@@ -1,2 +1,6 @@
 [workspace]
-members = []
+workspace.resolver = "2"
+members = [
+    #
+    "view/desktop/bin",
+]
