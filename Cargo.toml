@@ -4,3 +4,7 @@ members = [
     #
     "view/desktop/bin",
 ]
+
+[workspace.dependencies]
+tokio = "1.43.0"
+tauri = "2"
