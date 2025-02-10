@@ -1,2 +1,10 @@
 [workspace]
-members = []
+workspace.resolver = "2"
+members = [
+    #
+    "view/desktop/bin",
+]
+
+[workspace.dependencies]
+tokio = "1.43.0"
+tauri = "2"
