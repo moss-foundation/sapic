@@ -10,13 +10,6 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [
-      {
-        "title": "desktop",
-        "width": 800,
-        "height": 600
-      }
-    ],
     "withGlobalTauri": false,
     "macOSPrivateApi": true,
     "security": {
@@ -32,6 +25,15 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "exceptionDomain": "",
+      "entitlements": "lib/macos/entitlements.plist",
+      "frameworks": []
+    },
+    "windows": {
+      "digestAlgorithm": "sha256"
+    }
   }
 }
