@@ -26,11 +26,15 @@ RUSTUP := rustup
 
 # --- Commands ---
 
+## Generate Icons
+.PHONY: gen-icons
+gen-icons:
+	@cd $(ICONS_DIR) && $(PNPM) build
+
 ## Run Desktop Application
 .PHONY: run-desktop
 run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
-
 
 # Utility Commands
 
@@ -112,3 +116,4 @@ tidy: gen-license workspace-audit check-unused-deps
 build:
 	# Enable compression feature for reducing binary size
 	$(CARGO) build --bin desktop --features compression
+
