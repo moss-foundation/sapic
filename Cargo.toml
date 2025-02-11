@@ -1,6 +1,7 @@
 [workspace]
 workspace.resolver = "2"
 members = [
+    "crates/moss-git",
     #
     "view/desktop/bin",
 ]
