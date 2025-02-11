@@ -1,0 +1,14 @@
+target/
+obsolete/
+.turbo/
+.vscode/
+
+view/desktop/public
+view/desktop/bin/lib/macos/.build
+
+*.rs
+
+package*.json
+pnpm-lock.yaml
+
+**/LICENSE-MIT

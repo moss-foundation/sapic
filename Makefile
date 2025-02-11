@@ -17,3 +17,8 @@ RUSTUP := rustup
 .PHONY: run-desktop
 run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+
+## Generate Icons
+.PHONY: gen-icons
+gen-icons:
+	@cd $(ICONS_DIR) && $(PNPM) build

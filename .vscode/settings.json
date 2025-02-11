@@ -38,9 +38,6 @@
       "isWholeLine": false
     }
   ],
-  "files.associations": {
-    "*.css": "css"
-  },
   "editor.quickSuggestions": {
     "strings": "on"
   },
@@ -49,5 +46,12 @@
       "mode": "auto"
     }
   ],
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
 }
