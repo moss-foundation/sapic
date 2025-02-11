@@ -45,7 +45,7 @@ pub fn create_window(app_handle: &AppHandle, input: CreateWindowInput<'_>) -> We
     {
         win_builder = win_builder
             .hidden_title(true)
-            .title_bar_style(tauri::TitleBarStyle::Overlay);
+            .title_bar_style(tauri::TitleBarStyle::Visible);
     }
 
     let webview_window = win_builder
