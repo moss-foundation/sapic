@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@config "@repo/tailwind-config";
+@import "./fonts.css";
+
+#root {
+  height: 100%;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+
+  white-space: nowrap;
+  clip-path: inset(100%);
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+}
+
+@layer base {
+  html,
+  body {
+    @apply font-sans text-[rgba(var(--moss-primary))] transition-colors duration-75 ease-linear;
+    overflow: hidden;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-[rgba(var(--moss-primary))];
+  }
+
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold;
+  }
+
+  h1 {
+    @apply text-3xl font-bold;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  h4 {
+    @apply text-lg;
+  }
+
+  p {
+    @apply text-sm leading-normal text-[rgba(var(--moss-primary))];
+  }
+}
+
+[class*="bg-["],
+[class*="group-bg-["] {
+  transition-property: background-color, border-color;
+  transition-timing-function: ease-out;
+  transition-duration: 0.2s;
+}
+[class*="text-["],
+[class*="group-text-["] {
+  transition-property: color, text-decoration-color, fill, stroke;
+  transition-timing-function: ease-out;
+  transition-duration: 0.2s;
+}
