@@ -1,5 +1,4 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 
 function App() {
   const [name, setName] = useState("");
@@ -49,7 +48,7 @@ function App() {
           </a>
           <a href="https://reactjs.org" target="_blank">
             <img
-              src={reactLogo}
+              src="/react.svg"
               className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#61dafb]"
               alt="React logo"
             />
