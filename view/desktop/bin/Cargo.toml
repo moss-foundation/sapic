@@ -26,7 +26,8 @@ moss_env.workspace = true
 moss_tauri.workspace = true
 moss_text.workspace = true
 
-tauri = { workspace = true, default-features = false, features = [
+tauri = { workspace = true, features = [
+    "wry",
     "macos-private-api",
     "devtools",
     "objc-exception",

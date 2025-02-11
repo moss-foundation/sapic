@@ -1,0 +1,20 @@
+[package]
+name = "xtask"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+toml = "0.8.19"
+cargo_metadata = "0.19"
+pathdiff = "0.2"
+clap.workspace = true
+
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+smol.workspace = true
+tokio = { workspace = true, features = ["full"] }
+futures.workspace = true
+serde = { workspace = true, features = ["derive"] }
