@@ -7,15 +7,11 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-moss_text.workspace = true
-
-
 anyhow.workspace = true
 tauri.workspace = true
 derive_more = {workspace = true, features = ["deref", "deref_mut"]}
 parking_lot.workspace = true
 fnv.workspace = true
 log.workspace = true
-dashmap.workspace = true
 serde.workspace = true
 ts-rs.workspace = true

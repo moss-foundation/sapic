@@ -5,5 +5,4 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-tauri.workspace = true
 serde.workspace = true

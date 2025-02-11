@@ -23,7 +23,6 @@ compression = ["tauri/compression"]
 [dependencies]
 moss_desktop.workspace = true
 moss_tauri.workspace = true
-moss_text.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",
@@ -37,19 +36,16 @@ tauri-plugin-global-shortcut = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 tauri-plugin-window-state = "2.2.1"
 
-tokio = { workspace = true, features = ["full"] }
-
 anyhow.workspace = true
-rand.workspace = true
-serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
-log.workspace = true
-strum = { workspace = true, features = ["derive"] }
 dirs.workspace = true
-
+log.workspace = true
 once_cell.workspace = true
+rand.workspace = true
+serde_json.workspace = true
+strum = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ["full"] }
+tracing-subscriber.workspace = true
+tracing.workspace = true
 
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]

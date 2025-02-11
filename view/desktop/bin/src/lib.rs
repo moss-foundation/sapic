@@ -154,8 +154,8 @@ fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
         title: "Moss Studio",
         inner_size: (window_inner_width, window_inner_height),
         position: (
-            100.0 + random::<f64>() * 20.0,
-            100.0 + random::<f64>() * 20.0,
+            100.0,
+            100.0,
         ),
     };
 
