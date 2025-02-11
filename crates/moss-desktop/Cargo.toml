@@ -1,0 +1,23 @@
+[package]
+name = "moss_desktop"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+moss_cache.workspace = true
+moss_text.workspace = true
+moss_jsonlogic.workspace = true
+
+
+anyhow.workspace = true
+tauri.workspace = true
+derive_more = {workspace = true, features = ["deref", "deref_mut"]}
+parking_lot.workspace = true
+fnv.workspace = true
+log.workspace = true
+dashmap.workspace = true
+serde.workspace = true
+ts-rs.workspace = true

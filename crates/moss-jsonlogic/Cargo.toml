@@ -1,0 +1,12 @@
+[package]
+name = "moss_jsonlogic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde_json.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+moss_jsonlogic_macro.workspace = true

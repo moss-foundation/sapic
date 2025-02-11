@@ -11,23 +11,51 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "desktop_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+name = "desktop_app_lib"
+# crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.0.5", features = [] }
 
 [features]
 compression = ["tauri/compression"]
 
 [dependencies]
+moss_desktop.workspace = true
+moss_env.workspace = true
+moss_tauri.workspace = true
+moss_text.workspace = true
+
 tauri = { workspace = true, default-features = false, features = [
     "macos-private-api",
     "devtools",
     "objc-exception",
 ] }
+tauri-plugin-fs = "2.2.0"
+tauri-plugin-os = "2.2.0"
+tauri-plugin-global-shortcut = "2.2.0"
+tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
+tauri-plugin-window-state = "2.2.1"
+
 tokio = { workspace = true, features = ["full"] }
 
-tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+anyhow.workspace = true
+rand.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+log.workspace = true
+strum = { workspace = true, features = ["derive"] }
+dirs.workspace = true
+
+once_cell.workspace = true
+
+
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+mimalloc = { version = "0.1.39", default-features = false }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = "0.2.7"
+cocoa = "0.26.0"
+macos-trampoline = { path = "./lib/macos" }
