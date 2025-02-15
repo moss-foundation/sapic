@@ -40,16 +40,10 @@ mod tests {
             Cred::credential_helper(&default_config, url, username_from_url)
         });
 
-        if let repo = clone_flow(repo_url, repo_path, callbacks) {
-            println!("The repo is successfully cloned using https.");
-        }
-    }
+        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
 
-    // Some extra setup needs to be done before using SSH on Windows
-    // https://github.com/rust-lang/git2-rs/issues/659
-    // https://github.com/rust-lang/git2-rs/issues/1106
-    // https://stackoverflow.com/questions/72062352/issue-running-openssl-on-windows
-    // For vcpkg, run .\bootstrap-vcpkg.bat
+    }
+    
     #[test]
     fn cloning_with_ssh() {
         let repo_url = "git@github.com:***/***";
@@ -64,9 +58,7 @@ mod tests {
             Cred::ssh_key("git", Some(public), private, Some(password))
         });
 
-        if let repo = clone_flow(repo_url, repo_path, callbacks) {
-            println!("The repo is successfully cloned using ssh.");
-        }
+        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
     }
 
     // Run cargo test cloning_with_oauth_github -- --nocapture
@@ -169,8 +161,6 @@ mod tests {
             Cred::userpass_plaintext("oauth2", access_token.secret())
         });
 
-        if let repo = clone_flow(repo_url, repo_path, callbacks) {
-            println!("The repo is successfully cloned using OAuth Git");
-        }
+        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
     }
 }
