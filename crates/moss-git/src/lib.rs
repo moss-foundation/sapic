@@ -10,15 +10,6 @@ use oauth2::basic::BasicClient;
 use oauth2::reqwest;
 use oauth2::url::Url;
 
-fn prompt_credentials() -> (String, String) {
-    println!("Please enter username: ");
-    let mut username = String::new();
-    stdin().read_line(&mut username).unwrap();
-    println!("Please enter password: ");
-    let mut password = String::new();
-    stdin().read_line(&mut password).unwrap();
-    (username, password)
-}
 mod test {
 
     use super::*;
@@ -52,8 +43,6 @@ mod test {
         if let repo = clone_flow(repo_url, repo_path, callbacks) {
             println!("The repo is successfully cloned using https.");
         }
-
-
     }
 
     // Some extra setup needs to be done before using SSH on Windows
@@ -185,5 +174,7 @@ mod test {
             println!("The repo is successfully cloned using OAuth Git");
         }
     }
+
+
 }
 
