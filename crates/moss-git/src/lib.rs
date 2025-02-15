@@ -1,21 +1,22 @@
-use git2::{Repository, Cred, Config};
-use git2::build::RepoBuilder;
-use std::fs::remove_dir_all;
-use std::io::{stdin, BufRead, BufReader, Write};
-use std::net::TcpListener;
-use std::path::Path;
-use git2::{RemoteCallbacks};
-use oauth2::{AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl};
-use oauth2::basic::BasicClient;
-use oauth2::reqwest;
-use oauth2::url::Url;
-
-mod test {
-
-    use super::*;
+#[cfg(test)]
+mod tests {
+    use git2::build::RepoBuilder;
+    use git2::RemoteCallbacks;
+    use git2::{Config, Cred, Repository};
+    use oauth2::basic::BasicClient;
+    use oauth2::reqwest;
+    use oauth2::url::Url;
+    use oauth2::{
+        AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, RedirectUrl, Scope,
+        TokenResponse, TokenUrl,
+    };
+    use std::fs::remove_dir_all;
+    use std::io::{stdin, BufRead, BufReader, Write};
+    use std::net::TcpListener;
+    use std::path::Path;
 
     fn clone_flow(url: &str, path: &Path, callback: RemoteCallbacks) -> Result<Repository, String> {
-        remove_dir_all(path);
+        // remove_dir_all(path);
 
         let mut fo = git2::FetchOptions::new();
         fo.remote_callbacks(callback);
@@ -27,7 +28,6 @@ mod test {
             Ok(repo) => Ok(repo),
             Err(e) => Err(format!("failed to clone: {}", e)),
         }
-
     }
     #[test]
     fn cloning_with_https() {
@@ -69,7 +69,6 @@ mod test {
         }
     }
 
-
     // Run cargo test cloning_with_oauth_github -- --nocapture
     #[test]
     fn cloning_with_oauth_github() {
@@ -93,7 +92,8 @@ mod test {
             // This example will be running its own server at localhost:8080.
             // See below for the server implementation.
             .set_redirect_uri(
-                RedirectUrl::new(format!("http://localhost:{}", callback_port)).expect("Invalid redirect URL"),
+                RedirectUrl::new(format!("http://localhost:{}", callback_port))
+                    .expect("Invalid redirect URL"),
             );
 
         let http_client = reqwest::blocking::ClientBuilder::new()
@@ -108,7 +108,6 @@ mod test {
             // This example is requesting access to the user's public repos and private repos
             .add_scope(Scope::new("repo".to_string()))
             .url();
-
 
         println!("Open this URL in your browser:\n{authorize_url}\n");
         let (code, state) = {
@@ -174,7 +173,4 @@ mod test {
             println!("The repo is successfully cloned using OAuth Git");
         }
     }
-
-
 }
-
