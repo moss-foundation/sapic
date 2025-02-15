@@ -1,14 +1,25 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+// use serde::Deserialize;
+
+// #[derive(Debug, Deserialize)]
+// pub struct Collection {
+//     pub name: String,
+// }
 
 #[cfg(test)]
+
 mod tests {
-    use super::*;
+    use std::fs;
+
+    use kdl::KdlDocument;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn de() {
+        let content =
+            fs::read_to_string("./tests/requests/TestRequest/TestRequest.http.sapic").unwrap();
+        let r: KdlDocument = content.parse().unwrap();
+        dbg!(r);
+        // let config: Config = parse::de::from_str(&content)?;
+
+        // println!("{:#?}", r.);
     }
 }

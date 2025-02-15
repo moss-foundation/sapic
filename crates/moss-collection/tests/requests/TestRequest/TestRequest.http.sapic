@@ -1,0 +1,55 @@
+metadata {
+    order 1
+}
+
+get {
+    url {
+        raw "{{baseUrl}}/objects"
+        host "{{baseUrl}}"
+    }
+}
+
+params type=query {
+    pageToken {
+        value "{{vault::myVariable}}"
+        desc "An opaque token used to fetch the next page of results."
+        order 1
+        options {
+            propagate #true
+        }
+    }
+
+    limit {
+        value "{{defaultLimit}}"
+        desc "Maximum number of results to return in this query."
+        order 3
+    }
+
+    visibleOnly {
+        value "true"
+        desc "If true, returns only visible columns for the table."
+        disabled #true
+        order 2
+    } 
+}
+
+params type=query {
+    docId {
+        value "{{env::myEnvVariable}}"
+        desc "(Required) ID of the doc."
+        order 1
+    }
+}
+
+body type=graphql {
+  query Capsules {
+      capsules {
+          id
+          landings
+          original_launch
+          reuse_count
+          status
+          type
+      }
+  }
+}
