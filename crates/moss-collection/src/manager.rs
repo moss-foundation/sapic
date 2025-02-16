@@ -25,6 +25,7 @@ pub struct CollectionEntity {
 
 pub trait CollectionRepository {
     fn put_collection_item(&self, input: PutCollectionInput) -> Result<()>;
+    fn remove_collection_item(&self, input: RemoveCollectionInput) -> Result<()>;
 }
 
 pub trait CollectionRequestRepository {}
@@ -33,6 +34,10 @@ pub struct PutCollectionInput {
     pub source: String,
     pub kind: CollectionKind,
     pub order: usize,
+}
+
+pub struct RemoveCollectionInput<'a> {
+    pub source: &'a str,
 }
 
 impl CollectionRepository for SledClient {
@@ -50,7 +55,14 @@ impl CollectionRepository for SledClient {
             kind: input.kind,
             order: input.order,
         })?;
-        collections_tree.insert(input.source, value)?;
+        collections_tree.insert(&input.source, value)?;
+
+        Ok(())
+    }
+
+    fn remove_collection_item(&self, input: RemoveCollectionInput) -> Result<()> {
+        let collections_tree = self.db.open_tree("collections")?;
+        collections_tree.remove(input.source)?;
 
         Ok(())
     }
@@ -90,7 +102,7 @@ where
     FS: FileSystemCollectionRead + FileSystemCollectionWrite,
     R: CollectionRequestRepository,
 {
-    fs: FS,
+    fs: Arc<FS>,
     repo: Arc<R>,
     collection: LocalCollection,
 }
@@ -115,12 +127,13 @@ pub trait CollectionManagerFileSystem:
     FileSystemCollectionRead + FileSystemCollectionWrite
 {
     fn create_dir(&self, path: &PathBuf) -> Result<()>;
+    fn remove_dir(&self, path: &PathBuf) -> Result<()>;
 }
 
 pub struct CollectionManager<R, FS>
 where
     R: CollectionRepository + CollectionRequestRepository + 'static,
-    FS: CollectionManagerFileSystem,
+    FS: CollectionManagerFileSystem + 'static,
 {
     repo: Arc<R>,
     fs: Arc<FS>,
@@ -129,7 +142,7 @@ where
 
 impl<R, FS> CollectionManager<R, FS>
 where
-    R: CollectionRepository + CollectionRequestRepository + 'static,
+    R: CollectionRepository + CollectionRequestRepository,
     FS: CollectionManagerFileSystem,
 {
     pub fn create_collection(&self, path: PathBuf) -> Result<()> {
@@ -148,13 +161,25 @@ where
             source,
             CollectionHandle::new(
                 LocalCollectionHandle {
-                    fs: LocalFileSystem {},
+                    fs: Arc::clone(&self.fs),
                     repo: Arc::clone(&self.repo),
                     collection: LocalCollection { path },
                 },
                 kind,
             ),
         );
+
+        Ok(())
+    }
+
+    pub fn delete_collection(&self, path: PathBuf) -> Result<()> {
+        self.fs.remove_dir(&path)?;
+
+        let source = path.to_string_lossy().to_string();
+
+        self.repo
+            .remove_collection_item(RemoveCollectionInput { source: &source })?;
+        self.collections.remove(&source);
 
         Ok(())
     }
@@ -174,6 +199,10 @@ mod tests {
 
     impl CollectionManagerFileSystem for MockLocalFileSystem {
         fn create_dir(&self, path: &std::path::PathBuf) -> anyhow::Result<()> {
+            todo!()
+        }
+
+        fn remove_dir(&self, path: &std::path::PathBuf) -> anyhow::Result<()> {
             todo!()
         }
     }
