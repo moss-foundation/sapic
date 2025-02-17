@@ -12,7 +12,10 @@ use std::{
 };
 use tauri::AppHandle;
 
-use super::instantiation::InstantiationType;
+pub enum InstantiationType {
+    Instant,
+    Delayed,
+}
 
 pub trait Service: Any + Send + Sync {
     fn name(&self) -> &'static str;

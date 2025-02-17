@@ -14,8 +14,8 @@ use std::sync::Arc;
 use anyhow::Result;
 
 use moss_desktop::app::db::manager::SledManager;
-use moss_desktop::app::instantiation::InstantiationType;
 use moss_desktop::app::repositories::collection_repository::SledCollectionRepository;
+use moss_desktop::app::service::InstantiationType;
 use moss_desktop::services::collection_service::CollectionService;
 use moss_desktop::services::collection_service::FileSystem;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};

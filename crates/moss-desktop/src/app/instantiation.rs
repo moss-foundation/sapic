@@ -1,4 +1,4 @@
-pub enum InstantiationType {
-    Instant,
-    Delayed,
-}
+// pub enum InstantiationType {
+//     Instant,
+//     Delayed,
+// }
