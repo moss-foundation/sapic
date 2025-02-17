@@ -39,9 +39,8 @@ mod github_tests {
         let token_url = "https://github.com/login/oauth/access_token";
         let client_id = "***";
         let client_secret = "***";
-        let callback_port = "1357";
 
-        let github_oauth = OAuth::new(auth_url, token_url, client_id, client_secret, callback_port);
+        let github_oauth = OAuth::new(auth_url, token_url, client_id, client_secret);
         let mut callbacks = git2::RemoteCallbacks::new();
 
         github_oauth.flow(&mut callbacks);
