@@ -5,6 +5,7 @@ members = [
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
+    "crates/moss-db",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -14,6 +15,7 @@ moss_desktop = { path = "crates/moss-desktop" }
 moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
+moss_db = { path = "crates/moss-db" }
 
 tauri = { version = "2.2.5", default-features = false }
 
@@ -40,3 +42,6 @@ tracing-subscriber = "0.3.18"
 ts-rs = "10.1.0"
 kdl = "6.3.3"
 thiserror = "2.0.11"
+dashmap = "6.1.0"
+sled = "0.34.7"
+bincode = "1.3.3"

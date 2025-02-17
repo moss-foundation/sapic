@@ -29,7 +29,7 @@ impl Service for WindowService {
 
     fn dispose(&self) {}
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&self) -> &(dyn std::any::Any + Send) {
         self
     }
 }

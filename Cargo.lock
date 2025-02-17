@@ -1020,6 +1020,7 @@ dependencies = [
  "once_cell",
  "rand 0.9.0",
  "serde_json",
+ "sled",
  "strum",
  "tauri",
  "tauri-build",
@@ -2492,6 +2493,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss-db"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
 name = "moss_collection"
 version = "0.1.0"
 dependencies = [
@@ -2510,11 +2518,15 @@ name = "moss_desktop"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bincode",
+ "dashmap",
  "derive_more 2.0.1",
  "fnv",
  "log",
+ "moss_collection",
  "parking_lot 0.12.3",
  "serde",
+ "sled",
  "tauri",
  "ts-rs",
 ]

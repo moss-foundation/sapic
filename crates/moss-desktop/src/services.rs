@@ -1,2 +1,2 @@
-// TODO: Migrate services if needed
+pub mod collection_service;
 pub mod window_service;

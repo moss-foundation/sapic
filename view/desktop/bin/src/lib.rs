@@ -1,5 +1,5 @@
-pub mod constants;
 mod commands;
+pub mod constants;
 mod mem;
 mod menu;
 mod plugins;
@@ -9,8 +9,15 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+use std::sync::Arc;
+
 use anyhow::Result;
 
+use moss_desktop::app::db::manager::SledManager;
+use moss_desktop::app::instantiation::InstantiationType;
+use moss_desktop::app::repositories::collection_repository::SledCollectionRepository;
+use moss_desktop::services::collection_service::CollectionService;
+use moss_desktop::services::collection_service::FileSystem;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -19,8 +26,8 @@ use tauri_plugin_os;
 use rand::random;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::format::FmtSpan;
-use tracing_subscriber::{Layer};
 use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Layer;
 
 use moss_desktop::app::manager::AppManager;
 use moss_desktop::app::state::AppStateManager;
@@ -31,6 +38,18 @@ use crate::plugins::*;
 pub use constants::*;
 use moss_desktop::services::window_service::WindowService;
 use window::{create_window, CreateWindowInput};
+
+struct MockLocalFileSystem {}
+
+impl FileSystem for MockLocalFileSystem {
+    fn create_dir(&self, path: &std::path::PathBuf) -> Result<()> {
+        todo!()
+    }
+
+    fn remove_dir(&self, path: &std::path::PathBuf) -> Result<()> {
+        todo!()
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -76,8 +95,24 @@ pub fn run() {
             let app_state = AppStateManager::new();
             app_handle.manage(app_state);
 
-            let app_manager = AppManager::new(app_handle.clone());
-            // TODO: Service creation and registry?
+            let db: sled::Db =
+                sled::open("../../../sleddb").expect("failed to open a connection to the database");
+            let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
+            let collection_repository =
+                SledCollectionRepository::new(sled_manager.collections_tree());
+
+            let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    |_| {
+                        CollectionService::new(
+                            Arc::new(MockLocalFileSystem {}),
+                            Arc::new(collection_repository),
+                        )
+                        .expect("failed to create the CollectionService")
+                    },
+                    InstantiationType::Instant,
+                )
+                .with_service(|_| WindowService::new(), InstantiationType::Delayed);
             app_handle.manage(app_manager);
 
             let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
@@ -153,10 +188,7 @@ fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
         label: label.as_str(),
         title: "Moss Studio",
         inner_size: (window_inner_width, window_inner_height),
-        position: (
-            100.0,
-            100.0,
-        ),
+        position: (100.0, 100.0),
     };
 
     create_window(app_handle, config)
