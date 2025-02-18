@@ -46,3 +46,4 @@ dist/
 .idea
 .idea/**
 /crates/moss-wasmhost/wasm/target
+/crates/moss-git/src/secrets
