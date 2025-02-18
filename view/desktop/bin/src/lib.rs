@@ -11,49 +11,29 @@ extern crate tracing;
 
 use anyhow::Result;
 use moss_app::manager::AppManager;
+use moss_app::service::InstantiationType;
 use moss_app::state::AppStateManager;
 use moss_collection::adapters::sled::collection_request_substore::SledCollectionRequestSubstore;
-use moss_collection::services::collection_service::CollectionService;
-use moss_collection::services::collection_service::FileSystem;
-use moss_tauri::services::window_service::WindowService;
-use std::sync::Arc;
-
-use moss_app::service::InstantiationType;
 use moss_collection::adapters::sled::collection_store::SledCollectionStore;
+use moss_collection::services::collection_service::CollectionService;
 use moss_db::sled::SledManager;
-
+use moss_fs::adapters::disk::DickFileSystem;
+use moss_tauri::services::window_service::WindowService;
+use rand::random;
+use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
-
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
-
-use rand::random;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
-
-// use moss_desktop::app::manager::AppManager;
-// use moss_desktop::app::state::AppStateManager;
+use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-// use moss_desktop::services::window_service::WindowService;
-use window::{create_window, CreateWindowInput};
-
-struct MockLocalFileSystem {}
-
-impl FileSystem for MockLocalFileSystem {
-    fn create_dir(&self, path: &std::path::PathBuf) -> Result<()> {
-        todo!()
-    }
-
-    fn remove_dir(&self, path: &std::path::PathBuf) -> Result<()> {
-        todo!()
-    }
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -110,7 +90,7 @@ pub fn run() {
                 .with_service(
                     |_| {
                         CollectionService::new(
-                            Arc::new(MockLocalFileSystem {}),
+                            Arc::new(DickFileSystem::new()),
                             Arc::new(collection_store),
                             Arc::new(collection_request_substore),
                         )

@@ -276,6 +276,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
+name = "async-trait"
+version = "0.1.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644dd749086bf3771a2fbc5f256fdb982d53f011c7d5d560304eafeecebce79d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
+]
+
+[[package]]
 name = "atk"
 version = "0.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1042,6 +1053,7 @@ dependencies = [
  "moss_app",
  "moss_collection",
  "moss_db",
+ "moss_fs",
  "moss_tauri",
  "objc",
  "once_cell",
@@ -2665,6 +2677,7 @@ dependencies = [
  "kdl",
  "miette",
  "moss_app",
+ "moss_fs",
  "serde",
  "sled",
  "thiserror 2.0.11",
@@ -2676,6 +2689,17 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "sled",
+]
+
+[[package]]
+name = "moss_fs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -5338,6 +5362,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f6d0975eaace0cf0fcadee4e4aaa5da15b5c079146f2cffb67c113be122bf37"
 dependencies = [
  "rustls",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-stream"
+version = "0.1.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eca58d7bba4a75707817a2c44174253f9236b2d5fbd055602e9d5c07c139a047"
+dependencies = [
+ "futures-core",
+ "pin-project-lite",
  "tokio",
 ]
 
