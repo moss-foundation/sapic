@@ -21,8 +21,10 @@ tauri-build = { version = "2.0.5", features = [] }
 compression = ["tauri/compression"]
 
 [dependencies]
-moss_desktop.workspace = true
 moss_tauri.workspace = true
+moss_db.workspace = true
+moss_collection.workspace = true
+moss_app.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",
@@ -36,6 +38,7 @@ tauri-plugin-global-shortcut = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 tauri-plugin-window-state = "2.2.1"
 
+sled.workspace = true
 anyhow.workspace = true
 dirs.workspace = true
 log.workspace = true

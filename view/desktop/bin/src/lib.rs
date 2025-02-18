@@ -1,5 +1,5 @@
-pub mod constants;
 mod commands;
+pub mod constants;
 mod mem;
 mod menu;
 mod plugins;
@@ -10,6 +10,17 @@ mod window;
 extern crate tracing;
 
 use anyhow::Result;
+use moss_app::manager::AppManager;
+use moss_app::state::AppStateManager;
+use moss_collection::adapters::sled::collection_request_substore::SledCollectionRequestSubstore;
+use moss_collection::services::collection_service::CollectionService;
+use moss_collection::services::collection_service::FileSystem;
+use moss_tauri::services::window_service::WindowService;
+use std::sync::Arc;
+
+use moss_app::service::InstantiationType;
+use moss_collection::adapters::sled::collection_store::SledCollectionStore;
+use moss_db::sled::SledManager;
 
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 
@@ -19,18 +30,30 @@ use tauri_plugin_os;
 use rand::random;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::fmt::format::FmtSpan;
-use tracing_subscriber::{Layer};
 use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Layer;
 
-use moss_desktop::app::manager::AppManager;
-use moss_desktop::app::state::AppStateManager;
+// use moss_desktop::app::manager::AppManager;
+// use moss_desktop::app::state::AppStateManager;
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-use moss_desktop::services::window_service::WindowService;
+// use moss_desktop::services::window_service::WindowService;
 use window::{create_window, CreateWindowInput};
+
+struct MockLocalFileSystem {}
+
+impl FileSystem for MockLocalFileSystem {
+    fn create_dir(&self, path: &std::path::PathBuf) -> Result<()> {
+        todo!()
+    }
+
+    fn remove_dir(&self, path: &std::path::PathBuf) -> Result<()> {
+        todo!()
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -76,8 +99,26 @@ pub fn run() {
             let app_state = AppStateManager::new();
             app_handle.manage(app_state);
 
-            let app_manager = AppManager::new(app_handle.clone());
-            // TODO: Service creation and registry?
+            let db: sled::Db =
+                sled::open("../../../sleddb").expect("failed to open a connection to the database");
+            let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
+            let collection_store = SledCollectionStore::new(sled_manager.collections_tree());
+            let collection_request_substore =
+                SledCollectionRequestSubstore::new(sled_manager.collections_tree());
+
+            let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    |_| {
+                        CollectionService::new(
+                            Arc::new(MockLocalFileSystem {}),
+                            Arc::new(collection_store),
+                            Arc::new(collection_request_substore),
+                        )
+                        .expect("failed to create the CollectionService")
+                    },
+                    InstantiationType::Instant,
+                )
+                .with_service(|_| WindowService::new(), InstantiationType::Delayed);
             app_handle.manage(app_manager);
 
             let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
@@ -105,7 +146,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             cmd_window::create_new_window,
-            cmd_window::get_state,
+            //
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]
@@ -153,10 +194,7 @@ fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
         label: label.as_str(),
         title: "Moss Studio",
         inner_size: (window_inner_width, window_inner_height),
-        position: (
-            100.0,
-            100.0,
-        ),
+        position: (100.0, 100.0),
     };
 
     create_window(app_handle, config)

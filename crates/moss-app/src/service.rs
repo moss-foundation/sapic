@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use derive_more::{Deref, DerefMut};
 use fnv::FnvHashMap;
+use log::debug;
 use parking_lot::RwLock;
 use std::{
     any::{Any, TypeId},
@@ -9,15 +10,17 @@ use std::{
         Arc,
     },
 };
-use log::debug;
 use tauri::AppHandle;
 
-use super::instantiation::InstantiationType;
+pub enum InstantiationType {
+    Instant,
+    Delayed,
+}
 
 pub trait Service: Any + Send + Sync {
     fn name(&self) -> &'static str;
     fn dispose(&self);
-    fn as_any(&self) -> &dyn Any;
+    fn as_any(&self) -> &(dyn std::any::Any + Send);
 }
 
 impl dyn Service {

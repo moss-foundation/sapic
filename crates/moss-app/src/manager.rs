@@ -1,9 +1,7 @@
 use anyhow::Result;
 use tauri::AppHandle;
-use super::{
-    instantiation::InstantiationType,
-    service::{Service, ServiceCollection, ServiceHandle},
-};
+
+use super::service::{InstantiationType, Service, ServiceCollection, ServiceHandle};
 
 pub struct AppManager {
     services: ServiceCollection,

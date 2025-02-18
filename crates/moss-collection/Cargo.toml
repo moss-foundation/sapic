@@ -1,0 +1,16 @@
+[package]
+name = "moss_collection"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+moss_app.workspace = true
+anyhow.workspace = true
+kdl.workspace = true
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
+
+miette = { version = "7.5.0", features = ["fancy"] }
+sled = "0.34.7"
+bincode = "1.3.3"
+dashmap = "6.1.0"
