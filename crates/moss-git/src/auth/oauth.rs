@@ -9,26 +9,28 @@ use git2::{Cred, RemoteCallbacks};
 use oauth2::{AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, Scope, TokenResponse, TokenUrl};
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
+use crate::auth::AuthAgent;
 
-pub struct OAuth {
+pub struct OAuthAgent {
     auth_url: String,
     token_url: String,
     client_id: String,
     client_secret: String,
 }
 
-impl OAuth {
-    pub fn new(auth_url: &str, token_url: &str, client_id: &str, client_secret: &str) -> OAuth {
-        OAuth {
+impl OAuthAgent {
+    pub fn new(auth_url: &str, token_url: &str, client_id: &str, client_secret: &str) -> OAuthAgent {
+        OAuthAgent {
             auth_url: auth_url.to_string(),
             token_url: token_url.to_string(),
             client_id: client_id.to_string(),
             client_secret: client_secret.to_string(),
         }
     }
+}
 
-
-    pub fn flow(&self, remote_callbacks: &mut RemoteCallbacks) {
+impl AuthAgent for OAuthAgent {
+    fn authorize(self, remote_callbacks: &mut RemoteCallbacks) {
         let auth_url = AuthUrl::new(self.auth_url.clone())
             .expect("Invalid authorization endpoint URL");
         let token_url = TokenUrl::new(self.token_url.clone())
@@ -122,4 +124,5 @@ impl OAuth {
             Cred::userpass_plaintext("oauth2", access_token.as_str())
         });
     }
+
 }
