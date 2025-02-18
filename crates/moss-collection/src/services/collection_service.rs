@@ -1,22 +1,22 @@
 use anyhow::Result;
 use dashmap::DashMap;
 use moss_app::service::Service;
-use std::{any::Any, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 
 use crate::domain::{
     models::{CollectionDetails, CollectionSource},
     ports::db_ports::{CollectionRequestSubstore, CollectionStore},
 };
 
-pub trait FileSystem: Send + Sync + 'static {
+pub trait FileSystem: Send + Sync {
     fn create_dir(&self, path: &PathBuf) -> Result<()>;
     fn remove_dir(&self, path: &PathBuf) -> Result<()>;
 }
 
 pub enum CollectionHandle {
     Local {
-        fs: Arc<dyn FileSystem + 'static>,
-        repo: Arc<dyn CollectionRequestSubstore + 'static>,
+        fs: Arc<dyn FileSystem>,
+        repo: Arc<dyn CollectionRequestSubstore>,
         order: usize,
     },
 
@@ -24,7 +24,7 @@ pub enum CollectionHandle {
 }
 
 pub struct CollectionService {
-    fs: Arc<dyn FileSystem + 'static>,
+    fs: Arc<dyn FileSystem>,
     collection_store: Arc<dyn CollectionStore>,
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
     collections: DashMap<CollectionSource, CollectionHandle>,
