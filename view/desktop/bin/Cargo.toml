@@ -21,7 +21,6 @@ tauri-build = { version = "2.0.5", features = [] }
 compression = ["tauri/compression"]
 
 [dependencies]
-# moss_desktop.workspace = true
 moss_tauri.workspace = true
 moss_db.workspace = true
 moss_collection.workspace = true

@@ -1,7 +1,6 @@
 [workspace]
 resolver = "1"
 members = [
-    "crates/moss-desktop",
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
@@ -12,7 +11,6 @@ members = [
 ]
 
 [workspace.dependencies]
-moss_desktop = { path = "crates/moss-desktop" }
 moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
