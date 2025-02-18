@@ -5,6 +5,7 @@ members = [
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
+    "crates/moss-app",
     "crates/moss-db",
     "tools/xtask",
     "view/desktop/bin",
@@ -16,6 +17,7 @@ moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
+moss_app = { path = "crates/moss-app" }
 
 tauri = { version = "2.2.5", default-features = false }
 

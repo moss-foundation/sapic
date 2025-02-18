@@ -1014,7 +1014,9 @@ dependencies = [
  "log",
  "macos-trampoline",
  "mimalloc",
- "moss_desktop",
+ "moss_app",
+ "moss_collection",
+ "moss_db",
  "moss_tauri",
  "objc",
  "once_cell",
@@ -2493,10 +2495,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss-db"
+name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "derive_more 2.0.1",
+ "fnv",
+ "log",
+ "parking_lot 0.12.3",
+ "tauri",
 ]
 
 [[package]]
@@ -2508,9 +2515,18 @@ dependencies = [
  "dashmap",
  "kdl",
  "miette",
+ "moss_app",
  "serde",
  "sled",
  "thiserror 2.0.11",
+]
+
+[[package]]
+name = "moss_db"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "sled",
 ]
 
 [[package]]
@@ -2536,6 +2552,7 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_app",
  "serde",
 ]
 

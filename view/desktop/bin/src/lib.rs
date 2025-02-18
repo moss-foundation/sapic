@@ -9,15 +9,19 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
+use anyhow::Result;
+use moss_app::manager::AppManager;
+use moss_app::state::AppStateManager;
+use moss_collection::adapters::sled::collection_request_substore::SledCollectionRequestSubstore;
+use moss_collection::services::collection_service::CollectionService;
+use moss_collection::services::collection_service::FileSystem;
+use moss_tauri::services::window_service::WindowService;
 use std::sync::Arc;
 
-use anyhow::Result;
+use moss_app::service::InstantiationType;
+use moss_collection::adapters::sled::collection_store::SledCollectionStore;
+use moss_db::sled::SledManager;
 
-use moss_desktop::app::db::manager::SledManager;
-use moss_desktop::app::repositories::collection_repository::SledCollectionRepository;
-use moss_desktop::app::service::InstantiationType;
-use moss_desktop::services::collection_service::CollectionService;
-use moss_desktop::services::collection_service::FileSystem;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -29,14 +33,14 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
 
-use moss_desktop::app::manager::AppManager;
-use moss_desktop::app::state::AppStateManager;
+// use moss_desktop::app::manager::AppManager;
+// use moss_desktop::app::state::AppStateManager;
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-use moss_desktop::services::window_service::WindowService;
+// use moss_desktop::services::window_service::WindowService;
 use window::{create_window, CreateWindowInput};
 
 struct MockLocalFileSystem {}
@@ -98,15 +102,17 @@ pub fn run() {
             let db: sled::Db =
                 sled::open("../../../sleddb").expect("failed to open a connection to the database");
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
-            let collection_repository =
-                SledCollectionRepository::new(sled_manager.collections_tree());
+            let collection_store = SledCollectionStore::new(sled_manager.collections_tree());
+            let collection_request_substore =
+                SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
                     |_| {
                         CollectionService::new(
                             Arc::new(MockLocalFileSystem {}),
-                            Arc::new(collection_repository),
+                            Arc::new(collection_store),
+                            Arc::new(collection_request_substore),
                         )
                         .expect("failed to create the CollectionService")
                     },
@@ -140,7 +146,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             cmd_window::create_new_window,
-            cmd_window::get_state,
+            //
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]

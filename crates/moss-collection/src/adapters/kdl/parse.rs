@@ -1,8 +1,8 @@
 use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 
-use crate::kdl::foundations::http::{HttpMethod, Metadata, Request, Url};
-use crate::kdl::tokens::{METADATA_LIT, URL_LIT};
+use crate::adapters::kdl::foundations::http::{HttpMethod, Metadata, Request, Url};
+use crate::adapters::kdl::tokens::{METADATA_LIT, URL_LIT};
 
 #[macro_export]
 macro_rules! kdl_get_child {
