@@ -1,17 +1,13 @@
 use anyhow::Result;
 use dashmap::DashMap;
 use moss_app::service::Service;
+use moss_fs::FileSystem;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::domain::{
     models::{CollectionDetails, CollectionSource},
     ports::db_ports::{CollectionRequestSubstore, CollectionStore},
 };
-
-pub trait FileSystem: Send + Sync {
-    fn create_dir(&self, path: &PathBuf) -> Result<()>;
-    fn remove_dir(&self, path: &PathBuf) -> Result<()>;
-}
 
 pub enum CollectionHandle {
     Local {
@@ -46,8 +42,8 @@ impl CollectionService {
 }
 
 impl CollectionService {
-    pub fn create_collection(&self, path: PathBuf) -> Result<()> {
-        self.fs.create_dir(&path)?;
+    pub async fn create_collection(&self, path: PathBuf) -> Result<()> {
+        self.fs.create_dir(path.as_path()).await?;
 
         let source = CollectionSource::Local(path);
         let order = self.collections.len() + 1;

@@ -1,7 +1,12 @@
 pub mod adapters;
 
-use anyhow::{anyhow, Context as _, Result};
-use std::{path::Path, pin::Pin};
+use anyhow::Result;
+use futures::Stream;
+use std::{
+    io,
+    path::{Path, PathBuf},
+    pin::Pin,
+};
 
 #[derive(Copy, Clone, Default)]
 pub struct RemoveOptions {
@@ -15,11 +20,24 @@ pub struct CreateOptions {
     pub ignore_if_exists: bool,
 }
 
+#[derive(Copy, Clone, Default)]
+pub struct RenameOptions {
+    pub overwrite: bool,
+    pub ignore_if_exists: bool,
+}
+
 #[async_trait::async_trait]
 pub trait FileSystem: Send + Sync {
     async fn create_dir(&self, path: &Path) -> Result<()>;
+    async fn read_dir(
+        &self,
+        path: &Path,
+    ) -> Result<Pin<Box<dyn Send + Stream<Item = Result<PathBuf>>>>>;
     async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> Result<()>;
+
+    async fn rename(&self, source: &Path, target: &Path, options: RenameOptions) -> Result<()>;
 
     async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;
+    async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>>;
 }
