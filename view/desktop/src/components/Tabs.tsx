@@ -39,11 +39,11 @@ export const Tabs = ({ children, defaultIndex = 0, ...props }: {
 
     useEffect(() => {
         const currentTab = tabsRefs.current[activeIndex];
-        if (currentTab && tabListRef.current && indicatorRef.current) {
+        if (currentTab && indicatorRef.current) {
             const tabRect = currentTab.getBoundingClientRect();
-            const listRect = tabListRef.current.getBoundingClientRect();
+
             indicatorRef.current.style.width = `${tabRect.width}px`;
-            indicatorRef.current.style.left = `${tabRect.left - listRect.left}px`;
+            indicatorRef.current.style.left = `${currentTab.offsetLeft}px`;
         }
     }, [activeIndex]);
 
@@ -80,7 +80,7 @@ const TabsList = ({ children, ...props }: {
             role="tablist"
             aria-labelledby="tablist-1"
             data-tabs="default"
-            className={cn(`flex group relative bg-[#F4F4F4] dark:bg-[#161819]`)}
+            className={cn(`flex overflow-auto relative bg-[#F4F4F4] dark:bg-[#161819]`)}
             ref={tabListRef}
             {...props}
         >
@@ -110,7 +110,7 @@ const Tab = forwardRef<
         aria-selected={isActive}
         aria-controls={`panel-${id}`}
         tabIndex={isActive ? 0 : -1}
-        className={cn("px-3 py-2.5 bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer ", {
+        className={cn("min-w-max px-3 py-2.5 bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer ", {
             "bg-white dark:bg-[#1e2021] dark:text-white": isActive,
             "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 ": !isActive
         }, props.className)}

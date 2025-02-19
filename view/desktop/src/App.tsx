@@ -17,9 +17,9 @@ function App() {
 
   return (
     <>
-      <div className="absolute inset-0 ml-1 mt-1 flex outline-2 outline-amber-300 z-100 w-[500px] h-[500px]" >
+      <div className="absolute inset-0 ml-1 mt-1 flex outline-2 outline-amber-300 z-100 w-[500px] h-[200px] resize-x overflow-auto" >
         <Tabs defaultIndex={0}>
-          <Tabs.List>
+          {/* <Tabs.List>
             <Tabs.Tab id={1}>Explorer</Tabs.Tab>
             <Tabs.Tab id={2}>Issues</Tabs.Tab>
             <Tabs.Tab id={3}>History</Tabs.Tab>
@@ -29,9 +29,17 @@ function App() {
             <Tabs.Panel id={1}>Explorer content</Tabs.Panel>
             <Tabs.Panel id={2}>Issues content</Tabs.Panel>
             <Tabs.Panel id={3}>History content</Tabs.Panel>
+          </Tabs.Panels> */}
+          <Tabs.List>
+            {Array.from({ length: 8 }, (_, i) => i + 1).map(id => <Tabs.Tab id={id} onClick={() => {
+              console.log(id)
+            }}>Panel {id}</Tabs.Tab>)}
+          </Tabs.List>
+
+          <Tabs.Panels className="text-black dark:text-white">
+            {Array.from({ length: 8 }, (_, i) => i + 1).map(id => <Tabs.Panel id={id}>Panel {id} content</Tabs.Panel>)}
           </Tabs.Panels>
         </Tabs>
-
       </div>
 
       <div className="absolute -top-3 -right-3 p-4 flex" >
