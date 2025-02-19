@@ -49,3 +49,5 @@ dist/
 .idea/**
 /crates/moss-wasmhost/wasm/target
 /crates/moss-git/src/secrets
+/crates/moss-git/test-repo
+crates/moss-git/oauth.json

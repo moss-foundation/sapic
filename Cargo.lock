@@ -2706,10 +2706,13 @@ dependencies = [
 name = "moss_git"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "git2",
  "oauth2",
  "openssl",
  "reqwest",
+ "serde",
+ "serde_json",
  "ssh2",
 ]
 

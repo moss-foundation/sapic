@@ -1,46 +1,36 @@
 mod oauth;
 mod ssh;
-mod cred_helper;
 
 pub use oauth::*;
 pub use ssh::*;
-pub use cred_helper::*;
 
-use git2::build::RepoBuilder;
+use crate::clone_flow;
+use anyhow::Result;
 use git2::RemoteCallbacks;
-use git2::{Repository};
 use oauth2::TokenResponse;
 use std::io::{BufRead, Write};
 use std::path::Path;
-use crate::auth::cred_helper::CredHelper;
-
 // TODO: Create a `Sensitive` type for storing passwords securely?
-
+// TODO: Preserving the auth info for repos
 
 pub trait AuthAgent {
-    fn authorize(self, remote_callbacks: &mut RemoteCallbacks);
+    // We have to return the Cred in order to store
+    fn authorize<'a>(self, remote_callbacks: &mut RemoteCallbacks<'a>) -> Result<()>;
 }
 
-
-fn clone_flow(url: &str, path: &Path, callback: RemoteCallbacks) -> Result<Repository, String> {
-    // remove_dir_all(path);
-
-    let mut fo = git2::FetchOptions::new();
-    fo.remote_callbacks(callback);
-
-    let mut builder = RepoBuilder::new();
-    builder.fetch_options(fo);
-
-    match builder.clone(url, path) {
-        Ok(repo) => Ok(repo),
-        Err(e) => Err(format!("failed to clone: {}", e)),
-    }
+pub trait TestStorage {
+    // TODO: We will use more secure method of storing the AuthAgent info
+    // For easy testing, we will use environment variables for now
+    fn write_to_file(&self) -> Result<()>;
+    fn read_from_file() -> Result<Box<Self>>;
 }
-
 
 #[cfg(test)]
 mod github_tests {
     use crate::auth::oauth::OAuthAgent;
+    use git2::Time;
+    use std::path::PathBuf;
+
     use super::*;
 
     // Run cargo test cloning_with_https -- --nocapture
@@ -55,7 +45,17 @@ mod github_tests {
         let client_id = "***";
         let client_secret = "***";
 
-        let auth_agent = OAuthAgent::new(auth_url, token_url, client_id, client_secret);
+        let mut auth_agent = match OAuthAgent::read_from_file() {
+            Ok(agent) => agent,
+            Err(_) => Box::new(OAuthAgent::new(
+                auth_url,
+                token_url,
+                client_id,
+                client_secret,
+                vec![],
+                None,
+            )),
+        };
 
         let mut callbacks = git2::RemoteCallbacks::new();
 
@@ -69,18 +69,17 @@ mod github_tests {
         let repo_url = "git@github.com:***/***";
         let repo_path = Path::new("Path to your local repo");
 
-        let private = Path::new(".ssh/id_***");
-        let public = Path::new(".ssh/id_***.pub");
+        let private = PathBuf::from(".ssh/id_***");
+        let public = PathBuf::from(".ssh/id_***.pub");
         let password = "**";
 
-        let auth_agent = SSHAgent::new(Some(public), private, Some(password.into()));
+        let mut auth_agent = SSHAgent::new(Some(public), private, Some(password.into()));
 
         let mut callbacks = git2::RemoteCallbacks::new();
         auth_agent.authorize(&mut callbacks);
 
         let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
     }
-
 }
 
 #[cfg(test)]
@@ -91,13 +90,28 @@ mod gitlab_tests {
         let repo_url = "https://gitlab.com/**/**.git";
         let repo_path = Path::new("Path to your local repo");
 
-        let auth_agent = CredHelper::new();
+        let auth_url = "https://gitlab.com/oauth/authorize";
+        let token_url = "https://gitlab.com/oauth/token";
+        let client_id = "***";
+        let client_secret = "***";
 
         let mut callbacks = git2::RemoteCallbacks::new();
+
+        let mut auth_agent = match OAuthAgent::read_from_file() {
+            Ok(agent) => agent,
+            Err(_) => Box::new(OAuthAgent::new(
+                auth_url,
+                token_url,
+                client_id,
+                client_secret,
+                vec![],
+                None,
+            )),
+        };
+
         auth_agent.authorize(&mut callbacks);
 
         let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
-
     }
 
     #[test]
@@ -109,13 +123,12 @@ mod gitlab_tests {
         let public = Path::new(".ssh/id_***.pub");
         let password = "**";
 
-        let auth_agent = SSHAgent::new(Some(public), private, Some(password.into()));
+        let mut auth_agent =
+            SSHAgent::new(Some(public.into()), private.into(), Some(password.into()));
 
         let mut callbacks = git2::RemoteCallbacks::new();
         auth_agent.authorize(&mut callbacks);
 
         let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
     }
-
-
 }

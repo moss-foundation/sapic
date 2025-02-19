@@ -1,15 +1,21 @@
-use std::path::{Path, PathBuf};
+use crate::auth::AuthAgent;
+use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
-use crate::auth::{AuthAgent};
+use std::ops::Deref;
+use std::path::PathBuf;
 
 pub struct SSHAgent {
-    public_key: Option<&'static Path>,
-    private_key: &'static Path,
+    public_key: Option<PathBuf>,
+    private_key: PathBuf,
     passphrase: Option<String>,
 }
 
 impl SSHAgent {
-    pub fn new(public_key: Option<&'static Path>, private_key: &'static Path, passphrase: Option<String>) -> Self {
+    pub fn new(
+        public_key: Option<PathBuf>,
+        private_key: PathBuf,
+        passphrase: Option<String>,
+    ) -> Self {
         SSHAgent {
             public_key,
             private_key,
@@ -19,9 +25,15 @@ impl SSHAgent {
 }
 
 impl AuthAgent for SSHAgent {
-    fn authorize(self, remote_callbacks: &mut RemoteCallbacks) {
+    fn authorize<'a>(mut self, remote_callbacks: &mut RemoteCallbacks<'a>) -> Result<()> {
         remote_callbacks.credentials(move |url, username, allowed| {
-            Cred::ssh_key("git", self.public_key, self.private_key, self.passphrase.as_deref())
+            Cred::ssh_key(
+                username.unwrap(),
+                self.public_key.as_deref(),
+                self.private_key.deref(),
+                self.passphrase.as_deref(),
+            )
         });
+        Ok(())
     }
 }
