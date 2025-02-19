@@ -1,0 +1,11 @@
+[package]
+name = "moss_fs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+futures.workspace = true
+tokio-stream = { workspace = true, features = ["fs"] }

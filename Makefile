@@ -1,3 +1,4 @@
+export WORKSPACE_ROOT_DIR = ${CURDIR}
 export LOG_LEVEL = trace
 
 .DEFAULT_GOAL := run-desktop

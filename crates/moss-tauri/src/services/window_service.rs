@@ -1,6 +1,5 @@
+use moss_app::service::Service;
 use std::sync::atomic::AtomicUsize;
-
-use crate::app::service::Service;
 
 const INITIAL_WINDOW_ID: usize = 0;
 const WINDOW_ID_INCREMENT: usize = 1;
@@ -29,7 +28,7 @@ impl Service for WindowService {
 
     fn dispose(&self) {}
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&self) -> &(dyn std::any::Any + Send) {
         self
     }
 }
