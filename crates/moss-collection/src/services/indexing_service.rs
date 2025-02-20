@@ -100,6 +100,7 @@ impl IndexingService {
 
     async fn index_requests(&self, path: PathBuf) -> Result<Vec<RequestIndexEntry>> {
         let mut requests = Vec::new();
+        let mut tasks = Vec::new();
         let mut stack = vec![path];
 
         while let Some(current_path) = stack.pop() {
@@ -113,19 +114,22 @@ impl IndexingService {
                 }
 
                 if path.extension().is_some_and(|value| value == "request") {
-                    let entry = self.index_request_dir(&path).await?;
-                    requests.push(entry);
-                    continue;
+                    tasks.push(self.index_request_dir(path.clone()));
                 } else {
                     stack.push(path);
                 }
             }
         }
 
+        let results = futures::future::join_all(tasks).await;
+        for res in results {
+            requests.push(res?);
+        }
+
         Ok(requests)
     }
 
-    async fn index_request_dir(&self, path: &PathBuf) -> Result<RequestIndexEntry> {
+    async fn index_request_dir(&self, path: PathBuf) -> Result<RequestIndexEntry> {
         let folder_name = path
             .file_name()
             .and_then(|s| s.to_str())
