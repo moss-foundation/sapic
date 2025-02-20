@@ -1,155 +1,172 @@
 import {
-    createContext,
-    useContext,
     useState,
     useRef,
     useEffect,
-    Children,
-    cloneElement,
     HTMLAttributes,
-    forwardRef,
     ReactNode,
-    isValidElement,
     ReactElement,
 } from 'react';
 import { cn } from '../utils';
+import {
+    attachClosestEdge,
+    extractClosestEdge,
+    type Edge,
+} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+import DropIndicator from './DropIndicator';
+import { createPortal } from 'react-dom';
 
-const TabsContext = createContext<{
-    activeIndex: number,
-    setActiveIndex: (index: number) => void,
-    tabListRef: React.RefObject<HTMLDivElement>,
-    indicatorRef: React.RefObject<HTMLDivElement>,
-    tabsRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>,
-}>({
-    activeIndex: 0,
-    setActiveIndex: () => { },
-    tabListRef: { current: null },
-    indicatorRef: { current: null },
-    tabsRefs: { current: [] as (HTMLButtonElement | null)[] },
-});
-
-export const Tabs = ({ children, defaultIndex = 0, ...props }: {
+interface TabsProps extends HTMLAttributes<HTMLDivElement> {
     children: ReactNode;
-    defaultIndex?: number;
-} & HTMLAttributes<HTMLDivElement>) => {
-    const [activeIndex, setActiveIndex] = useState(defaultIndex);
-    const tabListRef = useRef<HTMLDivElement>(null);
-    const indicatorRef = useRef<HTMLDivElement>(null);
-    const tabsRefs = useRef<(HTMLButtonElement | null)[]>([]);
+}
 
-    useEffect(() => {
-        const currentTab = tabsRefs.current[activeIndex];
-        if (currentTab && indicatorRef.current) {
-            const tabRect = currentTab.getBoundingClientRect();
-
-            indicatorRef.current.style.width = `${tabRect.width}px`;
-            indicatorRef.current.style.left = `${currentTab.offsetLeft}px`;
-        }
-    }, [activeIndex]);
-
+const Tabs = ({ children, ...props }: TabsProps) => {
     return (
-        <TabsContext.Provider
-            value={{ activeIndex, setActiveIndex, tabListRef, indicatorRef, tabsRefs }}
-        >
-            <div className="TabsRoot w-full flex flex-col" {...props}>
-                {children}
-            </div>
-        </TabsContext.Provider>
+        <div className="w-full flex flex-col" {...props}>
+            {children}
+        </div>
     );
 };
 
-const TabsList = ({ children, ...props }: {
-    children: ReactElement<React.ComponentProps<typeof Tab>> | ReactElement<React.ComponentProps<typeof Tab>>[]
-}) => {
-    const { tabListRef, indicatorRef, setActiveIndex, tabsRefs, activeIndex } =
-        useContext(TabsContext);
+interface TabsListProps extends HTMLAttributes<HTMLDivElement> {
+    children: ReactElement<React.ComponentProps<typeof Tab>> | ReactElement<React.ComponentProps<typeof Tab>>[];
+}
 
-    const mappedChildren = Children.map(children, (child, index) => {
-        if (isValidElement(child)) {
-            return cloneElement(child, {
-                isActive: index === activeIndex,
-                onClick: () => setActiveIndex(index),
-                ref: (el: HTMLButtonElement | null) => (tabsRefs.current[index] = el),
-            });
-        }
-        return child;
-    });
-
+const TabsList = ({ children, ...props }: TabsListProps) => {
     return (
         <div
             role="tablist"
             aria-labelledby="tablist-1"
             data-tabs="default"
             className={cn(`flex overflow-auto relative bg-[#F4F4F4] dark:bg-[#161819]`)}
-            ref={tabListRef}
             {...props}
         >
-            <Indicator ref={indicatorRef} />
-            {mappedChildren}
+            {children}
         </div>
     );
 };
 
-const Indicator = forwardRef<HTMLDivElement>(({ }, ref) => {
-    return <div
-        data-tabs-indicator
-        aria-hidden="true"
-        className={`absolute transition-[left,width] bottom-auto top-0 h-[1px] bg-sky-600`}
-        ref={ref}
-    />
-})
+interface TabProps extends Omit<HTMLAttributes<HTMLButtonElement>, 'id'> {
+    id: number | string,
+    isActive: boolean,
+    isDraggable?: boolean
+    label: string
+    draggableType?: string
+}
 
-const Tab = forwardRef<
-    HTMLButtonElement,
-    { id: number | string, isActive?: boolean } & Omit<HTMLAttributes<HTMLButtonElement>, 'id'>
->(({ id, isActive = false, ...props }, ref) => (
-    <button
+const Tab = ({ id, isActive, isDraggable = false, className, draggableType = "TabTrigger", label, ...props }: TabProps) => {
+    const ref = useRef<HTMLButtonElement | null>(null);
+    const [preview, setPreview] = useState<HTMLElement | null>(null);
+    const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
+
+    useEffect(() => {
+        const element = ref?.current;
+
+        if (!element || !isDraggable) return;
+
+        return combine(
+            draggable({
+                element,
+                getInitialData: () => ({ id, label }),
+                onDrop: () => {
+                    setPreview(null);
+                },
+                onGenerateDragPreview({ nativeSetDragImage }) {
+                    setCustomNativeDragPreview({
+                        nativeSetDragImage,
+                        render({ container }) {
+                            setPreview((prev) => (prev === container ? prev : container));
+                        },
+                    });
+                },
+            }),
+            dropTargetForElements({
+                element,
+                onDrop: () => {
+                    setClosestEdge(null);
+                },
+                getData({ input }) {
+                    return attachClosestEdge(
+                        { id, label, draggableType },
+                        {
+                            element,
+                            input,
+                            allowedEdges: ["right", "left"],
+                        }
+                    );
+                },
+                getIsSticky() {
+                    return true;
+                },
+                onDragEnter({ self }) {
+                    const closestEdge = extractClosestEdge(self.data);
+                    setClosestEdge(closestEdge);
+                },
+                onDrag({ self }) {
+                    const closestEdge = extractClosestEdge(self.data);
+                    setClosestEdge((current) => {
+                        if (current === closestEdge) return current;
+
+                        return closestEdge;
+                    });
+                },
+                onDragLeave() {
+                    setClosestEdge(null);
+                },
+            })
+        );
+    }, [id, label, isDraggable, draggableType, ref]);
+
+    return <button
+        ref={ref}
         id={`${id}`}
         type="button"
         role="tab"
         aria-selected={isActive}
         aria-controls={`panel-${id}`}
         tabIndex={isActive ? 0 : -1}
-        className={cn("min-w-max px-3 py-2.5 bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer ", {
-            "bg-white dark:bg-[#1e2021] dark:text-white": isActive,
-            "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 ": !isActive
-        }, props.className)}
-        ref={ref}
+        className={cn("relative min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border", {
+            "bg-white dark:bg-[#1e2021] dark:text-white border-[#0065FF] ": isActive,
+            "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-transparent": !isActive
+        }, className)}
         {...props}
     >
-        <span className="focus">{props.children}</span>
+        <span className="focus">{label}</span>
+        {closestEdge ? <DropIndicator edge={closestEdge} gap={0} noTerminal /> : null}
+        {preview && createPortal(<Tab id={id} label={label} isActive={isActive} className="" />, preview)}
     </button>
-));
-
-const TabsPanels = ({ children, className, ...props }: {
-    children: ReactNode;
-
-} & HTMLAttributes<HTMLDivElement>) => {
-    const { activeIndex } = useContext(TabsContext);
-    const mappedPanels = Children.toArray(children).filter(child => isValidElement(child)).map((child, index) =>
-        cloneElement(child as React.ReactElement, { isActive: index === activeIndex })
-    );
-    return <div className={cn("TabsPanels  w-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props} >{mappedPanels}</div>;
 };
 
-const TabPanel = ({ children, id, isActive = false, ...props }: {
+interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
+    children: ReactNode;
+}
+
+const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
+    return <div className={cn("w-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props} >{children}</div>;
+};
+
+interface TabPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'id'> {
     children: ReactNode;
     id: string | number;
-    isActive?: boolean;
-} & Omit<HTMLAttributes<HTMLDivElement>, 'id'>) => (
-    <div
+    isActive: boolean;
+}
+
+const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps) => {
+    return <div
         id={`panel-${id}`}
         role="tabpanel"
         tabIndex={0}
         aria-labelledby={`${id}`}
         className={cn("", {
             'hidden': !isActive
-        })}
+        }, className)}
         {...props}
     >
         <p className="text-caption">{children}</p>
     </div>
-);
+}
 
 Tabs.List = TabsList;
 Tabs.Tab = Tab;

@@ -1,5 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs from "./components/Tabs";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { swapObjectsById } from "./utils";
+
+
+interface ListItem {
+  id: number;
+  label: string;
+  isActive: boolean
+}
+
+const initialList = Array.from({ length: 8 }, (_, i) => {
+  if (i === 0) return {
+    id: i + 1,
+    label: `Explorer`,
+    isActive: i === 0,
+  }
+
+  if (i === 1) return {
+    id: i + 1,
+    label: `Issues`,
+    isActive: false,
+  }
+
+  if (i === 2) return {
+    id: i + 1,
+    label: `History`,
+    isActive: false,
+  }
+
+  return {
+    id: i + 1,
+    label: `Panel ${i + 1}`,
+    isActive: i === 0,
+  }
+});
 
 function App() {
   const [name, setName] = useState("");
@@ -15,29 +50,53 @@ function App() {
     document.querySelector("html")!.setAttribute("data-theme", theme === "dark" ? "light" : "dark");
   };
 
+  const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
+
+  const handleSetActive = (id: number) => {
+    setDNDList([...DNDList.map(item => ({ ...item, isActive: item.id === id }))]);
+  };
+
+  useEffect(() => {
+    return monitorForElements({
+      onDrop({ location, source }) {
+        const target = location.current.dropTargets[0];
+        if (!target || target.data.draggableType !== "WidgetBarButton") return;
+
+        const sourceData = source.data as unknown as ListItem;
+        const targetData = target.data as unknown as ListItem;
+
+        if (!sourceData || !targetData) return;
+
+        const updatedItems = swapObjectsById(sourceData, targetData, DNDList);
+
+        if (!updatedItems) return;
+
+        setDNDList(updatedItems);
+      },
+    });
+  }, [DNDList]);
+
   return (
     <>
-      <div className="absolute inset-0 ml-1 mt-1 flex outline-2 outline-amber-300 z-100 w-[500px] h-[200px] resize-x overflow-auto" >
-        <Tabs defaultIndex={0}>
-          {/* <Tabs.List>
-            <Tabs.Tab id={1}>Explorer</Tabs.Tab>
-            <Tabs.Tab id={2}>Issues</Tabs.Tab>
-            <Tabs.Tab id={3}>History</Tabs.Tab>
-          </Tabs.List>
-
-          <Tabs.Panels className="text-black dark:text-white">
-            <Tabs.Panel id={1}>Explorer content</Tabs.Panel>
-            <Tabs.Panel id={2}>Issues content</Tabs.Panel>
-            <Tabs.Panel id={3}>History content</Tabs.Panel>
-          </Tabs.Panels> */}
+      <div className="absolute inset-0 ml-1 mt-1 flex z-100 w-[500px] h-[200px] resize-x overflow-auto" >
+        <Tabs >
           <Tabs.List>
-            {Array.from({ length: 8 }, (_, i) => i + 1).map(id => <Tabs.Tab id={id} onClick={() => {
-              console.log(id)
-            }}>Panel {id}</Tabs.Tab>)}
+            {DNDList.map(item =>
+              <Tabs.Tab
+                {...item}
+                isDraggable
+                onClick={() => handleSetActive(item.id)}
+                draggableType="WidgetBarButton"
+              />
+            )}
           </Tabs.List>
 
           <Tabs.Panels className="text-black dark:text-white">
-            {Array.from({ length: 8 }, (_, i) => i + 1).map(id => <Tabs.Panel id={id}>Panel {id} content</Tabs.Panel>)}
+            {DNDList.map(item =>
+              <Tabs.Panel {...item}>
+                Panel {item.id} content
+              </Tabs.Panel>
+            )}
           </Tabs.Panels>
         </Tabs>
       </div>
