@@ -94,25 +94,31 @@ impl IndexingService {
             name: path
                 .file_name()
                 .and_then(|s| Some(s.to_string_lossy().to_string())),
-            requests: self.index_requests(&path.join("requests")).await?,
+            requests: self.index_requests(path.join("requests")).await?,
         })
     }
 
-    async fn index_requests(&self, path: &PathBuf) -> Result<Vec<RequestIndexEntry>> {
-        let mut dir = tokio::fs::read_dir(path).await?;
+    async fn index_requests(&self, path: PathBuf) -> Result<Vec<RequestIndexEntry>> {
         let mut requests = Vec::new();
+        let mut stack = vec![path];
 
-        while let Some(entry) = dir.next_entry().await? {
-            let path = entry.path();
-            let metadata = entry.metadata().await?;
-            if !metadata.is_dir() {
-                continue;
-            }
+        while let Some(current_path) = stack.pop() {
+            let mut dir = tokio::fs::read_dir(current_path).await?;
 
-            if path.extension().is_some_and(|value| value == "request") {
-                let entry = self.index_request_dir(&path).await?;
-                requests.push(entry);
-                continue;
+            while let Some(entry) = dir.next_entry().await? {
+                let path = entry.path();
+                let metadata = entry.metadata().await?;
+                if !metadata.is_dir() {
+                    continue;
+                }
+
+                if path.extension().is_some_and(|value| value == "request") {
+                    let entry = self.index_request_dir(&path).await?;
+                    requests.push(entry);
+                    continue;
+                } else {
+                    stack.push(path);
+                }
             }
         }
 
