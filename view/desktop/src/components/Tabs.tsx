@@ -22,9 +22,9 @@ interface TabsProps extends HTMLAttributes<HTMLDivElement> {
     children: ReactNode;
 }
 
-const Tabs = ({ children, ...props }: TabsProps) => {
+const Tabs = ({ children, className, ...props }: TabsProps) => {
     return (
-        <div className="w-full flex flex-col" {...props}>
+        <div className={cn("w-full flex flex-col", className)} {...props}>
             {children}
         </div>
     );
@@ -34,13 +34,13 @@ interface TabsListProps extends HTMLAttributes<HTMLDivElement> {
     children: ReactElement<React.ComponentProps<typeof Tab>> | ReactElement<React.ComponentProps<typeof Tab>>[];
 }
 
-const TabsList = ({ children, ...props }: TabsListProps) => {
+const TabsList = ({ children, className, ...props }: TabsListProps) => {
     return (
         <div
             role="tablist"
             aria-labelledby="tablist-1"
             data-tabs="default"
-            className={cn(`flex overflow-auto relative bg-[#F4F4F4] dark:bg-[#161819]`)}
+            className={cn(`flex overflow-auto relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
             {...props}
         >
             {children}
@@ -135,7 +135,7 @@ const Tab = ({ id, isActive, isDraggable = false, className, draggableType = "Ta
     >
         <span className="focus">{label}</span>
         {closestEdge ? <DropIndicator edge={closestEdge} gap={0} noTerminal /> : null}
-        {preview && createPortal(<Tab id={id} label={label} isActive={isActive} className="" />, preview)}
+        {preview && createPortal(<Tab id={id} label={label} isActive={isActive} />, preview)}
     </button>
 };
 
