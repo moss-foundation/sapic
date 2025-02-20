@@ -10,7 +10,7 @@ interface ListItem {
   isActive: boolean
 }
 
-const initialList = Array.from({ length: 8 }, (_, i) => {
+const initialList = Array.from({ length: 3 }, (_, i) => {
   if (i === 0) return {
     id: i + 1,
     label: `Explorer`,
@@ -77,8 +77,8 @@ function App() {
   }, [DNDList]);
 
   return (
-    <>
-      <div className="absolute inset-0 ml-1 mt-1 flex z-100 w-[500px] h-[200px] resize-x overflow-auto" >
+    <div className="flex w-full h-full">
+      <div className="flex z-100 w-[270px]  resize-x overflow-auto" >
         <Tabs >
           <Tabs.List>
             {DNDList.map(item =>
@@ -112,7 +112,7 @@ function App() {
         </button>
       </div>
 
-      <main className="h-full  flex flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
+      <main className="h-full flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
         <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
 
         <div className="flex justify-center mt-4">
@@ -161,7 +161,7 @@ function App() {
           </button>
         </form>
       </main>
-    </>
+    </div>
   );
 }
 
