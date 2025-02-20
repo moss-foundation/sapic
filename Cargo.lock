@@ -1047,6 +1047,7 @@ dependencies = [
  "anyhow",
  "cocoa",
  "dirs 6.0.0",
+ "futures",
  "log",
  "macos-trampoline",
  "mimalloc",
@@ -2674,6 +2675,7 @@ dependencies = [
  "anyhow",
  "bincode",
  "dashmap",
+ "futures",
  "kdl",
  "miette",
  "moss_app",
@@ -2681,6 +2683,8 @@ dependencies = [
  "serde",
  "sled",
  "thiserror 2.0.11",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
