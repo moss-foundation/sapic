@@ -4,7 +4,7 @@
 use crate::auth::{AuthAgent, TestStorage};
 use crate::cred::oauth::OAuthCred;
 use anyhow::Result;
-use git2::{Cred, RemoteCallbacks};
+use git2::{Cred, Error, RemoteCallbacks};
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
 use oauth2::{
@@ -14,6 +14,7 @@ use oauth2::{
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, SystemTime};
 
 #[derive(Serialize, Deserialize)]
@@ -23,7 +24,7 @@ pub struct OAuthAgent {
     client_id: ClientId,
     client_secret: ClientSecret,
     scopes: Vec<Scope>,
-    cred: Option<OAuthCred>,
+    cred: RwLock<Option<OAuthCred>>,
 }
 
 impl OAuthAgent {
@@ -44,13 +45,43 @@ impl OAuthAgent {
                 .into_iter()
                 .map(|s| Scope::new(s.to_string()))
                 .collect(),
-            cred,
+            cred: RwLock::new(cred),
         }
+    }
+
+    pub fn github() -> OAuthAgent {
+        dotenv::dotenv().ok();
+        let auth_url = "https://github.com/login/oauth/authorize";
+        let token_url = "https://github.com/login/oauth/access_token";
+        let client_id = &dotenv::var("GITHUB_CLIENT_ID").unwrap();
+        let client_secret = &dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
+        // GitHub App has fine-grained permission control, so no need to specify scopes
+        OAuthAgent::new(auth_url, token_url, client_id, client_secret, vec![], None)
+    }
+
+    pub fn gitlab() -> OAuthAgent {
+        dotenv::dotenv().ok();
+        let auth_url = "https://gitlab.com/oauth/authorize";
+        let token_url = "https://gitlab.com/oauth/token";
+        let client_id = &dotenv::var("GITLAB_CLIENT_ID").unwrap();
+        let client_secret = &dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
+        OAuthAgent::new(
+            auth_url,
+            token_url,
+            client_id,
+            client_secret,
+            vec!["write_repository"],
+            None,
+        )
     }
 }
 
 impl OAuthAgent {
-    fn initial_auth(&mut self) -> Result<()> {
+    fn github_app_install(&mut self) -> Result<()> {
+        unimplemented!()
+    }
+
+    fn initial_auth(&self) -> Result<()> {
         println!("Initial OAuth Protocol");
         // Setting the port as 0 automatically assigns a free port
         let listener = TcpListener::bind("127.0.0.1:0")?;
@@ -136,7 +167,8 @@ impl OAuthAgent {
             .checked_sub(Duration::from_secs(30 * 60))
             .unwrap();
 
-        self.cred = Some(OAuthCred::new(
+        let mut write = self.cred.write().unwrap();
+        *write = Some(OAuthCred::new(
             &access_token,
             time_to_refresh,
             &refresh_token,
@@ -145,7 +177,7 @@ impl OAuthAgent {
         Ok(())
     }
 
-    fn refresh_token(&mut self) -> Result<()> {
+    fn refresh_token(&self) -> Result<()> {
         println!("Refreshing Access Token");
         // Setting the port as 0 automatically assigns a free port
         let listener = TcpListener::bind("127.0.0.1:0")?;
@@ -164,7 +196,10 @@ impl OAuthAgent {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = self.cred.clone().unwrap().refresh_token();
+        let refresh_token = (*self.cred.read().unwrap())
+            .clone()
+            .unwrap()
+            .refresh_token();
 
         let token_res = client
             .exchange_refresh_token(&RefreshToken::new(refresh_token.clone()))
@@ -178,7 +213,8 @@ impl OAuthAgent {
             .checked_sub(Duration::from_secs(30 * 60))
             .unwrap();
 
-        self.cred = Some(OAuthCred::new(
+        let mut write = self.cred.write().unwrap();
+        *write = Some(OAuthCred::new(
             &access_token,
             time_to_refresh,
             &refresh_token,
@@ -189,20 +225,21 @@ impl OAuthAgent {
 }
 
 impl AuthAgent for OAuthAgent {
-    fn authorize<'a>(mut self, remote_callbacks: &mut RemoteCallbacks<'a>) -> Result<()> {
-        remote_callbacks.credentials(move |_url, _username_from_url, _allowed_types| {
-            if self.cred.is_none() {
-                self.initial_auth().unwrap();
-            }
-            let time_to_refresh = self.cred.clone().unwrap().time_to_refresh();
-            if SystemTime::now() > time_to_refresh {
-                self.refresh_token().unwrap();
-            }
-            self.write_to_file().unwrap();
-            let access_token = self.cred.clone().unwrap().access_token();
+    fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
+        let cred = (self.cred.read().unwrap()).clone();
+        if cred.is_none() {
+            self.initial_auth()
+                .expect("Unable to finish initial authentication");
+        }
+        let time_to_refresh = self.cred.read().unwrap().clone().unwrap().time_to_refresh();
+        if SystemTime::now() > time_to_refresh {
+            self.refresh_token()
+                .expect("Unable to refresh access token");
+        }
+        let access_token = self.cred.read().unwrap().clone().unwrap().access_token();
+        cb.credentials(move |_url, username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &access_token)
         });
-
         Ok(())
     }
 }
@@ -210,12 +247,12 @@ impl AuthAgent for OAuthAgent {
 impl TestStorage for OAuthAgent {
     fn write_to_file(&self) -> Result<()> {
         println!("Writing to file");
-        std::fs::write("oauth.json", serde_json::to_string(&self)?);
+        std::fs::write("oauth.json", serde_json::to_string(&self)?)?;
         Ok(())
     }
 
-    fn read_from_file() -> Result<Box<Self>> {
-        Ok(Box::new(serde_json::from_str(&std::fs::read_to_string(
+    fn read_from_file() -> Result<Arc<Self>> {
+        Ok(Arc::new(serde_json::from_str(&std::fs::read_to_string(
             "oauth.json",
         )?)?))
     }

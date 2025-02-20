@@ -9,6 +9,7 @@ anyhow.workspace = true
 git2.workspace = true
 # gix = {version =  "0.70.0"}
 
+dotenv = "0.15.0"
 serde_json = "1.0.138"
 oauth2 = { workspace = true, features = ["reqwest-blocking"] }
 reqwest = { workspace = true, features = ["blocking"] }
