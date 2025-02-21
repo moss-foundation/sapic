@@ -1,4 +1,3 @@
-import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -43,12 +42,6 @@ const initialList = Array.from({ length: 5 }, (_, i) => {
 });
 
 function App() {
-  const [name, setName] = useState("");
-
-  async function greet() {
-    alert("Greeting " + name + "...");
-  }
-
   const [theme, setTheme] = useState("dark");
 
   const toggleTheme = () => {
@@ -85,7 +78,7 @@ function App() {
   return (
     <div className="flex w-full h-full">
       <Resizable>
-        <ResizablePanel preferredSize={270}>
+        <ResizablePanel preferredSize={270} maxSize={400}>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -108,54 +101,6 @@ function App() {
         </ResizablePanel>
         <ResizablePanel>
           <main className="h-screen flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
-            {/* <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
-
-            <div className="flex justify-center mt-4">
-              <a href="https://vitejs.dev" target="_blank">
-                <img
-                  src="/vite.svg"
-                  className="size-38 p-6  duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#747bff]"
-                  alt="Vite logo"
-                />
-              </a>
-              <a href="https://tauri.app" target="_blank">
-                <img
-                  src="/tauri.svg"
-                  className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#24c8db]"
-                  alt="Tauri logo"
-                />
-              </a>
-              <a href="https://reactjs.org" target="_blank">
-                <img
-                  src="/react.svg"
-                  className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#61dafb]"
-                  alt="React logo"
-                />
-              </a>
-            </div>
-            <p className="mt-4">Click on the Tauri, Vite, and React logos to learn more.</p>
-
-            <form
-              className="flex justify-center mt-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                greet();
-              }}
-            >
-              <input
-                id="greet-input"
-                onChange={(e) => setName(e.currentTarget.value)}
-                placeholder="Enter a name..."
-                className="mr-2 border border-transparent rounded-lg px-4 py-2 text-gray-900 bg-white shadow-md duration-200 focus:outline-none focus:border-blue-500 dark:text-white dark:bg-gray-900 dark:focus:border-blue-400"
-              />
-              <button
-                type="submit"
-                className="border border-transparent rounded-lg px-4 py-2 font-medium text-gray-900 bg-white shadow-md cursor-pointer duration-200 hover:border-blue-500 active:border-blue-500 active:bg-gray-200 dark:text-white dark:bg-gray-900 dark:active:bg-gray-700"
-              >
-                Greet
-              </button>
-            </form> */}
-
             <Scrollbar>
               {Array.from({ length: 100 }, (_, i) => (
                 <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-[#131313]">
