@@ -21,8 +21,3 @@ pub fn clone_flow(url: &str, path: &Path, callback: RemoteCallbacks) -> Result<R
         Err(e) => Err(format!("failed to clone: {}", e)),
     }
 }
-
-// GIT ui functionality
-// Other VCS?
-// Operations: Clone, Commit, (Conflict/Merge), (Branching), (PR)...
-// Secrets: tauri plugin stronghold

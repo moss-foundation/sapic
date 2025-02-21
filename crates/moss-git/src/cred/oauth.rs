@@ -4,7 +4,10 @@ use std::time::SystemTime;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct OAuthCred {
     access_token: String,
-    // TODO: Change this to `Instant` when not testing
+    // FIXME: Neither `SystemTime` nor `Instant` seems ideal
+    // `SystemTime` is prone to drifting, while `Instant` is opaque
+    // An alternative option is to only store refresh_token when storing
+    // Forcing the agent to generate a new access_token when a new session starts
     time_to_refresh: SystemTime,
     refresh_token: String,
 }

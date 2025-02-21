@@ -322,15 +322,41 @@ mod test {
 
         let repo = SAPICRepo::open(repo_path, auth_agent).unwrap();
 
-        println!("HEAD before pulling: {}",  repo.repo.find_reference("HEAD").unwrap().peel_to_commit().unwrap().message().unwrap());
+        println!(
+            "HEAD before pulling: {}",
+            repo.repo
+                .find_reference("HEAD")
+                .unwrap()
+                .peel_to_commit()
+                .unwrap()
+                .message()
+                .unwrap()
+        );
 
         let _ = repo.fetch(Some("origin"));
 
-        println!("Current FETCH_HEAD: {}", repo.repo.find_reference("FETCH_HEAD").unwrap().peel_to_commit().unwrap().message().unwrap());
+        println!(
+            "Current FETCH_HEAD: {}",
+            repo.repo
+                .find_reference("FETCH_HEAD")
+                .unwrap()
+                .peel_to_commit()
+                .unwrap()
+                .message()
+                .unwrap()
+        );
 
         repo.pull(Some("origin")).unwrap();
 
-        println!("Current HEAD: {}", repo.repo.find_reference("HEAD").unwrap().peel_to_commit().unwrap().message().unwrap());
-
+        println!(
+            "Current HEAD: {}",
+            repo.repo
+                .find_reference("HEAD")
+                .unwrap()
+                .peel_to_commit()
+                .unwrap()
+                .message()
+                .unwrap()
+        );
     }
 }
