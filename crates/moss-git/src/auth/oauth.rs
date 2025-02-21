@@ -106,8 +106,9 @@ impl OAuthAgent {
             .set_pkce_challenge(pkce_challenge)
             .url();
 
-        // TODO: Open a browser for this url
-        println!("Open this URL in your browser:\n{authorize_url}\n");
+        if webbrowser::open(&authorize_url.to_string()).is_err() {
+            println!("Open this URL in your browser:\n{authorize_url}\n");
+        }
 
         let (code, state) = {
             let Some(mut stream) = listener.incoming().flatten().next() else {
