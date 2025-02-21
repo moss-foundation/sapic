@@ -1,8 +1,9 @@
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { Resizable, ResizablePanel } from "./components";
+import { Resizable, ResizablePanel, Scrollbar } from "./components";
 import Tabs from "./components/Tabs";
 import { swapObjectsById } from "./utils";
 
@@ -106,8 +107,8 @@ function App() {
           </Tabs>
         </ResizablePanel>
         <ResizablePanel>
-          <main className="h-full flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
-            <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
+          <main className="h-screen flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
+            {/* <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
 
             <div className="flex justify-center mt-4">
               <a href="https://vitejs.dev" target="_blank">
@@ -153,7 +154,15 @@ function App() {
               >
                 Greet
               </button>
-            </form>
+            </form> */}
+
+            <Scrollbar>
+              {Array.from({ length: 100 }, (_, i) => (
+                <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-red-800">
+                  {i + 1}
+                </div>
+              ))}
+            </Scrollbar>
           </main>
         </ResizablePanel>
       </Resizable>
