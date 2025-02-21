@@ -1,94 +1,9 @@
+pub mod collection;
 pub mod indexing;
+pub mod storage;
 
 use serde::{Deserialize, Serialize};
-use std::{borrow::Cow, path::PathBuf};
-
-// #[derive(Debug)]
-// pub enum HttpFileTypeExt {
-//     Post,
-//     Get,
-//     Put,
-//     Delete,
-// }
-
-// #[derive(Debug)]
-// pub enum RequestFileTypeExt {
-//     Http(HttpFileTypeExt),
-//     WebSocket,
-//     Graphql,
-//     Grpc,
-//     Variant,
-// }
-
-// impl TryFrom<&str> for RequestFileTypeExt {
-//     type Error = anyhow::Error;
-
-//     fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-//         match value {
-//             "post" => Ok(Self::Http(HttpFileTypeExt::Post)),
-//             "get" => Ok(Self::Http(HttpFileTypeExt::Get)),
-//             "put" => Ok(Self::Http(HttpFileTypeExt::Put)),
-//             "delete" => Ok(Self::Http(HttpFileTypeExt::Delete)),
-
-//             "ws" => Ok(Self::WebSocket),
-//             "graphql" => Ok(Self::WebSocket),
-//             "grpc" => Ok(Self::WebSocket),
-
-//             "variant" => Ok(Self::Variant),
-
-//             _ => Err(anyhow!("unknown request file type extension: {}", value)),
-//         }
-//     }
-// }
-
-// impl RequestFileTypeExt {
-//     fn is_http(&self) -> bool {
-//         match self {
-//             RequestFileTypeExt::Http(_) => true,
-//             _ => false,
-//         }
-//     }
-
-//     fn is_variant(&self) -> bool {
-//         match self {
-//             RequestFileTypeExt::Variant => true,
-//             _ => false,
-//         }
-//     }
-// }
-
-// #[derive(Debug)]
-// pub struct RequestVariantEntry {
-//     pub name: String,
-//     pub path: PathBuf,
-// }
-
-// #[derive(Debug)]
-// pub struct RequestEntry {
-//     pub name: String,
-//     pub ext: Option<RequestFileTypeExt>,
-//     pub path: Option<PathBuf>,
-//     pub variants: Vec<RequestVariantEntry>,
-// }
-
-// #[derive(Debug)]
-// pub struct DirEntry {
-//     pub name: String,
-//     pub path: PathBuf,
-//     pub children: Vec<RequestIndexEntry>,
-// }
-
-// #[derive(Debug)]
-// pub enum RequestIndexEntry {
-//     Request(RequestEntry),
-//     Dir(DirEntry),
-// }
-
-// #[derive(Debug)]
-// pub struct IndexedCollection {
-//     pub name: Option<String>,
-//     pub requests: Vec<RequestIndexEntry>,
-// }
+use std::{collections::HashMap, path::PathBuf};
 
 pub struct LocalCollection {
     pub path: PathBuf,
@@ -100,20 +15,31 @@ pub enum CollectionSource {
     Remote(String),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct CollectionDetails {
-    pub order: usize,
-    pub source: CollectionSource,
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct RequestVariant {
+//     pub order: usize,
+// }
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct RequestMetadata {
+//     pub order: usize,
+//     pub variants: HashMap<String, RequestVariant>,
+// }
 
-impl CollectionDetails {
-    pub fn source(&self) -> Cow<'_, str> {
-        match &self.source {
-            CollectionSource::Local(path) => path
-                .to_str()
-                .map(Cow::Borrowed)
-                .unwrap_or_else(|| Cow::Owned(path.to_string_lossy().into_owned())),
-            CollectionSource::Remote(url) => Cow::Borrowed(url),
-        }
-    }
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct CollectionMetadata {
+//     pub order: usize,
+//     pub requests: HashMap<Vec<u8>, RequestMetadata>,
+//     // pub source: CollectionSource,
+// }
+
+// impl CollectionMetadata {
+//     pub fn source(&self) -> Cow<'_, str> {
+//         match &self.source {
+//             CollectionSource::Local(path) => path
+//                 .to_str()
+//                 .map(Cow::Borrowed)
+//                 .unwrap_or_else(|| Cow::Owned(path.to_string_lossy().into_owned())),
+//             CollectionSource::Remote(url) => Cow::Borrowed(url),
+//         }
+//     }
+// }

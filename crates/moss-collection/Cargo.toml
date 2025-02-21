@@ -19,3 +19,4 @@ tokio.workspace = true
 futures.workspace = true
 tokio-stream = { workspace = true, features = ["fs"] }
 async-trait.workspace = true
+patricia_tree.workspace = true

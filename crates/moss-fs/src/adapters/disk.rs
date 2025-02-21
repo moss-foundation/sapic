@@ -10,16 +10,16 @@ use tokio_stream::wrappers::ReadDirStream;
 
 use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
-pub struct DickFileSystem;
+pub struct DiskFileSystem;
 
-impl DickFileSystem {
+impl DiskFileSystem {
     pub fn new() -> Self {
         Self
     }
 }
 
 #[async_trait::async_trait]
-impl FileSystem for DickFileSystem {
+impl FileSystem for DiskFileSystem {
     async fn create_dir(&self, path: &Path) -> Result<()> {
         Ok(tokio::fs::create_dir_all(path).await?)
     }

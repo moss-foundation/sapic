@@ -1,59 +1,7 @@
-use anyhow::anyhow;
+use patricia_tree::PatriciaMap;
 use std::path::PathBuf;
 
-#[derive(Debug)]
-pub enum HttpFileTypeExt {
-    Post,
-    Get,
-    Put,
-    Delete,
-}
-
-#[derive(Debug)]
-pub enum RequestFileTypeExt {
-    Http(HttpFileTypeExt),
-    WebSocket,
-    Graphql,
-    Grpc,
-    Variant,
-}
-
-impl TryFrom<&str> for RequestFileTypeExt {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-        match value {
-            "post" => Ok(Self::Http(HttpFileTypeExt::Post)),
-            "get" => Ok(Self::Http(HttpFileTypeExt::Get)),
-            "put" => Ok(Self::Http(HttpFileTypeExt::Put)),
-            "delete" => Ok(Self::Http(HttpFileTypeExt::Delete)),
-
-            "ws" => Ok(Self::WebSocket),
-            "graphql" => Ok(Self::WebSocket),
-            "grpc" => Ok(Self::WebSocket),
-
-            "variant" => Ok(Self::Variant),
-
-            _ => Err(anyhow!("unknown request file type extension: {}", value)),
-        }
-    }
-}
-
-impl RequestFileTypeExt {
-    pub fn is_http(&self) -> bool {
-        match self {
-            RequestFileTypeExt::Http(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_variant(&self) -> bool {
-        match self {
-            RequestFileTypeExt::Variant => true,
-            _ => false,
-        }
-    }
-}
+use super::collection::RequestType;
 
 #[derive(Debug)]
 pub struct RequestVariantEntry {
@@ -64,7 +12,7 @@ pub struct RequestVariantEntry {
 #[derive(Debug)]
 pub struct RequestEntry {
     pub name: String,
-    pub ext: Option<RequestFileTypeExt>,
+    pub ext: Option<RequestType>,
     pub path: Option<PathBuf>,
     pub variants: Vec<RequestVariantEntry>,
 }
@@ -84,6 +32,5 @@ pub enum RequestIndexEntry {
 
 #[derive(Debug)]
 pub struct IndexedCollection {
-    pub name: Option<String>,
-    pub requests: Vec<RequestIndexEntry>,
+    pub requests: PatriciaMap<RequestEntry>,
 }

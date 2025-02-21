@@ -2681,6 +2681,7 @@ dependencies = [
  "miette",
  "moss_app",
  "moss_fs",
+ "patricia_tree",
  "serde",
  "sled",
  "thiserror 2.0.11",
@@ -3363,6 +3364,15 @@ name = "pathdiff"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
+
+[[package]]
+name = "patricia_tree"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edb45b6331bbdbb54c9a29413703e892ab94f83a31e4a546c778495a91e7fbca"
+dependencies = [
+ "bitflags 2.8.0",
+]
 
 [[package]]
 name = "percent-encoding"
