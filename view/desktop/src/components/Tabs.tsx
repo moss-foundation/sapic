@@ -35,7 +35,7 @@ const TabsList = ({ children, className, ...props }: TabsListProps) => {
       role="tablist"
       aria-labelledby="tablist-1"
       data-tabs="default"
-      className={cn(`flex overflow-auto relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
+      className={cn(`TabsList w-full flex overflow-x-scroll relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
       {...props}
     >
       {children}
