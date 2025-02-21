@@ -15,9 +15,12 @@ use moss_app::service::InstantiationType;
 use moss_app::state::AppStateManager;
 use moss_collection::adapters::sled::collection_request_substore::SledCollectionRequestSubstore;
 use moss_collection::adapters::sled::collection_store::SledCollectionStore;
+use moss_collection::domain::ports::collection_ports::CollectionIndexer;
 use moss_collection::services::collection_service::CollectionService;
+use moss_collection::services::indexing_service::IndexingService;
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DickFileSystem;
+use moss_fs::FileSystem;
 use moss_tauri::services::window_service::WindowService;
 use rand::random;
 use std::sync::Arc;
@@ -79,22 +82,29 @@ pub fn run() {
             let app_state = AppStateManager::new();
             app_handle.manage(app_state);
 
+            let fs = Arc::new(DickFileSystem::new());
             let db: sled::Db =
                 sled::open("../../../sleddb").expect("failed to open a connection to the database");
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
-            let collection_store = SledCollectionStore::new(sled_manager.collections_tree());
-            let collection_request_substore =
-                SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
-                    |_| {
-                        CollectionService::new(
-                            Arc::new(DickFileSystem::new()),
-                            Arc::new(collection_store),
-                            Arc::new(collection_request_substore),
-                        )
-                        .expect("failed to create the CollectionService")
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let collection_store =
+                            SledCollectionStore::new(sled_manager.collections_tree());
+                        let collection_request_substore =
+                            SledCollectionRequestSubstore::new(sled_manager.collections_tree());
+
+                        move |_| {
+                            CollectionService::new(
+                                Arc::clone(&fs_clone) as Arc<dyn FileSystem>,
+                                Arc::new(collection_store),
+                                Arc::new(collection_request_substore),
+                                Arc::new(IndexingService::new(fs_clone, 100)),
+                            )
+                            .expect("failed to create the CollectionService")
+                        }
                     },
                     InstantiationType::Instant,
                 )

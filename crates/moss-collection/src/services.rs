@@ -1,3 +1,2 @@
 pub mod collection_service;
-
-pub(super) mod indexing_service;
+pub mod indexing_service;

@@ -6,7 +6,10 @@ use std::{path::PathBuf, sync::Arc};
 
 use crate::domain::{
     models::{CollectionDetails, CollectionSource},
-    ports::db_ports::{CollectionRequestSubstore, CollectionStore},
+    ports::{
+        collection_ports::CollectionIndexer,
+        db_ports::{CollectionRequestSubstore, CollectionStore},
+    },
 };
 
 pub enum CollectionHandle {
@@ -24,6 +27,7 @@ pub struct CollectionService {
     collection_store: Arc<dyn CollectionStore>,
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
     collections: DashMap<CollectionSource, CollectionHandle>,
+    indexer: Arc<dyn CollectionIndexer>,
 }
 
 impl CollectionService {
@@ -31,12 +35,14 @@ impl CollectionService {
         fs: Arc<dyn FileSystem>,
         collection_store: Arc<dyn CollectionStore>,
         collection_request_substore: Arc<dyn CollectionRequestSubstore>,
+        indexer: Arc<dyn CollectionIndexer>,
     ) -> Result<Self> {
         Ok(Self {
             fs,
             collection_store,
             collection_request_substore,
             collections: DashMap::new(),
+            indexer,
         })
     }
 }

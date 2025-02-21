@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
     pin::Pin,
 };
+use tokio::fs::ReadDir;
 use tokio_stream::wrappers::ReadDirStream;
 
 use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
@@ -78,17 +79,7 @@ impl FileSystem for DickFileSystem {
         Ok(tokio::fs::rename(source, target).await?)
     }
 
-    async fn read_dir(
-        &self,
-        path: &Path,
-    ) -> Result<Pin<Box<dyn Send + Stream<Item = Result<PathBuf>>>>> {
-        let read_dir = tokio::fs::read_dir(path).await?;
-
-        let stream = ReadDirStream::new(read_dir).map(|entry| match entry {
-            Ok(entry) => Ok(entry.path()),
-            Err(error) => Err(anyhow!("failed to read dir entry: {:?}", error)),
-        });
-
-        Ok(Box::pin(stream))
+    async fn read_dir(&self, path: &Path) -> Result<ReadDir> {
+        Ok(tokio::fs::read_dir(path).await?)
     }
 }

@@ -1,107 +1,25 @@
 use anyhow::{anyhow, Result};
+use futures::stream::{FuturesUnordered, StreamExt};
 use moss_fs::FileSystem;
 use std::{ffi::OsStr, path::PathBuf, sync::Arc};
+use tokio::sync::Semaphore;
 
-#[derive(Debug)]
-pub enum HttpFileTypeExt {
-    Post,
-    Get,
-    Put,
-    Delete,
-}
-
-#[derive(Debug)]
-pub enum RequestFileTypeExt {
-    Http(HttpFileTypeExt),
-    WebSocket,
-    Graphql,
-    Grpc,
-    Variant,
-}
-
-impl TryFrom<&str> for RequestFileTypeExt {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-        match value {
-            "post" => Ok(Self::Http(HttpFileTypeExt::Post)),
-            "get" => Ok(Self::Http(HttpFileTypeExt::Get)),
-            "put" => Ok(Self::Http(HttpFileTypeExt::Put)),
-            "delete" => Ok(Self::Http(HttpFileTypeExt::Delete)),
-
-            "ws" => Ok(Self::WebSocket),
-            "graphql" => Ok(Self::WebSocket),
-            "grpc" => Ok(Self::WebSocket),
-
-            "variant" => Ok(Self::Variant),
-
-            _ => Err(anyhow!("unknown request file type extension: {}", value)),
-        }
-    }
-}
-
-impl RequestFileTypeExt {
-    fn is_http(&self) -> bool {
-        match self {
-            RequestFileTypeExt::Http(_) => true,
-            _ => false,
-        }
-    }
-
-    fn is_variant(&self) -> bool {
-        match self {
-            RequestFileTypeExt::Variant => true,
-            _ => false,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct RequestVariantEntry {
-    name: String,
-    path: PathBuf,
-}
-
-#[derive(Debug)]
-pub struct RequestEntry {
-    name: String,
-    ext: Option<RequestFileTypeExt>,
-    path: Option<PathBuf>,
-    variants: Vec<RequestVariantEntry>,
-}
-
-#[derive(Debug)]
-pub enum RequestIndexEntry {
-    Request(RequestEntry),
-
-    Folder {
-        name: String,
-        path: PathBuf,
-        children: Vec<RequestIndexEntry>,
+use crate::domain::{
+    models::indexing::{
+        DirEntry, IndexedCollection, RequestEntry, RequestFileTypeExt, RequestIndexEntry,
+        RequestVariantEntry,
     },
-}
-
-#[derive(Debug)]
-pub struct IndexedCollection {
-    name: Option<String>,
-    requests: Vec<RequestIndexEntry>,
-}
+    ports::collection_ports::CollectionIndexer,
+};
 
 pub struct IndexingService {
     fs: Arc<dyn FileSystem>,
+    concurrency_limit: Arc<Semaphore>,
 }
 
-struct HandleRequestFileOutput {
-    ext: RequestFileTypeExt,
-    is_request_file: bool,
-}
-
-impl IndexingService {
-    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
-    }
-
-    pub async fn index(&self, path: &PathBuf) -> Result<IndexedCollection> {
+#[async_trait::async_trait]
+impl CollectionIndexer for IndexingService {
+    async fn index(&self, path: &PathBuf) -> Result<IndexedCollection> {
         Ok(IndexedCollection {
             name: path
                 .file_name()
@@ -109,30 +27,79 @@ impl IndexingService {
             requests: self.index_requests(path.join("requests")).await?,
         })
     }
+}
 
-    async fn index_requests(&self, path: PathBuf) -> Result<Vec<RequestIndexEntry>> {
-        let mut tasks = Vec::new();
-        let mut stack = vec![path];
+impl IndexingService {
+    pub fn new(fs: Arc<dyn FileSystem>, limit: usize) -> Self {
+        Self {
+            fs,
+            concurrency_limit: Arc::new(Semaphore::new(limit)),
+        }
+    }
 
-        while let Some(current_path) = stack.pop() {
-            let mut dir = tokio::fs::read_dir(current_path).await?;
+    async fn index_requests(&self, root: PathBuf) -> Result<Vec<RequestIndexEntry>> {
+        let mut children = Vec::new();
+        let mut dir = self.fs.read_dir(&root).await?;
+        let mut tasks = FuturesUnordered::new();
 
-            while let Some(entry) = dir.next_entry().await? {
-                let path = entry.path();
-                let metadata = entry.metadata().await?;
-                if !metadata.is_dir() {
-                    continue;
-                }
-
-                if path.extension().is_some_and(|value| value == "request") {
-                    tasks.push(self.index_request_dir(path.clone()));
-                } else {
-                    stack.push(path);
-                }
+        while let Some(entry) = dir.next_entry().await? {
+            let path = entry.path();
+            let file_type = entry.file_type().await?;
+            if !file_type.is_dir() {
+                continue;
             }
+
+            let sem_clone = self.concurrency_limit.clone();
+            tasks.push(async move {
+                let _permit = sem_clone.acquire_owned().await;
+                self.index_dir(path).await
+            });
         }
 
-        futures::future::join_all(tasks).await.into_iter().collect()
+        while let Some(child_result) = tasks.next().await {
+            children.push(child_result?);
+        }
+
+        Ok(children)
+    }
+
+    async fn index_dir(&self, path: PathBuf) -> Result<RequestIndexEntry> {
+        if path.extension().map_or(false, |ext| ext == "request") {
+            let req = self.index_request_dir(path).await?;
+            return Ok(req);
+        }
+
+        let mut children = Vec::new();
+        let mut dir = self.fs.read_dir(&path).await?;
+        let mut tasks = FuturesUnordered::new();
+
+        while let Some(entry) = dir.next_entry().await? {
+            let child_path = entry.path();
+            let file_type = entry.file_type().await?;
+            if !file_type.is_dir() {
+                continue;
+            }
+            let sem_clone = self.concurrency_limit.clone();
+            let task = async move {
+                let _permit = sem_clone.acquire_owned().await;
+                self.index_dir(child_path).await
+            };
+            tasks.push(task);
+        }
+
+        while let Some(child) = tasks.next().await {
+            children.push(child?);
+        }
+
+        let folder = DirEntry {
+            name: path
+                .file_name()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_default(),
+            path,
+            children,
+        };
+        Ok(RequestIndexEntry::Dir(folder))
     }
 
     async fn index_request_dir(&self, path: PathBuf) -> Result<RequestIndexEntry> {
@@ -148,13 +115,13 @@ impl IndexingService {
             variants: Vec::new(),
         };
 
-        let mut inner_dir = tokio::fs::read_dir(&path).await?;
+        let mut inner_dir = self.fs.read_dir(&path).await?;
 
         while let Some(inner_entry) = inner_dir.next_entry().await? {
             let file_path = inner_entry.path();
             let file_metadata = inner_entry.metadata().await?;
 
-            if file_metadata.is_file() && !is_sapic_file(&file_path) {
+            if !file_metadata.is_file() || !is_sapic_file(&file_path) {
                 continue;
             }
 
@@ -232,7 +199,7 @@ mod tests {
             .build()
             .unwrap()
             .block_on(async {
-                let r = IndexingService::new(Arc::new(DickFileSystem::new()));
+                let r = IndexingService::new(Arc::new(DickFileSystem::new()), 100);
                 let r = r
                     .index(&PathBuf::from("./tests/TestCollection"))
                     .await
