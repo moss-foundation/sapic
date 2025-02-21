@@ -12,6 +12,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { cn } from "../utils";
 import DropIndicator from "./DropIndicator";
+import Scrollbar from "./Scrollbar";
 
 interface TabsProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -19,7 +20,7 @@ interface TabsProps extends HTMLAttributes<HTMLDivElement> {
 
 const Tabs = ({ children, className, ...props }: TabsProps) => {
   return (
-    <div className={cn("w-full flex flex-col", className)} {...props}>
+    <div className={cn("w-full h-full flex flex-col", className)} {...props}>
       {children}
     </div>
   );
@@ -31,15 +32,17 @@ interface TabsListProps extends HTMLAttributes<HTMLDivElement> {
 
 const TabsList = ({ children, className, ...props }: TabsListProps) => {
   return (
-    <div
-      role="tablist"
-      aria-labelledby="tablist-1"
-      data-tabs="default"
-      className={cn(`TabsList w-full flex overflow-x-scroll relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
-      {...props}
-    >
-      {children}
-    </div>
+    <Scrollbar>
+      <div
+        role="tablist"
+        aria-labelledby="tablist-1"
+        data-tabs="default"
+        className={cn(`w-full h-full flex relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
+        {...props}
+      >
+        {children}
+      </div>
+    </Scrollbar>
   );
 };
 
@@ -134,8 +137,8 @@ const Tab = ({
       className={cn(
         "relative grow min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border",
         {
-          "bg-white dark:bg-[#1e2021] dark:text-white border-[#0065FF] ": isActive,
-          "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-transparent": !isActive,
+          "bg-white dark:bg-[#1e2021] dark:text-white border-t-[#0065FF] ": isActive,
+          "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-t-transparent": !isActive,
         },
         className
       )}
@@ -154,7 +157,7 @@ interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
 
 const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
-    <div className={cn("w-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
+    <div className={cn("w-full h-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
       {children}
     </div>
   );
