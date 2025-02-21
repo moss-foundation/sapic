@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
-use std::{ffi::OsStr, path::PathBuf};
+use moss_fs::FileSystem;
+use std::{ffi::OsStr, path::PathBuf, sync::Arc};
 
 #[derive(Debug)]
 pub enum HttpFileTypeExt {
@@ -12,6 +13,9 @@ pub enum HttpFileTypeExt {
 #[derive(Debug)]
 pub enum RequestFileTypeExt {
     Http(HttpFileTypeExt),
+    WebSocket,
+    Graphql,
+    Grpc,
     Variant,
 }
 
@@ -24,6 +28,10 @@ impl TryFrom<&str> for RequestFileTypeExt {
             "get" => Ok(Self::Http(HttpFileTypeExt::Get)),
             "put" => Ok(Self::Http(HttpFileTypeExt::Put)),
             "delete" => Ok(Self::Http(HttpFileTypeExt::Delete)),
+
+            "ws" => Ok(Self::WebSocket),
+            "graphql" => Ok(Self::WebSocket),
+            "grpc" => Ok(Self::WebSocket),
 
             "variant" => Ok(Self::Variant),
 
@@ -80,7 +88,7 @@ pub struct IndexedCollection {
 }
 
 pub struct IndexingService {
-    // fs: Arc<dyn FileSystem>,
+    fs: Arc<dyn FileSystem>,
 }
 
 struct HandleRequestFileOutput {
@@ -89,6 +97,10 @@ struct HandleRequestFileOutput {
 }
 
 impl IndexingService {
+    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
+        Self { fs }
+    }
+
     pub async fn index(&self, path: &PathBuf) -> Result<IndexedCollection> {
         Ok(IndexedCollection {
             name: path
@@ -99,7 +111,6 @@ impl IndexingService {
     }
 
     async fn index_requests(&self, path: PathBuf) -> Result<Vec<RequestIndexEntry>> {
-        let mut requests = Vec::new();
         let mut tasks = Vec::new();
         let mut stack = vec![path];
 
@@ -121,12 +132,7 @@ impl IndexingService {
             }
         }
 
-        let results = futures::future::join_all(tasks).await;
-        for res in results {
-            requests.push(res?);
-        }
-
-        Ok(requests)
+        futures::future::join_all(tasks).await.into_iter().collect()
     }
 
     async fn index_request_dir(&self, path: PathBuf) -> Result<RequestIndexEntry> {
@@ -215,6 +221,8 @@ fn get_request_name(folder_name: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    use moss_fs::adapters::disk::DickFileSystem;
+
     use super::*;
 
     #[test]
@@ -224,7 +232,7 @@ mod tests {
             .build()
             .unwrap()
             .block_on(async {
-                let r = super::IndexingService {};
+                let r = IndexingService::new(Arc::new(DickFileSystem::new()));
                 let r = r
                     .index(&PathBuf::from("./tests/TestCollection"))
                     .await
