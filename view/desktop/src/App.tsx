@@ -11,7 +11,7 @@ interface ListItem {
   isActive: boolean;
 }
 
-const initialList = Array.from({ length: 3 }, (_, i) => {
+const initialList = Array.from({ length: 5 }, (_, i) => {
   if (i === 0)
     return {
       id: i + 1,
@@ -82,7 +82,7 @@ function App() {
 
   return (
     <div className="flex w-full h-full">
-      <div className="flex z-100 w-[270px]  resize-x overflow-auto">
+      <div className="flex z-100 w-[270px] resize-x overflow-auto border-r border-[#E0E0E0] dark:border-[#181818]">
         <Tabs>
           <Tabs.List>
             {DNDList.map((item) => (

@@ -132,7 +132,7 @@ const Tab = ({
       aria-controls={`panel-${id}`}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "relative min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border",
+        "relative grow min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border",
         {
           "bg-white dark:bg-[#1e2021] dark:text-white border-[#0065FF] ": isActive,
           "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-transparent": !isActive,
