@@ -158,7 +158,7 @@ function App() {
 
             <Scrollbar>
               {Array.from({ length: 100 }, (_, i) => (
-                <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-red-800">
+                <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-[#131313]">
                   {i + 1}
                 </div>
               ))}
