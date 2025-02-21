@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { Resizable, ResizablePanel } from "./components";
 import Tabs from "./components/Tabs";
 import { swapObjectsById } from "./utils";
 
@@ -82,26 +83,80 @@ function App() {
 
   return (
     <div className="flex w-full h-full">
-      <div className="flex z-100 w-[270px] resize-x overflow-auto border-r border-[#E0E0E0] dark:border-[#181818]">
-        <Tabs>
-          <Tabs.List>
-            {DNDList.map((item) => (
-              <Tabs.Tab
-                {...item}
-                isDraggable
-                onClick={() => handleSetActive(item.id)}
-                draggableType="WidgetBarButton"
-              />
-            ))}
-          </Tabs.List>
+      <Resizable>
+        <ResizablePanel preferredSize={270}>
+          <Tabs>
+            <Tabs.List>
+              {DNDList.map((item) => (
+                <Tabs.Tab
+                  {...item}
+                  key={item.id}
+                  isDraggable
+                  onClick={() => handleSetActive(item.id)}
+                  draggableType="WidgetBarButton"
+                />
+              ))}
+            </Tabs.List>
 
-          <Tabs.Panels className="text-black dark:text-white">
-            {DNDList.map((item) => (
-              <Tabs.Panel {...item}>Panel {item.id} content</Tabs.Panel>
-            ))}
-          </Tabs.Panels>
-        </Tabs>
-      </div>
+            <Tabs.Panels className="text-black dark:text-white">
+              {DNDList.map((item) => (
+                <Tabs.Panel {...item}>Panel {item.id} content</Tabs.Panel>
+              ))}
+            </Tabs.Panels>
+          </Tabs>
+        </ResizablePanel>
+        <ResizablePanel>
+          <main className="h-full flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
+            <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
+
+            <div className="flex justify-center mt-4">
+              <a href="https://vitejs.dev" target="_blank">
+                <img
+                  src="/vite.svg"
+                  className="size-38 p-6  duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#747bff]"
+                  alt="Vite logo"
+                />
+              </a>
+              <a href="https://tauri.app" target="_blank">
+                <img
+                  src="/tauri.svg"
+                  className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#24c8db]"
+                  alt="Tauri logo"
+                />
+              </a>
+              <a href="https://reactjs.org" target="_blank">
+                <img
+                  src="/react.svg"
+                  className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#61dafb]"
+                  alt="React logo"
+                />
+              </a>
+            </div>
+            <p className="mt-4">Click on the Tauri, Vite, and React logos to learn more.</p>
+
+            <form
+              className="flex justify-center mt-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                greet();
+              }}
+            >
+              <input
+                id="greet-input"
+                onChange={(e) => setName(e.currentTarget.value)}
+                placeholder="Enter a name..."
+                className="mr-2 border border-transparent rounded-lg px-4 py-2 text-gray-900 bg-white shadow-md duration-200 focus:outline-none focus:border-blue-500 dark:text-white dark:bg-gray-900 dark:focus:border-blue-400"
+              />
+              <button
+                type="submit"
+                className="border border-transparent rounded-lg px-4 py-2 font-medium text-gray-900 bg-white shadow-md cursor-pointer duration-200 hover:border-blue-500 active:border-blue-500 active:bg-gray-200 dark:text-white dark:bg-gray-900 dark:active:bg-gray-700"
+              >
+                Greet
+              </button>
+            </form>
+          </main>
+        </ResizablePanel>
+      </Resizable>
 
       <div className="absolute -top-3 -right-3 p-4 flex">
         <div className="" />
@@ -143,56 +198,6 @@ function App() {
           )}
         </button>
       </div>
-
-      <main className="h-full flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
-        <h1 className="text-center text-2xl font-bold">Welcome to Tauri + React</h1>
-
-        <div className="flex justify-center mt-4">
-          <a href="https://vitejs.dev" target="_blank">
-            <img
-              src="/vite.svg"
-              className="size-38 p-6  duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#747bff]"
-              alt="Vite logo"
-            />
-          </a>
-          <a href="https://tauri.app" target="_blank">
-            <img
-              src="/tauri.svg"
-              className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#24c8db]"
-              alt="Tauri logo"
-            />
-          </a>
-          <a href="https://reactjs.org" target="_blank">
-            <img
-              src="/react.svg"
-              className="size-38 p-6 duration-700 will-change-[filter] hover:drop-shadow-[0_0_2em_#61dafb]"
-              alt="React logo"
-            />
-          </a>
-        </div>
-        <p className="mt-4">Click on the Tauri, Vite, and React logos to learn more.</p>
-
-        <form
-          className="flex justify-center mt-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            greet();
-          }}
-        >
-          <input
-            id="greet-input"
-            onChange={(e) => setName(e.currentTarget.value)}
-            placeholder="Enter a name..."
-            className="mr-2 border border-transparent rounded-lg px-4 py-2 text-gray-900 bg-white shadow-md duration-200 focus:outline-none focus:border-blue-500 dark:text-white dark:bg-gray-900 dark:focus:border-blue-400"
-          />
-          <button
-            type="submit"
-            className="border border-transparent rounded-lg px-4 py-2 font-medium text-gray-900 bg-white shadow-md cursor-pointer duration-200 hover:border-blue-500 active:border-blue-500 active:bg-gray-200 dark:text-white dark:bg-gray-900 dark:active:bg-gray-700"
-          >
-            Greet
-          </button>
-        </form>
-      </main>
     </div>
   );
 }

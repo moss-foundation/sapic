@@ -19,7 +19,7 @@ interface TabsProps extends HTMLAttributes<HTMLDivElement> {
 
 const Tabs = ({ children, className, ...props }: TabsProps) => {
   return (
-    <div className={cn("w-full flex flex-col", className)} {...props}>
+    <div className={cn("w-full h-full flex flex-col", className)} {...props}>
       {children}
     </div>
   );
@@ -154,7 +154,7 @@ interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
 
 const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
-    <div className={cn("w-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
+    <div className={cn("w-full h-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
       {children}
     </div>
   );
