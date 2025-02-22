@@ -1,0 +1,72 @@
+// metadata {
+//     order 1
+//     method POST
+// }
+
+headers {
+    docId {
+        value "{{env::myEnvVariable}}"
+        desc "(Required) ID of the doc."
+        order 1
+    }
+}
+
+url {
+    raw "{{baseUrl}}/objects"
+    host "{{baseUrl}}"
+}
+
+params type=query {
+    pageToken {
+        value "{{vault::myVariable}}"
+        desc "An opaque token used to fetch the next page of results."
+        order 1
+        options {
+            propagate #true
+        }
+    }
+
+    limit {
+        value "{{defaultLimit}}"
+        desc "Maximum number of results to return in this query."
+        order 3
+    }
+
+    visibleOnly {
+        value "true"
+        desc "If true, returns only visible columns for the table."
+        disabled #true
+        order 2
+    } 
+}
+
+params type=path {
+    docId {
+        value "{{env::myEnvVariable}}"
+        desc "(Required) ID of the doc."
+        order 1
+    }
+}
+
+body type=json {
+    id "8c7df939-df92-4b47-8d9e-3f46e5db7987"
+    data 1 3 4 5 6
+}
+
+body type=file {
+    path "/foo/bor/file.txt"
+}
+
+
+// body type="graphql" {
+//     query Capsules {
+//         capsules {
+//         id
+//         landings
+//         original_launch
+//             reuse_count
+//             status
+//             type
+//         }
+//     }
+// }

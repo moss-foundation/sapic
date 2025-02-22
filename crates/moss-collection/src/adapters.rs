@@ -1,2 +1,2 @@
-pub(crate) mod kdl;
+pub mod kdl;
 pub mod sled;

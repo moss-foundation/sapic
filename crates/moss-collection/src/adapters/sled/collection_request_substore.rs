@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::domain::ports::db_ports::CollectionRequestSubstore;
+use crate::ports::storage_ports::CollectionRequestSubstore;
 
 pub struct SledCollectionRequestSubstore {
     tree: Arc<sled::Tree>,

@@ -14,10 +14,12 @@ use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
 use moss_app::state::AppStateManager;
 use moss_collection::adapters::sled::collection_request_substore::SledCollectionRequestSubstore;
-use moss_collection::adapters::sled::collection_store::SledCollectionStore;
+use moss_collection::adapters::sled::collection_store::SledCollectionMetadataStore;
 use moss_collection::services::collection_service::CollectionService;
+use moss_collection::services::indexing_service::IndexingService;
 use moss_db::sled::SledManager;
-use moss_fs::adapters::disk::DickFileSystem;
+use moss_fs::adapters::disk::DiskFileSystem;
+use moss_fs::ports::FileSystem;
 use moss_tauri::services::window_service::WindowService;
 use rand::random;
 use std::sync::Arc;
@@ -79,22 +81,29 @@ pub fn run() {
             let app_state = AppStateManager::new();
             app_handle.manage(app_state);
 
+            let fs = Arc::new(DiskFileSystem::new());
             let db: sled::Db =
                 sled::open("../../../sleddb").expect("failed to open a connection to the database");
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
-            let collection_store = SledCollectionStore::new(sled_manager.collections_tree());
-            let collection_request_substore =
-                SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
-                    |_| {
-                        CollectionService::new(
-                            Arc::new(DickFileSystem::new()),
-                            Arc::new(collection_store),
-                            Arc::new(collection_request_substore),
-                        )
-                        .expect("failed to create the CollectionService")
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let collection_store =
+                            SledCollectionMetadataStore::new(sled_manager.collections_tree());
+                        let collection_request_substore =
+                            SledCollectionRequestSubstore::new(sled_manager.collections_tree());
+
+                        move |_| {
+                            CollectionService::new(
+                                Arc::clone(&fs_clone) as Arc<dyn FileSystem>,
+                                Arc::new(collection_store),
+                                Arc::new(collection_request_substore),
+                                Arc::new(IndexingService::new(fs_clone)),
+                            )
+                            .expect("failed to create the CollectionService")
+                        }
                     },
                     InstantiationType::Instant,
                 )
@@ -163,16 +172,13 @@ fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
     // TODO: Use ConfigurationService
 
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;
-
     let window_inner_width = DEFAULT_WINDOW_WIDTH;
-
-    dbg!(&window_inner_width, &window_inner_height);
 
     let label = format!("{MAIN_WINDOW_PREFIX}{}", 0);
     let config = CreateWindowInput {
         url,
         label: label.as_str(),
-        title: "Moss Studio",
+        title: "Sapic",
         inner_size: (window_inner_width, window_inner_height),
         position: (100.0, 100.0),
     };
@@ -186,7 +192,7 @@ fn create_child_window(app_handle: &AppHandle, url: &str) -> Result<WebviewWindo
     let config = CreateWindowInput {
         url,
         label: &format!("{MAIN_WINDOW_PREFIX}{}", next_window_id),
-        title: "Moss Studio",
+        title: "Sapic",
         inner_size: (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT),
         position: (
             100.0 + random::<f64>() * 20.0,
