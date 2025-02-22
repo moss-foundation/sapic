@@ -1,7 +1,8 @@
-use crate::auth::AuthAgent;
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use std::path::PathBuf;
+
+use crate::ports::AuthAgent;
 
 #[derive(Clone)]
 pub struct SSHAgent {

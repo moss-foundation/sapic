@@ -1,11 +1,13 @@
-use crate::auth::{AuthAgent, OAuthAgent, TestStorage};
 use anyhow::Result;
 use git2::build::RepoBuilder;
 use git2::{IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository, Signature};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-pub struct SAPICRepo {
+use crate::auth::TestStorage;
+use crate::ports::AuthAgent;
+
+pub struct RepoHandle {
     // FIXME: Is it necessary to store the url of the repo?
     url: Option<String>,
     path: PathBuf,
@@ -18,8 +20,8 @@ pub struct SAPICRepo {
 // https://github.com/rust-lang/git2-rs/tree/master/examples
 
 // TODO: Use callback to return/display progress
-impl SAPICRepo {
-    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<SAPICRepo> {
+impl RepoHandle {
+    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<RepoHandle> {
         let mut callbacks = RemoteCallbacks::new();
         auth_agent.generate_callback(&mut callbacks)?;
 
@@ -30,7 +32,7 @@ impl SAPICRepo {
 
         let repo = builder.clone(url, &path)?;
 
-        Ok(SAPICRepo {
+        Ok(RepoHandle {
             url: Some(url.to_string()),
             path: path.to_owned(),
             auth_agent: auth_agent.clone(),
@@ -38,7 +40,7 @@ impl SAPICRepo {
         })
     }
 
-    pub fn open(path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<SAPICRepo> {
+    pub fn open(path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<RepoHandle> {
         let repo = Repository::open(path)?;
         // FIXME: This assumes that the remote's name is `origin`
         // Is there a better way to get the url of a local repo?
@@ -47,7 +49,7 @@ impl SAPICRepo {
         let url = remote
             .map(|r| r.pushurl().map(|s| s.to_string()))
             .unwrap_or(None);
-        Ok(SAPICRepo {
+        Ok(RepoHandle {
             url,
             path: path.to_owned(),
             auth_agent: auth_agent.clone(),
@@ -152,7 +154,7 @@ impl SAPICRepo {
         Ok(())
     }
 }
-impl SAPICRepo {
+impl RepoHandle {
     fn fast_forward(
         &self,
         our_reference: &mut git2::Reference,
@@ -271,8 +273,9 @@ impl SAPICRepo {
 
 #[cfg(test)]
 mod test {
-    use crate::auth::{OAuthAgent, TestStorage};
-    use crate::repo::SAPICRepo;
+    use crate::adapters::auth::oauth::OAuthAgent;
+    use crate::auth::TestStorage;
+    use crate::repo::RepoHandle;
     use git2::{IndexAddOption, Signature};
     use std::path::Path;
     use std::sync::Arc;
@@ -290,7 +293,7 @@ mod test {
         let mut auth_agent =
             OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let repo = SAPICRepo::clone(&repo_url, &repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
         let time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -320,7 +323,7 @@ mod test {
         let mut auth_agent =
             OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let repo = SAPICRepo::open(repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::open(repo_path, auth_agent).unwrap();
 
         println!(
             "HEAD before pulling: {}",
