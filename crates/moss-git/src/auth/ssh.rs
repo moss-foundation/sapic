@@ -1,7 +1,6 @@
 use crate::auth::AuthAgent;
 use anyhow::Result;
-use git2::{Cred, Error, RemoteCallbacks};
-use std::ops::Deref;
+use git2::{Cred, RemoteCallbacks};
 use std::path::PathBuf;
 
 #[derive(Clone)]

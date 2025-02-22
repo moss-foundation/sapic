@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 
 anyhow.workspace = true
+parking_lot = {workspace = true, features = ["serde"]}
 git2.workspace = true
 # gix = {version =  "0.70.0"}
 

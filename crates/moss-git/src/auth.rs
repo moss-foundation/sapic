@@ -4,15 +4,14 @@ mod ssh;
 pub use oauth::*;
 pub use ssh::*;
 
-use crate::clone_flow;
 use anyhow::Result;
-use git2::{Cred, Error, RemoteCallbacks};
+use git2::RemoteCallbacks;
 use oauth2::TokenResponse;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
-
+use crate::repo::SAPICRepo;
 // TODO: Create a `Sensitive` type for storing passwords securely?
 // TODO: Preserving the auth info for repos
 
@@ -29,10 +28,6 @@ pub trait TestStorage {
 
 #[cfg(test)]
 mod github_tests {
-    use crate::auth::oauth::OAuthAgent;
-    use git2::Time;
-    use std::path::PathBuf;
-
     use super::*;
 
     // Run cargo test cloning_with_https -- --nocapture
@@ -46,10 +41,7 @@ mod github_tests {
         let auth_agent =
             OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let mut callbacks = git2::RemoteCallbacks::new();
-        auth_agent.generate_callback(&mut callbacks).unwrap();
-
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
+        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
     #[test]
@@ -62,17 +54,15 @@ mod github_tests {
         let public = PathBuf::from(dotenv::var("GITHUB_SSH_PUBLIC").unwrap());
         let password = dotenv::var("GITHUB_SSH_PASSWORD").unwrap();
 
-        let mut auth_agent = SSHAgent::new(Some(public), private, Some(password.into()));
-        let mut callbacks = git2::RemoteCallbacks::new();
-        auth_agent.generate_callback(&mut callbacks).unwrap();
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
+        let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
+        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }
 
 #[cfg(test)]
 mod gitlab_tests {
     use super::*;
-    use std::path::PathBuf;
+
     #[test]
     fn cloning_with_https() {
         dotenv::dotenv().ok();
@@ -80,11 +70,9 @@ mod gitlab_tests {
         let repo_path = Path::new("test-repo-lab");
 
         let auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::gitlab()));
-        let mut callbacks = git2::RemoteCallbacks::new();
-        auth_agent.generate_callback(&mut callbacks).unwrap();
+            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
+        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
     #[test]
@@ -96,9 +84,7 @@ mod gitlab_tests {
         let public = PathBuf::from(dotenv::var("GITLAB_SSH_PUBLIC").unwrap());
         let password = dotenv::var("GITLAB_SSH_PASSWORD").unwrap();
 
-        let auth_agent = SSHAgent::new(Some(public.into()), private.into(), Some(password.into()));
-        let mut callbacks = git2::RemoteCallbacks::new();
-        auth_agent.generate_callback(&mut callbacks).unwrap();
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
+        let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
+        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }

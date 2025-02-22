@@ -1,31 +1,33 @@
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+use std::time::Instant;
 
+
+// Since `Instant` is opaque and cannot be serialized
+// We will only store the refresh_token when serializing OAuth Credential
+// Forcing refreshing of tokens for new sessions
 #[derive(Clone, Serialize, Deserialize)]
 pub struct OAuthCred {
-    access_token: String,
-    // FIXME: Neither `SystemTime` nor `Instant` seems ideal
-    // `SystemTime` is prone to drifting, while `Instant` is opaque
-    // An alternative option is to only store refresh_token when storing
-    // Forcing the agent to generate a new access_token when a new session starts
-    time_to_refresh: SystemTime,
+    #[serde(skip)]
+    access_token: Option<String>,
+    #[serde(skip)]
+    time_to_refresh: Option<Instant>,
     refresh_token: String,
 }
 
 impl OAuthCred {
-    pub fn new(access_token: &str, time_to_refresh: SystemTime, refresh_token: &str) -> OAuthCred {
+    pub fn new(access_token: Option<&str>, time_to_refresh: Option<Instant>, refresh_token: &str) -> OAuthCred {
         OAuthCred {
-            access_token: access_token.to_string(),
+            access_token: access_token.map(String::from),
             time_to_refresh,
             refresh_token: refresh_token.to_string(),
         }
     }
 
-    pub fn access_token(&self) -> String {
+    pub fn access_token(&self) -> Option<String> {
         self.access_token.clone()
     }
 
-    pub fn time_to_refresh(&self) -> SystemTime {
+    pub fn time_to_refresh(&self) -> Option<Instant> {
         self.time_to_refresh.clone()
     }
 

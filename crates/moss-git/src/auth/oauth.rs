@@ -4,7 +4,7 @@
 use crate::auth::{AuthAgent, TestStorage};
 use crate::cred::oauth::OAuthCred;
 use anyhow::Result;
-use git2::{Cred, Error, RemoteCallbacks};
+use git2::{Cred, RemoteCallbacks};
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
 use oauth2::{
@@ -14,8 +14,14 @@ use oauth2::{
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
-use std::sync::{Arc, Mutex, RwLock};
-use std::time::{Duration, SystemTime};
+use parking_lot::RwLock;
+use std::sync::Arc;
+use std::time::{Duration, Instant, SystemTime};
+
+const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
+const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
+const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
+const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
 
 #[derive(Serialize, Deserialize)]
 pub struct OAuthAgent {
@@ -51,23 +57,19 @@ impl OAuthAgent {
 
     pub fn github() -> OAuthAgent {
         dotenv::dotenv().ok();
-        let auth_url = "https://github.com/login/oauth/authorize";
-        let token_url = "https://github.com/login/oauth/access_token";
         let client_id = &dotenv::var("GITHUB_CLIENT_ID").unwrap();
         let client_secret = &dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
         // GitHub App has fine-grained permission control, so no need to specify scopes
-        OAuthAgent::new(auth_url, token_url, client_id, client_secret, vec![], None)
+        OAuthAgent::new(GITHUB_AUTH_URL, GITHUB_TOKEN_URL, client_id, client_secret, vec![], None)
     }
 
     pub fn gitlab() -> OAuthAgent {
         dotenv::dotenv().ok();
-        let auth_url = "https://gitlab.com/oauth/authorize";
-        let token_url = "https://gitlab.com/oauth/token";
         let client_id = &dotenv::var("GITLAB_CLIENT_ID").unwrap();
         let client_secret = &dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
         OAuthAgent::new(
-            auth_url,
-            token_url,
+            GITLAB_AUTH_URL,
+            GITLAB_TOKEN_URL,
             client_id,
             client_secret,
             vec!["write_repository"],
@@ -162,16 +164,16 @@ impl OAuthAgent {
 
         // Force refreshing the access token half an hour before the actual expiry
         // To avoid any timing issue
-        let time_to_refresh = SystemTime::now()
+        let time_to_refresh = Instant::now()
             .checked_add(token_res.expires_in().unwrap())
             .unwrap()
             .checked_sub(Duration::from_secs(30 * 60))
             .unwrap();
 
-        let mut write = self.cred.write().unwrap();
+        let mut write = self.cred.write();
         *write = Some(OAuthCred::new(
-            &access_token,
-            time_to_refresh,
+            Some(&access_token),
+            Some(time_to_refresh),
             &refresh_token,
         ));
 
@@ -197,7 +199,7 @@ impl OAuthAgent {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = (*self.cred.read().unwrap())
+        let refresh_token = (*self.cred.read())
             .clone()
             .unwrap()
             .refresh_token();
@@ -208,16 +210,16 @@ impl OAuthAgent {
 
         let access_token = token_res.access_token().secret().to_owned();
         // Force refreshing the access token half an hour before the actual expiry
-        let time_to_refresh = SystemTime::now()
+        let time_to_refresh = Instant::now()
             .checked_add(token_res.expires_in().unwrap())
             .unwrap()
             .checked_sub(Duration::from_secs(30 * 60))
             .unwrap();
 
-        let mut write = self.cred.write().unwrap();
+        let mut write = self.cred.write();
         *write = Some(OAuthCred::new(
-            &access_token,
-            time_to_refresh,
+            Some(&access_token),
+            Some(time_to_refresh),
             &refresh_token,
         ));
 
@@ -227,17 +229,17 @@ impl OAuthAgent {
 
 impl AuthAgent for OAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-        let cred = (self.cred.read().unwrap()).clone();
+        let cred = (self.cred.read()).clone();
         if cred.is_none() {
             self.initial_auth()
                 .expect("Unable to finish initial authentication");
         }
-        let time_to_refresh = self.cred.read().unwrap().clone().unwrap().time_to_refresh();
-        if SystemTime::now() > time_to_refresh {
+        let time_to_refresh = self.cred.read().clone().unwrap().time_to_refresh();
+        if time_to_refresh.is_none() || Instant::now() > time_to_refresh.unwrap() {
             self.refresh_token()
                 .expect("Unable to refresh access token");
         }
-        let access_token = self.cred.read().unwrap().clone().unwrap().access_token();
+        let access_token = self.cred.read().clone().unwrap().access_token().unwrap();
         cb.credentials(move |_url, username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &access_token)
         });
