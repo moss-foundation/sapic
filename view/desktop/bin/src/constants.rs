@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+
 pub const MAIN_WINDOW_PREFIX: &str = "main_";
 pub const OTHER_WINDOW_PREFIX: &str = "other_";
 
@@ -6,3 +8,7 @@ pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
 
 pub const DEFAULT_WINDOW_WIDTH: f64 = 1160.0;
 pub const DEFAULT_WINDOW_HEIGHT: f64 = 720.0;
+
+pub const RUNTIME_MAX_BLOCKING_THREADS: usize = 512;
+
+pub const RUNTIME_STACK_SIZE: usize = 20 * 1024 * 1024;

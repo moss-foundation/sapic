@@ -1,6 +1,26 @@
 [package]
-name = "moss-git"
+name = "moss_git"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+
+anyhow.workspace = true
+parking_lot = { workspace = true, features = ["serde"] }
+git2.workspace = true
+# gix = {version =  "0.70.0"}
+
+dotenv = "0.15.0"
+serde_json = "1.0.138"
+oauth2 = { workspace = true, features = ["reqwest-blocking"] }
+reqwest = { workspace = true, features = ["blocking"] }
+serde = { version = "1.0.217", features = [
+    "derive",
+] } # Using blocking for easy testing here
+webbrowser = "1.0.3"
+
+
+# Making SSH work on Windows
+[target.'cfg(windows)'.dependencies]
+openssl = { version = "0.10.70", features = ["vendored"] }
+ssh2 = { workspace = true, features = ["openssl-on-win32", "vendored-openssl"] }

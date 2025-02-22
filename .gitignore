@@ -1,3 +1,5 @@
+sleddb
+
 # dependencies
 node_modules
 .pnp
@@ -46,3 +48,8 @@ dist/
 .idea
 .idea/**
 /crates/moss-wasmhost/wasm/target
+/crates/moss-git/src/secrets
+/crates/moss-git/test-repo
+crates/moss-git/oauth.json
+crates/moss-git/.env
+crates/moss-git/test-repo-lab/
