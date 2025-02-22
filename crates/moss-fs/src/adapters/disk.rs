@@ -1,14 +1,8 @@
 use anyhow::{anyhow, Result};
-use futures::{Stream, StreamExt};
-use std::{
-    io,
-    path::{Path, PathBuf},
-    pin::Pin,
-};
+use std::{io, path::Path};
 use tokio::fs::ReadDir;
-use tokio_stream::wrappers::ReadDirStream;
 
-use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use crate::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
 pub struct DiskFileSystem;
 

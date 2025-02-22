@@ -1,8 +1,8 @@
 use anyhow::Result;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
-use crate::domain::{
-    models::storage::CollectionMetadataEntity, ports::db_ports::CollectionMetadataStore,
+use crate::{
+    models::storage::CollectionMetadataEntity, ports::storage_ports::CollectionMetadataStore,
 };
 
 pub struct SledCollectionMetadataStore {
@@ -16,13 +16,14 @@ impl SledCollectionMetadataStore {
 }
 
 impl CollectionMetadataStore for SledCollectionMetadataStore {
-    fn get_all_items(&self) -> Result<Vec<(String, CollectionMetadataEntity)>> {
+    fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
         let mut result = Vec::new();
 
         for iter_result in self.tree.iter() {
             let (key, value) = iter_result?;
+
             result.push((
-                String::from_utf8_lossy(&key).to_string(),
+                PathBuf::from(String::from_utf8_lossy(&key).to_string()), // Not sure if this is the best way to transform it.
                 bincode::deserialize::<CollectionMetadataEntity>(&value)?,
             ));
         }
@@ -30,15 +31,15 @@ impl CollectionMetadataStore for SledCollectionMetadataStore {
         Ok(result)
     }
 
-    fn put_collection_item(&self, source: String, item: CollectionMetadataEntity) -> Result<()> {
+    fn put_collection_item(&self, path: PathBuf, item: CollectionMetadataEntity) -> Result<()> {
         let value = bincode::serialize(&item)?;
-        self.tree.insert(source, value)?;
+        self.tree.insert(path.to_string_lossy().as_bytes(), value)?;
 
         Ok(())
     }
 
-    fn remove_collection_item(&self, source: String) -> Result<()> {
-        self.tree.remove(source)?;
+    fn remove_collection_item(&self, path: PathBuf) -> Result<()> {
+        self.tree.remove(path.to_string_lossy().as_bytes())?;
 
         Ok(())
     }

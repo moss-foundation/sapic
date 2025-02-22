@@ -1,16 +1,12 @@
 use anyhow::{anyhow, Result};
-use futures::stream::{FuturesUnordered, StreamExt};
-use moss_fs::FileSystem;
+use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
 use std::{ffi::OsStr, path::PathBuf, sync::Arc};
-use tokio::sync::Semaphore;
 
-use crate::domain::{
+use crate::{
     models::{
         collection::RequestType,
-        indexing::{
-            DirEntry, IndexedCollection, RequestEntry, RequestIndexEntry, RequestVariantEntry,
-        },
+        indexing::{IndexedCollection, RequestEntry, RequestVariantEntry},
     },
     ports::collection_ports::CollectionIndexer,
 };

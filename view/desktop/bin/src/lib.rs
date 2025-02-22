@@ -19,7 +19,7 @@ use moss_collection::services::collection_service::CollectionService;
 use moss_collection::services::indexing_service::IndexingService;
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
-use moss_fs::FileSystem;
+use moss_fs::ports::FileSystem;
 use moss_tauri::services::window_service::WindowService;
 use rand::random;
 use std::sync::Arc;

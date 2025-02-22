@@ -1,6 +1,14 @@
-metadata {
-    order 1
-    method POST
+// metadata {
+//     order 1
+//     method POST
+// }
+
+headers {
+    docId {
+        value "{{env::myEnvVariable}}"
+        desc "(Required) ID of the doc."
+        order 1
+    }
 }
 
 url {
@@ -40,20 +48,25 @@ params type=path {
     }
 }
 
-body type="json" {
+body type=json {
     id "8c7df939-df92-4b47-8d9e-3f46e5db7987"
     data 1 3 4 5 6
 }
 
-body type="graphql" {
-    query Capsules {
-        capsules {
-        id
-        landings
-        original_launch
-            reuse_count
-            status
-            type
-        }
-    }
+body type=file {
+    path "/foo/bor/file.txt"
 }
+
+
+// body type="graphql" {
+//     query Capsules {
+//         capsules {
+//         id
+//         landings
+//         original_launch
+//             reuse_count
+//             status
+//             type
+//         }
+//     }
+// }

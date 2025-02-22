@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub enum HttpRequestType {
@@ -52,4 +53,16 @@ impl RequestType {
             _ => false,
         }
     }
+}
+
+pub struct CollectionRequestVariantEntry {
+    pub name: String,
+    pub order: Option<usize>,
+}
+
+pub struct CollectionRequestEntry {
+    pub name: String,
+    pub order: Option<usize>,
+    pub typ: Option<RequestType>,
+    pub variants: HashMap<String, CollectionRequestVariantEntry>,
 }

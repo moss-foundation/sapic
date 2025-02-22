@@ -13,7 +13,7 @@ pub struct RequestMetadataEntity {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CollectionMetadataEntity {
-    pub order: usize,
+    pub order: Option<usize>,
     pub requests: HashMap<Vec<u8>, RequestMetadataEntity>,
     // pub source: CollectionSource,
 }

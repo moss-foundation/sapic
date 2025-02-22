@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::path::PathBuf;
 
-use crate::domain::models::indexing::IndexedCollection;
+use crate::models::indexing::IndexedCollection;
 
 #[async_trait::async_trait]
 pub trait CollectionIndexer: Send + Sync {

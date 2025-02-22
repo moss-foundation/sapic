@@ -1,38 +1,29 @@
 use anyhow::Result;
 use dashmap::DashMap;
 use moss_app::service::Service;
-use moss_fs::FileSystem;
+use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use crate::domain::{
-    models::{collection::RequestType, storage::CollectionMetadataEntity},
+use crate::{
+    models::{
+        collection::{CollectionRequestEntry, CollectionRequestVariantEntry},
+        storage::CollectionMetadataEntity,
+    },
     ports::{
         collection_ports::CollectionIndexer,
-        db_ports::{CollectionMetadataStore, CollectionRequestSubstore},
+        storage_ports::{CollectionMetadataStore, CollectionRequestSubstore},
     },
 };
 
-pub struct CollectionRequestVariantEntry {
+pub struct CollectionState {
     name: String,
     order: Option<usize>,
-}
-
-pub struct CollectionRequestEntry {
-    name: String,
-    order: Option<usize>,
-    ext: Option<RequestType>,
-    variants: HashMap<String, CollectionRequestVariantEntry>,
-}
-
-pub struct LocalCollectionState {
-    name: String,
-    order: usize,
     requests: PatriciaMap<CollectionRequestEntry>,
 }
 
-impl LocalCollectionState {
-    fn new(name: String, order: usize) -> Self {
+impl CollectionState {
+    fn new(name: String, order: Option<usize>) -> Self {
         Self {
             name,
             order,
@@ -41,28 +32,17 @@ impl LocalCollectionState {
     }
 }
 
-pub enum CollectionHandle {
-    Local {
-        fs: Arc<dyn FileSystem>,
-        repo: Arc<dyn CollectionRequestSubstore>,
-        state: LocalCollectionState,
-    },
-
-    Remote {},
-}
-
-pub struct DescribeCollectionOutput {
-    name: String,
-    order: Option<usize>,
-    source: String,
-    // requests: Vec
+pub struct CollectionHandle {
+    fs: Arc<dyn FileSystem>,
+    store: Arc<dyn CollectionRequestSubstore>,
+    state: CollectionState,
 }
 
 pub struct CollectionService {
     fs: Arc<dyn FileSystem>,
     collection_store: Arc<dyn CollectionMetadataStore>,
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
-    collections: DashMap<String, CollectionHandle>,
+    collections: DashMap<PathBuf, CollectionHandle>,
     indexer: Arc<dyn CollectionIndexer>,
 }
 
@@ -97,41 +77,41 @@ impl CollectionService {
     }
 
     async fn restore_collections(&self) -> Result<()> {
-        for (source, collection_details) in self.collection_store.get_all_items()? {
-            // TODO: Check whether the source is a URL or a filesystem path,
-            // and create either a local or remote handle accordingly.
-            // Currently, we only support the local handle.
-
-            let path = PathBuf::from(source.clone());
-
-            let collection_name = match path.file_name() {
+        for (collection_path, collection_metadata) in self.collection_store.get_all_items()? {
+            let collection_name = match collection_path.file_name() {
                 Some(name) => name,
                 None => {
-                    println!("failed to get the collection {:?} name", path);
+                    println!("failed to get the collection {:?} name", collection_path);
                     continue;
                 }
             };
 
-            let indexed_collection = match self.indexer.index(&path).await {
+            let indexed_collection = match self.indexer.index(&collection_path).await {
                 Ok(data) => data,
                 Err(err) => {
-                    println!("failed to index the collection {:?}: {}", path, err);
+                    println!(
+                        "failed to index the collection {:?}: {}",
+                        collection_path, err
+                    );
                     continue;
                 }
             };
 
-            let mut state = LocalCollectionState::new(
+            let mut state = CollectionState::new(
                 collection_name.to_string_lossy().to_string(),
-                collection_details.order,
+                collection_metadata.order,
             );
 
-            for (key, request_entry) in indexed_collection.requests.iter_prefix(source.as_bytes()) {
-                let metadata = collection_details.requests.get(&key);
+            for (key, request_entry) in indexed_collection
+                .requests
+                .iter_prefix(collection_path.to_string_lossy().as_bytes())
+            {
+                let request_metadata = collection_metadata.requests.get(&key);
 
                 let mut variants = HashMap::new();
                 for variant in &request_entry.variants {
                     let variant_path = variant.path.to_string_lossy().to_string();
-                    let variant_order = metadata
+                    let variant_order = request_metadata
                         .and_then(|request_metadata| Some(&request_metadata.variants))
                         .and_then(|variants_metadata| variants_metadata.get(&variant_path))
                         .and_then(|variant| Some(variant.order));
@@ -149,18 +129,18 @@ impl CollectionService {
                     key,
                     CollectionRequestEntry {
                         name: request_entry.name.clone(),
-                        order: metadata.map(|m| m.order),
-                        ext: request_entry.ext.clone(),
+                        order: request_metadata.map(|m| m.order),
+                        typ: request_entry.ext.clone(),
                         variants,
                     },
                 );
             }
 
             self.collections.insert(
-                source,
-                CollectionHandle::Local {
+                collection_path,
+                CollectionHandle {
                     fs: Arc::clone(&self.fs),
-                    repo: Arc::clone(&self.collection_request_substore),
+                    store: Arc::clone(&self.collection_request_substore),
                     state,
                 },
             );
@@ -172,23 +152,22 @@ impl CollectionService {
     pub async fn create_collection(&self, path: PathBuf, name: String) -> Result<()> {
         self.fs.create_dir(path.join(&name).as_path()).await?;
 
-        let source = path.to_string_lossy().to_string();
         let order = self.collections.len() + 1;
 
         self.collection_store.put_collection_item(
-            source.clone(),
+            path.clone(),
             CollectionMetadataEntity {
-                order,
+                order: Some(order),
                 requests: HashMap::new(),
             },
         )?;
 
         self.collections.insert(
-            source,
-            CollectionHandle::Local {
+            path,
+            CollectionHandle {
                 fs: Arc::clone(&self.fs),
-                repo: Arc::clone(&self.collection_request_substore),
-                state: LocalCollectionState::new(name, order),
+                store: Arc::clone(&self.collection_request_substore),
+                state: CollectionState::new(name, Some(order)),
             },
         );
 
