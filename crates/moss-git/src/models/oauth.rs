@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
-
 // Since `Instant` is opaque and cannot be serialized
 // We will only store the refresh_token when serializing OAuth Credential
 // Forcing refreshing of tokens for new sessions
@@ -15,7 +14,11 @@ pub struct OAuthCred {
 }
 
 impl OAuthCred {
-    pub fn new(access_token: Option<&str>, time_to_refresh: Option<Instant>, refresh_token: &str) -> OAuthCred {
+    pub fn new(
+        access_token: Option<&str>,
+        time_to_refresh: Option<Instant>,
+        refresh_token: &str,
+    ) -> OAuthCred {
         OAuthCred {
             access_token: access_token.map(String::from),
             time_to_refresh,

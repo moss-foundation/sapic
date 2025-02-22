@@ -1,23 +1,7 @@
-mod oauth;
-mod ssh;
-
-pub use oauth::*;
-pub use ssh::*;
-
 use anyhow::Result;
-use git2::RemoteCallbacks;
-use oauth2::TokenResponse;
-use serde::{Deserialize, Serialize};
-use std::io::{BufRead, Write};
-use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use crate::repo::SAPICRepo;
 // TODO: Create a `Sensitive` type for storing passwords securely?
 // TODO: Preserving the auth info for repos
-
-pub trait AuthAgent {
-    fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()>;
-}
 
 pub trait TestStorage {
     // TODO: We will use more secure method of storing the AuthAgent info
@@ -28,7 +12,12 @@ pub trait TestStorage {
 
 #[cfg(test)]
 mod github_tests {
-    use super::*;
+    use std::path::{Path, PathBuf};
+    use std::sync::Arc;
+
+    use super::TestStorage;
+    use crate::adapters::auth::{oauth::OAuthAgent, ssh::SSHAgent};
+    use crate::repo::RepoHandle;
 
     // Run cargo test cloning_with_https -- --nocapture
     #[test]
@@ -41,7 +30,7 @@ mod github_tests {
         let auth_agent =
             OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
     #[test]
@@ -55,13 +44,18 @@ mod github_tests {
         let password = dotenv::var("GITHUB_SSH_PASSWORD").unwrap();
 
         let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
-        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }
 
 #[cfg(test)]
 mod gitlab_tests {
-    use super::*;
+    use std::path::{Path, PathBuf};
+    use std::sync::Arc;
+
+    use super::TestStorage;
+    use crate::adapters::auth::{oauth::OAuthAgent, ssh::SSHAgent};
+    use crate::repo::RepoHandle;
 
     #[test]
     fn cloning_with_https() {
@@ -72,7 +66,7 @@ mod gitlab_tests {
         let auth_agent =
             OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
 
-        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
     #[test]
@@ -85,6 +79,6 @@ mod gitlab_tests {
         let password = dotenv::var("GITLAB_SSH_PASSWORD").unwrap();
 
         let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
-        let repo = SAPICRepo::clone(repo_url, repo_path, auth_agent).unwrap();
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }
