@@ -15,5 +15,4 @@ pub struct RequestMetadataEntity {
 pub struct CollectionMetadataEntity {
     pub order: Option<usize>,
     pub requests: HashMap<Vec<u8>, RequestMetadataEntity>,
-    // pub source: CollectionSource,
 }
