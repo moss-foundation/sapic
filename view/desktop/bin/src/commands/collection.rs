@@ -10,10 +10,3 @@ pub fn create_collection(app_manager: State<'_, AppManager>) -> TauriResult<()> 
 
     todo!()
 }
-
-// #[tauri::command(async)]
-// async fn read_dir_command(
-//     path: String,
-// ) -> Result<impl futures::Stream<Item = Result<String, String>>, String> {
-//     todo!()
-// }

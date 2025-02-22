@@ -11,6 +11,10 @@ use crate::{
     ports::collection_ports::CollectionIndexer,
 };
 
+const REQUESTS_DIR: &'static str = "requests";
+const REQUEST_DIR_EXT: &'static str = "request";
+const REQUEST_FILE_EXT: &'static str = "sapic";
+
 pub struct IndexingService {
     fs: Arc<dyn FileSystem>,
 }
@@ -19,7 +23,7 @@ pub struct IndexingService {
 impl CollectionIndexer for IndexingService {
     async fn index(&self, path: &PathBuf) -> Result<IndexedCollection> {
         Ok(IndexedCollection {
-            requests: self.index_requests(path.join("requests")).await?,
+            requests: self.index_requests(path.join(REQUESTS_DIR)).await?,
         })
     }
 }
@@ -43,7 +47,7 @@ impl IndexingService {
                 }
 
                 let path = entry.path();
-                if path.extension().map_or(false, |ext| ext == "request") {
+                if path.extension().map_or(false, |ext| ext == REQUEST_DIR_EXT) {
                     result.insert(
                         path.to_string_lossy().to_string(),
                         self.index_request_dir(path).await?,
@@ -56,71 +60,6 @@ impl IndexingService {
 
         Ok(result)
     }
-
-    // async fn index_requests(&self, root: PathBuf) -> Result<Node<String, RequestEntry>> {
-    //     let mut children = Vec::new();
-    //     let mut dir = self.fs.read_dir(&root).await?;
-    //     let mut tasks = FuturesUnordered::new();
-
-    //     while let Some(entry) = dir.next_entry().await? {
-    //         let path = entry.path();
-    //         let file_type = entry.file_type().await?;
-    //         if !file_type.is_dir() {
-    //             continue;
-    //         }
-
-    //         let sem_clone = self.concurrency_limit.clone();
-    //         tasks.push(async move {
-    //             let _permit = sem_clone.acquire_owned().await;
-    //             self.index_dir(path).await
-    //         });
-    //     }
-
-    //     while let Some(child_result) = tasks.next().await {
-    //         children.push(child_result?);
-    //     }
-
-    //     Ok(children)
-    // }
-
-    // async fn index_dir(&self, path: PathBuf) -> Result<RequestIndexEntry> {
-    //     if path.extension().map_or(false, |ext| ext == "request") {
-    //         let req = self.index_request_dir(path).await?;
-    //         return Ok(req);
-    //     }
-
-    //     let mut children = Vec::new();
-    //     let mut dir = self.fs.read_dir(&path).await?;
-    //     let mut tasks = FuturesUnordered::new();
-
-    //     while let Some(entry) = dir.next_entry().await? {
-    //         let child_path = entry.path();
-    //         let file_type = entry.file_type().await?;
-    //         if !file_type.is_dir() {
-    //             continue;
-    //         }
-    //         let sem_clone = self.concurrency_limit.clone();
-    //         let task = async move {
-    //             let _permit = sem_clone.acquire_owned().await;
-    //             self.index_dir(child_path).await
-    //         };
-    //         tasks.push(task);
-    //     }
-
-    //     while let Some(child) = tasks.next().await {
-    //         children.push(child?);
-    //     }
-
-    //     let folder = DirEntry {
-    //         name: path
-    //             .file_name()
-    //             .map(|s| s.to_string_lossy().to_string())
-    //             .unwrap_or_default(),
-    //         path,
-    //         children,
-    //     };
-    //     Ok(RequestIndexEntry::Dir(folder))
-    // }
 
     async fn index_request_dir(&self, path: PathBuf) -> Result<RequestEntry> {
         let folder_name = path
@@ -180,7 +119,7 @@ impl IndexingService {
 fn is_sapic_file(file_path: &PathBuf) -> bool {
     file_path
         .extension()
-        .map(|ext| ext == "sapic")
+        .map(|ext| ext == REQUEST_FILE_EXT)
         .unwrap_or(false)
 }
 

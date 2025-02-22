@@ -1047,7 +1047,6 @@ dependencies = [
  "anyhow",
  "cocoa",
  "dirs 6.0.0",
- "futures",
  "log",
  "macos-trampoline",
  "mimalloc",
@@ -2701,9 +2700,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "futures",
  "tokio",
- "tokio-stream",
 ]
 
 [[package]]
@@ -5375,17 +5372,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f6d0975eaace0cf0fcadee4e4aaa5da15b5c079146f2cffb67c113be122bf37"
 dependencies = [
  "rustls",
- "tokio",
-]
-
-[[package]]
-name = "tokio-stream"
-version = "0.1.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eca58d7bba4a75707817a2c44174253f9236b2d5fbd055602e9d5c07c139a047"
-dependencies = [
- "futures-core",
- "pin-project-lite",
  "tokio",
 ]
 
