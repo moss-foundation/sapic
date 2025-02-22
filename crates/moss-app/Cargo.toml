@@ -9,9 +9,4 @@ derive_more = { workspace = true, features = ["full"] }
 fnv.workspace = true
 log.workspace = true
 parking_lot.workspace = true
-tauri = { workspace = true, features = [
-    "wry",
-    "macos-private-api",
-    "devtools",
-    "objc-exception",
-] }
+tauri = { workspace = true, features = ["wry"] }
