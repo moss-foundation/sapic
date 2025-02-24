@@ -61,13 +61,14 @@ mod gitlab_tests {
         let repo_path = Path::new("test-repo-lab");
 
         let auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
+            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::gitlab()));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
     #[test]
     fn cloning_with_ssh() {
+        dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo-lab");
 

@@ -88,10 +88,6 @@ impl OAuthAgent {
 }
 
 impl OAuthAgent {
-    fn github_app_install(&mut self) -> Result<()> {
-        unimplemented!()
-    }
-
     fn initial_auth(&self) -> Result<()> {
         println!("Initial OAuth Protocol");
         // Setting the port as 0 automatically assigns a free port
@@ -168,28 +164,30 @@ impl OAuthAgent {
             .set_pkce_verifier(pkce_verifier)
             .request(&http_client)?;
 
-        let access_token = token_res.access_token().secret().to_owned();
-        let refresh_token = token_res.refresh_token().unwrap().secret().to_owned();
-
-        // Force refreshing the access token half an hour before the actual expiry
-        // To avoid any timing issue
-        let time_to_refresh = Instant::now()
-            .checked_add(token_res.expires_in().unwrap())
-            .unwrap()
-            .checked_sub(Duration::from_secs(30 * 60))
-            .unwrap();
-
+        let access_token = token_res.access_token().secret().as_str();
+        // Some OAuth's providers don't have expiration time for access token and no refresh flow
         let mut write = self.cred.write();
-        *write = Some(OAuthCred::new(
-            Some(&access_token),
-            Some(time_to_refresh),
-            &refresh_token,
-        ));
-
+        if token_res.refresh_token().is_some() && token_res.expires_in().is_some() {
+            let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
+            // Force refreshing the access token half an hour before the actual expiry
+            // To avoid any timing issue
+            let time_to_refresh = Instant::now()
+                .checked_add(token_res.expires_in().unwrap())
+                .unwrap()
+                .checked_sub(Duration::from_secs(30 * 60))
+                .unwrap();
+            *write = Some(OAuthCred::with_expiration(
+                Some(access_token),
+                Some(time_to_refresh),
+                refresh_token,
+            ))
+        } else {
+            *write = Some(OAuthCred::without_expiration(access_token))
+        }
         Ok(())
     }
 
-    fn refresh_token(&self) -> Result<()> {
+    fn refresh_token_flow(&self) -> Result<()> {
         println!("Refreshing Access Token");
         // Setting the port as 0 automatically assigns a free port
         let listener = TcpListener::bind("127.0.0.1:0")?;
@@ -208,13 +206,17 @@ impl OAuthAgent {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = (*self.cred.read()).clone().unwrap().refresh_token();
+        let refresh_token = (*self.cred.read())
+            .clone()
+            .unwrap()
+            .refresh_token()
+            .unwrap();
 
         let token_res = client
             .exchange_refresh_token(&RefreshToken::new(refresh_token.clone()))
             .request(&http_client)?;
 
-        let access_token = token_res.access_token().secret().to_owned();
+        let access_token = token_res.access_token().secret().as_str();
         // Force refreshing the access token half an hour before the actual expiry
         let time_to_refresh = Instant::now()
             .checked_add(token_res.expires_in().unwrap())
@@ -223,32 +225,38 @@ impl OAuthAgent {
             .unwrap();
 
         let mut write = self.cred.write();
-        *write = Some(OAuthCred::new(
-            Some(&access_token),
+        *write = Some(OAuthCred::with_expiration(
+            Some(access_token),
             Some(time_to_refresh),
             &refresh_token,
         ));
-
         Ok(())
     }
 }
 
 impl AuthAgent for OAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-        let cred = (self.cred.read()).clone();
-        if cred.is_none() {
+        if self.cred.read().is_none() {
             self.initial_auth()
                 .expect("Unable to finish initial authentication");
         }
-        let time_to_refresh = self.cred.read().clone().unwrap().time_to_refresh();
-        if time_to_refresh.is_none() || Instant::now() > time_to_refresh.unwrap() {
-            self.refresh_token()
-                .expect("Unable to refresh access token");
-        }
-        let access_token = self.cred.read().clone().unwrap().access_token().unwrap();
+        let cred = self.cred.read().clone();
+        let access_token = match cred.unwrap() {
+            OAuthCred::WithExpiration {
+                time_to_refresh, ..
+            } => {
+                // Refresh an expired or deserialized token
+                if time_to_refresh.is_none() || Instant::now() > time_to_refresh.unwrap() {
+                    self.refresh_token_flow()?;
+                }
+                self.cred.read().clone().unwrap().access_token().unwrap()
+            }
+            OAuthCred::WithoutExpiration { access_token } => access_token,
+        };
         cb.credentials(move |_url, username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", &access_token)
         });
+        self.write_to_file();
         Ok(())
     }
 }
