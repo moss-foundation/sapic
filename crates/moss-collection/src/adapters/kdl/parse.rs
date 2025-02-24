@@ -1,6 +1,6 @@
 use crate::adapters::kdl::foundations::http::{
-    HeaderBody, HeaderOptions, HttpMethod, Metadata, PathParamBody, PathParamOptions,
-    QueryParamBody, QueryParamOptions, Request, Url,
+    HeaderBody, HeaderOptions, HttpMethod, PathParamBody, PathParamOptions, QueryParamBody,
+    QueryParamOptions, Request, Url,
 };
 use crate::adapters::kdl::tokens::*;
 use anyhow::Result;
@@ -70,26 +70,26 @@ macro_rules! kdl_get_arg_as_helper {
     };
 }
 
-fn parse_metadata_node(node: &KdlNode) -> Result<Metadata> {
-    if let Some(document) = node.children() {
-        Ok(Metadata {
-            order: kdl_get_arg_as_integer!(document, "order")
-                .and_then(|value| Some(value as usize)),
-            method: kdl_get_arg_as_str!(document, "method")
-                .and_then(|value| match value {
-                    "GET" => Some(HttpMethod::Get),
-                    "POST" => Some(HttpMethod::Post),
-                    _ => Some(HttpMethod::default()),
-                })
-                .unwrap_or_default(),
-        })
-    } else {
-        Ok(Metadata {
-            order: None,
-            method: HttpMethod::default(),
-        })
-    }
-}
+// fn parse_metadata_node(node: &KdlNode) -> Result<Metadata> {
+//     if let Some(document) = node.children() {
+//         Ok(Metadata {
+//             order: kdl_get_arg_as_integer!(document, "order")
+//                 .and_then(|value| Some(value as usize)),
+//             method: kdl_get_arg_as_str!(document, "method")
+//                 .and_then(|value| match value {
+//                     "GET" => Some(HttpMethod::Get),
+//                     "POST" => Some(HttpMethod::Post),
+//                     _ => Some(HttpMethod::default()),
+//                 })
+//                 .unwrap_or_default(),
+//         })
+//     } else {
+//         Ok(Metadata {
+//             order: None,
+//             method: HttpMethod::default(),
+//         })
+//     }
+// }
 
 fn parse_url_node(node: &KdlNode) -> Result<Url> {
     if let Some(document) = node.children() {
@@ -240,15 +240,15 @@ fn parse_header_options(node: &KdlNode) -> Result<HeaderOptions> {
     }
 }
 
-pub fn parse(input: &str) -> Result<()> {
+pub fn parse(input: &str) -> Result<Request> {
     let document: KdlDocument = input.parse()?;
     let mut request = Request::default();
 
     for node in document {
         match node.name().to_string().as_str() {
-            METADATA_LIT => {
-                request.metadata = Some(parse_metadata_node(&node)?);
-            }
+            // METADATA_LIT => {
+            //     request.metadata = Some(parse_metadata_node(&node)?);
+            // }
             URL_LIT => {
                 request.url = Some(parse_url_node(&node)?);
             }
@@ -276,14 +276,15 @@ pub fn parse(input: &str) -> Result<()> {
         }
     }
 
-    dbg!(request);
+    // dbg!(request);
 
-    Ok(())
+    Ok(request)
 }
 
 #[cfg(test)]
 mod tests {
-    use kdl::KdlDocument;
+    use crate::adapters::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
+    use kdl::{KdlDocument, KdlNode};
     use miette::{Diagnostic, NamedSource, SourceSpan};
     use std::fs;
     use thiserror::Error;
@@ -326,5 +327,40 @@ mod tests {
         // let doc: KdlDocument = content.parse().unwrap();
 
         super::parse(&node).unwrap();
+    }
+
+    #[test]
+    fn test_url_to_string() {
+        let url = Url {
+            raw: Some("raw".to_string()),
+            host: Some("host".to_string()),
+        };
+        let mut node: KdlNode = url.into();
+        node.autoformat();
+        println!("{}", node.to_string());
+    }
+
+    #[test]
+    fn test_query_param_body_to_string() {
+        let body = QueryParamBody {
+            value: Some("value".into()),
+            desc: Some("desc".into()),
+            order: Some(1),
+            disabled: false,
+            options: QueryParamOptions { propagate: true },
+        };
+        let mut doc: KdlDocument = body.into();
+        doc.autoformat();
+        println!("{}", doc.to_string());
+    }
+
+    #[test]
+    fn test_read_request_from_file_and_writing_back() {
+        let content = fs::read_to_string(
+            "tests/TestCollection/requests/MyFolder/Test6.request/Test6.get.sapic",
+        )
+        .unwrap();
+        let request = super::parse(&content).unwrap();
+        println!("{}", request.to_string());
     }
 }
