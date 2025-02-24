@@ -1,22 +1,6 @@
 use crate::adapters::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-
-#[derive(Debug, Default)]
-pub enum HttpMethod {
-    Post,
-    Put,
-    #[default]
-    Get,
-    Delete,
-}
-
-// #[derive(Debug)]
-// pub struct Metadata {
-//     pub order: Option<usize>,
-//     pub method: HttpMethod,
-// }
 
 #[derive(Clone, Debug)]
 pub struct Url {
