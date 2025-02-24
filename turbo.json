@@ -4,9 +4,10 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "!**/*.stories.{tsx,jsx,mdx}", "!src-tauri/**", "!node_modules/**"],
+      "outputs": ["dist/**", "build/**"]
     },
+    "build:storybook": {},
     "lint": {
       "dependsOn": ["^lint"]
     },
@@ -16,6 +17,9 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "clean": {
+      "cache": false
     }
   }
 }
