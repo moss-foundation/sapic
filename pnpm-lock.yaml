@@ -70,7 +70,7 @@ importers:
         specifier: ^4.0.7
         version: 4.0.7
       turbo:
-        specifier: ^2.0.6
+        specifier: ^2.4.1
         version: 2.4.1
       typescript:
         specifier: ^5.7.2
