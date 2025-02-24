@@ -4,7 +4,6 @@ use git2::{IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::auth::TestStorage;
 use crate::ports::AuthAgent;
 
 pub struct RepoHandle {
@@ -273,13 +272,14 @@ impl RepoHandle {
 
 #[cfg(test)]
 mod test {
-    use crate::adapters::auth::oauth::OAuthAgent;
-    use crate::auth::TestStorage;
-    use crate::repo::RepoHandle;
     use git2::{IndexAddOption, Signature};
     use std::path::Path;
     use std::sync::Arc;
     use std::time::SystemTime;
+
+    use crate::adapters::auth::oauth::OAuthAgent;
+    use crate::repo::RepoHandle;
+    use crate::TestStorage;
 
     // cargo test test_add_commit_push -- --nocapture
     #[test]

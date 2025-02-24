@@ -16,9 +16,9 @@ use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use crate::auth::TestStorage;
 use crate::models::oauth::OAuthCred;
 use crate::ports::AuthAgent;
+use crate::TestStorage;
 
 const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
@@ -261,6 +261,9 @@ impl TestStorage for OAuthAgent {
     }
 
     fn read_from_file() -> Result<Arc<Self>> {
+        dbg!("-----------");
+        dbg!(&std::fs::read_to_string("oauth.json",)?);
+
         Ok(Arc::new(serde_json::from_str(&std::fs::read_to_string(
             "oauth.json",
         )?)?))
