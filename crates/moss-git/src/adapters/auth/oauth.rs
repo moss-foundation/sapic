@@ -1,8 +1,6 @@
 // https://datatracker.ietf.org/doc/html/rfc7636#section-1.1
 // https://datatracker.ietf.org/doc/html/rfc8252#section-7
 
-use crate::auth::{AuthAgent, TestStorage};
-use crate::cred::oauth::OAuthCred;
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use oauth2::basic::BasicClient;
@@ -11,12 +9,16 @@ use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
     RefreshToken, Scope, TokenResponse, TokenUrl,
 };
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
-use parking_lot::RwLock;
 use std::sync::Arc;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, Instant};
+
+use crate::models::oauth::OAuthCred;
+use crate::ports::AuthAgent;
+use crate::TestStorage;
 
 const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
@@ -60,7 +62,14 @@ impl OAuthAgent {
         let client_id = &dotenv::var("GITHUB_CLIENT_ID").unwrap();
         let client_secret = &dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
         // GitHub App has fine-grained permission control, so no need to specify scopes
-        OAuthAgent::new(GITHUB_AUTH_URL, GITHUB_TOKEN_URL, client_id, client_secret, vec![], None)
+        OAuthAgent::new(
+            GITHUB_AUTH_URL,
+            GITHUB_TOKEN_URL,
+            client_id,
+            client_secret,
+            vec![],
+            None,
+        )
     }
 
     pub fn gitlab() -> OAuthAgent {
@@ -199,10 +208,7 @@ impl OAuthAgent {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = (*self.cred.read())
-            .clone()
-            .unwrap()
-            .refresh_token();
+        let refresh_token = (*self.cred.read()).clone().unwrap().refresh_token();
 
         let token_res = client
             .exchange_refresh_token(&RefreshToken::new(refresh_token.clone()))
@@ -255,6 +261,9 @@ impl TestStorage for OAuthAgent {
     }
 
     fn read_from_file() -> Result<Arc<Self>> {
+        dbg!("-----------");
+        dbg!(&std::fs::read_to_string("oauth.json",)?);
+
         Ok(Arc::new(serde_json::from_str(&std::fs::read_to_string(
             "oauth.json",
         )?)?))
