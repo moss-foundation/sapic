@@ -281,7 +281,7 @@ mod test {
     use crate::repo::RepoHandle;
     use crate::TestStorage;
 
-    // cargo test test_add_commit_push -- --nocapture
+    // cargo test test_clone_add_commit_push -- --nocapture
     #[test]
     fn test_clone_add_commit_push() {
         // TODO: Support verified signed commits using `gpg`
