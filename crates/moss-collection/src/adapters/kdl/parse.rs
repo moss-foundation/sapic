@@ -1,6 +1,6 @@
 use crate::adapters::kdl::foundations::http::{
-    HttpMethod, Metadata, PathParamBody, PathParamOptions, QueryParamBody, QueryParamOptions,
-    Request, Url,
+    HeaderBody, HeaderOptions, HttpMethod, Metadata, PathParamBody, PathParamOptions,
+    QueryParamBody, QueryParamOptions, Request, Url,
 };
 use crate::adapters::kdl::tokens::*;
 use anyhow::Result;
@@ -195,6 +195,51 @@ fn parse_path_param_options(node: &KdlNode) -> Result<PathParamOptions> {
     }
 }
 
+fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
+    let mut headers: HashMap<String, HeaderBody> = HashMap::new();
+    if let Some(document) = node.children() {
+        for header_node in document.nodes() {
+            let name = header_node.name().to_string();
+            let header_body = parse_header_body(header_node)?;
+            headers.insert(name, header_body);
+        }
+    }
+    Ok(headers)
+}
+
+fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
+    if let Some(fields) = node.children() {
+        let value = kdl_get_arg_as_value!(fields, "value");
+        let desc = kdl_get_arg_as_string!(fields, "desc");
+        let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
+        let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
+        let options_node = fields.get("options");
+        let options = if let Some(options_node) = options_node {
+            parse_header_options(options_node)?
+        } else {
+            HeaderOptions::default()
+        };
+        Ok(HeaderBody {
+            value,
+            desc,
+            order,
+            disabled,
+            options,
+        })
+    } else {
+        Ok(HeaderBody::default())
+    }
+}
+
+fn parse_header_options(node: &KdlNode) -> Result<HeaderOptions> {
+    if let Some(fields) = node.children() {
+        let propagate = kdl_get_arg_as_bool!(fields, "propagate").unwrap_or(false);
+        Ok(HeaderOptions { propagate })
+    } else {
+        Ok(HeaderOptions::default())
+    }
+}
+
 pub fn parse(input: &str) -> Result<()> {
     let document: KdlDocument = input.parse()?;
     let mut request = Request::default();
@@ -223,6 +268,9 @@ pub fn parse(input: &str) -> Result<()> {
                     }
                     _ => return Err(ParseError::InvalidParamsType.into()),
                 }
+            }
+            HEADERS_LIT => {
+                request.headers = Some(parse_headers_node(&node)?);
             }
             _ => {}
         }

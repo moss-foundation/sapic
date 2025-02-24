@@ -51,9 +51,24 @@ pub struct PathParamOptions {
 }
 
 #[derive(Debug, Default)]
+pub struct HeaderBody {
+    pub value: Option<KdlValue>,
+    pub desc: Option<String>,
+    pub order: Option<usize>,
+    pub disabled: bool,
+    pub options: HeaderOptions,
+}
+
+#[derive(Debug, Default)]
+pub struct HeaderOptions {
+    pub propagate: bool,
+}
+
+#[derive(Debug, Default)]
 pub struct Request {
     pub metadata: Option<Metadata>,
     pub url: Option<Url>,
     pub query_params: Option<HashMap<String, QueryParamBody>>,
     pub path_params: Option<HashMap<String, PathParamBody>>,
+    pub headers: Option<HashMap<String, HeaderBody>>,
 }
