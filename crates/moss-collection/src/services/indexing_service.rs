@@ -144,19 +144,19 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
     let mut segments = file_name_str.split('.');
 
-    let name = if let Some(typ) = segments.nth(0) {
-        typ.to_string()
-    } else {
-        return Err(anyhow!("failed to retrieve the request name"));
-    };
+    let name = segments
+        .next()
+        .ok_or_else(|| anyhow!("failed to retrieve the request name"))?
+        .to_string();
 
-    let file_type = if let Some(typ) = segments.nth(1) {
-        RequestType::try_from(typ)?
-    } else {
-        return Err(anyhow!("failed to retrieve the request type"));
-    };
+    let file_type_str = segments
+        .next()
+        .ok_or_else(|| anyhow!("failed to retrieve the request type"))?;
 
-    Ok(RequestFolderParseOutput { name, file_type })
+    Ok(RequestFolderParseOutput {
+        name,
+        file_type: RequestType::try_from(file_type_str)?,
+    })
 }
 
 fn get_request_name(folder_name: &str) -> Result<String> {

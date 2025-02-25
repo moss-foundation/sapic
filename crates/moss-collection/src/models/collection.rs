@@ -14,7 +14,7 @@ pub enum HttpRequestType {
 pub enum RequestType {
     Http(HttpRequestType),
     WebSocket,
-    Graphql,
+    GraphQL,
     Grpc,
     Variant,
 }
@@ -30,8 +30,8 @@ impl TryFrom<&str> for RequestType {
             "delete" => Ok(Self::Http(HttpRequestType::Delete)),
 
             "ws" => Ok(Self::WebSocket),
-            "graphql" => Ok(Self::WebSocket),
-            "grpc" => Ok(Self::WebSocket),
+            "gql" => Ok(Self::GraphQL),
+            "grpc" => Ok(Self::Grpc),
 
             "variant" => Ok(Self::Variant),
 

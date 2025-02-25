@@ -283,3 +283,132 @@ impl Service for CollectionService {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::adapters::disk::DiskFileSystem;
+
+    use crate::{
+        models::storage::RequestMetadataEntity, services::indexing_service::IndexingService,
+    };
+
+    use super::*;
+
+    struct MockCollectionMetadataStore {}
+
+    const TEST_COLLECTION_PATH: &'static str =
+        "/Users/g10z3r/Project/keenawa-co/api-client/crates/moss-collection/tests/TestCollection";
+
+    const TEST_REQUEST_PATH: &'static str =
+        "/Users/g10z3r/Project/keenawa-co/api-client/crates/moss-collection/tests/TestCollection/requests/Test1.request";
+
+    impl CollectionMetadataStore for MockCollectionMetadataStore {
+        fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
+            Ok(vec![(
+                PathBuf::from(TEST_COLLECTION_PATH),
+                CollectionMetadataEntity {
+                    order: None,
+                    requests: {
+                        let mut this = HashMap::new();
+                        this.insert(
+                            TEST_REQUEST_PATH.into(),
+                            RequestMetadataEntity {
+                                order: None,
+                                variants: Default::default(),
+                            },
+                        );
+
+                        this
+                    },
+                },
+            )])
+        }
+
+        fn put_collection_item(&self, path: PathBuf, item: CollectionMetadataEntity) -> Result<()> {
+            todo!()
+        }
+
+        fn remove_collection_item(&self, path: PathBuf) -> Result<()> {
+            todo!()
+        }
+    }
+
+    struct MockCollectionRequestSubstore {}
+
+    impl CollectionRequestSubstore for MockCollectionRequestSubstore {}
+
+    #[test]
+    fn collections() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let collection_store = Arc::new(MockCollectionMetadataStore {});
+        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
+        let indexer = Arc::new(IndexingService::new(fs.clone()));
+
+        let service =
+            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
+                .unwrap();
+
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let result: Arc<DashMap<PathBuf, CollectionHandle>> =
+                    service.collections().await.unwrap();
+
+                for item in result.iter() {
+                    dbg!(item.key());
+                }
+            });
+    }
+
+    #[test]
+    fn overview_collection() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let collection_store = Arc::new(MockCollectionMetadataStore {});
+        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
+        let indexer = Arc::new(IndexingService::new(fs.clone()));
+
+        let service =
+            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
+                .unwrap();
+
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let result = service.overview_collections().await.unwrap();
+
+                dbg!(&result);
+            });
+    }
+
+    #[test]
+    fn index_collection() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let collection_store = Arc::new(MockCollectionMetadataStore {});
+        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
+        let indexer = Arc::new(IndexingService::new(fs.clone()));
+
+        let service =
+            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
+                .unwrap();
+
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let result = service
+                    .index_collection(PathBuf::from(TEST_COLLECTION_PATH))
+                    .await
+                    .unwrap();
+
+                for (path, handle) in result.requests.read().iter() {
+                    dbg!(String::from_utf8_lossy(&path).to_string());
+                    dbg!(handle.state.variants.read());
+                }
+            });
+    }
+}
