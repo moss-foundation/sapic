@@ -6,7 +6,7 @@ mod github_tests {
     use std::path::{Path, PathBuf};
     use std::sync::Arc;
 
-    use crate::adapters::auth::{oauth::OAuthAgent, ssh::SSHAgent};
+    use crate::adapters::auth::{oauth::GitHubAgent, ssh::SSHAgent};
     use crate::repo::RepoHandle;
     use crate::TestStorage;
 
@@ -19,7 +19,7 @@ mod github_tests {
         let repo_path = Path::new("test-repo");
 
         let auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
+            GitHubAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitHubAgent::new()));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
@@ -50,7 +50,7 @@ mod gitlab_tests {
     use parking_lot::Mutex;
     use zeroize::Zeroizing;
 
-    use crate::adapters::auth::{oauth::OAuthAgent, ssh::SSHAgent};
+    use crate::adapters::auth::{oauth::GitLabAgent, ssh::SSHAgent};
     use crate::repo::RepoHandle;
     use crate::TestStorage;
 
@@ -61,7 +61,7 @@ mod gitlab_tests {
         let repo_path = Path::new("test-repo-lab");
 
         let auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::gitlab()));
+            GitLabAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitLabAgent::new()));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
