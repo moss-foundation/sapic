@@ -1,5 +1,6 @@
 use anyhow::anyhow;
-use std::collections::HashMap;
+use parking_lot::RwLock;
+use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub enum HttpRequestType {
@@ -55,14 +56,8 @@ impl RequestType {
     }
 }
 
+#[derive(Debug)]
 pub struct CollectionRequestVariantEntry {
     pub name: String,
     pub order: Option<usize>,
-}
-
-pub struct CollectionRequestEntry {
-    pub name: String,
-    pub order: Option<usize>,
-    pub typ: Option<RequestType>,
-    pub variants: HashMap<String, CollectionRequestVariantEntry>,
 }

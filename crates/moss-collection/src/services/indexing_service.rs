@@ -1,7 +1,12 @@
 use anyhow::{anyhow, Result};
 use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
-use std::{ffi::OsStr, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    ffi::{OsStr, OsString},
+    path::PathBuf,
+    sync::Arc,
+};
 
 use crate::{
     models::{
@@ -69,9 +74,9 @@ impl IndexingService {
 
         let mut request_entry = RequestEntry {
             name: get_request_name(folder_name)?,
-            ext: None,
+            typ: None,
             path: None,
-            variants: Vec::new(),
+            variants: HashMap::new(),
         };
 
         let mut inner_dir = self.fs.read_dir(&path).await?;
@@ -85,30 +90,34 @@ impl IndexingService {
             }
 
             let file_name = if let Some(name) = file_path.file_name() {
-                name
+                name.to_owned()
             } else {
                 // TODO: logging?
                 println!("Failed to read the request file name");
                 continue;
             };
 
-            let request_typ = match get_request_type(file_name) {
-                Ok(typ) => typ,
-                Err(err) => {
-                    // TODO: logging?
-                    println!("Failed to get the request type: {}", err);
-                    continue;
-                }
-            };
+            // let request_typ = match get_request_type(&file_name) {
+            //     Ok(typ) => typ,
+            //     Err(err) => {
+            //         // TODO: logging?
+            //         println!("Failed to get the request type: {}", err);
+            //         continue;
+            //     }
+            // };
 
-            if !request_typ.is_variant() {
+            let parse_output = parse_request_folder_name(file_name)?;
+
+            if !parse_output.file_type.is_variant() {
                 request_entry.path = Some(file_path);
-                request_entry.ext = Some(request_typ);
+                request_entry.typ = Some(parse_output.file_type);
             } else {
-                request_entry.variants.push(RequestVariantEntry {
-                    name: file_name.to_string_lossy().to_string(),
-                    path: file_path,
-                });
+                request_entry.variants.insert(
+                    file_path,
+                    RequestVariantEntry {
+                        name: parse_output.name,
+                    },
+                );
             }
         }
 
@@ -123,16 +132,31 @@ fn is_sapic_file(file_path: &PathBuf) -> bool {
         .unwrap_or(false)
 }
 
-fn get_request_type(file_name: &OsStr) -> Result<RequestType> {
+struct RequestFolderParseOutput {
+    name: String,
+    file_type: RequestType,
+}
+
+fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOutput> {
     let file_name_str = file_name
         .to_str()
         .ok_or_else(|| anyhow!("failed to retrieve the request filename"))?;
 
-    if let Some(typ) = file_name_str.split('.').nth(1) {
-        RequestType::try_from(typ)
+    let mut segments = file_name_str.split('.');
+
+    let name = if let Some(typ) = segments.nth(0) {
+        typ.to_string()
     } else {
-        Err(anyhow!("failed to retrieve the request type"))
-    }
+        return Err(anyhow!("failed to retrieve the request name"));
+    };
+
+    let file_type = if let Some(typ) = segments.nth(1) {
+        RequestType::try_from(typ)?
+    } else {
+        return Err(anyhow!("failed to retrieve the request type"));
+    };
+
+    Ok(RequestFolderParseOutput { name, file_type })
 }
 
 fn get_request_name(folder_name: &str) -> Result<String> {

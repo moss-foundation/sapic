@@ -1,13 +1,16 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::Service;
 use moss_fs::ports::FileSystem;
+use parking_lot::RwLock;
 use patricia_tree::PatriciaMap;
+use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use tokio::sync::OnceCell;
 
 use crate::{
     models::{
-        collection::{CollectionRequestEntry, CollectionRequestVariantEntry},
+        collection::{CollectionRequestVariantEntry, RequestType},
         storage::CollectionMetadataEntity,
     },
     ports::{
@@ -16,10 +19,22 @@ use crate::{
     },
 };
 
+pub struct RequestState {
+    pub name: String,
+    pub order: Option<usize>,
+    pub typ: Option<RequestType>,
+    pub variants: RwLock<HashMap<PathBuf, CollectionRequestVariantEntry>>,
+}
+
+pub struct RequestHandle {
+    fs: Arc<dyn FileSystem>,
+    state: RequestState,
+}
+
 pub struct CollectionState {
     name: String,
     order: Option<usize>,
-    requests: PatriciaMap<CollectionRequestEntry>,
+    requests: RwLock<PatriciaMap<Arc<RequestHandle>>>,
 }
 
 impl CollectionState {
@@ -27,22 +42,60 @@ impl CollectionState {
         Self {
             name,
             order,
-            requests: PatriciaMap::new(),
+            requests: RwLock::new(PatriciaMap::new()),
         }
+    }
+
+    fn get_request_handle_or_init(
+        &self,
+        key: &[u8],
+        f: impl FnOnce() -> RequestHandle,
+    ) -> Arc<RequestHandle> {
+        {
+            let read_guard = self.requests.read();
+            if let Some(entry) = read_guard.get(key) {
+                return Arc::clone(&entry);
+            }
+        }
+
+        let mut write_guard = self.requests.write();
+        if let Some(entry) = write_guard.get(key) {
+            return Arc::clone(&entry);
+        }
+
+        let entry = Arc::new(f());
+        write_guard.insert(key, Arc::clone(&entry));
+        entry
     }
 }
 
 pub struct CollectionHandle {
     fs: Arc<dyn FileSystem>,
     store: Arc<dyn CollectionRequestSubstore>,
-    state: CollectionState,
+    state: Arc<CollectionState>,
 }
+
+pub struct CreateRequestInput {
+    name: String,
+}
+
+impl CollectionHandle {
+    pub fn create_request(
+        &self,
+        collection_path: &PathBuf,
+        input: CreateRequestInput,
+    ) -> Result<()> {
+        unimplemented!()
+    }
+}
+
+type CollectionMap = DashMap<PathBuf, CollectionHandle>;
 
 pub struct CollectionService {
     fs: Arc<dyn FileSystem>,
     collection_store: Arc<dyn CollectionMetadataStore>,
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
-    collections: DashMap<PathBuf, CollectionHandle>,
+    collections: OnceCell<Arc<CollectionMap>>,
     indexer: Arc<dyn CollectionIndexer>,
 }
 
@@ -57,117 +110,161 @@ impl CollectionService {
             fs,
             collection_store,
             collection_request_substore,
-            collections: DashMap::new(),
+            collections: OnceCell::new(),
             indexer,
         })
     }
 }
 
+#[derive(Debug, Serialize)]
+pub struct CollectionOverview {
+    pub name: String,
+    pub path: PathBuf,
+    pub order: Option<usize>,
+}
+
 impl CollectionService {
-    // TODO: At the moment, there is no clear understanding of the format in which
-    // collection descriptions should be sent to the frontend. This largely depends
-    // on the library we choose to use for displaying hierarchical structures.
+    async fn collections(&self) -> Result<Arc<CollectionMap>> {
+        let collections = self
+            .collections
+            .get_or_try_init(|| async move {
+                let collections = DashMap::new();
 
-    pub async fn describe_collections(&self) -> Result<()> {
-        if self.collections.is_empty() {
-            self.restore_collections().await?;
-        }
+                for (collection_path, collection_metadata) in
+                    self.collection_store.get_all_items()?
+                {
+                    let collection_name = match collection_path.file_name() {
+                        Some(name) => name,
+                        None => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} name", collection_path);
+                            continue;
+                        }
+                    };
 
-        unimplemented!()
-    }
-
-    async fn restore_collections(&self) -> Result<()> {
-        for (collection_path, collection_metadata) in self.collection_store.get_all_items()? {
-            let collection_name = match collection_path.file_name() {
-                Some(name) => name,
-                None => {
-                    println!("failed to get the collection {:?} name", collection_path);
-                    continue;
-                }
-            };
-
-            let indexed_collection = match self.indexer.index(&collection_path).await {
-                Ok(data) => data,
-                Err(err) => {
-                    println!(
-                        "failed to index the collection {:?}: {}",
-                        collection_path, err
+                    let state = CollectionState::new(
+                        collection_name.to_string_lossy().to_string(),
+                        collection_metadata.order,
                     );
-                    continue;
-                }
-            };
 
-            let mut state = CollectionState::new(
-                collection_name.to_string_lossy().to_string(),
-                collection_metadata.order,
-            );
-
-            for (key, request_entry) in indexed_collection
-                .requests
-                .iter_prefix(collection_path.to_string_lossy().as_bytes())
-            {
-                let request_metadata = collection_metadata.requests.get(&key);
-
-                let mut variants = HashMap::new();
-                for variant in &request_entry.variants {
-                    let variant_path = variant.path.to_string_lossy().to_string();
-                    let variant_order = request_metadata
-                        .and_then(|request_metadata| Some(&request_metadata.variants))
-                        .and_then(|variants_metadata| variants_metadata.get(&variant_path))
-                        .and_then(|variant| Some(variant.order));
-
-                    variants.insert(
-                        variant_path,
-                        CollectionRequestVariantEntry {
-                            name: variant.name.clone(),
-                            order: variant_order,
+                    collections.insert(
+                        collection_path,
+                        CollectionHandle {
+                            fs: Arc::clone(&self.fs),
+                            store: Arc::clone(&self.collection_request_substore),
+                            state: Arc::new(state),
                         },
                     );
                 }
 
-                state.requests.insert(
-                    key,
-                    CollectionRequestEntry {
-                        name: request_entry.name.clone(),
-                        order: request_metadata.map(|m| m.order),
-                        typ: request_entry.ext.clone(),
-                        variants,
-                    },
-                );
-            }
+                Ok::<Arc<CollectionMap>, anyhow::Error>(Arc::new(collections))
+            })
+            .await?;
 
-            self.collections.insert(
-                collection_path,
-                CollectionHandle {
-                    fs: Arc::clone(&self.fs),
-                    store: Arc::clone(&self.collection_request_substore),
-                    state,
-                },
-            );
-        }
+        Ok(Arc::clone(collections))
+    }
+}
 
-        todo!()
+pub struct CreateCollectionInput {
+    path: PathBuf,
+    name: String,
+    repo: Option<String>, // Url ?
+}
+
+impl CollectionService {
+    pub async fn overview_collections(&self) -> Result<Vec<CollectionOverview>> {
+        let collections = self.collections().await?;
+
+        Ok(collections
+            .iter()
+            .map(|item| CollectionOverview {
+                name: item.state.name.clone(),
+                path: item.key().clone(),
+                order: item.state.order,
+            })
+            .collect())
     }
 
-    pub async fn create_collection(&self, path: PathBuf, name: String) -> Result<()> {
-        self.fs.create_dir(path.join(&name).as_path()).await?;
+    // TODO: At the moment, there is no clear understanding of the format in which
+    // collection descriptions should be sent to the frontend. This largely depends
+    // on the library we choose to use for displaying hierarchical structures.
 
-        let order = self.collections.len() + 1;
+    pub async fn index_collection(&self, path: PathBuf) -> Result<Arc<CollectionState>> {
+        let collections = self.collections().await?;
+        let collection_handle = collections
+            .get(&path)
+            .ok_or_else(|| anyhow!("Collection with path {:?} not found", path))?;
+        let collection_state = Arc::clone(&collection_handle.state);
+
+        let indexed_collection = self.indexer.index(&path).await?;
+
+        for (raw_request_path, indexed_request_entry) in indexed_collection.requests {
+            let request_handle =
+                collection_state.get_request_handle_or_init(&raw_request_path, || RequestHandle {
+                    fs: Arc::clone(&self.fs),
+                    state: RequestState {
+                        name: indexed_request_entry.name,
+                        order: None,
+                        typ: indexed_request_entry.typ,
+                        variants: Default::default(),
+                    },
+                });
+
+            let mut variants = Vec::new();
+
+            {
+                let variants_lock = request_handle.state.variants.read();
+                for (variant_path, variant_entry) in indexed_request_entry.variants {
+                    let variant_order = variants_lock
+                        .get(&variant_path)
+                        .and_then(|variant| variant.order);
+
+                    variants.push((
+                        variant_path,
+                        CollectionRequestVariantEntry {
+                            name: variant_entry.name,
+                            order: variant_order,
+                        },
+                    ));
+                }
+            }
+
+            request_handle
+                .state
+                .variants
+                .write()
+                .extend(variants.into_iter());
+        }
+
+        Ok(collection_state)
+    }
+
+    pub async fn create_collection(&self, input: CreateCollectionInput) -> Result<()> {
+        if input.name.is_empty() {
+            return Err(anyhow!("Collection name cannot be empty"));
+        }
+
+        let full_path = input.path.join(&input.name);
+        self.fs.create_dir(&full_path).await?;
+
+        // TODO: init repo
+
+        let collections = self.collections().await?;
 
         self.collection_store.put_collection_item(
-            path.clone(),
+            input.path.clone(),
             CollectionMetadataEntity {
-                order: Some(order),
-                requests: HashMap::new(),
+                order: None,
+                requests: Default::default(),
             },
         )?;
 
-        self.collections.insert(
-            path,
+        collections.insert(
+            input.path,
             CollectionHandle {
                 fs: Arc::clone(&self.fs),
                 store: Arc::clone(&self.collection_request_substore),
-                state: CollectionState::new(name, Some(order)),
+                state: Arc::new(CollectionState::new(input.name, None)),
             },
         );
 

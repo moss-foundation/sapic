@@ -3275,6 +3275,7 @@ dependencies = [
  "miette",
  "moss_app",
  "moss_fs",
+ "parking_lot 0.12.3",
  "patricia_tree",
  "serde",
  "sled",
