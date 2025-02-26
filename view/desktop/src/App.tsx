@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import TestTreeData from "./assets/testTreeData.json";
 import { Resizable, ResizablePanel, Scrollbar } from "./components";
 import Tabs from "./components/Tabs";
+import Tree, { ITreeNode } from "./components/Tree/Tree";
 import { swapObjectsById } from "./utils";
 
 interface ListItem {
@@ -78,7 +80,7 @@ function App() {
   return (
     <div className="flex w-full h-full">
       <Resizable>
-        <ResizablePanel preferredSize={270} maxSize={400}>
+        <ResizablePanel preferredSize={270}>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -94,7 +96,9 @@ function App() {
 
             <Tabs.Panels className="text-black dark:text-white">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item}>Panel {item.id} content</Tabs.Panel>
+                <Tabs.Panel {...item} key={item.id}>
+                  {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
+                </Tabs.Panel>
               ))}
             </Tabs.Panels>
           </Tabs>
@@ -152,8 +156,34 @@ function App() {
           )}
         </button>
       </div>
+
+      {/* <TestDropTarget /> */}
     </div>
   );
 }
 
 export default App;
+
+const IsolatedTreeComponent = () => {
+  const [treeItems, setTreeItems] = useState<ITreeNode[]>(TestTreeData.items);
+
+  const handleNodeUpdate = (node: ITreeNode) => {
+    console.log("Node updated:", node);
+  };
+
+  const handleChildNodesUpdate = (items: ITreeNode[]) => {
+    console.log("Tree updated:", items);
+    setTreeItems(items);
+  };
+
+  return (
+    <>
+      <Tree nodes={treeItems} onNodeUpdate={handleNodeUpdate} onChildNodesUpdate={handleChildNodesUpdate} />
+      <div className="absolute -top-3 right-0 p-4 flex text-xs bg-gray-800">
+        <pre>
+          <code>{JSON.stringify(treeItems, null, 2)}</code>
+        </pre>
+      </div>
+    </>
+  );
+};

@@ -14,11 +14,7 @@ import { cn } from "../utils";
 import DropIndicator from "./DropIndicator";
 import Scrollbar from "./Scrollbar";
 
-interface TabsProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
-
-const Tabs = ({ children, className, ...props }: TabsProps) => {
+const Tabs = ({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) => {
   return (
     <div className={cn("w-full h-full flex flex-col", className)} {...props}>
       {children}
@@ -75,7 +71,7 @@ const Tab = ({
     return combine(
       draggable({
         element,
-        getInitialData: () => ({ id, label }),
+        getInitialData: () => ({ id, label, type: "Tab" }),
         onDrop: () => {
           setPreview(null);
         },
@@ -185,7 +181,7 @@ const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps
       )}
       {...props}
     >
-      <p className="text-caption">{children}</p>
+      {children}
     </div>
   );
 };
