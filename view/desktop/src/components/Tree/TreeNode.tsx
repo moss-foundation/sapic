@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import { SVGProps, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils";
 
@@ -14,6 +14,10 @@ interface TreeNodeProps {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, depth }: TreeNodeProps) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [redacting, setRedacting] = useState(false);
+
   const handleClick = () => {
     if (!node.isFolder) return;
 
@@ -32,47 +36,84 @@ export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, dep
     onNodeUpdate({ ...node, childNodes: nodes });
   };
 
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if ((e.key === "F2", document.activeElement === ref.current)) {
+      setRedacting(true);
+    }
+  };
+
+  useEffect(() => {
+    if (redacting && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.value = node.name;
+
+      const dotIndex = inputRef.current.value.indexOf(".");
+      inputRef.current.setSelectionRange(0, dotIndex);
+    }
+  }, [redacting, inputRef, node.name]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
+    if ("preventDefault" in e) e.preventDefault();
+
+    const newName = inputRef.current?.value.trim();
+    if (newName && newName !== node.name) {
+      onNodeUpdate({ ...node, name: newName });
+    }
+    setRedacting(false);
+  };
+
   return (
-    <li key={node.id}>
-      <ContextMenu.Root>
-        <ContextMenu.Trigger asChild>
-          <button
-            className="flex gap-1 items-center cursor-pointer focus-within:outline-1 focus-within:outline-amber-400"
-            onClick={handleClick}
-          >
-            <ChevronRightIcon
-              className={cn("", {
-                "rotate-90": node.isExpanded,
-                "opacity-0": !node.isFolder,
-              })}
-            />
-            {node.isFolder ? <FolderIcon /> : <FileIcon />}
-            <span>{node.name}</span>
-          </button>
-        </ContextMenu.Trigger>
+    <li key={node.id} className="w-full">
+      {redacting ? (
+        <div className="flex w-full items-center gap-1 focus-within:bg-gray-800 px-[1px]">
+          <ChevronRightIcon className="opacity-0" />
+          {node.isFolder ? <FolderIcon /> : <FileIcon />}
+          <form onSubmit={handleSubmit} className="grow w-full">
+            <input ref={inputRef} className="w-full focus-within:outline-none " onBlur={handleSubmit} />
+          </form>
+        </div>
+      ) : (
+        <ContextMenu.Root>
+          <ContextMenu.Trigger asChild>
+            <button
+              className="flex gap-1 w-full grow items-center cursor-pointer focus-within:outline-none focus-within:bg-gray-800 "
+              onClick={handleClick}
+              onKeyUp={handleKeyUp}
+              ref={ref}
+            >
+              <ChevronRightIcon
+                className={cn({
+                  "rotate-90": node.isExpanded,
+                  "opacity-0": !node.isFolder,
+                })}
+              />
+              {node.isFolder ? <FolderIcon /> : <FileIcon />}
+              <span>{node.name}</span>
+            </button>
+          </ContextMenu.Trigger>
 
-        <ContextMenu.Content>
-          <div>
-            <table className="border-separate border-spacing-3 ">
-              <tbody>
-                <tr>
-                  <td>ID</td>
-                  <td>{node.id}</td>
-                </tr>
-                <tr>
-                  <td>Name</td>
-                  <td>{node.name}</td>
-                </tr>
-                <tr>
-                  <td>Is Folder</td>
-                  <td>{node.isFolder.toString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
-
+          <ContextMenu.Content>
+            <div>
+              <table className="border-separate border-spacing-3 ">
+                <tbody>
+                  <tr>
+                    <td>ID</td>
+                    <td>{node.id}</td>
+                  </tr>
+                  <tr>
+                    <td>Name</td>
+                    <td>{node.name}</td>
+                  </tr>
+                  <tr>
+                    <td>Is Folder</td>
+                    <td>{node.isFolder.toString()}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ContextMenu.Content>
+        </ContextMenu.Root>
+      )}
       {node.childNodes && node.isExpanded && (
         <Tree
           nodes={node.childNodes}
