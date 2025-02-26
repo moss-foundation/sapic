@@ -7,12 +7,28 @@ import Tree, { ITreeNode } from "./Tree";
 export const TreeNode = ({
   node,
   onNodeUpdate,
+  onNodeExpand,
+  onNodeCollapse,
   depth,
 }: {
   node: ITreeNode;
   onNodeUpdate: (node: ITreeNode) => void;
+  onNodeExpand?: (node: ITreeNode) => void;
+  onNodeCollapse?: (node: ITreeNode) => void;
   depth: number;
 }) => {
+  const handleClick = () => {
+    if (!node.isFolder) return;
+    const newExpanded = !node.isExpanded;
+    if (newExpanded) {
+      onNodeExpand?.(node);
+    } else {
+      onNodeCollapse?.(node);
+    }
+    const updatedItem = { ...node, isExpanded: newExpanded };
+    onNodeUpdate(updatedItem);
+  };
+
   const handleChildNodesUpdate = (nodes: ITreeNode[]) => {
     onNodeUpdate({ ...node, childNodes: nodes });
   };
@@ -21,18 +37,26 @@ export const TreeNode = ({
     <li key={node.id}>
       <button
         className="flex gap-1 items-center cursor-pointer focus-within:outline-1 focus-within:outline-amber-400"
-        onClick={() => {
-          if (!node.isFolder) return;
-          const updatedItem = { ...node, isExpanded: !node.isExpanded };
-          onNodeUpdate(updatedItem);
-        }}
+        onClick={handleClick}
       >
-        <ChevronRightIcon className={cn("", { "rotate-90": node.isExpanded, "opacity-0": !node.isFolder })} />
+        <ChevronRightIcon
+          className={cn("", {
+            "rotate-90": node.isExpanded,
+            "opacity-0": !node.isFolder,
+          })}
+        />
         {node.isFolder ? <FolderIcon /> : <FileIcon />}
         <span>{node.name}</span>
       </button>
       {node.childNodes && node.isExpanded && (
-        <Tree nodes={node.childNodes} depth={depth + 1} onChildNodesUpdate={handleChildNodesUpdate} />
+        <Tree
+          nodes={node.childNodes}
+          depth={depth + 1}
+          onChildNodesUpdate={handleChildNodesUpdate}
+          onNodeUpdate={onNodeUpdate}
+          onNodeExpand={onNodeExpand}
+          onNodeCollapse={onNodeCollapse}
+        />
       )}
     </li>
   );
@@ -40,6 +64,7 @@ export const TreeNode = ({
 
 export default TreeNode;
 
+// Icon components remain unchanged
 const FolderIcon = () => {
   return (
     <svg
