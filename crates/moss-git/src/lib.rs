@@ -1,106 +1,18 @@
-pub mod oauth;
+pub mod adapters;
+pub mod models;
+pub mod ports;
 
-use git2::build::RepoBuilder;
-use git2::RemoteCallbacks;
-use git2::{Config, Cred, Repository};
-use oauth2::TokenResponse;
-use std::io::{BufRead, Write};
-use std::path::Path;
+pub mod repo;
 
-fn clone_flow(url: &str, path: &Path, callback: RemoteCallbacks) -> Result<Repository, String> {
-    // remove_dir_all(path);
+use anyhow::Result;
+use std::sync::Arc;
 
-    let mut fo = git2::FetchOptions::new();
-    fo.remote_callbacks(callback);
+// TODO: Create a `Sensitive` type for storing passwords securely?
+// TODO: Preserving the auth info for repos
 
-    let mut builder = RepoBuilder::new();
-    builder.fetch_options(fo);
-
-    match builder.clone(url, path) {
-        Ok(repo) => Ok(repo),
-        Err(e) => Err(format!("failed to clone: {}", e)),
-    }
-}
-
-
-#[cfg(test)]
-mod github_tests {
-    use crate::oauth::OAuth;
-    use super::*;
-
-    // Run cargo test cloning_with_https -- --nocapture
-    #[test]
-    fn cloning_with_https() {
-        // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
-        let repo_url = "https://github.com/**/**.git";
-        let repo_path = Path::new("Path to your local repo");
-
-        let auth_url = "https://github.com/login/oauth/authorize";
-        let token_url = "https://github.com/login/oauth/access_token";
-        let client_id = "***";
-        let client_secret = "***";
-
-        let github_oauth = OAuth::new(auth_url, token_url, client_id, client_secret);
-        let mut callbacks = git2::RemoteCallbacks::new();
-
-        github_oauth.flow(&mut callbacks);
-
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
-    }
-
-    #[test]
-    fn cloning_with_ssh() {
-        let repo_url = "git@github.com:***/***";
-        let repo_path = Path::new("Path to your local repo");
-
-        let private = Path::new(".ssh/id_***");
-        let public = Path::new(".ssh/id_***.pub");
-        let password = "**";
-
-        let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.credentials(move |url, username_from_url, _allowed_types| {
-            Cred::ssh_key("git", Some(public), private, Some(password))
-        });
-
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
-    }
-
-}
-
-#[cfg(test)]
-mod gitlab_tests {
-    use super::*;
-    #[test]
-    fn cloning_with_https() {
-        let repo_url = "https://gitlab.com/**/**.git";
-        let repo_path = Path::new("Path to your local repo");
-
-        let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.credentials(move |url, username_from_url, _allowed_types| {
-            let default_config = Config::open_default().unwrap();
-            Cred::credential_helper(&default_config, url, username_from_url)
-        });
-
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
-
-    }
-
-    #[test]
-    fn cloning_with_ssh() {
-        let repo_url = "git@gitlab.com:**/**.git";
-        let repo_path = Path::new("test-repo");
-
-        let private = Path::new(".ssh/id_***");
-        let public = Path::new(".ssh/id_***.pub");
-        let password = "**";
-
-        let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.credentials(move |url, username_from_url, _allowed_types| {
-            Cred::ssh_key("git", Some(public), private, Some(password))
-        });
-
-        let repo = clone_flow(repo_url, repo_path, callbacks).unwrap();
-    }
-
-
+pub trait TestStorage {
+    // TODO: We will use more secure method of storing the AuthAgent info
+    // For easy testing, we will use environment variables for now
+    fn write_to_file(&self) -> Result<()>;
+    fn read_from_file() -> Result<Arc<Self>>;
 }
