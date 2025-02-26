@@ -32,11 +32,13 @@ export const Tree = ({
   const [treeNodes, setTreeNodes] = useState<ITreeNode[]>(nodes);
 
   const handleNodeUpdate = (updatedNode: ITreeNode) => {
-    console.log({ updatedNode });
     const newTreeItems = treeNodes.map((node) => (node.id === updatedNode.id ? updatedNode : node));
+    console.log({ newTreeItems });
+
     setTreeNodes(newTreeItems);
-    if (onChildNodesUpdate) onChildNodesUpdate(newTreeItems);
-    if (onNodeUpdate) onNodeUpdate(updatedNode);
+
+    onNodeUpdate?.(updatedNode);
+    onChildNodesUpdate?.(newTreeItems);
   };
 
   return (

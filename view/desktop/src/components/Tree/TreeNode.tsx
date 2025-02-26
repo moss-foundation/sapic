@@ -64,7 +64,6 @@ export const TreeNode = ({
 
 export default TreeNode;
 
-// Icon components remain unchanged
 const FolderIcon = () => {
   return (
     <svg
