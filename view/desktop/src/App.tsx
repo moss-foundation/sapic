@@ -168,7 +168,7 @@ const IsolatedTreeComponent = () => {
   const [treeItems, setTreeItems] = useState<NodeProps[]>(TestTreeData.items);
 
   const handleNodeUpdate = (node: NodeProps) => {
-    console.log("Node updated:", node);
+    // console.log("Node updated:", node);
   };
 
   const handleNodeExpand = (node: NodeProps) => {

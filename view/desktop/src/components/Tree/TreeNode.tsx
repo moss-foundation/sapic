@@ -1,10 +1,11 @@
-import { SVGProps, useEffect, useRef, useState } from "react";
+import { SVGProps, useRef } from "react";
 
 import { cn } from "@/utils";
 
 import { ContextMenu } from "..";
 import RecursiveTree from "./RecursiveTree";
 import { NodeProps, TreeNodeProps } from "./types";
+import { useNodeRedacting } from "./useNodeRedacting";
 
 export const TreeNode = ({
   node,
@@ -19,20 +20,21 @@ export const TreeNode = ({
   const paddingRight = `${horizontalPadding}px`;
 
   const ref = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [redacting, setRedacting] = useState(false);
+
+  const { redacting, setRedacting, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRedacting(
+    node,
+    onNodeUpdate
+  );
 
   const handleClick = () => {
     if (!node.isFolder) return;
 
     const updatedItem = { ...node, isExpanded: !node.isExpanded };
-
     if (updatedItem.isExpanded) {
       onNodeExpand?.(updatedItem);
     } else {
       onNodeCollapse?.(updatedItem);
     }
-
     onNodeUpdate(updatedItem);
   };
 
@@ -40,64 +42,36 @@ export const TreeNode = ({
     onNodeUpdate({ ...node, childNodes: nodes });
   };
 
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "F2" && document.activeElement === ref.current) {
-      setRedacting(true);
-    }
-  };
-
-  useEffect(() => {
-    if (redacting && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.value = node.name;
-
-      const dotIndex = inputRef.current.value.indexOf(".");
-      inputRef.current.setSelectionRange(0, dotIndex);
-    }
-  }, [redacting, inputRef, node.name]);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
-    if ("preventDefault" in e) e.preventDefault();
-
-    const newName = inputRef.current?.value.trim();
-    if (newName && newName !== node.name) {
-      onNodeUpdate({ ...node, name: newName });
-    }
-
-    setRedacting(false);
-  };
-
   return (
-    <li key={node.id} className={cn("w-full")}>
+    <li key={node.id} className="w-full select-none">
       {redacting ? (
         <div
-          className={cn(
-            "flex w-full items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] text-ellipsis whitespace-nowrap"
-          )}
+          className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
           style={{ paddingLeft, paddingRight }}
         >
           {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
           <form onSubmit={handleSubmit} className="grow w-full">
-            <input ref={inputRef} className="w-full focus-within:outline-none " onBlur={handleSubmit} />
+            <input
+              ref={inputRef}
+              className="w-full focus-within:outline-none"
+              onKeyUp={handleInputKeyUp}
+              onBlur={handleSubmit}
+            />
           </form>
-
           <ChevronRightIcon className="opacity-0 ml-auto" />
         </div>
       ) : (
         <ContextMenu.Root>
           <ContextMenu.Trigger asChild>
             <button
-              className={cn(
-                "flex gap-1 w-full grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] text-ellipsis whitespace-nowrap"
-              )}
+              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
               style={{ paddingLeft, paddingRight }}
               onClick={handleClick}
-              onKeyUp={handleKeyUp}
+              onKeyUp={handleButtonKeyUp}
               ref={ref}
             >
               {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
-              <span>{node.name}</span>
-
+              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.name}</span>
               <ChevronRightIcon
                 className={cn("ml-auto", {
                   "rotate-90": node.isExpanded,
@@ -106,7 +80,6 @@ export const TreeNode = ({
               />
             </button>
           </ContextMenu.Trigger>
-
           <ContextMenu.Content>
             <ContextMenu.Item label="Edit" onClick={() => setRedacting(true)} />
           </ContextMenu.Content>
@@ -127,8 +100,6 @@ export const TreeNode = ({
     </li>
   );
 };
-
-export default TreeNode;
 
 const FolderIcon = ({ ...props }: SVGProps<SVGSVGElement>) => {
   return (
@@ -169,3 +140,5 @@ const ChevronRightIcon = ({ ...props }: SVGProps<SVGSVGElement>) => {
     </svg>
   );
 };
+
+export default TreeNode;

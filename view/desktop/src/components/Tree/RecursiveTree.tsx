@@ -27,7 +27,7 @@ export const RecursiveTree = ({
   };
 
   return (
-    <ul className="overflow-hidden">
+    <ul>
       {treeNodes.map((node) => (
         <TreeNode
           key={node.id}
