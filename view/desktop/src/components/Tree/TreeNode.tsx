@@ -58,7 +58,7 @@ export const TreeNode = ({
               onBlur={handleSubmit}
             />
           </form>
-          <ChevronRightIcon className="opacity-0 ml-auto" />
+          <ChevronRightIcon className="opacity-0 ml-auto min-w-4 min-h-4" />
         </div>
       ) : (
         <ContextMenu.Root>
@@ -73,7 +73,7 @@ export const TreeNode = ({
               {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
               <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.name}</span>
               <ChevronRightIcon
-                className={cn("ml-auto", {
+                className={cn("ml-auto min-w-4 min-h-4", {
                   "rotate-90": node.isExpanded,
                   "opacity-0": !node.isFolder,
                 })}
