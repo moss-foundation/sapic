@@ -3,17 +3,21 @@ import { SVGProps, useEffect, useRef, useState } from "react";
 import { cn } from "@/utils";
 
 import { ContextMenu } from "..";
-import Tree, { ITreeNode } from "./Tree";
+import RecursiveTree from "./RecursiveTree";
+import { NodeProps, TreeNodeProps } from "./types";
 
-interface TreeNodeProps {
-  node: ITreeNode;
-  onNodeUpdate: (node: ITreeNode) => void;
-  onNodeExpand?: (node: ITreeNode) => void;
-  onNodeCollapse?: (node: ITreeNode) => void;
-  depth: number;
-}
+export const TreeNode = ({
+  node,
+  onNodeUpdate,
+  onNodeExpand,
+  onNodeCollapse,
+  depth,
+  horizontalPadding,
+  nodeOffset,
+}: TreeNodeProps) => {
+  const paddingLeft = `${depth * nodeOffset + horizontalPadding}px`;
+  const paddingRight = `${horizontalPadding}px`;
 
-export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, depth }: TreeNodeProps) => {
   const ref = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [redacting, setRedacting] = useState(false);
@@ -32,12 +36,12 @@ export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, dep
     onNodeUpdate(updatedItem);
   };
 
-  const handleChildNodesUpdate = (nodes: ITreeNode[]) => {
+  const handleChildNodesUpdate = (nodes: NodeProps[]) => {
     onNodeUpdate({ ...node, childNodes: nodes });
   };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if ((e.key === "F2", document.activeElement === ref.current)) {
+    if (e.key === "F2" && document.activeElement === ref.current) {
       setRedacting(true);
     }
   };
@@ -59,69 +63,65 @@ export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, dep
     if (newName && newName !== node.name) {
       onNodeUpdate({ ...node, name: newName });
     }
+
     setRedacting(false);
   };
 
   return (
-    <li key={node.id} className="w-full">
+    <li key={node.id} className={cn("w-full")}>
       {redacting ? (
-        <div className="flex w-full items-center gap-1 focus-within:bg-gray-800 px-[1px]">
-          <ChevronRightIcon className="opacity-0" />
-          {node.isFolder ? <FolderIcon /> : <FileIcon />}
+        <div
+          className={cn(
+            "flex w-full items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] text-ellipsis whitespace-nowrap"
+          )}
+          style={{ paddingLeft, paddingRight }}
+        >
+          {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
           <form onSubmit={handleSubmit} className="grow w-full">
             <input ref={inputRef} className="w-full focus-within:outline-none " onBlur={handleSubmit} />
           </form>
+
+          <ChevronRightIcon className="opacity-0 ml-auto" />
         </div>
       ) : (
         <ContextMenu.Root>
           <ContextMenu.Trigger asChild>
             <button
-              className="flex gap-1 w-full grow items-center cursor-pointer focus-within:outline-none focus-within:bg-gray-800 "
+              className={cn(
+                "flex gap-1 w-full grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] text-ellipsis whitespace-nowrap"
+              )}
+              style={{ paddingLeft, paddingRight }}
               onClick={handleClick}
               onKeyUp={handleKeyUp}
               ref={ref}
             >
+              {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
+              <span>{node.name}</span>
+
               <ChevronRightIcon
-                className={cn({
+                className={cn("ml-auto", {
                   "rotate-90": node.isExpanded,
                   "opacity-0": !node.isFolder,
                 })}
               />
-              {node.isFolder ? <FolderIcon /> : <FileIcon />}
-              <span>{node.name}</span>
             </button>
           </ContextMenu.Trigger>
 
           <ContextMenu.Content>
-            <div>
-              <table className="border-separate border-spacing-3 ">
-                <tbody>
-                  <tr>
-                    <td>ID</td>
-                    <td>{node.id}</td>
-                  </tr>
-                  <tr>
-                    <td>Name</td>
-                    <td>{node.name}</td>
-                  </tr>
-                  <tr>
-                    <td>Is Folder</td>
-                    <td>{node.isFolder.toString()}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <ContextMenu.Item label="Edit" onClick={() => setRedacting(true)} />
           </ContextMenu.Content>
         </ContextMenu.Root>
       )}
       {node.childNodes && node.isExpanded && (
-        <Tree
+        <RecursiveTree
           nodes={node.childNodes}
-          depth={depth + 1}
           onChildNodesUpdate={handleChildNodesUpdate}
           onNodeUpdate={onNodeUpdate}
           onNodeExpand={onNodeExpand}
           onNodeCollapse={onNodeCollapse}
+          depth={depth + 1}
+          horizontalPadding={horizontalPadding}
+          nodeOffset={nodeOffset}
         />
       )}
     </li>
@@ -130,25 +130,19 @@ export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, dep
 
 export default TreeNode;
 
-const FolderIcon = () => {
+const FolderIcon = ({ ...props }: SVGProps<SVGSVGElement>) => {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M8.10584 4.34613L8.25344 4.5H8.46667H13C13.8284 4.5 14.5 5.17157 14.5 6V12.1333C14.5 12.9529 13.932 13.5 13.3667 13.5H2.63333C2.06804 13.5 1.5 12.9529 1.5 12.1333V3.86667C1.5 3.04707 2.06804 2.5 2.63333 2.5H6.1217C6.25792 2.5 6.38824 2.55557 6.48253 2.65387L8.10584 4.34613Z"
+        fill="#EBECF0"
+        stroke="#6C707E"
+      />
     </svg>
   );
 };
 
-const FileIcon = () => {
+const FileIcon = ({ ...props }: SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -160,6 +154,7 @@ const FileIcon = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      {...props}
     >
       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
       <path d="M14 2v4a2 2 0 0 0 2 2h4" />
@@ -169,19 +164,8 @@ const FileIcon = () => {
 
 const ChevronRightIcon = ({ ...props }: SVGProps<SVGSVGElement>) => {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 5l7 7-7 7" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M6 11.5L9.5 8L6 4.5" stroke="#818594" strokeLinecap="round" />
     </svg>
   );
 };

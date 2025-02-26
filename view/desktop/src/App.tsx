@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { Resizable, ResizablePanel, Scrollbar } from "./components";
+import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
-import Tree, { ITreeNode } from "./components/Tree/Tree";
+import { NodeProps } from "./components/Tree/types";
 import { swapObjectsById } from "./utils";
 
 interface ListItem {
@@ -80,7 +80,7 @@ function App() {
   return (
     <div className="flex w-full h-full">
       <Resizable>
-        <ResizablePanel preferredSize={270}>
+        <ResizablePanel preferredSize={270} minSize={100} maxSize={400} snap>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -165,24 +165,21 @@ function App() {
 export default App;
 
 const IsolatedTreeComponent = () => {
-  const [treeItems, setTreeItems] = useState<ITreeNode[]>(TestTreeData.items);
+  const [treeItems, setTreeItems] = useState<NodeProps[]>(TestTreeData.items);
 
-  const handleNodeUpdate = (node: ITreeNode) => {
+  const handleNodeUpdate = (node: NodeProps) => {
     console.log("Node updated:", node);
   };
 
-  const handleNodeExpand = (node: ITreeNode) => {
+  const handleNodeExpand = (node: NodeProps) => {
     // console.log("Node expanded:", node);
   };
 
-  const handleNodeCollapse = (node: ITreeNode) => {
+  const handleNodeCollapse = (node: NodeProps) => {
     // console.log("Node collapsed:", node);
   };
 
-  const handleChildNodesUpdate = (items: ITreeNode[]) => {
-    // console.log("ChildNodesUpdate updated:", items);
-  };
-  const handleTreeUpdate = (updatedTree: ITreeNode[]) => {
+  const handleTreeUpdate = (updatedTree: NodeProps[]) => {
     setTreeItems(updatedTree);
   };
 
@@ -193,14 +190,13 @@ const IsolatedTreeComponent = () => {
         onNodeUpdate={handleNodeUpdate}
         onNodeExpand={handleNodeExpand}
         onNodeCollapse={handleNodeCollapse}
-        onChildNodesUpdate={handleChildNodesUpdate}
         onTreeUpdate={handleTreeUpdate}
       />
-      <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
+      {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
         <pre>
           <code>{JSON.stringify(treeItems, null, 2)}</code>
         </pre>
-      </div>
+      </div> */}
     </>
   );
 };
