@@ -1,3 +1,4 @@
 packages:
   - "view/*"
   - "packages/*"
+  - "tools/*"

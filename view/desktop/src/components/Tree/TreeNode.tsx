@@ -2,6 +2,7 @@ import { SVGProps } from "react";
 
 import { cn } from "@/utils";
 
+import { ContextMenu } from "..";
 import Tree, { ITreeNode } from "./Tree";
 
 interface TreeNodeProps {
@@ -33,19 +34,45 @@ export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, dep
 
   return (
     <li key={node.id}>
-      <button
-        className="flex gap-1 items-center cursor-pointer focus-within:outline-1 focus-within:outline-amber-400"
-        onClick={handleClick}
-      >
-        <ChevronRightIcon
-          className={cn("", {
-            "rotate-90": node.isExpanded,
-            "opacity-0": !node.isFolder,
-          })}
-        />
-        {node.isFolder ? <FolderIcon /> : <FileIcon />}
-        <span>{node.name}</span>
-      </button>
+      <ContextMenu.Root>
+        <ContextMenu.Trigger asChild>
+          <button
+            className="flex gap-1 items-center cursor-pointer focus-within:outline-1 focus-within:outline-amber-400"
+            onClick={handleClick}
+          >
+            <ChevronRightIcon
+              className={cn("", {
+                "rotate-90": node.isExpanded,
+                "opacity-0": !node.isFolder,
+              })}
+            />
+            {node.isFolder ? <FolderIcon /> : <FileIcon />}
+            <span>{node.name}</span>
+          </button>
+        </ContextMenu.Trigger>
+
+        <ContextMenu.Content>
+          <div>
+            <table className="border-separate border-spacing-3 ">
+              <tbody>
+                <tr>
+                  <td>ID</td>
+                  <td>{node.id}</td>
+                </tr>
+                <tr>
+                  <td>Name</td>
+                  <td>{node.name}</td>
+                </tr>
+                <tr>
+                  <td>Is Folder</td>
+                  <td>{node.isFolder.toString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ContextMenu.Content>
+      </ContextMenu.Root>
+
       {node.childNodes && node.isExpanded && (
         <Tree
           nodes={node.childNodes}
