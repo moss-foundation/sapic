@@ -18,6 +18,7 @@ interface TreeProps {
   onChildNodesUpdate?: (items: ITreeNode[]) => void;
   onNodeExpand?: (node: ITreeNode) => void;
   onNodeCollapse?: (node: ITreeNode) => void;
+  onTreeUpdate?: (nodes: ITreeNode[]) => void;
   depth?: number;
 }
 
@@ -27,18 +28,19 @@ export const Tree = ({
   onChildNodesUpdate,
   onNodeExpand,
   onNodeCollapse,
+  onTreeUpdate,
   depth = 0,
 }: TreeProps) => {
   const [treeNodes, setTreeNodes] = useState<ITreeNode[]>(nodes);
 
   const handleNodeUpdate = (updatedNode: ITreeNode) => {
     const newTreeItems = treeNodes.map((node) => (node.id === updatedNode.id ? updatedNode : node));
-    console.log({ newTreeItems });
 
     setTreeNodes(newTreeItems);
 
     onNodeUpdate?.(updatedNode);
     onChildNodesUpdate?.(newTreeItems);
+    onTreeUpdate?.(newTreeItems);
   };
 
   return (

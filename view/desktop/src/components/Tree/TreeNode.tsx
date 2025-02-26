@@ -4,28 +4,26 @@ import { cn } from "@/utils";
 
 import Tree, { ITreeNode } from "./Tree";
 
-export const TreeNode = ({
-  node,
-  onNodeUpdate,
-  onNodeExpand,
-  onNodeCollapse,
-  depth,
-}: {
+interface TreeNodeProps {
   node: ITreeNode;
   onNodeUpdate: (node: ITreeNode) => void;
   onNodeExpand?: (node: ITreeNode) => void;
   onNodeCollapse?: (node: ITreeNode) => void;
   depth: number;
-}) => {
+}
+
+export const TreeNode = ({ node, onNodeUpdate, onNodeExpand, onNodeCollapse, depth }: TreeNodeProps) => {
   const handleClick = () => {
     if (!node.isFolder) return;
-    const newExpanded = !node.isExpanded;
-    if (newExpanded) {
-      onNodeExpand?.(node);
+
+    const updatedItem = { ...node, isExpanded: !node.isExpanded };
+
+    if (updatedItem.isExpanded) {
+      onNodeExpand?.(updatedItem);
     } else {
-      onNodeCollapse?.(node);
+      onNodeCollapse?.(updatedItem);
     }
-    const updatedItem = { ...node, isExpanded: newExpanded };
+
     onNodeUpdate(updatedItem);
   };
 

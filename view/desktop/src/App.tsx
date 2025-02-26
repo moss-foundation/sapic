@@ -172,16 +172,18 @@ const IsolatedTreeComponent = () => {
   };
 
   const handleNodeExpand = (node: ITreeNode) => {
-    console.log("Node expanded:", node);
+    // console.log("Node expanded:", node);
   };
 
   const handleNodeCollapse = (node: ITreeNode) => {
-    console.log("Node collapsed:", node);
+    // console.log("Node collapsed:", node);
   };
 
   const handleChildNodesUpdate = (items: ITreeNode[]) => {
-    console.log("Tree updated:", items);
-    setTreeItems(items);
+    // console.log("ChildNodesUpdate updated:", items);
+  };
+  const handleTreeUpdate = (updatedTree: ITreeNode[]) => {
+    setTreeItems(updatedTree);
   };
 
   return (
@@ -192,8 +194,9 @@ const IsolatedTreeComponent = () => {
         onNodeExpand={handleNodeExpand}
         onNodeCollapse={handleNodeCollapse}
         onChildNodesUpdate={handleChildNodesUpdate}
+        onTreeUpdate={handleTreeUpdate}
       />
-      <div className="absolute -top-3 right-0 p-4 flex text-xs bg-gray-800">
+      <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
         <pre>
           <code>{JSON.stringify(treeItems, null, 2)}</code>
         </pre>
