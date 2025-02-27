@@ -1,3 +1,4 @@
+import { table } from "console";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils";
@@ -8,6 +9,13 @@ export const TestDropTarget = () => {
   const label = "Drop target for element";
 
   const [dropAllowance, setDropAllowance] = useState<boolean | null>(null);
+
+  const [lastDroppedElement, setLastDroppedElement] = useState<{
+    id: unknown;
+    name: unknown;
+    type: unknown;
+    TreeId: unknown;
+  } | null>(null);
 
   useEffect(() => {
     const element = ref?.current;
@@ -26,11 +34,17 @@ export const TestDropTarget = () => {
         }
       },
       onDrag({ self, source, location }) {
-        console.log("onDrag", { self, source, location });
+        // console.log("onDrag", { self, source, location });
       },
       onDragLeave(args) {
         // console.log("onDragLeave", args);
         setDropAllowance(null);
+      },
+      onDrop({ self, source, location }) {
+        // console.log("onDrop", { self, source, location });
+        setDropAllowance(null);
+        console.log(1234, { ...source.data });
+        setLastDroppedElement({ ...source.data });
       },
     });
   }, [label, ref]);
@@ -38,13 +52,24 @@ export const TestDropTarget = () => {
   return (
     <div
       ref={ref}
-      className={cn("absolute inset-x-100 inset-y-40 bg-amber-300", {
+      className={cn("absolute h-full w-[500px] inset-x-100  bg-amber-300", {
         "bg-amber-500": dropAllowance === null,
         "bg-red-600": dropAllowance === false,
         "bg-green-600": dropAllowance === true,
       })}
     >
-      {label}
+      {lastDroppedElement ? (
+        <div className="relative h-full">
+          <div className="overflow-auto h-full">
+            <div>Last Dropped Item:</div>
+            <pre>
+              <code>{JSON.stringify(lastDroppedElement, null, 2)}</code>
+            </pre>
+          </div>
+        </div>
+      ) : (
+        label
+      )}
     </div>
   );
 };

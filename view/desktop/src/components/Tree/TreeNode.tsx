@@ -1,8 +1,11 @@
-import { SVGProps, useRef } from "react";
+import { SVGProps, useContext, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { ContextMenu } from "..";
+import { ContextMenu, TreeContext } from "..";
 import RecursiveTree from "./RecursiveTree";
 import { NodeProps, TreeNodeProps } from "./types";
 import { useNodeRedacting } from "./useNodeRedacting";
@@ -16,34 +19,95 @@ export const TreeNode = ({
   horizontalPadding,
   nodeOffset,
 }: TreeNodeProps) => {
+  const TreeContextValues = useContext(TreeContext);
+
   const paddingLeft = `${depth * nodeOffset + horizontalPadding}px`;
   const paddingRight = `${horizontalPadding}px`;
 
-  const ref = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const treeRef = useRef<HTMLLIElement>(null);
 
   const { redacting, setRedacting, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRedacting(
     node,
     onNodeUpdate
   );
 
-  const handleClick = () => {
+  const handleButtonClick = () => {
     if (!node.isFolder) return;
 
-    const updatedItem = { ...node, isExpanded: !node.isExpanded };
-    if (updatedItem.isExpanded) {
-      onNodeExpand?.(updatedItem);
+    const updatedNode = { ...node, isExpanded: !node.isExpanded };
+    if (updatedNode.isExpanded) {
+      onNodeExpand?.(updatedNode);
     } else {
-      onNodeCollapse?.(updatedItem);
+      onNodeCollapse?.(updatedNode);
     }
-    onNodeUpdate(updatedItem);
+    onNodeUpdate(updatedNode);
   };
 
   const handleChildNodesUpdate = (nodes: NodeProps[]) => {
     onNodeUpdate({ ...node, childNodes: nodes });
   };
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const element = buttonRef.current;
+
+    if (!element) return;
+
+    return draggable({
+      element: element,
+      getInitialData: () => ({ node, TreeId: TreeContextValues.TreeId }),
+      onDrop: () => {
+        setPreview(null);
+      },
+      onGenerateDragPreview({ nativeSetDragImage }) {
+        setCustomNativeDragPreview({
+          nativeSetDragImage,
+          render({ container }) {
+            setPreview((prev) => (prev === container ? prev : container));
+          },
+        });
+      },
+    });
+  }, [TreeContextValues.TreeId, node]);
+
+  useEffect(() => {
+    const element = treeRef.current;
+
+    if (!element) return;
+
+    return dropTargetForElements({
+      element,
+      onDrop: ({ source }) => {
+        if (
+          TreeContextValues.TreeId === TreeContextValues.dropTargetData?.TreeId &&
+          TreeContextValues.dropTargetData?.node?.id === node.id
+        ) {
+          const sourceNode = source.data.node as NodeProps;
+          if (node.childNodes.some(({ id }) => id === sourceNode.id)) {
+            return;
+          }
+          onNodeUpdate({
+            ...node,
+            childNodes: [...node.childNodes, sourceNode],
+          });
+        }
+      },
+      getData: () => ({ node, TreeId: TreeContextValues.TreeId }),
+    });
+  }, [TreeContextValues.TreeId, TreeContextValues.dropTargetData, node, onNodeUpdate]);
+
   return (
-    <li key={node.id} className="w-full select-none">
+    <li
+      key={node.id}
+      className={cn("w-full select-none", {
+        "bg-[#ebecf0] dark:bg-[#434343]":
+          TreeContextValues.dropTargetData?.node?.id === node.id &&
+          TreeContextValues.TreeId === TreeContextValues.dropTargetData?.TreeId,
+      })}
+      ref={treeRef}
+    >
       {redacting ? (
         <div
           className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
@@ -64,11 +128,11 @@ export const TreeNode = ({
         <ContextMenu.Root>
           <ContextMenu.Trigger asChild>
             <button
-              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
+              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] relative"
               style={{ paddingLeft, paddingRight }}
-              onClick={handleClick}
+              onClick={handleButtonClick}
               onKeyUp={handleButtonKeyUp}
-              ref={ref}
+              ref={buttonRef}
             >
               {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
               <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.name}</span>
@@ -78,6 +142,17 @@ export const TreeNode = ({
                   "opacity-0": !node.isFolder,
                 })}
               />
+              {preview &&
+                createPortal(
+                  <TreeNode
+                    node={{ ...node, childNodes: [] }}
+                    onNodeUpdate={() => {}}
+                    depth={0}
+                    horizontalPadding={0}
+                    nodeOffset={0}
+                  />,
+                  preview
+                )}
             </button>
           </ContextMenu.Trigger>
           <ContextMenu.Content>

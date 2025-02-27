@@ -5,7 +5,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import TestTreeData from "./assets/testTreeData.json";
 import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
-import { NodeProps } from "./components/Tree/types";
+import TestDropTarget from "./components/TestDropTarget";
 import { swapObjectsById } from "./utils";
 
 interface ListItem {
@@ -157,7 +157,7 @@ function App() {
         </button>
       </div>
 
-      {/* <TestDropTarget /> */}
+      <TestDropTarget />
     </div>
   );
 }
@@ -165,38 +165,34 @@ function App() {
 export default App;
 
 const IsolatedTreeComponent = () => {
-  const [treeItems, setTreeItems] = useState<NodeProps[]>(TestTreeData.items);
-
-  const handleNodeUpdate = (node: NodeProps) => {
-    // console.log("Node updated:", node);
-  };
-
-  const handleNodeExpand = (node: NodeProps) => {
-    // console.log("Node expanded:", node);
-  };
-
-  const handleNodeCollapse = (node: NodeProps) => {
-    // console.log("Node collapsed:", node);
-  };
-
-  const handleTreeUpdate = (updatedTree: NodeProps[]) => {
-    setTreeItems(updatedTree);
-  };
-
   return (
     <>
-      <Tree
-        nodes={treeItems}
-        onNodeUpdate={handleNodeUpdate}
-        onNodeExpand={handleNodeExpand}
-        onNodeCollapse={handleNodeCollapse}
-        onTreeUpdate={handleTreeUpdate}
-      />
+      <Tree nodes={TestTreeData.items} />
       {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
         <pre>
           <code>{JSON.stringify(treeItems, null, 2)}</code>
         </pre>
       </div> */}
+      <hr />
+      <Tree nodes={TestTreeData.items} />
+      <div>{Math.random().toFixed(2)}</div>
+
+      {/* <table>
+        <tbody>
+          <tr>
+            <th>lastUpdatedNode</th>
+            <td>{lastUpdatedNode}</td>
+          </tr>
+          <tr>
+            <th>lastExpandedNode</th>
+            <td>{lastExpandedNode}</td>
+          </tr>
+          <tr>
+            <th>lastCollapsedNode</th>
+            <td>{lastCollapsedNode}</td>
+          </tr>
+        </tbody>
+      </table> */}
     </>
   );
 };

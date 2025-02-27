@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import TreeNode from "./TreeNode";
 import { NodeProps, RecursiveTreeProps } from "./types";
 
@@ -14,12 +12,8 @@ export const RecursiveTree = ({
   horizontalPadding,
   nodeOffset,
 }: RecursiveTreeProps) => {
-  const [treeNodes, setTreeNodes] = useState<NodeProps[]>(nodes);
-
   const handleNodeUpdate = (updatedNode: NodeProps) => {
-    const newTreeItems = treeNodes.map((node) => (node.id === updatedNode.id ? updatedNode : node));
-
-    setTreeNodes(newTreeItems);
+    const newTreeItems = nodes.map((node) => (node.id === updatedNode.id ? updatedNode : node));
 
     onNodeUpdate?.(updatedNode);
     onChildNodesUpdate?.(newTreeItems);
@@ -28,7 +22,7 @@ export const RecursiveTree = ({
 
   return (
     <ul>
-      {treeNodes.map((node) => (
+      {nodes.map((node) => (
         <TreeNode
           key={node.id}
           node={node}
