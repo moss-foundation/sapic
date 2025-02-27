@@ -6,6 +6,10 @@ import { Resizable, ResizablePanel, Scrollbar } from "./components";
 import Tabs from "./components/Tabs";
 import { swapObjectsById } from "./utils";
 
+import "@repo/moss-tabs/assets/styles.css";
+
+import TabbedPane from "./parts/TabbedPane/TabbedPane";
+
 interface ListItem {
   id: number;
   label: string;
@@ -100,6 +104,7 @@ function App() {
           </Tabs>
         </ResizablePanel>
         <ResizablePanel>
+          <TabbedPane theme="dockview-theme-light" />
           <main className="h-screen flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
             <Scrollbar>
               {Array.from({ length: 100 }, (_, i) => (
