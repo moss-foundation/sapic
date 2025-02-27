@@ -297,10 +297,10 @@ mod tests {
     struct MockCollectionMetadataStore {}
 
     const TEST_COLLECTION_PATH: &'static str =
-        "/Users/g10z3r/Project/keenawa-co/api-client/crates/moss-collection/tests/TestCollection";
+        "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection";
 
     const TEST_REQUEST_PATH: &'static str =
-        "/Users/g10z3r/Project/keenawa-co/api-client/crates/moss-collection/tests/TestCollection/requests/Test1.request";
+        "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection/requests/Test1.request";
 
     impl CollectionMetadataStore for MockCollectionMetadataStore {
         fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
