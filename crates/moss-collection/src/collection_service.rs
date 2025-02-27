@@ -2,92 +2,17 @@ use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::Service;
 use moss_fs::ports::FileSystem;
-use parking_lot::RwLock;
-use patricia_tree::PatriciaMap;
 use serde::Serialize;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
 use crate::{
-    models::{
-        collection::{CollectionRequestVariantEntry, RequestType},
-        storage::CollectionMetadataEntity,
-    },
-    ports::{
-        collection_ports::CollectionIndexer,
-        storage_ports::{CollectionMetadataStore, CollectionRequestSubstore},
-    },
+    collection_handle::{CollectionHandle, CollectionState},
+    indexing::CollectionIndexer,
+    models::{collection::CollectionRequestVariantEntry, storage::CollectionMetadataEntity},
+    request_handle::{RequestHandle, RequestState},
+    storage::{CollectionMetadataStore, CollectionRequestSubstore},
 };
-
-pub struct RequestState {
-    pub name: String,
-    pub order: Option<usize>,
-    pub typ: Option<RequestType>,
-    pub variants: RwLock<HashMap<PathBuf, CollectionRequestVariantEntry>>,
-}
-
-pub struct RequestHandle {
-    fs: Arc<dyn FileSystem>,
-    state: RequestState,
-}
-
-pub struct CollectionState {
-    name: String,
-    order: Option<usize>,
-    requests: RwLock<PatriciaMap<Arc<RequestHandle>>>,
-}
-
-impl CollectionState {
-    fn new(name: String, order: Option<usize>) -> Self {
-        Self {
-            name,
-            order,
-            requests: RwLock::new(PatriciaMap::new()),
-        }
-    }
-
-    fn get_request_handle_or_init(
-        &self,
-        key: &[u8],
-        f: impl FnOnce() -> RequestHandle,
-    ) -> Arc<RequestHandle> {
-        {
-            let read_guard = self.requests.read();
-            if let Some(entry) = read_guard.get(key) {
-                return Arc::clone(&entry);
-            }
-        }
-
-        let mut write_guard = self.requests.write();
-        if let Some(entry) = write_guard.get(key) {
-            return Arc::clone(&entry);
-        }
-
-        let entry = Arc::new(f());
-        write_guard.insert(key, Arc::clone(&entry));
-        entry
-    }
-}
-
-pub struct CollectionHandle {
-    fs: Arc<dyn FileSystem>,
-    store: Arc<dyn CollectionRequestSubstore>,
-    state: Arc<CollectionState>,
-}
-
-pub struct CreateRequestInput {
-    name: String,
-}
-
-impl CollectionHandle {
-    pub fn create_request(
-        &self,
-        collection_path: &PathBuf,
-        input: CreateRequestInput,
-    ) -> Result<()> {
-        unimplemented!()
-    }
-}
 
 type CollectionMap = DashMap<PathBuf, CollectionHandle>;
 
@@ -149,11 +74,11 @@ impl CollectionService {
 
                     collections.insert(
                         collection_path,
-                        CollectionHandle {
-                            fs: Arc::clone(&self.fs),
-                            store: Arc::clone(&self.collection_request_substore),
-                            state: Arc::new(state),
-                        },
+                        CollectionHandle::new(
+                            Arc::clone(&self.fs),
+                            Arc::clone(&self.collection_request_substore),
+                            Arc::new(state),
+                        ),
                     );
                 }
 
@@ -177,10 +102,14 @@ impl CollectionService {
 
         Ok(collections
             .iter()
-            .map(|item| CollectionOverview {
-                name: item.state.name.clone(),
-                path: item.key().clone(),
-                order: item.state.order,
+            .map(|item| {
+                let item_state = item.state();
+
+                CollectionOverview {
+                    name: item_state.name.clone(),
+                    path: item.key().clone(),
+                    order: item_state.order,
+                }
             })
             .collect())
     }
@@ -194,20 +123,22 @@ impl CollectionService {
         let collection_handle = collections
             .get(&path)
             .ok_or_else(|| anyhow!("Collection with path {:?} not found", path))?;
-        let collection_state = Arc::clone(&collection_handle.state);
+        let collection_state = collection_handle.state();
 
         let indexed_collection = self.indexer.index(&path).await?;
 
         for (raw_request_path, indexed_request_entry) in indexed_collection.requests {
             let request_handle =
-                collection_state.get_request_handle_or_init(&raw_request_path, || RequestHandle {
-                    fs: Arc::clone(&self.fs),
-                    state: RequestState {
-                        name: indexed_request_entry.name,
-                        order: None,
-                        typ: indexed_request_entry.typ,
-                        variants: Default::default(),
-                    },
+                collection_state.get_request_handle_or_init(&raw_request_path, || {
+                    RequestHandle::new(
+                        Arc::clone(&self.fs),
+                        RequestState {
+                            name: indexed_request_entry.name,
+                            order: None,
+                            typ: indexed_request_entry.typ,
+                            variants: Default::default(),
+                        },
+                    )
                 });
 
             let mut variants = Vec::new();
@@ -261,11 +192,11 @@ impl CollectionService {
 
         collections.insert(
             input.path,
-            CollectionHandle {
-                fs: Arc::clone(&self.fs),
-                store: Arc::clone(&self.collection_request_substore),
-                state: Arc::new(CollectionState::new(input.name, None)),
-            },
+            CollectionHandle::new(
+                Arc::clone(&self.fs),
+                Arc::clone(&self.collection_request_substore),
+                Arc::new(CollectionState::new(input.name, None)),
+            ),
         );
 
         Ok(())
@@ -286,15 +217,17 @@ impl Service for CollectionService {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use moss_fs::adapters::disk::DiskFileSystem;
 
     use crate::{
-        models::storage::RequestMetadataEntity, services::indexing_service::IndexingService,
+        indexing::indexer::IndexingService,
+        models::storage::RequestMetadataEntity,
+        storage::{MockCollectionMetadataStore, MockCollectionRequestSubstore},
     };
 
     use super::*;
-
-    struct MockCollectionMetadataStore {}
 
     const TEST_COLLECTION_PATH: &'static str =
         "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection";
@@ -302,8 +235,11 @@ mod tests {
     const TEST_REQUEST_PATH: &'static str =
         "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection/requests/Test1.request";
 
-    impl CollectionMetadataStore for MockCollectionMetadataStore {
-        fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
+    #[test]
+    fn collections() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let mut collection_store = MockCollectionMetadataStore::new();
+        collection_store.expect_get_all_items().returning(|| {
             Ok(vec![(
                 PathBuf::from(TEST_COLLECTION_PATH),
                 CollectionMetadataEntity {
@@ -322,31 +258,17 @@ mod tests {
                     },
                 },
             )])
-        }
+        });
 
-        fn put_collection_item(&self, path: PathBuf, item: CollectionMetadataEntity) -> Result<()> {
-            todo!()
-        }
-
-        fn remove_collection_item(&self, path: PathBuf) -> Result<()> {
-            todo!()
-        }
-    }
-
-    struct MockCollectionRequestSubstore {}
-
-    impl CollectionRequestSubstore for MockCollectionRequestSubstore {}
-
-    #[test]
-    fn collections() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let collection_store = Arc::new(MockCollectionMetadataStore {});
-        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
+        let collection_request_substore = MockCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
-
-        let service =
-            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
-                .unwrap();
+        let service = CollectionService::new(
+            fs,
+            Arc::new(collection_store),
+            Arc::new(collection_request_substore),
+            indexer,
+        )
+        .unwrap();
 
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
@@ -365,13 +287,37 @@ mod tests {
     #[test]
     fn overview_collection() {
         let fs = Arc::new(DiskFileSystem::new());
-        let collection_store = Arc::new(MockCollectionMetadataStore {});
-        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
-        let indexer = Arc::new(IndexingService::new(fs.clone()));
+        let mut collection_store = MockCollectionMetadataStore::new();
+        collection_store.expect_get_all_items().returning(|| {
+            Ok(vec![(
+                PathBuf::from(TEST_COLLECTION_PATH),
+                CollectionMetadataEntity {
+                    order: None,
+                    requests: {
+                        let mut this = HashMap::new();
+                        this.insert(
+                            TEST_REQUEST_PATH.into(),
+                            RequestMetadataEntity {
+                                order: None,
+                                variants: Default::default(),
+                            },
+                        );
 
-        let service =
-            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
-                .unwrap();
+                        this
+                    },
+                },
+            )])
+        });
+
+        let collection_request_substore = MockCollectionRequestSubstore::new();
+        let indexer = Arc::new(IndexingService::new(fs.clone()));
+        let service = CollectionService::new(
+            fs,
+            Arc::new(collection_store),
+            Arc::new(collection_request_substore),
+            indexer,
+        )
+        .unwrap();
 
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
@@ -387,14 +333,37 @@ mod tests {
     #[test]
     fn index_collection() {
         let fs = Arc::new(DiskFileSystem::new());
-        let collection_store = Arc::new(MockCollectionMetadataStore {});
-        let collection_request_substore = Arc::new(MockCollectionRequestSubstore {});
+        let mut collection_store = MockCollectionMetadataStore::new();
+        collection_store.expect_get_all_items().returning(|| {
+            Ok(vec![(
+                PathBuf::from(TEST_COLLECTION_PATH),
+                CollectionMetadataEntity {
+                    order: None,
+                    requests: {
+                        let mut this = HashMap::new();
+                        this.insert(
+                            TEST_REQUEST_PATH.into(),
+                            RequestMetadataEntity {
+                                order: None,
+                                variants: Default::default(),
+                            },
+                        );
+
+                        this
+                    },
+                },
+            )])
+        });
+
+        let collection_request_substore = MockCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
-
-        let service =
-            CollectionService::new(fs, collection_store, collection_request_substore, indexer)
-                .unwrap();
-
+        let service = CollectionService::new(
+            fs,
+            Arc::new(collection_store),
+            Arc::new(collection_request_substore),
+            indexer,
+        )
+        .unwrap();
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()

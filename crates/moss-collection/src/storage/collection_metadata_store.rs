@@ -1,9 +1,9 @@
 use anyhow::Result;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::{
-    models::storage::CollectionMetadataEntity, ports::storage_ports::CollectionMetadataStore,
-};
+use crate::models::storage::CollectionMetadataEntity;
+
+use super::CollectionMetadataStore;
 
 pub struct SledCollectionMetadataStore {
     tree: Arc<sled::Tree>,

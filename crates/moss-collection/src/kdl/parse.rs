@@ -1,8 +1,8 @@
-use crate::adapters::kdl::foundations::http::{
+use crate::kdl::foundations::http::{
     HeaderBody, HeaderOptions, PathParamBody, PathParamOptions, QueryParamBody, QueryParamOptions,
     Request, Url,
 };
-use crate::adapters::kdl::tokens::*;
+use crate::kdl::tokens::*;
 use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
@@ -257,7 +257,7 @@ pub fn parse(input: &str) -> Result<Request> {
 
 #[cfg(test)]
 mod tests {
-    use crate::adapters::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
+    use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
     use kdl::{KdlDocument, KdlNode};
     use miette::{Diagnostic, NamedSource, SourceSpan};
     use std::fs;

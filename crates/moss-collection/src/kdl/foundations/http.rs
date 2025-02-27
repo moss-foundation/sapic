@@ -1,4 +1,4 @@
-use crate::adapters::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
+use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
 

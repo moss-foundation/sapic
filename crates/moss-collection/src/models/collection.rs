@@ -1,6 +1,4 @@
 use anyhow::anyhow;
-use parking_lot::RwLock;
-use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub enum HttpRequestType {

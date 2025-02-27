@@ -1,19 +1,14 @@
 use anyhow::{anyhow, Result};
 use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
-use std::{
-    collections::HashMap,
-    ffi::{OsStr, OsString},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 
 use crate::{
+    indexing::CollectionIndexer,
     models::{
         collection::RequestType,
         indexing::{IndexedCollection, RequestEntry, RequestVariantEntry},
     },
-    ports::collection_ports::CollectionIndexer,
 };
 
 const REQUESTS_DIR: &'static str = "requests";

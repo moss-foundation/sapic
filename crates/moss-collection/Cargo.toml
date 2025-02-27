@@ -19,3 +19,6 @@ tokio.workspace = true
 async-trait.workspace = true
 patricia_tree.workspace = true
 parking_lot.workspace = true
+
+[dev-dependencies]
+mockall = "0.13.1"
