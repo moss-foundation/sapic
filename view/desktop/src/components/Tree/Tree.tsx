@@ -9,9 +9,11 @@ export const Tree = ({
   onTreeUpdate,
   horizontalPadding = 16,
   nodeOffset = 16,
+  sortBy = "none",
+  className,
 }: TreeProps) => {
   return (
-    <div>
+    <div className={className}>
       <RecursiveTree
         nodes={nodes}
         onNodeUpdate={onNodeUpdate}

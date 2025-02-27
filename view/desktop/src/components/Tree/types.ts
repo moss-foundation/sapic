@@ -1,17 +1,20 @@
 export interface TreeProps {
   nodes: NodeProps[];
-  onNodeUpdate?: (item: NodeProps) => void;
+  onNodeUpdate?: (node: NodeProps) => void;
   onNodeExpand?: (node: NodeProps) => void;
   onNodeCollapse?: (node: NodeProps) => void;
   onTreeUpdate?: (nodes: NodeProps[]) => void;
   horizontalPadding?: number;
   nodeOffset?: number;
+  sortBy?: "none" | "order" | "alphabetically";
+  className?: string;
+
 }
 
 export interface RecursiveTreeProps {
   nodes: NodeProps[];
-  onNodeUpdate?: (item: NodeProps) => void;
-  onChildNodesUpdate?: (items: NodeProps[]) => void;
+  onNodeUpdate?: (node: NodeProps) => void;
+  onChildNodesUpdate?: (nodes: NodeProps[]) => void;
   onNodeExpand?: (node: NodeProps) => void;
   onNodeCollapse?: (node: NodeProps) => void;
   onTreeUpdate?: (nodes: NodeProps[]) => void;
