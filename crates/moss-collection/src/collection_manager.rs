@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use dashmap::DashMap;
-use moss_app::service::Service;
+use moss_app::service::AppService;
 use moss_fs::ports::FileSystem;
 use serde::Serialize;
 use std::{path::PathBuf, sync::Arc};
@@ -16,7 +16,7 @@ use crate::{
 
 type CollectionMap = DashMap<PathBuf, CollectionHandle>;
 
-pub struct CollectionService {
+pub struct CollectionManager {
     fs: Arc<dyn FileSystem>,
     collection_store: Arc<dyn CollectionMetadataStore>,
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
@@ -24,7 +24,7 @@ pub struct CollectionService {
     indexer: Arc<dyn CollectionIndexer>,
 }
 
-impl CollectionService {
+impl CollectionManager {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         collection_store: Arc<dyn CollectionMetadataStore>,
@@ -48,7 +48,7 @@ pub struct CollectionOverview {
     pub order: Option<usize>,
 }
 
-impl CollectionService {
+impl CollectionManager {
     async fn collections(&self) -> Result<Arc<CollectionMap>> {
         let collections = self
             .collections
@@ -59,7 +59,7 @@ impl CollectionService {
                     self.collection_store.get_all_items()?
                 {
                     let collection_name = match collection_path.file_name() {
-                        Some(name) => name,
+                        Some(name) => name.to_string_lossy().to_string(),
                         None => {
                             // TODO: logging
                             println!("failed to get the collection {:?} name", collection_path);
@@ -67,17 +67,13 @@ impl CollectionService {
                         }
                     };
 
-                    let state = CollectionState::new(
-                        collection_name.to_string_lossy().to_string(),
-                        collection_metadata.order,
-                    );
-
                     collections.insert(
                         collection_path,
                         CollectionHandle::new(
                             Arc::clone(&self.fs),
                             Arc::clone(&self.collection_request_substore),
-                            Arc::new(state),
+                            collection_name,
+                            collection_metadata.order,
                         ),
                     );
                 }
@@ -96,7 +92,7 @@ pub struct CreateCollectionInput {
     repo: Option<String>, // Url ?
 }
 
-impl CollectionService {
+impl CollectionManager {
     pub async fn overview_collections(&self) -> Result<Vec<CollectionOverview>> {
         let collections = self.collections().await?;
 
@@ -195,7 +191,8 @@ impl CollectionService {
             CollectionHandle::new(
                 Arc::clone(&self.fs),
                 Arc::clone(&self.collection_request_substore),
-                Arc::new(CollectionState::new(input.name, None)),
+                input.name,
+                None,
             ),
         );
 
@@ -203,7 +200,7 @@ impl CollectionService {
     }
 }
 
-impl Service for CollectionService {
+impl AppService for CollectionManager {
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
@@ -262,7 +259,7 @@ mod tests {
 
         let collection_request_substore = MockCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
-        let service = CollectionService::new(
+        let service = CollectionManager::new(
             fs,
             Arc::new(collection_store),
             Arc::new(collection_request_substore),
@@ -311,7 +308,7 @@ mod tests {
 
         let collection_request_substore = MockCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
-        let service = CollectionService::new(
+        let service = CollectionManager::new(
             fs,
             Arc::new(collection_store),
             Arc::new(collection_request_substore),
@@ -357,7 +354,7 @@ mod tests {
 
         let collection_request_substore = MockCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
-        let service = CollectionService::new(
+        let service = CollectionManager::new(
             fs,
             Arc::new(collection_store),
             Arc::new(collection_request_substore),

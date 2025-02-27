@@ -187,7 +187,6 @@ impl Into<KdlNode> for HeaderOptions {
 
 #[derive(Clone, Debug, Default)]
 pub struct Request {
-    // pub metadata: Option<Metadata>,
     pub url: Option<Url>,
     pub query_params: Option<HashMap<String, QueryParamBody>>,
     pub path_params: Option<HashMap<String, PathParamBody>>,
@@ -197,9 +196,7 @@ pub struct Request {
 impl ToString for Request {
     fn to_string(&self) -> String {
         let mut document = KdlDocument::new();
-        let mut nodes = document.nodes_mut();
-        // let metadata_node: KdlNode = self.metadata.into();
-        // nodes.push(metadata_node);
+        let nodes = document.nodes_mut();
         if let Some(url) = &self.url {
             let url_node: KdlNode = url.clone().into();
             nodes.push(url_node);

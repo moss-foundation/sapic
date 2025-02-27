@@ -58,12 +58,17 @@ impl CollectionHandle {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         store: Arc<dyn CollectionRequestSubstore>,
-        state: Arc<CollectionState>,
+        name: String,
+        order: Option<usize>,
     ) -> Self {
-        Self { fs, store, state }
+        Self {
+            fs,
+            store,
+            state: Arc::new(CollectionState::new(name, order)),
+        }
     }
 
-    pub fn state(&self) -> Arc<CollectionState> {
+    pub(crate) fn state(&self) -> Arc<CollectionState> {
         Arc::clone(&self.state)
     }
 
@@ -72,6 +77,8 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         input: CreateRequestInput,
     ) -> Result<()> {
-        unimplemented!()
+        // self.fs.create_dir(path)
+
+        Ok(())
     }
 }

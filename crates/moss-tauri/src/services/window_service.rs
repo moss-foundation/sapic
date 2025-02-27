@@ -1,4 +1,4 @@
-use moss_app::service::Service;
+use moss_app::service::AppService;
 use std::sync::atomic::AtomicUsize;
 
 const INITIAL_WINDOW_ID: usize = 0;
@@ -21,7 +21,7 @@ impl WindowService {
     }
 }
 
-impl Service for WindowService {
+impl AppService for WindowService {
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }

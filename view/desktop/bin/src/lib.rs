@@ -13,8 +13,8 @@ use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
 use moss_app::state::AppStateManager;
+use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
-use moss_collection::services::collection_service::CollectionService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
@@ -95,7 +95,7 @@ pub fn run() {
                             SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 
                         move |_| {
-                            CollectionService::new(
+                            CollectionManager::new(
                                 Arc::clone(&fs_clone) as Arc<dyn FileSystem>,
                                 Arc::new(collection_store),
                                 Arc::new(collection_request_substore),

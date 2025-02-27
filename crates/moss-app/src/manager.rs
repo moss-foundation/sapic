@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tauri::AppHandle;
 
-use super::service::{InstantiationType, Service, ServiceCollection, ServiceHandle};
+use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 
 pub struct AppManager {
     services: ServiceCollection,
@@ -20,14 +20,14 @@ impl AppManager {
 
     pub fn with_service<T, F>(self, service: F, activation_type: InstantiationType) -> Self
     where
-        T: Service + 'static,
+        T: AppService + 'static,
         F: FnOnce(&AppHandle) -> T + 'static,
     {
         self.services.register(service, activation_type);
         self
     }
 
-    pub fn service<T: Service>(&self) -> Result<ServiceHandle<T>> {
+    pub fn service<T: AppService>(&self) -> Result<ServiceHandle<T>> {
         self.services.get()
     }
 }
