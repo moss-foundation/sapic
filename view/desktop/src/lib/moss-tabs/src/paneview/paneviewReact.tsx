@@ -3,15 +3,10 @@ import React from "react";
 import { PaneviewApi } from "../api/component.api";
 import { createPaneview } from "../api/entryPoints";
 import { PaneviewPanelApi } from "../api/paneviewPanelApi";
-import {
-  PaneviewComponentOptions,
-  PaneviewFrameworkOptions,
-  PaneviewOptions,
-  PROPERTY_KEYS_PANEVIEW,
-} from "../paneview/options";
 import { usePortalsLifecycle } from "../react";
 import { PanelParameters } from "../types";
 import { PaneviewDidDropEvent as PaneviewDropEvent } from "./draggablePaneviewPanel";
+import { PaneviewComponentOptions, PaneviewFrameworkOptions, PaneviewOptions, PROPERTY_KEYS_PANEVIEW } from "./options";
 import { PanePanelSection } from "./view";
 
 export interface PaneviewReadyEvent {

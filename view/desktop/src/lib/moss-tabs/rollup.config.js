@@ -7,7 +7,7 @@ const typescript = require("@rollup/plugin-typescript");
 const terser = require("@rollup/plugin-terser");
 const postcss = require("rollup-plugin-postcss");
 
-const { name, version, homepage, license } = require("../moss-tabs/package.json");
+const { name, version, homepage, license } = require("./package.json");
 const main = join(__dirname, "./scripts/rollupEntryTarget.ts");
 const mainNoStyles = join(__dirname, "./src/index.ts");
 const outputDir = join(__dirname, "dist");

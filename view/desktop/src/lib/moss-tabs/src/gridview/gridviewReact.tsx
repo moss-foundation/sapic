@@ -3,14 +3,9 @@ import React from "react";
 import { GridviewApi } from "../api/component.api";
 import { createGridview } from "../api/entryPoints";
 import { GridviewPanelApi } from "../api/gridviewPanelApi";
-import {
-  GridviewComponentOptions,
-  GridviewFrameworkOptions,
-  GridviewOptions,
-  PROPERTY_KEYS_GRIDVIEW,
-} from "../gridview/options";
 import { usePortalsLifecycle } from "../react";
 import { PanelParameters } from "../types";
+import { GridviewComponentOptions, GridviewFrameworkOptions, GridviewOptions, PROPERTY_KEYS_GRIDVIEW } from "./options";
 import { ReactGridPanelView } from "./view";
 
 export interface GridviewReadyEvent {

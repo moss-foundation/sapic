@@ -4,13 +4,13 @@ import { SplitviewApi } from "../api/component.api";
 import { createSplitview } from "../api/entryPoints";
 import { SplitviewPanelApi } from "../api/splitviewPanelApi";
 import { usePortalsLifecycle } from "../react";
+import { PanelParameters } from "../types";
 import {
   PROPERTY_KEYS_SPLITVIEW,
   SplitviewComponentOptions,
   SplitviewFrameworkOptions,
   SplitviewOptions,
-} from "../splitview/options";
-import { PanelParameters } from "../types";
+} from "./options";
 import { ReactPanelView } from "./view";
 
 export interface SplitviewReadyEvent {

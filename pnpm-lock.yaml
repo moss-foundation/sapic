@@ -119,40 +119,6 @@ importers:
         specifier: ^22.10.1
         version: 22.13.1
 
-  packages/moss-tabs:
-    dependencies:
-      '@testing-library/dom':
-        specifier: ^10.4.0
-        version: 10.4.0
-      '@testing-library/react':
-        specifier: ^16.2.0
-        version: 16.2.0(@testing-library/dom@10.4.0)(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@total-typescript/shoehorn':
-        specifier: ^0.1.2
-        version: 0.1.2
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
-      react:
-        specifier: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-        version: 18.3.1
-    devDependencies:
-      '@repo/tailwind-config':
-        specifier: workspace:*
-        version: link:../config-tailwind
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../config-typescript
-      '@types/node':
-        specifier: ^22.10.1
-        version: 22.13.1
-      jsdom:
-        specifier: ^26.0.0
-        version: 26.0.0
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@22.13.1)(typescript@5.7.3)
-
   view/desktop:
     dependencies:
       '@tauri-apps/api':
@@ -185,7 +151,7 @@ importers:
         version: link:../../packages/config-eslint
       '@repo/moss-tabs':
         specifier: workspace:*
-        version: link:../../packages/moss-tabs
+        version: link:src/lib/moss-tabs
       '@repo/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config-tailwind
@@ -204,6 +170,40 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.1
         version: 18.3.5(@types/react@18.3.18)
+
+  view/desktop/src/lib/moss-tabs:
+    dependencies:
+      '@testing-library/dom':
+        specifier: ^10.4.0
+        version: 10.4.0
+      '@testing-library/react':
+        specifier: ^16.2.0
+        version: 16.2.0(@testing-library/dom@10.4.0)(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@total-typescript/shoehorn':
+        specifier: ^0.1.2
+        version: 0.1.2
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      react:
+        specifier: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+        version: 18.3.1
+    devDependencies:
+      '@repo/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../../../packages/config-tailwind
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../../../../packages/config-typescript
+      '@types/node':
+        specifier: ^22.10.1
+        version: 22.13.1
+      jsdom:
+        specifier: ^26.0.0
+        version: 26.0.0
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@22.13.1)(typescript@5.7.3)
 
 packages:
 
