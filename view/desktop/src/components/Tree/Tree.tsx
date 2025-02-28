@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useId, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { sortNodes } from "./sortNodes";
 import TreeNode from "./TreeNode";
 import { NodeProps, TreeProps } from "./types";
 
@@ -26,7 +27,6 @@ export const Tree = ({
   onTreeUpdate,
   horizontalPadding = 16,
   nodeOffset = 16,
-  sortBy = "none",
   className,
 }: TreeProps) => {
   const TreeId = useId();
@@ -59,8 +59,9 @@ export const Tree = ({
         const removeNode = (nodes: NodeProps[], nodeId: string | number): NodeProps[] => {
           return nodes
             .filter((n) => n.id !== nodeId)
-            .map((n) => ({
+            .map((n, index) => ({
               ...n,
+              order: index + 1,
               childNodes: n.childNodes ? removeNode(n.childNodes, nodeId) : [],
             }));
         };
@@ -68,7 +69,7 @@ export const Tree = ({
         setTree((prev) => {
           return {
             ...prev,
-            childNodes: removeNode(prev.childNodes, source.node.id),
+            childNodes: sortNodes(removeNode(prev.childNodes, source.node.id)),
           };
         });
       }
@@ -78,12 +79,12 @@ export const Tree = ({
           if (tree.id === parentId) {
             return {
               ...tree,
-              childNodes: [...(tree.childNodes || []), newNode],
+              childNodes: sortNodes([...(tree.childNodes || []), newNode]),
             };
           } else if (tree.childNodes) {
             return {
               ...tree,
-              childNodes: tree.childNodes.map((child) => addNodeToTree(child, parentId, newNode)),
+              childNodes: sortNodes(tree.childNodes.map((child) => addNodeToTree(child, parentId, newNode))),
             };
           }
           return tree;

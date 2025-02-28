@@ -6,7 +6,6 @@ export interface TreeProps {
   onTreeUpdate?: (nodes: NodeProps) => void;
   horizontalPadding?: number;
   nodeOffset?: number;
-  sortBy?: "none" | "order" | "alphabetically";
   className?: string;
 
 }
