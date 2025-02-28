@@ -13,29 +13,39 @@ export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps
   };
 
   const handleInputKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      setRedacting(false);
-    }
+    if (e.key === "Escape") setRedacting(false)
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
+    console.log("handleSubmit")
     if ("preventDefault" in e) e.preventDefault();
 
     const newId = inputRef.current?.value.trim();
     if (newId && newId !== node.id) {
       onNodeUpdate({ ...node, id: newId, }, node.id);
     }
+
     setRedacting(false);
   };
 
+
   useEffect(() => {
     if (redacting && inputRef.current) {
+      setFocusOnInput(inputRef, node);
+    }
+
+  }, [redacting, node.id, inputRef, node]);
+
+
+
+  const setFocusOnInput = (inputRef: React.RefObject<HTMLInputElement>, node: NodeProps) => {
+    if (inputRef?.current) {
       inputRef.current.focus();
       inputRef.current.value = String(node.id);
       const dotIndex = inputRef.current.value.indexOf(".");
       inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : String(node.id).length);
     }
-  }, [redacting, node.id]);
+  };
 
   return {
     redacting,
@@ -44,5 +54,6 @@ export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps
     handleButtonKeyUp,
     handleInputKeyUp,
     handleSubmit,
+    setFocusOnInput
   };
 };

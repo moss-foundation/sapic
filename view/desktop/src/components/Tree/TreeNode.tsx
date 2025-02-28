@@ -130,7 +130,6 @@ export const TreeNode = ({
       </ul>
     );
   }
-
   return (
     <li
       key={node.id}
@@ -155,6 +154,7 @@ export const TreeNode = ({
                 {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
                 <form onSubmit={handleSubmit} className="grow w-full">
                   <input
+                    autoFocus
                     ref={inputRef}
                     className="w-full focus-within:outline-none"
                     onKeyUp={handleInputKeyUp}
@@ -175,7 +175,7 @@ export const TreeNode = ({
                 />
                 {preview &&
                   createPortal(
-                    <div className="bg-[#ebecf0] dark:bg-[#434343] h-max">
+                    <ul className="bg-[#ebecf0] dark:bg-[#434343]">
                       <TreeNode
                         node={{ ...node, childNodes: [] }}
                         onNodeUpdate={() => {}}
@@ -183,7 +183,7 @@ export const TreeNode = ({
                         horizontalPadding={0}
                         nodeOffset={0}
                       />
-                    </div>,
+                    </ul>,
                     preview
                   )}
               </>
@@ -192,7 +192,12 @@ export const TreeNode = ({
         </ContextMenu.Trigger>
         {!redacting && (
           <ContextMenu.Content>
-            <ContextMenu.Item label="Edit" onClick={() => setRedacting(true)} />
+            <ContextMenu.Item
+              label="Edit"
+              onClick={() => {
+                setRedacting(true);
+              }}
+            />
           </ContextMenu.Content>
         )}
       </ContextMenu.Root>

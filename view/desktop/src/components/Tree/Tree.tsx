@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useId, useState } from "react";
 
+import { cn } from "@/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import TestDropTarget from "../TestDropTarget";
 import { sortNodes } from "./sortNodes";
 import TreeNode from "./TreeNode";
 import { NodeProps, TreeProps } from "./types";
@@ -18,6 +20,10 @@ export const TreeContext = createContext<TreeContextProps>({
   dropSourceData: null,
   TreeId: "",
 });
+const isDescendant = (node: NodeProps, targetId: string | number): boolean => {
+  if (!node.childNodes) return false;
+  return node.childNodes.some((child) => child.id === targetId || isDescendant(child, targetId));
+};
 
 export const Tree = ({
   tree: initialTree,
@@ -52,8 +58,9 @@ export const Tree = ({
         };
       };
 
+      if (source.treeId === target.treeId && isDescendant(source.node, target.node.id)) return;
+
       if (source.treeId === target.treeId && source.node.id === target.node.id) return;
-      if (source.node.id === target.node.id) return;
 
       if (source.treeId === TreeId) {
         const removeNode = (nodes: NodeProps[], nodeId: string | number): NodeProps[] => {
@@ -104,6 +111,15 @@ export const Tree = ({
     return monitorForElements({
       onDropTargetChange: ({ location }) => {
         if (location.current?.dropTargets.length === 0) return;
+
+        if (
+          location.current?.dropTargets[0].data.depth === 0 &&
+          location.current?.dropTargets[0] &&
+          (location.current?.dropTargets[0].data as { node: NodeProps }).node.isFolder
+        ) {
+          setDropSourceData(location.current.dropTargets[0].data as { node: NodeProps; TreeId: string });
+          return;
+        }
 
         if (location.current?.dropTargets[0].data.depth === 0 && location.current?.dropTargets[0]) {
           setDropSourceData({ node: tree, TreeId: location.current?.dropTargets[0].data.TreeId as string });
