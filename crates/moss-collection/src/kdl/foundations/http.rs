@@ -2,10 +2,20 @@ use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Url {
     pub raw: Option<String>,
     pub host: Option<String>,
+}
+
+impl Url {
+    pub fn new(raw: String) -> Self {
+        // TODO: implement this
+        Self {
+            raw: Some(raw),
+            host: None,
+        }
+    }
 }
 
 impl Into<KdlNode> for Url {
@@ -187,10 +197,10 @@ impl Into<KdlNode> for HeaderOptions {
 
 #[derive(Clone, Debug, Default)]
 pub struct Request {
-    pub url: Option<Url>,
-    pub query_params: Option<HashMap<String, QueryParamBody>>,
-    pub path_params: Option<HashMap<String, PathParamBody>>,
-    pub headers: Option<HashMap<String, HeaderBody>>,
+    pub url: Option<Url>, // FIXME: doesn’t make sense to wrap it in Option
+    pub query_params: Option<HashMap<String, QueryParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
+    pub path_params: Option<HashMap<String, PathParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
+    pub headers: Option<HashMap<String, HeaderBody>>, // FIXME: doesn’t make sense to wrap it in Option
 }
 
 impl ToString for Request {

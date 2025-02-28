@@ -2,14 +2,17 @@ use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::AppService;
 use moss_fs::ports::FileSystem;
-use serde::Serialize;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
 use crate::{
     collection_handle::{CollectionHandle, CollectionState},
     indexing::CollectionIndexer,
-    models::{collection::CollectionRequestVariantEntry, storage::CollectionMetadataEntity},
+    models::{
+        collection::CollectionRequestVariantEntry,
+        operations::collection_operations::{CreateCollectionInput, OverviewCollectionOutput},
+        storage::CollectionMetadataEntity,
+    },
     request_handle::{RequestHandle, RequestState},
     storage::{CollectionMetadataStore, CollectionRequestSubstore},
 };
@@ -39,13 +42,6 @@ impl CollectionManager {
             indexer,
         })
     }
-}
-
-#[derive(Debug, Serialize)]
-pub struct CollectionOverview {
-    pub name: String,
-    pub path: PathBuf,
-    pub order: Option<usize>,
 }
 
 impl CollectionManager {
@@ -86,14 +82,8 @@ impl CollectionManager {
     }
 }
 
-pub struct CreateCollectionInput {
-    path: PathBuf,
-    name: String,
-    repo: Option<String>, // Url ?
-}
-
 impl CollectionManager {
-    pub async fn overview_collections(&self) -> Result<Vec<CollectionOverview>> {
+    pub async fn overview_collections(&self) -> Result<Vec<OverviewCollectionOutput>> {
         let collections = self.collections().await?;
 
         Ok(collections
@@ -101,7 +91,7 @@ impl CollectionManager {
             .map(|item| {
                 let item_state = item.state();
 
-                CollectionOverview {
+                OverviewCollectionOutput {
                     name: item_state.name.clone(),
                     path: item.key().clone(),
                     order: item_state.order,

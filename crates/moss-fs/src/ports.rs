@@ -1,5 +1,6 @@
 use anyhow::Result;
-use std::{io, path::Path};
+use futures::AsyncRead;
+use std::{io, path::Path, pin::Pin};
 use tokio::fs::ReadDir;
 
 #[derive(Copy, Clone, Default)]
@@ -29,6 +30,11 @@ pub trait FileSystem: Send + Sync {
     async fn rename(&self, source: &Path, target: &Path, options: RenameOptions) -> Result<()>;
 
     async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()>;
+    async fn create_file_with(
+        &self,
+        path: &Path,
+        content: Pin<&mut (dyn AsyncRead + Send)>,
+    ) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;
     async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>>;
 }

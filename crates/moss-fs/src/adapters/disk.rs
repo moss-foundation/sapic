@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
-use std::{io, path::Path};
-use tokio::fs::ReadDir;
+use std::{io, path::Path, pin::Pin};
+use tokio::{fs::ReadDir, io::AsyncRead};
 
 use crate::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
@@ -44,6 +44,16 @@ impl FileSystem for DiskFileSystem {
 
         open_options.open(path).await?;
 
+        Ok(())
+    }
+
+    async fn create_file_with(
+        &self,
+        path: &Path,
+        content: Pin<&mut (dyn AsyncRead + Send)>,
+    ) -> Result<()> {
+        let mut file = tokio::fs::File::create(&path).await?;
+        tokio::io::copy(content.get_mut(), &mut file).await?;
         Ok(())
     }
 

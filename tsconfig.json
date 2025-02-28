@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "crates/moss-collection"
+    },
+    {
       "path": "view/desktop"
     }
   ]
