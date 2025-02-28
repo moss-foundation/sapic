@@ -1,26 +1,24 @@
 use std::sync::Arc;
-
-use moss_git::GitAuthAgent;
 use url::Url;
-
+use moss_git::GitAuthAgent;
 use crate::GitHostingProvider;
 
-pub struct GitHubClient {
-    auth_agent: Arc<dyn GitAuthAgent>,
+pub struct HeadlessClient {
+    auth_agent: Arc<dyn GitAuthAgent>
 }
 
-impl GitHubClient {
+impl HeadlessClient {
     pub fn new(auth_agent: Arc<dyn GitAuthAgent>) -> Self {
         Self { auth_agent }
     }
 }
 
-impl GitHostingProvider for GitHubClient {
+impl GitHostingProvider for HeadlessClient {
     fn name(&self) -> Option<String> {
-        Some("GitHub".to_string())
+        None
     }
 
     fn base_url(&self) -> Option<Url> {
-        Some(Url::parse("https://github.com").unwrap())
+        None
     }
 }

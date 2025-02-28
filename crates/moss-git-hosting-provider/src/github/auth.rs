@@ -1,6 +1,6 @@
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
-use moss_git::ports::AuthAgent;
+use moss_git::{GitAuthAgent, TestStorage};
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
 use oauth2::{
@@ -14,7 +14,6 @@ use std::net::TcpListener;
 use std::string::ToString;
 use std::sync::Arc;
 
-use crate::TestStorage;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GitHubCred {
@@ -148,7 +147,7 @@ impl GitHubAuthAgent {
     }
 }
 
-impl AuthAgent for GitHubAuthAgent {
+impl GitAuthAgent for GitHubAuthAgent {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         if self.cred.read().is_none() {
             self.initial_auth()
@@ -186,36 +185,18 @@ mod github_tests {
 
     use std::path::{Path, PathBuf};
     use std::sync::Arc;
+    use moss_git::repo::RepoHandle;
 
-    // use crate::adapters::auth::ssh::SSHAgent;
-    // use crate::repo::RepoHandle;
-    use crate::TestStorage;
+    #[test]
+    fn cloning_with_oauth() -> Result<()> {
+        dotenv::dotenv().ok();
+        let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
+        let repo_path = Path::new("test-repo");
 
-    // Run cargo test cloning_with_https -- --nocapture
-    // #[test]
-    // fn cloning_with_https() {
-    //     // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
-    //     dotenv::dotenv().ok();
-    //     let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
-    //     let repo_path = Path::new("test-repo");
+        let auth_agent =
+            GitHubAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitHubAuthAgent::new()));
 
-    //     let auth_agent =
-    //         GitHubAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitHubAgent::new()));
-
-    //     let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
-    // }
-
-    // #[test]
-    // fn cloning_with_ssh() {
-    //     dotenv::dotenv().ok();
-    //     let repo_url = &dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
-    //     let repo_path = Path::new("test-repo");
-
-    //     let private = PathBuf::from(dotenv::var("GITHUB_SSH_PRIVATE").unwrap());
-    //     let public = PathBuf::from(dotenv::var("GITHUB_SSH_PUBLIC").unwrap());
-    //     let password = dotenv::var("GITHUB_SSH_PASSWORD").unwrap();
-
-    //     let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
-    //     let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
-    // }
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent)?;
+        Ok(())
+    }
 }
