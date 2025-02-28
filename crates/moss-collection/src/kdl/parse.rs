@@ -1,8 +1,8 @@
-use crate::adapters::kdl::foundations::http::{
-    HeaderBody, HeaderOptions, HttpMethod, PathParamBody, PathParamOptions, QueryParamBody,
-    QueryParamOptions, Request, Url,
+use crate::kdl::foundations::http::{
+    HeaderBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
+    QueryParamOptions, Url,
 };
-use crate::adapters::kdl::tokens::*;
+use crate::kdl::tokens::*;
 use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
@@ -69,27 +69,6 @@ macro_rules! kdl_get_arg_as_helper {
             .and_then(|kdl_value| kdl_value.$conversion())
     };
 }
-
-// fn parse_metadata_node(node: &KdlNode) -> Result<Metadata> {
-//     if let Some(document) = node.children() {
-//         Ok(Metadata {
-//             order: kdl_get_arg_as_integer!(document, "order")
-//                 .and_then(|value| Some(value as usize)),
-//             method: kdl_get_arg_as_str!(document, "method")
-//                 .and_then(|value| match value {
-//                     "GET" => Some(HttpMethod::Get),
-//                     "POST" => Some(HttpMethod::Post),
-//                     _ => Some(HttpMethod::default()),
-//                 })
-//                 .unwrap_or_default(),
-//         })
-//     } else {
-//         Ok(Metadata {
-//             order: None,
-//             method: HttpMethod::default(),
-//         })
-//     }
-// }
 
 fn parse_url_node(node: &KdlNode) -> Result<Url> {
     if let Some(document) = node.children() {
@@ -240,15 +219,12 @@ fn parse_header_options(node: &KdlNode) -> Result<HeaderOptions> {
     }
 }
 
-pub fn parse(input: &str) -> Result<Request> {
+pub fn parse(input: &str) -> Result<HttpRequestFile> {
     let document: KdlDocument = input.parse()?;
-    let mut request = Request::default();
+    let mut request = HttpRequestFile::default();
 
     for node in document {
         match node.name().to_string().as_str() {
-            // METADATA_LIT => {
-            //     request.metadata = Some(parse_metadata_node(&node)?);
-            // }
             URL_LIT => {
                 request.url = Some(parse_url_node(&node)?);
             }
@@ -276,14 +252,12 @@ pub fn parse(input: &str) -> Result<Request> {
         }
     }
 
-    // dbg!(request);
-
     Ok(request)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::adapters::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
+    use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
     use kdl::{KdlDocument, KdlNode};
     use miette::{Diagnostic, NamedSource, SourceSpan};
     use std::fs;

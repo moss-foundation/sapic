@@ -79,6 +79,26 @@ importers:
         specifier: ^6.0.3
         version: 6.1.0(@types/node@22.13.1)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0)
 
+  crates/moss-collection:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.3
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
+  crates/moss-text:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.3
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   packages/config-eslint:
     devDependencies:
       '@typescript-eslint/rule-tester':

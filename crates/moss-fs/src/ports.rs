@@ -8,16 +8,34 @@ pub struct RemoveOptions {
     pub ignore_if_not_exists: bool,
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub struct CreateOptions {
     pub overwrite: bool,
     pub ignore_if_exists: bool,
 }
 
-#[derive(Copy, Clone, Default)]
+impl Default for CreateOptions {
+    fn default() -> Self {
+        Self {
+            overwrite: true,
+            ignore_if_exists: false,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
 pub struct RenameOptions {
     pub overwrite: bool,
     pub ignore_if_exists: bool,
+}
+
+impl Default for RenameOptions {
+    fn default() -> Self {
+        Self {
+            overwrite: true,
+            ignore_if_exists: false,
+        }
+    }
 }
 
 #[async_trait::async_trait]
@@ -29,6 +47,12 @@ pub trait FileSystem: Send + Sync {
     async fn rename(&self, source: &Path, target: &Path, options: RenameOptions) -> Result<()>;
 
     async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()>;
+    async fn create_file_with(
+        &self,
+        path: &Path,
+        content: String,
+        options: CreateOptions,
+    ) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;
     async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>>;
 }

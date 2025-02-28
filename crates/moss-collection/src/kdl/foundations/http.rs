@@ -1,27 +1,21 @@
-use crate::adapters::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
+use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Default)]
-pub enum HttpMethod {
-    Post,
-    Put,
-    #[default]
-    Get,
-    Delete,
-}
-
-// #[derive(Debug)]
-// pub struct Metadata {
-//     pub order: Option<usize>,
-//     pub method: HttpMethod,
-// }
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Url {
     pub raw: Option<String>,
     pub host: Option<String>,
+}
+
+impl Url {
+    pub fn new(raw: String) -> Self {
+        // TODO: implement this
+        Self {
+            raw: Some(raw),
+            host: None,
+        }
+    }
 }
 
 impl Into<KdlNode> for Url {
@@ -45,7 +39,7 @@ impl Into<KdlNode> for Url {
 
 #[derive(Clone, Debug, Default)]
 pub struct QueryParamBody {
-    pub value: Option<KdlValue>,
+    pub value: Option<KdlValue>, // FIXME: doesn’t make sense to wrap it in Option
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
@@ -202,20 +196,17 @@ impl Into<KdlNode> for HeaderOptions {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Request {
-    // pub metadata: Option<Metadata>,
-    pub url: Option<Url>,
-    pub query_params: Option<HashMap<String, QueryParamBody>>,
-    pub path_params: Option<HashMap<String, PathParamBody>>,
-    pub headers: Option<HashMap<String, HeaderBody>>,
+pub struct HttpRequestFile {
+    pub url: Option<Url>, // FIXME: doesn’t make sense to wrap it in Option
+    pub query_params: Option<HashMap<String, QueryParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
+    pub path_params: Option<HashMap<String, PathParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
+    pub headers: Option<HashMap<String, HeaderBody>>, // FIXME: doesn’t make sense to wrap it in Option
 }
 
-impl ToString for Request {
+impl ToString for HttpRequestFile {
     fn to_string(&self) -> String {
         let mut document = KdlDocument::new();
-        let mut nodes = document.nodes_mut();
-        // let metadata_node: KdlNode = self.metadata.into();
-        // nodes.push(metadata_node);
+        let nodes = document.nodes_mut();
         if let Some(url) = &self.url {
             let url_node: KdlNode = url.clone().into();
             nodes.push(url_node);
