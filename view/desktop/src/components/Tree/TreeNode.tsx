@@ -25,7 +25,8 @@ export const TreeNode = ({
   const paddingRight = `${horizontalPadding}px`;
 
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const treeRef = useRef<HTMLLIElement>(null);
+  const treeLiRef = useRef<HTMLLIElement>(null);
+  const treeUlRef = useRef<HTMLUListElement>(null);
 
   const { redacting, setRedacting, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRedacting(
     node,
@@ -73,40 +74,75 @@ export const TreeNode = ({
   }, [TreeContextValues.TreeId, node]);
 
   useEffect(() => {
-    const element = treeRef.current;
+    const element = treeUlRef.current || treeLiRef.current;
 
     if (!element) return;
 
     return dropTargetForElements({
       element,
+      getData: () => ({ node, TreeId: TreeContextValues.TreeId, depth }),
       onDrop: ({ source }) => {
         if (
-          TreeContextValues.TreeId === TreeContextValues.dropTargetData?.TreeId &&
-          TreeContextValues.dropTargetData?.node?.id === node.id
+          TreeContextValues.TreeId === TreeContextValues.dropSourceData?.TreeId &&
+          TreeContextValues.dropSourceData?.node?.id === node.id
         ) {
           const sourceNode = source.data.node as NodeProps;
           if (node.childNodes.some(({ id }) => id === sourceNode.id)) {
             return;
           }
-          onNodeUpdate({
-            ...node,
-            childNodes: [...node.childNodes, sourceNode],
-          });
+
+          window.dispatchEvent(
+            new CustomEvent("moveTreeNode", {
+              detail: {
+                source: {
+                  treeId: source.data.TreeId,
+                  node: sourceNode,
+                },
+                target: {
+                  treeId: TreeContextValues.TreeId,
+                  node,
+                },
+              },
+            })
+          );
         }
       },
-      getData: () => ({ node, TreeId: TreeContextValues.TreeId }),
     });
-  }, [TreeContextValues.TreeId, TreeContextValues.dropTargetData, node, onNodeUpdate]);
+  }, [TreeContextValues.TreeId, TreeContextValues.dropSourceData, depth, node, onNodeUpdate]);
+
+  if (node.id === "root") {
+    return (
+      <ul
+        ref={treeUlRef}
+        className={cn("w-full select-none", {
+          "bg-[#ebecf0] dark:bg-[#434343]":
+            TreeContextValues.dropSourceData?.node?.id === node.id &&
+            TreeContextValues.TreeId === TreeContextValues.dropSourceData?.TreeId,
+        })}
+      >
+        <RecursiveTree
+          nodes={node.childNodes}
+          onChildNodesUpdate={handleChildNodesUpdate}
+          onNodeUpdate={onNodeUpdate}
+          onNodeExpand={onNodeExpand}
+          onNodeCollapse={onNodeCollapse}
+          depth={depth}
+          horizontalPadding={horizontalPadding}
+          nodeOffset={nodeOffset}
+        />
+      </ul>
+    );
+  }
 
   return (
     <li
       key={node.id}
       className={cn("w-full select-none", {
         "bg-[#ebecf0] dark:bg-[#434343]":
-          TreeContextValues.dropTargetData?.node?.id === node.id &&
-          TreeContextValues.TreeId === TreeContextValues.dropTargetData?.TreeId,
+          TreeContextValues.dropSourceData?.node?.id === node.id &&
+          TreeContextValues.TreeId === TreeContextValues.dropSourceData?.TreeId,
       })}
-      ref={treeRef}
+      ref={treeLiRef}
     >
       {redacting ? (
         <div
@@ -135,7 +171,7 @@ export const TreeNode = ({
               ref={buttonRef}
             >
               {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
-              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.name}</span>
+              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
               <ChevronRightIcon
                 className={cn("ml-auto min-w-4 min-h-4", {
                   "rotate-90": node.isExpanded,
@@ -161,16 +197,18 @@ export const TreeNode = ({
         </ContextMenu.Root>
       )}
       {node.childNodes && node.isExpanded && (
-        <RecursiveTree
-          nodes={node.childNodes}
-          onChildNodesUpdate={handleChildNodesUpdate}
-          onNodeUpdate={onNodeUpdate}
-          onNodeExpand={onNodeExpand}
-          onNodeCollapse={onNodeCollapse}
-          depth={depth + 1}
-          horizontalPadding={horizontalPadding}
-          nodeOffset={nodeOffset}
-        />
+        <ul>
+          <RecursiveTree
+            nodes={node.childNodes}
+            onChildNodesUpdate={handleChildNodesUpdate}
+            onNodeUpdate={onNodeUpdate}
+            onNodeExpand={onNodeExpand}
+            onNodeCollapse={onNodeCollapse}
+            depth={depth + 1}
+            horizontalPadding={horizontalPadding}
+            nodeOffset={nodeOffset}
+          />
+        </ul>
       )}
     </li>
   );

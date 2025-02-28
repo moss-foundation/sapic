@@ -17,11 +17,10 @@ export const RecursiveTree = ({
 
     onNodeUpdate?.(updatedNode);
     onChildNodesUpdate?.(newTreeItems);
-    onTreeUpdate?.(newTreeItems);
   };
 
   return (
-    <ul>
+    <>
       {nodes.map((node) => (
         <TreeNode
           key={node.id}
@@ -34,7 +33,7 @@ export const RecursiveTree = ({
           nodeOffset={nodeOffset}
         />
       ))}
-    </ul>
+    </>
   );
 };
 

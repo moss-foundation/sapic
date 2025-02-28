@@ -1,88 +1,87 @@
 {
-  "items": [
-    {
-      "id": "view",
-      "name": "view",
-      "order": 1,
-      "type": "folder",
-      "isFolder": true,
-      "isExpanded": false,
-      "childNodes": [
-        {
-          "id": "desktop",
-          "name": "desktop",
-          "order": 1,
-          "type": "folder",
-          "isFolder": true,
-          "isExpanded": false,
-          "childNodes": [
-            {
-              "id": "firstChildOfChild",
-              "name": "file1",
-              "order": 1,
-              "type": "file",
-              "isFolder": false,
-              "isExpanded": false,
-              "childNodes": []
-            },
-            {
-              "id": "secondChildOfChild",
-              "name": "file2",
-              "order": 2,
-              "type": "file",
-              "isFolder": false,
-              "isExpanded": false,
-              "childNodes": []
-            },
-            {
-              "id": "yetAnotherFolder",
-              "name": "yetAnotherFolder",
-              "order": 3,
-              "type": "folder",
-              "isFolder": true,
-              "isExpanded": false,
-              "childNodes": [
-                {
-                  "id": "thirdChildOfChild",
-                  "name": "file3",
-                  "order": 1,
-                  "type": "file",
-                  "isFolder": false,
-                  "isExpanded": false,
-                  "childNodes": []
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "secondChildOfFirstItem",
-          "name": "config file",
-          "order": 2,
-          "type": "file",
-          "isFolder": false,
-          "isExpanded": false,
-          "childNodes": []
-        }
-      ]
-    },
-    {
-      "id": "secondItem",
-      "name": "somefile.xtx",
-      "order": 2,
-      "type": "file",
-      "isFolder": false,
-      "isExpanded": false,
-      "childNodes": []
-    },
-    {
-      "id": "thirdItem",
-      "name": "anotherFile.qwe",
-      "order": 3,
-      "type": "file",
-      "isFolder": false,
-      "isExpanded": false,
-      "childNodes": []
-    }
-  ]
+  "tree": {
+    "id": "root",
+    "order": 1,
+    "type": "folder",
+    "isFolder": true,
+    "isExpanded": true,
+
+    "childNodes": [
+      {
+        "id": "view",
+        "order": 1,
+        "type": "folder",
+        "isFolder": true,
+        "isExpanded": false,
+        "childNodes": [
+          {
+            "id": "desktop",
+            "order": 1,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": false,
+            "childNodes": [
+              {
+                "id": "file1",
+                "order": 1,
+                "type": "file",
+                "isFolder": false,
+                "isExpanded": false,
+                "childNodes": []
+              },
+              {
+                "id": "file2",
+                "order": 2,
+                "type": "file",
+                "isFolder": false,
+                "isExpanded": false,
+                "childNodes": []
+              },
+              {
+                "id": "yetAnotherFolder",
+                "order": 3,
+                "type": "folder",
+                "isFolder": true,
+                "isExpanded": false,
+                "childNodes": [
+                  {
+                    "id": "file3",
+                    "order": 1,
+                    "type": "file",
+                    "isFolder": false,
+                    "isExpanded": false,
+                    "childNodes": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "config file",
+            "order": 2,
+            "type": "file",
+            "isFolder": false,
+            "isExpanded": false,
+            "childNodes": []
+          }
+        ]
+      },
+      {
+        "id": "somefile.xtx",
+        "order": 2,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": false,
+        "childNodes": []
+      },
+      {
+        "id": "anotherFile.qwe",
+        "order": 3,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": false,
+        "childNodes": []
+      }
+    ]
+  }
 }

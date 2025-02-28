@@ -167,14 +167,14 @@ export default App;
 const IsolatedTreeComponent = () => {
   return (
     <>
-      <Tree nodes={TestTreeData.items} />
+      <Tree tree={TestTreeData.tree} />
       {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
         <pre>
           <code>{JSON.stringify(treeItems, null, 2)}</code>
         </pre>
       </div> */}
       <hr />
-      <Tree nodes={TestTreeData.items} />
+      <Tree tree={TestTreeData.tree} />
       <div>{Math.random().toFixed(2)}</div>
 
       {/* <table>
