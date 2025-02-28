@@ -104,7 +104,7 @@ export const Tree = ({
   useEffect(() => {
     return monitorForElements({
       onDropTargetChange: ({ location }) => {
-        if (location.current?.dropTargets[0].data.depth === 0) {
+        if (location.current?.dropTargets[0].data.depth === 0 && location.current?.dropTargets[0]) {
           setDropSourceData({ node: tree, TreeId: location.current?.dropTargets[0].data.TreeId as string });
           return;
         }
