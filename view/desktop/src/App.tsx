@@ -5,6 +5,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import TestTreeData from "./assets/testTreeData.json";
 import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
+import TestDropTarget from "./components/TestDropTarget";
 import { NodeProps } from "./components/Tree/types";
 import { swapObjectsById } from "./utils";
 
@@ -157,7 +158,7 @@ function App() {
         </button>
       </div>
 
-      {/* <TestDropTarget /> */}
+      <TestDropTarget />
     </div>
   );
 }
