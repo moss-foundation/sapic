@@ -4,13 +4,13 @@ use git2::{IndexAddOption, IntoCString, PushOptions, RemoteCallbacks, Repository
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::ports::AuthAgent;
+use crate::GitAuthAgent;
 
 pub struct RepoHandle {
     // FIXME: Is it necessary to store the url of the repo?
     url: Option<String>,
     path: PathBuf,
-    auth_agent: Arc<dyn AuthAgent>,
+    auth_agent: Arc<dyn GitAuthAgent>,
     // public for easier testing
     pub repo: Repository,
 }
@@ -20,7 +20,7 @@ pub struct RepoHandle {
 
 // TODO: Use callback to return/display progress
 impl RepoHandle {
-    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<RepoHandle> {
+    pub fn clone(url: &str, path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let mut callbacks = RemoteCallbacks::new();
         auth_agent.generate_callback(&mut callbacks)?;
 
@@ -39,7 +39,7 @@ impl RepoHandle {
         })
     }
 
-    pub fn open(path: &Path, auth_agent: Arc<dyn AuthAgent>) -> Result<RepoHandle> {
+    pub fn open(path: &Path, auth_agent: Arc<dyn GitAuthAgent>) -> Result<RepoHandle> {
         let repo = Repository::open(path)?;
         // FIXME: This assumes that the remote's name is `origin`
         // Is there a better way to get the url of a local repo?
@@ -272,14 +272,33 @@ impl RepoHandle {
 
 #[cfg(test)]
 mod test {
-    use git2::{IndexAddOption, Signature};
+    use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::path::Path;
     use std::sync::Arc;
     use std::time::SystemTime;
-
-    use crate::adapters::auth::oauth::OAuthAgent;
+    use crate::GitAuthAgent;
     use crate::repo::RepoHandle;
-    use crate::TestStorage;
+
+    // This is so that we don't have circular dependency on git-hosting-provider when testing repo
+    struct TestAuthAgent {}
+    impl GitAuthAgent for TestAuthAgent {
+        fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> anyhow::Result<()> {
+            dotenv::dotenv().ok();
+            let public_key = dotenv::var("GITHUB_SSH_PUBLIC")?;
+            let private_key = dotenv::var("GITHUB_SSH_PRIVATE")?;
+            let password = dotenv::var("GITHUB_SSH_PASSWORD")?;
+
+            cb.credentials(move |_url, username_from_url, _allowed_types| {
+                Cred::ssh_key(
+                    "git",
+                    Some(public_key.as_ref()),
+                    private_key.as_ref(),
+                    Some(&password),
+                )
+            });
+            Ok(())
+        }
+    }
 
     // cargo test test_clone_add_commit_push -- --nocapture
     #[test]
@@ -287,11 +306,10 @@ mod test {
         // TODO: Support verified signed commits using `gpg`
         // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
         // https://users.rust-lang.org/t/how-to-use-git2-push-correctly/97202/6
-        let repo_url = dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
+        let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
+        let mut auth_agent = Arc::new(TestAuthAgent{});
 
         let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
@@ -317,11 +335,10 @@ mod test {
 
     #[test]
     fn test_open_fetch_pull() {
-        let repo_url = dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
+        let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent =
-            OAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(OAuthAgent::github()));
+        let mut auth_agent = Arc::new(TestAuthAgent{});
 
         let repo = RepoHandle::open(repo_path, auth_agent).unwrap();
 
