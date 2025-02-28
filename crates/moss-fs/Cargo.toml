@@ -7,4 +7,3 @@ edition = "2021"
 async-trait.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
-futures.workspace = true

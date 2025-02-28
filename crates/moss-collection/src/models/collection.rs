@@ -27,7 +27,7 @@ impl TryFrom<&str> for RequestType {
             "post" => Ok(Self::Http(HttpRequestType::Post)),
             "get" => Ok(Self::Http(HttpRequestType::Get)),
             "put" => Ok(Self::Http(HttpRequestType::Put)),
-            "delete" => Ok(Self::Http(HttpRequestType::Delete)),
+            "del" => Ok(Self::Http(HttpRequestType::Delete)),
 
             "ws" => Ok(Self::WebSocket),
             "gql" => Ok(Self::GraphQL),

@@ -39,7 +39,7 @@ impl Into<KdlNode> for Url {
 
 #[derive(Clone, Debug, Default)]
 pub struct QueryParamBody {
-    pub value: Option<KdlValue>,
+    pub value: Option<KdlValue>, // FIXME: doesn’t make sense to wrap it in Option
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
@@ -196,14 +196,14 @@ impl Into<KdlNode> for HeaderOptions {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Request {
+pub struct HttpRequestFile {
     pub url: Option<Url>, // FIXME: doesn’t make sense to wrap it in Option
     pub query_params: Option<HashMap<String, QueryParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
     pub path_params: Option<HashMap<String, PathParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
     pub headers: Option<HashMap<String, HeaderBody>>, // FIXME: doesn’t make sense to wrap it in Option
 }
 
-impl ToString for Request {
+impl ToString for HttpRequestFile {
     fn to_string(&self) -> String {
         let mut document = KdlDocument::new();
         let nodes = document.nodes_mut();

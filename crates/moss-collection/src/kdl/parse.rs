@@ -1,6 +1,6 @@
 use crate::kdl::foundations::http::{
-    HeaderBody, HeaderOptions, PathParamBody, PathParamOptions, QueryParamBody, QueryParamOptions,
-    Request, Url,
+    HeaderBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
+    QueryParamOptions, Url,
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
@@ -219,9 +219,9 @@ fn parse_header_options(node: &KdlNode) -> Result<HeaderOptions> {
     }
 }
 
-pub fn parse(input: &str) -> Result<Request> {
+pub fn parse(input: &str) -> Result<HttpRequestFile> {
     let document: KdlDocument = input.parse()?;
-    let mut request = Request::default();
+    let mut request = HttpRequestFile::default();
 
     for node in document {
         match node.name().to_string().as_str() {
