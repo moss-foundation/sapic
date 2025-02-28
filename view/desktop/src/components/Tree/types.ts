@@ -1,6 +1,6 @@
 export interface TreeProps {
   tree: NodeProps;
-  onNodeUpdate?: (node: NodeProps) => void;
+  onNodeUpdate?: (node: NodeProps, oldId?: string | number) => void;
   onNodeExpand?: (node: NodeProps) => void;
   onNodeCollapse?: (node: NodeProps) => void;
   onTreeUpdate?: (nodes: NodeProps) => void;
@@ -13,7 +13,7 @@ export interface TreeProps {
 
 export interface RecursiveTreeProps {
   nodes: NodeProps[];
-  onNodeUpdate?: (node: NodeProps) => void;
+  onNodeUpdate?: (node: NodeProps, oldId?: string | number) => void;
   onChildNodesUpdate?: (nodes: NodeProps[]) => void;
   onNodeExpand?: (node: NodeProps) => void;
   onNodeCollapse?: (node: NodeProps) => void;
@@ -25,7 +25,7 @@ export interface RecursiveTreeProps {
 
 export interface TreeNodeProps {
   node: NodeProps;
-  onNodeUpdate: (node: NodeProps) => void;
+  onNodeUpdate: (node: NodeProps, oldId?: string | number) => void;
   onNodeExpand?: (node: NodeProps) => void;
   onNodeCollapse?: (node: NodeProps) => void;
   depth: number;

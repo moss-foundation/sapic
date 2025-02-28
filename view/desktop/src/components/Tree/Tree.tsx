@@ -52,8 +52,6 @@ export const Tree = ({
         };
       };
 
-      console.log("onDropTargetChange", source, target);
-
       if (source.treeId === target.treeId && source.node.id === target.node.id) return;
       if (source.node.id === target.node.id) return;
 
@@ -104,6 +102,8 @@ export const Tree = ({
   useEffect(() => {
     return monitorForElements({
       onDropTargetChange: ({ location }) => {
+        if (location.current?.dropTargets.length === 0) return;
+
         if (location.current?.dropTargets[0].data.depth === 0 && location.current?.dropTargets[0]) {
           setDropSourceData({ node: tree, TreeId: location.current?.dropTargets[0].data.TreeId as string });
           return;
@@ -128,12 +128,7 @@ export const Tree = ({
     });
   }, [TreeContextValues.dropSourceData, TreeId, tree]);
 
-  // const handleTreeUpdate = (updatedTree: NodeProps[]) => {
-  //   setTree(updatedTree);
-  //   onTreeUpdate?.(updatedTree);
-  // };
-
-  const hanldeOnNodeUpdate = (node: NodeProps) => {
+  const handleOnNodeUpdate = (node: NodeProps) => {
     setTree(node);
     onNodeUpdate?.(node);
     onTreeUpdate?.(node);
@@ -144,7 +139,7 @@ export const Tree = ({
       <TreeContext.Provider value={{ dropSourceData, TreeId }}>
         <TreeNode
           node={tree}
-          onNodeUpdate={hanldeOnNodeUpdate}
+          onNodeUpdate={handleOnNodeUpdate}
           onNodeExpand={onNodeExpand}
           onNodeCollapse={onNodeCollapse}
           depth={0}

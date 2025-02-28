@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { NodeProps } from "./types";
 
-export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps) => void) => {
+export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps, oldId?: string | number) => void) => {
   const [redacting, setRedacting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -21,9 +21,9 @@ export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps
   const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
     if ("preventDefault" in e) e.preventDefault();
 
-    const newName = inputRef.current?.value.trim();
-    if (newName && newName !== node.name) {
-      onNodeUpdate({ ...node, name: newName });
+    const newId = inputRef.current?.value.trim();
+    if (newId && newId !== node.id) {
+      onNodeUpdate({ ...node, id: newId, }, node.id);
     }
     setRedacting(false);
   };
@@ -31,11 +31,11 @@ export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps
   useEffect(() => {
     if (redacting && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.value = node.name;
+      inputRef.current.value = String(node.id);
       const dotIndex = inputRef.current.value.indexOf(".");
-      inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : node.name.length);
+      inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : String(node.id).length);
     }
-  }, [redacting, node.name]);
+  }, [redacting, node.id]);
 
   return {
     redacting,
