@@ -13,7 +13,10 @@ export const RecursiveTree = ({
   nodeOffset,
 }: RecursiveTreeProps) => {
   const handleNodeUpdate = (updatedNode: NodeProps, oldId?: string | number) => {
-    const newTreeItems = nodes.map((node) => (node.id === oldId ? updatedNode : node));
+    let newTreeItems: NodeProps[] = [];
+
+    if (oldId) newTreeItems = nodes.map((node) => (node.id === oldId ? updatedNode : node));
+    else newTreeItems = nodes.map((node) => (node.id === updatedNode.id ? updatedNode : node));
 
     onNodeUpdate?.(updatedNode);
     onChildNodesUpdate?.(newTreeItems);

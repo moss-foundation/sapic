@@ -176,23 +176,6 @@ const IsolatedTreeComponent = () => {
       <hr />
       <Tree tree={TestTreeData.tree} />
       <div>{Math.random().toFixed(2)}</div>
-
-      {/* <table>
-        <tbody>
-          <tr>
-            <th>lastUpdatedNode</th>
-            <td>{lastUpdatedNode}</td>
-          </tr>
-          <tr>
-            <th>lastExpandedNode</th>
-            <td>{lastExpandedNode}</td>
-          </tr>
-          <tr>
-            <th>lastCollapsedNode</th>
-            <td>{lastCollapsedNode}</td>
-          </tr>
-        </tbody>
-      </table> */}
     </>
   );
 };
