@@ -2,3 +2,4 @@ packages:
   - "crates/*"
   - "view/*"
   - "packages/*"
+  - "view/desktop/src/lib/*"

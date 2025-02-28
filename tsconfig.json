@@ -6,6 +6,9 @@
     },
     {
       "path": "view/desktop"
+    },
+    {
+      "path": "packages/moss-tabs"
     }
   ]
 }
