@@ -1,4 +1,3 @@
-import { table } from "console";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/utils";
@@ -27,11 +26,7 @@ export const TestDropTarget = () => {
 
       onDragEnter({ self, source, location }) {
         // console.log("onDragEnter", { self, source, location });
-        if (source.data.type === "Tab") {
-          setDropAllowance(true);
-        } else {
-          setDropAllowance(false);
-        }
+        setDropAllowance(true);
       },
       onDrag({ self, source, location }) {
         // console.log("onDrag", { self, source, location });
@@ -54,7 +49,6 @@ export const TestDropTarget = () => {
       ref={ref}
       className={cn("absolute h-full w-[500px] inset-x-100  bg-amber-300", {
         "bg-amber-500": dropAllowance === null,
-        "bg-red-600": dropAllowance === false,
         "bg-green-600": dropAllowance === true,
       })}
     >
