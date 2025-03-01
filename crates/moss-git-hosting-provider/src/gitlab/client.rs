@@ -31,3 +31,59 @@ impl GitHostingProvider for GitLabClient {
         Url::parse("https://gitlab.com").unwrap()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Result;
+    use git2::RemoteCallbacks;
+
+    use super::*;
+
+    struct DummyGitLabAuthAgent;
+
+    impl GitAuthAgent for DummyGitLabAuthAgent {
+        fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
+            Ok(())
+        }
+    }
+    impl GitLabAuthAgent for DummyGitLabAuthAgent {}
+
+    struct DummySHHAuthAgent;
+
+    impl GitAuthAgent for DummySHHAuthAgent {
+        fn generate_callback<'a>(&'a self, _cb: &mut RemoteCallbacks<'a>) -> Result<()> {
+            Ok(())
+        }
+    }
+    impl SHHAuthAgent for DummySHHAuthAgent {}
+
+    #[test]
+    fn test_gitlab_client_name() {
+        let client_auth_agent = DummyGitLabAuthAgent;
+        let ssh_auth_agent: Option<DummySHHAuthAgent> = None;
+        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+
+        assert_eq!(client.name(), "GitLab");
+    }
+
+    #[test]
+    fn test_gitlab_client_base_url() {
+        let client_auth_agent = DummyGitLabAuthAgent;
+        let ssh_auth_agent: Option<DummySHHAuthAgent> = None;
+        let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
+        let expected_url = Url::parse("https://gitlab.com").unwrap();
+
+        assert_eq!(client.base_url(), expected_url);
+    }
+
+    #[test]
+    fn test_gitlab_client_with_ssh_auth_agent() {
+        let client_auth_agent = DummyGitLabAuthAgent;
+        let ssh_agent = DummySHHAuthAgent;
+        let client = GitLabClient::new(client_auth_agent, Some(ssh_agent));
+
+        assert_eq!(client.name(), "GitLab");
+        let expected_url = Url::parse("https://gitlab.com").unwrap();
+        assert_eq!(client.base_url(), expected_url);
+    }
+}
