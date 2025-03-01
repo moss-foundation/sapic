@@ -1,13 +1,9 @@
-use anyhow::Result;
-use kdl::KdlValue;
-use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use parking_lot::RwLock;
-use patricia_tree::PatriciaMap;
-use serde_json::Value as JsonValue;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
-use thiserror::Error;
+use crate::kdl::foundations::http::{HeaderOptions, PathParamOptions};
+use crate::request_handle::RequestState;
 use crate::{
-    kdl::foundations::http::{HttpRequestFile, QueryParamBody, QueryParamOptions, Url},
+    kdl::foundations::http::{
+        HeaderBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url,
+    },
     models::{
         operations::collection_operations::{
             CreateRequestInput, CreateRequestProtocolSpecificPayload,
@@ -17,21 +13,20 @@ use crate::{
     request_handle::RequestHandle,
     storage::CollectionRequestSubstore,
 };
-use crate::models::collection::RequestType;
-use crate::request_handle::RequestState;
+use anyhow::Result;
+use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use parking_lot::RwLock;
+use patricia_tree::PatriciaMap;
+use serde_json::Value as JsonValue;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use thiserror::Error;
 
 #[derive(Clone, Debug, Error)]
 pub enum RequestOperationError {
     #[error("A request named {name} already exists in {path}")]
-    DuplicateName{
-        path: PathBuf,
-        name: String
-    },
+    DuplicateName { path: PathBuf, name: String },
     #[error("The request named {name} does not exist in {path}")]
-    NonexistentRequest{
-        path: PathBuf,
-        name: String
-    }
+    NonexistentRequest { path: PathBuf, name: String },
 }
 
 pub(crate) struct CollectionState {
@@ -54,10 +49,7 @@ impl CollectionState {
         read_guard.contains_key(key.as_ref())
     }
 
-    pub fn get_request_handle(
-        &self,
-        key: impl AsRef<[u8]>,
-    ) -> Option<Arc<RequestHandle>> {
+    pub fn get_request_handle(&self, key: impl AsRef<[u8]>) -> Option<Arc<RequestHandle>> {
         let key = key.as_ref();
         let read_guard = self.requests.read();
         if let Some(entry) = read_guard.get(key) {
@@ -87,7 +79,11 @@ impl CollectionState {
         entry
     }
 
-    pub fn insert_request_handle(&self, key: impl AsRef<[u8]>, handle: RequestHandle) -> Result<()> {
+    pub fn insert_request_handle(
+        &self,
+        key: impl AsRef<[u8]>,
+        handle: RequestHandle,
+    ) -> Result<()> {
         let mut write_guard = self.requests.write();
         write_guard.insert(key.as_ref(), Arc::new(handle));
         Ok(())
@@ -97,7 +93,7 @@ impl CollectionState {
         &self,
         old_key: impl AsRef<[u8]>,
         new_key: impl AsRef<[u8]>,
-        new_name: &str
+        new_name: &str,
     ) -> Result<()> {
         let mut write_guard = self.requests.write();
         let old_handle = write_guard.remove(old_key.as_ref()).unwrap();
@@ -109,7 +105,7 @@ impl CollectionState {
                 order: old_handle.state.order,
                 typ: old_handle.state.typ.clone(),
                 variants: RwLock::new(variants),
-            }
+            },
         );
 
         write_guard.insert(new_key, Arc::new(new_handle));
@@ -127,6 +123,24 @@ pub struct CollectionHandle {
     fs: Arc<dyn FileSystem>,
     store: Arc<dyn CollectionRequestSubstore>,
     state: Arc<CollectionState>,
+}
+
+fn transform_jsonvalue(value: &JsonValue) -> Option<String> {
+    // FIXME: Should we accommodate JSONValue::Array/Object?
+    match value {
+        JsonValue::Null => Some("".to_string()),
+        JsonValue::Bool(value) => Some(value.to_string()),
+        JsonValue::Number(value) => Some(value.to_string()),
+        JsonValue::String(value) => Some(value.to_string()),
+        JsonValue::Array(_) => {
+            None
+            // TODO: Invalid type, logging
+        }
+        JsonValue::Object(_) => {
+            None
+            // TODO: Invalid type, logging
+        }
+    }
 }
 
 impl CollectionHandle {
@@ -163,10 +177,7 @@ impl CollectionHandle {
         let request_dir = path.join(format!("{}.request", name));
         let key = request_dir.to_string_lossy().to_string();
         if self.state.contains(&key) {
-            return Err(RequestOperationError::DuplicateName {
-                path,
-                name,
-            }.into())
+            return Err(RequestOperationError::DuplicateName { path, name }.into());
         }
 
         self.fs.create_dir(&request_dir).await?;
@@ -175,42 +186,66 @@ impl CollectionHandle {
             Some(CreateRequestProtocolSpecificPayload::Http {
                 method,
                 query_params,
+                path_params,
+                headers,
             }) => {
                 let mut transformed_query_params = HashMap::new();
                 for item in &query_params {
-                    let value = match &item.value {
-                        JsonValue::Null => "".to_string(),
-                        JsonValue::Bool(value) => value.to_string(),
-                        JsonValue::Number(value) => value.to_string(),
-                        JsonValue::String(value) => value.to_string(),
-                        JsonValue::Array(_) => {
-                            // TODO: Invalid type, logging
-                            continue;
-                        }
-                        JsonValue::Object(_) => {
-                            // TODO: Invalid type, logging
-                            continue;
-                        }
-                    };
-
-                    transformed_query_params.insert(
-                        item.key.clone(),
-                        QueryParamBody {
-                            value,
-                            desc: item.desc.clone(),
-                            order: item.order,
-                            disabled: item.disabled,
-                            options: QueryParamOptions {
-                                propagate: item.options.propagate,
+                    if let Some(value) = transform_jsonvalue(&item.value) {
+                        transformed_query_params.insert(
+                            item.key.clone(),
+                            QueryParamBody {
+                                value,
+                                desc: item.desc.clone(),
+                                order: item.order,
+                                disabled: item.disabled,
+                                options: QueryParamOptions {
+                                    propagate: item.options.propagate,
+                                },
                             },
-                        },
-                    );
+                        );
+                    }
                 }
+                let mut transformed_path_params = HashMap::new();
+                for item in &path_params {
+                    if let Some(value) = transform_jsonvalue(&item.value) {
+                        transformed_path_params.insert(
+                            item.key.clone(),
+                            PathParamBody {
+                                value,
+                                desc: item.desc.clone(),
+                                order: item.order,
+                                disabled: item.disabled,
+                                options: PathParamOptions {
+                                    propagate: item.options.propagate,
+                                },
+                            },
+                        );
+                    }
+                }
+                let mut transformed_headers = HashMap::new();
+                for item in &headers {
+                    if let Some(value) = transform_jsonvalue(&item.value) {
+                        transformed_headers.insert(
+                            item.key.clone(),
+                            HeaderBody {
+                                value,
+                                desc: item.desc.clone(),
+                                order: item.order,
+                                disabled: item.disabled,
+                                options: HeaderOptions {
+                                    propagate: item.options.propagate,
+                                },
+                            },
+                        );
+                    }
+                }
+
                 let request_file = HttpRequestFile {
                     url: input.url.unwrap_or(Url::default()),
                     query_params: transformed_query_params,
-                    path_params: Default::default(),
-                    headers: Default::default(),
+                    path_params: transformed_path_params,
+                    headers: transformed_headers,
                 };
                 self.state.insert_request_handle(
                     key,
@@ -220,14 +255,14 @@ impl CollectionHandle {
                             name: name.clone(),
                             order: None,
                             typ: Some(method.clone().into()),
+                            // TODO: handling variants
                             variants: Default::default(),
-                        }
-                    )
+                        },
+                    ),
                 )?;
                 // TODO: update store after implementing db
                 (
-                    request_file
-                    .to_string(),
+                    request_file.to_string(),
                     method_to_request_type_str(&method),
                 )
             }
@@ -242,12 +277,12 @@ impl CollectionHandle {
                             order: None,
                             typ: None,
                             variants: Default::default(),
-                        }
-                    )
+                        },
+                    ),
                 )?;
                 // TODO: update store after implementing db
                 (String::new(), "get".to_string())
-            },
+            }
         };
 
         self.fs
@@ -257,7 +292,6 @@ impl CollectionHandle {
                 CreateOptions::default(),
             )
             .await
-
     }
 
     pub async fn rename_request(
@@ -279,7 +313,8 @@ impl CollectionHandle {
             return Err(RequestOperationError::NonexistentRequest {
                 path,
                 name: old_name.to_string(),
-            }.into());
+            }
+            .into());
         }
 
         // FIXME: Theoretically, a batch rename operation might fail in the middle
@@ -288,7 +323,9 @@ impl CollectionHandle {
 
         let new_request_dir = path.join(format!("{}.request", new_name));
         let new_key = new_request_dir.to_string_lossy().to_string();
-        self.fs.rename(&old_request_dir, &new_request_dir, RenameOptions::default()).await?;
+        self.fs
+            .rename(&old_request_dir, &new_request_dir, RenameOptions::default())
+            .await?;
 
         let mut dir = self.fs.read_dir(&new_request_dir).await?;
 
@@ -299,28 +336,28 @@ impl CollectionHandle {
             }
             let old_path = entry.path();
             let old_filename = old_path.file_name().unwrap().to_string_lossy().to_string();
-            let new_filename =
-                format!("{}.{}", new_name, old_filename
+            let new_filename = format!(
+                "{}.{}",
+                new_name,
+                old_filename
                     .strip_prefix(&format!("{}.", old_name))
                     .unwrap()
-                );
+            );
             let new_path = old_path.parent().unwrap().join(new_filename);
-            self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+            self.fs
+                .rename(&old_path, &new_path, RenameOptions::default())
+                .await?;
         }
         // TODO: update store after implementing db
 
-        self.state.rename_request_handle(
-            old_key,
-            new_key,
-            new_name,
-        )
+        self.state.rename_request_handle(old_key, new_key, new_name)
     }
 
     pub async fn delete_request(
         &self,
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
-        name: &str
+        name: &str,
     ) -> Result<()> {
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
@@ -334,37 +371,43 @@ impl CollectionHandle {
             return Err(RequestOperationError::NonexistentRequest {
                 path,
                 name: name.to_string(),
-            }.into());
+            }
+            .into());
         }
 
-        self.fs.remove_dir(&request_dir, RemoveOptions {
-            recursive: true,
-            ignore_if_not_exists: true,
-        }).await?;
+        self.fs
+            .remove_dir(
+                &request_dir,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await?;
 
         // TODO: update store after implementing db
 
         self.state.remove_request_handle(key)
-
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use moss_fs::adapters::disk::DiskFileSystem;
-    use moss_fs::ports::RemoveOptions;
+    use super::*;
+    use crate::models::types::request_types::{HeaderItem, PathParamItem};
     use crate::{
         models::{
             operations::collection_operations::CreateRequestProtocolSpecificPayload,
-            types::request_types::{HttpMethod, QueryParamItem, QueryParamOptions},
+            types::request_types::{
+                HeaderOptions, HttpMethod, PathParamOptions, QueryParamItem, QueryParamOptions,
+            },
         },
         storage::MockCollectionRequestSubstore,
     };
+    use moss_fs::adapters::disk::DiskFileSystem;
+    use moss_fs::ports::RemoveOptions;
 
-    use super::*;
-
-    const TEST_COLLECTION_PATH: &'static str =
-        "TestCollection";
+    const TEST_COLLECTION_PATH: &'static str = "TestCollection";
 
     fn collection_handle() -> CollectionHandle {
         let fs = Arc::new(DiskFileSystem::new());
@@ -385,8 +428,9 @@ mod tests {
 
         let input = CreateRequestInput {
             name: name.clone(),
-            url: Some(
-                Url::new("https://spacex-production.up.railway.app".to_string())),
+            url: Some(Url::new(
+                "https://spacex-production.up.railway.app".to_string(),
+            )),
             payload: Some(CreateRequestProtocolSpecificPayload::Http {
                 method: HttpMethod::Get,
                 query_params: vec![QueryParamItem {
@@ -397,23 +441,39 @@ mod tests {
                     disabled: false,
                     options: QueryParamOptions { propagate: true },
                 }],
+                path_params: vec![PathParamItem {
+                    key: "docId".to_string(),
+                    value: JsonValue::Null,
+                    order: Some(1),
+                    desc: None,
+                    disabled: false,
+                    options: PathParamOptions { propagate: true },
+                }],
+                headers: vec![HeaderItem {
+                    key: "user_agent".to_string(),
+                    value: JsonValue::Null,
+                    order: Some(1),
+                    desc: None,
+                    disabled: false,
+                    options: HeaderOptions { propagate: true },
+                }],
             }),
         };
 
         let fut = async {
-            handle.fs.remove_dir(
-                &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true
-                }
-            ).await.unwrap();
             handle
-                .create_request(
-                    &PathBuf::from(TEST_COLLECTION_PATH),
-                    None,
-                    input,
+                .fs
+                .remove_dir(
+                    &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
                 )
+                .await
+                .unwrap();
+            handle
+                .create_request(&PathBuf::from(TEST_COLLECTION_PATH), None, input)
                 .await
                 .unwrap();
         };
@@ -444,28 +504,24 @@ mod tests {
         };
 
         let fut = async {
-            handle.fs.remove_dir(
-                &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true
-                }
-            ).await.unwrap();
             handle
-                .create_request(
-                    &PathBuf::from(TEST_COLLECTION_PATH),
-                    None,
-                    input.clone(),
+                .fs
+                .remove_dir(
+                    &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
                 )
+                .await
+                .unwrap();
+            handle
+                .create_request(&PathBuf::from(TEST_COLLECTION_PATH), None, input.clone())
                 .await
                 .unwrap();
 
             handle
-                .create_request(
-                    &PathBuf::from(TEST_COLLECTION_PATH),
-                    None,
-                    input,
-                )
+                .create_request(&PathBuf::from(TEST_COLLECTION_PATH), None, input)
                 .await
         };
 
@@ -476,7 +532,6 @@ mod tests {
             .block_on(fut);
 
         assert!(result.is_err());
-
     }
 
     #[test]
@@ -489,27 +544,31 @@ mod tests {
         };
 
         let fut = async {
-            handle.fs.remove_dir(
-                &PathBuf::from(TEST_COLLECTION_PATH).join("pre-rename.request"),
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true
-                }
-            ).await.unwrap();
-            handle.fs.remove_dir(
-                &PathBuf::from(TEST_COLLECTION_PATH).join("post-rename.request"),
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true
-                }
-            ).await.unwrap();
+            handle
+                .fs
+                .remove_dir(
+                    &PathBuf::from(TEST_COLLECTION_PATH).join("pre-rename.request"),
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
+                )
+                .await
+                .unwrap();
+            handle
+                .fs
+                .remove_dir(
+                    &PathBuf::from(TEST_COLLECTION_PATH).join("post-rename.request"),
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
+                )
+                .await
+                .unwrap();
 
             handle
-                .create_request(
-                    &PathBuf::from(TEST_COLLECTION_PATH),
-                    None,
-                    input.clone(),
-                )
+                .create_request(&PathBuf::from(TEST_COLLECTION_PATH), None, input.clone())
                 .await
                 .unwrap();
 
@@ -518,7 +577,7 @@ mod tests {
                     &PathBuf::from(TEST_COLLECTION_PATH),
                     None,
                     "pre-rename",
-                    "post-rename"
+                    "post-rename",
                 )
                 .await
         };
@@ -531,23 +590,27 @@ mod tests {
         dbg!(&result);
         assert!(result.is_ok());
         assert_eq!(
-            handle.state.get_request_handle(
-                PathBuf::from(TEST_COLLECTION_PATH)
-                    .join("requests")
-                    .join("post-rename.request")
-                    .to_string_lossy()
-                    .to_string()
-            ).unwrap().state.name, "post-rename"
+            handle
+                .state
+                .get_request_handle(
+                    PathBuf::from(TEST_COLLECTION_PATH)
+                        .join("requests")
+                        .join("post-rename.request")
+                        .to_string_lossy()
+                        .to_string()
+                )
+                .unwrap()
+                .state
+                .name,
+            "post-rename"
         );
-        assert!(
-            !handle.state.contains(
-                PathBuf::from(TEST_COLLECTION_PATH)
-                    .join("requests")
-                    .join("pre-rename.request")
-                    .to_string_lossy()
-                    .to_string()
-            )
-        );
+        assert!(!handle.state.contains(
+            PathBuf::from(TEST_COLLECTION_PATH)
+                .join("requests")
+                .join("pre-rename.request")
+                .to_string_lossy()
+                .to_string()
+        ));
     }
 
     #[test]
@@ -561,28 +624,26 @@ mod tests {
         };
 
         let fut = async {
-            handle.fs.remove_dir(
-                &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true
-                }
-            ).await.unwrap();
-
             handle
-                .create_request(
-                    &PathBuf::from(TEST_COLLECTION_PATH),
-                    None,
-                    input,
+                .fs
+                .remove_dir(
+                    &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
                 )
                 .await
                 .unwrap();
 
-            handle.delete_request(
-                &PathBuf::from(TEST_COLLECTION_PATH),
-                None,
-                &name
-            ).await
+            handle
+                .create_request(&PathBuf::from(TEST_COLLECTION_PATH), None, input)
+                .await
+                .unwrap();
+
+            handle
+                .delete_request(&PathBuf::from(TEST_COLLECTION_PATH), None, &name)
+                .await
         };
 
         let result = tokio::runtime::Builder::new_multi_thread()
@@ -599,7 +660,6 @@ mod tests {
                 .to_string_lossy()
                 .to_string()
         ))
-
     }
 }
 

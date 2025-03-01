@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use serde::Serialize;
-use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HttpRequestType {

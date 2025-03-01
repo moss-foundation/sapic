@@ -4,7 +4,7 @@ use crate::kdl::foundations::http::{
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
-use kdl::{KdlDocument, KdlNode, KdlValue};
+use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
 use thiserror::Error;
 

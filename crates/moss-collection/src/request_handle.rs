@@ -4,15 +4,12 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::collection::{CollectionRequestVariantEntry, RequestType};
 
-
-
 pub struct RequestState {
     pub name: String,
     pub order: Option<usize>,
     pub typ: Option<RequestType>,
     pub variants: RwLock<HashMap<PathBuf, CollectionRequestVariantEntry>>,
 }
-
 
 pub(crate) struct RequestHandle {
     pub fs: Arc<dyn FileSystem>,

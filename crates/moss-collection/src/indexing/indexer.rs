@@ -194,7 +194,7 @@ mod tests {
         map.insert("foo/some/test", 2);
         map.insert("baz/collection", 3);
 
-        for (k, v) in map.iter_prefix(b"foo/") {
+        for (_k, v) in map.iter_prefix(b"foo/") {
             dbg!(v);
         }
     }

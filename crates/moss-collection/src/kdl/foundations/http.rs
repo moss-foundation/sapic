@@ -1,7 +1,7 @@
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
-use kdl::{FormatConfig, FormatConfigBuilder, KdlDocument, KdlEntry, KdlNode, KdlValue};
-use std::collections::HashMap;
+use kdl::{KdlDocument, KdlEntry, KdlNode};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, TS)]
@@ -189,7 +189,6 @@ impl Default for HeaderBody {
     }
 }
 
-
 impl Into<KdlDocument> for HeaderBody {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
@@ -261,7 +260,6 @@ impl ToString for HttpRequestFile {
         query_params_node.set_children(children);
         nodes.push(query_params_node);
 
-
         let mut path_params_node = KdlNode::new(PARAMS_LIT);
         path_params_node.push(KdlEntry::new_prop("type", "path"));
         let mut children = KdlDocument::new();
@@ -272,7 +270,6 @@ impl ToString for HttpRequestFile {
         }
         path_params_node.set_children(children);
         nodes.push(path_params_node);
-
 
         let mut headers_node = KdlNode::new(HEADERS_LIT);
         let mut children = KdlDocument::new();
@@ -285,6 +282,10 @@ impl ToString for HttpRequestFile {
         nodes.push(headers_node);
 
         document.autoformat();
-        document.into_iter().map(|node| {node.to_string()}).collect::<Vec<String>>().join("\n")
+        document
+            .into_iter()
+            .map(|node| node.to_string())
+            .collect::<Vec<String>>()
+            .join("\n")
     }
 }
