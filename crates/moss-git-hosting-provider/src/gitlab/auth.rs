@@ -56,11 +56,11 @@ const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
 const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
 
 #[derive(Serialize, Deserialize)]
-pub struct GitLabAuthAgent {
+pub struct GitLabAuthAgentImpl {
     cred: RwLock<Option<GitLabCred>>,
 }
 
-impl GitLabAuthAgent {
+impl GitLabAuthAgentImpl {
     pub fn new() -> Self {
         Self {
             cred: RwLock::new(None),
@@ -68,7 +68,7 @@ impl GitLabAuthAgent {
     }
 }
 
-impl GitLabAuthAgent {
+impl GitLabAuthAgentImpl {
     fn client_id() -> Result<ClientId> {
         dotenv::dotenv()?;
         Ok(ClientId::new(dotenv::var("GITLAB_CLIENT_ID")?))
@@ -84,8 +84,8 @@ impl GitLabAuthAgent {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let callback_port = listener.local_addr()?.port();
 
-        let client = BasicClient::new(GitLabAuthAgent::client_id()?)
-            .set_client_secret(GitLabAuthAgent::client_secret()?)
+        let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
+            .set_client_secret(GitLabAuthAgentImpl::client_secret()?)
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -180,8 +180,8 @@ impl GitLabAuthAgent {
         let listener = TcpListener::bind("127.0.0.1:0")?;
         let callback_port = listener.local_addr()?.port();
 
-        let client = BasicClient::new(GitLabAuthAgent::client_id()?)
-            .set_client_secret(GitLabAuthAgent::client_secret()?)
+        let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
+            .set_client_secret(GitLabAuthAgentImpl::client_secret()?)
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -222,7 +222,7 @@ impl GitLabAuthAgent {
     }
 }
 
-impl GitAuthAgent for GitLabAuthAgent {
+impl GitAuthAgent for GitLabAuthAgentImpl {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
         if self.cred.read().is_none() {
             self.initial_auth()
@@ -249,7 +249,7 @@ impl GitAuthAgent for GitLabAuthAgent {
     }
 }
 
-impl TestStorage for GitLabAuthAgent {
+impl TestStorage for GitLabAuthAgentImpl {
     fn write_to_file(&self) -> Result<()> {
         println!("Writing to file");
         std::fs::write("gitlab_oauth.json", serde_json::to_string(&self)?)?;
@@ -271,7 +271,7 @@ mod gitlab_tests {
     use std::path::Path;
     use std::sync::Arc;
 
-    use crate::gitlab::auth::GitLabAuthAgent;
+    use crate::gitlab::auth::GitLabAuthAgentImpl;
     use moss_git::repo::RepoHandle;
     use moss_git::TestStorage;
 
@@ -281,8 +281,8 @@ mod gitlab_tests {
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");
 
-        let auth_agent =
-            GitLabAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitLabAuthAgent::new()));
+        let auth_agent = GitLabAuthAgentImpl::read_from_file()
+            .unwrap_or_else(|_| Arc::new(GitLabAuthAgentImpl::new()));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }

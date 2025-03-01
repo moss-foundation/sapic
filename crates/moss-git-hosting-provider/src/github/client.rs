@@ -1,26 +1,34 @@
-use std::sync::Arc;
-
 use moss_git::GitAuthAgent;
+use std::sync::Arc;
 use url::Url;
 
-use crate::GitHostingProvider;
+use crate::{common::SHHAuthAgent, GitHostingProvider};
+
+pub trait GitHubAuthAgent: GitAuthAgent {}
 
 pub struct GitHubClient {
-    auth_agent: Arc<dyn GitAuthAgent>,
+    client_auth_agent: Arc<dyn GitHubAuthAgent>,
+    ssh_auth_agent: Option<Arc<dyn SHHAuthAgent>>,
 }
 
 impl GitHubClient {
-    pub fn new(auth_agent: Arc<dyn GitAuthAgent>) -> Self {
-        Self { auth_agent }
+    pub fn new(
+        client_auth_agent: impl GitHubAuthAgent + 'static,
+        ssh_auth_agent: Option<impl SHHAuthAgent + 'static>,
+    ) -> Self {
+        Self {
+            client_auth_agent: Arc::new(client_auth_agent),
+            ssh_auth_agent: ssh_auth_agent.map(|agent| Arc::new(agent) as Arc<dyn SHHAuthAgent>),
+        }
     }
 }
 
 impl GitHostingProvider for GitHubClient {
-    fn name(&self) -> Option<String> {
-        Some("GitHub".to_string())
+    fn name(&self) -> String {
+        "GitHub".to_string()
     }
 
-    fn base_url(&self) -> Option<Url> {
-        Some(Url::parse("https://github.com").unwrap())
+    fn base_url(&self) -> Url {
+        Url::parse("https://github.com").unwrap()
     }
 }

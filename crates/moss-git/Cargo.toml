@@ -6,8 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow.workspace = true
 git2.workspace = true
-
-dotenv = "0.15.0"
+dotenv.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]
