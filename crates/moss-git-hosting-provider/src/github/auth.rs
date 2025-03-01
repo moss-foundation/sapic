@@ -1,14 +1,15 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use git2::{Cred, RemoteCallbacks};
-use moss_git::{GitAuthAgent, TestStorage};
+use moss_git::GitAuthAgent;
+use moss_keyring::KeyringClient;
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
 use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
     Scope, TokenResponse, TokenUrl,
 };
-use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+use std::cell::OnceCell;
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::string::ToString;
@@ -16,7 +17,12 @@ use std::sync::Arc;
 
 use super::client::GitHubAuthAgent;
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyringCredEntry {
+    access_token: String,
+}
+
+#[derive(Debug)]
 pub struct GitHubCred {
     access_token: String,
 }
@@ -35,20 +41,21 @@ impl GitHubCred {
 
 const GITHUB_AUTH_URL: &'static str = "https://github.com/login/oauth/authorize";
 const GITHUB_TOKEN_URL: &'static str = "https://github.com/login/oauth/access_token";
-
 const GITHUB_SCOPES: [&'static str; 3] = ["repo", "read:user", "user:email"];
+const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
-#[derive(Serialize, Deserialize)]
 pub struct GitHubAuthAgentImpl {
-    cred: RwLock<Option<GitHubCred>>,
+    keyring: Arc<dyn KeyringClient>,
+    cred: OnceCell<GitHubCred>,
 }
 
 impl GitHubAuthAgent for GitHubAuthAgentImpl {}
 
 impl GitHubAuthAgentImpl {
-    pub fn new() -> Self {
+    pub fn new(keyring: Arc<dyn KeyringClient>) -> Self {
         Self {
-            cred: RwLock::new(None),
+            keyring,
+            cred: OnceCell::new(),
         }
     }
 }
@@ -63,10 +70,39 @@ impl GitHubAuthAgentImpl {
         Ok(ClientSecret::new(dotenv::var("GITHUB_CLIENT_SECRET")?))
     }
 
-    fn initial_auth(&self) -> Result<()> {
-        println!("Initial OAuth Protocol");
-        // Setting the port as 0 automatically assigns a free port
-        let listener = TcpListener::bind("127.0.0.1:0")?;
+    fn credentials(&self) -> Result<&GitHubCred> {
+        if let Some(cred) = self.cred.get() {
+            return Ok(cred);
+        }
+
+        let cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
+            Ok(data) => {
+                let entry: KeyringCredEntry = serde_json::from_slice(&data)?;
+
+                GitHubCred {
+                    access_token: entry.access_token,
+                }
+            }
+            Err(keyring::Error::NoEntry) => {
+                let cred = self.gen_initial_credentials()?;
+                let cred_str = serde_json::to_string(&KeyringCredEntry {
+                    access_token: cred.access_token.clone(),
+                })?;
+
+                self.keyring.set_secret(KEYRING_SECRET_KEY, &cred_str)?;
+                cred
+            }
+            Err(err) => return Err(err.into()),
+        };
+
+        let _ = self.cred.set(cred);
+        self.cred.get().ok_or_else(|| {
+            anyhow!("Failed to set GitHubAuthAgent credentials because they have already been set")
+        })
+    }
+
+    fn gen_initial_credentials(&self) -> Result<GitHubCred> {
+        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
         let callback_port = listener.local_addr()?.port();
 
         let client = BasicClient::new(GitHubAuthAgentImpl::client_id()?)
@@ -143,42 +179,20 @@ impl GitHubAuthAgentImpl {
             .request(&http_client)?;
 
         let access_token = token_res.access_token().secret().as_str();
-        let mut write = self.cred.write();
-        // GitHub's access_token does not have expiration
-        *write = Some(GitHubCred::new(access_token));
-        Ok(())
+
+        Ok(GitHubCred::new(access_token))
     }
 }
 
 impl GitAuthAgent for GitHubAuthAgentImpl {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-        if self.cred.read().is_none() {
-            self.initial_auth()
-                .expect("Unable to finish initial authentication");
-        }
-        let cred = self.cred.read().clone().unwrap();
+        let cred = self.credentials()?;
+
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
             Cred::userpass_plaintext("oauth2", cred.access_token())
         });
-        self.write_to_file()?;
+
         Ok(())
-    }
-}
-
-impl TestStorage for GitHubAuthAgentImpl {
-    fn write_to_file(&self) -> Result<()> {
-        println!("Writing to file");
-        std::fs::write("github_oauth.json", serde_json::to_string(&self)?)?;
-        Ok(())
-    }
-
-    fn read_from_file() -> Result<Arc<Self>> {
-        dbg!("-----------");
-        dbg!(&std::fs::read_to_string("gitlab_oauth.json",)?);
-
-        Ok(Arc::new(serde_json::from_str(&std::fs::read_to_string(
-            "github_oauth.json",
-        )?)?))
     }
 }
 
@@ -187,6 +201,7 @@ mod github_tests {
     use super::*;
 
     use moss_git::repo::RepoHandle;
+    use moss_keyring::KeyringClientImpl;
     use std::path::Path;
     use std::sync::Arc;
 
@@ -196,8 +211,8 @@ mod github_tests {
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let auth_agent = GitHubAuthAgentImpl::read_from_file()
-            .unwrap_or_else(|_| Arc::new(GitHubAuthAgentImpl::new()));
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitHubAuthAgentImpl::new(keyring_client));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent)?;
         Ok(())
