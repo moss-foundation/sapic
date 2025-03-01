@@ -24,7 +24,6 @@ moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 
 tauri = { version = "2.2.5", default-features = false }
-tauri-plugin-stronghold = "2.0.0"
 rand = { version = "0.9.0", default-features = false, features = [
     "thread_rng",
 ] }

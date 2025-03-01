@@ -14,7 +14,6 @@ use std::net::TcpListener;
 use std::string::ToString;
 use std::sync::Arc;
 
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GitHubCred {
     access_token: String,
@@ -183,9 +182,9 @@ impl TestStorage for GitHubAuthAgent {
 mod github_tests {
     use super::*;
 
-    use std::path::{Path, PathBuf};
-    use std::sync::Arc;
     use moss_git::repo::RepoHandle;
+    use std::path::Path;
+    use std::sync::Arc;
 
     #[test]
     fn cloning_with_oauth() -> Result<()> {

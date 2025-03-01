@@ -19,9 +19,6 @@ oauth2 = { workspace = true, features = [
 reqwest = { workspace = true, features = ["blocking"] }
 serde = { version = "1.0.217", features = ["derive"] }
 webbrowser = "1.0.3"
-iota_stronghold = "2.1.0"
-zeroize = "1.8.1"
-rust-argon2 = "2.1.0"
 
 
 # Making SSH work on Windows

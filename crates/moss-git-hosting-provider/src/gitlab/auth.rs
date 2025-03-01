@@ -1,6 +1,5 @@
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
-use moss_git::repo::RepoHandle;
 use moss_git::{GitAuthAgent, TestStorage};
 use oauth2::basic::BasicClient;
 use oauth2::{
@@ -269,18 +268,12 @@ impl TestStorage for GitLabAuthAgent {
 
 #[cfg(test)]
 mod gitlab_tests {
-    use anyhow::Result;
-    use std::collections::HashMap;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::sync::Arc;
 
     use crate::gitlab::auth::GitLabAuthAgent;
-    use crate::headless::auth::SSHAgent;
-    use iota_stronghold::{KeyProvider, SnapshotPath};
     use moss_git::repo::RepoHandle;
     use moss_git::TestStorage;
-    use parking_lot::Mutex;
-    use zeroize::Zeroizing;
 
     #[test]
     fn cloning_with_oauth() {
@@ -292,88 +285,5 @@ mod gitlab_tests {
             GitLabAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitLabAuthAgent::new()));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
-    }
-
-    #[derive(Default)]
-    struct StrongholdCollection(Arc<Mutex<HashMap<PathBuf, Stronghold>>>);
-
-    pub struct Stronghold {
-        inner: iota_stronghold::Stronghold,
-        path: SnapshotPath,
-        keyprovider: KeyProvider,
-    }
-
-    impl Stronghold {
-        pub fn new<P: AsRef<Path>>(path: P, password: Vec<u8>) -> Result<Self> {
-            let path = SnapshotPath::from_path(path);
-            let stronghold = iota_stronghold::Stronghold::default();
-            let keyprovider = KeyProvider::try_from(Zeroizing::new(password))?;
-            if path.exists() {
-                stronghold.load_snapshot(&keyprovider, &path)?;
-            }
-            Ok(Self {
-                inner: stronghold,
-                path,
-                keyprovider,
-            })
-        }
-
-        pub fn save(&self) -> Result<()> {
-            self.inner
-                .commit_with_keyprovider(&self.path, &self.keyprovider)?;
-            Ok(())
-        }
-
-        pub fn inner(&self) -> &iota_stronghold::Stronghold {
-            &self.inner
-        }
-    }
-
-    #[test]
-    fn stronghold_test() {
-        use zeroize::{Zeroize, Zeroizing};
-
-        let hash_function = |password: &str| {
-            // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
-            // Here is an example implementation using the `rust-argon2` crate for hashing the password
-
-            use argon2::{hash_raw, Config, Variant, Version};
-
-            let config = Config {
-                lanes: 4,
-                mem_cost: 10_000,
-                time_cost: 10,
-                variant: Variant::Argon2id,
-                version: Version::Version13,
-                ..Default::default()
-            };
-
-            let salt = "your-salt".as_bytes();
-
-            let key = hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
-
-            key.to_vec()
-        };
-
-        let snapshot_path = PathBuf::from("vault.hold");
-        let mut password = "mypass1234".to_string();
-        let hash = hash_function(&password);
-        let collection = StrongholdCollection::default();
-        let stronghold = Stronghold::new(snapshot_path.clone(), hash).unwrap();
-        let client = stronghold.inner.create_client("name your client").unwrap();
-
-        // client.vault(vault_path)
-
-        stronghold.save().unwrap();
-
-        // collection.0.lock().insert(snapshot_path, stronghold);
-
-        // password.zeroize();
-
-        // let path = SnapshotPath::from_path("vault.hold");
-        // let stronghold = iota_stronghold::Stronghold::default();
-        // let pass = "password".as_bytes().to_vec();
-        // let keyprovider = KeyProvider::try_from(Zeroizing::new(pass)).unwrap();
-        // let client = stronghold.create_client("vault.hold").unwrap();
     }
 }
