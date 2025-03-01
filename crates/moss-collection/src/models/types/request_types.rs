@@ -25,6 +25,8 @@ impl Into<RequestType> for HttpMethod {
     }
 }
 
+// FIXME: Should the following types be put in a different file?
+
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]

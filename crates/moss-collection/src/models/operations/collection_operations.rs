@@ -1,4 +1,4 @@
-use crate::kdl::foundations::http::Url;
+use crate::kdl::foundations::http::{Url};
 use crate::models::types::request_types::{HeaderItem, HttpMethod, PathParamItem, QueryParamItem};
 use serde::Serialize;
 use std::path::PathBuf;
@@ -45,3 +45,4 @@ pub struct CreateRequestInput {
     pub url: Option<Url>,
     pub payload: Option<CreateRequestProtocolSpecificPayload>,
 }
+

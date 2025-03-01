@@ -1,16 +1,19 @@
-use crate::kdl::foundations::http::{HeaderOptions, PathParamOptions};
-use crate::request_handle::RequestState;
+
 use crate::{
     kdl::foundations::http::{
-        HeaderBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url,
+        HeaderBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url, HeaderOptions, PathParamOptions
     },
     models::{
         operations::collection_operations::{
             CreateRequestInput, CreateRequestProtocolSpecificPayload,
         },
-        types::request_types::HttpMethod,
+        types::request_types::{
+            HttpMethod, HeaderItem, PathParamItem, QueryParamItem
+        },
     },
-    request_handle::RequestHandle,
+    request_handle::{
+        RequestHandle, RequestState
+    },
     storage::CollectionRequestSubstore,
 };
 use anyhow::Result;
@@ -143,13 +146,80 @@ fn transform_jsonvalue(value: &JsonValue) -> Option<String> {
     }
 }
 
+fn create_http_requestfile(
+    url: Option<Url>,
+    query_params: Vec<QueryParamItem>,
+    path_params: Vec<PathParamItem>,
+    headers: Vec<HeaderItem>
+) -> Result<HttpRequestFile> {
+    let mut transformed_query_params = HashMap::new();
+    for item in &query_params {
+        if let Some(value) = transform_jsonvalue(&item.value) {
+            transformed_query_params.insert(
+                item.key.clone(),
+                QueryParamBody {
+                    value,
+                    desc: item.desc.clone(),
+                    order: item.order,
+                    disabled: item.disabled,
+                    options: QueryParamOptions {
+                        propagate: item.options.propagate,
+                    },
+                },
+            );
+        }
+    }
+    let mut transformed_path_params = HashMap::new();
+    for item in &path_params {
+        if let Some(value) = transform_jsonvalue(&item.value) {
+            transformed_path_params.insert(
+                item.key.clone(),
+                PathParamBody {
+                    value,
+                    desc: item.desc.clone(),
+                    order: item.order,
+                    disabled: item.disabled,
+                    options: PathParamOptions {
+                        propagate: item.options.propagate,
+                    },
+                },
+            );
+        }
+    }
+    let mut transformed_headers = HashMap::new();
+    for item in &headers {
+        if let Some(value) = transform_jsonvalue(&item.value) {
+            transformed_headers.insert(
+                item.key.clone(),
+                HeaderBody {
+                    value,
+                    desc: item.desc.clone(),
+                    order: item.order,
+                    disabled: item.disabled,
+                    options: HeaderOptions {
+                        propagate: item.options.propagate,
+                    },
+                },
+            );
+        }
+    }
+
+    Ok(HttpRequestFile {
+        url: url.unwrap_or(Url::default()),
+        query_params: transformed_query_params,
+        path_params: transformed_path_params,
+        headers: transformed_headers,
+    })
+}
+
 impl CollectionHandle {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         store: Arc<dyn CollectionRequestSubstore>,
         name: String,
         order: Option<usize>,
-    ) -> Self {
+    )
+        -> Self {
         Self {
             fs,
             store,
@@ -166,7 +236,8 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         input: CreateRequestInput,
-    ) -> Result<()> {
+    )
+        -> Result<()> {
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)
@@ -189,64 +260,7 @@ impl CollectionHandle {
                 path_params,
                 headers,
             }) => {
-                let mut transformed_query_params = HashMap::new();
-                for item in &query_params {
-                    if let Some(value) = transform_jsonvalue(&item.value) {
-                        transformed_query_params.insert(
-                            item.key.clone(),
-                            QueryParamBody {
-                                value,
-                                desc: item.desc.clone(),
-                                order: item.order,
-                                disabled: item.disabled,
-                                options: QueryParamOptions {
-                                    propagate: item.options.propagate,
-                                },
-                            },
-                        );
-                    }
-                }
-                let mut transformed_path_params = HashMap::new();
-                for item in &path_params {
-                    if let Some(value) = transform_jsonvalue(&item.value) {
-                        transformed_path_params.insert(
-                            item.key.clone(),
-                            PathParamBody {
-                                value,
-                                desc: item.desc.clone(),
-                                order: item.order,
-                                disabled: item.disabled,
-                                options: PathParamOptions {
-                                    propagate: item.options.propagate,
-                                },
-                            },
-                        );
-                    }
-                }
-                let mut transformed_headers = HashMap::new();
-                for item in &headers {
-                    if let Some(value) = transform_jsonvalue(&item.value) {
-                        transformed_headers.insert(
-                            item.key.clone(),
-                            HeaderBody {
-                                value,
-                                desc: item.desc.clone(),
-                                order: item.order,
-                                disabled: item.disabled,
-                                options: HeaderOptions {
-                                    propagate: item.options.propagate,
-                                },
-                            },
-                        );
-                    }
-                }
-
-                let request_file = HttpRequestFile {
-                    url: input.url.unwrap_or(Url::default()),
-                    query_params: transformed_query_params,
-                    path_params: transformed_path_params,
-                    headers: transformed_headers,
-                };
+                let request_file = create_http_requestfile(input.url, query_params, path_params, headers)?;
                 self.state.insert_request_handle(
                     key,
                     RequestHandle::new(
@@ -300,7 +314,8 @@ impl CollectionHandle {
         relative_path: Option<PathBuf>,
         old_name: &str,
         new_name: &str,
-    ) -> Result<()> {
+    )
+        -> Result<()> {
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)
@@ -358,7 +373,8 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         name: &str,
-    ) -> Result<()> {
+    )
+        -> Result<()> {
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)
@@ -389,6 +405,9 @@ impl CollectionHandle {
 
         self.state.remove_request_handle(key)
     }
+
+
+
 }
 
 #[cfg(test)]
