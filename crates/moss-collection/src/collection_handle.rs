@@ -1,6 +1,6 @@
 use anyhow::Result;
 use kdl::KdlValue;
-use moss_fs::ports::{CreateOptions, FileSystem, RenameOptions};
+use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use parking_lot::RwLock;
 use patricia_tree::PatriciaMap;
 use serde_json::Value as JsonValue;
@@ -113,6 +113,12 @@ impl CollectionState {
         );
 
         write_guard.insert(new_key, Arc::new(new_handle));
+        Ok(())
+    }
+
+    pub fn remove_request_handle(&self, key: impl AsRef<[u8]>) -> Result<()> {
+        let mut write_guard = self.requests.write();
+        write_guard.remove(key.as_ref());
         Ok(())
     }
 }
@@ -301,12 +307,45 @@ impl CollectionHandle {
             let new_path = old_path.parent().unwrap().join(new_filename);
             self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
         }
+        // TODO: update store after implementing db
 
         self.state.rename_request_handle(
             old_key,
             new_key,
             new_name,
         )
+    }
+
+    pub async fn delete_request(
+        &self,
+        collection_path: &PathBuf,
+        relative_path: Option<PathBuf>,
+        name: &str
+    ) -> Result<()> {
+        let requests_dir = collection_path.join("requests");
+        let path = if let Some(path) = relative_path {
+            requests_dir.join(path)
+        } else {
+            requests_dir
+        };
+        let request_dir = path.join(format!("{}.request", name));
+        let key = request_dir.to_string_lossy().to_string();
+        if !self.state.contains(&key) {
+            return Err(RequestOperationError::NonexistentRequest {
+                path,
+                name: name.to_string(),
+            }.into());
+        }
+
+        self.fs.remove_dir(&request_dir, RemoveOptions {
+            recursive: true,
+            ignore_if_not_exists: true,
+        }).await?;
+
+        // TODO: update store after implementing db
+
+        self.state.remove_request_handle(key)
+
     }
 }
 
@@ -509,6 +548,58 @@ mod tests {
                     .to_string()
             )
         );
+    }
+
+    #[test]
+    fn test_delete_request() {
+        let handle = collection_handle();
+        let name = "delete".to_string();
+        let input = CreateRequestInput {
+            name: name.clone(),
+            url: None,
+            payload: None,
+        };
+
+        let fut = async {
+            handle.fs.remove_dir(
+                &PathBuf::from(TEST_COLLECTION_PATH).join(format!("{}.request", name)),
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true
+                }
+            ).await.unwrap();
+
+            handle
+                .create_request(
+                    &PathBuf::from(TEST_COLLECTION_PATH),
+                    None,
+                    input,
+                )
+                .await
+                .unwrap();
+
+            handle.delete_request(
+                &PathBuf::from(TEST_COLLECTION_PATH),
+                None,
+                &name
+            ).await
+        };
+
+        let result = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(fut);
+
+        assert!(result.is_ok());
+        assert!(!handle.state.contains(
+            PathBuf::from(TEST_COLLECTION_PATH)
+                .join("requests")
+                .join(format!("{}.request", name))
+                .to_string_lossy()
+                .to_string()
+        ))
+
     }
 }
 
