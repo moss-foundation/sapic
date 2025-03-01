@@ -39,7 +39,7 @@ impl Into<KdlNode> for Url {
 
 #[derive(Clone, Debug)]
 pub struct QueryParamBody {
-    pub value: KdlValue,
+    pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
@@ -49,7 +49,7 @@ pub struct QueryParamBody {
 impl Default for QueryParamBody {
     fn default() -> Self {
         Self {
-            value: KdlValue::Null,
+            value: "".to_string(),
             desc: None,
             order: None,
             disabled: false,
@@ -103,7 +103,7 @@ impl Into<KdlNode> for QueryParamOptions {
 
 #[derive(Clone, Debug)]
 pub struct PathParamBody {
-    pub value: KdlValue,
+    pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
@@ -113,7 +113,7 @@ pub struct PathParamBody {
 impl Default for PathParamBody {
     fn default() -> Self {
         Self {
-            value: KdlValue::Null,
+            value: "".to_string(),
             desc: None,
             order: None,
             disabled: false,
@@ -168,7 +168,7 @@ impl Into<KdlNode> for PathParamOptions {
 
 #[derive(Clone, Debug)]
 pub struct HeaderBody {
-    pub value: KdlValue,
+    pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
@@ -178,7 +178,7 @@ pub struct HeaderBody {
 impl Default for HeaderBody {
     fn default() -> Self {
         Self {
-            value: KdlValue::Null,
+            value: "".to_string(),
             desc: None,
             order: None,
             disabled: false,

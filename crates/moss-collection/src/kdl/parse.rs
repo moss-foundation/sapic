@@ -98,7 +98,7 @@ fn parse_query_params(node: &KdlNode) -> Result<HashMap<String, QueryParamBody>>
 
 fn parse_query_param_body(node: &KdlNode) -> Result<QueryParamBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -109,7 +109,7 @@ fn parse_query_param_body(node: &KdlNode) -> Result<QueryParamBody> {
             QueryParamOptions::default()
         };
         Ok(QueryParamBody {
-            value: value.unwrap_or(KdlValue::Null),
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,
@@ -143,7 +143,7 @@ fn parse_path_params(node: &KdlNode) -> Result<HashMap<String, PathParamBody>> {
 
 fn parse_path_param_body(node: &KdlNode) -> Result<PathParamBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -154,7 +154,7 @@ fn parse_path_param_body(node: &KdlNode) -> Result<PathParamBody> {
             PathParamOptions::default()
         };
         Ok(PathParamBody {
-            value: value.unwrap_or(KdlValue::Null),
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,
@@ -188,7 +188,7 @@ fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
 
 fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -199,7 +199,7 @@ fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
             HeaderOptions::default()
         };
         Ok(HeaderBody {
-            value: value.unwrap_or(KdlValue::Null),
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,

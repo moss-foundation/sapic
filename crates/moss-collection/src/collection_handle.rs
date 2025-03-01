@@ -104,10 +104,10 @@ impl CollectionHandle {
                 let mut transformed_query_params = HashMap::new();
                 for item in &query_params {
                     let value = match &item.value {
-                        JsonValue::Null => KdlValue::Null,
-                        JsonValue::Bool(value) => KdlValue::String(value.to_string()),
-                        JsonValue::Number(value) => KdlValue::String(value.to_string()),
-                        JsonValue::String(value) => KdlValue::String(value.to_string()),
+                        JsonValue::Null => "".to_string(),
+                        JsonValue::Bool(value) => value.to_string(),
+                        JsonValue::Number(value) => value.to_string(),
+                        JsonValue::String(value) => value.to_string(),
                         JsonValue::Array(_) => {
                             // TODO: Invalid type, logging
                             continue;
@@ -200,7 +200,7 @@ mod tests {
                             method: HttpMethod::Get,
                             query_params: vec![QueryParamItem {
                                 key: "pageToken".to_string(),
-                                value: "myValue".into(),
+                                value: JsonValue::Null,
                                 order: Some(1),
                                 desc: None,
                                 disabled: false,
