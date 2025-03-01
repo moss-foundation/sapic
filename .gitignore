@@ -53,3 +53,5 @@ dist/
 crates/moss-git/oauth.json
 crates/moss-git/.env
 crates/moss-git/test-repo-lab/
+/crates/moss-collection/TestCollection
+.env

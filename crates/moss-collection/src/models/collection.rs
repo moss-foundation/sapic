@@ -56,7 +56,7 @@ impl RequestType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CollectionRequestVariantEntry {
     pub name: String,
     pub order: Option<usize>,

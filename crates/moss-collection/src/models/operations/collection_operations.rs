@@ -24,7 +24,7 @@ pub struct OverviewCollectionOutput {
     pub order: Option<usize>,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub enum CreateRequestProtocolSpecificPayload {
@@ -34,7 +34,7 @@ pub enum CreateRequestProtocolSpecificPayload {
     },
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct CreateRequestInput {

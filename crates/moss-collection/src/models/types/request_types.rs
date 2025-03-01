@@ -1,8 +1,10 @@
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
+use crate::models::collection::HttpRequestType::{Delete, Get, Post, Put};
+use crate::models::collection::RequestType;
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
 pub enum HttpMethod {
@@ -12,14 +14,25 @@ pub enum HttpMethod {
     Delete,
 }
 
-#[derive(Debug, Serialize, TS)]
+impl Into<RequestType> for HttpMethod {
+    fn into(self) -> RequestType {
+        match self {
+            HttpMethod::Post => {RequestType::Http(Post)}
+            HttpMethod::Get => {RequestType::Http(Get)}
+            HttpMethod::Put => {RequestType::Http(Put)}
+            HttpMethod::Delete => {RequestType::Http(Delete)}
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
 pub struct QueryParamOptions {
     pub propagate: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
 pub struct QueryParamItem {
