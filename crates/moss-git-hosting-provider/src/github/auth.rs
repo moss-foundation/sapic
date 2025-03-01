@@ -3,17 +3,17 @@ use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
 use moss_keyring::KeyringClient;
 use oauth2::basic::BasicClient;
-use oauth2::url::Url;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
-    Scope, TokenResponse, TokenUrl,
+    AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, Scope,
+    TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
 use std::cell::OnceCell;
-use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::string::ToString;
 use std::sync::Arc;
+
+use crate::common::utils;
 
 use super::client::GitHubAuthAgent;
 
@@ -102,8 +102,7 @@ impl GitHubAuthAgentImpl {
     }
 
     fn gen_initial_credentials(&self) -> Result<GitHubCred> {
-        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
-        let callback_port = listener.local_addr()?.port();
+        let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
         let client = BasicClient::new(GitHubAuthAgentImpl::client_id()?)
             .set_client_secret(GitHubAuthAgentImpl::client_secret()?)
@@ -131,42 +130,7 @@ impl GitHubAuthAgentImpl {
             println!("Open this URL in your browser:\n{authorize_url}\n");
         }
 
-        let (code, _state) = {
-            let Some(mut stream) = listener.incoming().flatten().next() else {
-                panic!("listener terminated without accepting a connection");
-            };
-
-            let mut reader = BufReader::new(&stream);
-            let mut request_line = String::new();
-            reader.read_line(&mut request_line)?;
-
-            // GET /?code=*** HTTP/1.1
-            let redirect_url = request_line.split_whitespace().nth(1).unwrap();
-            let url = Url::parse(&("http://127.0.0.1".to_string() + redirect_url))?;
-
-            let code = url
-                .query_pairs()
-                .find(|(key, _)| key == "code")
-                .map(|(_, code)| AuthorizationCode::new(code.into_owned()))
-                .unwrap();
-
-            let state = url
-                .query_pairs()
-                .find(|(key, _)| key == "state")
-                .map(|(_, state)| CsrfToken::new(state.into_owned()))
-                .unwrap();
-
-            // TODO: Once the code is received, the focus should switch back to the main application
-            let message = "Go back to your terminal :)";
-            let response = format!(
-                "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
-                message.len(),
-                message
-            );
-            stream.write_all(response.as_bytes())?;
-
-            (code, state)
-        };
+        let (code, _state) = utils::receive_auth_code(&listener)?;
 
         let http_client = reqwest::blocking::ClientBuilder::new()
             .redirect(reqwest::redirect::Policy::none())

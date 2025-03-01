@@ -1,20 +1,20 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use git2::Cred;
 use git2::RemoteCallbacks;
 use moss_git::GitAuthAgent;
 use moss_keyring::KeyringClient;
 use oauth2::basic::BasicClient;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
-    RefreshToken, Scope, TokenResponse, TokenUrl,
+    AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, RefreshToken,
+    Scope, TokenResponse, TokenUrl,
 };
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use url::Url;
+
+use crate::common::utils;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -107,8 +107,7 @@ impl GitLabAuthAgentImpl {
     }
 
     fn gen_initial_credentials(&self) -> Result<GitLabCred> {
-        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
-        let callback_port = listener.local_addr()?.port();
+        let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
         let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
             .set_client_secret(GitLabAuthAgentImpl::client_secret()?)
@@ -133,42 +132,7 @@ impl GitLabAuthAgentImpl {
             println!("Open this URL in your browser:\n{authorize_url}\n");
         }
 
-        let (code, _state) = {
-            let Some(mut stream) = listener.incoming().flatten().next() else {
-                panic!("listener terminated without accepting a connection");
-            };
-
-            let mut reader = BufReader::new(&stream);
-            let mut request_line = String::new();
-            reader.read_line(&mut request_line)?;
-
-            // GET /?code=*** HTTP/1.1
-            let redirect_url = request_line.split_whitespace().nth(1).unwrap();
-            let url = Url::parse(&("http://127.0.0.1".to_string() + redirect_url))?;
-
-            let code = url
-                .query_pairs()
-                .find(|(key, _)| key == "code")
-                .map(|(_, code)| AuthorizationCode::new(code.into_owned()))
-                .unwrap();
-
-            let state = url
-                .query_pairs()
-                .find(|(key, _)| key == "state")
-                .map(|(_, state)| CsrfToken::new(state.into_owned()))
-                .unwrap();
-
-            // TODO: Once the code is received, the focus should switch back to the main application
-            let message = "Go back to your terminal :)";
-            let response = format!(
-                "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
-                message.len(),
-                message
-            );
-            stream.write_all(response.as_bytes())?;
-
-            (code, state)
-        };
+        let (code, _state) = utils::receive_auth_code(&listener)?;
 
         let http_client = reqwest::blocking::ClientBuilder::new()
             .redirect(reqwest::redirect::Policy::none())
@@ -179,24 +143,20 @@ impl GitLabAuthAgentImpl {
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
             .request(&http_client)?;
-
-        let access_token = token_res.access_token().secret().as_str();
-
-        // GitLab's access token expires in 2 hours, so we need refreshing
-        let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
-
-        // Force refreshing the access token half an hour before the actual expiry
-        // To avoid any timing issue
-        let time_to_refresh = Instant::now()
-            .checked_add(token_res.expires_in().unwrap())
-            .unwrap()
-            .checked_sub(Duration::from_secs(30 * 60))
-            .unwrap();
+        let expires_in = token_res.expires_in().ok_or_else(|| {
+            anyhow::anyhow!(
+                "Failed to perform initial GitLab credentials setup: expires_in value not received"
+            )
+        })?;
 
         Ok(GitLabCred {
-            access_token: access_token.to_string(),
-            time_to_refresh,
-            refresh_token: refresh_token.to_string(),
+            access_token: token_res.access_token().secret().to_owned(),
+            time_to_refresh: compute_time_to_refresh(expires_in),
+            refresh_token: token_res
+                .refresh_token()
+                .ok_or_else(|| anyhow::anyhow!("Failed to perform initial GitLab credentials setup: refresh token not received"))?
+                .secret()
+                .to_owned(),
         })
     }
 
@@ -221,21 +181,20 @@ impl GitLabAuthAgentImpl {
             .exchange_refresh_token(&RefreshToken::new(refresh_token))
             .request(&http_client)?;
 
-        let access_token = token_res.access_token().secret().as_str();
-
-        // Force refreshing the access token half an hour before the actual expiry
-        let time_to_refresh = Instant::now()
-            .checked_add(token_res.expires_in().unwrap())
-            .unwrap()
-            .checked_sub(Duration::from_secs(30 * 60))
-            .unwrap();
-
-        let new_refresh_token = token_res.refresh_token().unwrap().secret().as_str();
+        let expires_in = token_res.expires_in().ok_or_else(|| {
+            anyhow::anyhow!(
+                "Failed to perform refresh GitLab credentials operation: expires_in value not received"
+            )
+        })?;
 
         Ok(GitLabCred {
-            access_token: access_token.to_string(),
-            time_to_refresh,
-            refresh_token: new_refresh_token.to_string(),
+            access_token: token_res.access_token().secret().to_owned(),
+            time_to_refresh: compute_time_to_refresh(expires_in),
+            refresh_token: token_res
+                .refresh_token()
+                .ok_or_else(|| anyhow::anyhow!("Failed to perform refresh GitLab credentials operation: refresh token not received"))?
+                .secret()
+                .to_owned(),
         })
     }
 }
@@ -250,6 +209,16 @@ impl GitAuthAgent for GitLabAuthAgentImpl {
 
         Ok(())
     }
+}
+
+fn compute_time_to_refresh(expires_in: Duration) -> Instant {
+    // Force refreshing the access token half an hour before the actual expiry
+    // To avoid any timing issue
+    Instant::now()
+        .checked_add(expires_in)
+        .unwrap()
+        .checked_sub(Duration::from_secs(30 * 60))
+        .unwrap()
 }
 
 #[cfg(test)]
