@@ -1,5 +1,7 @@
+use anyhow::anyhow;
 use anyhow::Result;
-use git2::{Cred, RemoteCallbacks};
+use git2::Cred;
+use git2::RemoteCallbacks;
 use moss_git::GitAuthAgent;
 use moss_keyring::KeyringClient;
 use oauth2::basic::BasicClient;
@@ -9,54 +11,57 @@ use oauth2::{
 };
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+use std::cell::OnceCell;
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use url::Url;
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyringCredEntry {
+    refresh_token: String,
+}
+
 // Since `Instant` is opaque and cannot be serialized
 // We will only store the refresh_token when serializing OAuth Credential
 // Forcing refreshing of tokens for new sessions
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct GitLabCred {
-    #[serde(skip)]
-    access_token: Option<String>,
-    #[serde(skip)]
-    time_to_refresh: Option<Instant>,
+    access_token: String,
+    time_to_refresh: Instant,
     refresh_token: String,
 }
 
 impl GitLabCred {
-    pub fn new(
-        access_token: Option<&str>,
-        time_to_refresh: Option<Instant>,
-        refresh_token: &str,
-    ) -> Self {
-        Self {
-            access_token: access_token.map(|s| s.to_string()),
-            time_to_refresh,
-            refresh_token: refresh_token.to_string(),
-        }
-    }
+    // pub fn new(
+    //     access_token: Option<&str>,
+    //     time_to_refresh: Option<Instant>,
+    //     refresh_token: &str,
+    // ) -> Self {
+    //     Self {
+    //         access_token: access_token.map(|s| s.to_string()),
+    //         time_to_refresh,
+    //         refresh_token: refresh_token.to_string(),
+    //     }
+    // }
 
-    pub fn access_token(&self) -> Option<&str> {
-        self.access_token.as_deref()
-    }
-    pub fn time_to_refresh(&self) -> Option<Instant> {
-        self.time_to_refresh
-    }
-    pub fn refresh_token(&self) -> &str {
-        self.refresh_token.as_str()
-    }
+    // pub fn access_token(&self) -> Option<&str> {
+    //     self.access_token.as_deref()
+    // }
+    // pub fn time_to_refresh(&self) -> Option<Instant> {
+    //     self.time_to_refresh
+    // }
+    // pub fn refresh_token(&self) -> &str {
+    //     self.refresh_token.as_str()
+    // }
 }
 
 const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
 const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
-
 const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
+const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
 
-// #[derive(Serialize, Deserialize)]
 pub struct GitLabAuthAgentImpl {
     keyring: Arc<dyn KeyringClient>,
     cred: RwLock<Option<GitLabCred>>,
@@ -81,9 +86,40 @@ impl GitLabAuthAgentImpl {
         Ok(ClientSecret::new(dotenv::var("GITLAB_CLIENT_SECRET")?))
     }
 
-    fn initial_auth(&self) -> Result<()> {
-        // Setting the port as 0 automatically assigns a free port
-        let listener = TcpListener::bind("127.0.0.1:0")?;
+    fn credentials(&self) -> Result<GitLabCred> {
+        if let Some(existing) = self.cred.read().clone() {
+            if Instant::now() <= existing.time_to_refresh {
+                return Ok(existing);
+            }
+        }
+
+        let new_cred = {
+            let loaded_cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
+                Ok(data) => {
+                    let entry: KeyringCredEntry = serde_json::from_slice(&data)?;
+                    self.refresh_token_flow(entry.refresh_token)?
+                }
+                Err(keyring::Error::NoEntry) => {
+                    let cred = self.gen_initial_credentials()?;
+                    let cred_str = serde_json::to_string(&KeyringCredEntry {
+                        refresh_token: cred.refresh_token.clone(),
+                    })?;
+                    self.keyring.set_secret(KEYRING_SECRET_KEY, &cred_str)?;
+                    cred
+                }
+                Err(err) => return Err(err.into()),
+            };
+
+            // Always trigger an update to ensure credentials are up to date
+            self.refresh_token_flow(loaded_cred.refresh_token)?
+        };
+
+        *self.cred.write() = Some(new_cred.clone());
+        Ok(new_cred)
+    }
+
+    fn gen_initial_credentials(&self) -> Result<GitLabCred> {
+        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
         let callback_port = listener.local_addr()?.port();
 
         let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
@@ -157,7 +193,7 @@ impl GitLabAuthAgentImpl {
             .request(&http_client)?;
 
         let access_token = token_res.access_token().secret().as_str();
-        let mut write = self.cred.write();
+        // let mut write = self.cred.write();
 
         // GitLab's access token expires in 2 hours, so we need refreshing
         let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
@@ -169,19 +205,17 @@ impl GitLabAuthAgentImpl {
             .unwrap()
             .checked_sub(Duration::from_secs(30 * 60))
             .unwrap();
-        *write = Some(GitLabCred::new(
-            Some(access_token),
-            Some(time_to_refresh),
-            refresh_token,
-        ));
 
-        Ok(())
+        Ok(GitLabCred {
+            access_token: access_token.to_string(),
+            time_to_refresh,
+            refresh_token: refresh_token.to_string(),
+        })
     }
 
-    fn refresh_token_flow(&self) -> Result<()> {
+    fn refresh_token_flow(&self, refresh_token: String) -> Result<GitLabCred> {
         println!("Refreshing Access Token");
-        // Setting the port as 0 automatically assigns a free port
-        let listener = TcpListener::bind("127.0.0.1:0")?;
+        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
         let callback_port = listener.local_addr()?.port();
 
         let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
@@ -197,14 +231,14 @@ impl GitLabAuthAgentImpl {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = (*self.cred.read())
-            .clone()
-            .unwrap()
-            .refresh_token()
-            .to_string();
+        // let refresh_token = (*self.cred.read())
+        //     .clone()
+        //     .unwrap()
+        //     .refresh_token()
+        //     .to_string();
 
         let token_res = client
-            .exchange_refresh_token(&RefreshToken::new(refresh_token.to_string()))
+            .exchange_refresh_token(&RefreshToken::new(refresh_token.clone()))
             .request(&http_client)?;
 
         let access_token = token_res.access_token().secret().as_str();
@@ -216,14 +250,11 @@ impl GitLabAuthAgentImpl {
             .unwrap();
         let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
 
-        let mut write = self.cred.write();
-        *write = Some(GitLabCred::new(
-            Some(access_token),
-            Some(time_to_refresh),
-            &refresh_token,
-        ));
-
-        Ok(())
+        Ok(GitLabCred {
+            access_token: access_token.to_string(),
+            time_to_refresh,
+            refresh_token: refresh_token.to_string(),
+        })
     }
 }
 
@@ -233,6 +264,9 @@ impl GitAuthAgent for GitLabAuthAgentImpl {
         //     self.initial_auth()
         //         .expect("Unable to finish initial authentication");
         // }
+
+        let cred = self.credentials()?;
+
         // let cred = self.cred.read().clone().unwrap();
         // if cred.time_to_refresh().is_none() || Instant::now() > cred.time_to_refresh().unwrap() {
         //     self.refresh_token_flow()?;
@@ -246,14 +280,12 @@ impl GitAuthAgent for GitLabAuthAgentImpl {
         //     .unwrap()
         //     .to_string();
 
-        // cb.credentials(move |_url, username_from_url, _allowed_types| {
-        //     Cred::userpass_plaintext("oauth2", &access_token)
-        // });
+        cb.credentials(move |_url, _username_from_url, _allowed_types| {
+            Cred::userpass_plaintext("oauth2", &cred.access_token)
+        });
 
         // self.write_to_file();
-        // Ok(())
-
-        unimplemented!()
+        Ok(())
     }
 }
 
@@ -274,24 +306,25 @@ impl GitAuthAgent for GitLabAuthAgentImpl {
 //     }
 // }
 
-// #[cfg(test)]
-// mod gitlab_tests {
-//     use std::path::Path;
-//     use std::sync::Arc;
+#[cfg(test)]
+mod gitlab_tests {
+    use std::path::Path;
+    use std::sync::Arc;
 
-//     use crate::gitlab::auth::GitLabAuthAgentImpl;
-//     use moss_git::repo::RepoHandle;
-//     // use moss_git::TestStorage;
+    use crate::gitlab::auth::GitLabAuthAgentImpl;
+    use moss_git::repo::RepoHandle;
+    use moss_keyring::KeyringClientImpl;
+    // use moss_git::TestStorage;
 
-//     #[test]
-//     fn cloning_with_oauth() {
-//         dotenv::dotenv().ok();
-//         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
-//         let repo_path = Path::new("test-repo-lab");
+    #[test]
+    fn cloning_with_oauth() {
+        dotenv::dotenv().ok();
+        let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
+        let repo_path = Path::new("test-repo-lab");
 
-//         let auth_agent = GitLabAuthAgentImpl::read_from_file()
-//             .unwrap_or_else(|_| Arc::new(GitLabAuthAgentImpl::new()));
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitLabAuthAgentImpl::new(keyring_client));
 
-//         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
-//     }
-// }
+        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+    }
+}

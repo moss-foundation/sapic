@@ -88,8 +88,8 @@ impl GitHubAuthAgentImpl {
                 let cred_str = serde_json::to_string(&KeyringCredEntry {
                     access_token: cred.access_token.clone(),
                 })?;
-
                 self.keyring.set_secret(KEYRING_SECRET_KEY, &cred_str)?;
+
                 cred
             }
             Err(err) => return Err(err.into()),
