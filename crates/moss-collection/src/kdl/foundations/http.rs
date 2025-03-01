@@ -1,8 +1,10 @@
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{FormatConfig, FormatConfigBuilder, KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, TS)]
 pub struct Url {
     pub raw: Option<String>,
     pub host: Option<String>,

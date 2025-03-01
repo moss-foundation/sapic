@@ -54,6 +54,13 @@ impl CollectionState {
         write_guard.insert(key, Arc::clone(&entry));
         entry
     }
+
+    pub fn insert_request_handle(&self, key: &[u8], handle: RequestHandle) -> Result<()> {
+        let mut write_guard = self.requests.write();
+        write_guard.insert(key, Arc::new(handle));
+        Ok(())
+    }
+
 }
 
 pub struct CollectionHandle {
@@ -86,6 +93,7 @@ impl CollectionHandle {
         relative_path: Option<PathBuf>,
         input: CreateRequestInput,
     ) -> Result<()> {
+        // TODO: update `store` and `state`
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)
@@ -134,7 +142,7 @@ impl CollectionHandle {
 
                 (
                     HttpRequestFile {
-                        url: input.url.map(|raw| Url::new(raw)).unwrap_or(Url::default()),
+                        url: input.url.unwrap_or(Url::default()),
                         query_params: transformed_query_params,
                         path_params: Default::default(),
                         headers: Default::default(),
@@ -157,6 +165,11 @@ impl CollectionHandle {
 
         Ok(())
     }
+
+    // FIXME
+    // pub async fn rename_request(&self, )
+
+
 }
 
 #[cfg(test)]
@@ -195,7 +208,8 @@ mod tests {
                     None,
                     CreateRequestInput {
                         name: "Test42".to_string(),
-                        url: Some("https://spacex-production.up.railway.app".to_string()),
+                        url: Some(
+                            Url::new("https://spacex-production.up.railway.app".to_string())),
                         payload: Some(CreateRequestProtocolSpecificPayload::Http {
                             method: HttpMethod::Get,
                             query_params: vec![QueryParamItem {
