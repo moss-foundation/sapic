@@ -3348,7 +3348,19 @@ dependencies = [
  "anyhow",
  "dotenv",
  "git2",
+ "openssl",
+ "ssh2",
+]
+
+[[package]]
+name = "moss_git_hosting_provider"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dotenv",
+ "git2",
  "iota_stronghold",
+ "moss_git",
  "oauth2",
  "openssl",
  "parking_lot 0.12.3",
@@ -3358,6 +3370,7 @@ dependencies = [
  "serde_json",
  "ssh2",
  "tokio",
+ "url",
  "webbrowser",
  "zeroize",
 ]
