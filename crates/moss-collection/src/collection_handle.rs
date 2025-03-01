@@ -121,7 +121,7 @@ impl CollectionHandle {
                     transformed_query_params.insert(
                         item.key.clone(),
                         QueryParamBody {
-                            value: Some(value), // FIXME: doesn’t make sense to wrap it in Option
+                            value,
                             desc: item.desc.clone(),
                             order: item.order,
                             disabled: item.disabled,
@@ -134,8 +134,8 @@ impl CollectionHandle {
 
                 (
                     HttpRequestFile {
-                        url: Some(input.url.map(|raw| Url::new(raw)).unwrap_or(Url::default())),
-                        query_params: Some(transformed_query_params),
+                        url: input.url.map(|raw| Url::new(raw)).unwrap_or(Url::default()),
+                        query_params: transformed_query_params,
                         path_params: Default::default(),
                         headers: Default::default(),
                     }
@@ -174,7 +174,7 @@ mod tests {
     use super::*;
 
     const TEST_COLLECTION_PATH: &'static str =
-        "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection";
+        "TestCollection";
 
     #[test]
     fn create_request() {

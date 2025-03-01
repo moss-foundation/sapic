@@ -4,7 +4,7 @@ use crate::kdl::foundations::http::{
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
-use kdl::{KdlDocument, KdlNode};
+use kdl::{KdlDocument, KdlNode, KdlValue};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -109,7 +109,7 @@ fn parse_query_param_body(node: &KdlNode) -> Result<QueryParamBody> {
             QueryParamOptions::default()
         };
         Ok(QueryParamBody {
-            value,
+            value: value.unwrap_or(KdlValue::Null),
             desc,
             order,
             disabled,
@@ -154,7 +154,7 @@ fn parse_path_param_body(node: &KdlNode) -> Result<PathParamBody> {
             PathParamOptions::default()
         };
         Ok(PathParamBody {
-            value,
+            value: value.unwrap_or(KdlValue::Null),
             desc,
             order,
             disabled,
@@ -199,7 +199,7 @@ fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
             HeaderOptions::default()
         };
         Ok(HeaderBody {
-            value,
+            value: value.unwrap_or(KdlValue::Null),
             desc,
             order,
             disabled,
@@ -226,7 +226,7 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
     for node in document {
         match node.name().to_string().as_str() {
             URL_LIT => {
-                request.url = Some(parse_url_node(&node)?);
+                request.url = parse_url_node(&node)?;
             }
             PARAMS_LIT => {
                 // FIXME: Should we handle duplicate query/path param nodes?
@@ -237,16 +237,16 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
 
                 match typ {
                     QUERY_LIT => {
-                        request.query_params = Some(parse_query_params(&node)?);
+                        request.query_params = parse_query_params(&node)?;
                     }
                     PATH_LIT => {
-                        request.path_params = Some(parse_path_params(&node)?);
+                        request.path_params = parse_path_params(&node)?;
                     }
                     _ => return Err(ParseError::InvalidParamsType.into()),
                 }
             }
             HEADERS_LIT => {
-                request.headers = Some(parse_headers_node(&node)?);
+                request.headers = parse_headers_node(&node)?;
             }
             _ => {}
         }
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn test_query_param_body_to_string() {
         let body = QueryParamBody {
-            value: Some("value".into()),
+            value: "value".into(),
             desc: Some("desc".into()),
             order: Some(1),
             disabled: false,

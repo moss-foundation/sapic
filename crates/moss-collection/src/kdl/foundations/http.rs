@@ -1,5 +1,5 @@
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
-use kdl::{KdlDocument, KdlEntry, KdlNode, KdlValue};
+use kdl::{FormatConfig, FormatConfigBuilder, KdlDocument, KdlEntry, KdlNode, KdlValue};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default)]
@@ -37,23 +37,35 @@ impl Into<KdlNode> for Url {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct QueryParamBody {
-    pub value: Option<KdlValue>, // FIXME: doesn’t make sense to wrap it in Option
+    pub value: KdlValue,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
     pub options: QueryParamOptions,
 }
 
+impl Default for QueryParamBody {
+    fn default() -> Self {
+        Self {
+            value: KdlValue::Null,
+            desc: None,
+            order: None,
+            disabled: false,
+            options: QueryParamOptions::default(),
+        }
+    }
+}
+
 impl Into<KdlDocument> for QueryParamBody {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
-        if let Some(value) = self.value {
-            let mut value_node = KdlNode::new("value");
-            value_node.push(KdlEntry::new(value));
-            doc.nodes_mut().push(value_node);
-        }
+
+        let mut value_node = KdlNode::new("value");
+        value_node.push(KdlEntry::new(self.value));
+        doc.nodes_mut().push(value_node);
+
         if let Some(desc) = self.desc {
             let mut desc_node = KdlNode::new("desc");
             desc_node.push(KdlEntry::new(desc));
@@ -89,23 +101,35 @@ impl Into<KdlNode> for QueryParamOptions {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct PathParamBody {
-    pub value: Option<KdlValue>,
+    pub value: KdlValue,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
     pub options: PathParamOptions,
 }
 
+impl Default for PathParamBody {
+    fn default() -> Self {
+        Self {
+            value: KdlValue::Null,
+            desc: None,
+            order: None,
+            disabled: false,
+            options: PathParamOptions::default(),
+        }
+    }
+}
+
 impl Into<KdlDocument> for PathParamBody {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
-        if let Some(value) = self.value {
-            let mut value_node = KdlNode::new("value");
-            value_node.push(KdlEntry::new(value));
-            doc.nodes_mut().push(value_node);
-        }
+
+        let mut value_node = KdlNode::new("value");
+        value_node.push(KdlEntry::new(self.value));
+        doc.nodes_mut().push(value_node);
+
         if let Some(desc) = self.desc {
             let mut desc_node = KdlNode::new("desc");
             desc_node.push(KdlEntry::new(desc));
@@ -142,23 +166,36 @@ impl Into<KdlNode> for PathParamOptions {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct HeaderBody {
-    pub value: Option<KdlValue>,
+    pub value: KdlValue,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
     pub options: HeaderOptions,
 }
 
+impl Default for HeaderBody {
+    fn default() -> Self {
+        Self {
+            value: KdlValue::Null,
+            desc: None,
+            order: None,
+            disabled: false,
+            options: HeaderOptions::default(),
+        }
+    }
+}
+
+
 impl Into<KdlDocument> for HeaderBody {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
-        if let Some(value) = self.value {
-            let mut value_node = KdlNode::new("value");
-            value_node.push(KdlEntry::new(value));
-            doc.nodes_mut().push(value_node);
-        }
+
+        let mut value_node = KdlNode::new("value");
+        value_node.push(KdlEntry::new(self.value));
+        doc.nodes_mut().push(value_node);
+
         if let Some(desc) = self.desc {
             let mut desc_node = KdlNode::new("desc");
             desc_node.push(KdlEntry::new(desc));
@@ -197,56 +234,55 @@ impl Into<KdlNode> for HeaderOptions {
 
 #[derive(Clone, Debug, Default)]
 pub struct HttpRequestFile {
-    pub url: Option<Url>, // FIXME: doesn’t make sense to wrap it in Option
-    pub query_params: Option<HashMap<String, QueryParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
-    pub path_params: Option<HashMap<String, PathParamBody>>, // FIXME: doesn’t make sense to wrap it in Option
-    pub headers: Option<HashMap<String, HeaderBody>>, // FIXME: doesn’t make sense to wrap it in Option
+    pub url: Url,
+    pub query_params: HashMap<String, QueryParamBody>,
+    pub path_params: HashMap<String, PathParamBody>,
+    pub headers: HashMap<String, HeaderBody>,
 }
 
 impl ToString for HttpRequestFile {
     fn to_string(&self) -> String {
         let mut document = KdlDocument::new();
         let nodes = document.nodes_mut();
-        if let Some(url) = &self.url {
-            let url_node: KdlNode = url.clone().into();
-            nodes.push(url_node);
+
+        let url_node: KdlNode = self.url.clone().into();
+        nodes.push(url_node);
+
+        let mut query_params_node = KdlNode::new(PARAMS_LIT);
+        query_params_node.push(KdlEntry::new_prop("type", "query"));
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.query_params {
+            let mut param_node = KdlNode::new(name.to_string());
+            param_node.set_children(body.clone().into());
+            children.nodes_mut().push(param_node);
         }
-        if let Some(query_params) = &self.query_params {
-            let mut query_params_node = KdlNode::new(PARAMS_LIT);
-            query_params_node.push(KdlEntry::new_prop("type", "query"));
-            let mut children = KdlDocument::new();
-            for (name, body) in query_params {
-                let mut param_node = KdlNode::new(name.to_string());
-                param_node.set_children(body.clone().into());
-                children.nodes_mut().push(param_node);
-            }
-            query_params_node.set_children(children);
-            nodes.push(query_params_node);
+        query_params_node.set_children(children);
+        nodes.push(query_params_node);
+
+
+        let mut path_params_node = KdlNode::new(PARAMS_LIT);
+        path_params_node.push(KdlEntry::new_prop("type", "path"));
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.path_params {
+            let mut param_node = KdlNode::new(name.clone());
+            param_node.set_children(body.clone().into());
+            children.nodes_mut().push(param_node);
         }
-        if let Some(path_params) = &self.path_params {
-            let mut path_params_node = KdlNode::new(PARAMS_LIT);
-            path_params_node.push(KdlEntry::new_prop("type", "path"));
-            let mut children = KdlDocument::new();
-            for (name, body) in path_params {
-                let mut param_node = KdlNode::new(name.clone());
-                param_node.set_children(body.clone().into());
-                children.nodes_mut().push(param_node);
-            }
-            path_params_node.set_children(children);
-            nodes.push(path_params_node);
+        path_params_node.set_children(children);
+        nodes.push(path_params_node);
+
+
+        let mut headers_node = KdlNode::new(HEADERS_LIT);
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.headers {
+            let mut header_node = KdlNode::new(name.clone());
+            header_node.set_children(body.clone().into());
+            children.nodes_mut().push(header_node);
         }
-        if let Some(headers) = &self.headers {
-            let mut headers_node = KdlNode::new(HEADERS_LIT);
-            let mut children = KdlDocument::new();
-            for (name, body) in headers {
-                let mut header_node = KdlNode::new(name.clone());
-                header_node.set_children(body.clone().into());
-                children.nodes_mut().push(header_node);
-            }
-            headers_node.set_children(children);
-            nodes.push(headers_node);
-        }
+        headers_node.set_children(children);
+        nodes.push(headers_node);
+
         document.autoformat();
-        document.to_string()
+        document.into_iter().map(|node| {node.to_string()}).collect::<Vec<String>>().join("\n")
     }
 }
