@@ -8,7 +8,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { ContextMenu } from "..";
 import { ChevronRightIcon, FileIcon, FolderIcon } from "./Icons";
 import { TreeNodeComponentProps } from "./types";
-import { useNodeRedacting } from "./useNodeRedacting";
+import { useNodeRename } from "./useNodeRenaming";
 import { canDrop, getActualDropSourceTarget, getActualDropTarget } from "./utils";
 
 export const TreeNode = ({
@@ -129,7 +129,7 @@ export const TreeNode = ({
     });
   }, [dropAllowance, node, treeId]);
 
-  const { redacting, setRedacting, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRedacting(
+  const { renaming, setRenaming, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRename(
     node,
     onNodeUpdate
   );
@@ -170,7 +170,7 @@ export const TreeNode = ({
       })}
     >
       <span className="DropCapture" ref={spanRef}>
-        {redacting ? (
+        {renaming ? (
           <div
             className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
             style={{ paddingLeft, paddingRight }}
@@ -229,7 +229,7 @@ export const TreeNode = ({
 
             <ContextMenu.Portal>
               <ContextMenu.Content className="text-white">
-                <ContextMenu.Item label="Edit" onClick={() => setRedacting(true)} />
+                <ContextMenu.Item label="Edit" onClick={() => setRenaming(true)} />
                 <ContextMenu.Item label="Item 2" />
                 <ContextMenu.Item label="Item 3" />
               </ContextMenu.Content>

@@ -2,22 +2,21 @@ import { useEffect, useRef, useState } from "react";
 
 import { NodeProps, TreeNodeProps } from "./types";
 
-export const useNodeRedacting = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps, oldId?: string | number) => void) => {
-  const [redacting, setRedacting] = useState(false);
+export const useNodeRename = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps, oldId?: string | number) => void) => {
+  const [renaming, setRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === "F2" && document.activeElement === e.currentTarget) {
-      setRedacting(true);
+      setRenaming(true);
     }
   };
 
   const handleInputKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") setRedacting(false)
+    if (e.key === "Escape") setRenaming(false)
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
-    console.log("handleSubmit")
     if ("preventDefault" in e) e.preventDefault();
 
     const newId = inputRef.current?.value.trim();
@@ -25,18 +24,15 @@ export const useNodeRedacting = (node: TreeNodeProps, onNodeUpdate: (node: TreeN
       onNodeUpdate({ ...node, id: newId, }, node.id);
     }
 
-    setRedacting(false);
+    setRenaming(false);
   };
 
-
   useEffect(() => {
-    if (redacting && inputRef.current) {
+    if (renaming && inputRef.current) {
       setFocusOnInput(inputRef, node);
     }
 
-  }, [redacting, node.id, inputRef, node]);
-
-
+  }, [renaming, node.id, inputRef, node]);
 
   const setFocusOnInput = (inputRef: React.RefObject<HTMLInputElement>, node: NodeProps) => {
     if (inputRef?.current) {
@@ -48,8 +44,8 @@ export const useNodeRedacting = (node: TreeNodeProps, onNodeUpdate: (node: TreeN
   };
 
   return {
-    redacting,
-    setRedacting,
+    renaming,
+    setRenaming,
     inputRef,
     handleButtonKeyUp,
     handleInputKeyUp,
