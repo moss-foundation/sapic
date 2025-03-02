@@ -5,7 +5,6 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import TestTreeData from "./assets/testTreeData.json";
 import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
-import TestDropTarget from "./components/TestDropTarget";
 import { NodeProps } from "./components/Tree/types";
 import { swapObjectsById } from "./utils";
 
@@ -162,8 +161,6 @@ function App() {
           )}
         </button>
       </div>
-
-      <TestDropTarget />
     </div>
   );
 }
@@ -178,11 +175,6 @@ const IsolatedTreeComponent = () => {
   return (
     <>
       <Tree tree={TestTreeData.tree} onTreeUpdate={handleTreeUpdate} />
-      {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-800 overflow-auto">
-        <pre>
-          <code>{JSON.stringify(treeItems, null, 2)}</code>
-        </pre>
-      </div> */}
       <hr className="my-3" />
       <Tree tree={TestTreeData.tree} />
     </>
