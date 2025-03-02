@@ -6,10 +6,10 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { ContextMenu } from "..";
-import { ChevronRightIcon, FileIcon, FolderIcon } from "./Icons";
+import { ChevronRightIcon, CollapseAllIcon, ExpandAllIcon, FileIcon, FolderIcon, TreeRootDetailIcon } from "./Icons";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps } from "./types";
-import { canDrop, getActualDropSourceTarget, getActualDropTarget } from "./utils";
+import { canDrop, collapseAllNodes, expandAllNodes, getActualDropSourceTarget, getActualDropTarget } from "./utils";
 
 export const TreeNode = ({
   node,
@@ -141,35 +141,79 @@ export const TreeNode = ({
     onNodeUpdate({ ...node, id: newId });
     setRenaming(false);
   };
+
   const handleFormCancel = () => {
     setRenaming(false);
   };
 
+  const handleExpandAll = () => {
+    onNodeUpdate(expandAllNodes(node));
+  };
+
+  const handleCollapseAll = () => {
+    onNodeUpdate(collapseAllNodes(node));
+  };
+
   if (node.id === "root") {
     return (
-      <ul
-        ref={ulList}
-        className={cn({
-          "bg-green-600": dropAllowance === true,
-          "bg-red-600": dropAllowance === false,
-          "": dropAllowance === null,
-        })}
-      >
-        {node.childNodes.map((childNode) => {
-          return (
-            <TreeNode
-              parentNode={node}
-              treeId={treeId}
-              onNodeUpdate={onNodeUpdate}
-              key={childNode.uniqueId}
-              node={childNode}
-              depth={0}
-              horizontalPadding={horizontalPadding}
-              nodeOffset={nodeOffset}
+      <div>
+        <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
+          <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
+            <ChevronRightIcon
+              className={cn(" min-w-4 min-h-4", {
+                "rotate-90": node.isExpanded,
+              })}
             />
-          );
-        })}
-      </ul>
+
+            <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
+          </button>
+
+          <div className="flex gap-1 items-center">
+            <button
+              className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]"
+              onClick={handleExpandAll}
+            >
+              <ExpandAllIcon className="size-4" />
+            </button>
+
+            <button
+              className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]"
+              onClick={handleCollapseAll}
+            >
+              <CollapseAllIcon className="size-4" />
+            </button>
+
+            <button className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]">
+              <TreeRootDetailIcon className="size-4" />
+            </button>
+          </div>
+        </div>
+
+        <ul
+          ref={ulList}
+          className={cn({
+            "bg-green-600": dropAllowance === true,
+            "bg-red-600": dropAllowance === false,
+            "": dropAllowance === null,
+          })}
+        >
+          {node.isExpanded &&
+            node.childNodes.map((childNode) => {
+              return (
+                <TreeNode
+                  parentNode={node}
+                  treeId={treeId}
+                  onNodeUpdate={onNodeUpdate}
+                  key={childNode.uniqueId}
+                  node={childNode}
+                  depth={0}
+                  horizontalPadding={horizontalPadding}
+                  nodeOffset={nodeOffset}
+                />
+              );
+            })}
+        </ul>
+      </div>
     );
   }
 

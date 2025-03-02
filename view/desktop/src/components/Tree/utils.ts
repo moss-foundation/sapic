@@ -5,7 +5,6 @@ export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps):
     if (node.uniqueId === updatedNode.uniqueId) {
         return updatedNode;
     }
-
     return {
         ...node,
         childNodes: node.childNodes.map((child) => updateTreeNode(child, updatedNode)),
@@ -173,4 +172,21 @@ export const canDrop = (sourceTarget: DropNodeElement, dropTarget: DropNodeEleme
     }
 
     return true;
-} 
+}
+
+export const expandAllNodes = (node: TreeNodeProps): TreeNodeProps => {
+    return {
+        ...node,
+        isExpanded: true,
+        childNodes: node.childNodes.map(child => expandAllNodes(child))
+    }
+}
+
+export const collapseAllNodes = (node: TreeNodeProps): TreeNodeProps => {
+    return {
+        ...node,
+        isExpanded: false,
+        childNodes: node.childNodes.map(child => collapseAllNodes(child))
+    }
+}
+
