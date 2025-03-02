@@ -3,4 +3,4 @@ pub mod utils;
 
 use moss_git::GitAuthAgent;
 
-pub trait SHHAuthAgent: GitAuthAgent {}
+pub trait SSHAuthAgent: GitAuthAgent {}

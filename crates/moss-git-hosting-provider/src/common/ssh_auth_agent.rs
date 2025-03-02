@@ -3,7 +3,7 @@ use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
 use std::path::PathBuf;
 
-use super::SHHAuthAgent;
+use super::SSHAuthAgent;
 
 #[derive(Clone)]
 pub struct SSHAuthAgentImpl {
@@ -12,7 +12,7 @@ pub struct SSHAuthAgentImpl {
     passphrase: Option<String>,
 }
 
-impl SHHAuthAgent for SSHAuthAgentImpl {}
+impl SSHAuthAgent for SSHAuthAgentImpl {}
 
 impl SSHAuthAgentImpl {
     pub fn new(
