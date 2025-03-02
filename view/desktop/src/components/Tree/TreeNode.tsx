@@ -170,20 +170,20 @@ export const TreeNode = ({
 
           <div className="flex gap-1 items-center">
             <button
-              className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]"
+              className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
               onClick={handleExpandAll}
             >
               <ExpandAllIcon className="size-4" />
             </button>
 
             <button
-              className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]"
+              className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
               onClick={handleCollapseAll}
             >
               <CollapseAllIcon className="size-4" />
             </button>
 
-            <button className="size-[22px] hover:bg-[#EBECF0] flex items-center justify-center rounded-[3px]">
+            <button className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
               <TreeRootDetailIcon className="size-4" />
             </button>
           </div>
@@ -247,7 +247,7 @@ export const TreeNode = ({
                 onClick={node.isFolder ? handleFolderClick : undefined}
                 onKeyUp={handleButtonKeyUp}
                 style={{ paddingLeft, paddingRight }}
-                className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative"
+                className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
               >
                 {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
 
