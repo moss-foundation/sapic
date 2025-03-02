@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import { NodeProps } from "./types";
+import { NodeProps, TreeNodeProps } from "./types";
 
-export const useNodeRedacting = (node: NodeProps, onNodeUpdate: (node: NodeProps, oldId?: string | number) => void) => {
+export const useNodeRedacting = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps, oldId?: string | number) => void) => {
   const [redacting, setRedacting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
