@@ -75,25 +75,35 @@ impl GitLabAuthAgentImpl {
             }
         }
 
+        let gen_initial_cred_fn: Box<dyn Fn() -> Result<GitLabCred>> = Box::new(|| {
+            let initial_cred = self.gen_initial_credentials()?;
+            let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
+            self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
+
+            Ok(initial_cred)
+        });
+
         let updated_cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
             Ok(data) => {
                 let stored_entry: KeyringCredEntry = serde_json::from_slice(&data)?;
-                let refreshed_cred = self.refresh_token_flow(stored_entry.refresh_token)?;
+                let refreshed_cred = match self.refresh_token_flow(stored_entry.refresh_token) {
+                    Ok(cred) => cred,
+                    Err(err) => {
+                        // TODO: log her
+                        println!("{}", err);
+
+                        gen_initial_cred_fn()?
+                    }
+                };
+
                 let updated_entry_str: String =
                     KeyringCredEntry::from(&refreshed_cred).try_into()?;
-
                 self.keyring
                     .set_secret(KEYRING_SECRET_KEY, &updated_entry_str)?;
 
                 refreshed_cred
             }
-            Err(keyring::Error::NoEntry) => {
-                let initial_cred = self.gen_initial_credentials()?;
-                let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
-                self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
-
-                initial_cred
-            }
+            Err(keyring::Error::NoEntry) => gen_initial_cred_fn()?,
             Err(err) => return Err(err.into()),
         };
 
