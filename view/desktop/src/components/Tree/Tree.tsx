@@ -1,103 +1,52 @@
-import { createContext, useContext, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
-import { cn } from "@/utils";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import TreeNode from "./TreeNode.tsx";
+import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "./types.ts";
+import {
+  addNodeToFolder,
+  addUniqueIdToTree,
+  hasDescendant,
+  removeNodeFromTree,
+  removeUniqueIdFromTree,
+  sortNode,
+  updateTreeNode,
+} from "./utils.ts";
 
-import TestDropTarget from "../TestDropTarget";
-import { sortNodes } from "./sortNodes";
-import TreeNode from "./TreeNode";
-import { NodeProps, TreeProps } from "./types";
+export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 16, onTreeUpdate }: TreeProps) => {
+  const treeId = useId();
+  const [tree, setTree] = useState<TreeNodeProps>(sortNode(addUniqueIdToTree(initialTree)));
 
-interface TreeContextProps {
-  dropSourceData: {
-    node: NodeProps;
-    TreeId: string;
-  } | null;
-  TreeId: string;
-}
-
-export const TreeContext = createContext<TreeContextProps>({
-  dropSourceData: null,
-  TreeId: "",
-});
-const isDescendant = (node: NodeProps, targetId: string | number): boolean => {
-  if (!node.childNodes) return false;
-  return node.childNodes.some((child) => child.id === targetId || isDescendant(child, targetId));
-};
-
-export const Tree = ({
-  tree: initialTree,
-  onNodeUpdate,
-  onNodeExpand,
-  onNodeCollapse,
-  onTreeUpdate,
-  horizontalPadding = 16,
-  nodeOffset = 16,
-  className,
-}: TreeProps) => {
-  const TreeId = useId();
-  const TreeContextValues = useContext(TreeContext);
-
-  const [dropSourceData, setDropSourceData] = useState<{
-    node: NodeProps;
-    TreeId: string;
-  } | null>(null);
-
-  const [tree, setTree] = useState<NodeProps>(initialTree);
+  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
+    setTree((prev) => updateTreeNode(prev, updatedNode));
+  };
 
   useEffect(() => {
-    const handleMoveTreeNode = (event: CustomEvent) => {
-      const { source, target } = event.detail as {
-        source: {
-          treeId: string;
-          node: NodeProps;
-        };
-        target: {
-          treeId: string;
-          node: NodeProps;
-        };
-      };
+    onTreeUpdate?.(removeUniqueIdFromTree(tree));
+  }, [onTreeUpdate, tree]);
 
-      if (source.treeId === target.treeId && isDescendant(source.node, target.node.id)) return;
+  useEffect(() => {
+    const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
+      const { source, target } = event.detail;
 
-      if (source.treeId === target.treeId && source.node.id === target.node.id) return;
-
-      if (source.treeId === TreeId) {
-        const removeNode = (nodes: NodeProps[], nodeId: string | number): NodeProps[] => {
-          return nodes
-            .filter((n) => n.id !== nodeId)
-            .map((n, index) => ({
-              ...n,
-              order: index + 1,
-              childNodes: n.childNodes ? removeNode(n.childNodes, nodeId) : [],
-            }));
-        };
-
-        setTree((prev) => {
-          return {
-            ...prev,
-            childNodes: sortNodes(removeNode(prev.childNodes, source.node.id)),
-          };
+      if (source.treeId === target.treeId && source.treeId === treeId) {
+        if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
+          return;
+        }
+        setTree((prevTree) => {
+          const treeWithoutSource = removeNodeFromTree(prevTree, source.node.uniqueId);
+          const updatedTree = addNodeToFolder(treeWithoutSource, target.node.uniqueId, source.node);
+          return sortNode(updatedTree);
         });
-      }
-
-      if (target.treeId === TreeId) {
-        const addNodeToTree = (tree: NodeProps, parentId: string | number, newNode: NodeProps): NodeProps => {
-          if (tree.id === parentId) {
-            return {
-              ...tree,
-              childNodes: sortNodes([...(tree.childNodes || []), newNode]),
-            };
-          } else if (tree.childNodes) {
-            return {
-              ...tree,
-              childNodes: sortNodes(tree.childNodes.map((child) => addNodeToTree(child, parentId, newNode))),
-            };
-          }
-          return tree;
-        };
-
-        setTree((prev) => addNodeToTree(prev, target.node.id, source.node));
+      } else {
+        if (target.treeId === treeId) {
+          setTree((prevTree) => {
+            const updatedTree = addNodeToFolder(prevTree, target.node.uniqueId, source.node);
+            return sortNode(updatedTree);
+          });
+        }
+        if (source.treeId === treeId) {
+          setTree((prevTree) => removeNodeFromTree(prevTree, source.node.uniqueId));
+        }
       }
     };
 
@@ -105,65 +54,28 @@ export const Tree = ({
     return () => {
       window.removeEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
     };
-  }, [TreeId]);
-
-  useEffect(() => {
-    return monitorForElements({
-      onDropTargetChange: ({ location }) => {
-        if (location.current?.dropTargets.length === 0) return;
-
-        if (
-          location.current?.dropTargets[0].data.depth === 0 &&
-          location.current?.dropTargets[0] &&
-          (location.current?.dropTargets[0].data as { node: NodeProps }).node.isFolder
-        ) {
-          setDropSourceData(location.current.dropTargets[0].data as { node: NodeProps; TreeId: string });
-          return;
-        }
-
-        if (location.current?.dropTargets[0].data.depth === 0 && location.current?.dropTargets[0]) {
-          setDropSourceData({ node: tree, TreeId: location.current?.dropTargets[0].data.TreeId as string });
-          return;
-        }
-
-        if (
-          location.current?.dropTargets[0] &&
-          (location.current.dropTargets[0].data as { node: NodeProps }).node?.isFolder
-        ) {
-          setDropSourceData(location.current.dropTargets[0].data as { node: NodeProps; TreeId: string });
-        } else if (location.current?.dropTargets[1]) {
-          setDropSourceData(location.current.dropTargets[1].data as { node: NodeProps; TreeId: string });
-        } else if (location.current?.dropTargets[0]) {
-          setDropSourceData(location.current.dropTargets[0].data as { node: NodeProps; TreeId: string });
-        } else {
-          setDropSourceData(null);
-        }
-      },
-      onDrop: () => {
-        setDropSourceData(null);
-      },
-    });
-  }, [TreeContextValues.dropSourceData, TreeId, tree]);
-
-  const handleOnNodeUpdate = (node: NodeProps) => {
-    setTree(node);
-    onNodeUpdate?.(node);
-    onTreeUpdate?.(node);
-  };
+  }, [treeId]);
 
   return (
-    <div className={className}>
-      <TreeContext.Provider value={{ dropSourceData, TreeId }}>
-        <TreeNode
-          node={tree}
-          onNodeUpdate={handleOnNodeUpdate}
-          onNodeExpand={onNodeExpand}
-          onNodeCollapse={onNodeCollapse}
-          depth={0}
-          horizontalPadding={horizontalPadding}
-          nodeOffset={nodeOffset}
-        />
-      </TreeContext.Provider>
-    </div>
+    <>
+      <TreeNode
+        onNodeUpdate={handleNodeUpdate}
+        key={`root-${treeId}`}
+        node={tree}
+        depth={0}
+        horizontalPadding={horizontalPadding}
+        nodeOffset={nodeOffset}
+        treeId={treeId}
+      />
+
+      {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-500 overflow-auto">
+        <div>treeId: {treeId}</div>
+        <pre>
+          <code>{JSON.stringify(tree, null, 2)}</code>
+        </pre>
+      </div> */}
+    </>
   );
 };
+
+export default Tree;

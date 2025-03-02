@@ -9,12 +9,7 @@ export const TestDropTarget = () => {
 
   const [dropAllowance, setDropAllowance] = useState<boolean | null>(null);
 
-  const [lastDroppedElement, setLastDroppedElement] = useState<{
-    id: unknown;
-    name: unknown;
-    type: unknown;
-    TreeId: unknown;
-  } | null>(null);
+  const [lastDroppedElement, setLastDroppedElement] = useState<unknown | null>(null);
 
   useEffect(() => {
     const element = ref?.current;
@@ -24,22 +19,16 @@ export const TestDropTarget = () => {
     return dropTargetForElements({
       element,
 
-      onDragEnter({ self, source, location }) {
-        // console.log("onDragEnter", { self, source, location });
+      onDragEnter() {
         setDropAllowance(true);
       },
-      onDrag({ self, source, location }) {
-        // console.log("onDrag", { self, source, location });
-      },
-      onDragLeave(args) {
-        // console.log("onDragLeave", args);
+
+      onDragLeave() {
         setDropAllowance(null);
       },
-      onDrop({ self, source, location }) {
-        // console.log("onDrop", { self, source, location });
-        setDropAllowance(null);
-        console.log(1234, { ...source.data });
+      onDrop({ source }) {
         setLastDroppedElement({ ...source.data });
+        setDropAllowance(null);
       },
     });
   }, [label, ref]);
@@ -47,17 +36,17 @@ export const TestDropTarget = () => {
   return (
     <div
       ref={ref}
-      className={cn("absolute h-full w-[500px] inset-x-100  bg-amber-300", {
-        "bg-amber-500": dropAllowance === null,
-        "bg-green-600": dropAllowance === true,
+      className={cn("absolute h-full w-[500px] inset-x-100", {
+        "bg-white": dropAllowance === null,
+        "bg-green-300": dropAllowance === true,
       })}
     >
       {lastDroppedElement ? (
         <div className="relative h-full">
-          <div className="overflow-auto h-full">
+          <div className="overflow-auto h-full text-sm">
             <div>Last Dropped Item:</div>
             <pre>
-              <code>{JSON.stringify(lastDroppedElement, null, 2)}</code>
+              <code className="text-xs">{JSON.stringify(lastDroppedElement, null, 2)}</code>
             </pre>
           </div>
         </div>

@@ -12,21 +12,21 @@
         "order": 1,
         "type": "folder",
         "isFolder": true,
-        "isExpanded": false,
+        "isExpanded": true,
         "childNodes": [
           {
             "id": "desktop",
             "order": 1,
             "type": "folder",
             "isFolder": true,
-            "isExpanded": false,
+            "isExpanded": true,
             "childNodes": [
               {
                 "id": "file1",
                 "order": 1,
                 "type": "file",
                 "isFolder": false,
-                "isExpanded": false,
+                "isExpanded": true,
                 "childNodes": []
               },
               {
@@ -34,7 +34,7 @@
                 "order": 2,
                 "type": "file",
                 "isFolder": false,
-                "isExpanded": false,
+                "isExpanded": true,
                 "childNodes": []
               },
               {
@@ -42,14 +42,14 @@
                 "order": 3,
                 "type": "folder",
                 "isFolder": true,
-                "isExpanded": false,
+                "isExpanded": true,
                 "childNodes": [
                   {
                     "id": "file3",
                     "order": 1,
                     "type": "file",
                     "isFolder": false,
-                    "isExpanded": false,
+                    "isExpanded": true,
                     "childNodes": []
                   }
                 ]
@@ -61,8 +61,25 @@
             "order": 2,
             "type": "file",
             "isFolder": false,
-            "isExpanded": false,
+            "isExpanded": true,
             "childNodes": []
+          },
+          {
+            "id": "yetAnotherFolder",
+            "order": 3,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": true,
+            "childNodes": [
+              {
+                "id": "file3",
+                "order": 1,
+                "type": "file",
+                "isFolder": false,
+                "isExpanded": true,
+                "childNodes": []
+              }
+            ]
           }
         ]
       },
@@ -71,7 +88,7 @@
         "order": 2,
         "type": "file",
         "isFolder": false,
-        "isExpanded": false,
+        "isExpanded": true,
         "childNodes": []
       },
       {
@@ -79,7 +96,7 @@
         "order": 3,
         "type": "file",
         "isFolder": false,
-        "isExpanded": false,
+        "isExpanded": true,
         "childNodes": []
       }
     ]

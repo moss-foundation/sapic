@@ -1,42 +1,56 @@
+export interface TreeNodeDropProps {
+  type: "TreeNode";
+  data: {
+    node: TreeNodeProps;
+    treeId: string;
+  };
+}
+
 export interface TreeProps {
   tree: NodeProps;
-  onNodeUpdate?: (node: NodeProps, oldId?: string | number) => void;
-  onNodeExpand?: (node: NodeProps) => void;
-  onNodeCollapse?: (node: NodeProps) => void;
-  onTreeUpdate?: (nodes: NodeProps) => void;
   horizontalPadding?: number;
   nodeOffset?: number;
-  className?: string;
-
+  onTreeUpdate?: (tree: NodeProps) => void;
 }
 
-export interface RecursiveTreeProps {
-  nodes: NodeProps[];
-  onNodeUpdate?: (node: NodeProps, oldId?: string | number) => void;
-  onChildNodesUpdate?: (nodes: NodeProps[]) => void;
-  onNodeExpand?: (node: NodeProps) => void;
-  onNodeCollapse?: (node: NodeProps) => void;
-  onTreeUpdate?: (nodes: NodeProps) => void;
-  depth?: number;
-  horizontalPadding: number;
-  nodeOffset: number;
+export interface NodeEvents {
+  onNodeUpdate: (node: TreeNodeProps) => void;
 }
 
-export interface TreeNodeProps {
-  node: NodeProps;
-  onNodeUpdate: (node: NodeProps, oldId?: string | number) => void;
-  onNodeExpand?: (node: NodeProps) => void;
-  onNodeCollapse?: (node: NodeProps) => void;
+export interface TreeNodeComponentProps extends NodeEvents {
+  node: TreeNodeProps;
   depth: number;
   horizontalPadding: number;
   nodeOffset: number;
+  treeId: string;
+}
+
+export interface TreeNodeProps extends NodeProps {
+  uniqueId: string;
+  childNodes: TreeNodeProps[];
+
 }
 
 export interface NodeProps {
   id: string | number;
-  order: number;
   type: string;
-  isExpanded: boolean;
+  order: number;
   isFolder: boolean;
+  isExpanded: boolean;
   childNodes: NodeProps[];
 }
+
+export interface MoveNodeEventDetail {
+  source: {
+    node: TreeNodeProps;
+    treeId: string;
+  };
+  target: {
+    node: TreeNodeProps;
+    treeId: string;
+  };
+}
+export interface DropNodeElement {
+  node: TreeNodeProps; treeId: string
+}
+export type SortTypes = "none" | "order" | "alphabetically";
