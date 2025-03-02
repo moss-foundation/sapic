@@ -26,9 +26,13 @@ use thiserror::Error;
 
 #[derive(Clone, Debug, Error)]
 pub enum RequestOperationError {
-    #[error("A request named {name} already exists in {path}")]
+    #[error("The name of a request cannot be empty.")]
+    EmptyName,
+    #[error("`{name}` is an invalid name for a request.")]
+    InvalidName { name: String }, // TODO: validate name
+    #[error("A request named {name} already exists in {path}.")]
     DuplicateName { path: PathBuf, name: String },
-    #[error("The request named {name} does not exist in {path}")]
+    #[error("The request named {name} does not exist in {path}.")]
     NonexistentRequest { path: PathBuf, name: String },
 }
 
@@ -124,6 +128,7 @@ impl CollectionState {
 
 pub struct CollectionHandle {
     fs: Arc<dyn FileSystem>,
+    // TODO: extract request store
     store: Arc<dyn CollectionRequestSubstore>,
     state: Arc<CollectionState>,
 }
@@ -227,6 +232,18 @@ impl CollectionHandle {
         }
     }
 
+    pub fn with_state(
+        fs: Arc<dyn FileSystem>,
+        store: Arc<dyn CollectionRequestSubstore>,
+        state: CollectionState
+    ) -> Self {
+        Self {
+            fs,
+            store,
+            state: Arc::new(state),
+        }
+    }
+
     pub(crate) fn state(&self) -> Arc<CollectionState> {
         Arc::clone(&self.state)
     }
@@ -245,6 +262,9 @@ impl CollectionHandle {
             requests_dir
         };
         let name = input.name;
+        if name.trim().is_empty() {
+            return Err(RequestOperationError::EmptyName.into());
+        }
         let request_dir = path.join(format!("{}.request", name));
         let key = request_dir.to_string_lossy().to_string();
         if self.state.contains(&key) {
@@ -274,7 +294,6 @@ impl CollectionHandle {
                         },
                     ),
                 )?;
-                // TODO: update store after implementing db
                 (
                     request_file.to_string(),
                     method_to_request_type_str(&method),
@@ -294,7 +313,6 @@ impl CollectionHandle {
                         },
                     ),
                 )?;
-                // TODO: update store after implementing db
                 (String::new(), "get".to_string())
             }
         };
@@ -308,6 +326,7 @@ impl CollectionHandle {
             .await
     }
 
+
     pub async fn rename_request(
         &self,
         collection_path: &PathBuf,
@@ -316,6 +335,9 @@ impl CollectionHandle {
         new_name: &str,
     )
         -> Result<()> {
+        if new_name.trim().is_empty() {
+            return Err(RequestOperationError::EmptyName.into());
+        }
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)
@@ -363,7 +385,6 @@ impl CollectionHandle {
                 .rename(&old_path, &new_path, RenameOptions::default())
                 .await?;
         }
-        // TODO: update store after implementing db
 
         self.state.rename_request_handle(old_key, new_key, new_name)
     }
@@ -375,6 +396,9 @@ impl CollectionHandle {
         name: &str,
     )
         -> Result<()> {
+        if name.trim().is_empty() {
+            return Err(RequestOperationError::EmptyName.into());
+        }
         let requests_dir = collection_path.join("requests");
         let path = if let Some(path) = relative_path {
             requests_dir.join(path)

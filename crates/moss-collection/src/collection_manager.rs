@@ -1,8 +1,10 @@
 use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::AppService;
-use moss_fs::ports::FileSystem;
+use moss_fs::ports::{FileSystem};
 use std::{path::PathBuf, sync::Arc};
+
+use thiserror::Error;
 use tokio::sync::OnceCell;
 
 use crate::{
@@ -19,9 +21,22 @@ use crate::{
 
 type CollectionMap = DashMap<PathBuf, CollectionHandle>;
 
+#[derive(Clone, Debug, Error)]
+pub enum CollectionOperationError {
+    #[error("The name of a collection cannot be empty.")]
+    EmptyName,
+    #[error("`{name}` is an invalid name for a collection.")]
+    InvalidName { name: String }, // TODO: validate name
+    #[error("A collection named {name} already exists in {path}.")]
+    DuplicateName { name: String, path: PathBuf },
+    #[error("The collection named `{name}` does not exist in {path}")]
+    NonexistentCollection { name: String, path: PathBuf }
+}
+
 pub struct CollectionManager {
     fs: Arc<dyn FileSystem>,
     collection_store: Arc<dyn CollectionMetadataStore>,
+    // TODO: extract request store
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
     collections: OnceCell<Arc<CollectionMap>>,
     indexer: Arc<dyn CollectionIndexer>,
@@ -157,19 +172,22 @@ impl CollectionManager {
     }
 
     pub async fn create_collection(&self, input: CreateCollectionInput) -> Result<()> {
-        if input.name.is_empty() {
-            return Err(anyhow!("Collection name cannot be empty"));
+        if input.name.trim().is_empty() {
+            return Err(CollectionOperationError::EmptyName.into());
         }
-
         let full_path = input.path.join(&input.name);
+        let collections = self.collections().await?;
+        if collections.contains_key(&full_path) {
+            return Err(CollectionOperationError::DuplicateName {
+                name: input.name,
+                path: full_path
+            }.into());
+        }
         self.fs.create_dir(&full_path).await?;
-
         // TODO: init repo
 
-        let collections = self.collections().await?;
-
         self.collection_store.put_collection_item(
-            input.path.clone(),
+            full_path.clone(),
             CollectionMetadataEntity {
                 order: None,
                 requests: Default::default(),
@@ -177,7 +195,7 @@ impl CollectionManager {
         )?;
 
         collections.insert(
-            input.path,
+            full_path.clone(),
             CollectionHandle::new(
                 Arc::clone(&self.fs),
                 Arc::clone(&self.collection_request_substore),
@@ -187,6 +205,55 @@ impl CollectionManager {
         );
 
         Ok(())
+    }
+
+    // TODO: In the future, we need to test the impact of this on the user experience
+    // Since we use the full path as the PatriciaMap's key
+    // Renaming a collection is potentially a very heavy operation
+    // Which requires rebuilding the entire PatriciaMap
+    pub async fn rename_collection(&self, path_buf: PathBuf, new_name: &str) -> Result<()> {
+        if new_name.trim().is_empty() {
+            return Err(CollectionOperationError::EmptyName.into());
+        }
+        let collections = self.collections().await?;
+        if !collections.contains_key(&path_buf) {
+            let name = path_buf.file_name().unwrap();
+            return Err(CollectionOperationError::NonexistentCollection {
+                name: name.to_string_lossy().to_string(),
+                path: path_buf
+            }.into());
+        }
+        let new_path = path_buf.parent().unwrap().join(&new_name);
+        // self.fs.rename(&path_buf, &new_path, RenameOptions::default()).await?;
+
+        let metadata = self.collection_store.remove_collection_item(path_buf.clone())?;
+        self.collection_store.put_collection_item(new_path.clone(), metadata)?;
+
+        // Updating the key for every request within the collection
+        // FIXME: We run into a deadlock here
+        // Apparently tokio does not work very well with DashMap
+        let handle = collections.remove(&path_buf).unwrap().1;
+        let state = handle.state();
+        let requests =
+            state
+                .requests
+                .read()
+                .iter()
+                .map(|(k, v)| (k.clone(), v.clone()) )
+                .collect::<Vec<_>>();
+
+        for (old_key, req_handle) in requests {
+            // handle.delete_request(&PathBuf::from(String::from_utf8_lossy(&old_key)))?
+            println!("{}", String::from_utf8_lossy(&old_key))
+        }
+
+        collections.insert(new_path.clone(), handle);
+
+        Ok(())
+    }
+
+    pub async fn delete_collection(&self, name: &str) -> Result<()> {
+        unimplemented!()
     }
 }
 
@@ -205,7 +272,7 @@ impl AppService for CollectionManager {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-
+    use std::path::Path;
     use moss_fs::adapters::disk::DiskFileSystem;
 
     use crate::{
@@ -213,14 +280,129 @@ mod tests {
         models::storage::RequestMetadataEntity,
         storage::{MockCollectionMetadataStore, MockCollectionRequestSubstore},
     };
-
+    use crate::models::operations::collection_operations::CreateRequestInput;
     use super::*;
 
     const TEST_COLLECTION_PATH: &'static str =
-        "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection";
+        "TestCollection";
 
     const TEST_REQUEST_PATH: &'static str =
-        "/Users/g10z3r/Project/keenawa-co/sapic/crates/moss-collection/tests/TestCollection/requests/Test1.request";
+        "TestCollection/requests/Test1.request";
+    // FIXME: I have not figured out how automock works and the best way to use it
+    // For easier testing on my part I'll try to manually create test structures for them
+    struct TestCollectionMetadataStore{
+        collections: DashMap<PathBuf, CollectionMetadataEntity>
+    }
+
+    impl TestCollectionMetadataStore {
+        pub fn new() -> Self {
+            Self {
+                collections: DashMap::new()
+            }
+        }
+    }
+    impl CollectionMetadataStore for TestCollectionMetadataStore {
+        fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
+            Ok(self
+                .collections
+                .iter()
+                .map(|ref_multi| (ref_multi.key().clone(), ref_multi.value().clone()))
+                .collect())
+        }
+
+        fn put_collection_item(&self, path: PathBuf, item: CollectionMetadataEntity) -> Result<()> {
+            self.collections.insert(path.clone(), item);
+            Ok(())
+        }
+
+
+        fn remove_collection_item(&self, path: PathBuf) -> Result<CollectionMetadataEntity> {
+            if let Some((_k, v)) = self.collections.remove(&path) {
+                Ok(v)
+            } else {
+                Err(anyhow!("{} not found in CollectionMetadataStore", path.to_string_lossy()))
+            }
+
+        }
+    }
+
+    struct TestCollectionRequestSubstore {}
+
+    impl TestCollectionRequestSubstore {
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+    impl CollectionRequestSubstore for TestCollectionRequestSubstore {}
+
+
+    fn generate_test_service() -> CollectionManager {
+        let fs = Arc::new(DiskFileSystem::new());
+        let collection_store = TestCollectionMetadataStore::new();
+        let collection_request_substore = TestCollectionRequestSubstore::new();
+        let indexer = Arc::new(IndexingService::new(fs.clone()));
+        CollectionManager::new(
+            fs,
+            Arc::new(collection_store),
+            Arc::new(collection_request_substore),
+            indexer,
+        ).unwrap()
+    }
+
+    #[test]
+    fn test_create_collection() {
+        let service = generate_test_service();
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                service.create_collection(
+                    CreateCollectionInput {
+                        name: "TestCollection".to_string(),
+                        path: "Collections".into(),
+                        repo: None,
+                    }
+                ).await.unwrap();
+                let collections = service.collections().await.unwrap();
+                assert!(collections.contains_key(
+                    &PathBuf::from("Collections")
+                        .join("TestCollection")
+                ));
+            });
+    }
+
+    #[test]
+    fn test_rename_collection(){
+        let service = generate_test_service();
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                service.create_collection(
+                    CreateCollectionInput {
+                        name: "Pre-renaming".to_string(),
+                        path: "Collections".into(),
+                        repo: None,
+                    }
+                ).await.unwrap();
+                let old_path = PathBuf::from("Collections").join("Pre-renaming");
+                let collections = service.collections().await.unwrap();
+                let handle = collections.get(&old_path).unwrap();
+                handle.create_request(&old_path, None, CreateRequestInput {
+                    name: "Test".to_string(),
+                    url: None,
+                    payload: None,
+                }).await.unwrap();
+                let new_path = PathBuf::from("Collections").join("Post-renaming");
+                service.rename_collection(old_path.clone(), "Post-renaming").await.unwrap();
+
+                assert!(!collections.contains_key(&old_path));
+                assert!(collections.contains_key(&new_path));
+
+            });
+    }
 
     #[test]
     fn collections() {

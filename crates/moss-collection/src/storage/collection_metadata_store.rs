@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use std::{path::PathBuf, sync::Arc};
 
 use crate::models::storage::CollectionMetadataEntity;
@@ -38,9 +38,12 @@ impl CollectionMetadataStore for SledCollectionMetadataStore {
         Ok(())
     }
 
-    fn remove_collection_item(&self, path: PathBuf) -> Result<()> {
-        self.tree.remove(path.to_string_lossy().as_bytes())?;
+    fn remove_collection_item(&self, path: PathBuf) -> Result<CollectionMetadataEntity> {
+        if let Some(value) = self.tree.remove(path.to_string_lossy().as_bytes())? {
+            Ok(bincode::deserialize::<CollectionMetadataEntity>(&value)?)
+        } else {
+            Err(anyhow!("{} not found in SledCollectionMetadataStore", path.to_string_lossy()))
+        }
 
-        Ok(())
     }
 }
