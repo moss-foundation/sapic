@@ -7,8 +7,8 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { ContextMenu } from "..";
 import { ChevronRightIcon, FileIcon, FolderIcon } from "./Icons";
+import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps } from "./types";
-import { useNodeRename } from "./useNodeRenaming";
 import { canDrop, getActualDropSourceTarget, getActualDropTarget } from "./utils";
 
 export const TreeNode = ({
@@ -18,6 +18,7 @@ export const TreeNode = ({
   horizontalPadding,
   nodeOffset,
   treeId,
+  parentNode,
 }: TreeNodeComponentProps) => {
   const paddingLeft = `${depth * nodeOffset + horizontalPadding}px`;
   const paddingRight = `${horizontalPadding}px`;
@@ -129,10 +130,20 @@ export const TreeNode = ({
     });
   }, [dropAllowance, node, treeId]);
 
-  const { renaming, setRenaming, inputRef, handleButtonKeyUp, handleInputKeyUp, handleSubmit } = useNodeRename(
-    node,
-    onNodeUpdate
-  );
+  const [renaming, setRenaming] = useState(false);
+  const handleButtonKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "F2" && document.activeElement === e.currentTarget) {
+      setRenaming(true);
+    }
+  };
+
+  const handleFormSubmit = (newId: string) => {
+    onNodeUpdate({ ...node, id: newId });
+    setRenaming(false);
+  };
+  const handleFormCancel = () => {
+    setRenaming(false);
+  };
 
   if (node.id === "root") {
     return (
@@ -147,6 +158,7 @@ export const TreeNode = ({
         {node.childNodes.map((childNode) => {
           return (
             <TreeNode
+              parentNode={node}
               treeId={treeId}
               onNodeUpdate={onNodeUpdate}
               key={childNode.uniqueId}
@@ -173,19 +185,15 @@ export const TreeNode = ({
         {renaming ? (
           <div
             className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
-            style={{ paddingLeft, paddingRight }}
+            style={{ paddingLeft }}
           >
             {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
-            <form onSubmit={handleSubmit} className="grow w-full">
-              <input
-                autoFocus
-                ref={inputRef}
-                className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none  relative"
-                onKeyUp={handleInputKeyUp}
-                onBlur={handleSubmit}
-              />
-            </form>
-            <ChevronRightIcon className="opacity-0 ml-auto min-w-4 min-h-4" />
+            <NodeRenamingForm
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
+              currentName={node.id}
+            />
           </div>
         ) : (
           <ContextMenu.Root modal={false}>
@@ -201,7 +209,7 @@ export const TreeNode = ({
 
                 <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
 
-                <span className="h-full min-h-4 grow" />
+                <span className="DragHandle h-full min-h-4 grow" />
 
                 <ChevronRightIcon
                   className={cn("ml-auto min-w-4 min-h-4", {
@@ -214,6 +222,15 @@ export const TreeNode = ({
                   createPortal(
                     <ul className="bg-[#ebecf0] dark:bg-[#434343]">
                       <TreeNode
+                        parentNode={{
+                          uniqueId: "-",
+                          childNodes: [],
+                          type: "",
+                          order: 0,
+                          isFolder: false,
+                          isExpanded: false,
+                          id: "-",
+                        }}
                         treeId={treeId}
                         node={{ ...node, childNodes: [] }}
                         onNodeUpdate={() => {}}
@@ -242,6 +259,7 @@ export const TreeNode = ({
             {node.childNodes.map((childNode) => {
               return (
                 <TreeNode
+                  parentNode={node}
                   treeId={treeId}
                   key={childNode.uniqueId}
                   node={childNode}

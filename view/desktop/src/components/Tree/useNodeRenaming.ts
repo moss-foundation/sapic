@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from "react";
 
 import { NodeProps, TreeNodeProps } from "./types";
 
-export const useNodeRename = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps, oldId?: string | number) => void) => {
+interface UseNodeRenameProps {
+  node: TreeNodeProps;
+  onNodeUpdate: (node: TreeNodeProps, oldId?: string | number) => void;
+  siblingsIds: (string | number)[];
+}
+
+export const useNodeRename = ({ node, onNodeUpdate, siblingsIds }: UseNodeRenameProps) => {
   const [renaming, setRenaming] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -20,7 +26,7 @@ export const useNodeRename = (node: TreeNodeProps, onNodeUpdate: (node: TreeNode
     if ("preventDefault" in e) e.preventDefault();
 
     const newId = inputRef.current?.value.trim();
-    if (newId && newId !== node.id) {
+    if (newId && newId !== node.id && !siblingsIds.includes(String(newId))) {
       onNodeUpdate({ ...node, id: newId, }, node.id);
     }
 

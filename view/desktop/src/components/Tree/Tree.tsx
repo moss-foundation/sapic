@@ -59,6 +59,7 @@ export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 1
   return (
     <>
       <TreeNode
+        parentNode={tree}
         onNodeUpdate={handleNodeUpdate}
         key={`root-${treeId}`}
         node={tree}

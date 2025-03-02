@@ -1,10 +1,4 @@
-export interface TreeNodeDropProps {
-  type: "TreeNode";
-  data: {
-    node: TreeNodeProps;
-    treeId: string;
-  };
-}
+
 
 export interface TreeProps {
   tree: NodeProps;
@@ -23,6 +17,7 @@ export interface TreeNodeComponentProps extends NodeEvents {
   horizontalPadding: number;
   nodeOffset: number;
   treeId: string;
+  parentNode: TreeNodeProps;
 }
 
 export interface TreeNodeProps extends NodeProps {
@@ -50,7 +45,17 @@ export interface MoveNodeEventDetail {
     treeId: string;
   };
 }
+
+export type SortTypes = "none" | "order" | "alphabetically";
+
+export interface TreeNodeDropProps {
+  type: "TreeNode";
+  data: {
+    node: TreeNodeProps;
+    treeId: string;
+  };
+}
+
 export interface DropNodeElement {
   node: TreeNodeProps; treeId: string
 }
-export type SortTypes = "none" | "order" | "alphabetically";
