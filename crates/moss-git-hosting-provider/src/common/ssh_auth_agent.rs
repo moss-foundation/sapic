@@ -3,20 +3,24 @@ use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
 use std::path::PathBuf;
 
+use super::SSHAuthAgent;
+
 #[derive(Clone)]
-pub struct SSHAgent {
+pub struct SSHAuthAgentImpl {
     public_key: Option<PathBuf>,
     private_key: PathBuf,
     passphrase: Option<String>,
 }
 
-impl SSHAgent {
+impl SSHAuthAgent for SSHAuthAgentImpl {}
+
+impl SSHAuthAgentImpl {
     pub fn new(
         public_key: Option<PathBuf>,
         private_key: PathBuf,
         passphrase: Option<String>,
     ) -> Self {
-        SSHAgent {
+        SSHAuthAgentImpl {
             public_key,
             private_key,
             passphrase,
@@ -24,9 +28,9 @@ impl SSHAgent {
     }
 }
 
-impl GitAuthAgent for SSHAgent {
+impl GitAuthAgent for SSHAuthAgentImpl {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-        cb.credentials(|_url, username_from_url, _allowed_types| {
+        cb.credentials(|_url, _username_from_url, _allowed_types| {
             Cred::ssh_key(
                 "git",
                 self.public_key.as_deref(),
@@ -54,7 +58,11 @@ mod test {
         let public = PathBuf::from(dotenv::var("GITHUB_SSH_PUBLIC").unwrap());
         let password = dotenv::var("GITHUB_SSH_PASSWORD").unwrap();
 
-        let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
+        let auth_agent = Arc::new(SSHAuthAgentImpl::new(
+            Some(public),
+            private,
+            Some(password.into()),
+        ));
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
@@ -68,7 +76,11 @@ mod test {
         let public = PathBuf::from(dotenv::var("GITLAB_SSH_PUBLIC").unwrap());
         let password = dotenv::var("GITLAB_SSH_PASSWORD").unwrap();
 
-        let auth_agent = Arc::new(SSHAgent::new(Some(public), private, Some(password.into())));
+        let auth_agent = Arc::new(SSHAuthAgentImpl::new(
+            Some(public),
+            private,
+            Some(password.into()),
+        ));
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }

@@ -1,92 +1,121 @@
 use anyhow::Result;
-use git2::{Cred, RemoteCallbacks};
-use moss_git::repo::RepoHandle;
-use moss_git::{GitAuthAgent, TestStorage};
+use git2::Cred;
+use git2::RemoteCallbacks;
+use moss_git::GitAuthAgent;
+use moss_keyring::KeyringClient;
 use oauth2::basic::BasicClient;
 use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
-    RefreshToken, Scope, TokenResponse, TokenUrl,
+    AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, RefreshToken,
+    Scope, TokenResponse, TokenUrl,
 };
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use url::Url;
 
-// Since `Instant` is opaque and cannot be serialized
-// We will only store the refresh_token when serializing OAuth Credential
-// Forcing refreshing of tokens for new sessions
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GitLabCred {
-    #[serde(skip)]
-    access_token: Option<String>,
-    #[serde(skip)]
-    time_to_refresh: Option<Instant>,
+use crate::common::utils;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct KeyringCredEntry {
     refresh_token: String,
 }
 
-impl GitLabCred {
-    pub fn new(
-        access_token: Option<&str>,
-        time_to_refresh: Option<Instant>,
-        refresh_token: &str,
-    ) -> Self {
+impl From<&GitLabCred> for KeyringCredEntry {
+    fn from(value: &GitLabCred) -> Self {
         Self {
-            access_token: access_token.map(|s| s.to_string()),
-            time_to_refresh,
-            refresh_token: refresh_token.to_string(),
+            refresh_token: value.refresh_token.clone(),
         }
     }
+}
 
-    pub fn access_token(&self) -> Option<&str> {
-        self.access_token.as_deref()
+impl TryInto<String> for KeyringCredEntry {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> std::result::Result<String, Self::Error> {
+        Ok(serde_json::to_string(&self)?)
     }
-    pub fn time_to_refresh(&self) -> Option<Instant> {
-        self.time_to_refresh
-    }
-    pub fn refresh_token(&self) -> &str {
-        self.refresh_token.as_str()
-    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GitLabCred {
+    access_token: String,
+    time_to_refresh: Instant,
+    refresh_token: String,
 }
 
 const GITLAB_AUTH_URL: &'static str = "https://gitlab.com/oauth/authorize";
 const GITLAB_TOKEN_URL: &'static str = "https://gitlab.com/oauth/token";
-
 const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
+const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
 
-#[derive(Serialize, Deserialize)]
-pub struct GitLabAuthAgent {
+pub struct GitLabAuthAgentImpl {
+    client_id: ClientId,
+    client_secret: ClientSecret,
+    keyring: Arc<dyn KeyringClient>,
     cred: RwLock<Option<GitLabCred>>,
 }
 
-impl GitLabAuthAgent {
-    pub fn new() -> Self {
+impl GitLabAuthAgentImpl {
+    pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
         Self {
+            client_id: ClientId::new(client_id),
+            client_secret: ClientSecret::new(client_secret),
+            keyring,
             cred: RwLock::new(None),
         }
     }
 }
 
-impl GitLabAuthAgent {
-    fn client_id() -> Result<ClientId> {
-        dotenv::dotenv()?;
-        Ok(ClientId::new(dotenv::var("GITLAB_CLIENT_ID")?))
-    }
-    fn client_secret() -> Result<ClientSecret> {
-        dotenv::dotenv()?;
-        Ok(ClientSecret::new(dotenv::var("GITLAB_CLIENT_SECRET")?))
+impl GitLabAuthAgentImpl {
+    fn credentials(&self) -> Result<GitLabCred> {
+        if let Some(cached) = self.cred.read().clone() {
+            if Instant::now() <= cached.time_to_refresh {
+                return Ok(cached);
+            }
+        }
+
+        let gen_initial_cred_fn: Box<dyn Fn() -> Result<GitLabCred>> = Box::new(|| {
+            let initial_cred = self.gen_initial_credentials()?;
+            let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
+            self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
+
+            Ok(initial_cred)
+        });
+
+        let updated_cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
+            Ok(data) => {
+                let stored_entry: KeyringCredEntry = serde_json::from_slice(&data)?;
+                let refreshed_cred = match self.refresh_token_flow(stored_entry.refresh_token) {
+                    Ok(cred) => cred,
+                    Err(err) => {
+                        // TODO: log her
+                        println!("{}", err);
+
+                        gen_initial_cred_fn()?
+                    }
+                };
+
+                let updated_entry_str: String =
+                    KeyringCredEntry::from(&refreshed_cred).try_into()?;
+                self.keyring
+                    .set_secret(KEYRING_SECRET_KEY, &updated_entry_str)?;
+
+                refreshed_cred
+            }
+            Err(keyring::Error::NoEntry) => gen_initial_cred_fn()?,
+            Err(err) => return Err(err.into()),
+        };
+
+        *self.cred.write() = Some(updated_cred.clone());
+        Ok(updated_cred)
     }
 
-    fn initial_auth(&self) -> Result<()> {
-        println!("Initial OAuth Protocol");
-        // Setting the port as 0 automatically assigns a free port
-        let listener = TcpListener::bind("127.0.0.1:0")?;
-        let callback_port = listener.local_addr()?.port();
+    fn gen_initial_credentials(&self) -> Result<GitLabCred> {
+        let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
-        let client = BasicClient::new(GitLabAuthAgent::client_id()?)
-            .set_client_secret(GitLabAuthAgent::client_secret()?)
+        let client = BasicClient::new(self.client_id.clone())
+            .set_client_secret(self.client_secret.clone())
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -108,42 +137,7 @@ impl GitLabAuthAgent {
             println!("Open this URL in your browser:\n{authorize_url}\n");
         }
 
-        let (code, _state) = {
-            let Some(mut stream) = listener.incoming().flatten().next() else {
-                panic!("listener terminated without accepting a connection");
-            };
-
-            let mut reader = BufReader::new(&stream);
-            let mut request_line = String::new();
-            reader.read_line(&mut request_line)?;
-
-            // GET /?code=*** HTTP/1.1
-            let redirect_url = request_line.split_whitespace().nth(1).unwrap();
-            let url = Url::parse(&("http://127.0.0.1".to_string() + redirect_url))?;
-
-            let code = url
-                .query_pairs()
-                .find(|(key, _)| key == "code")
-                .map(|(_, code)| AuthorizationCode::new(code.into_owned()))
-                .unwrap();
-
-            let state = url
-                .query_pairs()
-                .find(|(key, _)| key == "state")
-                .map(|(_, state)| CsrfToken::new(state.into_owned()))
-                .unwrap();
-
-            // TODO: Once the code is received, the focus should switch back to the main application
-            let message = "Go back to your terminal :)";
-            let response = format!(
-                "HTTP/1.1 200 OK\r\ncontent-length: {}\r\n\r\n{}",
-                message.len(),
-                message
-            );
-            stream.write_all(response.as_bytes())?;
-
-            (code, state)
-        };
+        let (code, _state) = utils::receive_auth_code(&listener)?;
 
         let http_client = reqwest::blocking::ClientBuilder::new()
             .redirect(reqwest::redirect::Policy::none())
@@ -154,35 +148,29 @@ impl GitLabAuthAgent {
             .exchange_code(code)
             .set_pkce_verifier(pkce_verifier)
             .request(&http_client)?;
+        let expires_in = token_res.expires_in().ok_or_else(|| {
+            anyhow::anyhow!(
+                "Failed to perform initial GitLab credentials setup: expires_in value not received"
+            )
+        })?;
 
-        let access_token = token_res.access_token().secret().as_str();
-        let mut write = self.cred.write();
-        // GitLab's access token expires in 2 hours, so we need refreshing
-        let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
-        // Force refreshing the access token half an hour before the actual expiry
-        // To avoid any timing issue
-        let time_to_refresh = Instant::now()
-            .checked_add(token_res.expires_in().unwrap())
-            .unwrap()
-            .checked_sub(Duration::from_secs(30 * 60))
-            .unwrap();
-        *write = Some(GitLabCred::new(
-            Some(access_token),
-            Some(time_to_refresh),
-            refresh_token,
-        ));
-
-        Ok(())
+        Ok(GitLabCred {
+            access_token: token_res.access_token().secret().to_owned(),
+            time_to_refresh: compute_time_to_refresh(expires_in),
+            refresh_token: token_res
+                .refresh_token()
+                .ok_or_else(|| anyhow::anyhow!("Failed to perform initial GitLab credentials setup: refresh token not received"))?
+                .secret()
+                .to_owned(),
+        })
     }
 
-    fn refresh_token_flow(&self) -> Result<()> {
-        println!("Refreshing Access Token");
-        // Setting the port as 0 automatically assigns a free port
-        let listener = TcpListener::bind("127.0.0.1:0")?;
+    fn refresh_token_flow(&self, refresh_token: String) -> Result<GitLabCred> {
+        let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
         let callback_port = listener.local_addr()?.port();
 
-        let client = BasicClient::new(GitLabAuthAgent::client_id()?)
-            .set_client_secret(GitLabAuthAgent::client_secret()?)
+        let client = BasicClient::new(self.client_id.clone())
+            .set_client_secret(self.client_secret.clone())
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -194,93 +182,59 @@ impl GitLabAuthAgent {
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
 
-        let refresh_token = (*self.cred.read())
-            .clone()
-            .unwrap()
-            .refresh_token()
-            .to_string();
-
         let token_res = client
-            .exchange_refresh_token(&RefreshToken::new(refresh_token.to_string()))
+            .exchange_refresh_token(&RefreshToken::new(refresh_token))
             .request(&http_client)?;
 
-        let access_token = token_res.access_token().secret().as_str();
-        // Force refreshing the access token half an hour before the actual expiry
-        let time_to_refresh = Instant::now()
-            .checked_add(token_res.expires_in().unwrap())
-            .unwrap()
-            .checked_sub(Duration::from_secs(30 * 60))
-            .unwrap();
-        let refresh_token = token_res.refresh_token().unwrap().secret().as_str();
+        let expires_in = token_res.expires_in().ok_or_else(|| {
+            anyhow::anyhow!(
+                "Failed to perform refresh GitLab credentials operation: expires_in value not received"
+            )
+        })?;
 
-        let mut write = self.cred.write();
-        *write = Some(GitLabCred::new(
-            Some(access_token),
-            Some(time_to_refresh),
-            &refresh_token,
-        ));
-        Ok(())
+        Ok(GitLabCred {
+            access_token: token_res.access_token().secret().to_owned(),
+            time_to_refresh: compute_time_to_refresh(expires_in),
+            refresh_token: token_res
+                .refresh_token()
+                .ok_or_else(|| anyhow::anyhow!("Failed to perform refresh GitLab credentials operation: refresh token not received"))?
+                .secret()
+                .to_owned(),
+        })
     }
 }
 
-impl GitAuthAgent for GitLabAuthAgent {
+impl GitAuthAgent for GitLabAuthAgentImpl {
     fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()> {
-        if self.cred.read().is_none() {
-            self.initial_auth()
-                .expect("Unable to finish initial authentication");
-        }
-        let cred = self.cred.read().clone().unwrap();
-        if cred.time_to_refresh().is_none() || Instant::now() > cred.time_to_refresh().unwrap() {
-            self.refresh_token_flow()?;
-        }
-        let access_token = self
-            .cred
-            .read()
-            .clone()
-            .unwrap()
-            .access_token()
-            .unwrap()
-            .to_string();
+        let cred = self.credentials()?;
 
-        cb.credentials(move |_url, username_from_url, _allowed_types| {
-            Cred::userpass_plaintext("oauth2", &access_token)
+        cb.credentials(move |_url, _username_from_url, _allowed_types| {
+            Cred::userpass_plaintext("oauth2", &cred.access_token)
         });
-        self.write_to_file();
+
         Ok(())
     }
 }
 
-impl TestStorage for GitLabAuthAgent {
-    fn write_to_file(&self) -> Result<()> {
-        println!("Writing to file");
-        std::fs::write("gitlab_oauth.json", serde_json::to_string(&self)?)?;
-        Ok(())
-    }
-
-    fn read_from_file() -> Result<Arc<Self>> {
-        dbg!("-----------");
-        dbg!(&std::fs::read_to_string("gitlab_oauth.json",)?);
-
-        Ok(Arc::new(serde_json::from_str(&std::fs::read_to_string(
-            "gitlab_oauth.json",
-        )?)?))
-    }
+fn compute_time_to_refresh(expires_in: Duration) -> Instant {
+    // Force refreshing the access token half an hour before the actual expiry
+    // To avoid any timing issue
+    Instant::now()
+        .checked_add(expires_in)
+        .unwrap()
+        .checked_sub(Duration::from_secs(30 * 60))
+        .unwrap()
 }
 
 #[cfg(test)]
 mod gitlab_tests {
-    use anyhow::Result;
-    use std::collections::HashMap;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::sync::Arc;
 
-    use crate::gitlab::auth::GitLabAuthAgent;
-    use crate::headless::auth::SSHAgent;
-    use iota_stronghold::{KeyProvider, SnapshotPath};
     use moss_git::repo::RepoHandle;
-    use moss_git::TestStorage;
-    use parking_lot::Mutex;
-    use zeroize::Zeroizing;
+    use moss_keyring::KeyringClientImpl;
+
+    use crate::gitlab::auth::GitLabAuthAgentImpl;
 
     #[test]
     fn cloning_with_oauth() {
@@ -288,92 +242,16 @@ mod gitlab_tests {
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");
 
-        let auth_agent =
-            GitLabAuthAgent::read_from_file().unwrap_or_else(|_| Arc::new(GitLabAuthAgent::new()));
+        let client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap();
+        let client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
+
+        let keyring_client = Arc::new(KeyringClientImpl::new());
+        let auth_agent = Arc::new(GitLabAuthAgentImpl::new(
+            keyring_client,
+            client_id,
+            client_secret,
+        ));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
-    }
-
-    #[derive(Default)]
-    struct StrongholdCollection(Arc<Mutex<HashMap<PathBuf, Stronghold>>>);
-
-    pub struct Stronghold {
-        inner: iota_stronghold::Stronghold,
-        path: SnapshotPath,
-        keyprovider: KeyProvider,
-    }
-
-    impl Stronghold {
-        pub fn new<P: AsRef<Path>>(path: P, password: Vec<u8>) -> Result<Self> {
-            let path = SnapshotPath::from_path(path);
-            let stronghold = iota_stronghold::Stronghold::default();
-            let keyprovider = KeyProvider::try_from(Zeroizing::new(password))?;
-            if path.exists() {
-                stronghold.load_snapshot(&keyprovider, &path)?;
-            }
-            Ok(Self {
-                inner: stronghold,
-                path,
-                keyprovider,
-            })
-        }
-
-        pub fn save(&self) -> Result<()> {
-            self.inner
-                .commit_with_keyprovider(&self.path, &self.keyprovider)?;
-            Ok(())
-        }
-
-        pub fn inner(&self) -> &iota_stronghold::Stronghold {
-            &self.inner
-        }
-    }
-
-    #[test]
-    fn stronghold_test() {
-        use zeroize::{Zeroize, Zeroizing};
-
-        let hash_function = |password: &str| {
-            // Hash the password here with e.g. argon2, blake2b or any other secure algorithm
-            // Here is an example implementation using the `rust-argon2` crate for hashing the password
-
-            use argon2::{hash_raw, Config, Variant, Version};
-
-            let config = Config {
-                lanes: 4,
-                mem_cost: 10_000,
-                time_cost: 10,
-                variant: Variant::Argon2id,
-                version: Version::Version13,
-                ..Default::default()
-            };
-
-            let salt = "your-salt".as_bytes();
-
-            let key = hash_raw(password.as_ref(), salt, &config).expect("failed to hash password");
-
-            key.to_vec()
-        };
-
-        let snapshot_path = PathBuf::from("vault.hold");
-        let mut password = "mypass1234".to_string();
-        let hash = hash_function(&password);
-        let collection = StrongholdCollection::default();
-        let stronghold = Stronghold::new(snapshot_path.clone(), hash).unwrap();
-        let client = stronghold.inner.create_client("name your client").unwrap();
-
-        // client.vault(vault_path)
-
-        stronghold.save().unwrap();
-
-        // collection.0.lock().insert(snapshot_path, stronghold);
-
-        // password.zeroize();
-
-        // let path = SnapshotPath::from_path("vault.hold");
-        // let stronghold = iota_stronghold::Stronghold::default();
-        // let pass = "password".as_bytes().to_vec();
-        // let keyprovider = KeyProvider::try_from(Zeroizing::new(pass)).unwrap();
-        // let client = stronghold.create_client("vault.hold").unwrap();
     }
 }
