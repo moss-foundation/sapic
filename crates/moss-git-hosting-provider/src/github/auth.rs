@@ -9,7 +9,6 @@ use oauth2::{
 };
 use serde::{Deserialize, Serialize};
 use std::cell::OnceCell;
-use std::net::TcpListener;
 use std::string::ToString;
 use std::sync::Arc;
 
@@ -20,6 +19,22 @@ use super::client::GitHubAuthAgent;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
     access_token: String,
+}
+
+impl From<&GitHubCred> for KeyringCredEntry {
+    fn from(value: &GitHubCred) -> Self {
+        Self {
+            access_token: value.access_token.clone(),
+        }
+    }
+}
+
+impl TryInto<String> for KeyringCredEntry {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> std::result::Result<String, Self::Error> {
+        Ok(serde_json::to_string(&self)?)
+    }
 }
 
 #[derive(Debug)]
@@ -33,9 +48,13 @@ impl GitHubCred {
             access_token: access_token.to_string(),
         }
     }
+}
 
-    pub fn access_token(&self) -> &str {
-        &self.access_token
+impl From<KeyringCredEntry> for GitHubCred {
+    fn from(value: KeyringCredEntry) -> Self {
+        Self {
+            access_token: value.access_token,
+        }
     }
 }
 
@@ -45,6 +64,8 @@ const GITHUB_SCOPES: [&'static str; 3] = ["repo", "read:user", "user:email"];
 const KEYRING_SECRET_KEY: &str = "github_auth_agent";
 
 pub struct GitHubAuthAgentImpl {
+    client_id: ClientId,
+    client_secret: ClientSecret,
     keyring: Arc<dyn KeyringClient>,
     cred: OnceCell<GitHubCred>,
 }
@@ -52,8 +73,10 @@ pub struct GitHubAuthAgentImpl {
 impl GitHubAuthAgent for GitHubAuthAgentImpl {}
 
 impl GitHubAuthAgentImpl {
-    pub fn new(keyring: Arc<dyn KeyringClient>) -> Self {
+    pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
         Self {
+            client_id: ClientId::new(client_id),
+            client_secret: ClientSecret::new(client_secret),
             keyring,
             cred: OnceCell::new(),
         }
@@ -61,15 +84,6 @@ impl GitHubAuthAgentImpl {
 }
 
 impl GitHubAuthAgentImpl {
-    fn client_id() -> Result<ClientId> {
-        dotenv::dotenv()?;
-        Ok(ClientId::new(dotenv::var("GITHUB_CLIENT_ID")?))
-    }
-    fn client_secret() -> Result<ClientSecret> {
-        dotenv::dotenv()?;
-        Ok(ClientSecret::new(dotenv::var("GITHUB_CLIENT_SECRET")?))
-    }
-
     fn credentials(&self) -> Result<&GitHubCred> {
         if let Some(cred) = self.cred.get() {
             return Ok(cred);
@@ -77,20 +91,16 @@ impl GitHubAuthAgentImpl {
 
         let cred = match self.keyring.get_secret(KEYRING_SECRET_KEY) {
             Ok(data) => {
-                let entry: KeyringCredEntry = serde_json::from_slice(&data)?;
+                let stored_entry: KeyringCredEntry = serde_json::from_slice(&data)?;
 
-                GitHubCred {
-                    access_token: entry.access_token,
-                }
+                GitHubCred::from(stored_entry)
             }
             Err(keyring::Error::NoEntry) => {
-                let cred = self.gen_initial_credentials()?;
-                let cred_str = serde_json::to_string(&KeyringCredEntry {
-                    access_token: cred.access_token.clone(),
-                })?;
-                self.keyring.set_secret(KEYRING_SECRET_KEY, &cred_str)?;
+                let initial_cred = self.gen_initial_credentials()?;
+                let entry_str: String = KeyringCredEntry::from(&initial_cred).try_into()?;
+                self.keyring.set_secret(KEYRING_SECRET_KEY, &entry_str)?;
 
-                cred
+                initial_cred
             }
             Err(err) => return Err(err.into()),
         };
@@ -104,8 +114,8 @@ impl GitHubAuthAgentImpl {
     fn gen_initial_credentials(&self) -> Result<GitHubCred> {
         let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
-        let client = BasicClient::new(GitHubAuthAgentImpl::client_id()?)
-            .set_client_secret(GitHubAuthAgentImpl::client_secret()?)
+        let client = BasicClient::new(self.client_id.clone())
+            .set_client_secret(self.client_secret.clone())
             .set_auth_uri(AuthUrl::new(GITHUB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITHUB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -153,7 +163,7 @@ impl GitAuthAgent for GitHubAuthAgentImpl {
         let cred = self.credentials()?;
 
         cb.credentials(move |_url, _username_from_url, _allowed_types| {
-            Cred::userpass_plaintext("oauth2", cred.access_token())
+            Cred::userpass_plaintext("oauth2", &cred.access_token)
         });
 
         Ok(())
@@ -175,8 +185,15 @@ mod github_tests {
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo");
 
+        let client_id = dotenv::var("GITHUB_CLIENT_ID").unwrap();
+        let client_secret = dotenv::var("GITHUB_CLIENT_SECRET").unwrap();
+
         let keyring_client = Arc::new(KeyringClientImpl::new());
-        let auth_agent = Arc::new(GitHubAuthAgentImpl::new(keyring_client));
+        let auth_agent = Arc::new(GitHubAuthAgentImpl::new(
+            keyring_client,
+            client_id,
+            client_secret,
+        ));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent)?;
         Ok(())

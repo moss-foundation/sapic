@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use git2::Cred;
 use git2::RemoteCallbacks;
 use moss_git::GitAuthAgent;
@@ -50,13 +50,17 @@ const GITLAB_SCOPES: [&'static str; 2] = ["write_repository", "read_user"];
 const KEYRING_SECRET_KEY: &str = "gitlab_auth_agent";
 
 pub struct GitLabAuthAgentImpl {
+    client_id: ClientId,
+    client_secret: ClientSecret,
     keyring: Arc<dyn KeyringClient>,
     cred: RwLock<Option<GitLabCred>>,
 }
 
 impl GitLabAuthAgentImpl {
-    pub fn new(keyring: Arc<dyn KeyringClient>) -> Self {
+    pub fn new(keyring: Arc<dyn KeyringClient>, client_id: String, client_secret: String) -> Self {
         Self {
+            client_id: ClientId::new(client_id),
+            client_secret: ClientSecret::new(client_secret),
             keyring,
             cred: RwLock::new(None),
         }
@@ -64,15 +68,6 @@ impl GitLabAuthAgentImpl {
 }
 
 impl GitLabAuthAgentImpl {
-    fn client_id() -> Result<ClientId> {
-        dotenv::dotenv()?;
-        Ok(ClientId::new(dotenv::var("GITLAB_CLIENT_ID")?))
-    }
-    fn client_secret() -> Result<ClientSecret> {
-        dotenv::dotenv()?;
-        Ok(ClientSecret::new(dotenv::var("GITLAB_CLIENT_SECRET")?))
-    }
-
     fn credentials(&self) -> Result<GitLabCred> {
         if let Some(cached) = self.cred.read().clone() {
             if Instant::now() <= cached.time_to_refresh {
@@ -109,8 +104,8 @@ impl GitLabAuthAgentImpl {
     fn gen_initial_credentials(&self) -> Result<GitLabCred> {
         let (listener, callback_port) = utils::create_auth_tcp_listener()?;
 
-        let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
-            .set_client_secret(GitLabAuthAgentImpl::client_secret()?)
+        let client = BasicClient::new(self.client_id.clone())
+            .set_client_secret(self.client_secret.clone())
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -164,8 +159,8 @@ impl GitLabAuthAgentImpl {
         let listener = TcpListener::bind("127.0.0.1:0")?; // Setting the port as 0 automatically assigns a free port
         let callback_port = listener.local_addr()?.port();
 
-        let client = BasicClient::new(GitLabAuthAgentImpl::client_id()?)
-            .set_client_secret(GitLabAuthAgentImpl::client_secret()?)
+        let client = BasicClient::new(self.client_id.clone())
+            .set_client_secret(self.client_secret.clone())
             .set_auth_uri(AuthUrl::new(GITLAB_AUTH_URL.to_string())?)
             .set_token_uri(TokenUrl::new(GITLAB_TOKEN_URL.to_string())?)
             .set_redirect_uri(RedirectUrl::new(format!(
@@ -237,8 +232,15 @@ mod gitlab_tests {
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");
 
+        let client_id = dotenv::var("GITLAB_CLIENT_ID").unwrap();
+        let client_secret = dotenv::var("GITLAB_CLIENT_SECRET").unwrap();
+
         let keyring_client = Arc::new(KeyringClientImpl::new());
-        let auth_agent = Arc::new(GitLabAuthAgentImpl::new(keyring_client));
+        let auth_agent = Arc::new(GitLabAuthAgentImpl::new(
+            keyring_client,
+            client_id,
+            client_secret,
+        ));
 
         let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
