@@ -17,14 +17,14 @@ pub enum InstantiationType {
     Delayed,
 }
 
-pub trait Service: Any + Send + Sync {
+pub trait AppService: Any + Send + Sync {
     fn name(&self) -> &'static str;
     fn dispose(&self);
     fn as_any(&self) -> &(dyn std::any::Any + Send);
 }
 
-impl dyn Service {
-    pub fn downcast_arc<T: Service>(self: Arc<Self>) -> Result<Arc<T>, Arc<Self>> {
+impl dyn AppService {
+    pub fn downcast_arc<T: AppService>(self: Arc<Self>) -> Result<Arc<T>, Arc<Self>> {
         if self.as_any().is::<T>() {
             let raw = Arc::into_raw(self) as *const T;
             Ok(unsafe { Arc::from_raw(raw) })
@@ -37,7 +37,7 @@ impl dyn Service {
 #[derive(Debug, Deref, DerefMut)]
 pub struct ServiceHandle<T>
 where
-    T: Service,
+    T: AppService,
 {
     #[deref]
     #[deref_mut]
@@ -103,8 +103,8 @@ impl ServiceMetadata {
 }
 
 struct ServiceCollectionState {
-    services: FnvHashMap<TypeId, Arc<dyn Service>>,
-    pending_services: FnvHashMap<TypeId, Box<dyn FnOnce(&AppHandle) -> Arc<dyn Service>>>,
+    services: FnvHashMap<TypeId, Arc<dyn AppService>>,
+    pending_services: FnvHashMap<TypeId, Box<dyn FnOnce(&AppHandle) -> Arc<dyn AppService>>>,
     known_services: FnvHashMap<TypeId, Arc<ServiceMetadata>>,
 }
 
@@ -133,7 +133,7 @@ impl ServiceCollection {
 
     pub fn register<T, F>(&self, creation_fn: F, activation_type: InstantiationType)
     where
-        T: Service + 'static,
+        T: AppService + 'static,
         F: FnOnce(&AppHandle) -> T + 'static,
     {
         let type_id = TypeId::of::<T>();
@@ -175,7 +175,7 @@ impl ServiceCollection {
         &self,
         service_metadata: Arc<ServiceMetadata>,
         type_id: TypeId,
-    ) -> Result<Arc<dyn Service>> {
+    ) -> Result<Arc<dyn AppService>> {
         match service_metadata.get_instantiation_mode() {
             ServiceInstantiationMode::Active => {
                 let state_lock = self.state.write();
@@ -215,7 +215,7 @@ impl ServiceCollection {
         }
     }
 
-    pub fn get<T: Service>(&self) -> Result<ServiceHandle<T>> {
+    pub fn get<T: AppService>(&self) -> Result<ServiceHandle<T>> {
         let type_id = TypeId::of::<T>();
         let service_metadata = self
             .state
@@ -249,7 +249,7 @@ impl ServiceCollection {
         }
     }
 
-    pub fn get_unchecked<T: Service>(&self) -> ServiceHandle<T> {
+    pub fn get_unchecked<T: AppService>(&self) -> ServiceHandle<T> {
         let type_id = TypeId::of::<T>();
         let service_metadata = self
             .state

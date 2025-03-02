@@ -31,10 +31,32 @@ RUSTUP := rustup
 gen-icons:
 	@cd $(ICONS_DIR) && $(PNPM) build
 
+
 ## Run Desktop Application
 .PHONY: run-desktop
 run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+
+# --- Models ---
+
+# The gen_models function generates TS models from Rust structures.
+# The export_bindings_ prefix is used to run only those tests that trigger
+# the generation of models. 
+define gen_models
+.PHONY: gen-$(1)-model
+gen-$(1)-models:
+	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
+	@$(CARGO) build --manifest-path $($(2))/Cargo.toml
+endef
+
+COLLECTION_MODELS_DIR := crates/moss-collection
+
+$(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
+
+## Generate All Models
+.PHONY: gen-models
+gen-models: \
+	gen-collection-models \
 
 # Utility Commands
 

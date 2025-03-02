@@ -10,7 +10,6 @@ anyhow.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
-
 miette = { version = "7.5.0", features = ["fancy"] }
 sled.workspace = true
 bincode.workspace = true
@@ -18,3 +17,9 @@ dashmap.workspace = true
 tokio.workspace = true
 async-trait.workspace = true
 patricia_tree.workspace = true
+parking_lot.workspace = true
+ts-rs = { workspace = true, features = ["serde-json-impl"] }
+serde_json.workspace = true
+
+[dev-dependencies]
+mockall = "0.13.1"

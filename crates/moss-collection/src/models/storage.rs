@@ -7,7 +7,7 @@ pub struct RequestVariantEntity {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RequestMetadataEntity {
-    pub order: usize,
+    pub order: Option<usize>,
     pub variants: HashMap<String, RequestVariantEntity>,
 }
 

@@ -2,12 +2,14 @@
 resolver = "1"
 members = [
     "crates/moss-git",
+    "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
     "crates/moss-app",
     "crates/moss-db",
     "crates/moss-fs",
+    "crates/moss-keyring",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -19,10 +21,11 @@ moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_git = { path = "crates/moss-git" }
+moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
+moss_keyring = { path = "crates/moss-keyring" }
 
 tauri = { version = "2.2.5", default-features = false }
-tauri-plugin-stronghold = "2.0.0"
 rand = { version = "0.9.0", default-features = false, features = [
     "thread_rng",
 ] }
@@ -41,7 +44,7 @@ oauth2 = "5.0.0"
 once_cell = "1.20.3"
 parking_lot = "0.12.3"
 reqwest = "0.12.12"
-serde_json = "1.0.138"
+serde_json = "1.0"
 ssh2 = "0.9.5"
 strum = "0.27.0"
 tokio = "1.43.0"
@@ -55,3 +58,11 @@ sled = "0.34.7"
 bincode = "1.3.3"
 async-trait = "0.1.86"
 patricia_tree = "0.9.0"
+url = "2.5.4"
+dotenv = "0.15.0"
+keyring = { version = "3", features = [
+    "apple-native",
+    "windows-native",
+    "sync-secret-service",
+] }
+whoami = "1.5.2"

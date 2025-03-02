@@ -1,7 +1,8 @@
 use anyhow::anyhow;
-use std::collections::HashMap;
+use serde::Serialize;
+use ts_rs::TS;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum HttpRequestType {
     Post,
     Get,
@@ -13,7 +14,7 @@ pub enum HttpRequestType {
 pub enum RequestType {
     Http(HttpRequestType),
     WebSocket,
-    Graphql,
+    GraphQL,
     Grpc,
     Variant,
 }
@@ -26,11 +27,11 @@ impl TryFrom<&str> for RequestType {
             "post" => Ok(Self::Http(HttpRequestType::Post)),
             "get" => Ok(Self::Http(HttpRequestType::Get)),
             "put" => Ok(Self::Http(HttpRequestType::Put)),
-            "delete" => Ok(Self::Http(HttpRequestType::Delete)),
+            "del" => Ok(Self::Http(HttpRequestType::Delete)),
 
             "ws" => Ok(Self::WebSocket),
-            "graphql" => Ok(Self::WebSocket),
-            "grpc" => Ok(Self::WebSocket),
+            "gql" => Ok(Self::GraphQL),
+            "grpc" => Ok(Self::Grpc),
 
             "variant" => Ok(Self::Variant),
 
@@ -55,14 +56,8 @@ impl RequestType {
     }
 }
 
+#[derive(Debug)]
 pub struct CollectionRequestVariantEntry {
     pub name: String,
     pub order: Option<usize>,
-}
-
-pub struct CollectionRequestEntry {
-    pub name: String,
-    pub order: Option<usize>,
-    pub typ: Option<RequestType>,
-    pub variants: HashMap<String, CollectionRequestVariantEntry>,
 }

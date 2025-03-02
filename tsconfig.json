@@ -2,10 +2,16 @@
   "files": [],
   "references": [
     {
+      "path": "crates/moss-collection"
+    },
+    {
       "path": "view/desktop"
     },
     {
       "path": "tools/icongen"
+    },
+    {
+      "path": "packages/moss-tabs"
     }
   ]
 }

@@ -1,0 +1,9 @@
+[package]
+name = "moss_keyring"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+keyring.workspace = true
+whoami.workspace = true
+anyhow.workspace = true
