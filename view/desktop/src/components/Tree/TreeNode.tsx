@@ -131,11 +131,6 @@ export const TreeNode = ({
   }, [dropAllowance, node, treeId]);
 
   const [renaming, setRenaming] = useState(false);
-  const handleButtonKeyUp = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "F2" && document.activeElement === e.currentTarget) {
-      setRenaming(true);
-    }
-  };
 
   const handleFormSubmit = (newId: string) => {
     onNodeUpdate({ ...node, id: newId });
@@ -253,7 +248,6 @@ export const TreeNode = ({
               <button
                 ref={buttonRef}
                 onClick={node.isFolder ? handleFolderClick : undefined}
-                onKeyUp={handleButtonKeyUp}
                 style={{ paddingLeft, paddingRight }}
                 className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
               >

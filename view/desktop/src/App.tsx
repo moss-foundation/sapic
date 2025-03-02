@@ -84,7 +84,7 @@ function App() {
   return (
     <div className="flex w-full h-full">
       <Resizable>
-        <ResizablePanel preferredSize={270} minSize={100} snap>
+        <ResizablePanel preferredSize={270} minSize={100} maxSize={400} snap>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -168,13 +168,9 @@ function App() {
 export default App;
 
 const IsolatedTreeComponent = () => {
-  const handleTreeUpdate = (updatedTree: NodeProps) => {
-    console.log(updatedTree);
-  };
-
   return (
     <>
-      <Tree tree={TestTreeData.tree} onTreeUpdate={handleTreeUpdate} />
+      <Tree tree={TestTreeData.tree} />
       <hr className="my-3" />
       <Tree tree={TestTreeData.tree} />
     </>

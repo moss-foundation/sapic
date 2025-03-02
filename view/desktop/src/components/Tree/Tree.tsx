@@ -57,25 +57,16 @@ export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 1
   }, [treeId]);
 
   return (
-    <>
-      <TreeNode
-        parentNode={tree}
-        onNodeUpdate={handleNodeUpdate}
-        key={`root-${treeId}`}
-        node={tree}
-        depth={0}
-        horizontalPadding={horizontalPadding}
-        nodeOffset={nodeOffset}
-        treeId={treeId}
-      />
-
-      {/* <div className="absolute h-screen -top-3 right-0 p-4 flex flex-col gap-1 text-xs bg-gray-500 overflow-auto">
-        <div>treeId: {treeId}</div>
-        <pre>
-          <code>{JSON.stringify(tree, null, 2)}</code>
-        </pre>
-      </div> */}
-    </>
+    <TreeNode
+      parentNode={tree}
+      onNodeUpdate={handleNodeUpdate}
+      key={`root-${treeId}`}
+      node={tree}
+      depth={0}
+      horizontalPadding={horizontalPadding}
+      nodeOffset={nodeOffset}
+      treeId={treeId}
+    />
   );
 };
 

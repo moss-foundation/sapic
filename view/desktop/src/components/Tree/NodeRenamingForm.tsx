@@ -16,7 +16,6 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
-    console.log("handleSubmit");
     if ("preventDefault" in e) e.preventDefault();
 
     const newName = value.trim();
@@ -54,7 +53,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         autoFocus
         minLength={1}
         maxLength={100}
-        className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none relative"
+        className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative"
         onKeyUp={handleInputKeyUp}
         onBlur={restrictedNames.includes(String(value)) ? onCancel : handleSubmit}
         required
