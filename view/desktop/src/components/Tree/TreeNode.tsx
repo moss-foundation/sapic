@@ -147,11 +147,19 @@ export const TreeNode = ({
   };
 
   const handleExpandAll = () => {
-    onNodeUpdate(expandAllNodes(node));
+    const newNode = expandAllNodes(node);
+    onNodeUpdate({
+      ...node,
+      childNodes: newNode.childNodes,
+    });
   };
 
   const handleCollapseAll = () => {
-    onNodeUpdate(collapseAllNodes(node));
+    const newNode = collapseAllNodes(node);
+    onNodeUpdate({
+      ...node,
+      childNodes: newNode.childNodes,
+    });
   };
 
   if (node.id === "root") {
