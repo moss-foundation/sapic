@@ -5,6 +5,7 @@ import { cn } from "@/utils";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
+import { ContextMenu } from "..";
 import { ChevronRightIcon, FileIcon, FolderIcon } from "./Icons";
 import { TreeNodeComponentProps } from "./types";
 import { canDrop, getActualDropSourceTarget, getActualDropTarget } from "./utils";
@@ -163,36 +164,52 @@ export const TreeNode = ({
       })}
     >
       <span className="DropCapture" ref={spanRef}>
-        <button
-          ref={buttonRef}
-          onClick={node.isFolder ? handleFolderClick : undefined}
-          style={{ paddingLeft, paddingRight }}
-          className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative"
-        >
-          {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
-          <span>{node.id}</span>
-          <ChevronRightIcon
-            className={cn("ml-auto min-w-4 min-h-4", {
-              "rotate-90": node.isExpanded,
-              "opacity-0": !node.isFolder,
-            })}
-          />
+        <ContextMenu.Root>
+          <ContextMenu.Trigger asChild>
+            <button
+              ref={buttonRef}
+              onClick={node.isFolder ? handleFolderClick : undefined}
+              style={{ paddingLeft, paddingRight }}
+              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative"
+            >
+              {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
 
-          {preview &&
-            createPortal(
-              <ul className="bg-[#ebecf0] dark:bg-[#434343]">
-                <TreeNode
-                  treeId={treeId}
-                  node={{ ...node, childNodes: [] }}
-                  onNodeUpdate={() => {}}
-                  depth={0}
-                  horizontalPadding={0}
-                  nodeOffset={0}
-                />
-              </ul>,
-              preview
-            )}
-        </button>
+              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
+
+              <span className="h-full min-h-4 grow" />
+
+              <ChevronRightIcon
+                className={cn("ml-auto min-w-4 min-h-4", {
+                  "rotate-90": node.isExpanded,
+                  "opacity-0": !node.isFolder,
+                })}
+              />
+
+              {preview &&
+                createPortal(
+                  <ul className="bg-[#ebecf0] dark:bg-[#434343]">
+                    <TreeNode
+                      treeId={treeId}
+                      node={{ ...node, childNodes: [] }}
+                      onNodeUpdate={() => {}}
+                      depth={0}
+                      horizontalPadding={0}
+                      nodeOffset={0}
+                    />
+                  </ul>,
+                  preview
+                )}
+            </button>
+          </ContextMenu.Trigger>
+
+          <ContextMenu.Portal>
+            <ContextMenu.Content className="text-white">
+              <ContextMenu.Item label="Edit" />
+              <ContextMenu.Item label="Item 2" />
+              <ContextMenu.Item label="Item 3" />
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        </ContextMenu.Root>
 
         {node.isFolder && node.isExpanded && (
           <ul ref={ulList}>
