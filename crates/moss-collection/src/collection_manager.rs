@@ -1,11 +1,11 @@
 use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::AppService;
-use moss_fs::ports::{FileSystem};
+use moss_fs::ports::{FileSystem, RenameOptions};
 use std::{path::PathBuf, sync::Arc};
-
+use std::collections::HashMap;
 use thiserror::Error;
-use tokio::sync::OnceCell;
+use tokio::sync::{OnceCell};
 
 use crate::{
     collection_handle::{CollectionHandle, CollectionState},
@@ -19,7 +19,9 @@ use crate::{
     storage::{CollectionMetadataStore, CollectionRequestSubstore},
 };
 
-type CollectionMap = DashMap<PathBuf, CollectionHandle>;
+// TODO: Testing the performance impact of RwLock in this case
+// Earlier we had used DashMap, but it doesn't work well in an async context
+type CollectionMap = tokio::sync::RwLock<HashMap<PathBuf, CollectionHandle>>;
 
 #[derive(Clone, Debug, Error)]
 pub enum CollectionOperationError {
@@ -64,7 +66,7 @@ impl CollectionManager {
         let collections = self
             .collections
             .get_or_try_init(|| async move {
-                let collections = DashMap::new();
+                let mut collections = HashMap::new();
 
                 for (collection_path, collection_metadata) in
                     self.collection_store.get_all_items()?
@@ -89,7 +91,9 @@ impl CollectionManager {
                     );
                 }
 
-                Ok::<Arc<CollectionMap>, anyhow::Error>(Arc::new(collections))
+                Ok::<Arc<CollectionMap>, anyhow::Error>(
+                    Arc::new(tokio::sync::RwLock::new(collections))
+                )
             })
             .await?;
 
@@ -100,15 +104,15 @@ impl CollectionManager {
 impl CollectionManager {
     pub async fn overview_collections(&self) -> Result<Vec<OverviewCollectionOutput>> {
         let collections = self.collections().await?;
-
-        Ok(collections
+        let read_lock = collections.read().await;
+        Ok(read_lock
             .iter()
             .map(|item| {
-                let item_state = item.state();
+                let item_state = item.1.state();
 
                 OverviewCollectionOutput {
                     name: item_state.name.clone(),
-                    path: item.key().clone(),
+                    path: item.0.clone(),
                     order: item_state.order,
                 }
             })
@@ -121,7 +125,9 @@ impl CollectionManager {
 
     pub(crate) async fn index_collection(&self, path: PathBuf) -> Result<Arc<CollectionState>> {
         let collections = self.collections().await?;
-        let collection_handle = collections
+        let read_lock = collections.read().await;
+
+        let collection_handle = (*read_lock)
             .get(&path)
             .ok_or_else(|| anyhow!("Collection with path {:?} not found", path))?;
         let collection_state = collection_handle.state();
@@ -177,11 +183,14 @@ impl CollectionManager {
         }
         let full_path = input.path.join(&input.name);
         let collections = self.collections().await?;
-        if collections.contains_key(&full_path) {
-            return Err(CollectionOperationError::DuplicateName {
-                name: input.name,
-                path: full_path
-            }.into());
+        {
+            let read_lock = collections.read().await;
+            if read_lock.contains_key(&full_path) {
+                return Err(CollectionOperationError::DuplicateName {
+                    name: input.name,
+                    path: full_path,
+                }.into());
+            }
         }
         self.fs.create_dir(&full_path).await?;
         // TODO: init repo
@@ -194,15 +203,18 @@ impl CollectionManager {
             },
         )?;
 
-        collections.insert(
-            full_path.clone(),
-            CollectionHandle::new(
-                Arc::clone(&self.fs),
-                Arc::clone(&self.collection_request_substore),
-                input.name,
-                None,
-            ),
-        );
+        {
+            let mut write_lock = collections.write().await;
+            (*write_lock).insert(
+                full_path.clone(),
+                CollectionHandle::new(
+                    Arc::clone(&self.fs),
+                    Arc::clone(&self.collection_request_substore),
+                    input.name,
+                    None,
+                ),
+            );
+        }
 
         Ok(())
     }
@@ -216,38 +228,54 @@ impl CollectionManager {
             return Err(CollectionOperationError::EmptyName.into());
         }
         let collections = self.collections().await?;
-        if !collections.contains_key(&path_buf) {
-            let name = path_buf.file_name().unwrap();
-            return Err(CollectionOperationError::NonexistentCollection {
-                name: name.to_string_lossy().to_string(),
-                path: path_buf
-            }.into());
+        {
+            let read_lock = collections.read().await;
+            if !read_lock.contains_key(&path_buf) {
+                let name = path_buf.file_name().unwrap();
+                return Err(CollectionOperationError::NonexistentCollection {
+                    name: name.to_string_lossy().to_string(),
+                    path: path_buf
+                }.into());
+            }
         }
+
         let new_path = path_buf.parent().unwrap().join(&new_name);
-        // self.fs.rename(&path_buf, &new_path, RenameOptions::default()).await?;
+        self.fs.rename(&path_buf, &new_path, RenameOptions::default()).await?;
 
         let metadata = self.collection_store.remove_collection_item(path_buf.clone())?;
         self.collection_store.put_collection_item(new_path.clone(), metadata)?;
 
         // Updating the key for every request within the collection
-        // FIXME: We run into a deadlock here
-        // Apparently tokio does not work very well with DashMap
-        let handle = collections.remove(&path_buf).unwrap().1;
-        let state = handle.state();
-        let requests =
-            state
-                .requests
-                .read()
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone()) )
-                .collect::<Vec<_>>();
+        {
+            let mut write_lock = collections.write().await;
 
-        for (old_key, req_handle) in requests {
-            // handle.delete_request(&PathBuf::from(String::from_utf8_lossy(&old_key)))?
-            println!("{}", String::from_utf8_lossy(&old_key))
+            let handle = (*write_lock).remove(&path_buf).unwrap();
+            let state = handle.state();
+            let requests =
+                state
+                    .requests
+                    .read()
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()) )
+                    .collect::<Vec<_>>();
+
+            for (old_key, req_handle) in requests {
+                // TODO: I'm not sure if this logic is robust enough?
+                let req_relative_path =
+                    PathBuf::from(String::from_utf8_lossy(&old_key).to_string())
+                        .strip_prefix(&path_buf)?.to_path_buf();
+                let new_prefix = &path_buf.parent().unwrap().join(&new_name);
+                let new_path = new_prefix.join(req_relative_path);
+                println!("{}", new_path.to_string_lossy());
+
+                let mut write_lock = state.requests.write();
+                (*write_lock).remove(old_key);
+                (*write_lock).insert(new_path.to_string_lossy().to_string(), req_handle);
+            }
+
+            (*write_lock).insert(new_path.clone(), handle);
         }
 
-        collections.insert(new_path.clone(), handle);
 
         Ok(())
     }
@@ -365,7 +393,8 @@ mod tests {
                     }
                 ).await.unwrap();
                 let collections = service.collections().await.unwrap();
-                assert!(collections.contains_key(
+                let read_lock = collections.read().await;
+                assert!((*read_lock).contains_key(
                     &PathBuf::from("Collections")
                         .join("TestCollection")
                 ));
@@ -387,71 +416,79 @@ mod tests {
                         repo: None,
                     }
                 ).await.unwrap();
-                let old_path = PathBuf::from("Collections").join("Pre-renaming");
+                let old_collection_path = PathBuf::from("Collections").join("Pre-renaming");
                 let collections = service.collections().await.unwrap();
-                let handle = collections.get(&old_path).unwrap();
-                handle.create_request(&old_path, None, CreateRequestInput {
-                    name: "Test".to_string(),
-                    url: None,
-                    payload: None,
-                }).await.unwrap();
-                let new_path = PathBuf::from("Collections").join("Post-renaming");
-                service.rename_collection(old_path.clone(), "Post-renaming").await.unwrap();
+                {
+                    let mut write_lock = collections.read().await;
 
-                assert!(!collections.contains_key(&old_path));
-                assert!(collections.contains_key(&new_path));
-
-            });
-    }
-
-    #[test]
-    fn collections() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let mut collection_store = MockCollectionMetadataStore::new();
-        collection_store.expect_get_all_items().returning(|| {
-            Ok(vec![(
-                PathBuf::from(TEST_COLLECTION_PATH),
-                CollectionMetadataEntity {
-                    order: None,
-                    requests: {
-                        let mut this = HashMap::new();
-                        this.insert(
-                            TEST_REQUEST_PATH.into(),
-                            RequestMetadataEntity {
-                                order: None,
-                                variants: Default::default(),
-                            },
-                        );
-
-                        this
-                    },
-                },
-            )])
-        });
-
-        let collection_request_substore = MockCollectionRequestSubstore::new();
-        let indexer = Arc::new(IndexingService::new(fs.clone()));
-        let service = CollectionManager::new(
-            fs,
-            Arc::new(collection_store),
-            Arc::new(collection_request_substore),
-            indexer,
-        )
-        .unwrap();
-
-        tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async {
-                let result: Arc<DashMap<PathBuf, CollectionHandle>> =
-                    service.collections().await.unwrap();
-
-                for item in result.iter() {
-                    dbg!(item.key());
+                    let handle = (*write_lock).get(&old_collection_path).unwrap();
+                    handle.create_request(&old_collection_path, None, CreateRequestInput {
+                        name: "Test".to_string(),
+                        url: None,
+                        payload: None,
+                    }).await.unwrap();
+                }
+                let new_collection_path = PathBuf::from("Collections").join("Post-renaming");
+                service.rename_collection(old_collection_path.clone(), "Post-renaming").await.unwrap();
+                {
+                    let read_lock = collections.read().await;
+                    assert!(!(*read_lock).contains_key(&old_collection_path));
+                    assert!((*read_lock).contains_key(&new_collection_path));
+                    let collection = (*read_lock).get(&new_collection_path).unwrap();
+                    let new_request_path = new_collection_path.join("requests").join("Test.request");
+                    assert!(collection.state().requests.read().contains_key(new_request_path.to_string_lossy().to_string()))
                 }
             });
     }
+
+    // #[test]
+    // fn collections() {
+    //     let fs = Arc::new(DiskFileSystem::new());
+    //     let mut collection_store = MockCollectionMetadataStore::new();
+    //     collection_store.expect_get_all_items().returning(|| {
+    //         Ok(vec![(
+    //             PathBuf::from(TEST_COLLECTION_PATH),
+    //             CollectionMetadataEntity {
+    //                 order: None,
+    //                 requests: {
+    //                     let mut this = HashMap::new();
+    //                     this.insert(
+    //                         TEST_REQUEST_PATH.into(),
+    //                         RequestMetadataEntity {
+    //                             order: None,
+    //                             variants: Default::default(),
+    //                         },
+    //                     );
+    //
+    //                     this
+    //                 },
+    //             },
+    //         )])
+    //     });
+    //
+    //     let collection_request_substore = MockCollectionRequestSubstore::new();
+    //     let indexer = Arc::new(IndexingService::new(fs.clone()));
+    //     let service = CollectionManager::new(
+    //         fs,
+    //         Arc::new(collection_store),
+    //         Arc::new(collection_request_substore),
+    //         indexer,
+    //     )
+    //     .unwrap();
+    //
+    //     tokio::runtime::Builder::new_multi_thread()
+    //         .enable_all()
+    //         .build()
+    //         .unwrap()
+    //         .block_on(async {
+    //             let result: Arc<DashMap<PathBuf, CollectionHandle>> =
+    //                 service.collections().await.unwrap();
+    //
+    //             for item in result.iter() {
+    //                 dbg!(item.key());
+    //             }
+    //         });
+    // }
 
     #[test]
     fn overview_collection() {
