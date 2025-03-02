@@ -4,11 +4,11 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 
 import { Resizable, ResizablePanel, Scrollbar } from "./components";
 import Tabs from "./components/Tabs";
+import { HeadBar } from "./parts/HeadBar/HeadBar";
+import TabbedPane from "./parts/TabbedPane/TabbedPane";
 import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";
-
-import TabbedPane from "./parts/TabbedPane/TabbedPane";
 
 interface ListItem {
   id: number;
@@ -80,7 +80,8 @@ function App() {
   }, [DNDList]);
 
   return (
-    <div className="flex w-full h-full">
+    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
+      <HeadBar />
       <Resizable>
         <ResizablePanel preferredSize={270} maxSize={400}>
           <Tabs>
@@ -117,7 +118,7 @@ function App() {
         </ResizablePanel>
       </Resizable>
 
-      <div className="absolute -top-3 -right-3 p-4 flex">
+      <div className="absolute -top-3 right-30 p-4 flex">
         <div className="" />
         <button onClick={toggleTheme} className="cursor-pointer">
           {theme === "light" ? (
