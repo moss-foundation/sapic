@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::AppService;
-use moss_fs::ports::{FileSystem, RenameOptions};
+use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
 use std::{path::PathBuf, sync::Arc};
 use std::collections::HashMap;
 use thiserror::Error;
@@ -228,6 +228,7 @@ impl CollectionManager {
             return Err(CollectionOperationError::EmptyName.into());
         }
         let collections = self.collections().await?;
+        // FIXME: Is this checking necessary?
         {
             let read_lock = collections.read().await;
             if !read_lock.contains_key(&path_buf) {
@@ -280,8 +281,32 @@ impl CollectionManager {
         Ok(())
     }
 
-    pub async fn delete_collection(&self, name: &str) -> Result<()> {
-        unimplemented!()
+    pub async fn delete_collection(&self, path_buf: PathBuf) -> Result<()> {
+        let collections = self.collections().await?;
+        // FIXME: Is this checking necessary?
+        {
+            let read_lock = collections.read().await;
+            if !read_lock.contains_key(&path_buf) {
+                let name = path_buf.file_name().unwrap();
+                return Err(CollectionOperationError::NonexistentCollection {
+                    name: name.to_string_lossy().to_string(),
+                    path: path_buf
+                }.into());
+            }
+        }
+        self.fs.remove_dir(&path_buf, RemoveOptions {
+            recursive: true,
+            ignore_if_not_exists: false,
+        }).await?;
+
+        let _ = self.collection_store.remove_collection_item(path_buf.clone())?;
+        {
+            let mut write_lock = collections.write().await;
+            (*write_lock).remove(&path_buf);
+        }
+
+        Ok(())
+
     }
 }
 
@@ -300,7 +325,6 @@ impl AppService for CollectionManager {
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
-    use std::path::Path;
     use moss_fs::adapters::disk::DiskFileSystem;
 
     use crate::{
@@ -343,14 +367,12 @@ mod tests {
             Ok(())
         }
 
-
         fn remove_collection_item(&self, path: PathBuf) -> Result<CollectionMetadataEntity> {
             if let Some((_k, v)) = self.collections.remove(&path) {
                 Ok(v)
             } else {
                 Err(anyhow!("{} not found in CollectionMetadataStore", path.to_string_lossy()))
             }
-
         }
     }
 
@@ -437,6 +459,31 @@ mod tests {
                     let collection = (*read_lock).get(&new_collection_path).unwrap();
                     let new_request_path = new_collection_path.join("requests").join("Test.request");
                     assert!(collection.state().requests.read().contains_key(new_request_path.to_string_lossy().to_string()))
+                }
+            });
+    }
+
+    #[test]
+    fn test_delete_collection() {
+        let service = generate_test_service();
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                service.create_collection(
+                    CreateCollectionInput {
+                        name: "ToBeDeleted".to_string(),
+                        path: "Collections".into(),
+                        repo: None,
+                    }
+                ).await.unwrap();
+                let path = PathBuf::from("Collections").join("ToBeDeleted");
+                service.delete_collection(path.clone()).await.unwrap();
+                let collections = service.collections().await.unwrap();
+                {
+                    let read_lock = collections.read().await;
+                    assert!(!(*read_lock).contains_key(&path));
                 }
             });
     }
