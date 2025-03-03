@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use anyhow::anyhow;
 use serde::Serialize;
 
@@ -9,6 +10,17 @@ pub enum HttpRequestType {
     Delete,
 }
 
+impl Display for HttpRequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", match self {
+            HttpRequestType::Post => "post",
+            HttpRequestType::Get => "get",
+            HttpRequestType::Put => "put",
+            HttpRequestType::Delete => "del",
+        })
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum RequestType {
     Http(HttpRequestType),
@@ -16,6 +28,24 @@ pub enum RequestType {
     GraphQL,
     Grpc,
     Variant,
+}
+
+impl Default for RequestType {
+    fn default() -> Self {
+        Self::Http(HttpRequestType::Get)
+    }
+}
+
+impl Display for RequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", match self {
+            Self::Http(http_request_type) => http_request_type.to_string(),
+            Self::WebSocket => "ws".to_string(),
+            Self::GraphQL => "gql".to_string(),
+            Self::Grpc => "grpc".to_string(),
+            Self::Variant => "variant".to_string(),
+        })
+    }
 }
 
 impl TryFrom<&str> for RequestType {

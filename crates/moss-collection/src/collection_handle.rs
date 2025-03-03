@@ -23,6 +23,7 @@ use patricia_tree::PatriciaMap;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
+use crate::models::collection::RequestType;
 
 #[derive(Clone, Debug, Error)]
 pub enum RequestOperationError {
@@ -209,6 +210,48 @@ fn create_http_requestfile(
 }
 
 impl CollectionHandle {
+    fn create_http_request_handle(
+        &self,
+        key: &str,
+        name: &str,
+        method: &HttpMethod,
+    ) -> Result<()> {
+        self.state.insert_request_handle(
+            key,
+            RequestHandle::new(
+                self.fs.clone(),
+                RequestState {
+                    name: name.to_string(),
+                    order: None,
+                    typ: Some(method.to_owned().into()),
+                    // TODO: handling variants
+                    variants: Default::default(),
+                },
+            ),
+        )
+    }
+
+    fn create_default_request_handle(
+        &self,
+        key: &str,
+        name: &str,
+    ) -> Result<()> {
+        self.state().insert_request_handle(
+            key,
+            RequestHandle::new(
+                self.fs.clone(),
+                RequestState {
+                    name: name.to_string(),
+                    order: None,
+                    typ: None,
+                    variants: Default::default(),
+                },
+            ),
+        )
+    }
+}
+
+impl CollectionHandle {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         store: Arc<dyn CollectionRequestSubstore>,
@@ -254,19 +297,7 @@ impl CollectionHandle {
                 headers,
             }) => {
                 let request_file = create_http_requestfile(input.url, query_params, path_params, headers)?;
-                self.state.insert_request_handle(
-                    key,
-                    RequestHandle::new(
-                        self.fs.clone(),
-                        RequestState {
-                            name: name.clone(),
-                            order: None,
-                            typ: Some(method.clone().into()),
-                            // TODO: handling variants
-                            variants: Default::default(),
-                        },
-                    ),
-                )?;
+                self.create_http_request_handle(&key, &name, &method)?;
                 (
                     request_file.to_string(),
                     method_to_request_type_str(&method),
@@ -274,19 +305,8 @@ impl CollectionHandle {
             }
 
             None => {
-                self.state().insert_request_handle(
-                    key,
-                    RequestHandle::new(
-                        self.fs.clone(),
-                        RequestState {
-                            name: name.clone(),
-                            order: None,
-                            typ: None,
-                            variants: Default::default(),
-                        },
-                    ),
-                )?;
-                (String::new(), "get".to_string())
+                self.create_default_request_handle(&key, &name)?;
+                (String::new(), RequestType::default().to_string())
             }
         };
 
