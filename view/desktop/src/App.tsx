@@ -84,7 +84,7 @@ function App() {
     <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
       <HeadBar />
       <Resizable>
-        <ResizablePanel preferredSize={270} minSize={100} maxSize={400} snap>
+        <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (

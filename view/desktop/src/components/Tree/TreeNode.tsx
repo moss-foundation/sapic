@@ -5,8 +5,7 @@ import { cn } from "@/utils";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { ContextMenu, TreeContext } from "..";
-import { ChevronRightIcon, CollapseAllIcon, ExpandAllIcon, FileIcon, FolderIcon, TreeRootDetailIcon } from "./Icons";
+import { ContextMenu, Icon, TreeContext } from "..";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps } from "./types";
 import { canDrop, collapseAllNodes, expandAllNodes, getActualDropSourceTarget, getActualDropTarget } from "./utils";
@@ -164,8 +163,9 @@ export const TreeNode = ({
       <div className="h-full">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
-            <ChevronRightIcon
-              className={cn(" min-w-4 min-h-4", {
+            <Icon
+              icon="TreeChevronRightIcon"
+              className={cn("text-[#717171]", {
                 "rotate-90": node.isExpanded,
               })}
             />
@@ -178,25 +178,25 @@ export const TreeNode = ({
               <>
                 {!allFoldersAreExpanded && (
                   <button
-                    className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
                     onClick={handleExpandAll}
                   >
-                    <ExpandAllIcon className="size-4" />
+                    <Icon icon="TreeExpandAllIcon" />
                   </button>
                 )}
 
                 {!allFoldersAreCollapsed && (
                   <button
-                    className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
                     onClick={handleCollapseAll}
                   >
-                    <CollapseAllIcon className="size-4" />
+                    <Icon icon="TreeCollapseAllIcon" />
                   </button>
                 )}
               </>
             )}
-            <button className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
-              <TreeRootDetailIcon className="size-4" />
+            <button className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
+              <Icon icon="TreeDetailIcon" />
             </button>
           </div>
         </div>
@@ -223,7 +223,7 @@ export const TreeNode = ({
     <li ref={dropTargetListRef}>
       {renaming ? (
         <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
-          {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
+          <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
           <NodeRenamingForm
             onSubmit={handleFormSubmit}
             onCancel={handleFormCancel}
@@ -240,14 +240,15 @@ export const TreeNode = ({
               onClick={node.isFolder ? handleFolderClick : undefined}
               className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
             >
-              {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
+              <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} />
 
               <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
 
               <span className="DragHandle h-full min-h-4 grow" />
 
-              <ChevronRightIcon
-                className={cn("ml-auto min-w-4 min-h-4", {
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("ml-auto text-[#717171]", {
                   "rotate-90": node.isExpanded,
                   "opacity-0": !node.isFolder,
                 })}
