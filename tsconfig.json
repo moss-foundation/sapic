@@ -5,6 +5,9 @@
       "path": "crates/moss-collection"
     },
     {
+      "path": "crates/moss-theme"
+    },
+    {
       "path": "view/desktop"
     },
     {

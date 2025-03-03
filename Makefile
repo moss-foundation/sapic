@@ -1,6 +1,8 @@
 export WORKSPACE_ROOT_DIR = ${CURDIR}
 export LOG_LEVEL = trace
 
+export THEMES_DIR = ${CURDIR}/assets/themes
+
 .DEFAULT_GOAL := run-desktop
 
 # Detect Operating System
@@ -50,13 +52,16 @@ gen-$(1)-models:
 endef
 
 COLLECTION_MODELS_DIR := crates/moss-collection
+THEME_MODELS_DIR := crates/moss-theme
 
 $(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
+$(eval $(call gen_models,theme,THEME_MODELS_DIR))
 
 ## Generate All Models
 .PHONY: gen-models
 gen-models: \
 	gen-collection-models \
+	gen-theme-models \
 
 # Utility Commands
 

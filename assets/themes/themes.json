@@ -1,0 +1,16 @@
+[
+  {
+    "identifier": "moss.sapic-light",
+    "displayName": "Light",
+    "order": 1,
+    "path": "light.css",
+    "isDefault": true
+  },
+  {
+    "identifier": "moss.sapic-dark",
+    "displayName": "Dark",
+    "order": 2,
+    "path": "dark.css",
+    "isDefault": false
+  }
+]

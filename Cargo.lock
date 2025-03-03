@@ -2869,6 +2869,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_theme"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_app",
+ "moss_fs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
 name = "muda"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
