@@ -223,18 +223,6 @@ impl CollectionHandle {
         }
     }
 
-    pub fn with_state(
-        fs: Arc<dyn FileSystem>,
-        store: Arc<dyn CollectionRequestSubstore>,
-        state: CollectionState
-    ) -> Self {
-        Self {
-            fs,
-            store,
-            state: Arc::new(state),
-        }
-    }
-
     pub(crate) fn state(&self) -> Arc<CollectionState> {
         Arc::clone(&self.state)
     }
