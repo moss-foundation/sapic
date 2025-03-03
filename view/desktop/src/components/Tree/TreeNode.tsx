@@ -32,15 +32,6 @@ export const TreeNode = ({
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
-  const handleFolderClick = () => {
-    if (!node.isFolder) return;
-
-    onNodeUpdate({
-      ...node,
-      isExpanded: !node.isExpanded,
-    });
-  };
-
   useEffect(() => {
     const element = draggableRef.current;
     if (!element) return;
@@ -132,6 +123,15 @@ export const TreeNode = ({
   }, [node, treeId]);
 
   const [renaming, setRenaming] = useState(false);
+
+  const handleFolderClick = () => {
+    if (!node.isFolder) return;
+
+    onNodeUpdate({
+      ...node,
+      isExpanded: !node.isExpanded,
+    });
+  };
 
   const handleFormSubmit = (newId: string) => {
     onNodeUpdate({ ...node, id: newId });

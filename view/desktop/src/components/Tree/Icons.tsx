@@ -1,4 +1,4 @@
-import exp from "constants";
+//TODO this whole file should be removed, because this icons are just stand in for the real ones
 import { SVGProps } from "react";
 
 export const FolderIcon = ({ ...props }: SVGProps<SVGSVGElement>) => (
