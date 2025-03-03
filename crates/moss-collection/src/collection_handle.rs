@@ -151,12 +151,22 @@ fn transform_jsonvalue(value: &JsonValue) -> Option<String> {
     }
 }
 
+fn request_dir(collection_path: &PathBuf, relative_path: Option<PathBuf>, name: &str) -> PathBuf {
+    let requests_dir = collection_path.join("requests");
+    let path = if let Some(path) = relative_path {
+        requests_dir.join(path)
+    } else {
+        requests_dir
+    };
+     path.join(format!("{}.request", name))
+}
 fn create_http_requestfile(
     url: Option<Url>,
     query_params: Vec<QueryParamItem>,
     path_params: Vec<PathParamItem>,
     headers: Vec<HeaderItem>
-) -> Result<HttpRequestFile> {
+)
+    -> Result<HttpRequestFile> {
     let mut transformed_query_params = HashMap::new();
     for item in &query_params {
         if let Some(value) = transform_jsonvalue(&item.value) {
@@ -255,17 +265,11 @@ impl CollectionHandle {
         input: CreateRequestInput,
     )
         -> Result<()> {
-        let requests_dir = collection_path.join("requests");
-        let path = if let Some(path) = relative_path {
-            requests_dir.join(path)
-        } else {
-            requests_dir
-        };
         let name = input.name;
         if name.trim().is_empty() {
             return Err(RequestOperationError::EmptyName.into());
         }
-        let request_dir = path.join(format!("{}.request", name));
+        let request_dir = request_dir(collection_path, relative_path, &name);
         let key = request_dir.to_string_lossy().to_string();
         if self.state.contains(&key) {
             return Err(RequestOperationError::DuplicateName { path, name }.into());
@@ -399,13 +403,7 @@ impl CollectionHandle {
         if name.trim().is_empty() {
             return Err(RequestOperationError::EmptyName.into());
         }
-        let requests_dir = collection_path.join("requests");
-        let path = if let Some(path) = relative_path {
-            requests_dir.join(path)
-        } else {
-            requests_dir
-        };
-        let request_dir = path.join(format!("{}.request", name));
+        let request_dir = request_dir(collection_path, relative_path, &name);
         let key = request_dir.to_string_lossy().to_string();
         if !self.state.contains(&key) {
             return Err(RequestOperationError::NonexistentRequest {
@@ -426,12 +424,20 @@ impl CollectionHandle {
             .await?;
 
         // TODO: update store after implementing db
-
         self.state.remove_request_handle(key)
     }
 
-
-
+    pub async fn update_request(
+        &self,
+        collection_path: &PathBuf,
+        relative_path: Option<PathBuf>,
+        name: &str,
+        input: UpdateRequestInput
+    )
+        -> Result<()>
+    {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]
