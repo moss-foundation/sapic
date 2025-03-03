@@ -1,7 +1,7 @@
 
 use crate::{
     kdl::foundations::http::{
-        HeaderBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url, HeaderOptions, PathParamOptions
+        HeaderParamBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url, HeaderOptions, PathParamOptions
     },
     models::{
         operations::collection_operations::{
@@ -206,7 +206,7 @@ fn create_http_requestfile(
         if let Some(value) = transform_jsonvalue(&item.value) {
             transformed_headers.insert(
                 item.key.clone(),
-                HeaderBody {
+                HeaderParamBody {
                     value,
                     desc: item.desc.clone(),
                     order: item.order,
@@ -272,7 +272,7 @@ impl CollectionHandle {
         let request_dir = request_dir(collection_path, relative_path, &name);
         let key = request_dir.to_string_lossy().to_string();
         if self.state.contains(&key) {
-            return Err(RequestOperationError::DuplicateName { path, name }.into());
+            return Err(RequestOperationError::DuplicateName { path: request_dir, name }.into());
         }
 
         self.fs.create_dir(&request_dir).await?;
@@ -407,7 +407,7 @@ impl CollectionHandle {
         let key = request_dir.to_string_lossy().to_string();
         if !self.state.contains(&key) {
             return Err(RequestOperationError::NonexistentRequest {
-                path,
+                path: request_dir,
                 name: name.to_string(),
             }
             .into());
@@ -432,7 +432,7 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         name: &str,
-        input: UpdateRequestInput
+        // input: UpdateRequestInput
     )
         -> Result<()>
     {

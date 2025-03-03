@@ -123,7 +123,7 @@ impl CollectionManager {
     // collection descriptions should be sent to the frontend. This largely depends
     // on the library we choose to use for displaying hierarchical structures.
 
-    pub(crate) async fn index_collection(&self, path: PathBuf) -> Result<Arc<CollectionState>> {
+    pub async fn index_collection(&self, path: PathBuf) -> Result<Arc<CollectionState>> {
         let collections = self.collections().await?;
         let read_lock = collections.read().await;
 

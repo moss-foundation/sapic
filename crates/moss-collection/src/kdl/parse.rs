@@ -1,5 +1,5 @@
 use crate::kdl::foundations::http::{
-    HeaderBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
+    HeaderParamBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
     QueryParamOptions, Url,
 };
 use crate::kdl::tokens::*;
@@ -174,8 +174,8 @@ fn parse_path_param_options(node: &KdlNode) -> Result<PathParamOptions> {
     }
 }
 
-fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
-    let mut headers: HashMap<String, HeaderBody> = HashMap::new();
+fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderParamBody>> {
+    let mut headers: HashMap<String, HeaderParamBody> = HashMap::new();
     if let Some(document) = node.children() {
         for header_node in document.nodes() {
             let name = header_node.name().to_string();
@@ -186,7 +186,7 @@ fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
     Ok(headers)
 }
 
-fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
+fn parse_header_body(node: &KdlNode) -> Result<HeaderParamBody> {
     if let Some(fields) = node.children() {
         let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
@@ -198,7 +198,7 @@ fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
         } else {
             HeaderOptions::default()
         };
-        Ok(HeaderBody {
+        Ok(HeaderParamBody {
             value: value.unwrap_or("".to_string()),
             desc,
             order,
@@ -206,7 +206,7 @@ fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
             options,
         })
     } else {
-        Ok(HeaderBody::default())
+        Ok(HeaderParamBody::default())
     }
 }
 

@@ -169,7 +169,7 @@ impl Into<KdlNode> for PathParamOptions {
 }
 
 #[derive(Clone, Debug)]
-pub struct HeaderBody {
+pub struct HeaderParamBody {
     pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
@@ -177,7 +177,7 @@ pub struct HeaderBody {
     pub options: HeaderOptions,
 }
 
-impl Default for HeaderBody {
+impl Default for HeaderParamBody {
     fn default() -> Self {
         Self {
             value: "".to_string(),
@@ -189,7 +189,7 @@ impl Default for HeaderBody {
     }
 }
 
-impl Into<KdlDocument> for HeaderBody {
+impl Into<KdlDocument> for HeaderParamBody {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
 
@@ -238,7 +238,7 @@ pub struct HttpRequestFile {
     pub url: Url,
     pub query_params: HashMap<String, QueryParamBody>,
     pub path_params: HashMap<String, PathParamBody>,
-    pub headers: HashMap<String, HeaderBody>,
+    pub headers: HashMap<String, HeaderParamBody>,
 }
 
 
