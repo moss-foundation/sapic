@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
@@ -20,12 +20,15 @@ export const TreeNode = ({
   treeId,
   parentNode,
 }: TreeNodeComponentProps) => {
-  const paddingLeft = `${depth * nodeOffset + horizontalPadding}px`;
-  const paddingRight = `${horizontalPadding}px`;
+  const paddingLeft = useMemo(
+    () => `${depth * nodeOffset + horizontalPadding}px`,
+    [depth, nodeOffset, horizontalPadding]
+  );
+  const paddingRight = useMemo(() => `${horizontalPadding}px`, [horizontalPadding]);
 
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const ulList = useRef<HTMLUListElement>(null);
-  const spanRef = useRef<HTMLSpanElement>(null);
+  const draggableRef = useRef<HTMLButtonElement>(null);
+  const dropTargetFolderRef = useRef<HTMLUListElement>(null);
+  const dropTargetListRef = useRef<HTMLSpanElement>(null);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [dropAllowance, setDropAllowance] = useState<boolean | null>(null);
@@ -40,7 +43,7 @@ export const TreeNode = ({
   };
 
   useEffect(() => {
-    const element = buttonRef.current;
+    const element = draggableRef.current;
     if (!element) return;
 
     return draggable({
@@ -67,7 +70,7 @@ export const TreeNode = ({
   }, [treeId, dropAllowance, node]);
 
   useEffect(() => {
-    const element = spanRef.current || ulList.current;
+    const element = dropTargetListRef.current || dropTargetFolderRef.current;
     if (!element) return;
 
     return dropTargetForElements({
@@ -90,12 +93,7 @@ export const TreeNode = ({
         const sourceTarget = getActualDropSourceTarget(source);
         const dropTarget = getActualDropTarget(location);
 
-        if (!dropTarget || !sourceTarget) {
-          setDropAllowance(null);
-          return;
-        }
-
-        if (dropTarget?.node.uniqueId !== node.uniqueId) {
+        if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
           setDropAllowance(null);
           return;
         }
@@ -193,11 +191,10 @@ export const TreeNode = ({
         </div>
 
         <ul
-          ref={ulList}
+          ref={dropTargetFolderRef}
           className={cn({
             "bg-green-600": dropAllowance === true,
             "bg-red-600": dropAllowance === false,
-            "": dropAllowance === null,
           })}
         >
           {node.isExpanded &&
@@ -225,10 +222,9 @@ export const TreeNode = ({
       className={cn({
         "bg-green-600": dropAllowance === true,
         "bg-red-600": dropAllowance === false,
-        "": dropAllowance === null,
       })}
     >
-      <span className="DropCapture" ref={spanRef}>
+      <span className="DropCapture" ref={dropTargetListRef}>
         {renaming ? (
           <div
             className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
@@ -246,7 +242,7 @@ export const TreeNode = ({
           <ContextMenu.Root modal={false}>
             <ContextMenu.Trigger asChild>
               <button
-                ref={buttonRef}
+                ref={draggableRef}
                 onClick={node.isFolder ? handleFolderClick : undefined}
                 style={{ paddingLeft, paddingRight }}
                 className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
@@ -301,7 +297,7 @@ export const TreeNode = ({
         )}
 
         {node.isFolder && node.isExpanded && (
-          <ul ref={ulList}>
+          <ul ref={dropTargetFolderRef}>
             {node.childNodes.map((childNode) => {
               return (
                 <TreeNode
