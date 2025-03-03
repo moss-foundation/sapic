@@ -9,10 +9,6 @@ export const Home: React.FC = () => {
     <div className="p-5 text-[var(--moss-primary)]">
       <h1 className="mb-3 text-2xl">Home</h1>
 
-      <button className="mb-2 rounded !bg-green-500 p-1" onClick={handleNewWindowButton}>
-        New Window
-      </button>
-
       <div>
         <span>Icon Placeholder</span>
       </div>

@@ -1,10 +1,4 @@
-@import "tailwindcss";
-@config "@repo/tailwind-config";
-@import "./fonts.css";
-
-#root {
-  height: 100%;
-
+:root {
   --moss-primary: rgba(0, 0, 0, 1);
   --moss-page-background: rgba(255, 255, 255, 1);
   --moss-sideBar-background: rgba(244, 244, 245, 1);
@@ -40,16 +34,4 @@
   --moss-tabs-and-actions-container-height: 35px;
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
   --moss-overlay-z-index: 999;
-}
-
-@layer base {
-  html,
-  body {
-    @apply font-sans transition;
-    overflow: hidden;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-  }
 }

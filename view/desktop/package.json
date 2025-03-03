@@ -30,10 +30,10 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/icongen": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/icongen": "workspace:*",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.1",
