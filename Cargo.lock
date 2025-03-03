@@ -2870,6 +2870,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_vault"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "redb",
+]
+
+[[package]]
 name = "muda"
 version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

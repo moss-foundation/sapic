@@ -1,9 +1,8 @@
 [package]
-name = "moss_db"
+name = "moss_vault"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow.workspace = true
-sled.workspace = true
 redb.workspace = true
+anyhow.workspace = true

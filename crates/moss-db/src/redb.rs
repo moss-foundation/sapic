@@ -1,6 +1,45 @@
-use redb::{Database, ReadableTable, TableDefinition};
+use std::path::Path;
 
-const TABLE_VAULT: TableDefinition<&str, u64> = TableDefinition::new("vault");
+use anyhow::Result;
+use redb::{Database, ReadTransaction, ReadableTable, TableDefinition, WriteTransaction};
+
+// const TABLE_VAULT_DEFINITION: TableDefinition<&str, u64> = TableDefinition::new("vault");
+
+pub struct ReDbClient {
+    db: Database,
+}
+
+impl ReDbClient {
+    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        Ok(Self {
+            db: Database::create(path)?,
+        })
+    }
+
+    pub fn write<F, T>(&self, f: F) -> Result<T>
+    where
+        F: FnOnce(WriteTransaction) -> Result<T>,
+    {
+        let write_txn = self.db.begin_write()?;
+        f(write_txn)
+    }
+
+    // pub fn write<F, T>(&self, f: F) -> Result<T>
+    // where
+    //     F: FnOnce(WriteTransaction) -> Result<T>,
+    // {
+    //     let write_txn = self.db.begin_write()?;
+    //     f(write_txn)
+    // }
+
+    pub fn read<F, T>(&self, f: F) -> Result<T>
+    where
+        F: FnOnce(ReadTransaction) -> Result<T>,
+    {
+        let read_txn = self.db.begin_read()?;
+        f(read_txn)
+    }
+}
 
 // #[cfg(test)]
 // mod tests {
