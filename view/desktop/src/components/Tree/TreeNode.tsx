@@ -30,11 +30,13 @@ export const TreeNode = ({
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
+  const [renaming, setRenaming] = useState(false);
+
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const element = draggableRef.current;
-    if (!element) return;
+    if (!element || renaming) return;
 
     return draggable({
       element,
@@ -57,7 +59,7 @@ export const TreeNode = ({
         });
       },
     });
-  }, [treeId, node]);
+  }, [treeId, node, renaming]);
 
   useEffect(() => {
     const element = dropTargetListRef.current || dropTargetFolderRef.current;
@@ -122,8 +124,6 @@ export const TreeNode = ({
     });
   }, [node, treeId]);
 
-  const [renaming, setRenaming] = useState(false);
-
   const handleFolderClick = () => {
     if (!node.isFolder) return;
 
@@ -160,7 +160,7 @@ export const TreeNode = ({
 
   if (node.id === "root") {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-full">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
             <ChevronRightIcon
@@ -217,10 +217,7 @@ export const TreeNode = ({
   return (
     <li ref={dropTargetListRef}>
       {renaming ? (
-        <div
-          className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
-          style={{ paddingLeft }}
-        >
+        <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
           {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
           <NodeRenamingForm
             onSubmit={handleFormSubmit}
@@ -234,8 +231,8 @@ export const TreeNode = ({
           <ContextMenu.Trigger asChild>
             <button
               ref={draggableRef}
-              onClick={node.isFolder ? handleFolderClick : undefined}
               style={{ paddingLeft, paddingRight }}
+              onClick={node.isFolder ? handleFolderClick : undefined}
               className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
             >
               {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
@@ -274,6 +271,7 @@ export const TreeNode = ({
                   </ul>,
                   preview
                 )}
+              <div className="absolute top-0 right-0 ">{Math.random().toFixed(2)}</div>
             </button>
           </ContextMenu.Trigger>
 
@@ -286,7 +284,6 @@ export const TreeNode = ({
           </ContextMenu.Portal>
         </ContextMenu.Root>
       )}
-
       {node.isFolder && node.isExpanded && (
         <ul>
           {node.childNodes.map((childNode) => {

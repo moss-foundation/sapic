@@ -69,7 +69,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         autoFocus
         minLength={1}
         maxLength={100}
-        className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative"
+        className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative bg-transparent"
         onKeyUp={handleKeyUp}
         onBlur={handleBlur}
         required
