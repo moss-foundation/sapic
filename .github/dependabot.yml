@@ -8,6 +8,9 @@ updates:
       actions-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
@@ -27,6 +30,9 @@ updates:
       rust-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
@@ -50,10 +56,16 @@ updates:
           - "@types/react"
           - "react"
           - "react-dom"
+        update-types:
+          - "minor"
+          - "patch"
       vite:
         patterns:
           - "@vitejs/*"
           - "vite"
+        update-types:
+          - "minor"
+          - "patch"
       other-frontend-dependencies:
         patterns:
           - "*"
@@ -63,6 +75,9 @@ updates:
           - "react-dom"
           - "@vitejs/*"
           - "vite"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
