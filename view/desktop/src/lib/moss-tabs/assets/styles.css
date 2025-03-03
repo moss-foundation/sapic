@@ -458,7 +458,7 @@
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
-  @apply /* Track | Handle */ flex overflow-x-auto overflow-y-hidden;
+  @apply flex overflow-x-auto overflow-y-hidden;
   scrollbar-width: thin;
 }
 
@@ -486,9 +486,5 @@
 /*--------------------dv-dragged--------------------*/
 
 .dv-dragged {
-  transform: translate3d(
-    0px,
-    0px,
-    0px
-  ); /* forces tab to be drawn on a separate layer (see https://github.com/microsoft/vscode/issues/18733) */
+  transform: translate3d(0px, 0px, 0px);
 }
