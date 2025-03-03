@@ -2796,6 +2796,7 @@ name = "moss_db"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "redb",
  "sled",
 ]
 
@@ -4083,6 +4084,15 @@ name = "raw-window-handle"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
+
+[[package]]
+name = "redb"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea0a72cd7140de9fc3e318823b883abf819c20d478ec89ce880466dc2ef263c6"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "redox_syscall"

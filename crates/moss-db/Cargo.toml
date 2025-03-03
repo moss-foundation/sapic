@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 anyhow.workspace = true
 sled.workspace = true
+redb = "2.4.0"
