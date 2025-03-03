@@ -271,7 +271,6 @@ export const TreeNode = ({
                   </ul>,
                   preview
                 )}
-              <div className="absolute top-0 right-0 ">{Math.random().toFixed(2)}</div>
             </button>
           </ContextMenu.Trigger>
 
