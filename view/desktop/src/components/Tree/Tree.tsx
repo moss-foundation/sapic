@@ -1,16 +1,26 @@
-import { useCallback, useEffect, useId, useState } from "react";
+import { createContext, useCallback, useEffect, useId, useState } from "react";
 
 import TreeNode from "./TreeNode.tsx";
-import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "./types.ts";
+import { MoveNodeEventDetail, TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
 import {
   addNodeToFolder,
   addUniqueIdToTree,
+  checkIfAllFoldersAreCollapsed,
+  checkIfAllFoldersAreExpanded,
   hasDescendant,
   removeNodeFromTree,
   removeUniqueIdFromTree,
   sortNode,
   updateTreeNode,
 } from "./utils.ts";
+
+export const TreeContext = createContext<TreeContextProps>({
+  treeId: "",
+  horizontalPadding: 16,
+  nodeOffset: 16,
+  allFoldersAreExpanded: false,
+  allFoldersAreCollapsed: true,
+});
 
 export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 16, onTreeUpdate }: TreeProps) => {
   const treeId = useId();
@@ -57,16 +67,17 @@ export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 1
   }, [treeId]);
 
   return (
-    <TreeNode
-      parentNode={tree}
-      onNodeUpdate={handleNodeUpdate}
-      key={`root-${treeId}`}
-      node={tree}
-      depth={0}
-      horizontalPadding={horizontalPadding}
-      nodeOffset={nodeOffset}
-      treeId={treeId}
-    />
+    <TreeContext.Provider
+      value={{
+        treeId,
+        horizontalPadding,
+        nodeOffset,
+        allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
+        allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
+      }}
+    >
+      <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+    </TreeContext.Provider>
   );
 };
 

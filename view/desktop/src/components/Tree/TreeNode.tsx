@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { ContextMenu } from "..";
+import { ContextMenu, TreeContext } from "..";
 import { ChevronRightIcon, CollapseAllIcon, ExpandAllIcon, FileIcon, FolderIcon, TreeRootDetailIcon } from "./Icons";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps } from "./types";
@@ -15,11 +15,12 @@ export const TreeNode = ({
   node,
   onNodeUpdate,
   depth,
-  horizontalPadding,
-  nodeOffset,
-  treeId,
+
   parentNode,
 }: TreeNodeComponentProps) => {
+  const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded } =
+    useContext(TreeContext);
+
   const paddingLeft = useMemo(
     () => `${depth * nodeOffset + horizontalPadding}px`,
     [depth, nodeOffset, horizontalPadding]
@@ -173,20 +174,27 @@ export const TreeNode = ({
           </button>
 
           <div className="flex gap-1 items-center">
-            <button
-              className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
-              onClick={handleExpandAll}
-            >
-              <ExpandAllIcon className="size-4" />
-            </button>
+            {node.isExpanded && (
+              <>
+                {!allFoldersAreExpanded && (
+                  <button
+                    className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    onClick={handleExpandAll}
+                  >
+                    <ExpandAllIcon className="size-4" />
+                  </button>
+                )}
 
-            <button
-              className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
-              onClick={handleCollapseAll}
-            >
-              <CollapseAllIcon className="size-4" />
-            </button>
-
+                {!allFoldersAreCollapsed && (
+                  <button
+                    className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    onClick={handleCollapseAll}
+                  >
+                    <CollapseAllIcon className="size-4" />
+                  </button>
+                )}
+              </>
+            )}
             <button className="size-[22px] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
               <TreeRootDetailIcon className="size-4" />
             </button>
@@ -199,13 +207,10 @@ export const TreeNode = ({
               return (
                 <TreeNode
                   parentNode={node}
-                  treeId={treeId}
                   onNodeUpdate={onNodeUpdate}
                   key={childNode.uniqueId}
                   node={childNode}
                   depth={0}
-                  horizontalPadding={horizontalPadding}
-                  nodeOffset={nodeOffset}
                 />
               );
             })}
@@ -261,12 +266,9 @@ export const TreeNode = ({
                         isExpanded: false,
                         id: "-",
                       }}
-                      treeId={treeId}
                       node={{ ...node, childNodes: [] }}
                       onNodeUpdate={() => {}}
                       depth={0}
-                      horizontalPadding={0}
-                      nodeOffset={0}
                     />
                   </ul>,
                   preview
@@ -289,13 +291,10 @@ export const TreeNode = ({
             return (
               <TreeNode
                 parentNode={node}
-                treeId={treeId}
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={depth + 1}
                 onNodeUpdate={onNodeUpdate}
-                horizontalPadding={horizontalPadding}
-                nodeOffset={nodeOffset}
               />
             );
           })}

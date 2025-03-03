@@ -1,4 +1,10 @@
-
+export interface TreeContextProps {
+  treeId: string
+  horizontalPadding: number
+  nodeOffset: number
+  allFoldersAreCollapsed: boolean
+  allFoldersAreExpanded: boolean
+}
 
 export interface TreeProps {
   tree: NodeProps;
@@ -14,9 +20,6 @@ export interface NodeEvents {
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeNodeProps;
   depth: number;
-  horizontalPadding: number;
-  nodeOffset: number;
-  treeId: string;
   parentNode: TreeNodeProps;
 }
 

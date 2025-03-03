@@ -2,9 +2,8 @@ import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-dra
 import { DropNodeElement, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
 export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
-    if (node.uniqueId === updatedNode.uniqueId) {
-        return updatedNode;
-    }
+    if (node.uniqueId === updatedNode.uniqueId) return updatedNode;
+
     return {
         ...node,
         childNodes: node.childNodes.map((child) => updateTreeNode(child, updatedNode)),
@@ -65,9 +64,7 @@ export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
 }
 
 export const findNodeByUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {
-    if (tree.uniqueId === uniqueId) {
-        return tree;
-    }
+    if (tree.uniqueId === uniqueId) return tree;
 
     return tree.childNodes.find(child => findNodeByUniqueId(child, uniqueId));
 }
@@ -177,7 +174,7 @@ export const canDrop = (sourceTarget: DropNodeElement, dropTarget: DropNodeEleme
 export const expandAllNodes = (node: TreeNodeProps): TreeNodeProps => {
     return {
         ...node,
-        isExpanded: true,
+        isExpanded: node.isFolder ? true : node.isExpanded,
         childNodes: node.childNodes.map(child => expandAllNodes(child))
     }
 }
@@ -185,8 +182,37 @@ export const expandAllNodes = (node: TreeNodeProps): TreeNodeProps => {
 export const collapseAllNodes = (node: TreeNodeProps): TreeNodeProps => {
     return {
         ...node,
-        isExpanded: false,
+        isExpanded: node.isFolder ? false : node.isExpanded,
         childNodes: node.childNodes.map(child => collapseAllNodes(child))
     }
 }
 
+export const checkIfAllFoldersAreExpanded = (nodes: TreeNodeProps[]): boolean => {
+    if (!nodes || nodes.length === 0) return true;
+
+    for (const node of nodes) {
+        if (node.isFolder && !node.isExpanded) {
+            return false;
+        }
+        if (!checkIfAllFoldersAreExpanded(node.childNodes)) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+export const checkIfAllFoldersAreCollapsed = (nodes: TreeNodeProps[]): boolean => {
+    if (!nodes || nodes.length === 0) return true;
+
+    for (const node of nodes) {
+        if (node.isFolder && node.isExpanded) {
+            return false;
+        }
+        if (!checkIfAllFoldersAreCollapsed(node.childNodes)) {
+            return false;
+        }
+    }
+
+    return true;
+};
