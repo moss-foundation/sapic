@@ -32,7 +32,7 @@ export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
           (props.icon ? (
             <Icon icon={props.icon} className="text-[#8D8D8D]" />
           ) : (
-            <Icon icon="Documentation" className="opacity-0" />
+            <Icon icon="DropdownMenuRadioIndicator" className="opacity-0" />
           ))}
 
         <span>{props.label}</span>
