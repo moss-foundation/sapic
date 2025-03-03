@@ -39,7 +39,7 @@ pub struct QueryParamOptions {
 #[ts(export, export_to = "types/request.ts")]
 pub struct QueryParamItem {
     pub key: String,
-    pub value: JsonValue,
+    pub value: String,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]
@@ -60,7 +60,7 @@ pub struct PathParamOptions {
 #[ts(export, export_to = "types/request.ts")]
 pub struct PathParamItem {
     pub key: String,
-    pub value: JsonValue,
+    pub value: String,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]
@@ -81,7 +81,7 @@ pub struct HeaderOptions {
 #[ts(export, export_to = "types/request.ts")]
 pub struct HeaderItem {
     pub key: String,
-    pub value: JsonValue,
+    pub value: String,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]

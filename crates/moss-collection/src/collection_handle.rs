@@ -133,24 +133,6 @@ pub struct CollectionHandle {
     state: Arc<CollectionState>,
 }
 
-fn transform_jsonvalue(value: &JsonValue) -> Option<String> {
-    // FIXME: Should we accommodate JSONValue::Array/Object?
-    match value {
-        JsonValue::Null => Some("".to_string()),
-        JsonValue::Bool(value) => Some(value.to_string()),
-        JsonValue::Number(value) => Some(value.to_string()),
-        JsonValue::String(value) => Some(value.to_string()),
-        JsonValue::Array(_) => {
-            None
-            // TODO: Invalid type, logging
-        }
-        JsonValue::Object(_) => {
-            None
-            // TODO: Invalid type, logging
-        }
-    }
-}
-
 fn request_dir(collection_path: &PathBuf, relative_path: Option<PathBuf>, name: &str) -> PathBuf {
     let requests_dir = collection_path.join("requests");
     let path = if let Some(path) = relative_path {
@@ -169,54 +151,53 @@ fn create_http_requestfile(
     -> Result<HttpRequestFile> {
     let mut transformed_query_params = HashMap::new();
     for item in &query_params {
-        if let Some(value) = transform_jsonvalue(&item.value) {
-            transformed_query_params.insert(
-                item.key.clone(),
-                QueryParamBody {
-                    value,
-                    desc: item.desc.clone(),
-                    order: item.order,
-                    disabled: item.disabled,
-                    options: QueryParamOptions {
-                        propagate: item.options.propagate,
-                    },
+
+        transformed_query_params.insert(
+            item.key.clone(),
+            QueryParamBody {
+                value: item.value.clone(),
+                desc: item.desc.clone(),
+                order: item.order,
+                disabled: item.disabled,
+                options: QueryParamOptions {
+                    propagate: item.options.propagate,
                 },
-            );
-        }
+            },
+        );
+
     }
     let mut transformed_path_params = HashMap::new();
     for item in &path_params {
-        if let Some(value) = transform_jsonvalue(&item.value) {
-            transformed_path_params.insert(
-                item.key.clone(),
-                PathParamBody {
-                    value,
-                    desc: item.desc.clone(),
-                    order: item.order,
-                    disabled: item.disabled,
-                    options: PathParamOptions {
-                        propagate: item.options.propagate,
-                    },
+        transformed_path_params.insert(
+            item.key.clone(),
+            PathParamBody {
+                value: item.value.clone(),
+                desc: item.desc.clone(),
+                order: item.order,
+                disabled: item.disabled,
+                options: PathParamOptions {
+                    propagate: item.options.propagate,
                 },
-            );
-        }
+            },
+        );
+
     }
     let mut transformed_headers = HashMap::new();
     for item in &headers {
-        if let Some(value) = transform_jsonvalue(&item.value) {
-            transformed_headers.insert(
-                item.key.clone(),
-                HeaderParamBody {
-                    value,
-                    desc: item.desc.clone(),
-                    order: item.order,
-                    disabled: item.disabled,
-                    options: HeaderOptions {
-                        propagate: item.options.propagate,
-                    },
+
+        transformed_headers.insert(
+            item.key.clone(),
+            HeaderParamBody {
+                value: item.value.clone(),
+                desc: item.desc.clone(),
+                order: item.order,
+                disabled: item.disabled,
+                options: HeaderOptions {
+                    propagate: item.options.propagate,
                 },
-            );
-        }
+            },
+        );
+
     }
 
     Ok(HttpRequestFile {
@@ -484,7 +465,7 @@ mod tests {
                 method: HttpMethod::Get,
                 query_params: vec![QueryParamItem {
                     key: "pageToken".to_string(),
-                    value: JsonValue::Null,
+                    value: "".to_string(),
                     order: Some(1),
                     desc: None,
                     disabled: false,
@@ -492,7 +473,7 @@ mod tests {
                 }],
                 path_params: vec![PathParamItem {
                     key: "docId".to_string(),
-                    value: JsonValue::Null,
+                    value: "".to_string(),
                     order: Some(1),
                     desc: None,
                     disabled: false,
@@ -500,7 +481,7 @@ mod tests {
                 }],
                 headers: vec![HeaderItem {
                     key: "user_agent".to_string(),
-                    value: JsonValue::Null,
+                    value: "".to_string(),
                     order: Some(1),
                     desc: None,
                     disabled: false,
