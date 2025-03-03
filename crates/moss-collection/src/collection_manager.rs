@@ -282,22 +282,29 @@ impl CollectionManager {
     }
 
     pub async fn delete_collection(&self, path_buf: PathBuf) -> Result<()> {
+        match path_buf.try_exists() {
+            Ok(true) => {
+                self.fs.remove_dir(&path_buf, RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                }).await?;
+            }
+            Ok(false) => {
+                // TODO: Logging this anormaly, the collection has already been deleted in the filesystem
+            }
+            Err(e) => {
+                // This is likely a permission issue
+                return Err(e.into());
+            }
+        }
+
         let collections = self.collections().await?;
-        // FIXME: Is this checking necessary?
         {
             let read_lock = collections.read().await;
             if !read_lock.contains_key(&path_buf) {
-                let name = path_buf.file_name().unwrap();
-                return Err(CollectionOperationError::NonexistentCollection {
-                    name: name.to_string_lossy().to_string(),
-                    path: path_buf
-                }.into());
+                // TODO: Logging this anormaly, the collection is already deleted from the map
             }
         }
-        self.fs.remove_dir(&path_buf, RemoveOptions {
-            recursive: true,
-            ignore_if_not_exists: false,
-        }).await?;
 
         let _ = self.collection_store.remove_collection_item(path_buf.clone())?;
         {
