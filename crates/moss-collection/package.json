@@ -10,7 +10,7 @@
       "@repo/typescript-config": "workspace:*"
     },
     "dependencies": {
-      "typescript": "^5.7.2"
+      "typescript": "^5.8.2"
     },
     "tsImportRules": {
       "bindings/operations/collection.ts": {
