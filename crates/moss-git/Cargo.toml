@@ -4,24 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio.workspace = true
 anyhow.workspace = true
-parking_lot = { workspace = true, features = ["serde"] }
 git2.workspace = true
-# gix = {version =  "0.70.0"}
-
-dotenv = "0.15.0"
-serde_json = "1.0.138"
-oauth2 = { workspace = true, features = ["reqwest-blocking"] }
-reqwest = { workspace = true, features = ["blocking"] }
-serde = { version = "1.0.217", features = [
-    "derive",
-] } # Using blocking for easy testing here
-webbrowser = "1.0.3"
-iota_stronghold = "2.1.0"
-zeroize = "1.8.1"
-rust-argon2 = "2.1.0"
-
+dotenv.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]

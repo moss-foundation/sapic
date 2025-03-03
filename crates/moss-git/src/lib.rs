@@ -1,18 +1,17 @@
-pub mod adapters;
-pub mod models;
-pub mod ports;
-
-pub mod repo;
-
+// TODO: Implement other git functionalities
+// e.g. branching, merging, conflict resolution
 use anyhow::Result;
+use git2::RemoteCallbacks;
 use std::sync::Arc;
 
-// TODO: Create a `Sensitive` type for storing passwords securely?
-// TODO: Preserving the auth info for repos
+pub mod repo;
+// TODO: We will use more secure method of storing the AuthAgent info
+// For easy testing, we will use environment variables for now
+// pub trait TestStorage {
+//     fn write_to_file(&self) -> Result<()>;
+//     fn read_from_file() -> Result<Arc<Self>>;
+// }
 
-pub trait TestStorage {
-    // TODO: We will use more secure method of storing the AuthAgent info
-    // For easy testing, we will use environment variables for now
-    fn write_to_file(&self) -> Result<()>;
-    fn read_from_file() -> Result<Arc<Self>>;
+pub trait GitAuthAgent {
+    fn generate_callback<'a>(&'a self, cb: &mut RemoteCallbacks<'a>) -> Result<()>;
 }
