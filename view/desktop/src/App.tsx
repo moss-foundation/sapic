@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { Resizable, ResizablePanel, Scrollbar } from "./components";
+import TestTreeData from "./assets/testTreeData.json";
+import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -83,7 +84,7 @@ function App() {
     <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
       <HeadBar />
       <Resizable>
-        <ResizablePanel preferredSize={270} maxSize={400}>
+        <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -97,9 +98,11 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-black dark:text-white">
+            <Tabs.Panels className="text-black dark:text-white  ">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item}>Panel {item.id} content</Tabs.Panel>
+                <Tabs.Panel {...item} key={item.id} className="0">
+                  {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
+                </Tabs.Panel>
               ))}
             </Tabs.Panels>
           </Tabs>
@@ -163,3 +166,15 @@ function App() {
 }
 
 export default App;
+
+const IsolatedTreeComponent = () => {
+  return (
+    <div className="h-full flex flex-col">
+      <div>
+        <Tree tree={TestTreeData.tree} />
+      </div>
+      <hr />
+      <Tree tree={TestTreeData.tree} />
+    </div>
+  );
+};

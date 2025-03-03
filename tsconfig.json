@@ -8,6 +8,9 @@
       "path": "view/desktop"
     },
     {
+      "path": "tools/icongen"
+    },
+    {
       "path": "packages/moss-tabs"
     }
   ]

@@ -15,7 +15,7 @@ endif
 
 # --- App Directories ---
 DESKTOP_DIR := view/desktop
-
+ICONS_DIR := tools/icongen
 # --- Tool Directories ---
 XTASK_DIR := tools/xtask
 

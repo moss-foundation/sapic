@@ -14,11 +14,7 @@ import { cn } from "../utils";
 import DropIndicator from "./DropIndicator";
 import Scrollbar from "./Scrollbar";
 
-interface TabsProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
-
-const Tabs = ({ children, className, ...props }: TabsProps) => {
+const Tabs = ({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) => {
   return (
     <div className={cn("w-full h-full flex flex-col", className)} {...props}>
       {children}
@@ -75,7 +71,7 @@ const Tab = ({
     return combine(
       draggable({
         element,
-        getInitialData: () => ({ id, label }),
+        getInitialData: () => ({ id, label, type: "Tab" }),
         onDrop: () => {
           setPreview(null);
         },
@@ -135,7 +131,7 @@ const Tab = ({
       aria-controls={`panel-${id}`}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "relative grow min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border",
+        "relative grow min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border select-none",
         {
           "bg-white dark:bg-[#1e2021] dark:text-white border-t-[#0065FF] ": isActive,
           "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-t-transparent": !isActive,
@@ -157,7 +153,10 @@ interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
 
 const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
-    <div className={cn("w-full h-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
+    <div
+      className={cn("w-full h-full flex flex-col grow bg-white dark:bg-[#1e2021] overflow-hidden", className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -177,7 +176,7 @@ const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps
       tabIndex={0}
       aria-labelledby={`${id}`}
       className={cn(
-        "",
+        "flex flex-col grow overflow-auto",
         {
           "hidden": !isActive,
         },
@@ -185,7 +184,7 @@ const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps
       )}
       {...props}
     >
-      <p className="text-caption">{children}</p>
+      {children}
     </div>
   );
 };
