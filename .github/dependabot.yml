@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
@@ -15,10 +19,14 @@ updates:
       - jevgenis33
     open-pull-requests-limit: 5
 
-  - package-ecosystem: cargo
+  - package-ecosystem: "cargo"
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      rust-dependencies:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
@@ -32,10 +40,29 @@ updates:
       - rust
     open-pull-requests-limit: 10
 
-  - package-ecosystem: npm
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      react:
+        patterns:
+          - "@types/react"
+          - "react"
+          - "react-dom"
+      vite:
+        patterns:
+          - "@vitejs/*"
+          - "vite"
+      other-frontend-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/react"
+          - "react"
+          - "react-dom"
+          - "@vitejs/*"
+          - "vite"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
