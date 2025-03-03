@@ -54,4 +54,13 @@
     ["cva\\(((?:[^()]|\\([^()]*\\))*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
     ["cx\\(((?:[^()]|\\([^()]*\\))*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
+  "cSpell.words": [
+    "activegroup",
+    "dodgerblue",
+    "hiddenpanel",
+    "inactivegroup",
+    "paneview",
+    "rgba",
+    "visiblepanel"
+  ],
 }
