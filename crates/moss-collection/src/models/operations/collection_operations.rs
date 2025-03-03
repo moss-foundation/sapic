@@ -11,7 +11,7 @@ pub struct CreateCollectionInput {
     pub name: String,
     pub path: PathBuf,
     #[ts(optional)]
-    pub repo: Option<Url>,
+    pub repo: Option<String>,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -42,7 +42,7 @@ pub enum CreateRequestProtocolSpecificPayload {
 pub struct CreateRequestInput {
     pub name: String,
     #[ts(optional)]
-    pub url: Option<Url>,
+    pub url: Option<String>,
     pub payload: Option<CreateRequestProtocolSpecificPayload>,
 }
 

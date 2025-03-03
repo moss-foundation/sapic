@@ -144,7 +144,7 @@ fn request_dir(collection_path: &PathBuf, relative_path: Option<PathBuf>, name: 
      path.join(format!("{}.request", name))
 }
 fn create_http_requestfile(
-    url: Option<Url>,
+    url: Option<&str>,
     query_params: Vec<QueryParamItem>,
     path_params: Vec<PathParamItem>,
     headers: Vec<HeaderItem>
@@ -202,7 +202,7 @@ fn create_http_requestfile(
     }
 
     Ok(HttpRequestFile {
-        url: url.unwrap_or(Url::default()),
+        url: url.map(|s| Url::new(s.to_string())).unwrap_or(Url::default()),
         query_params: transformed_query_params,
         path_params: transformed_path_params,
         headers: transformed_headers,
@@ -296,7 +296,7 @@ impl CollectionHandle {
                 path_params,
                 headers,
             }) => {
-                let request_file = create_http_requestfile(input.url, query_params, path_params, headers)?;
+                let request_file = create_http_requestfile(input.url.as_deref(), query_params, path_params, headers)?;
                 self.create_http_request_handle(&key, &name, &method)?;
                 (
                     request_file.to_string(),
@@ -466,9 +466,9 @@ mod tests {
 
         let input = CreateRequestInput {
             name: name.clone(),
-            url: Some(Url::new(
+            url: Some(
                 "https://spacex-production.up.railway.app".to_string(),
-            )),
+            ),
             payload: Some(CreateRequestProtocolSpecificPayload::Http {
                 method: HttpMethod::Get,
                 query_params: vec![QueryParamItem {
