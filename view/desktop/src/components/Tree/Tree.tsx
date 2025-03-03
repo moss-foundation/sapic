@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 
 import TreeNode from "./TreeNode.tsx";
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "./types.ts";
@@ -16,9 +16,9 @@ export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 1
   const treeId = useId();
   const [tree, setTree] = useState<TreeNodeProps>(sortNode(addUniqueIdToTree(initialTree)));
 
-  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
+  const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
-  };
+  }, []);
 
   useEffect(() => {
     onTreeUpdate?.(removeUniqueIdFromTree(tree));

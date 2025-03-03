@@ -5,7 +5,6 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import TestTreeData from "./assets/testTreeData.json";
 import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
-import { NodeProps } from "./components/Tree/types";
 import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";

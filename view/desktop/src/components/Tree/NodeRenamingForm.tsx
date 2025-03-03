@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
@@ -11,14 +11,11 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(String(currentName));
 
-  const handleKeyUp = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Escape") {
-        onCancel();
-      }
-    },
-    [onCancel]
-  );
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      onCancel();
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if ("preventDefault" in e) e.preventDefault();

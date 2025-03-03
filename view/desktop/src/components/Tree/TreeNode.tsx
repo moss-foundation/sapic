@@ -28,10 +28,9 @@ export const TreeNode = ({
 
   const draggableRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
-  const dropTargetListRef = useRef<HTMLSpanElement>(null);
+  const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const [dropAllowance, setDropAllowance] = useState<boolean | null>(null);
 
   const handleFolderClick = () => {
     if (!node.isFolder) return;
@@ -67,7 +66,7 @@ export const TreeNode = ({
         });
       },
     });
-  }, [treeId, dropAllowance, node]);
+  }, [treeId, node]);
 
   useEffect(() => {
     const element = dropTargetListRef.current || dropTargetFolderRef.current;
@@ -83,7 +82,7 @@ export const TreeNode = ({
         },
       }),
       onDragLeave() {
-        setDropAllowance(null);
+        element.classList.remove("bg-green-600", "bg-red-600");
       },
       onDrag({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
@@ -94,11 +93,14 @@ export const TreeNode = ({
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          setDropAllowance(null);
+          element.classList.remove("bg-green-600", "bg-red-600");
           return;
         }
-
-        setDropAllowance(canDrop(sourceTarget, dropTarget, node));
+        if (canDrop(sourceTarget, dropTarget, node)) {
+          element.classList.add("bg-green-600");
+        } else {
+          element.classList.add("bg-red-600");
+        }
       },
       onDrop({ location, source }) {
         if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
@@ -109,11 +111,11 @@ export const TreeNode = ({
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          setDropAllowance(null);
+          element.classList.remove("bg-green-600", "bg-red-600");
           return;
         }
 
-        if (dropAllowance) {
+        if (canDrop(sourceTarget, dropTarget, node)) {
           window.dispatchEvent(
             new CustomEvent("moveTreeNode", {
               detail: {
@@ -123,10 +125,11 @@ export const TreeNode = ({
             })
           );
         }
-        setDropAllowance(null);
+
+        element.classList.remove("bg-green-600", "bg-red-600");
       },
     });
-  }, [dropAllowance, node, treeId]);
+  }, [node, treeId]);
 
   const [renaming, setRenaming] = useState(false);
 
@@ -190,13 +193,7 @@ export const TreeNode = ({
           </div>
         </div>
 
-        <ul
-          ref={dropTargetFolderRef}
-          className={cn({
-            "bg-green-600": dropAllowance === true,
-            "bg-red-600": dropAllowance === false,
-          })}
-        >
+        <ul ref={dropTargetFolderRef}>
           {node.isExpanded &&
             node.childNodes.map((childNode) => {
               return (
@@ -218,103 +215,96 @@ export const TreeNode = ({
   }
 
   return (
-    <li
-      className={cn({
-        "bg-green-600": dropAllowance === true,
-        "bg-red-600": dropAllowance === false,
-      })}
-    >
-      <span className="DropCapture" ref={dropTargetListRef}>
-        {renaming ? (
-          <div
-            className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
-            style={{ paddingLeft }}
-          >
-            {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
-            <NodeRenamingForm
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-              restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
-              currentName={node.id}
-            />
-          </div>
-        ) : (
-          <ContextMenu.Root modal={false}>
-            <ContextMenu.Trigger asChild>
-              <button
-                ref={draggableRef}
-                onClick={node.isFolder ? handleFolderClick : undefined}
-                style={{ paddingLeft, paddingRight }}
-                className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
-              >
-                {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
+    <li ref={dropTargetListRef}>
+      {renaming ? (
+        <div
+          className="flex w-full min-w-0 items-center gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
+          style={{ paddingLeft }}
+        >
+          {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
+          <NodeRenamingForm
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
+            currentName={node.id}
+          />
+        </div>
+      ) : (
+        <ContextMenu.Root modal={false}>
+          <ContextMenu.Trigger asChild>
+            <button
+              ref={draggableRef}
+              onClick={node.isFolder ? handleFolderClick : undefined}
+              style={{ paddingLeft, paddingRight }}
+              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
+            >
+              {node.isFolder ? <FolderIcon className="min-w-4 min-h-4" /> : <FileIcon className="min-w-4 min-h-4" />}
 
-                <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
+              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
 
-                <span className="DragHandle h-full min-h-4 grow" />
+              <span className="DragHandle h-full min-h-4 grow" />
 
-                <ChevronRightIcon
-                  className={cn("ml-auto min-w-4 min-h-4", {
-                    "rotate-90": node.isExpanded,
-                    "opacity-0": !node.isFolder,
-                  })}
-                />
+              <ChevronRightIcon
+                className={cn("ml-auto min-w-4 min-h-4", {
+                  "rotate-90": node.isExpanded,
+                  "opacity-0": !node.isFolder,
+                })}
+              />
 
-                {preview &&
-                  createPortal(
-                    <ul className="bg-[#ebecf0] dark:bg-[#434343]">
-                      <TreeNode
-                        parentNode={{
-                          uniqueId: "-",
-                          childNodes: [],
-                          type: "",
-                          order: 0,
-                          isFolder: false,
-                          isExpanded: false,
-                          id: "-",
-                        }}
-                        treeId={treeId}
-                        node={{ ...node, childNodes: [] }}
-                        onNodeUpdate={() => {}}
-                        depth={0}
-                        horizontalPadding={0}
-                        nodeOffset={0}
-                      />
-                    </ul>,
-                    preview
-                  )}
-              </button>
-            </ContextMenu.Trigger>
+              {preview &&
+                createPortal(
+                  <ul className="bg-[#ebecf0] dark:bg-[#434343]">
+                    <TreeNode
+                      parentNode={{
+                        uniqueId: "-",
+                        childNodes: [],
+                        type: "",
+                        order: 0,
+                        isFolder: false,
+                        isExpanded: false,
+                        id: "-",
+                      }}
+                      treeId={treeId}
+                      node={{ ...node, childNodes: [] }}
+                      onNodeUpdate={() => {}}
+                      depth={0}
+                      horizontalPadding={0}
+                      nodeOffset={0}
+                    />
+                  </ul>,
+                  preview
+                )}
+            </button>
+          </ContextMenu.Trigger>
 
-            <ContextMenu.Portal>
-              <ContextMenu.Content className="text-white">
-                <ContextMenu.Item label="Edit" onClick={() => setRenaming(true)} />
-                <ContextMenu.Item label="Item 2" />
-                <ContextMenu.Item label="Item 3" />
-              </ContextMenu.Content>
-            </ContextMenu.Portal>
-          </ContextMenu.Root>
-        )}
+          <ContextMenu.Portal>
+            <ContextMenu.Content className="text-white">
+              <ContextMenu.Item label="Edit" onClick={() => setRenaming(true)} />
+              <ContextMenu.Item label="Item 2" />
+              <ContextMenu.Item label="Item 3" />
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        </ContextMenu.Root>
+      )}
 
-        {node.isFolder && node.isExpanded && (
-          <ul ref={dropTargetFolderRef}>
-            {node.childNodes.map((childNode) => {
-              return (
-                <TreeNode
-                  parentNode={node}
-                  treeId={treeId}
-                  key={childNode.uniqueId}
-                  node={childNode}
-                  depth={depth + 1}
-                  onNodeUpdate={onNodeUpdate}
-                  horizontalPadding={horizontalPadding}
-                  nodeOffset={nodeOffset}
-                />
-              );
-            })}
-          </ul>
-        )}
-      </span>
+      {node.isFolder && node.isExpanded && (
+        <ul>
+          {node.childNodes.map((childNode) => {
+            return (
+              <TreeNode
+                parentNode={node}
+                treeId={treeId}
+                key={childNode.uniqueId}
+                node={childNode}
+                depth={depth + 1}
+                onNodeUpdate={onNodeUpdate}
+                horizontalPadding={horizontalPadding}
+                nodeOffset={nodeOffset}
+              />
+            );
+          })}
+        </ul>
+      )}
     </li>
   );
 };
