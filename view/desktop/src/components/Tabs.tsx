@@ -153,7 +153,10 @@ interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
 
 const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
-    <div className={cn("w-full h-full grow bg-white dark:bg-[#1e2021] overflow-auto", className)} {...props}>
+    <div
+      className={cn("w-full h-full flex flex-col grow bg-white dark:bg-[#1e2021] overflow-hidden", className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -173,7 +176,7 @@ const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps
       tabIndex={0}
       aria-labelledby={`${id}`}
       className={cn(
-        "",
+        "flex flex-col grow overflow-auto",
         {
           "hidden": !isActive,
         },

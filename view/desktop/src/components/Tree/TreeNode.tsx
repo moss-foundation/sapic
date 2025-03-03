@@ -160,7 +160,7 @@ export const TreeNode = ({
 
   if (node.id === "root") {
     return (
-      <div>
+      <div className="h-full flex flex-col">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
             <ChevronRightIcon
@@ -193,7 +193,7 @@ export const TreeNode = ({
           </div>
         </div>
 
-        <ul ref={dropTargetFolderRef}>
+        <ul ref={dropTargetFolderRef} className="h-full">
           {node.isExpanded &&
             node.childNodes.map((childNode) => {
               return (

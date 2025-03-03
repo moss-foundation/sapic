@@ -97,9 +97,9 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-black dark:text-white">
+            <Tabs.Panels className="text-black dark:text-white  ">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item} key={item.id}>
+                <Tabs.Panel {...item} key={item.id} className="0">
                   {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}
@@ -168,10 +168,12 @@ export default App;
 
 const IsolatedTreeComponent = () => {
   return (
-    <>
+    <div className="h-full flex flex-col">
+      <div>
+        <Tree tree={TestTreeData.tree} />
+      </div>
+      <hr />
       <Tree tree={TestTreeData.tree} />
-      <hr className="my-3" />
-      <Tree tree={TestTreeData.tree} />
-    </>
+    </div>
   );
 };
