@@ -1,7 +1,8 @@
 mod tokens;
 
+use crate::tokens::*;
 use anyhow::Result;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, Utc};
 use serde_json::Value as JSONValue;
 use std::collections::HashSet;
 use std::fs;
@@ -17,8 +18,6 @@ use tracing_subscriber::fmt::{
     FormatFields,
 };
 use tracing_subscriber::prelude::*;
-
-use crate::tokens::*;
 
 type LogEntry = JSONValue;
 // Empty field means that no filter will be applied
@@ -73,11 +72,12 @@ impl LogFilter {
 }
 
 struct LoggingService {
-    guard: WorkerGuard,
+    session_path: PathBuf,
+    _guard: WorkerGuard,
 }
 
 impl LoggingService {
-    pub fn init() -> Result<LoggingService> {
+    pub fn init(path: &Path) -> Result<LoggingService> {
         let log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -86,8 +86,10 @@ impl LoggingService {
             .flatten_event(true)
             .with_current_span(true);
 
-        let file_appender = tracing_appender::rolling::daily(PathBuf::from(LOG_FOLDER), LOG_PREFIX);
-        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+        let session_id = Utc::now().timestamp().to_string();
+        let session_path = path.join(session_id);
+        let file_appender = tracing_appender::rolling::minutely(&session_path, LOG_PREFIX);
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
         let subscriber = tracing_subscriber::registry().with(
             tracing_subscriber::fmt::layer()
@@ -98,7 +100,10 @@ impl LoggingService {
         );
 
         tracing::subscriber::set_global_default(subscriber)?;
-        Ok(Self { guard })
+        Ok(Self {
+            _guard,
+            session_path,
+        })
     }
 
     fn parse_file_with_filter(
@@ -155,12 +160,13 @@ impl LoggingService {
 
     pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<LogEntry>> {
         let mut result = Vec::new();
-        for entry in fs::read_dir(LOG_FOLDER)? {
+        for entry in fs::read_dir(&self.session_path)? {
             let entry = entry?;
             let path = entry.path();
             if path.is_dir() {
                 continue;
             }
+
             if !filter.dates.is_empty() {
                 let file_date = path
                     .file_name()
@@ -168,7 +174,9 @@ impl LoggingService {
                     .to_string_lossy()
                     .to_string()
                     .strip_prefix(format!("{}.", LOG_PREFIX).as_str())
-                    .and_then(|f| NaiveDate::parse_from_str(f, "%Y-%m-%d").ok());
+                    .and_then(|f| NaiveDate::parse_from_str(f, "%Y-%m-%d-%H-%M").ok());
+
+                dbg!(&file_date);
                 // Parse only files with correctly formatted dates specifie in the filter
                 if let Some(file_date) = file_date {
                     if !filter.dates.contains(&file_date) {
@@ -233,9 +241,12 @@ mod tests {
         )
     }
 
+    const TEST_LOG_FOLDER: &'static str = "logs";
+    const TEST_MAX_FILE_SIZE: u64 = 1024 * 1024; // 1mb
+    const TEST_MAX_FILE_COUNTS: usize = 10;
     #[test]
     fn test() {
-        let service = LoggingService::init().unwrap();
+        let service = LoggingService::init(Path::new(TEST_LOG_FOLDER)).unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
