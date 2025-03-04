@@ -28,8 +28,8 @@ export const useChangeColorTheme = () => {
 
   return useMutation<void, Error, ThemeDescriptor>({
     mutationKey: ["changeColorTheme"],
-    mutationFn: async (id: string) => {
-      const result = await changeTheme(id);
+    mutationFn: async () => {
+      const result = await changeTheme();
       if (result.status === "ok") {
         return result.data;
       } else if (result.status === "error") {
