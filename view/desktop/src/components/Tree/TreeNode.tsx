@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
@@ -8,7 +8,14 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { ContextMenu, Icon, TreeContext } from "..";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps } from "./types";
-import { canDrop, collapseAllNodes, expandAllNodes, getActualDropSourceTarget, getActualDropTarget } from "./utils";
+import {
+  canDrop,
+  collapseAllNodes,
+  expandAllNodes,
+  getActualDropSourceTarget,
+  getActualDropTarget,
+  hasDescendantWithSearchInput,
+} from "./utils";
 
 export const TreeNode = ({
   node,
@@ -17,7 +24,7 @@ export const TreeNode = ({
 
   parentNode,
 }: TreeNodeComponentProps) => {
-  const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded } =
+  const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
 
   const paddingLeft = useMemo(
@@ -125,7 +132,7 @@ export const TreeNode = ({
   }, [node, treeId]);
 
   const handleFolderClick = () => {
-    if (!node.isFolder) return;
+    if (!node.isFolder || searchInput) return;
 
     onNodeUpdate({
       ...node,
@@ -158,6 +165,11 @@ export const TreeNode = ({
     });
   };
 
+  const shouldRenderChildNodes = searchInput || (!searchInput && node.isFolder && node.isExpanded);
+  const filteredChildNodes = searchInput
+    ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
+    : node.childNodes;
+
   if (node.id === "root") {
     return (
       <div className="h-full">
@@ -166,15 +178,15 @@ export const TreeNode = ({
             <Icon
               icon="TreeChevronRightIcon"
               className={cn("text-[#717171]", {
-                "rotate-90": node.isExpanded,
+                "rotate-90": shouldRenderChildNodes,
               })}
             />
 
-            <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
+            <NodeLabel label={node.id} searchInput={searchInput} />
           </button>
 
           <div className="flex gap-1 items-center">
-            {node.isExpanded && (
+            {node.isExpanded && !searchInput && (
               <>
                 {!allFoldersAreExpanded && (
                   <button
@@ -201,20 +213,19 @@ export const TreeNode = ({
           </div>
         </div>
 
-        <ul ref={dropTargetFolderRef} className="h-full">
-          {node.isExpanded &&
-            node.childNodes.map((childNode) => {
-              return (
-                <TreeNode
-                  parentNode={node}
-                  onNodeUpdate={onNodeUpdate}
-                  key={childNode.uniqueId}
-                  node={childNode}
-                  depth={0}
-                />
-              );
-            })}
-        </ul>
+        {shouldRenderChildNodes && (
+          <ul ref={dropTargetFolderRef} className="h-full">
+            {filteredChildNodes.map((childNode) => (
+              <TreeNode
+                parentNode={node}
+                onNodeUpdate={onNodeUpdate}
+                key={childNode.uniqueId}
+                node={childNode}
+                depth={0}
+              />
+            ))}
+          </ul>
+        )}
       </div>
     );
   }
@@ -242,14 +253,14 @@ export const TreeNode = ({
             >
               <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} />
 
-              <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">{node.id}</span>
+              <NodeLabel label={node.id} searchInput={searchInput} />
 
               <span className="DragHandle h-full min-h-4 grow" />
 
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("ml-auto text-[#717171]", {
-                  "rotate-90": node.isExpanded,
+                  "rotate-90": shouldRenderChildNodes,
                   "opacity-0": !node.isFolder,
                 })}
               />
@@ -286,22 +297,39 @@ export const TreeNode = ({
           </ContextMenu.Portal>
         </ContextMenu.Root>
       )}
-      {node.isFolder && node.isExpanded && (
-        <ul>
-          {node.childNodes.map((childNode) => {
-            return (
-              <TreeNode
-                parentNode={node}
-                key={childNode.uniqueId}
-                node={childNode}
-                depth={depth + 1}
-                onNodeUpdate={onNodeUpdate}
-              />
-            );
-          })}
+
+      {shouldRenderChildNodes && (
+        <ul ref={dropTargetFolderRef} className="h-full">
+          {filteredChildNodes.map((childNode) => (
+            <TreeNode
+              parentNode={node}
+              onNodeUpdate={onNodeUpdate}
+              key={childNode.uniqueId}
+              node={childNode}
+              depth={depth + 1}
+            />
+          ))}
         </ul>
       )}
     </li>
+  );
+};
+
+const NodeLabel = ({ label, searchInput }: { label: string | number; searchInput?: string }) => {
+  const renderHighlightedLabel = () => {
+    const parts = String(label).split(searchInput!);
+    return parts.map((part, index) => (
+      <React.Fragment key={index}>
+        <span>{part}</span>
+        {index < parts.length - 1 && <span className="bg-sky-600">{searchInput}</span>}
+      </React.Fragment>
+    ));
+  };
+
+  return (
+    <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">
+      {searchInput ? renderHighlightedLabel() : label}
+    </span>
   );
 };
 
