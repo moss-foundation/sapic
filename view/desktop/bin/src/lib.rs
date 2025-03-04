@@ -20,6 +20,7 @@ use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
 use moss_tauri::services::window_service::WindowService;
+use moss_theme::theme_service::ThemeService;
 use rand::random;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
@@ -86,6 +87,16 @@ pub fn run() {
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
 
             let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let themes_dir = std::env::var("THEMES_DIR")
+                            .expect("Environment variable THEMES_DIR is not set");
+
+                        move |_| ThemeService::new(fs_clone, themes_dir.into())
+                    },
+                    InstantiationType::Delayed,
+                )
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);

@@ -1079,6 +1079,7 @@ dependencies = [
  "moss_db",
  "moss_fs",
  "moss_tauri",
+ "moss_theme",
  "objc",
  "once_cell",
  "rand 0.9.0",
