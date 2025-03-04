@@ -13,6 +13,7 @@ use std::str::FromStr;
 use tracing::{event, instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::field::MakeExt;
+use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::fmt::{
     format::{FmtSpan, JsonFields},
     FormatFields,
@@ -23,9 +24,10 @@ type LogEntry = JSONValue;
 // Empty field means that no filter will be applied
 #[derive(Default)]
 struct LogFilter {
-    // TODO: Should we use `DateTime` objects as range?
+    // TODO: Make dates to a range
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
+    // FIXME: only one collection/request
     collections: HashSet<PathBuf>,
     requests: HashSet<PathBuf>,
 }
@@ -71,6 +73,7 @@ impl LogFilter {
     }
 }
 
+// TODO: in-memory, session log, global log
 struct LoggingService {
     session_path: PathBuf,
     _guard: WorkerGuard,
@@ -82,21 +85,27 @@ impl LoggingService {
             .with_file(false)
             .with_line_number(false)
             .with_target(false)
+            .with_timer(ChronoLocal::rfc_3339())
             .json()
             .flatten_event(true)
             .with_current_span(true);
 
+        // TODO: session_uuid
+        // crate: moss-session/session-service
         let session_id = Utc::now().timestamp().to_string();
         let session_path = path.join(session_id);
+        // TODO: make `log.` suffix or get rid of it
         let file_appender = tracing_appender::rolling::minutely(&session_path, LOG_PREFIX);
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
         let subscriber = tracing_subscriber::registry().with(
             tracing_subscriber::fmt::layer()
                 .event_format(log_format)
+                .with_timer(ChronoLocal::rfc_3339())
                 .with_span_events(FmtSpan::CLOSE)
                 .with_writer(non_blocking)
                 .fmt_fields(JsonFields::default()),
+            // TODO: subscriber for global logs
         );
 
         tracing::subscriber::set_global_default(subscriber)?;
@@ -242,8 +251,6 @@ mod tests {
     }
 
     const TEST_LOG_FOLDER: &'static str = "logs";
-    const TEST_MAX_FILE_SIZE: u64 = 1024 * 1024; // 1mb
-    const TEST_MAX_FILE_COUNTS: usize = 10;
     #[test]
     fn test() {
         let service = LoggingService::init(Path::new(TEST_LOG_FOLDER)).unwrap();
@@ -252,6 +259,7 @@ mod tests {
             .build()
             .unwrap();
 
+        // FIXME: Solve backslash issue
         let collection_path = Path::new("").join("TestCollection");
         let request_path = Path::new("").join("TestCollection").join("TestRequest");
 
