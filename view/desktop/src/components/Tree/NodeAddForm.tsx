@@ -61,6 +61,7 @@ const validateName = (
 
 export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [value, setValue] = useState("");
 
   const { message, isValid } = validateName(value, restrictedNames);
@@ -76,14 +77,23 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
     if (e.key === "Escape") onCancel();
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if ("preventDefault" in e) e.preventDefault();
 
     if (!isValid) return;
 
     const node = createSubtree(value, isFolder);
 
-    console.log(node);
+    onSubmit(node);
+  };
+
+  const handleBlur = () => {
+    if (!isValid) {
+      onCancel();
+      return;
+    }
+
+    const node = createSubtree(value, isFolder);
 
     onSubmit(node);
   };
@@ -113,7 +123,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
         maxLength={100}
         className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative bg-transparent"
         onKeyUp={handleKeyUp}
-        onBlur={handleSubmit}
+        onBlur={handleBlur}
         required
       />
     </form>
