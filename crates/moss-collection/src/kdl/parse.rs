@@ -1,6 +1,6 @@
 use crate::kdl::foundations::http::{
-    HeaderParamBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
-    QueryParamOptions, Url,
+    HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
+    QueryParamBody, QueryParamOptions, Url,
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;

@@ -2,10 +2,10 @@ use anyhow::{anyhow, Result};
 use dashmap::DashMap;
 use moss_app::service::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
-use std::{path::PathBuf, sync::Arc};
 use std::collections::HashMap;
+use std::{path::PathBuf, sync::Arc};
 use thiserror::Error;
-use tokio::sync::{OnceCell};
+use tokio::sync::OnceCell;
 
 use crate::{
     collection_handle::{CollectionHandle, CollectionState},
@@ -32,7 +32,7 @@ pub enum CollectionOperationError {
     #[error("A collection named {name} already exists in {path}.")]
     DuplicateName { name: String, path: PathBuf },
     #[error("The collection named `{name}` does not exist in {path}")]
-    NonexistentCollection { name: String, path: PathBuf }
+    NonexistentCollection { name: String, path: PathBuf },
 }
 
 pub struct CollectionManager {
@@ -91,9 +91,9 @@ impl CollectionManager {
                     );
                 }
 
-                Ok::<Arc<CollectionMap>, anyhow::Error>(
-                    Arc::new(tokio::sync::RwLock::new(collections))
-                )
+                Ok::<Arc<CollectionMap>, anyhow::Error>(Arc::new(tokio::sync::RwLock::new(
+                    collections,
+                )))
             })
             .await?;
 
@@ -189,7 +189,8 @@ impl CollectionManager {
                 return Err(CollectionOperationError::DuplicateName {
                     name: input.name,
                     path: full_path,
-                }.into());
+                }
+                .into());
             }
         }
         self.fs.create_dir(&full_path).await?;
@@ -235,16 +236,22 @@ impl CollectionManager {
                 let name = path_buf.file_name().unwrap();
                 return Err(CollectionOperationError::NonexistentCollection {
                     name: name.to_string_lossy().to_string(),
-                    path: path_buf
-                }.into());
+                    path: path_buf,
+                }
+                .into());
             }
         }
 
         let new_path = path_buf.parent().unwrap().join(&new_name);
-        self.fs.rename(&path_buf, &new_path, RenameOptions::default()).await?;
+        self.fs
+            .rename(&path_buf, &new_path, RenameOptions::default())
+            .await?;
 
-        let metadata = self.collection_store.remove_collection_item(path_buf.clone())?;
-        self.collection_store.put_collection_item(new_path.clone(), metadata)?;
+        let metadata = self
+            .collection_store
+            .remove_collection_item(path_buf.clone())?;
+        self.collection_store
+            .put_collection_item(new_path.clone(), metadata)?;
 
         // Updating the key for every request within the collection
         {
@@ -252,19 +259,19 @@ impl CollectionManager {
 
             let handle = (*write_lock).remove(&path_buf).unwrap();
             let state = handle.state();
-            let requests =
-                state
-                    .requests
-                    .read()
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.clone()) )
-                    .collect::<Vec<_>>();
+            let requests = state
+                .requests
+                .read()
+                .iter()
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect::<Vec<_>>();
 
             for (old_key, req_handle) in requests {
                 // TODO: I'm not sure if this logic is robust enough?
                 let req_relative_path =
                     PathBuf::from(String::from_utf8_lossy(&old_key).to_string())
-                        .strip_prefix(&path_buf)?.to_path_buf();
+                        .strip_prefix(&path_buf)?
+                        .to_path_buf();
                 let new_prefix = &path_buf.parent().unwrap().join(&new_name);
                 let new_path = new_prefix.join(req_relative_path);
                 println!("{}", new_path.to_string_lossy());
@@ -277,17 +284,21 @@ impl CollectionManager {
             (*write_lock).insert(new_path.clone(), handle);
         }
 
-
         Ok(())
     }
 
     pub async fn delete_collection(&self, path_buf: PathBuf) -> Result<()> {
         match path_buf.try_exists() {
             Ok(true) => {
-                self.fs.remove_dir(&path_buf, RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                }).await?;
+                self.fs
+                    .remove_dir(
+                        &path_buf,
+                        RemoveOptions {
+                            recursive: true,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
             }
             Ok(false) => {
                 // TODO: Logging this anormaly, the collection has already been deleted in the filesystem
@@ -306,14 +317,15 @@ impl CollectionManager {
             }
         }
 
-        let _ = self.collection_store.remove_collection_item(path_buf.clone())?;
+        let _ = self
+            .collection_store
+            .remove_collection_item(path_buf.clone())?;
         {
             let mut write_lock = collections.write().await;
             (*write_lock).remove(&path_buf);
         }
 
         Ok(())
-
     }
 }
 
@@ -331,32 +343,30 @@ impl AppService for CollectionManager {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use moss_fs::adapters::disk::DiskFileSystem;
+    use std::collections::HashMap;
 
+    use super::*;
+    use crate::models::operations::collection_operations::CreateRequestInput;
     use crate::{
         indexing::indexer::IndexingService,
         models::storage::RequestMetadataEntity,
         storage::{MockCollectionMetadataStore, MockCollectionRequestSubstore},
     };
-    use crate::models::operations::collection_operations::CreateRequestInput;
-    use super::*;
 
-    const TEST_COLLECTION_PATH: &'static str =
-        "TestCollection";
+    const TEST_COLLECTION_PATH: &'static str = "TestCollection";
 
-    const TEST_REQUEST_PATH: &'static str =
-        "TestCollection/requests/Test1.request";
+    const TEST_REQUEST_PATH: &'static str = "TestCollection/requests/Test1.request";
     // FIXME: I have not figured out how automock works and the best way to use it
     // For easier testing on my part I'll try to manually create test structures for them
-    struct TestCollectionMetadataStore{
-        collections: DashMap<PathBuf, CollectionMetadataEntity>
+    struct TestCollectionMetadataStore {
+        collections: DashMap<PathBuf, CollectionMetadataEntity>,
     }
 
     impl TestCollectionMetadataStore {
         pub fn new() -> Self {
             Self {
-                collections: DashMap::new()
+                collections: DashMap::new(),
             }
         }
     }
@@ -378,7 +388,10 @@ mod tests {
             if let Some((_k, v)) = self.collections.remove(&path) {
                 Ok(v)
             } else {
-                Err(anyhow!("{} not found in CollectionMetadataStore", path.to_string_lossy()))
+                Err(anyhow!(
+                    "{} not found in CollectionMetadataStore",
+                    path.to_string_lossy()
+                ))
             }
         }
     }
@@ -392,7 +405,6 @@ mod tests {
     }
     impl CollectionRequestSubstore for TestCollectionRequestSubstore {}
 
-
     fn generate_test_service() -> CollectionManager {
         let fs = Arc::new(DiskFileSystem::new());
         let collection_store = TestCollectionMetadataStore::new();
@@ -403,7 +415,8 @@ mod tests {
             Arc::new(collection_store),
             Arc::new(collection_request_substore),
             indexer,
-        ).unwrap()
+        )
+        .unwrap()
     }
 
     #[test]
@@ -414,58 +427,74 @@ mod tests {
             .build()
             .unwrap()
             .block_on(async {
-                service.create_collection(
-                    CreateCollectionInput {
+                service
+                    .create_collection(CreateCollectionInput {
                         name: "TestCollection".to_string(),
                         path: "Collections".into(),
                         repo: None,
-                    }
-                ).await.unwrap();
+                    })
+                    .await
+                    .unwrap();
                 let collections = service.collections().await.unwrap();
                 let read_lock = collections.read().await;
-                assert!((*read_lock).contains_key(
-                    &PathBuf::from("Collections")
-                        .join("TestCollection")
-                ));
+                assert!(
+                    (*read_lock).contains_key(&PathBuf::from("Collections").join("TestCollection"))
+                );
             });
     }
 
     #[test]
-    fn test_rename_collection(){
+    fn test_rename_collection() {
         let service = generate_test_service();
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
             .unwrap()
             .block_on(async {
-                service.create_collection(
-                    CreateCollectionInput {
+                service
+                    .create_collection(CreateCollectionInput {
                         name: "Pre-renaming".to_string(),
                         path: "Collections".into(),
                         repo: None,
-                    }
-                ).await.unwrap();
+                    })
+                    .await
+                    .unwrap();
                 let old_collection_path = PathBuf::from("Collections").join("Pre-renaming");
                 let collections = service.collections().await.unwrap();
                 {
                     let mut write_lock = collections.read().await;
 
                     let handle = (*write_lock).get(&old_collection_path).unwrap();
-                    handle.create_request(&old_collection_path, None, CreateRequestInput {
-                        name: "Test".to_string(),
-                        url: None,
-                        payload: None,
-                    }).await.unwrap();
+                    handle
+                        .create_request(
+                            &old_collection_path,
+                            None,
+                            CreateRequestInput {
+                                name: "Test".to_string(),
+                                url: None,
+                                payload: None,
+                            },
+                        )
+                        .await
+                        .unwrap();
                 }
                 let new_collection_path = PathBuf::from("Collections").join("Post-renaming");
-                service.rename_collection(old_collection_path.clone(), "Post-renaming").await.unwrap();
+                service
+                    .rename_collection(old_collection_path.clone(), "Post-renaming")
+                    .await
+                    .unwrap();
                 {
                     let read_lock = collections.read().await;
                     assert!(!(*read_lock).contains_key(&old_collection_path));
                     assert!((*read_lock).contains_key(&new_collection_path));
                     let collection = (*read_lock).get(&new_collection_path).unwrap();
-                    let new_request_path = new_collection_path.join("requests").join("Test.request");
-                    assert!(collection.state().requests.read().contains_key(new_request_path.to_string_lossy().to_string()))
+                    let new_request_path =
+                        new_collection_path.join("requests").join("Test.request");
+                    assert!(collection
+                        .state()
+                        .requests
+                        .read()
+                        .contains_key(new_request_path.to_string_lossy().to_string()))
                 }
             });
     }
@@ -478,13 +507,14 @@ mod tests {
             .build()
             .unwrap()
             .block_on(async {
-                service.create_collection(
-                    CreateCollectionInput {
+                service
+                    .create_collection(CreateCollectionInput {
                         name: "ToBeDeleted".to_string(),
                         path: "Collections".into(),
                         repo: None,
-                    }
-                ).await.unwrap();
+                    })
+                    .await
+                    .unwrap();
                 let path = PathBuf::from("Collections").join("ToBeDeleted");
                 service.delete_collection(path.clone()).await.unwrap();
                 let collections = service.collections().await.unwrap();

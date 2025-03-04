@@ -42,8 +42,10 @@ impl CollectionMetadataStore for SledCollectionMetadataStore {
         if let Some(value) = self.tree.remove(path.to_string_lossy().as_bytes())? {
             Ok(bincode::deserialize::<CollectionMetadataEntity>(&value)?)
         } else {
-            Err(anyhow!("{} not found in SledCollectionMetadataStore", path.to_string_lossy()))
+            Err(anyhow!(
+                "{} not found in SledCollectionMetadataStore",
+                path.to_string_lossy()
+            ))
         }
-
     }
 }

@@ -241,8 +241,6 @@ pub struct HttpRequestFile {
     pub headers: HashMap<String, HeaderParamBody>,
 }
 
-
-
 impl ToString for HttpRequestFile {
     fn to_string(&self) -> String {
         let mut document = KdlDocument::new();

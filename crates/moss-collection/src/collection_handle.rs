@@ -1,19 +1,16 @@
-
+use crate::models::collection::RequestType;
 use crate::{
     kdl::foundations::http::{
-        HeaderParamBody, HttpRequestFile, PathParamBody, QueryParamBody, QueryParamOptions, Url, HeaderOptions, PathParamOptions
+        HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
+        QueryParamBody, QueryParamOptions, Url,
     },
     models::{
         operations::collection_operations::{
             CreateRequestInput, CreateRequestProtocolSpecificPayload,
         },
-        types::request_types::{
-            HttpMethod, HeaderItem, PathParamItem, QueryParamItem
-        },
+        types::request_types::{HeaderItem, HttpMethod, PathParamItem, QueryParamItem},
     },
-    request_handle::{
-        RequestHandle, RequestState
-    },
+    request_handle::{RequestHandle, RequestState},
     storage::CollectionRequestSubstore,
 };
 use anyhow::Result;
@@ -23,7 +20,6 @@ use patricia_tree::PatriciaMap;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
-use crate::models::collection::RequestType;
 
 #[derive(Clone, Debug, Error)]
 pub enum RequestOperationError {
@@ -141,18 +137,16 @@ fn request_dir(collection_path: &PathBuf, relative_path: Option<PathBuf>, name: 
     } else {
         requests_dir
     };
-     path.join(format!("{}.request", name))
+    path.join(format!("{}.request", name))
 }
 fn create_http_requestfile(
     url: Option<&str>,
     query_params: Vec<QueryParamItem>,
     path_params: Vec<PathParamItem>,
-    headers: Vec<HeaderItem>
-)
-    -> Result<HttpRequestFile> {
+    headers: Vec<HeaderItem>,
+) -> Result<HttpRequestFile> {
     let mut transformed_query_params = HashMap::new();
     for item in &query_params {
-
         transformed_query_params.insert(
             item.key.clone(),
             QueryParamBody {
@@ -165,7 +159,6 @@ fn create_http_requestfile(
                 },
             },
         );
-
     }
     let mut transformed_path_params = HashMap::new();
     for item in &path_params {
@@ -181,11 +174,9 @@ fn create_http_requestfile(
                 },
             },
         );
-
     }
     let mut transformed_headers = HashMap::new();
     for item in &headers {
-
         transformed_headers.insert(
             item.key.clone(),
             HeaderParamBody {
@@ -198,11 +189,12 @@ fn create_http_requestfile(
                 },
             },
         );
-
     }
 
     Ok(HttpRequestFile {
-        url: url.map(|s| Url::new(s.to_string())).unwrap_or(Url::default()),
+        url: url
+            .map(|s| Url::new(s.to_string()))
+            .unwrap_or(Url::default()),
         query_params: transformed_query_params,
         path_params: transformed_path_params,
         headers: transformed_headers,
@@ -210,12 +202,7 @@ fn create_http_requestfile(
 }
 
 impl CollectionHandle {
-    fn create_http_request_handle(
-        &self,
-        key: &str,
-        name: &str,
-        method: &HttpMethod,
-    ) -> Result<()> {
+    fn create_http_request_handle(&self, key: &str, name: &str, method: &HttpMethod) -> Result<()> {
         self.state.insert_request_handle(
             key,
             RequestHandle::new(
@@ -231,11 +218,7 @@ impl CollectionHandle {
         )
     }
 
-    fn create_default_request_handle(
-        &self,
-        key: &str,
-        name: &str,
-    ) -> Result<()> {
+    fn create_default_request_handle(&self, key: &str, name: &str) -> Result<()> {
         self.state().insert_request_handle(
             key,
             RequestHandle::new(
@@ -257,8 +240,7 @@ impl CollectionHandle {
         store: Arc<dyn CollectionRequestSubstore>,
         name: String,
         order: Option<usize>,
-    )
-        -> Self {
+    ) -> Self {
         Self {
             fs,
             store,
@@ -275,8 +257,7 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         input: CreateRequestInput,
-    )
-        -> Result<()> {
+    ) -> Result<()> {
         let name = input.name;
         if name.trim().is_empty() {
             return Err(RequestOperationError::EmptyName.into());
@@ -284,7 +265,11 @@ impl CollectionHandle {
         let request_dir = request_dir(collection_path, relative_path, &name);
         let key = request_dir.to_string_lossy().to_string();
         if self.state.contains(&key) {
-            return Err(RequestOperationError::DuplicateName { path: request_dir, name }.into());
+            return Err(RequestOperationError::DuplicateName {
+                path: request_dir,
+                name,
+            }
+            .into());
         }
 
         self.fs.create_dir(&request_dir).await?;
@@ -296,7 +281,12 @@ impl CollectionHandle {
                 path_params,
                 headers,
             }) => {
-                let request_file = create_http_requestfile(input.url.as_deref(), query_params, path_params, headers)?;
+                let request_file = create_http_requestfile(
+                    input.url.as_deref(),
+                    query_params,
+                    path_params,
+                    headers,
+                )?;
                 self.create_http_request_handle(&key, &name, &method)?;
                 (
                     request_file.to_string(),
@@ -309,7 +299,6 @@ impl CollectionHandle {
                 (String::new(), RequestType::default().to_string())
             }
         };
-
         self.fs
             .create_file_with(
                 &request_dir.join(format!("{}.{}.sapic", name, request_type)),
@@ -319,15 +308,13 @@ impl CollectionHandle {
             .await
     }
 
-
     pub async fn rename_request(
         &self,
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         old_name: &str,
         new_name: &str,
-    )
-        -> Result<()> {
+    ) -> Result<()> {
         if new_name.trim().is_empty() {
             return Err(RequestOperationError::EmptyName.into());
         }
@@ -387,8 +374,7 @@ impl CollectionHandle {
         collection_path: &PathBuf,
         relative_path: Option<PathBuf>,
         name: &str,
-    )
-        -> Result<()> {
+    ) -> Result<()> {
         if name.trim().is_empty() {
             return Err(RequestOperationError::EmptyName.into());
         }
@@ -422,9 +408,7 @@ impl CollectionHandle {
         relative_path: Option<PathBuf>,
         name: &str,
         // input: UpdateRequestInput
-    )
-        -> Result<()>
-    {
+    ) -> Result<()> {
         unimplemented!()
     }
 }
@@ -466,9 +450,7 @@ mod tests {
 
         let input = CreateRequestInput {
             name: name.clone(),
-            url: Some(
-                "https://spacex-production.up.railway.app".to_string(),
-            ),
+            url: Some("https://spacex-production.up.railway.app".to_string()),
             payload: Some(CreateRequestProtocolSpecificPayload::Http {
                 method: HttpMethod::Get,
                 query_params: vec![QueryParamItem {
@@ -707,5 +689,27 @@ fn method_to_request_type_str(method: &HttpMethod) -> String {
         HttpMethod::Get => "get".to_string(),
         HttpMethod::Put => "put".to_string(),
         HttpMethod::Delete => "del".to_string(),
+    }
+}
+
+// TODO: Delete this
+mod t {
+    use std::path::PathBuf;
+    use tokio::fs::OpenOptions;
+
+    #[test]
+    fn test_create_dir_all() {
+        let path_buf = PathBuf::from("Collections\\Pre-renaming\\requests\\1.request\\1.get.sapic");
+
+        let mut opts = OpenOptions::new();
+        opts.write(true).create(true);
+
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let mut file = opts.open(path_buf).await.unwrap();
+            })
     }
 }
