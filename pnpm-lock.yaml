@@ -89,6 +89,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/moss-state:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.7.3
+    devDependencies:
+      '@repo/moss-theme':
+        specifier: workspace:*
+        version: link:../moss-theme
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-text:
     dependencies:
       typescript:

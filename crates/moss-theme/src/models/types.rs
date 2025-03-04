@@ -11,6 +11,5 @@ pub struct ThemeDescriptor {
     pub identifier: ThemeId,
     pub display_name: String,
     pub order: usize,
-    pub path: PathBuf,
-    pub is_default: bool,
+    pub source: PathBuf,
 }

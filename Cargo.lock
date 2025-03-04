@@ -1078,6 +1078,7 @@ dependencies = [
  "moss_collection",
  "moss_db",
  "moss_fs",
+ "moss_state",
  "moss_tauri",
  "moss_theme",
  "objc",
@@ -2849,6 +2850,16 @@ dependencies = [
  "anyhow",
  "keyring",
  "whoami",
+]
+
+[[package]]
+name = "moss_state"
+version = "0.1.0"
+dependencies = [
+ "moss_theme",
+ "parking_lot 0.12.3",
+ "serde",
+ "ts-rs",
 ]
 
 [[package]]

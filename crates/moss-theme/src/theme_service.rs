@@ -54,7 +54,7 @@ impl ThemeService {
         if let Some(descriptor) = themes.get(id) {
             let mut reader = self
                 .fs
-                .open_file(&self.themes_dir.join(descriptor.path.clone()))
+                .open_file(&self.themes_dir.join(descriptor.source.clone()))
                 .await?;
 
             let mut content = String::new();

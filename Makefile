@@ -53,15 +53,18 @@ endef
 
 COLLECTION_MODELS_DIR := crates/moss-collection
 THEME_MODELS_DIR := crates/moss-theme
+STATE_MODELS_DIR := crates/moss-state
 
 $(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_models,theme,THEME_MODELS_DIR))
+$(eval $(call gen_models,state,STATE_MODELS_DIR))
 
 ## Generate All Models
 .PHONY: gen-models
 gen-models: \
 	gen-collection-models \
 	gen-theme-models \
+	gen-state-models \
 
 # Utility Commands
 

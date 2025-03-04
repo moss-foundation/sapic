@@ -4,15 +4,13 @@
     "displayName": "Light Default",
     "mode": "light",
     "order": 1,
-    "path": "light.css",
-    "isDefault": true
+    "source": "light.css"
   },
   {
     "identifier": "moss.sapic-dark-light-default",
     "displayName": "Dark Default",
     "mode": "dark",
     "order": 2,
-    "path": "dark.css",
-    "isDefault": false
+    "source": "dark.css"
   }
 ]

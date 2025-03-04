@@ -1,0 +1,11 @@
+[package]
+name = "moss_state"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+moss_theme.workspace = true
+
+ts-rs.workspace = true
+serde = { workspace = true, features = ["derive"] }
+parking_lot.workspace = true

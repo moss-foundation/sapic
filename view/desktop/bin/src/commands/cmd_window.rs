@@ -1,8 +1,17 @@
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
+use moss_state::{
+    manager::AppStateManager,
+    models::{
+        operations::DescribeAppStateOutput,
+        types::{Defaults, Preferences},
+    },
+};
 use moss_tauri::TauriResult;
 use moss_theme::{
-    models::{events::ColorThemeChangeEventPayload, operations::ListThemesOutput},
+    models::{
+        events::ColorThemeChangeEventPayload, operations::ListThemesOutput, types::ThemeDescriptor,
+    },
     primitives::ThemeId,
     theme_service::ThemeService,
 };
@@ -21,21 +30,40 @@ pub async fn create_new_window(app_handle: AppHandle) -> TauriResult<()> {
 }
 
 #[tauri::command]
-#[instrument(level = "trace", skip(app_handle), fields(window = window.label()))]
-pub fn change_color_theme(app_handle: AppHandle, window: Window, id: ThemeId) -> TauriResult<()> {
+#[instrument(level = "trace", skip(app_handle, state_manager), fields(window = window.label()))]
+pub fn change_color_theme(
+    app_handle: AppHandle,
+    state_manager: State<'_, AppStateManager>,
+    window: Window,
+    descriptor: ThemeDescriptor,
+) -> TauriResult<()> {
     for (label, _) in app_handle.webview_windows() {
         if window.label() == &label {
             continue;
         }
 
+        // app_handle.emit_filter(
+        //     "core://color-theme-changed",
+        //     ColorThemeChangeEventPayload::new(&descriptor.identifier),
+        //     |v| {
+
+        //     },
+        // );
+        // .emit(
+        //     "core://color-theme-changed",
+        //     ColorThemeChangeEventPayload::new(&descriptor.identifier),
+        // );
+
         app_handle
             .emit_to(
                 EventTarget::webview_window(&label),
                 "core://color-theme-changed",
-                ColorThemeChangeEventPayload::new(&id),
+                ColorThemeChangeEventPayload::new(&descriptor.identifier),
             )
             .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
     }
+
+    state_manager.set_color_theme(descriptor);
 
     Ok(())
 }
@@ -56,4 +84,21 @@ pub async fn get_color_theme(
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn list_themes(app_manager: State<'_, AppManager>) -> TauriResult<ListThemesOutput> {
     Ok(app_manager.service::<ThemeService>()?.list_themes().await?)
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(state_manager))]
+pub fn describe_app_state(
+    state_manager: State<'_, AppStateManager>,
+) -> Result<DescribeAppStateOutput, String> {
+    Ok(DescribeAppStateOutput {
+        preferences: Preferences {
+            theme: state_manager.preferences.theme.read().clone(),
+            // locale: state_manager.preferences.locale.read().clone(),
+        },
+        defaults: Defaults {
+            theme: state_manager.defaults.theme.clone(),
+            // locale: state_manager.defaults.locale.clone(),
+        },
+    })
 }

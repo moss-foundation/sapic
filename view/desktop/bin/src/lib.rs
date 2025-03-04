@@ -12,16 +12,17 @@ extern crate tracing;
 use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
-use moss_app::state::AppStateManager;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
+use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -77,8 +78,10 @@ pub fn run() {
                 .expect("failed to set tracing subscriber");
 
             let app_handle = app.app_handle();
-
-            let app_state = AppStateManager::new();
+            let themes_dir: PathBuf = std::env::var("THEMES_DIR")
+                .expect("Environment variable THEMES_DIR is not set")
+                .into();
+            let app_state = AppStateManager::new(&themes_dir);
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
@@ -90,10 +93,8 @@ pub fn run() {
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
-                        let themes_dir = std::env::var("THEMES_DIR")
-                            .expect("Environment variable THEMES_DIR is not set");
 
-                        move |_| ThemeService::new(fs_clone, themes_dir.into())
+                        move |_| ThemeService::new(fs_clone, themes_dir)
                     },
                     InstantiationType::Delayed,
                 )
