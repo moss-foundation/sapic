@@ -144,8 +144,10 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            cmd_window::create_new_window,
-            //
+            commands::change_color_theme,
+            commands::change_color_theme,
+            commands::get_color_theme,
+            commands::list_themes,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]

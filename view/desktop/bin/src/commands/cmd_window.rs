@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::anyhow;
 use moss_app::manager::AppManager;
 use moss_tauri::TauriResult;
 use moss_theme::{
@@ -30,11 +30,11 @@ pub fn change_color_theme(app_handle: AppHandle, window: Window, id: ThemeId) ->
 
         app_handle
             .emit_to(
-                EventTarget::webview_window(label),
+                EventTarget::webview_window(&label),
                 "core://color-theme-changed",
                 ColorThemeChangeEventPayload::new(&id),
             )
-            .unwrap();
+            .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
     }
 
     Ok(())
@@ -42,15 +42,18 @@ pub fn change_color_theme(app_handle: AppHandle, window: Window, id: ThemeId) ->
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
-pub async fn read_color_theme(app_manager: State<'_, AppManager>, id: ThemeId) -> Result<String> {
-    app_manager
+pub async fn get_color_theme(
+    app_manager: State<'_, AppManager>,
+    id: ThemeId,
+) -> TauriResult<String> {
+    Ok(app_manager
         .service::<ThemeService>()?
         .read_color_theme(&id)
-        .await
+        .await?)
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
-pub async fn list_themes(app_manager: State<'_, AppManager>) -> Result<ListThemesOutput> {
-    app_manager.service::<ThemeService>()?.list_themes().await
+pub async fn list_themes(app_manager: State<'_, AppManager>) -> TauriResult<ListThemesOutput> {
+    Ok(app_manager.service::<ThemeService>()?.list_themes().await?)
 }
