@@ -2783,6 +2783,8 @@ dependencies = [
  "moss_fs",
  "parking_lot 0.12.3",
  "patricia_tree",
+ "phf 0.11.3",
+ "phf_macros 0.11.3",
  "serde",
  "serde_json",
  "sled",

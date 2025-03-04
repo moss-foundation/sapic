@@ -1,0 +1,20 @@
+url {
+    raw "https://spacex-production.up.railway.app"
+}
+
+params type=query {
+    pageToken {
+        value ""
+        order 1
+        disabled #false
+        options {
+            propagate #true
+        }
+    }
+}
+
+params type=path {
+}
+
+headers {
+}
