@@ -149,6 +149,7 @@ pub fn run() {
             commands::change_color_theme,
             commands::get_color_theme,
             commands::list_themes,
+            commands::describe_app_state,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]
