@@ -18,14 +18,18 @@
     "@radix-ui/react-primitive": "^2.0.2",
     "@radix-ui/react-use-callback-ref": "^1.1.0",
     "@radix-ui/react-use-controllable-state": "^1.1.0",
+    "@tanstack/react-query": "^5.67.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "^2.2.0",
+    "@types/i18next": "^13.0.0",
     "allotment": "^1.20.3",
+    "i18next": "^24.2.2",
     "overlayscrollbars": "^2.11.0",
     "overlayscrollbars-react": "^0.5.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^15.4.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -34,10 +38,12 @@
     "@repo/moss-tabs": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/moss-theme": "workspace:*",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1"
+    "@types/react-dom": "^18.3.1",
+    "@types/react-i18next": "^8.1.0"
   },
   "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
 }
