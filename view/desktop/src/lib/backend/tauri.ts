@@ -13,7 +13,7 @@ export type TauriIpcCommand =
   | "get_menu_items_by_namespace"
   | "get_locales"
   | "get_state"
-  | "get_themes";
+  | "list_themes";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

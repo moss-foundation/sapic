@@ -1,11 +1,11 @@
 import { getColorThemes } from "@/api/appearance";
 import { invokeMossCommand } from "@/lib/backend/platfrom";
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
-import { ThemeDescriptor } from "@repo/moss-theme";
+import { ListThemesOutput, ThemeDescriptor } from "@repo/moss-theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useGetColorThemes = () => {
-  return useQuery<ThemeDescriptor[], Error>({
+  return useQuery<ListThemesOutput, Error>({
     queryKey: ["getColorTheme"],
     queryFn: getColorThemes,
   });
@@ -17,26 +17,17 @@ export const useGetColorThemes = () => {
 //   });
 // };
 
-export const changeTheme = async (id: string): Promise<IpcResult<void, string>> => {
-  return await invokeTauriIpc("change_color_theme", {
+export const changeTheme = async (id: string): Promise<void> => {
+  await invokeTauriIpc("change_color_theme", {
     id: id,
   });
 };
 
 export const useChangeColorTheme = () => {
   const queryClient = useQueryClient();
-
-  return useMutation<void, Error, ThemeDescriptor>({
+  return useMutation<void, Error, string>({
     mutationKey: ["changeColorTheme"],
-    mutationFn: async () => {
-      const result = await changeTheme();
-      if (result.status === "ok") {
-        return result.data;
-      } else if (result.status === "error") {
-        throw result.error;
-      }
-      throw new Error("Unexpected response status");
-    },
+    mutationFn: changeTheme,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getState"] });
     },

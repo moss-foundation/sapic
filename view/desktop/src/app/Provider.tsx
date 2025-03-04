@@ -20,6 +20,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
 const useInitializeAppState = () => {
   const { data } = useGetAppState();
 
+  /*
   useEffect(() => {
     if (data) {
       const theme = data.preferences?.theme ?? data.defaults.theme;
@@ -29,6 +30,7 @@ const useInitializeAppState = () => {
       applyLanguagePack(languagePack);
     }
   }, [data]);
+  */
 };
 
 export default Provider;
