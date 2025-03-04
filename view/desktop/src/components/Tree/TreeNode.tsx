@@ -6,24 +6,22 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { ContextMenu, Icon, TreeContext } from "..";
+import { NodeAddForm } from "./NodeAddForm";
+import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
-import { TreeNodeComponentProps } from "./types";
+import { NodeProps, TreeNodeComponentProps } from "./types";
 import {
+  addUniqueIdToTree,
   canDrop,
   collapseAllNodes,
   expandAllNodes,
   getActualDropSourceTarget,
   getActualDropTarget,
   hasDescendantWithSearchInput,
+  sortNodes,
 } from "./utils";
 
-export const TreeNode = ({
-  node,
-  onNodeUpdate,
-  depth,
-
-  parentNode,
-}: TreeNodeComponentProps) => {
+export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
   const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
 
@@ -37,13 +35,15 @@ export const TreeNode = ({
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
-  const [renaming, setRenaming] = useState(false);
+  const [isRenamingNode, setIsRenamingNode] = useState(false);
+  const [isAddingFileNode, setIsAddingFileNode] = useState(false);
+  const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const element = draggableRef.current;
-    if (!element || renaming) return;
+    if (!element || isRenamingNode) return;
 
     return draggable({
       element,
@@ -66,7 +66,7 @@ export const TreeNode = ({
         });
       },
     });
-  }, [treeId, node, renaming]);
+  }, [treeId, node, isRenamingNode]);
 
   useEffect(() => {
     const element = dropTargetListRef.current || dropTargetFolderRef.current;
@@ -140,13 +140,25 @@ export const TreeNode = ({
     });
   };
 
-  const handleFormSubmit = (newId: string) => {
+  const handleRenamingFormSubmit = (newId: string) => {
     onNodeUpdate({ ...node, id: newId });
-    setRenaming(false);
+    setIsRenamingNode(false);
   };
 
-  const handleFormCancel = () => {
-    setRenaming(false);
+  const handleRenamingFormCancel = () => {
+    setIsRenamingNode(false);
+  };
+
+  const handleAddFormSubmit = (newNode: NodeProps) => {
+    onNodeUpdate({ ...node, childNodes: sortNodes([...node.childNodes, addUniqueIdToTree(newNode)]) });
+
+    setIsAddingFileNode(false);
+    setIsAddingFolderNode(false);
+  };
+
+  const handleAddFormCancel = () => {
+    setIsAddingFileNode(false);
+    setIsAddingFolderNode(false);
   };
 
   const handleExpandAll = () => {
@@ -165,7 +177,9 @@ export const TreeNode = ({
     });
   };
 
-  const shouldRenderChildNodes = searchInput || (!searchInput && node.isFolder && node.isExpanded);
+  const shouldRenderChildNodes =
+    !!searchInput || isAddingFileNode || isAddingFolderNode || (!searchInput && node.isFolder && node.isExpanded);
+
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
@@ -232,12 +246,12 @@ export const TreeNode = ({
 
   return (
     <li ref={dropTargetListRef}>
-      {renaming ? (
+      {isRenamingNode ? (
         <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
           <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
           <NodeRenamingForm
-            onSubmit={handleFormSubmit}
-            onCancel={handleFormCancel}
+            onSubmit={handleRenamingFormSubmit}
+            onCancel={handleRenamingFormCancel}
             restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
             currentName={node.id}
           />
@@ -290,12 +304,28 @@ export const TreeNode = ({
 
           <ContextMenu.Portal>
             <ContextMenu.Content className="text-white">
-              <ContextMenu.Item label="Edit" onClick={() => setRenaming(true)} />
-              <ContextMenu.Item label="Item 2" />
-              <ContextMenu.Item label="Item 3" />
+              {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
+              {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
+              <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
+              <ContextMenu.Item label="Item" />
             </ContextMenu.Content>
           </ContextMenu.Portal>
         </ContextMenu.Root>
+      )}
+
+      {(isAddingFileNode || isAddingFolderNode) && (
+        <div
+          style={{ paddingLeft: `${(depth + 1) * nodeOffset + horizontalPadding}px` }}
+          className="flex w-full min-w-0 items-center gap-1"
+        >
+          <Icon icon={isAddingFolderNode ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+          <NodeAddForm
+            isFolder={isAddingFolderNode}
+            restrictedNames={node.childNodes.map((childNode) => childNode.id)}
+            onSubmit={handleAddFormSubmit}
+            onCancel={handleAddFormCancel}
+          />
+        </div>
       )}
 
       {shouldRenderChildNodes && (
@@ -312,24 +342,6 @@ export const TreeNode = ({
         </ul>
       )}
     </li>
-  );
-};
-
-const NodeLabel = ({ label, searchInput }: { label: string | number; searchInput?: string }) => {
-  const renderHighlightedLabel = () => {
-    const parts = String(label).split(searchInput!);
-    return parts.map((part, index) => (
-      <React.Fragment key={index}>
-        <span>{part}</span>
-        {index < parts.length - 1 && <span className="bg-sky-600">{searchInput}</span>}
-      </React.Fragment>
-    ));
-  };
-
-  return (
-    <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">
-      {searchInput ? renderHighlightedLabel() : label}
-    </span>
   );
 };
 

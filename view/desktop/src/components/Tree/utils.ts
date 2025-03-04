@@ -103,12 +103,18 @@ export const hasDirectSimilarDescendant = (tree: TreeNodeProps, node: TreeNodePr
     return tree.childNodes.some((child) => child.uniqueId === node.uniqueId || child.id === node.id);
 };
 
+const doesStringIncludePartialString = (str: string, partialStr: string) => {
+    return str.toLowerCase().includes(partialStr.toLowerCase());
+};
+
 export const hasDescendantWithSearchInput = (tree: TreeNodeProps, input: string): boolean => {
     if (!tree.childNodes) return false;
 
-    if (String(tree.id).includes(input)) return true
+    const treeId = String(tree.id)
 
-    return tree.childNodes.some((child) => String(tree.id).includes(input) || hasDescendantWithSearchInput(child, input));
+    if (doesStringIncludePartialString(treeId, input)) return true
+
+    return tree.childNodes.some((child) => doesStringIncludePartialString(treeId, input) || hasDescendantWithSearchInput(child, input));
 };
 
 export const removeNodeFromTree = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps => {
