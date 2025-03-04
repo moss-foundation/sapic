@@ -17,15 +17,15 @@ export const useGetColorThemes = () => {
 //   });
 // };
 
-export const changeTheme = async (id: string): Promise<void> => {
+export const changeTheme = async (descriptor: ThemeDescriptor): Promise<void> => {
   await invokeTauriIpc("change_color_theme", {
-    id: id,
+    descriptor: descriptor,
   });
 };
 
 export const useChangeColorTheme = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, ThemeDescriptor>({
     mutationKey: ["changeColorTheme"],
     mutationFn: changeTheme,
     onSuccess: () => {

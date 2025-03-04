@@ -40,6 +40,7 @@
     "@repo/moss-theme": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/moss-state": "workspace:*",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.1",

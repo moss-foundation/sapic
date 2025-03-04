@@ -1,10 +1,10 @@
-import { getState } from "@/api/appearance";
-import { AppState } from "@repo/moss-desktop";
+import { getState as describeAppState } from "@/api/appearance";
+import { DescribeAppStateOutput } from "@repo/moss-state";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetAppState = () => {
-  return useQuery<AppState, Error>({
+  return useQuery<DescribeAppStateOutput, Error>({
     queryKey: ["getState"],
-    queryFn: getState,
+    queryFn: describeAppState,
   });
 };

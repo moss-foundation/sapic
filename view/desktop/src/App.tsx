@@ -47,13 +47,6 @@ const initialList = Array.from({ length: 5 }, (_, i) => {
 });
 
 function App() {
-  const [theme, setTheme] = useState("dark");
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-    document.querySelector("html")!.setAttribute("data-theme", theme === "dark" ? "light" : "dark");
-  };
-
   const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
 
   const handleSetActive = (id: number) => {
@@ -120,47 +113,6 @@ function App() {
           </main>
         </ResizablePanel>
       </Resizable>
-
-      <div className="absolute -top-3 right-30 p-4 flex">
-        <div className="" />
-        <button onClick={toggleTheme} className="cursor-pointer">
-          {theme === "light" ? (
-            <svg
-              className="size-9 text-black hover:text-gray-500 "
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
-          ) : (
-            <svg
-              className="size-9 text-white hover:text-black/50"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2" />
-              <path d="M12 20v2" />
-              <path d="m4.93 4.93 1.41 1.41" />
-              <path d="m17.66 17.66 1.41 1.41" />
-              <path d="M2 12h2" />
-              <path d="M20 12h2" />
-              <path d="m6.34 17.66-1.41 1.41" />
-              <path d="m19.07 4.93-1.41 1.41" />
-            </svg>
-          )}
-        </button>
-      </div>
     </div>
   );
 }

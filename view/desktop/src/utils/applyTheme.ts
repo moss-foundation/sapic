@@ -9,8 +9,11 @@ export const getColorTheme = async (source: string): Promise<IpcResult<string, s
 };
 
 export const applyTheme = async (id: string) => {
+  console.log("------------>");
   try {
     const result: IpcResult<string, string> = await getColorTheme(id);
+
+    console.log("------------>", result);
 
     if (result.status === "ok") {
       const cssContent = result.data;
