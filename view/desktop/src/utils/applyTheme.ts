@@ -1,10 +1,16 @@
-import { getColorTheme } from "@/api/appearance";
-import { IpcResult } from "@/lib/backend/tauri";
-import { ThemeDescriptor } from "@repo/moss-theme";
+import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
 
-export const applyTheme = async (theme: ThemeDescriptor) => {
+// import { ThemeDescriptor } from "@repo/moss-theme";
+
+export const getColorTheme = async (source: string): Promise<IpcResult<string, string>> => {
+  return await invokeTauriIpc("get_color_theme", {
+    path: source,
+  });
+};
+
+export const applyTheme = async (id: string) => {
   try {
-    const result: IpcResult<string, string> = await getColorTheme(theme.source);
+    const result: IpcResult<string, string> = await getColorTheme(id);
 
     if (result.status === "ok") {
       const cssContent = result.data;
@@ -19,9 +25,9 @@ export const applyTheme = async (theme: ThemeDescriptor) => {
         document.head.appendChild(styleTag);
       }
     } else {
-      console.error(`Error reading theme file for "${theme.id}":`, result.error);
+      console.error(`Error reading theme file for "${id}":`, result.error);
     }
   } catch (error) {
-    console.error(`Failed to apply theme "${theme.id}":`, error);
+    console.error(`Failed to apply theme "${id}":`, error);
   }
 };
