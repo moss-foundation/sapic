@@ -5,7 +5,7 @@ use super::types::{Defaults, Preferences};
 
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operation.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
