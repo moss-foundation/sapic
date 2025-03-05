@@ -66,8 +66,12 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
 
   const { message, isValid } = validateName(value, restrictedNames);
 
-  inputRef.current?.setCustomValidity(message);
-  inputRef.current?.reportValidity();
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.setCustomValidity(message);
+      inputRef.current.reportValidity();
+    }
+  }, [message]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);

@@ -1,25 +1,18 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { ContextMenu, Icon, TreeContext } from "..";
+import { useDraggableNode } from "./hooks/useDraggableNode";
+import { useDropTargetNode } from "./hooks/useDropTargetNode";
+import { useNodeAddForm } from "./hooks/useNodeAddForm";
+import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
-import { NodeProps, TreeNodeComponentProps } from "./types";
-import {
-  addUniqueIdToTree,
-  canDrop,
-  collapseAllNodes,
-  expandAllNodes,
-  getActualDropSourceTarget,
-  getActualDropTarget,
-  hasDescendantWithSearchInput,
-  sortNodes,
-} from "./utils";
+import { TreeNodeComponentProps } from "./types";
+import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
   const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
@@ -35,9 +28,19 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
-  const [isRenamingNode, setIsRenamingNode] = useState(false);
-  const [isAddingFileNode, setIsAddingFileNode] = useState(false);
-  const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
+    node,
+    onNodeUpdate
+  );
+
+  const {
+    isAddingFileNode,
+    isAddingFolderNode,
+    setIsAddingFileNode,
+    setIsAddingFolderNode,
+    handleAddFormSubmit,
+    handleAddFormCancel,
+  } = useNodeAddForm(node, onNodeUpdate);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
@@ -48,95 +51,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
 
-  useEffect(() => {
-    const element = draggableRef.current;
-    if (!element || isRenamingNode) return;
+  useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
 
-    return draggable({
-      element,
-      getInitialData: () => ({
-        type: "TreeNode",
-        data: {
-          node,
-          treeId,
-        },
-      }),
-      onDrop: () => {
-        setPreview(null);
-      },
-      onGenerateDragPreview({ nativeSetDragImage }) {
-        setCustomNativeDragPreview({
-          nativeSetDragImage,
-          render({ container }) {
-            setPreview((prev) => (prev === container ? prev : container));
-          },
-        });
-      },
-    });
-  }, [treeId, node, isRenamingNode]);
-
-  useEffect(() => {
-    const element = dropTargetListRef.current || dropTargetFolderRef.current;
-    if (!element) return;
-
-    return dropTargetForElements({
-      element,
-      getData: () => ({
-        type: "TreeNode",
-        data: {
-          treeId,
-          node,
-        },
-      }),
-      onDragLeave() {
-        element.classList.remove("bg-green-600", "bg-red-600");
-      },
-      onDrag({ location, source }) {
-        if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
-          return;
-        }
-
-        const sourceTarget = getActualDropSourceTarget(source);
-        const dropTarget = getActualDropTarget(location);
-
-        if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
-          return;
-        }
-        if (canDrop(sourceTarget, dropTarget, node)) {
-          element.classList.add("bg-green-600");
-        } else {
-          element.classList.add("bg-red-600");
-        }
-      },
-      onDrop({ location, source }) {
-        if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
-          return;
-        }
-
-        const sourceTarget = getActualDropSourceTarget(source);
-        const dropTarget = getActualDropTarget(location);
-
-        if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
-          return;
-        }
-
-        if (canDrop(sourceTarget, dropTarget, node)) {
-          window.dispatchEvent(
-            new CustomEvent("moveTreeNode", {
-              detail: {
-                source: sourceTarget,
-                target: dropTarget,
-              },
-            })
-          );
-        }
-
-        element.classList.remove("bg-green-600", "bg-red-600");
-      },
-    });
-  }, [node, treeId]);
+  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
@@ -145,27 +62,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
       ...node,
       isExpanded: !node.isExpanded,
     });
-  };
-
-  const handleRenamingFormSubmit = (newId: string) => {
-    onNodeUpdate({ ...node, id: newId });
-    setIsRenamingNode(false);
-  };
-
-  const handleRenamingFormCancel = () => {
-    setIsRenamingNode(false);
-  };
-
-  const handleAddFormSubmit = (newNode: NodeProps) => {
-    onNodeUpdate({ ...node, childNodes: sortNodes([...node.childNodes, addUniqueIdToTree(newNode)]) });
-
-    setIsAddingFileNode(false);
-    setIsAddingFolderNode(false);
-  };
-
-  const handleAddFormCancel = () => {
-    setIsAddingFileNode(false);
-    setIsAddingFolderNode(false);
   };
 
   const handleExpandAll = () => {

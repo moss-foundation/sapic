@@ -156,7 +156,7 @@ export const getActualDropTarget = (location: DragLocationHistory): DropNodeElem
         : (location.current.dropTargets[1].data.data as DropNodeElement);
 }
 
-export const canDrop = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {
+export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {
     if (sourceTarget.node.isFolder === false) {
         if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
             return false;
