@@ -1,5 +1,7 @@
 import React from "react";
 
+import { Resizable, ResizablePanel, Scrollbar } from "../components";
+
 export const Home: React.FC = () => {
   const handleNewWindowButton = async () => {
     // Handle new window button click
@@ -36,6 +38,17 @@ const SessionComponent = () => {
       <br />
       <span className="bg-secondary text-[var(--moss-primary)]">Description part 2</span>
       {data !== null && <p>Received data: {data}</p>}
+      <ResizablePanel>
+        <main className="h-screen flex grow flex-col justify-center text-center background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans transition">
+          <Scrollbar>
+            {Array.from({ length: 100 }, (_, i) => (
+              <div key={i} className="h-10 mb-1 w-full background-[var(--moss-test-background-2)]">
+                {i + 1}
+              </div>
+            ))}
+          </Scrollbar>
+        </main>
+      </ResizablePanel>
     </>
   );
 };

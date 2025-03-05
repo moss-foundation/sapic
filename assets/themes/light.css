@@ -1,4 +1,8 @@
 :root {
+  --moss-test-background-1: #f3f4f6;
+  --moss-test-background-2: #cbd5e0;
+  --moss-test-text-1: #101828;
+
   --moss-primary: rgba(0, 0, 0, 1);
   --moss-page-background: rgba(255, 255, 255, 1);
   --moss-sideBar-background: rgba(244, 244, 245, 1);
@@ -34,4 +38,12 @@
   --moss-tabs-and-actions-container-height: 35px;
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
   --moss-overlay-z-index: 999;
+
+  --moss-tabslist-background: #f4f4f4;
+  --moss-tab-background: #f4f4f4;
+  /*--moss-tab-text: ;*/
+  --moss-active-tab-background: white;
+  /*--moss-active-tab-text: ;*/
+  --moss-hover-inactive-tab-background: rgba(255, 255, 255, 0.5);
+  --moss-tab-panels-background: white;
 }

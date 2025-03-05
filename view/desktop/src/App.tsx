@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
+import { Resizable, ResizablePanel, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -91,7 +91,7 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-black dark:text-white  ">
+            <Tabs.Panels className="text-[var(--moss-primary)]">
               {DNDList.map((item) => (
                 <Tabs.Panel {...item} key={item.id} className="0">
                   {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
@@ -102,15 +102,6 @@ function App() {
         </ResizablePanel>
         <ResizablePanel>
           <TabbedPane theme="dockview-theme-light" />
-          <main className="h-screen flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
-            <Scrollbar>
-              {Array.from({ length: 100 }, (_, i) => (
-                <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-[#131313]">
-                  {i + 1}
-                </div>
-              ))}
-            </Scrollbar>
-          </main>
         </ResizablePanel>
       </Resizable>
     </div>

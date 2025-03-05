@@ -33,7 +33,7 @@ const TabsList = ({ children, className, ...props }: TabsListProps) => {
         role="tablist"
         aria-labelledby="tablist-1"
         data-tabs="default"
-        className={cn(`w-full h-full flex relative bg-[#F4F4F4] dark:bg-[#161819]`, className)}
+        className={cn(`w-full h-full flex relative background-[var(--moss-tabslist-background)]`, className)}
         {...props}
       >
         {children}
@@ -131,10 +131,11 @@ const Tab = ({
       aria-controls={`panel-${id}`}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "relative grow min-w-max px-3 pb-2 pt-[7px] bg-[#F4F4F4] dark:bg-[#161819] dark:text-[#525252] cursor-pointer border-t box-border select-none",
+        "relative grow min-w-max px-3 pb-2 pt-[7px] background-[var(--moss-tab-background)] text-[var(--moss-tab-text)] cursor-pointer border-t box-border select-none",
         {
-          "bg-white dark:bg-[#1e2021] dark:text-white border-t-[#0065FF] ": isActive,
-          "hover:bg-white/50 hover:dark:bg-[#1e2021]/50 border-t-transparent": !isActive,
+          "background-[var(--moss-active-tab-background)] text-[var(--moss-active-tab-text)] border-t-[#0065FF] ":
+            isActive,
+          "hover:background-[var(--moss-hover-inactive-tab-background)] border-t-transparent": !isActive,
         },
         className
       )}
@@ -154,7 +155,10 @@ interface TabsPanelsProps extends HTMLAttributes<HTMLDivElement> {
 const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
     <div
-      className={cn("w-full h-full flex flex-col grow bg-white dark:bg-[#1e2021] overflow-hidden", className)}
+      className={cn(
+        "w-full h-full flex flex-col grow background-[var(--moss-tab-panels-background)] overflow-hidden",
+        className
+      )}
       {...props}
     >
       {children}
