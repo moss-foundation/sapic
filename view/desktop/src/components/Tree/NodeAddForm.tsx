@@ -45,11 +45,27 @@ const validateName = (
   isValid: boolean;
   message: string;
 } => {
-  const names = name.split("/");
-  if (restrictedNames.includes(names[0])) {
+  const newNodeNames = name.split("/");
+  const newNodeRootName = newNodeNames[0];
+
+  if (newNodeRootName === "" && newNodeNames.length === 1) {
     return {
       isValid: false,
-      message: `The name "${names[0]}" is already exists in this location`,
+      message: "The name cannot be empty",
+    };
+  }
+
+  if (newNodeRootName === "" && newNodeNames.length > 1) {
+    return {
+      isValid: false,
+      message: "The root name of the new subtree cannot be empty",
+    };
+  }
+
+  if (restrictedNames.includes(newNodeRootName)) {
+    return {
+      isValid: false,
+      message: `The name "${newNodeRootName}" is already exists in this location`,
     };
   }
 
@@ -66,15 +82,18 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
 
   const { message, isValid } = validateName(value, restrictedNames);
 
+  const [didUserChangeInput, setDidUserChangeInput] = useState(false);
+
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && didUserChangeInput) {
       inputRef.current.setCustomValidity(message);
       inputRef.current.reportValidity();
     }
-  }, [message]);
+  }, [didUserChangeInput, message]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
+    setDidUserChangeInput(true);
   };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {

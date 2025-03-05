@@ -52,7 +52,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     : node.childNodes;
 
   useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
-
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const handleFolderClick = () => {

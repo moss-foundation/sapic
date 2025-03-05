@@ -13,10 +13,6 @@ export const useDropTargetNode = (
         const element = dropTargetListRef.current || dropTargetFolderRef.current;
         if (!element) return;
 
-        console.log({
-            dropRef: element
-        })
-
         return dropTargetForElements({
             element,
             getData: () => ({

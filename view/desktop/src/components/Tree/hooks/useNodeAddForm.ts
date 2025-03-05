@@ -7,7 +7,11 @@ export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNod
     const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
     const handleAddFormSubmit = (newNode: NodeProps) => {
-        onNodeUpdate({ ...node, childNodes: sortNodes([...node.childNodes, addUniqueIdToTree(newNode)]) });
+        onNodeUpdate({
+            ...node,
+            isExpanded: true,
+            childNodes: sortNodes([...node.childNodes, addUniqueIdToTree(newNode)])
+        });
 
         setIsAddingFileNode(false);
         setIsAddingFolderNode(false);
