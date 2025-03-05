@@ -43,7 +43,8 @@ pub fn run() {
         .plugin(plugin_log::init())
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_os::init());
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {}));
 
     #[cfg(target_os = "macos")]
     {
