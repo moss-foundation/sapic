@@ -1,8 +1,8 @@
 mod tokens;
 
 use crate::tokens::*;
-use anyhow::{anyhow, Result};
-use chrono::{Date, DateTime, Local, NaiveDate, NaiveDateTime, Utc};
+use anyhow::Result;
+use chrono::{NaiveDate, Utc};
 use serde_json::Value as JSONValue;
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -26,12 +26,10 @@ type LogEntry = JSONValue;
 // Empty field means that no filter will be applied
 #[derive(Default)]
 struct LogFilter {
-    // TODO: Make dates to a range
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
-    // FIXME: only one collection/request
-    collections: HashSet<PathBuf>,
-    requests: HashSet<PathBuf>,
+    collection: Option<PathBuf>,
+    request: Option<PathBuf>,
 }
 
 impl LogFilter {
@@ -53,23 +51,15 @@ impl LogFilter {
             ..self
         }
     }
-    pub fn add_collections(self, collections: impl IntoIterator<Item = PathBuf>) -> Self {
+    pub fn select_collection(self, collection: impl AsRef<Path>) -> Self {
         Self {
-            collections: self
-                .collections
-                .into_iter()
-                .chain(collections.into_iter())
-                .collect(),
+            collection: Some(collection.as_ref().to_path_buf()),
             ..self
         }
     }
-    pub fn add_requests(self, requests: impl IntoIterator<Item = PathBuf>) -> Self {
+    pub fn select_request(self, request: impl AsRef<Path>) -> Self {
         Self {
-            requests: self
-                .requests
-                .into_iter()
-                .chain(requests.into_iter())
-                .collect(),
+            request: Some(request.as_ref().to_path_buf().into()),
             ..self
         }
     }
@@ -140,33 +130,36 @@ impl LoggingService {
                 }
             }
 
-            if !filter.collections.is_empty() {
+            if filter.collection.is_some() {
                 if let Some(collection) = value
                     .get(COLLECTION_LIT)
                     .and_then(|v| v.as_str())
                     .map(PathBuf::from)
                 {
-                    if !filter.collections.contains(&collection) {
+                    if filter.collection.clone().unwrap() != collection {
                         continue;
                     }
                 } else {
+                    // With collection filter, skip entries without collection field
                     continue;
                 }
             }
 
-            if !filter.requests.is_empty() {
+            if filter.request.is_some() {
                 if let Some(request) = value
                     .get(REQUEST_LIT)
                     .and_then(|v| v.as_str())
                     .map(PathBuf::from)
                 {
-                    if !filter.requests.contains(&request) {
+                    if filter.request.clone().unwrap() != request {
                         continue;
                     }
                 } else {
+                    // With request filter, skip entries without request field
                     continue;
                 }
             }
+
             records.push(value);
         }
 
@@ -271,10 +264,11 @@ mod tests {
         });
 
         let filter = LogFilter::new()
+            .select_collection(&collection_path)
+            .select_request(&request_path)
             .add_dates(vec![Utc::now().naive_utc().into()])
-            .add_levels(vec![Level::WARN, Level::ERROR])
-            .add_collections(vec![collection_path.clone()])
-            .add_requests(vec![request_path.clone()]);
+            .add_levels(vec![Level::WARN, Level::ERROR]);
+
         dbg!(service.query_with_filter(&filter).unwrap());
     }
 }
