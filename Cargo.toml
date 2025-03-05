@@ -11,7 +11,9 @@ members = [
     "crates/moss-fs",
     "crates/moss-keyring",
     "tools/xtask",
-    "view/desktop/bin", "crates/moss-logging",
+    "view/desktop/bin",
+    "crates/moss-logging",
+    "crates/moss-session",
 ]
 
 [workspace.dependencies]
@@ -24,7 +26,8 @@ moss_git = { path = "crates/moss-git" }
 moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
-moss_logging = { path = "crates/moss-logging"}
+moss_logging = { path = "crates/moss-logging" }
+moss_session = { path = "crates/moss-session" }
 
 tauri = { version = "2.2.5", default-features = false }
 rand = { version = "0.9.0", default-features = false, features = [

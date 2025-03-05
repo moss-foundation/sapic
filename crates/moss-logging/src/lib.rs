@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::Arc;
 use std::{fs, io};
 #[allow(unused_imports)]
 use tracing::{event, instrument, Instrument, Level};
@@ -19,6 +20,8 @@ use tracing_subscriber::filter::filter_fn;
 use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::prelude::*;
+
+use moss_session::SessionService;
 
 type LogEntry = JSONValue;
 // Empty field means that no filter will be applied
@@ -70,7 +73,7 @@ struct LoggingService {
 }
 
 impl LoggingService {
-    pub fn init(path: &Path) -> Result<LoggingService> {
+    pub fn init(logs_path: &Path, session_service: Arc<SessionService>) -> Result<LoggingService> {
         let session_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -88,10 +91,8 @@ impl LoggingService {
             .compact()
             .with_ansi(true);
 
-        // TODO: session_uuid
-        // crate: moss-session/session-service
-        let session_id = Utc::now().timestamp().to_string();
-        let session_path = path.join(session_id);
+        let session_id = session_service.get_session_uuid();
+        let session_path = logs_path.join(session_id);
         // TODO: make `log.` suffix or get rid of it
         let file_appender = tracing_appender::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
@@ -265,7 +266,9 @@ mod tests {
     const TEST_LOG_FOLDER: &'static str = "logs";
     #[test]
     fn test() {
-        let service = LoggingService::init(Path::new(TEST_LOG_FOLDER)).unwrap();
+        let session_service = SessionService::init();
+        let logging_service =
+            LoggingService::init(Path::new(TEST_LOG_FOLDER), Arc::new(session_service)).unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
@@ -287,7 +290,7 @@ mod tests {
             .add_dates(vec![Utc::now().naive_utc().into()])
             .add_levels(vec![Level::WARN, Level::ERROR]);
 
-        let output = service
+        let output = logging_service
             .query_with_filter(&filter)
             .unwrap()
             .iter()
