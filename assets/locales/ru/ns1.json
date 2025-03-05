@@ -1,6 +1,8 @@
 {
   "settings": "Настройки",
   "home": "Главная",
+  "logs": "Логи",
+  "receivedData": "Полученные данные",
   "title": "Moss Studio",
   "selectTheme": "Выберите тему:",
   "selectLanguage": "Выберите язык:",

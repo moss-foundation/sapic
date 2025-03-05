@@ -1,6 +1,8 @@
 {
   "settings": "Settings",
   "home": "Home",
+  "logs": "Logs",
+  "receivedData": "Received data",
   "title": "Moss Studio",
   "selectTheme": "Select theme:",
   "selectLanguage": "Select language:",

@@ -66,7 +66,7 @@ const components = {
       </div>
     );
   },
-  nested: (props: IDockviewPanelProps) => {
+  nested: () => {
     return (
       <DockviewReact
         components={components}

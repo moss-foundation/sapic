@@ -1,5 +1,6 @@
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
+import { useTranslation } from "react-i18next";
 
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
@@ -77,6 +78,8 @@ export const GridActions = (props: {
   hasCustomWatermark: boolean;
   toggleCustomWatermark: () => void;
 }) => {
+  const { t } = useTranslation(["ns1", "ns2"]);
+
   const onClear = () => {
     props.api?.clear();
   };
@@ -145,13 +148,13 @@ export const GridActions = (props: {
   return (
     <div className="action-container">
       <button className="text-button" onClick={() => onAddPanel({ type: "Home" })}>
-        Home
+        {t("home")}
       </button>
       <button className="text-button" onClick={() => onAddPanel({ type: "Settings" })}>
-        Settings
+        {t("settings")}
       </button>
       <button className="text-button" onClick={() => onAddPanel({ type: "Logs" })}>
-        Logs
+        {t("logs")}
       </button>
       <span className="grow" />
       <div className="button-group">

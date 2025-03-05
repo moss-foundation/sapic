@@ -17,7 +17,7 @@ export const Settings = () => {
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCode = event.target.value;
-    const selectedLang = languages?.contents.find((lang) => lang.code === selectedCode);
+    const selectedLang = languages?.contents.find((lang: { code: string }) => lang.code === selectedCode);
     if (selectedLang) {
       mutateChangeLanguagePack(selectedLang);
     }
@@ -25,7 +25,9 @@ export const Settings = () => {
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
-    const selectedTheme = themes?.contents.find((theme) => theme.identifier === selectedId);
+    const selectedTheme = themes?.contents.find(
+      (theme: { identifier: string; displayName: string }) => theme.identifier === selectedId
+    );
     if (selectedTheme) {
       mutateChangeColorTheme(selectedTheme);
     }
@@ -34,7 +36,7 @@ export const Settings = () => {
   return (
     <main>
       <div className="p-5 text-[var(--moss-primary)]">
-        <h1 className="mb-3 text-2xl">Settings</h1>
+        <h1 className="mb-3 text-2xl">{t("settings")}</h1>
 
         <div>
           <h3>{t("selectLanguage")}</h3>
@@ -44,7 +46,7 @@ export const Settings = () => {
             value={appState?.preferences.locale?.code || appState?.defaults.locale?.code}
             onChange={handleLanguageChange}
           >
-            {languages?.contents.map((lang) => (
+            {languages?.contents.map((lang: { code: string; displayName: string }) => (
               <option key={lang.code} value={lang.code}>
                 {lang.displayName}
               </option>
@@ -60,7 +62,7 @@ export const Settings = () => {
             value={appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier}
             onChange={handleThemeChange}
           >
-            {themes?.contents.map((theme) => (
+            {themes?.contents.map((theme: { identifier: string; displayName: string }) => (
               <option key={theme.identifier} value={theme.identifier}>
                 {theme.displayName}
               </option>
