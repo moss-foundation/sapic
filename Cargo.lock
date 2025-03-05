@@ -1078,6 +1078,7 @@ dependencies = [
  "moss_collection",
  "moss_db",
  "moss_fs",
+ "moss_nls",
  "moss_state",
  "moss_tauri",
  "moss_theme",
@@ -2853,9 +2854,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_nls"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_app",
+ "moss_fs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_state"
 version = "0.1.0"
 dependencies = [
+ "moss_nls",
  "moss_theme",
  "parking_lot 0.12.3",
  "serde",

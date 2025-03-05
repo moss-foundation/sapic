@@ -8,7 +8,8 @@
     },
     "devDependencies": {
       "@repo/typescript-config": "workspace:*",
-      "@repo/moss-theme": "workspace:*"
+      "@repo/moss-theme": "workspace:*",
+      "@repo/moss-nls": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.7.2"
@@ -18,6 +19,12 @@
         "@repo/moss-theme": {
           "types": [
             "ThemeDescriptor"
+          ],
+          "is_type_import": true
+        },
+        "@repo/moss-nls": {
+          "types": [
+            "LocaleDescriptor"
           ],
           "is_type_import": true
         }

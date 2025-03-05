@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 moss_theme.workspace = true
+moss_nls.workspace = true
 
 ts-rs.workspace = true
 serde = { workspace = true, features = ["derive"] }

@@ -12,6 +12,7 @@ members = [
     "crates/moss-keyring",
     "crates/moss-theme",
     "crates/moss-state",
+    "crates/moss-nls",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -28,6 +29,7 @@ moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_theme = { path = "crates/moss-theme" }
 moss_state = { path = "crates/moss-state" }
+moss_nls = { path = "crates/moss-nls" }
 
 tauri = { version = "2.2.5", default-features = false }
 rand = { version = "0.9.0", default-features = false, features = [

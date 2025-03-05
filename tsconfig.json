@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "crates/moss-nls"
+    },
+    {
       "path": "crates/moss-state"
     },
     {
@@ -15,9 +18,6 @@
     },
     {
       "path": "tools/icongen"
-    },
-    {
-      "path": "packages/moss-tabs"
     }
   ]
 }

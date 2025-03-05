@@ -27,6 +27,7 @@ moss_collection.workspace = true
 moss_app.workspace = true
 moss_fs.workspace = true
 moss_theme.workspace = true
+moss_nls.workspace = true
 moss_state.workspace = true
 
 tauri = { workspace = true, features = [

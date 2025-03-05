@@ -8,8 +8,9 @@
 // re-run `make gen-models` it to regenerate the file accordingly.
 
 import type { ThemeDescriptor } from '@repo/moss-theme';
+import type { LocaleDescriptor } from '@repo/moss-nls';
 
 
-export type Defaults = { theme: ThemeDescriptor, };
+export type Defaults = { theme: ThemeDescriptor, locale: LocaleDescriptor, };
 
-export type Preferences = { theme?: ThemeDescriptor, };
+export type Preferences = { theme?: ThemeDescriptor, locale?: LocaleDescriptor, };
