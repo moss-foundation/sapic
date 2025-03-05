@@ -24,6 +24,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   );
   const paddingRight = useMemo(() => `${horizontalPadding}px`, [horizontalPadding]);
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+
   const draggableRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
@@ -42,7 +44,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
+  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const shouldRenderChildNodes =
     !!searchInput || isAddingFileNode || isAddingFolderNode || (!searchInput && node.isFolder && node.isExpanded);
@@ -50,9 +53,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-
-  useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
-  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
