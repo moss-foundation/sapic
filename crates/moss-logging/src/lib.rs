@@ -1,9 +1,6 @@
-mod tokens;
-
-use crate::tokens::*;
 use anyhow::Result;
 use chrono::{NaiveDate, Utc};
-use serde_json::Value as JSONValue;
+use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -23,7 +20,10 @@ use tracing_subscriber::prelude::*;
 
 use moss_session::SessionService;
 
-type LogEntry = JSONValue;
+pub const LEVEL_LIT: &'static str = "level";
+pub const COLLECTION_LIT: &'static str = "collection";
+pub const REQUEST_LIT: &'static str = "request";
+
 // Empty field means that no filter will be applied
 #[derive(Default)]
 struct LogFilter {
@@ -131,16 +131,16 @@ impl LoggingService {
     }
 
     fn parse_file_with_filter(
-        records: &mut Vec<LogEntry>,
+        records: &mut Vec<JsonValue>,
         path: &Path,
         filter: &LogFilter,
     ) -> Result<()> {
-        // In the log created by tracing-appender, each line is a JSON object for a LogEntry
+        // In the log created by tracing-appender, each line is a JSON object for a JsonValue
         let file = File::open(path)?;
 
         for line in BufReader::new(file).lines() {
             let line = line?;
-            let value: JSONValue = serde_json::from_str(&line)?;
+            let value: JsonValue = serde_json::from_str(&line)?;
 
             if !filter.levels.is_empty() {
                 let level = Level::from_str(value.get(LEVEL_LIT).unwrap().as_str().unwrap())?;
@@ -185,7 +185,7 @@ impl LoggingService {
         Ok(())
     }
 
-    pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<LogEntry>> {
+    pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
         let mut result = Vec::new();
         let mut paths = Vec::new();
         for entry in fs::read_dir(&self.session_path)? {
@@ -266,7 +266,7 @@ mod tests {
     const TEST_LOG_FOLDER: &'static str = "logs";
     #[test]
     fn test() {
-        let session_service = SessionService::init();
+        let session_service = SessionService::new();
         let logging_service =
             LoggingService::init(Path::new(TEST_LOG_FOLDER), Arc::new(session_service)).unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()

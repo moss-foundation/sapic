@@ -1,15 +1,17 @@
+use uuid::Uuid;
+
 pub struct SessionService {
-    uuid: String,
+    uuid: Uuid,
 }
 
 impl SessionService {
-    pub fn init() -> SessionService {
-        SessionService {
-            uuid: uuid::Uuid::new_v4().to_string(),
+    pub fn new() -> Self {
+        Self {
+            uuid: Uuid::new_v4(),
         }
     }
 
     pub fn get_session_uuid(&self) -> String {
-        self.uuid.clone()
+        self.uuid.to_string()
     }
 }
