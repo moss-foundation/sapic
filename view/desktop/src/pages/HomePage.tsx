@@ -1,12 +1,8 @@
 import React from "react";
 
-import { Resizable, ResizablePanel, Scrollbar } from "../components";
+import { ResizablePanel, Scrollbar } from "../components";
 
 export const Home: React.FC = () => {
-  const handleNewWindowButton = async () => {
-    // Handle new window button click
-  };
-
   return (
     <div className="p-5 text-[var(--moss-primary)]">
       <h1 className="mb-3 text-2xl">Home</h1>

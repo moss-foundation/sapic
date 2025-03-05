@@ -1,7 +1,4 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
-import { ThemeDescriptor } from "@repo/moss-theme";
-
-// import { ThemeDescriptor } from "@repo/moss-theme";
 
 export const getColorTheme = async (id: string): Promise<IpcResult<string, string>> => {
   return await invokeTauriIpc("get_color_theme", {
@@ -10,12 +7,8 @@ export const getColorTheme = async (id: string): Promise<IpcResult<string, strin
 };
 
 export const applyTheme = async (id: string) => {
-  console.log("------------>");
   try {
     const result: IpcResult<string, string> = await getColorTheme(id);
-
-    console.log("------------>", result);
-
     if (result.status === "ok") {
       const cssContent = result.data;
       let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
