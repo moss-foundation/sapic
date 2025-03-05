@@ -7,6 +7,7 @@ import { ContextMenu, Icon, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
+import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
@@ -29,16 +30,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
-  const [isRenamingNode, setIsRenamingNode] = useState(false);
-
-  const handleRenamingFormSubmit = (newId: string) => {
-    onNodeUpdate({ ...node, id: newId });
-    setIsRenamingNode(false);
-  };
-
-  const handleRenamingFormCancel = () => {
-    setIsRenamingNode(false);
-  };
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
+    node,
+    onNodeUpdate
+  );
 
   const {
     isAddingFileNode,
