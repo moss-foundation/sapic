@@ -2,6 +2,7 @@ export WORKSPACE_ROOT_DIR = ${CURDIR}
 export LOG_LEVEL = trace
 
 export THEMES_DIR = ${CURDIR}/assets/themes
+export LOCALES_DIR =  ${CURDIR}/assets/locales
 
 .DEFAULT_GOAL := run-desktop
 

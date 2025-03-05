@@ -18,6 +18,7 @@ use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionReques
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
+use moss_nls::locale_service::LocaleService;
 use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
@@ -90,6 +91,16 @@ pub fn run() {
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
 
             let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
+                            .expect("Environment variable LOCALES_DIR is not set")
+                            .into();
+                        move |_| LocaleService::new(fs_clone, locales_dir)
+                    },
+                    InstantiationType::Delayed,
+                )
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
