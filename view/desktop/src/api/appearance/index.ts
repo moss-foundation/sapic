@@ -6,13 +6,13 @@ import { invoke } from "@tauri-apps/api/core";
 
 // App state
 
-export const getState = async (): Promise<DescribeAppStateOutput> => {
+export const describeAppState = async (): Promise<DescribeAppStateOutput> => {
   return await invoke<DescribeAppStateOutput>("describe_app_state");
 };
 
 //Color themes
 
-export const getColorThemes = async (): Promise<ListThemesOutput> => {
+export const listThemes = async (): Promise<ListThemesOutput> => {
   return await invoke<ListThemesOutput>("list_themes");
 };
 
@@ -24,6 +24,6 @@ export const getColorTheme = async (source: string): Promise<IpcResult<string, s
 
 //Language packs
 
-export const getLanguagePacks = async (): Promise<ListLocalesOutput> => {
+export const listLocales = async (): Promise<ListLocalesOutput> => {
   return await invoke<ListLocalesOutput>("list_locales");
 };

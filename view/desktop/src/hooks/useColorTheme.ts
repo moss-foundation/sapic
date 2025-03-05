@@ -1,16 +1,16 @@
-import { getColorThemes } from "@/api/appearance";
-import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
+import { listThemes } from "@/api/appearance";
+import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { ListThemesOutput, ThemeDescriptor } from "@repo/moss-theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useGetColorThemes = () => {
   return useQuery<ListThemesOutput, Error>({
     queryKey: ["getColorTheme"],
-    queryFn: getColorThemes,
+    queryFn: listThemes,
   });
 };
 
-export const changeTheme = async (descriptor: ThemeDescriptor): Promise<void> => {
+export const changeColorTheme = async (descriptor: ThemeDescriptor): Promise<void> => {
   await invokeTauriIpc("change_color_theme", {
     descriptor: descriptor,
   });
@@ -20,7 +20,7 @@ export const useChangeColorTheme = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, ThemeDescriptor>({
     mutationKey: ["changeColorTheme"],
-    mutationFn: changeTheme,
+    mutationFn: changeColorTheme,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getState"] });
     },

@@ -1,4 +1,4 @@
-import { getState as describeAppState } from "@/api/appearance";
+import { describeAppState } from "@/api/appearance";
 import { DescribeAppStateOutput } from "@repo/moss-state";
 import { useQuery } from "@tanstack/react-query";
 

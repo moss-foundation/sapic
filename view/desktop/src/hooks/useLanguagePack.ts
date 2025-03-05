@@ -1,4 +1,4 @@
-import { getLanguagePacks } from "@/api/appearance";
+import { listLocales } from "@/api/appearance";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { ListLocalesOutput, LocaleDescriptor } from "@repo/moss-nls";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const useGetLanguagePacks = () => {
   return useQuery<ListLocalesOutput, Error>({
     queryKey: ["getLanguagePacks"],
-    queryFn: getLanguagePacks,
+    queryFn: listLocales,
   });
 };
 
