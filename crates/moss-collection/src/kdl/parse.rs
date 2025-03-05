@@ -1,6 +1,6 @@
 use crate::kdl::foundations::http::{
-    HeaderBody, HeaderOptions, HttpRequestFile, PathParamBody, PathParamOptions, QueryParamBody,
-    QueryParamOptions, Url,
+    HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
+    QueryParamBody, QueryParamOptions, Url,
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
@@ -98,7 +98,7 @@ fn parse_query_params(node: &KdlNode) -> Result<HashMap<String, QueryParamBody>>
 
 fn parse_query_param_body(node: &KdlNode) -> Result<QueryParamBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -109,7 +109,7 @@ fn parse_query_param_body(node: &KdlNode) -> Result<QueryParamBody> {
             QueryParamOptions::default()
         };
         Ok(QueryParamBody {
-            value,
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,
@@ -143,7 +143,7 @@ fn parse_path_params(node: &KdlNode) -> Result<HashMap<String, PathParamBody>> {
 
 fn parse_path_param_body(node: &KdlNode) -> Result<PathParamBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -154,7 +154,7 @@ fn parse_path_param_body(node: &KdlNode) -> Result<PathParamBody> {
             PathParamOptions::default()
         };
         Ok(PathParamBody {
-            value,
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,
@@ -174,8 +174,8 @@ fn parse_path_param_options(node: &KdlNode) -> Result<PathParamOptions> {
     }
 }
 
-fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
-    let mut headers: HashMap<String, HeaderBody> = HashMap::new();
+fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderParamBody>> {
+    let mut headers: HashMap<String, HeaderParamBody> = HashMap::new();
     if let Some(document) = node.children() {
         for header_node in document.nodes() {
             let name = header_node.name().to_string();
@@ -186,9 +186,9 @@ fn parse_headers_node(node: &KdlNode) -> Result<HashMap<String, HeaderBody>> {
     Ok(headers)
 }
 
-fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
+fn parse_header_body(node: &KdlNode) -> Result<HeaderParamBody> {
     if let Some(fields) = node.children() {
-        let value = kdl_get_arg_as_value!(fields, "value");
+        let value = kdl_get_arg_as_string!(fields, "value");
         let desc = kdl_get_arg_as_string!(fields, "desc");
         let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
         let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
@@ -198,15 +198,15 @@ fn parse_header_body(node: &KdlNode) -> Result<HeaderBody> {
         } else {
             HeaderOptions::default()
         };
-        Ok(HeaderBody {
-            value,
+        Ok(HeaderParamBody {
+            value: value.unwrap_or("".to_string()),
             desc,
             order,
             disabled,
             options,
         })
     } else {
-        Ok(HeaderBody::default())
+        Ok(HeaderParamBody::default())
     }
 }
 
@@ -226,7 +226,7 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
     for node in document {
         match node.name().to_string().as_str() {
             URL_LIT => {
-                request.url = Some(parse_url_node(&node)?);
+                request.url = parse_url_node(&node)?;
             }
             PARAMS_LIT => {
                 // FIXME: Should we handle duplicate query/path param nodes?
@@ -237,16 +237,16 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
 
                 match typ {
                     QUERY_LIT => {
-                        request.query_params = Some(parse_query_params(&node)?);
+                        request.query_params = parse_query_params(&node)?;
                     }
                     PATH_LIT => {
-                        request.path_params = Some(parse_path_params(&node)?);
+                        request.path_params = parse_path_params(&node)?;
                     }
                     _ => return Err(ParseError::InvalidParamsType.into()),
                 }
             }
             HEADERS_LIT => {
-                request.headers = Some(parse_headers_node(&node)?);
+                request.headers = parse_headers_node(&node)?;
             }
             _ => {}
         }
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn test_query_param_body_to_string() {
         let body = QueryParamBody {
-            value: Some("value".into()),
+            value: "value".into(),
             desc: Some("desc".into()),
             order: Some(1),
             disabled: false,

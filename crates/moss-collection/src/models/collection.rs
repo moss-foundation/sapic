@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use serde::Serialize;
-use ts_rs::TS;
+use std::fmt::Display;
 
 #[derive(Debug, Clone, Serialize)]
 pub enum HttpRequestType {
@@ -10,6 +10,17 @@ pub enum HttpRequestType {
     Delete,
 }
 
+impl ToString for HttpRequestType {
+    fn to_string(&self) -> String {
+        match self {
+            HttpRequestType::Post => "post".to_string(),
+            HttpRequestType::Get => "get".to_string(),
+            HttpRequestType::Put => "put".to_string(),
+            HttpRequestType::Delete => "del".to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum RequestType {
     Http(HttpRequestType),
@@ -17,6 +28,24 @@ pub enum RequestType {
     GraphQL,
     Grpc,
     Variant,
+}
+
+impl Default for RequestType {
+    fn default() -> Self {
+        Self::Http(HttpRequestType::Get)
+    }
+}
+
+impl ToString for RequestType {
+    fn to_string(&self) -> String {
+        match self {
+            RequestType::Http(http_request_type) => http_request_type.to_string(),
+            RequestType::WebSocket => "ws".to_string(),
+            RequestType::GraphQL => "gql".to_string(),
+            RequestType::Grpc => "grpc".to_string(),
+            RequestType::Variant => "variant".to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for RequestType {
@@ -56,7 +85,7 @@ impl RequestType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct CollectionRequestVariantEntry {
     pub name: String,
     pub order: Option<usize>,
