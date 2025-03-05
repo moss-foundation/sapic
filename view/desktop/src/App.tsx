@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { Input, Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
+import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -124,13 +124,23 @@ const IsolatedTreeComponent = () => {
 
   return (
     <div className="h-full">
-      <div className="py-1.5 px-4.5">
+      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
         <Input
           iconLeft="Search"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
           placeholder="Search"
+          size="sm"
         />
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
+            <Icon icon="Plus" />
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item label="Item" />
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
+
       <div className="h-full flex flex-col">
         <div>
           <Tree tree={TestTreeData.tree} searchInput={searchInput} />
