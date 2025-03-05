@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+  CARGO_PROFILE_DEV_DEBUG: 0
+
+jobs:
+  check-modified-files:
+    runs-on: ubuntu-latest
+    outputs:
+      node: ${{ steps.node.outputs.any_changed }}
+      rust: ${{ steps.rust.outputs.any_changed }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Get all changed Rust files
+        id: rust
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            **.rs
+            Cargo.toml
+
+      - name: Get all changed NodeJS files
+        id: node
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            **.ts
+            **.tsx
+            **.js
+            **.jsx
+            package.json
+
+
+  rust-general-workflows:
+    name: Rust General Workflows
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: |
+            libwebkit2gtk-4.0-dev
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@v2.7.5
+        with:
+          workspaces: ".github/cache"
+      # TODO: Add Rust unit/doc tests flow when we have them
+
+      - name: Workspace Audit
+        run: |
+          cd "${GITHUB_WORKSPACE}/tools/xtask"
+          cargo -q run -- --fail-fast rwa
+
+  node-workflows:
+    name: Node.js Workflows - ${{ matrix.task.name }}
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        task:
+          - name: Lint
+            command: pnpm run lint -- --quiet
+
+          - name: Test Packages (Vitest)
+            command: pnpm run test --project packages
+
+          - name: Test Desktop (Vitest)
+            command: pnpm run test --project desktop
+
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v4
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: "package.json"
+          cache: "pnpm"
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Cache optional Playwright paths
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}
+
+      - name: Build Icons
+        run: make gen-icons
+
+      - name: Execute Task - ${{ matrix.task.name }}
+        run: ${{ matrix.task.command }}
