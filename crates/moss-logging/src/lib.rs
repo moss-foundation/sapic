@@ -1,6 +1,7 @@
 use anyhow::Result;
-use chrono::{NaiveDate, Utc};
+use chrono::NaiveDate;
 use serde_json::Value as JsonValue;
+use std::any::Any;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -9,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::{fs, io};
-#[allow(unused_imports)]
+#[allow(unused_imports)] // Apparently these imports are used
 use tracing::{event, instrument, Instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::Rotation;
@@ -18,6 +19,7 @@ use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::prelude::*;
 
+use moss_app::service::AppService;
 use moss_session::SessionService;
 
 pub const LEVEL_LIT: &'static str = "level";
@@ -26,7 +28,7 @@ pub const REQUEST_LIT: &'static str = "request";
 
 // Empty field means that no filter will be applied
 #[derive(Default)]
-struct LogFilter {
+pub struct LogFilter {
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
     collection: Option<PathBuf>,
@@ -67,13 +69,13 @@ impl LogFilter {
 }
 
 // TODO: in-memory, session log, global log
-struct LoggingService {
+pub struct LoggingService {
     session_path: PathBuf,
     _guard: WorkerGuard,
 }
 
 impl LoggingService {
-    pub fn init(logs_path: &Path, session_service: Arc<SessionService>) -> Result<LoggingService> {
+    pub fn new(logs_path: &Path, session_service: &SessionService) -> Result<LoggingService> {
         let session_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -214,6 +216,20 @@ impl LoggingService {
     }
 }
 
+impl AppService for LoggingService {
+    fn name(&self) -> &'static str {
+        std::any::type_name::<Self>()
+    }
+
+    fn dispose(&self) {
+        // TODO: Dropping the session log folder here?
+    }
+
+    fn as_any(&self) -> &(dyn Any + Send) {
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -268,7 +284,7 @@ mod tests {
     fn test() {
         let session_service = SessionService::new();
         let logging_service =
-            LoggingService::init(Path::new(TEST_LOG_FOLDER), Arc::new(session_service)).unwrap();
+            LoggingService::new(Path::new(TEST_LOG_FOLDER), Arc::new(session_service)).unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()

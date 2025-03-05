@@ -26,6 +26,8 @@ moss_db.workspace = true
 moss_collection.workspace = true
 moss_app.workspace = true
 moss_fs.workspace = true
+moss_logging.workspace = true
+moss_session.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",

@@ -21,6 +21,7 @@ use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
 use moss_tauri::services::window_service::WindowService;
 use rand::random;
+use std::path::Path;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -35,6 +36,8 @@ use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
+use moss_logging::LoggingService;
+use moss_session::SessionService;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -52,29 +55,6 @@ pub fn run() {
 
     builder
         .setup(|app| {
-            let log_format = tracing_subscriber::fmt::format()
-                .with_file(true)
-                .with_line_number(true)
-                .with_target(false)
-                .compact();
-
-            let log_level_filter = std::env::var("LOG_LEVEL")
-                .unwrap_or("trace".to_string())
-                .to_lowercase()
-                .parse()
-                .unwrap_or(LevelFilter::TRACE);
-
-            let subscriber = tracing_subscriber::registry().with(
-                tracing_subscriber::fmt::layer()
-                    .event_format(log_format)
-                    .with_ansi(true)
-                    .with_span_events(FmtSpan::CLOSE)
-                    .with_filter(log_level_filter),
-            );
-
-            tracing::subscriber::set_global_default(subscriber)
-                .expect("failed to set tracing subscriber");
-
             let app_handle = app.app_handle();
 
             let app_state = AppStateManager::new();
@@ -84,6 +64,12 @@ pub fn run() {
             let db: sled::Db =
                 sled::open("../../../sleddb").expect("failed to open a connection to the database");
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
+
+            let session_service = SessionService::new();
+            // FIXME: In the future, we will place logs at appropriate locations
+            // Now we put `logs` folder at the project root for easier development
+            let logging_service =
+                LoggingService::new(Path::new("../../../logs"), &session_service)?;
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
@@ -106,7 +92,9 @@ pub fn run() {
                     },
                     InstantiationType::Instant,
                 )
-                .with_service(|_| WindowService::new(), InstantiationType::Delayed);
+                .with_service(|_| WindowService::new(), InstantiationType::Delayed)
+                .with_service(|_| session_service, InstantiationType::Instant)
+                .with_service(|_| logging_service, InstantiationType::Instant);
             app_handle.manage(app_manager);
 
             let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);

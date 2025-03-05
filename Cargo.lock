@@ -1078,6 +1078,8 @@ dependencies = [
  "moss_collection",
  "moss_db",
  "moss_fs",
+ "moss_logging",
+ "moss_session",
  "moss_tauri",
  "objc",
  "once_cell",
@@ -2763,9 +2765,9 @@ dependencies = [
  "anyhow",
  "derive_more 2.0.1",
  "fnv",
- "log",
  "parking_lot 0.12.3",
  "tauri",
+ "tracing",
 ]
 
 [[package]]
@@ -2856,6 +2858,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "moss_app",
  "moss_session",
  "serde_json",
  "tokio",
@@ -2868,6 +2871,7 @@ dependencies = [
 name = "moss_session"
 version = "0.1.0"
 dependencies = [
+ "moss_app",
  "uuid",
 ]
 

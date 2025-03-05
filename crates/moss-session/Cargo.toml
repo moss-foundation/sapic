@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 uuid = { workspace = true, features = ["v4"] }
+moss_app.workspace = true
