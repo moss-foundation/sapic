@@ -1,10 +1,11 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
+import { ThemeDescriptor } from "@repo/moss-theme";
 
 // import { ThemeDescriptor } from "@repo/moss-theme";
 
-export const getColorTheme = async (source: string): Promise<IpcResult<string, string>> => {
+export const getColorTheme = async (id: string): Promise<IpcResult<string, string>> => {
   return await invokeTauriIpc("get_color_theme", {
-    path: source,
+    id: id,
   });
 };
 

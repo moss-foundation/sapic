@@ -54,6 +54,7 @@ pub fn change_color_theme(
         //     ColorThemeChangeEventPayload::new(&descriptor.identifier),
         // );
 
+        dbg!(&label);
         app_handle
             .emit_to(
                 EventTarget::webview_window(&label),
