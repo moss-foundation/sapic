@@ -48,6 +48,18 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
 
   useEffect(() => {
     // Timer is set because of MacOS focus bug
+    if (inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.value = value;
+      const dotIndex = inputRef.current.value.indexOf(".");
+      inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : value.length);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Timer is set because of MacOS focus bug
     const timer = setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
