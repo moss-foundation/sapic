@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
+import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -47,13 +47,6 @@ const initialList = Array.from({ length: 5 }, (_, i) => {
 });
 
 function App() {
-  const [theme, setTheme] = useState("dark");
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-    document.querySelector("html")!.setAttribute("data-theme", theme === "dark" ? "light" : "dark");
-  };
-
   const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
 
   const handleSetActive = (id: number) => {
@@ -100,7 +93,7 @@ function App() {
 
             <Tabs.Panels className="text-black dark:text-white  ">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item} key={item.id} className="0">
+                <Tabs.Panel {...item} key={item.id} className="">
                   {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}
@@ -120,47 +113,6 @@ function App() {
           </main>
         </ResizablePanel>
       </Resizable>
-
-      <div className="absolute -top-3 right-30 p-4 flex">
-        <div className="" />
-        <button onClick={toggleTheme} className="cursor-pointer">
-          {theme === "light" ? (
-            <svg
-              className="size-9 text-black hover:text-gray-500 "
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
-          ) : (
-            <svg
-              className="size-9 text-white hover:text-black/50"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2" />
-              <path d="M12 20v2" />
-              <path d="m4.93 4.93 1.41 1.41" />
-              <path d="m17.66 17.66 1.41 1.41" />
-              <path d="M2 12h2" />
-              <path d="M20 12h2" />
-              <path d="m6.34 17.66-1.41 1.41" />
-              <path d="m19.07 4.93-1.41 1.41" />
-            </svg>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
@@ -168,13 +120,34 @@ function App() {
 export default App;
 
 const IsolatedTreeComponent = () => {
+  const [searchInput, setSearchInput] = useState<string>("");
+
   return (
-    <div className="h-full flex flex-col">
-      <div>
-        <Tree tree={TestTreeData.tree} />
+    <div className="h-full">
+      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
+        <Input
+          iconLeft="Search"
+          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
+          placeholder="Search"
+          size="sm"
+        />
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
+            <Icon icon="Plus" />
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item label="Item" />
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
-      <hr />
-      <Tree tree={TestTreeData.tree} />
+
+      <div className="h-full flex flex-col">
+        <div>
+          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+        </div>
+        <hr />
+        <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+      </div>
     </div>
   );
 };

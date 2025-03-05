@@ -20,9 +20,16 @@ export const TreeContext = createContext<TreeContextProps>({
   nodeOffset: 16,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
+  searchInput: undefined,
 });
 
-export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 16, onTreeUpdate }: TreeProps) => {
+export const Tree = ({
+  tree: initialTree,
+  horizontalPadding = 16,
+  nodeOffset = 16,
+  onTreeUpdate,
+  searchInput,
+}: TreeProps) => {
   const treeId = useId();
   const [tree, setTree] = useState<TreeNodeProps>(sortNode(addUniqueIdToTree(initialTree)));
 
@@ -74,6 +81,7 @@ export const Tree = ({ tree: initialTree, horizontalPadding = 16, nodeOffset = 1
         nodeOffset,
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
+        searchInput,
       }}
     >
       <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
