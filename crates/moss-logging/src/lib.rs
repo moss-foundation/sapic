@@ -1,10 +1,11 @@
 mod tokens;
 
 use crate::tokens::*;
-use anyhow::Result;
-use chrono::{NaiveDate, Utc};
+use anyhow::{anyhow, Result};
+use chrono::{Date, DateTime, Local, NaiveDate, NaiveDateTime, Utc};
 use serde_json::Value as JSONValue;
 use std::collections::HashSet;
+use std::ffi::OsStr;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -12,6 +13,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use tracing::{event, instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling::Rotation;
 use tracing_subscriber::field::MakeExt;
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::fmt::{
@@ -95,7 +97,11 @@ impl LoggingService {
         let session_id = Utc::now().timestamp().to_string();
         let session_path = path.join(session_id);
         // TODO: make `log.` suffix or get rid of it
-        let file_appender = tracing_appender::rolling::minutely(&session_path, LOG_PREFIX);
+        let file_appender = tracing_appender::rolling::Builder::new()
+            .rotation(Rotation::MINUTELY)
+            .filename_suffix("log")
+            .build(&session_path)?;
+
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
         let subscriber = tracing_subscriber::registry().with(
@@ -169,34 +175,29 @@ impl LoggingService {
 
     pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<LogEntry>> {
         let mut result = Vec::new();
+        let mut paths = Vec::new();
         for entry in fs::read_dir(&self.session_path)? {
             let entry = entry?;
             let path = entry.path();
-            if path.is_dir() {
+            if path.is_dir() || path.extension() != Some(OsStr::new("log")) {
                 continue;
             }
 
-            if !filter.dates.is_empty() {
-                let file_date = path
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string()
-                    .strip_prefix(format!("{}.", LOG_PREFIX).as_str())
-                    .and_then(|f| NaiveDate::parse_from_str(f, "%Y-%m-%d-%H-%M").ok());
+            let file_date = NaiveDate::parse_from_str(
+                &path.file_stem().unwrap().to_string_lossy().to_string(),
+                "%Y-%m-%d-%H-%M",
+            )?;
 
-                dbg!(&file_date);
-                // Parse only files with correctly formatted dates specifie in the filter
-                if let Some(file_date) = file_date {
-                    if !filter.dates.contains(&file_date) {
-                        continue;
-                    }
-                } else {
-                    continue;
-                }
-            }
-            LoggingService::parse_file_with_filter(&mut result, &path, filter)?
+            paths.push((path, file_date));
         }
+        paths.sort_by_key(|p| p.1);
+
+        for (path, date_time) in &paths {
+            if filter.dates.contains(date_time) {
+                LoggingService::parse_file_with_filter(&mut result, path, filter)?
+            }
+        }
+
         Ok(result)
     }
 }
