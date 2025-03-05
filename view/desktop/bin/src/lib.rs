@@ -12,15 +12,18 @@ extern crate tracing;
 use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
-use moss_app::state::AppStateManager;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
+use moss_nls::locale_service::LocaleService;
+use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
+use moss_theme::theme_service::ThemeService;
 use rand::random;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -77,8 +80,10 @@ pub fn run() {
                 .expect("failed to set tracing subscriber");
 
             let app_handle = app.app_handle();
-
-            let app_state = AppStateManager::new();
+            let themes_dir: PathBuf = std::env::var("THEMES_DIR")
+                .expect("Environment variable THEMES_DIR is not set")
+                .into();
+            let app_state = AppStateManager::new(&themes_dir);
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
@@ -87,6 +92,24 @@ pub fn run() {
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
 
             let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
+                            .expect("Environment variable LOCALES_DIR is not set")
+                            .into();
+                        move |_| LocaleService::new(fs_clone, locales_dir)
+                    },
+                    InstantiationType::Delayed,
+                )
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+
+                        move |_| ThemeService::new(fs_clone, themes_dir)
+                    },
+                    InstantiationType::Delayed,
+                )
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
@@ -134,8 +157,14 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            cmd_window::create_new_window,
-            //
+            commands::change_color_theme,
+            commands::change_color_theme,
+            commands::get_color_theme,
+            commands::list_themes,
+            commands::describe_app_state,
+            commands::change_language_pack,
+            commands::list_locales,
+            commands::get_translations,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]
