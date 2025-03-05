@@ -30,7 +30,7 @@ export const Logs: React.FC = () => {
             </p>
           ))
         ) : (
-          <p className="text-secondary">No logs received yet...</p>
+          <p className="text-secondary">{t("noLogs")}...</p>
         )}
       </div>
     </main>

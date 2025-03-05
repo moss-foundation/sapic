@@ -2,6 +2,7 @@
   "settings": "Настройки",
   "home": "Главная",
   "logs": "Логи",
+  "noLogs": "Логов пока нет",
   "receivedData": "Полученные данные",
   "title": "Moss Studio",
   "selectTheme": "Выберите тему:",

@@ -2,6 +2,7 @@
   "settings": "Einstellungen",
   "home": "Heim",
   "logs": "Protokolle",
+  "noLogs": "Noch keine Protokolle erhalten",
   "receivedData": "Erhaltene daten",
   "title": "Moss Studio",
   "selectTheme": "Thema auswählen:",
