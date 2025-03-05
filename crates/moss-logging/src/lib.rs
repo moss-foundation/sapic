@@ -6,20 +6,18 @@ use chrono::{NaiveDate, Utc};
 use serde_json::Value as JSONValue;
 use std::collections::HashSet;
 use std::ffi::OsStr;
-use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use tracing::{event, instrument, Level};
+use std::{fs, io};
+#[allow(unused_imports)]
+use tracing::{event, instrument, Instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::Rotation;
-use tracing_subscriber::field::MakeExt;
+use tracing_subscriber::filter::filter_fn;
+use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
-use tracing_subscriber::fmt::{
-    format::{FmtSpan, JsonFields},
-    FormatFields,
-};
 use tracing_subscriber::prelude::*;
 
 type LogEntry = JSONValue;
@@ -73,7 +71,7 @@ struct LoggingService {
 
 impl LoggingService {
     pub fn init(path: &Path) -> Result<LoggingService> {
-        let log_format = tracing_subscriber::fmt::format()
+        let session_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
             .with_target(false)
@@ -81,6 +79,14 @@ impl LoggingService {
             .json()
             .flatten_event(true)
             .with_current_span(true);
+
+        let instrument_log_format = tracing_subscriber::fmt::format()
+            .with_file(true)
+            .with_line_number(true)
+            .with_target(false)
+            .with_timer(ChronoLocal::rfc_3339())
+            .compact()
+            .with_ansi(true);
 
         // TODO: session_uuid
         // crate: moss-session/session-service
@@ -94,15 +100,27 @@ impl LoggingService {
 
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
-        let subscriber = tracing_subscriber::registry().with(
-            tracing_subscriber::fmt::layer()
-                .event_format(log_format)
-                .with_timer(ChronoLocal::rfc_3339())
-                .with_span_events(FmtSpan::CLOSE)
-                .with_writer(non_blocking)
-                .fmt_fields(JsonFields::default()),
-            // TODO: subscriber for global logs
-        );
+        let subscriber = tracing_subscriber::registry()
+            .with(
+                // Session log subscriber
+                tracing_subscriber::fmt::layer()
+                    .event_format(session_log_format)
+                    .with_timer(ChronoLocal::rfc_3339())
+                    .with_writer(non_blocking)
+                    .fmt_fields(JsonFields::default())
+                    .with_current_span(true)
+                    .with_filter(filter_fn(|metadata| metadata.level() < &Level::TRACE)),
+            )
+            .with(
+                // Trace log subscriber
+                tracing_subscriber::fmt::layer()
+                    .event_format(instrument_log_format)
+                    .with_timer(ChronoLocal::rfc_3339())
+                    .with_span_events(FmtSpan::CLOSE)
+                    .with_ansi(true)
+                    .with_writer(io::stdout)
+                    .with_filter(filter_fn(|metadata| metadata.level() == &Level::TRACE)),
+            );
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
@@ -199,7 +217,7 @@ impl LoggingService {
 mod tests {
     use super::*;
     use chrono::Utc;
-    #[instrument(level = "trace")]
+    #[instrument(level = "trace", skip_all)]
     async fn create_collection(path: &Path, name: &str) {
         let collection_path = path.join(name);
         event!(
@@ -213,7 +231,7 @@ mod tests {
         );
     }
 
-    #[instrument(level = "trace")]
+    #[instrument(level = "trace", skip_all)]
     async fn create_request(collection_path: &Path, name: &str) {
         let request_path = collection_path.join(name);
         event!(
@@ -228,7 +246,7 @@ mod tests {
         );
     }
 
-    #[instrument(level = "trace")]
+    #[instrument(level = "trace", skip_all)]
     async fn something_terrible(collection_path: &Path, request_path: &Path) {
         event!(
             Level::WARN,
@@ -269,6 +287,14 @@ mod tests {
             .add_dates(vec![Utc::now().naive_utc().into()])
             .add_levels(vec![Level::WARN, Level::ERROR]);
 
-        dbg!(service.query_with_filter(&filter).unwrap());
+        let output = service
+            .query_with_filter(&filter)
+            .unwrap()
+            .iter()
+            .map(|entry| serde_json::to_string_pretty(entry).unwrap())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        fs::write("logs/filtered", output).unwrap();
     }
 }
