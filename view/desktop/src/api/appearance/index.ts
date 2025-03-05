@@ -1,4 +1,5 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
+import { ListLocalesOutput } from "@repo/moss-nls";
 import { DescribeAppStateOutput } from "@repo/moss-state";
 import { ListThemesOutput } from "@repo/moss-theme";
 import { invoke } from "@tauri-apps/api/core";
@@ -22,14 +23,7 @@ export const getColorTheme = async (source: string): Promise<IpcResult<string, s
 };
 
 //Language packs
-/*
-export const getLanguagePacks = async (): Promise<LocaleDescriptor[]> => {
-  return await invoke<LocaleDescriptor[]>("get_locales");
-};
 
-//Activities
-
-export const getAllActivities = async (): Promise<IpcResult<MenuItem[], Error>> => {
-  return await invokeTauriIpc("get_menu_items_by_namespace", { namespace: "headItem" }); // this here should be a type
+export const getLanguagePacks = async (): Promise<ListLocalesOutput> => {
+  return await invoke<ListLocalesOutput>("list_locales");
 };
-*/

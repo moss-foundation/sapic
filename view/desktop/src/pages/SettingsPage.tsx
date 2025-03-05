@@ -2,8 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { useChangeColorTheme, useGetColorThemes } from "@/hooks/useColorTheme";
 import { useGetAppState } from "@/hooks/useGetAppState";
-
-//import { useChangeLanguagePack, useGetLanguagePacks } from "@/hooks/useLanguagePack";
+import { useChangeLanguagePack, useGetLanguagePacks } from "@/hooks/useLanguagePack";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -13,18 +12,16 @@ export const Settings = () => {
   const { data: themes } = useGetColorThemes();
   const { mutate: mutateChangeColorTheme } = useChangeColorTheme();
 
-  //const { data: languages } = useGetLanguagePacks();
-  //const { mutate: mutateChangeLanguagePack } = useChangeLanguagePack();
-  /*
+  const { data: languages } = useGetLanguagePacks();
+  const { mutate: mutateChangeLanguagePack } = useChangeLanguagePack();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCode = event.target.value;
-    const selectedLang = languages?.find((lang) => lang.code === selectedCode);
+    const selectedLang = languages?.contents.find((lang) => lang.code === selectedCode);
     if (selectedLang) {
       mutateChangeLanguagePack(selectedLang);
     }
   };
-  */
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
@@ -39,7 +36,7 @@ export const Settings = () => {
       <div className="p-5 text-[var(--moss-primary)]">
         <h1 className="mb-3 text-2xl">Settings</h1>
 
-        {/* <div>
+        <div>
           <h3>{t("selectLanguage")}</h3>
           <select
             id="lang-select"
@@ -47,13 +44,13 @@ export const Settings = () => {
             value={appState?.preferences.locale?.code || appState?.defaults.locale?.code}
             onChange={handleLanguageChange}
           >
-            {languages?.map((lang) => (
+            {languages?.contents.map((lang) => (
               <option key={lang.code} value={lang.code}>
-                {lang.name}
+                {lang.displayName}
               </option>
             ))}
           </select>
-        </div> */}
+        </div>
 
         <div>
           <h3>{t("selectTheme")}</h3>

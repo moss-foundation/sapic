@@ -278,6 +278,9 @@ importers:
       '@repo/icongen':
         specifier: workspace:*
         version: link:../../tools/icongen
+      '@repo/moss-nls':
+        specifier: workspace:*
+        version: link:../../crates/moss-nls
       '@repo/moss-state':
         specifier: workspace:*
         version: link:../../crates/moss-state

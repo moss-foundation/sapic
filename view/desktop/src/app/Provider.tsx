@@ -4,16 +4,16 @@ import { useGetAppState } from "@/hooks/useGetAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyTheme } from "@/utils/applyTheme";
 
-//import LanguageProvider from "./LanguageProvider";
+import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
 
 const Provider = ({ children }: { children: ReactNode }) => {
   useInitializeAppState();
 
   return (
-    //<LanguageProvider>
-    <ThemeProvider>{children}</ThemeProvider>
-    //</LanguageProvider>
+    <LanguageProvider>
+      <ThemeProvider>{children}</ThemeProvider>
+    </LanguageProvider>
   );
 };
 
@@ -23,10 +23,10 @@ const useInitializeAppState = () => {
   useEffect(() => {
     if (data) {
       const theme = data.preferences?.theme ?? data.defaults.theme;
-      // const languagePack = data.preferences?.locale ?? data.defaults.locale;
+      const languagePack = data.preferences?.locale ?? data.defaults.locale;
 
       applyTheme(theme.identifier);
-      // applyLanguagePack(languagePack);
+      applyLanguagePack(languagePack);
     }
   }, [data]);
 };

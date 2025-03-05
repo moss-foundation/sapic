@@ -5,13 +5,14 @@ import type { EventCallback, EventName } from "@tauri-apps/api/event";
 // Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
   | "change_color_theme"
+  | "change_language_pack"
   | "execute_command"
   | "get_translations"
   | "get_color_theme"
   | "create_new_window"
   | "sidebar_get_all_activities"
   | "get_menu_items_by_namespace"
-  | "get_locales"
+  | "list_locales"
   | "get_state"
   | "list_themes";
 

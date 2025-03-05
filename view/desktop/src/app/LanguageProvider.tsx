@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { LocaleDescriptor } from "@repo/moss-desktop";
+import { LocaleDescriptor } from "@repo/moss-nls";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
