@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
@@ -40,6 +40,13 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
+
+  const shouldRenderChildNodes =
+    !!searchInput || isAddingFileNode || isAddingFolderNode || (!searchInput && node.isFolder && node.isExpanded);
+
+  const filteredChildNodes = searchInput
+    ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
+    : node.childNodes;
 
   useEffect(() => {
     const element = draggableRef.current;
@@ -177,16 +184,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     });
   };
 
-  const shouldRenderChildNodes =
-    !!searchInput || isAddingFileNode || isAddingFolderNode || (!searchInput && node.isFolder && node.isExpanded);
-
-  const filteredChildNodes = searchInput
-    ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
-    : node.childNodes;
-
   if (node.id === "root") {
     return (
-      <div className="h-full">
+      <div className="flex flex-col h-full">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
             <Icon
@@ -228,7 +228,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         </div>
 
         {shouldRenderChildNodes && (
-          <ul ref={dropTargetFolderRef} className="h-full">
+          <ul ref={dropTargetFolderRef} className="grow">
             {filteredChildNodes.map((childNode) => (
               <TreeNode
                 parentNode={node}
