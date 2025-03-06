@@ -29,6 +29,11 @@ RUSTUP := rustup
 
 # --- Commands ---
 
+.PHONY: ready
+ready: gen-icons
+	$(PNPM) i
+
+
 ## Generate Icons
 .PHONY: gen-icons
 gen-icons:
