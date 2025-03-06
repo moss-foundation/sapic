@@ -2,10 +2,12 @@
 import type { HttpMethod } from "../types/request";
 import type { QueryParamItem } from "../types/request";
 
-export type CreateCollectionInput = { name: string, path: string, repo?: string, };
+export type CreateCollectionInput = { name: string; path: string; repo?: string };
 
-export type CreateRequestInput = { name: string, url?: string, payload: CreateRequestProtocolSpecificPayload | null, };
+export type CreateRequestInput = { name: string; url?: string; payload: CreateRequestProtocolSpecificPayload | null };
 
-export type CreateRequestProtocolSpecificPayload = { "http": { method: HttpMethod, query_params: Array<QueryParamItem>, } };
+export type CreateRequestProtocolSpecificPayload = {
+  "http": { method: HttpMethod; query_params: Array<QueryParamItem> };
+};
 
-export type OverviewCollectionOutput = { name: string, path: string, order?: number, };
+export type OverviewCollectionOutput = { name: string; path: string; order?: number };
