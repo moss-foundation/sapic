@@ -20,7 +20,6 @@ const SessionComponent = () => {
   const [data, setData] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    // Simulate data fetching
     const fetchData = async () => {
       setData(Math.floor(Math.random() * 100));
     };
