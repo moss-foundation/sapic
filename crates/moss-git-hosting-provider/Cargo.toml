@@ -18,8 +18,8 @@ oauth2 = { workspace = true, features = [
     "reqwest-blocking",
 ] } # Using blocking for easy testing here
 reqwest = { workspace = true, features = ["blocking"] }
-serde = { version = "1.0.217", features = ["derive"] }
-webbrowser = "1.0.3"
+serde = { workspace = true, features = ["derive"] }
+webbrowser.workspace = true
 keyring.workspace = true
 
 # Making SSH work on Windows

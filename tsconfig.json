@@ -2,16 +2,22 @@
   "files": [],
   "references": [
     {
+      "path": "crates/moss-nls"
+    },
+    {
+      "path": "crates/moss-state"
+    },
+    {
       "path": "crates/moss-collection"
+    },
+    {
+      "path": "crates/moss-theme"
     },
     {
       "path": "view/desktop"
     },
     {
       "path": "tools/icongen"
-    },
-    {
-      "path": "packages/moss-tabs"
     }
   ]
 }

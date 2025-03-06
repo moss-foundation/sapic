@@ -26,6 +26,12 @@ moss_db.workspace = true
 moss_collection.workspace = true
 moss_app.workspace = true
 moss_fs.workspace = true
+moss_logging.workspace = true
+moss_session.workspace = true
+moss_theme.workspace = true
+moss_nls.workspace = true
+moss_state.workspace = true
+
 
 tauri = { workspace = true, features = [
     "wry",
@@ -38,6 +44,7 @@ tauri-plugin-os = "2.2.0"
 tauri-plugin-global-shortcut = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 tauri-plugin-window-state = "2.2.1"
+tauri-plugin-single-instance = "2.2.2"
 
 sled.workspace = true
 anyhow.workspace = true

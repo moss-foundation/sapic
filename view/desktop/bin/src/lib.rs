@@ -12,21 +12,22 @@ extern crate tracing;
 use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
-use moss_app::state::AppStateManager;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
+use moss_nls::locale_service::LocaleService;
+use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
+use moss_theme::theme_service::ThemeService;
 use rand::random;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
-use tracing::level_filters::LevelFilter;
-use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
 use window::{create_window, CreateWindowInput};
@@ -35,6 +36,8 @@ use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
+use moss_logging::LoggingService;
+use moss_session::SessionService;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -43,7 +46,8 @@ pub fn run() {
         .plugin(plugin_log::init())
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_os::init());
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {}));
 
     #[cfg(target_os = "macos")]
     {
@@ -52,32 +56,11 @@ pub fn run() {
 
     builder
         .setup(|app| {
-            let log_format = tracing_subscriber::fmt::format()
-                .with_file(true)
-                .with_line_number(true)
-                .with_target(false)
-                .compact();
-
-            let log_level_filter = std::env::var("LOG_LEVEL")
-                .unwrap_or("trace".to_string())
-                .to_lowercase()
-                .parse()
-                .unwrap_or(LevelFilter::TRACE);
-
-            let subscriber = tracing_subscriber::registry().with(
-                tracing_subscriber::fmt::layer()
-                    .event_format(log_format)
-                    .with_ansi(true)
-                    .with_span_events(FmtSpan::CLOSE)
-                    .with_filter(log_level_filter),
-            );
-
-            tracing::subscriber::set_global_default(subscriber)
-                .expect("failed to set tracing subscriber");
-
             let app_handle = app.app_handle();
-
-            let app_state = AppStateManager::new();
+            let themes_dir: PathBuf = std::env::var("THEMES_DIR")
+                .expect("Environment variable THEMES_DIR is not set")
+                .into();
+            let app_state = AppStateManager::new(&themes_dir);
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
@@ -85,7 +68,31 @@ pub fn run() {
                 sled::open("../../../sleddb").expect("failed to open a connection to the database");
             let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
 
+            let session_service = SessionService::new();
+            // FIXME: In the future, we will place logs at appropriate locations
+            // Now we put `logs` folder at the project root for easier development
+            let logging_service =
+                LoggingService::new(Path::new("../../../logs"), &session_service)?;
+
             let app_manager = AppManager::new(app_handle.clone())
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+                        let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
+                            .expect("Environment variable LOCALES_DIR is not set")
+                            .into();
+                        move |_| LocaleService::new(fs_clone, locales_dir)
+                    },
+                    InstantiationType::Delayed,
+                )
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
+
+                        move |_| ThemeService::new(fs_clone, themes_dir)
+                    },
+                    InstantiationType::Delayed,
+                )
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
@@ -106,7 +113,9 @@ pub fn run() {
                     },
                     InstantiationType::Instant,
                 )
-                .with_service(|_| WindowService::new(), InstantiationType::Delayed);
+                .with_service(|_| WindowService::new(), InstantiationType::Delayed)
+                .with_service(|_| session_service, InstantiationType::Instant)
+                .with_service(|_| logging_service, InstantiationType::Instant);
             app_handle.manage(app_manager);
 
             let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
@@ -133,8 +142,14 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            cmd_window::create_new_window,
-            //
+            commands::change_color_theme,
+            commands::change_color_theme,
+            commands::get_color_theme,
+            commands::list_themes,
+            commands::describe_app_state,
+            commands::change_language_pack,
+            commands::list_locales,
+            commands::get_translations,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]
