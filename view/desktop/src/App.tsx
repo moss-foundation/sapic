@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { Resizable, ResizablePanel, Tree } from "./components";
+import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -93,7 +93,7 @@ function App() {
 
             <Tabs.Panels className="text-[var(--moss-primary)]">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item} key={item.id} className="0">
+                <Tabs.Panel {...item} key={item.id} className="">
                   {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}
@@ -111,13 +111,34 @@ function App() {
 export default App;
 
 const IsolatedTreeComponent = () => {
+  const [searchInput, setSearchInput] = useState<string>("");
+
   return (
-    <div className="h-full flex flex-col">
-      <div>
-        <Tree tree={TestTreeData.tree} />
+    <div className="h-full">
+      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
+        <Input
+          iconLeft="Search"
+          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
+          placeholder="Search"
+          size="sm"
+        />
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
+            <Icon icon="Plus" />
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Item label="Item" />
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
-      <hr />
-      <Tree tree={TestTreeData.tree} />
+
+      <div className="h-full flex flex-col">
+        <div>
+          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+        </div>
+        <hr />
+        <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+      </div>
     </div>
   );
 };

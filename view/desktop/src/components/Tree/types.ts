@@ -1,33 +1,4 @@
-export interface TreeContextProps {
-  treeId: string
-  horizontalPadding: number
-  nodeOffset: number
-  allFoldersAreCollapsed: boolean
-  allFoldersAreExpanded: boolean
-}
-
-export interface TreeProps {
-  tree: NodeProps;
-  horizontalPadding?: number;
-  nodeOffset?: number;
-  onTreeUpdate?: (tree: NodeProps) => void;
-}
-
-export interface NodeEvents {
-  onNodeUpdate: (node: TreeNodeProps) => void;
-}
-
-export interface TreeNodeComponentProps extends NodeEvents {
-  node: TreeNodeProps;
-  depth: number;
-  parentNode: TreeNodeProps;
-}
-
-export interface TreeNodeProps extends NodeProps {
-  uniqueId: string;
-  childNodes: TreeNodeProps[];
-
-}
+export type SortTypes = "none" | "order" | "alphabetically";
 
 export interface NodeProps {
   id: string | number;
@@ -36,6 +7,38 @@ export interface NodeProps {
   isFolder: boolean;
   isExpanded: boolean;
   childNodes: NodeProps[];
+}
+
+export interface TreeNodeProps extends NodeProps {
+  uniqueId: string;
+  childNodes: TreeNodeProps[];
+}
+
+export interface TreeProps {
+  tree: NodeProps;
+  horizontalPadding?: number;
+  nodeOffset?: number;
+  searchInput?: string;
+  onTreeUpdate?: (tree: NodeProps) => void;
+}
+
+export interface TreeContextProps {
+  treeId: string;
+  horizontalPadding: number;
+  nodeOffset: number;
+  searchInput?: string;
+  allFoldersAreCollapsed: boolean;
+  allFoldersAreExpanded: boolean;
+}
+
+export interface TreeNodeComponentProps extends NodeEvents {
+  node: TreeNodeProps;
+  depth: number;
+  parentNode: TreeNodeProps;
+}
+
+export interface NodeEvents {
+  onNodeUpdate: (node: TreeNodeProps) => void;
 }
 
 export interface MoveNodeEventDetail {
@@ -49,8 +52,6 @@ export interface MoveNodeEventDetail {
   };
 }
 
-export type SortTypes = "none" | "order" | "alphabetically";
-
 export interface TreeNodeDropProps {
   type: "TreeNode";
   data: {
@@ -60,5 +61,6 @@ export interface TreeNodeDropProps {
 }
 
 export interface DropNodeElement {
-  node: TreeNodeProps; treeId: string
+  node: TreeNodeProps;
+  treeId: string;
 }

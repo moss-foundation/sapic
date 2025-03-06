@@ -25,6 +25,7 @@
     "@tauri-apps/plugin-os": "^2.2.0",
     "@types/i18next": "^13.0.0",
     "allotment": "^1.20.3",
+    "class-variance-authority": "^0.7.1",
     "i18next": "^24.2.2",
     "overlayscrollbars": "^2.11.0",
     "overlayscrollbars-react": "^0.5.6",

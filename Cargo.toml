@@ -15,6 +15,8 @@ members = [
     "crates/moss-nls",
     "tools/xtask",
     "view/desktop/bin",
+    "crates/moss-logging",
+    "crates/moss-session",
 ]
 
 [workspace.dependencies]
@@ -27,6 +29,8 @@ moss_git = { path = "crates/moss-git" }
 moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
+moss_logging = { path = "crates/moss-logging" }
+moss_session = { path = "crates/moss-session" }
 moss_theme = { path = "crates/moss-theme" }
 moss_state = { path = "crates/moss-state" }
 moss_nls = { path = "crates/moss-nls" }
@@ -72,3 +76,7 @@ keyring = { version = "3", features = [
     "sync-secret-service",
 ] }
 whoami = "1.5.2"
+chrono = "0.4.40"
+uuid = "1.15.1"
+webbrowser = "1.0.3"
+miette = "7.5.0"
