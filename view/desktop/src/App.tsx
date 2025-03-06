@@ -115,7 +115,7 @@ const IsolatedTreeComponent = () => {
 
   return (
     <div className="h-full">
-      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
+      <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
         <Input
           iconLeft="Search"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
@@ -123,7 +123,7 @@ const IsolatedTreeComponent = () => {
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
+          <DropdownMenu.Trigger className="flex cursor-pointer items-center justify-center rounded p-[5px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E]">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
@@ -132,7 +132,7 @@ const IsolatedTreeComponent = () => {
         </DropdownMenu.Root>
       </div>
 
-      <div className="h-full flex flex-col">
+      <div className="flex h-full flex-col">
         <div>
           <Tree tree={TestTreeData.tree} searchInput={searchInput} />
         </div>

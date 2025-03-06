@@ -81,9 +81,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.id === "root") {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
-          <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
+      <div className="flex h-full flex-col">
+        <div className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]">
+          <button className="flex grow cursor-pointer items-center gap-1" onClick={handleFolderClick}>
             <Icon
               icon="TreeChevronRightIcon"
               className={cn("text-[#717171]", {
@@ -94,12 +94,12 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             <NodeLabel label={node.id} searchInput={searchInput} />
           </button>
 
-          <div className="flex gap-1 items-center">
+          <div className="flex items-center gap-1">
             {node.isExpanded && !searchInput && (
               <>
                 {!allFoldersAreExpanded && (
                   <button
-                    className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
                     onClick={handleExpandAll}
                   >
                     <Icon icon="TreeExpandAllIcon" />
@@ -108,7 +108,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
                 {!allFoldersAreCollapsed && (
                   <button
-                    className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer"
+                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
                     onClick={handleCollapseAll}
                   >
                     <Icon icon="TreeCollapseAllIcon" />
@@ -116,7 +116,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 )}
               </>
             )}
-            <button className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
+            <button className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
               <Icon icon="TreeDetailIcon" />
             </button>
           </div>
@@ -158,7 +158,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableRef}
               style={{ paddingLeft, paddingRight }}
               onClick={node.isFolder ? handleFolderClick : undefined}
-              className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
+              className="relative flex w-full min-w-0 grow cursor-pointer items-center gap-1 focus-within:bg-[#ebecf0] focus-within:outline-none hover:bg-[#ebecf0] dark:focus-within:bg-[#747474] dark:hover:bg-[#434343]"
             >
               <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} />
 
