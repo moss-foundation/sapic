@@ -18,7 +18,7 @@ export const NodeLabel = ({ label, searchInput }: { label: string | number; sear
   };
 
   return (
-    <span className="text-ellipsis whitespace-nowrap w-max overflow-hidden">
+    <span className="w-max overflow-hidden text-ellipsis whitespace-nowrap">
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );

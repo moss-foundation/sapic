@@ -35,10 +35,10 @@ const SessionComponent = () => {
         </p>
       )}
       <ResizablePanel>
-        <main className="h-screen flex grow flex-col justify-center text-center background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans transition">
+        <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
           <Scrollbar>
             {Array.from({ length: 100 }, (_, i) => (
-              <div key={i} className="h-10 mb-1 w-full background-[var(--moss-test-background-2)]">
+              <div key={i} className="background-[var(--moss-test-background-2)] mb-1 h-10 w-full">
                 {i + 1}
               </div>
             ))}

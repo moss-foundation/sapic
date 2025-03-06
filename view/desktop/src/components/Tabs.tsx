@@ -16,7 +16,7 @@ import Scrollbar from "./Scrollbar";
 
 const Tabs = ({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className={cn("w-full h-full flex flex-col", className)} {...props}>
+    <div className={cn("flex h-full w-full flex-col", className)} {...props}>
       {children}
     </div>
   );
@@ -33,7 +33,7 @@ const TabsList = ({ children, className, ...props }: TabsListProps) => {
         role="tablist"
         aria-labelledby="tablist-1"
         data-tabs="default"
-        className={cn(`w-full h-full flex relative background-[var(--moss-tabslist-background)]`, className)}
+        className={cn(`background-[var(--moss-tabslist-background)] relative flex h-full w-full`, className)}
         {...props}
       >
         {children}
@@ -131,9 +131,9 @@ const Tab = ({
       aria-controls={`panel-${id}`}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "relative grow min-w-max px-3 pb-2 pt-[7px] background-[var(--moss-tab-background)] text-[var(--moss-tab-text)] cursor-pointer border-t box-border select-none",
+        "background-[var(--moss-tab-background)] relative box-border min-w-max grow cursor-pointer border-t px-3 pt-[7px] pb-2 text-[var(--moss-tab-text)] select-none",
         {
-          "background-[var(--moss-active-tab-background)] text-[var(--moss-active-tab-text)] border-t-[#0065FF] ":
+          "background-[var(--moss-active-tab-background)] border-t-[#0065FF] text-[var(--moss-active-tab-text)]":
             isActive,
           "hover:background-[var(--moss-hover-inactive-tab-background)] border-t-transparent": !isActive,
         },
@@ -156,7 +156,7 @@ const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
     <div
       className={cn(
-        "w-full h-full flex flex-col grow background-[var(--moss-tab-panels-background)] overflow-hidden",
+        "background-[var(--moss-tab-panels-background)] flex h-full w-full grow flex-col overflow-hidden",
         className
       )}
       {...props}
@@ -180,7 +180,7 @@ const TabPanel = ({ children, id, isActive, className, ...props }: TabPanelProps
       tabIndex={0}
       aria-labelledby={`${id}`}
       className={cn(
-        "flex flex-col grow overflow-auto",
+        "flex grow flex-col overflow-auto",
         {
           "hidden": !isActive,
         },
