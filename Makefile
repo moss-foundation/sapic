@@ -1,6 +1,9 @@
 export WORKSPACE_ROOT_DIR = ${CURDIR}
 export LOG_LEVEL = trace
 
+export THEMES_DIR = ${CURDIR}/assets/themes
+export LOCALES_DIR =  ${CURDIR}/assets/locales
+
 .DEFAULT_GOAL := run-desktop
 
 # Detect Operating System
@@ -15,7 +18,7 @@ endif
 
 # --- App Directories ---
 DESKTOP_DIR := view/desktop
-
+ICONS_DIR := tools/icongen
 # --- Tool Directories ---
 XTASK_DIR := tools/xtask
 
@@ -25,6 +28,11 @@ CARGO := cargo
 RUSTUP := rustup
 
 # --- Commands ---
+
+.PHONY: ready
+ready: gen-icons
+	$(PNPM) i
+
 
 ## Generate Icons
 .PHONY: gen-icons
@@ -50,13 +58,22 @@ gen-$(1)-models:
 endef
 
 COLLECTION_MODELS_DIR := crates/moss-collection
+THEME_MODELS_DIR := crates/moss-theme
+STATE_MODELS_DIR := crates/moss-state
+NLS_MODELS_DIR := crates/moss-nls
 
 $(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
+$(eval $(call gen_models,theme,THEME_MODELS_DIR))
+$(eval $(call gen_models,state,STATE_MODELS_DIR))
+$(eval $(call gen_models,nls,NLS_MODELS_DIR))
 
 ## Generate All Models
 .PHONY: gen-models
 gen-models: \
 	gen-collection-models \
+	gen-theme-models \
+	gen-state-models \
+	gen-nls-models \
 
 # Utility Commands
 

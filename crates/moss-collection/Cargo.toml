@@ -10,7 +10,7 @@ anyhow.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
-miette = { version = "7.5.0", features = ["fancy"] }
+miette = { workspace = true, features = ["fancy"] }
 sled.workspace = true
 bincode.workspace = true
 dashmap.workspace = true

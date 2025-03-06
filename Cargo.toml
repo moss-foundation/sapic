@@ -11,8 +11,13 @@ members = [
     "crates/moss-fs",
     "crates/moss-keyring",
     "crates/moss-vault",
+    "crates/moss-theme",
+    "crates/moss-state",
+    "crates/moss-nls",
     "tools/xtask",
     "view/desktop/bin",
+    "crates/moss-logging",
+    "crates/moss-session",
 ]
 
 [workspace.dependencies]
@@ -26,6 +31,14 @@ moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
+moss_logging = { path = "crates/moss-logging" }
+moss_session = { path = "crates/moss-session" }
+moss_theme = { path = "crates/moss-theme" }
+moss_state = { path = "crates/moss-state" }
+moss_nls = { path = "crates/moss-nls" }
+
+
+redb = "2.4.0"
 
 tauri = { version = "2.2.5", default-features = false }
 rand = { version = "0.9.0", default-features = false, features = [
@@ -68,4 +81,7 @@ keyring = { version = "3", features = [
     "sync-secret-service",
 ] }
 whoami = "1.5.2"
-redb = "2.4.0"
+chrono = "0.4.40"
+uuid = "1.15.1"
+webbrowser = "1.0.3"
+miette = "7.5.0"
