@@ -3,6 +3,13 @@ import type { JsonValue } from "../serde_json/JsonValue";
 
 export type HttpMethod = "post" | "get" | "put" | "delete";
 
-export type QueryParamItem = { key: string, value: JsonValue, order?: number, desc?: string, disabled: boolean, options: QueryParamOptions, };
+export type QueryParamItem = {
+  key: string;
+  value: JsonValue;
+  order?: number;
+  desc?: string;
+  disabled: boolean;
+  options: QueryParamOptions;
+};
 
-export type QueryParamOptions = { propagate: boolean, };
+export type QueryParamOptions = { propagate: boolean };
