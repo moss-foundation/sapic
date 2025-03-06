@@ -58,10 +58,10 @@ importers:
         specifier: ^15.3.0
         version: 15.4.3
       prettier:
-        specifier: ^3.4.1
+        specifier: ^3.5.0
         version: 3.5.0
       prettier-plugin-tailwindcss:
-        specifier: ^0.6.9
+        specifier: ^0.6.11
         version: 0.6.11(@ianvs/prettier-plugin-sort-imports@4.4.1(prettier@3.5.0))(prettier@3.5.0)
       tailwind-merge:
         specifier: ^3.0.2
