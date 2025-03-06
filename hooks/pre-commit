@@ -1,4 +1,5 @@
 #!/bin/sh
+
 prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\"
 
 if [ $? -ne 0 ]; then
@@ -8,6 +9,6 @@ fi
 
 git add .
 
-git commit -m "chore: auto-format code"
+# git commit -m "chore: auto-format code"
 
 exit 0
