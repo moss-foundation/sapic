@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
 
-import { ContextMenu, Icon, TreeContext } from "..";
+import { ContextMenu, Icon, Scrollbar, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -81,7 +81,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.id === "root") {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col w-full h-full">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
             <Icon
@@ -123,17 +123,19 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         </div>
 
         {shouldRenderChildNodes && (
-          <ul ref={dropTargetFolderRef} className="grow">
-            {filteredChildNodes.map((childNode) => (
-              <TreeNode
-                parentNode={node}
-                onNodeUpdate={onNodeUpdate}
-                key={childNode.uniqueId}
-                node={childNode}
-                depth={0}
-              />
-            ))}
-          </ul>
+          <Scrollbar className="w-full h-full">
+            <ul ref={dropTargetFolderRef} className="grow">
+              {filteredChildNodes.map((childNode) => (
+                <TreeNode
+                  parentNode={node}
+                  onNodeUpdate={onNodeUpdate}
+                  key={childNode.uniqueId}
+                  node={childNode}
+                  depth={0}
+                />
+              ))}
+            </ul>
+          </Scrollbar>
         )}
       </div>
     );

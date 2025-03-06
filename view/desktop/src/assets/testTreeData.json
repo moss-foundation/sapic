@@ -97,6 +97,46 @@
         "isFolder": false,
         "isExpanded": true,
         "childNodes": []
+      },
+      {
+        "id": "anotherFile2.qwe",
+        "order": 4,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": true,
+        "childNodes": []
+      },
+      {
+        "id": "anotherFile4.qwe",
+        "order": 5,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": true,
+        "childNodes": []
+      },
+      {
+        "id": "anotherFile5.qwe",
+        "order": 6,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": true,
+        "childNodes": []
+      },
+      {
+        "id": "anotherFile6.qwe",
+        "order": 7,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": true,
+        "childNodes": []
+      },
+      {
+        "id": "anotherFile7.qwe",
+        "order": 8,
+        "type": "file",
+        "isFolder": false,
+        "isExpanded": true,
+        "childNodes": []
       }
     ]
   }

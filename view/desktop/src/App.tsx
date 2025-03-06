@@ -3,13 +3,15 @@ import { useEffect, useState } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "./assets/testTreeData.json";
-import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Tree } from "./components";
+import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
 import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";
+
+import TestDropTarget from "./components/TestDropTarget";
 
 interface ListItem {
   id: number;
@@ -114,7 +116,7 @@ const IsolatedTreeComponent = () => {
   const [searchInput, setSearchInput] = useState<string>("");
 
   return (
-    <div className="h-full">
+    <div className="flex flex-col h-full ">
       <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
         <Input
           iconLeft="Search"
@@ -132,13 +134,19 @@ const IsolatedTreeComponent = () => {
         </DropdownMenu.Root>
       </div>
 
-      <div className="h-full flex flex-col">
-        <div>
+      <Resizable vertical className="grow">
+        <ResizablePanel>
           <Tree tree={TestTreeData.tree} searchInput={searchInput} />
-        </div>
-        <hr />
-        <Tree tree={TestTreeData.tree} searchInput={searchInput} />
-      </div>
+        </ResizablePanel>
+        <ResizablePanel>
+          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+        </ResizablePanel>
+        <ResizablePanel>
+          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
+        </ResizablePanel>
+      </Resizable>
+
+      <TestDropTarget />
     </div>
   );
 };
