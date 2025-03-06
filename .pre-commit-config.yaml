@@ -6,4 +6,5 @@ repos:
         entry: npx prettier --plugin=prettier-plugin-tailwindcss --write
         language: system
         files: "\\.(ts|tsx|md)$"
+        pass_filenames: true
         stages: [commit]
