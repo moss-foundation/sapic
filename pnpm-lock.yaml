@@ -33,9 +33,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.0.0
         version: 4.0.6(vite@6.2.0(@types/node@22.13.1)(jiti@2.4.2)(lightningcss@1.29.1)(yaml@2.7.0))
-      '@trivago/prettier-plugin-sort-imports':
-        specifier: ^5.2.2
-        version: 5.2.2(prettier@3.5.0)
       '@types/node':
         specifier: ^22.10.1
         version: 22.13.1
@@ -6100,6 +6097,7 @@ snapshots:
       prettier: 3.5.0
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   '@trysound/sax@0.2.0': {}
 
@@ -7067,7 +7065,8 @@ snapshots:
     dependencies:
       '@isaacs/cliui': 8.0.2
 
-  javascript-natural-sort@0.7.1: {}
+  javascript-natural-sort@0.7.1:
+    optional: true
 
   jiti@2.4.2: {}
 
@@ -7213,7 +7212,8 @@ snapshots:
 
   lodash.merge@4.6.2: {}
 
-  lodash@4.17.21: {}
+  lodash@4.17.21:
+    optional: true
 
   log-update@6.1.0:
     dependencies:
