@@ -1,5 +1,5 @@
 import { StrictMode, Suspense } from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
 
 import App from "./App";
 
@@ -30,7 +30,13 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+if (import.meta.env.MODE === "development") {
+  const script = document.createElement("script");
+  script.src = "http://localhost:8097";
+  document.head.appendChild(script);
+}
+
+createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
