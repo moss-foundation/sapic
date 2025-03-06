@@ -1097,18 +1097,16 @@ dependencies = [
  "log",
  "macos-trampoline",
  "mimalloc",
- 
  "moss_app",
  "moss_collection",
  "moss_db",
  "moss_fs",
  "moss_logging",
- "moss_session",
  "moss_nls",
+ "moss_session",
  "moss_state",
  "moss_tauri",
  "moss_theme",
- 
  "objc",
  "once_cell",
  "rand 0.9.0",
@@ -2841,8 +2839,6 @@ dependencies = [
  "moss_fs",
  "parking_lot 0.12.3",
  "patricia_tree",
- "phf 0.11.3",
- "phf_macros 0.11.3",
  "serde",
  "serde_json",
  "sled",
@@ -2926,14 +2922,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_session"
-version = "0.1.0"
-dependencies = [
- "moss_app",
- "uuid",
-]
-
-[[package]]
 name = "moss_nls"
 version = "0.1.0"
 dependencies = [
@@ -2944,6 +2932,14 @@ dependencies = [
  "serde_json",
  "tokio",
  "ts-rs",
+]
+
+[[package]]
+name = "moss_session"
+version = "0.1.0"
+dependencies = [
+ "moss_app",
+ "uuid",
 ]
 
 [[package]]

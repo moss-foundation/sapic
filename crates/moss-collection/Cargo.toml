@@ -4,15 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-phf = "0.11.3"
-phf_macros = "0.11.3"
 moss_fs.workspace = true
 moss_app.workspace = true
 anyhow.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
-miette = { version = "7.5.0", features = ["fancy"] }
+miette = { workspace = true, features = ["fancy"] }
 sled.workspace = true
 bincode.workspace = true
 dashmap.workspace = true
