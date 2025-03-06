@@ -71,8 +71,11 @@ pub fn run() {
             let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
             // Now we put `logs` folder at the project root for easier development
-            let logging_service =
-                LoggingService::new(Path::new("../../../logs"), &session_service)?;
+            let logging_service = LoggingService::new(
+                Path::new("../../../logs/app"),
+                Path::new("../../../logs/session"),
+                &session_service,
+            )?;
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(

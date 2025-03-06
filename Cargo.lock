@@ -2819,9 +2819,9 @@ dependencies = [
  "anyhow",
  "derive_more 2.0.1",
  "fnv",
+ "log",
  "parking_lot 0.12.3",
  "tauri",
- "tracing",
 ]
 
 [[package]]

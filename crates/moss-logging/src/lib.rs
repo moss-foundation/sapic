@@ -14,6 +14,7 @@ use std::{fs, io};
 use tracing::{event, instrument, Instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::Rotation;
+use tracing_subscriber::field::MakeVisitor;
 use tracing_subscriber::filter::filter_fn;
 use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
@@ -68,15 +69,21 @@ impl LogFilter {
     }
 }
 
-// TODO: in-memory, session log, global log
+// TODO: in-memory log
 pub struct LoggingService {
+    app_log_path: PathBuf,
     session_path: PathBuf,
-    _guard: WorkerGuard,
+    _app_log_guard: WorkerGuard,
+    _session_log_guard: WorkerGuard,
 }
 
 impl LoggingService {
-    pub fn new(logs_path: &Path, session_service: &SessionService) -> Result<LoggingService> {
-        let session_log_format = tracing_subscriber::fmt::format()
+    pub fn new(
+        app_log_path: &Path,
+        session_log_path: &Path,
+        session_service: &SessionService,
+    ) -> Result<LoggingService> {
+        let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
             .with_target(false)
@@ -94,40 +101,61 @@ impl LoggingService {
             .with_ansi(true);
 
         let session_id = session_service.get_session_uuid();
-        let session_path = logs_path.join(session_id);
+        let session_path = session_log_path.join(session_id);
         // TODO: make `log.` suffix or get rid of it
-        let file_appender = tracing_appender::rolling::Builder::new()
+        let session_log_appender = tracing_appender::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
             .build(&session_path)?;
 
-        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        let app_log_appender = tracing_appender::rolling::Builder::new()
+            .rotation(Rotation::MINUTELY)
+            .filename_suffix("log")
+            .build(&app_log_path)?;
+        let (session_log_writer, _session_log_guard) =
+            tracing_appender::non_blocking(session_log_appender);
+        let (app_log_writer, _app_log_guard) = tracing_appender::non_blocking(app_log_appender);
+
+        let timestamp_format = "%Y-%m-%dT%H:%M:%S%.3f%z".to_string();
 
         let subscriber = tracing_subscriber::registry()
             .with(
                 // Session log subscriber
                 tracing_subscriber::fmt::layer()
-                    .event_format(session_log_format)
-                    .with_timer(ChronoLocal::rfc_3339())
-                    .with_writer(non_blocking)
+                    .event_format(standard_log_format.clone())
+                    .with_timer(ChronoLocal::new(timestamp_format.clone()))
+                    .with_writer(session_log_writer)
                     .fmt_fields(JsonFields::default())
-                    .with_current_span(true)
-                    .with_filter(filter_fn(|metadata| metadata.level() < &Level::TRACE)),
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == "session"
+                    })),
             )
             .with(
-                // Trace log subscriber
+                // App log subscriber
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format)
+                    .with_timer(ChronoLocal::new(timestamp_format.clone()))
+                    .with_writer(app_log_writer)
+                    .fmt_fields(JsonFields::default())
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == "app"
+                    })),
+            )
+            .with(
+                // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
                     .event_format(instrument_log_format)
-                    .with_timer(ChronoLocal::rfc_3339())
+                    .with_timer(ChronoLocal::new(timestamp_format))
                     .with_span_events(FmtSpan::CLOSE)
                     .with_ansi(true)
-                    .with_writer(io::stdout)
-                    .with_filter(filter_fn(|metadata| metadata.level() == &Level::TRACE)),
+                    .with_writer(io::stdout),
             );
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
-            _guard,
+            _app_log_guard,
+            _session_log_guard,
+            app_log_path: app_log_path.to_path_buf(),
             session_path,
         })
     }
@@ -187,6 +215,10 @@ impl LoggingService {
         Ok(())
     }
 
+    // TODO: Add query app log, right now this is querying session log
+    // Although it's better to do that when we understand what app log would entail
+    // Maybe it will need a different set of filters
+
     pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
         let mut result = Vec::new();
         let mut paths = Vec::new();
@@ -234,11 +266,14 @@ impl AppService for LoggingService {
 mod tests {
     use super::*;
     use chrono::Utc;
+    use tracing::{error, info, warn};
+
     #[instrument(level = "trace", skip_all)]
     async fn create_collection(path: &Path, name: &str) {
         let collection_path = path.join(name);
-        event!(
-            Level::INFO,
+
+        info!(
+            target: "session",
             collection = collection_path.to_string_lossy().to_string(),
             message = format!(
                 "Created collection {} at {}",
@@ -251,8 +286,8 @@ mod tests {
     #[instrument(level = "trace", skip_all)]
     async fn create_request(collection_path: &Path, name: &str) {
         let request_path = collection_path.join(name);
-        event!(
-            Level::INFO,
+        info!(
+            target: "session",
             collection = collection_path.to_string_lossy().to_string(),
             request = request_path.to_string_lossy().to_string(),
             message = format!(
@@ -265,26 +300,31 @@ mod tests {
 
     #[instrument(level = "trace", skip_all)]
     async fn something_terrible(collection_path: &Path, request_path: &Path) {
-        event!(
-            Level::WARN,
+        warn!(
+            target: "app",
             collection = collection_path.to_string_lossy().to_string(),
             request = request_path.to_string_lossy().to_string(),
             message = "Something bad!"
         );
-        event!(
-            Level::ERROR,
+        error!(
+            target: "app",
             collection = collection_path.to_string_lossy().to_string(),
             request = request_path.to_string_lossy().to_string(),
             message = "Something terrible!"
         )
     }
 
-    const TEST_LOG_FOLDER: &'static str = "logs";
+    const TEST_SESSION_LOG_FOLDER: &'static str = "logs/session";
+    const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
     #[test]
     fn test() {
         let session_service = SessionService::new();
-        let logging_service =
-            LoggingService::new(Path::new(TEST_LOG_FOLDER), Arc::new(session_service)).unwrap();
+        let logging_service = LoggingService::new(
+            Path::new(TEST_APP_LOG_FOLDER),
+            Path::new(TEST_SESSION_LOG_FOLDER),
+            &session_service,
+        )
+        .unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
