@@ -12,7 +12,7 @@ pub struct RequestState {
 }
 
 pub(crate) struct RequestHandle {
-    fs: Arc<dyn FileSystem>,
+    pub fs: Arc<dyn FileSystem>,
     pub state: RequestState,
 }
 

@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { Resizable, ResizablePanel, Scrollbar } from "./components";
+import TestTreeData from "./assets/testTreeData.json";
+import { Resizable, ResizablePanel, Tree } from "./components";
 import Tabs from "./components/Tabs";
+import { HeadBar } from "./parts/HeadBar/HeadBar";
+import TabbedPane from "./parts/TabbedPane/TabbedPane";
 import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";
-
-import TabbedPane from "./parts/TabbedPane/TabbedPane";
 
 interface ListItem {
   id: number;
@@ -46,13 +47,6 @@ const initialList = Array.from({ length: 5 }, (_, i) => {
 });
 
 function App() {
-  const [theme, setTheme] = useState("dark");
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-    document.querySelector("html")!.setAttribute("data-theme", theme === "dark" ? "light" : "dark");
-  };
-
   const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
 
   const handleSetActive = (id: number) => {
@@ -80,9 +74,10 @@ function App() {
   }, [DNDList]);
 
   return (
-    <div className="flex w-full h-full">
+    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
+      <HeadBar />
       <Resizable>
-        <ResizablePanel preferredSize={270} maxSize={400}>
+        <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
           <Tabs>
             <Tabs.List>
               {DNDList.map((item) => (
@@ -96,69 +91,33 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-black dark:text-white">
+            <Tabs.Panels className="text-[var(--moss-primary)]">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item}>Panel {item.id} content</Tabs.Panel>
+                <Tabs.Panel {...item} key={item.id} className="0">
+                  {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
+                </Tabs.Panel>
               ))}
             </Tabs.Panels>
           </Tabs>
         </ResizablePanel>
         <ResizablePanel>
           <TabbedPane theme="dockview-theme-light" />
-          <main className="h-screen flex grow flex-col justify-center text-center bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-sans transition">
-            <Scrollbar>
-              {Array.from({ length: 100 }, (_, i) => (
-                <div key={i} className="h-10 mb-1 w-full bg-gray-200 dark:bg-[#131313]">
-                  {i + 1}
-                </div>
-              ))}
-            </Scrollbar>
-          </main>
         </ResizablePanel>
       </Resizable>
-
-      <div className="absolute -top-3 -right-3 p-4 flex">
-        <div className="" />
-        <button onClick={toggleTheme} className="cursor-pointer">
-          {theme === "light" ? (
-            <svg
-              className="size-9 text-black hover:text-gray-500 "
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-            </svg>
-          ) : (
-            <svg
-              className="size-9 text-white hover:text-black/50"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2" />
-              <path d="M12 20v2" />
-              <path d="m4.93 4.93 1.41 1.41" />
-              <path d="m17.66 17.66 1.41 1.41" />
-              <path d="M2 12h2" />
-              <path d="M20 12h2" />
-              <path d="m6.34 17.66-1.41 1.41" />
-              <path d="m19.07 4.93-1.41 1.41" />
-            </svg>
-          )}
-        </button>
-      </div>
     </div>
   );
 }
 
 export default App;
+
+const IsolatedTreeComponent = () => {
+  return (
+    <div className="h-full flex flex-col">
+      <div>
+        <Tree tree={TestTreeData.tree} />
+      </div>
+      <hr />
+      <Tree tree={TestTreeData.tree} />
+    </div>
+  );
+};

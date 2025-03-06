@@ -1,0 +1,15 @@
+{
+  "settings": "Settings",
+  "home": "Home",
+  "logs": "Logs",
+  "noLogs": "No logs received yet",
+  "receivedData": "Received data",
+  "title": "Moss Studio",
+  "selectTheme": "Select theme:",
+  "selectLanguage": "Select language:",
+  "user": "My name is: {{name}}",
+  "description": {
+    "part1": "Welcome to react using <1>react-i18next</1> fully type-safe.",
+    "part2": "😉"
+  }
+}
