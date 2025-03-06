@@ -145,10 +145,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
           <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
           <NodeRenamingForm
-            onSubmit={(e) => {
-              console.log(4.5);
-              handleRenamingFormSubmit(e);
-            }}
+            onSubmit={handleRenamingFormSubmit}
             onCancel={handleRenamingFormCancel}
             restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
             currentName={node.id}
