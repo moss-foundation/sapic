@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { platform } from "@tauri-apps/plugin-os";
+
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
@@ -11,10 +13,10 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(String(currentName));
 
+  const isMac = platform() === "macos";
+
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      onCancel();
-    }
+    if (e.key === "Escape") onCancel();
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -71,7 +73,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         maxLength={100}
         className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative bg-transparent"
         onKeyUp={handleKeyUp}
-        onBlur={handleBlur}
+        onBlur={isMac ? undefined : handleBlur}
         required
       />
     </form>

@@ -35,6 +35,7 @@ export const Tree = ({
 
   const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
+    console.log("tree updatedTree");
   }, []);
 
   useEffect(() => {
