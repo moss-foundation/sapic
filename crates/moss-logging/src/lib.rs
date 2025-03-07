@@ -37,7 +37,6 @@ pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
 // Empty field means that no filter will be applied
 #[derive(Default)]
 pub struct LogFilter {
-    scope: Option<LogScope>,
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
     collection: Option<PathBuf>,
@@ -76,12 +75,6 @@ impl LogFilter {
         }
     }
 
-    pub fn select_scope(self, scope: LogScope) -> Self {
-        Self {
-            scope: Some(scope),
-            ..self
-        }
-    }
 }
 
 pub struct LogPayload {
@@ -303,26 +296,13 @@ impl LoggingService {
     }
 
     pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
-        match filter.scope {
-            Some(LogScope::App) => Ok(self
-                .combine_logs(&self.app_log_path, filter)?
-                .into_iter()
-                .map(|(_dt, value)| value)
-                .collect()),
-            Some(LogScope::Session) => Ok(self
-                .combine_logs(&self.session_path, filter)?
-                .into_iter()
-                .map(|(_dt, value)| value)
-                .collect()),
-            None => {
-                // Combining both app and session log
-                let app_logs = self.combine_logs(&self.app_log_path, filter)?;
-                let session_logs = self.combine_logs(&self.session_path, filter)?;
-                let merged_logs =
-                    LoggingService::merge_logs_chronologically(app_logs, session_logs);
-                Ok(merged_logs.into_iter().map(|(_dt, value)| value).collect())
-            }
-        }
+        // Combining both app and session log
+        let app_logs = self.combine_logs(&self.app_log_path, filter)?;
+        let session_logs = self.combine_logs(&self.session_path, filter)?;
+        let merged_logs =
+            LoggingService::merge_logs_chronologically(app_logs, session_logs);
+        Ok(merged_logs.into_iter().map(|(_dt, value)| value).collect())
+
     }
 }
 
