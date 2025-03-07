@@ -63,11 +63,13 @@ COLLECTION_MODELS_DIR := crates/moss-collection
 THEME_MODELS_DIR := crates/moss-theme
 STATE_MODELS_DIR := crates/moss-state
 NLS_MODELS_DIR := crates/moss-nls
+LOGGING_MODELS_DIR := crates/moss-logging
 
 $(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_models,theme,THEME_MODELS_DIR))
 $(eval $(call gen_models,state,STATE_MODELS_DIR))
 $(eval $(call gen_models,nls,NLS_MODELS_DIR))
+$(eval $(call gen_models,logging,LOGGING_MODELS_DIR))
 
 ## Generate All Models
 .PHONY: gen-models
@@ -76,6 +78,7 @@ gen-models: \
 	gen-theme-models \
 	gen-state-models \
 	gen-nls-models \
+	gen-logging-models \
 
 # Utility Commands
 
