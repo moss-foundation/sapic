@@ -1,5 +1,7 @@
 use anyhow::Result;
-use chrono::NaiveDate;
+use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
+use moss_app::service::AppService;
+use moss_session::SessionService;
 use serde_json::Value as JsonValue;
 use std::any::Any;
 use std::collections::HashSet;
@@ -22,16 +24,17 @@ use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::prelude::*;
 
-use moss_app::service::AppService;
-use moss_session::SessionService;
-
 pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";
 pub const REQUEST_LIT: &'static str = "request";
 
+pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
+pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
+
 // Empty field means that no filter will be applied
 #[derive(Default)]
 pub struct LogFilter {
+    scope: Option<LogScope>,
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
     collection: Option<PathBuf>,
@@ -69,6 +72,13 @@ impl LogFilter {
             ..self
         }
     }
+
+    pub fn select_scope(self, scope: LogScope) -> Self {
+        Self {
+            scope: Some(scope),
+            ..self
+        }
+    }
 }
 
 pub struct LogPayload {
@@ -91,93 +101,12 @@ pub struct LoggingService {
 }
 
 impl LoggingService {
-    pub fn new(
-        app_log_path: &Path,
-        session_log_path: &Path,
-        session_service: &SessionService,
-    ) -> Result<LoggingService> {
-        let standard_log_format = tracing_subscriber::fmt::format()
-            .with_file(false)
-            .with_line_number(false)
-            .with_target(false)
-            .with_timer(ChronoLocal::rfc_3339())
-            .json()
-            .flatten_event(true)
-            .with_current_span(true);
-
-        let instrument_log_format = tracing_subscriber::fmt::format()
-            .with_file(true)
-            .with_line_number(true)
-            .with_target(false)
-            .with_timer(ChronoLocal::rfc_3339())
-            .compact()
-            .with_ansi(true);
-
-        let session_id = session_service.get_session_uuid();
-        let session_path = session_log_path.join(session_id);
-        // TODO: make `log.` suffix or get rid of it
-        let session_log_appender = tracing_appender::rolling::Builder::new()
-            .rotation(Rotation::MINUTELY)
-            .filename_suffix("log")
-            .build(&session_path)?;
-
-        let app_log_appender = tracing_appender::rolling::Builder::new()
-            .rotation(Rotation::MINUTELY)
-            .filename_suffix("log")
-            .build(&app_log_path)?;
-        let (session_log_writer, _session_log_guard) =
-            tracing_appender::non_blocking(session_log_appender);
-        let (app_log_writer, _app_log_guard) = tracing_appender::non_blocking(app_log_appender);
-
-        let timestamp_format = "%Y-%m-%dT%H:%M:%S%.3f%z".to_string();
-
-        let subscriber = tracing_subscriber::registry()
-            .with(
-                // Session log subscriber
-                tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format.clone())
-                    .with_timer(ChronoLocal::new(timestamp_format.clone()))
-                    .with_writer(session_log_writer)
-                    .fmt_fields(JsonFields::default())
-                    .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == "session"
-                    })),
-            )
-            .with(
-                // App log subscriber
-                tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format)
-                    .with_timer(ChronoLocal::new(timestamp_format.clone()))
-                    .with_writer(app_log_writer)
-                    .fmt_fields(JsonFields::default())
-                    .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == "app"
-                    })),
-            )
-            .with(
-                // Showing all logs (including span events) to the console
-                tracing_subscriber::fmt::layer()
-                    .event_format(instrument_log_format)
-                    .with_timer(ChronoLocal::new(timestamp_format))
-                    .with_span_events(FmtSpan::CLOSE)
-                    .with_ansi(true)
-                    .with_writer(io::stdout),
-            );
-
-        tracing::subscriber::set_global_default(subscriber)?;
-        Ok(Self {
-            _app_log_guard,
-            _session_log_guard,
-            app_log_path: app_log_path.to_path_buf(),
-            session_path,
-        })
-    }
-
     fn parse_file_with_filter(
-        records: &mut Vec<JsonValue>,
+        records: &mut Vec<(DateTime<FixedOffset>, JsonValue)>,
         path: &Path,
         filter: &LogFilter,
-    ) -> Result<()> {
+    )
+        -> Result<()> {
         // In the log created by tracing-appender, each line is a JSON object for a JsonValue
         let file = File::open(path)?;
 
@@ -221,21 +150,27 @@ impl LoggingService {
                     continue;
                 }
             }
+            let timestamp = value
+                .get("timestamp")
+                .and_then(|v| v.as_str())
+                .map(|ts| DateTime::<FixedOffset>::parse_from_str(ts, TIMESTAMP_FORMAT))
+                .unwrap()?;
 
-            records.push(value);
+            records.push((timestamp, value));
         }
-
         Ok(())
     }
 
-    // TODO: Add query app log, right now this is querying session log
-    // Although it's better to do that when we understand what app log would entail
-    // Maybe it will need a different set of filters
-
-    pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
+    fn combine_logs(
+        &self,
+        path: &Path,
+        filter: &LogFilter,
+    )
+        -> Result<Vec<(DateTime<FixedOffset>, JsonValue)>> {
         let mut result = Vec::new();
-        let mut paths = Vec::new();
-        for entry in fs::read_dir(&self.session_path)? {
+        let mut log_files = Vec::new();
+
+        for entry in fs::read_dir(path)? {
             let entry = entry?;
             let path = entry.path();
             if path.is_dir() || path.extension() != Some(OsStr::new("log")) {
@@ -244,15 +179,14 @@ impl LoggingService {
 
             let file_date = NaiveDate::parse_from_str(
                 &path.file_stem().unwrap().to_string_lossy().to_string(),
-                "%Y-%m-%d-%H-%M",
+                FILE_DATE_FORMAT,
             )?;
 
-            paths.push((path, file_date));
+            log_files.push((path, file_date));
         }
-        paths.sort_by_key(|p| p.1);
-
-        for (path, date_time) in &paths {
-            if filter.dates.contains(date_time) {
+        log_files.sort_by_key(|p| p.1);
+        for (path, date_time) in &log_files {
+            if filter.dates.is_empty() || filter.dates.contains(date_time) {
                 LoggingService::parse_file_with_filter(&mut result, path, filter)?
             }
         }
@@ -260,6 +194,136 @@ impl LoggingService {
         Ok(result)
     }
 
+    fn merge_logs_chronologically(
+        a: Vec<(DateTime<FixedOffset>, JsonValue)>,
+        b: Vec<(DateTime<FixedOffset>, JsonValue)>,
+    )
+        -> Vec<(DateTime<FixedOffset>, JsonValue)> {
+        let (mut i, mut j) = (0, 0);
+        let mut merged = Vec::with_capacity(a.len() + b.len());
+        while i < a.len() && j < b.len() {
+            if a[i].0 <= b[j].0 {
+                merged.push(a[i].clone());
+                i += 1;
+            } else {
+                merged.push(b[j].clone());
+                j += 1;
+            }
+        }
+        if i < a.len() {
+            merged.extend_from_slice(&a[i..]);
+        }
+        if j < b.len() {
+            merged.extend_from_slice(&b[j..]);
+        }
+        merged
+    }
+
+}
+
+impl LoggingService {
+    pub fn new(
+        app_log_path: &Path,
+        session_log_path: &Path,
+        session_service: &SessionService,
+    )
+        -> Result<LoggingService> {
+        let standard_log_format = tracing_subscriber::fmt::format()
+            .with_file(false)
+            .with_line_number(false)
+            .with_target(false)
+            .with_timer(ChronoLocal::new(TIMESTAMP_FORMAT.to_string()))
+            .json()
+            .flatten_event(true)
+            .with_current_span(true);
+
+        let instrument_log_format = tracing_subscriber::fmt::format()
+            .with_file(true)
+            .with_line_number(true)
+            .with_target(false)
+            .with_timer(ChronoLocal::new(TIMESTAMP_FORMAT.to_string()))
+            .compact()
+            .with_ansi(true);
+
+        let session_id = session_service.get_session_uuid();
+        let session_path = session_log_path.join(session_id);
+        let session_log_appender = tracing_appender::rolling::Builder::new()
+            .rotation(Rotation::MINUTELY)
+            .filename_suffix("log")
+            .build(&session_path)?;
+
+        let app_log_appender = tracing_appender::rolling::Builder::new()
+            .rotation(Rotation::MINUTELY)
+            .filename_suffix("log")
+            .build(&app_log_path)?;
+        let (session_log_writer, _session_log_guard) =
+            tracing_appender::non_blocking(session_log_appender);
+        let (app_log_writer, _app_log_guard) = tracing_appender::non_blocking(app_log_appender);
+
+        let subscriber = tracing_subscriber::registry()
+            .with(
+                // Session log subscriber
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format.clone())
+                    .with_writer(session_log_writer)
+                    .fmt_fields(JsonFields::default())
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == "session"
+                    })),
+            )
+            .with(
+                // App log subscriber
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format)
+                    .with_writer(app_log_writer)
+                    .fmt_fields(JsonFields::default())
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == "app"
+                    })),
+            )
+            .with(
+                // Showing all logs (including span events) to the console
+                tracing_subscriber::fmt::layer()
+                    .event_format(instrument_log_format)
+                    .with_span_events(FmtSpan::CLOSE)
+                    .with_ansi(true)
+                    .with_writer(io::stdout),
+            );
+
+        tracing::subscriber::set_global_default(subscriber)?;
+        Ok(Self {
+            _app_log_guard,
+            _session_log_guard,
+            app_log_path: app_log_path.to_path_buf(),
+            session_path,
+        })
+    }
+    
+    pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
+        match filter.scope {
+            Some(LogScope::App) => Ok(self
+                .combine_logs(&self.app_log_path, filter)?
+                .into_iter()
+                .map(|(_dt, value)| value)
+                .collect()),
+            Some(LogScope::Session) => Ok(self
+                .combine_logs(&self.session_path, filter)?
+                .into_iter()
+                .map(|(_dt, value)| value)
+                .collect()),
+            None => {
+                // Combining both app and session log
+                let app_logs = self.combine_logs(&self.app_log_path, filter)?;
+                let session_logs = self.combine_logs(&self.session_path, filter)?;
+                let merged_logs =
+                    LoggingService::merge_logs_chronologically(app_logs, session_logs);
+                Ok(merged_logs.into_iter().map(|(_dt, value)| value).collect())
+            }
+        }
+    }
+}
+
+impl LoggingService {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
@@ -403,6 +467,14 @@ mod tests {
                 ),
             },
         );
+        log_service.info(
+            LogScope::App,
+            LogPayload {
+                collection: None,
+                request: None,
+                message: "Successfully created collection".to_string(),
+            },
+        )
     }
 
     #[instrument(level = "trace", skip_all)]
@@ -420,6 +492,14 @@ mod tests {
                 ),
             },
         );
+        log_service.info(
+            LogScope::App,
+            LogPayload {
+                collection: None,
+                request: None,
+                message: "Successfully created request".to_string(),
+            },
+        )
     }
 
     #[instrument(level = "trace", skip_all)]
@@ -472,11 +552,7 @@ mod tests {
             something_terrible(&collection_path, &request_path, &logging_service).await;
         });
 
-        let filter = LogFilter::new()
-            .select_collection(&collection_path)
-            .select_request(&request_path)
-            .add_dates(vec![Utc::now().naive_utc().into()])
-            .add_levels(vec![Level::WARN, Level::ERROR]);
+        let filter = LogFilter::new().add_levels(vec![Level::INFO]);
 
         let output = logging_service
             .query_with_filter(&filter)
