@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Result};
 use moss_app::service::AppService;
+use moss_db::redb::EncryptedBincodeStore;
 use moss_fs::ports::FileSystem;
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -11,19 +13,28 @@ use crate::models::{
     types::LocaleDescriptor,
 };
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MockVault {}
+
 const LOCALES_REGISTRY_FILE: &str = "locales.json";
 
 pub struct LocaleService {
     locales_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
+    v_store: EncryptedBincodeStore<'static, &'static str, MockVault>,
     locales: OnceCell<HashMap<LocaleId, LocaleDescriptor>>,
 }
 
 impl LocaleService {
-    pub fn new(fs: Arc<dyn FileSystem>, locales_dir: PathBuf) -> Self {
+    pub fn new(
+        fs: Arc<dyn FileSystem>,
+        locales_dir: PathBuf,
+        v_store: EncryptedBincodeStore<'static, &'static str, MockVault>,
+    ) -> Self {
         Self {
             locales_dir,
             fs,
+            v_store,
             locales: OnceCell::new(),
         }
     }

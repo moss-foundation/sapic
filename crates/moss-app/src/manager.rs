@@ -1,10 +1,15 @@
+use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 use anyhow::Result;
+use moss_db::redb::EncryptedBincodeStore;
+use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
-use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct MockVault {}
 
 pub struct AppManager {
     services: ServiceCollection,
+    v_store: EncryptedBincodeStore<'static, &'static str, MockVault>,
     // TODO: Registry
 }
 
@@ -12,9 +17,13 @@ unsafe impl Send for AppManager {}
 unsafe impl Sync for AppManager {}
 
 impl AppManager {
-    pub fn new(app_handle: AppHandle) -> Self {
+    pub fn new(
+        app_handle: AppHandle,
+        v_store: EncryptedBincodeStore<'static, &'static str, MockVault>,
+    ) -> Self {
         Self {
             services: ServiceCollection::new(app_handle),
+            v_store,
         }
     }
 

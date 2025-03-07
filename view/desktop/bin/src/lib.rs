@@ -15,6 +15,7 @@ use moss_app::service::InstantiationType;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
+use moss_db::redb::{EncryptedBincodeStore, ReDbClient};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
@@ -36,8 +37,12 @@ use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
+use moss_db::redb::{EncryptedBincodeTable, EncryptionConfig};
 use moss_logging::LoggingService;
 use moss_session::SessionService;
+
+const TABLE_VAULT_2: EncryptedBincodeTable<&str, moss_app::manager::MockVault> =
+    EncryptedBincodeTable::new("vault_2");
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -74,7 +79,20 @@ pub fn run() {
             let logging_service =
                 LoggingService::new(Path::new("../../../logs"), &session_service)?;
 
-            let app_manager = AppManager::new(app_handle.clone())
+            let client = ReDbClient::new("encrypted.db").unwrap();
+            let store = EncryptedBincodeStore::new(
+                client,
+                TABLE_VAULT_2,
+                EncryptionConfig {
+                    memory_cost: 65536,
+                    time_cost: 10,
+                    parallelism: 4,
+                    salt_len: 32,
+                    nonce_len: 12,
+                },
+            );
+
+            let app_manager = AppManager::new(app_handle.clone(), store)
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
