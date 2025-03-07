@@ -70,39 +70,6 @@ impl From<ListLogsInput> for LogFilter {
     }
 }
 
-impl LogFilter {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
-
-    pub fn add_dates(self, dates: impl IntoIterator<Item = NaiveDate>) -> Self {
-        Self {
-            dates: self.dates.into_iter().chain(dates.into_iter()).collect(),
-            ..self
-        }
-    }
-    pub fn add_levels(self, levels: impl IntoIterator<Item = Level>) -> Self {
-        Self {
-            levels: self.levels.into_iter().chain(levels.into_iter()).collect(),
-            ..self
-        }
-    }
-    pub fn select_collection(self, collection: impl AsRef<Path>) -> Self {
-        Self {
-            collection: Some(collection.as_ref().to_path_buf()),
-            ..self
-        }
-    }
-    pub fn select_request(self, request: impl AsRef<Path>) -> Self {
-        Self {
-            request: Some(request.as_ref().to_path_buf().into()),
-            ..self
-        }
-    }
-}
-
 pub struct LogPayload {
     collection: Option<PathBuf>,
     request: Option<PathBuf>,
