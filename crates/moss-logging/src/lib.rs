@@ -81,16 +81,6 @@ pub enum LogScope {
     App,
     Session,
 }
-macro_rules! event_helper {
-    ($level_macro:ident, $scope:expr, $collection:expr, $request:expr, $message:expr) => {
-        $level_macro!(
-            target: $scope,
-            collection = $collection.map(|p| p.display().to_string()).unwrap_or_default(),
-            request = $request.map(|p| p.display().to_string()).unwrap_or_default(),
-            message = $message,
-        )
-    };
-}
 
 // TODO: in-memory log
 pub struct LoggingService {
@@ -275,21 +265,19 @@ impl LoggingService {
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
         match scope {
             LogScope::App => {
-                event_helper!(
-                    trace,
-                    "app",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                trace!(
+                    target: "app",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
             LogScope::Session => {
-                event_helper!(
-                    trace,
-                    "session",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                trace!(
+                    target: "session",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
         }
@@ -298,21 +286,19 @@ impl LoggingService {
     pub fn debug(&self, scope: LogScope, payload: LogPayload) {
         match scope {
             LogScope::App => {
-                event_helper!(
-                    debug,
-                    "app",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                debug!(
+                    target: "app",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
             LogScope::Session => {
-                event_helper!(
-                    debug,
-                    "session",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                debug!(
+                    target: "session",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
         }
@@ -321,21 +307,19 @@ impl LoggingService {
     pub fn info(&self, scope: LogScope, payload: LogPayload) {
         match scope {
             LogScope::App => {
-                event_helper!(
-                    info,
-                    "app",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                info!(
+                    target: "app",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
             LogScope::Session => {
-                event_helper!(
-                    info,
-                    "session",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                info!(
+                    target: "session",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
         }
@@ -344,21 +328,19 @@ impl LoggingService {
     pub fn warn(&self, scope: LogScope, payload: LogPayload) {
         match scope {
             LogScope::App => {
-                event_helper!(
-                    warn,
-                    "app",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                warn!(
+                    target: "app",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
             LogScope::Session => {
-                event_helper!(
-                    warn,
-                    "session",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                warn!(
+                    target: "session",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
         }
@@ -367,21 +349,19 @@ impl LoggingService {
     pub fn error(&self, scope: LogScope, payload: LogPayload) {
         match scope {
             LogScope::App => {
-                event_helper!(
-                    error,
-                    "app",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                error!(
+                    target: "app",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
             LogScope::Session => {
-                event_helper!(
-                    error,
-                    "session",
-                    payload.collection,
-                    payload.request,
-                    payload.message
+                error!(
+                    target: "session",
+                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
+                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    message = payload.message
                 )
             }
         }
