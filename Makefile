@@ -3,6 +3,8 @@ export LOG_LEVEL = trace
 
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR =  ${CURDIR}/assets/locales
+export APP_LOG_DIR = ${CURDIR}/logs/app
+export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
 .DEFAULT_GOAL := run-desktop
 
