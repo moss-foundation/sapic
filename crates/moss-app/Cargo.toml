@@ -9,4 +9,4 @@ derive_more = { workspace = true, features = ["full"] }
 fnv.workspace = true
 parking_lot.workspace = true
 tauri = { workspace = true, features = ["wry"] }
-log = "0.4.26"
+log.workspace = true

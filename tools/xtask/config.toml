@@ -4,7 +4,6 @@ licenses = ["LICENSE-MIT"]
 rust_workspace_audit.global_ignore = ["syn", "quote", "proc-macro2", "clap"]
 
 [rust_workspace_audit.crate_ignore]
-moss-app = ["log"]
 
 desktop = [
     "tauri-plugin-shell",
