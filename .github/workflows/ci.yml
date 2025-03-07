@@ -90,14 +90,11 @@ jobs:
           - name: Lint
             command: pnpm run lint -- --quiet
 
-          - name: Test Packages (Vitest)
+          - name: Test Packages
             command: pnpm run test --project packages
 
-          - name: Test Moss-Tabs (Vitest)
+          - name: Test Moss-Tabs
             command: pnpm run test --project moss-tabs
-
-          #- name: Test Desktop (Vitest)
-          #  command: pnpm run test --project desktop
 
     timeout-minutes: 30
     steps:

@@ -20,10 +20,4 @@ export default defineWorkspace([
       setupFiles: ["./view/desktop/src/lib/moss-tabs/vitest.setup.ts"],
     },
   },
-  //{
-  //  test: {
-  //    name: "desktop",
-  //    include: ["view/desktop/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-  //  },
-  //},
 ]);
