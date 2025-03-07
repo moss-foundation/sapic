@@ -81,7 +81,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className="flex flex-col w-full h-full">
+      <div className="flex flex-col w-full h-full ">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
           <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
             <Icon
@@ -124,7 +124,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
         {shouldRenderChildNodes && (
           <Scrollbar className="w-full h-full">
-            <ul ref={dropTargetFolderRef} className="grow">
+            <ul ref={dropTargetFolderRef} className="h-full w-full">
               {filteredChildNodes.map((childNode) => (
                 <TreeNode
                   parentNode={node}
@@ -142,7 +142,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   }
 
   return (
-    <li ref={dropTargetListRef}>
+    <li ref={dropTargetListRef} className="s">
       {isRenamingNode ? (
         <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
           <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
