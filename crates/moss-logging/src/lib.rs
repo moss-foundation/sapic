@@ -28,6 +28,9 @@ pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";
 pub const REQUEST_LIT: &'static str = "request";
 
+pub const APP_SCOPE: &'static str = "app";
+pub const SESSION_SCOPE: &'static str = "session";
+
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
 
@@ -268,7 +271,7 @@ impl LoggingService {
                     .with_writer(session_log_writer)
                     .fmt_fields(JsonFields::default())
                     .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == "session"
+                        metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
                     })),
             )
             .with(
@@ -278,7 +281,7 @@ impl LoggingService {
                     .with_writer(app_log_writer)
                     .fmt_fields(JsonFields::default())
                     .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == "app"
+                        metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
                     })),
             )
             .with(
@@ -298,7 +301,7 @@ impl LoggingService {
             session_path,
         })
     }
-    
+
     pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
         match filter.scope {
             Some(LogScope::App) => Ok(self
@@ -330,7 +333,7 @@ impl LoggingService {
         match scope {
             LogScope::App => {
                 trace!(
-                    target: "app",
+                    target: APP_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -338,7 +341,7 @@ impl LoggingService {
             }
             LogScope::Session => {
                 trace!(
-                    target: "session",
+                    target: SESSION_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -351,7 +354,7 @@ impl LoggingService {
         match scope {
             LogScope::App => {
                 debug!(
-                    target: "app",
+                    target: APP_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -359,7 +362,7 @@ impl LoggingService {
             }
             LogScope::Session => {
                 debug!(
-                    target: "session",
+                    target: SESSION_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -372,7 +375,7 @@ impl LoggingService {
         match scope {
             LogScope::App => {
                 info!(
-                    target: "app",
+                    target: APP_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -380,7 +383,7 @@ impl LoggingService {
             }
             LogScope::Session => {
                 info!(
-                    target: "session",
+                    target: SESSION_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -393,7 +396,7 @@ impl LoggingService {
         match scope {
             LogScope::App => {
                 warn!(
-                    target: "app",
+                    target: APP_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -401,7 +404,7 @@ impl LoggingService {
             }
             LogScope::Session => {
                 warn!(
-                    target: "session",
+                    target: SESSION_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -414,7 +417,7 @@ impl LoggingService {
         match scope {
             LogScope::App => {
                 error!(
-                    target: "app",
+                    target: APP_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
@@ -422,7 +425,7 @@ impl LoggingService {
             }
             LogScope::Session => {
                 error!(
-                    target: "session",
+                    target: SESSION_SCOPE,
                     collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
                     request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
                     message = payload.message
