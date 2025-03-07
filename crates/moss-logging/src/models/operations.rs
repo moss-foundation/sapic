@@ -1,4 +1,3 @@
-use crate::models::primitives::{CollectionPath, RequestPath};
 use crate::models::types::{LogDate, LogEntry, LogLevel};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -9,10 +8,10 @@ use ts_rs::TS;
 pub struct ListLogsInput {
     pub dates: Vec<LogDate>,
     pub levels: Vec<LogLevel>,
-    #[ts(optional)]
-    pub collection: Option<CollectionPath>,
-    #[ts(optional)]
-    pub request: Option<RequestPath>,
+    #[ts(optional, rename = "CollectionPath")]
+    pub collection: Option<String>,
+    #[ts(optional, rename = "RequestPath")]
+    pub request: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

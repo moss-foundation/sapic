@@ -185,23 +185,32 @@ impl LoggingService {
         a: Vec<(DateTime<FixedOffset>, JsonValue)>,
         b: Vec<(DateTime<FixedOffset>, JsonValue)>,
     ) -> Vec<(DateTime<FixedOffset>, JsonValue)> {
-        let (mut i, mut j) = (0, 0);
-        let mut merged = Vec::with_capacity(a.len() + b.len());
-        while i < a.len() && j < b.len() {
-            if a[i].0 <= b[j].0 {
-                merged.push(a[i].clone());
-                i += 1;
+        let mut iter_a = a.into_iter();
+        let mut iter_b = b.into_iter();
+        let mut merged = Vec::with_capacity(iter_a.size_hint().0 + iter_b.size_hint().0);
+
+        let mut next_a = iter_a.next();
+        let mut next_b = iter_b.next();
+
+        while let (Some(ref a_val), Some(ref b_val)) = (next_a.as_ref(), next_b.as_ref()) {
+            if a_val.0 <= b_val.0 {
+                merged.push(next_a.take().unwrap());
+                next_a = iter_a.next();
             } else {
-                merged.push(b[j].clone());
-                j += 1;
+                merged.push(next_b.take().unwrap());
+                next_b = iter_b.next();
             }
         }
-        if i < a.len() {
-            merged.extend_from_slice(&a[i..]);
+
+        if let Some(val) = next_a {
+            merged.push(val);
+            merged.extend(iter_a);
         }
-        if j < b.len() {
-            merged.extend_from_slice(&b[j..]);
+        if let Some(val) = next_b {
+            merged.push(val);
+            merged.extend(iter_b);
         }
+
         merged
     }
 }
