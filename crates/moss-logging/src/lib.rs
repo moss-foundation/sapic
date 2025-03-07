@@ -1,3 +1,5 @@
+mod models;
+
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
 use moss_app::service::AppService;
@@ -23,7 +25,10 @@ use tracing_subscriber::filter::filter_fn;
 use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::prelude::*;
-
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
+use crate::models::operations::{ListLogsInput, ListLogsOutput};
+use crate::models::types::{LogEntry, LogLevel};
 pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";
 pub const REQUEST_LIT: &'static str = "request";
@@ -41,6 +46,41 @@ pub struct LogFilter {
     levels: HashSet<Level>,
     collection: Option<PathBuf>,
     request: Option<PathBuf>,
+}
+
+fn get_level(level: LogLevel) -> Level {
+    match level {
+        LogLevel::TRACE => Level::TRACE,
+        LogLevel::DEBUG => Level::DEBUG,
+        LogLevel::INFO => Level::INFO,
+        LogLevel::WARN => Level::WARN,
+        LogLevel::ERROR => Level::ERROR,
+    }
+}
+
+impl From<ListLogsInput> for LogFilter {
+    fn from(input: ListLogsInput) -> Self {
+        Self {
+            dates: input
+                .dates
+                .into_iter()
+                .map(|date| NaiveDate::from_ymd_opt(
+                    date.year as i32, date.month, date.day
+                ).unwrap())
+                .collect(),
+            levels: input
+                .levels
+                .into_iter()
+                .map(get_level)
+                .collect(),
+            collection: input
+                .collection
+                .map(PathBuf::from),
+            request: input
+                .request
+                .map(PathBuf::from),
+        }
+    }
 }
 
 impl LogFilter {
@@ -295,13 +335,21 @@ impl LoggingService {
         })
     }
 
-    pub fn query_with_filter(&self, filter: &LogFilter) -> Result<Vec<JsonValue>> {
+    pub fn list_logs(&self, input: &ListLogsInput) -> Result<ListLogsOutput> {
         // Combining both app and session log
-        let app_logs = self.combine_logs(&self.app_log_path, filter)?;
-        let session_logs = self.combine_logs(&self.session_path, filter)?;
+        let filter: LogFilter = input.clone().into();
+        let app_logs = self.combine_logs(&self.app_log_path, &filter)?;
+        let session_logs = self.combine_logs(&self.session_path, &filter)?;
         let merged_logs =
             LoggingService::merge_logs_chronologically(app_logs, session_logs);
-        Ok(merged_logs.into_iter().map(|(_dt, value)| value).collect())
+
+        let log_entries: Vec<LogEntry> = merged_logs
+            .into_iter()
+            .map(|(_dt, value)| serde_json::from_value(value))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(ListLogsOutput {
+            contents: log_entries,
+        })
 
     }
 }
@@ -535,13 +583,19 @@ mod tests {
             something_terrible(&collection_path, &request_path, &logging_service).await;
         });
 
-        let filter = LogFilter::new().add_levels(vec![Level::INFO]);
+        let input = ListLogsInput {
+            dates: vec![],
+            levels: vec![LogLevel::INFO],
+            collection: None,
+            request: None,
+        };
 
         let output = logging_service
-            .query_with_filter(&filter)
+            .list_logs(&input)
             .unwrap()
-            .iter()
-            .map(|entry| serde_json::to_string_pretty(entry).unwrap())
+            .contents
+            .into_iter()
+            .map(|entry| serde_json::to_value(entry).unwrap().to_string())
             .collect::<Vec<_>>()
             .join("\n");
 

@@ -2914,11 +2914,13 @@ dependencies = [
  "chrono",
  "moss_app",
  "moss_session",
+ "serde",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
+ "ts-rs",
 ]
 
 [[package]]
