@@ -4,12 +4,14 @@ use serde_json::Value as JsonValue;
 use std::any::Any;
 use std::collections::HashSet;
 use std::ffi::OsStr;
+use std::fmt::{write, Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::{fs, io};
+use tracing::{debug, error, info, trace, warn};
 #[allow(unused_imports)] // Apparently these imports are used
 use tracing::{event, instrument, Instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
@@ -67,6 +69,27 @@ impl LogFilter {
             ..self
         }
     }
+}
+
+pub struct LogPayload {
+    collection: Option<PathBuf>,
+    request: Option<PathBuf>,
+    message: String,
+}
+
+pub enum LogScope {
+    App,
+    Session,
+}
+macro_rules! event_helper {
+    ($level_macro:ident, $scope:expr, $collection:expr, $request:expr, $message:expr) => {
+        $level_macro!(
+            target: $scope,
+            collection = $collection.map(|p| p.display().to_string()).unwrap_or_default(),
+            request = $request.map(|p| p.display().to_string()).unwrap_or_default(),
+            message = $message,
+        )
+    };
 }
 
 // TODO: in-memory log
@@ -246,6 +269,123 @@ impl LoggingService {
 
         Ok(result)
     }
+
+    // Tracing disallows non-constant value for `target`
+    // So we have to manually match it
+    pub fn trace(&self, scope: LogScope, payload: LogPayload) {
+        match scope {
+            LogScope::App => {
+                event_helper!(
+                    trace,
+                    "app",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+            LogScope::Session => {
+                event_helper!(
+                    trace,
+                    "session",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+        }
+    }
+
+    pub fn debug(&self, scope: LogScope, payload: LogPayload) {
+        match scope {
+            LogScope::App => {
+                event_helper!(
+                    debug,
+                    "app",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+            LogScope::Session => {
+                event_helper!(
+                    debug,
+                    "session",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+        }
+    }
+
+    pub fn info(&self, scope: LogScope, payload: LogPayload) {
+        match scope {
+            LogScope::App => {
+                event_helper!(
+                    info,
+                    "app",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+            LogScope::Session => {
+                event_helper!(
+                    info,
+                    "session",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+        }
+    }
+
+    pub fn warn(&self, scope: LogScope, payload: LogPayload) {
+        match scope {
+            LogScope::App => {
+                event_helper!(
+                    warn,
+                    "app",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+            LogScope::Session => {
+                event_helper!(
+                    warn,
+                    "session",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+        }
+    }
+
+    pub fn error(&self, scope: LogScope, payload: LogPayload) {
+        match scope {
+            LogScope::App => {
+                event_helper!(
+                    error,
+                    "app",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+            LogScope::Session => {
+                event_helper!(
+                    error,
+                    "session",
+                    payload.collection,
+                    payload.request,
+                    payload.message
+                )
+            }
+        }
+    }
 }
 
 impl AppService for LoggingService {
@@ -266,52 +406,64 @@ impl AppService for LoggingService {
 mod tests {
     use super::*;
     use chrono::Utc;
-    use tracing::{error, info, warn};
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_collection(path: &Path, name: &str) {
+    async fn create_collection(path: &Path, name: &str, log_service: &LoggingService) {
         let collection_path = path.join(name);
 
-        info!(
-            target: "session",
-            collection = collection_path.to_string_lossy().to_string(),
-            message = format!(
-                "Created collection {} at {}",
-                name,
-                collection_path.to_string_lossy().to_string()
-            )
+        log_service.info(
+            LogScope::Session,
+            LogPayload {
+                collection: Some(collection_path.clone()),
+                request: None,
+                message: format!(
+                    "Created collection {} at {}",
+                    name,
+                    collection_path.to_string_lossy().to_string()
+                ),
+            },
         );
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_request(collection_path: &Path, name: &str) {
+    async fn create_request(collection_path: &Path, name: &str, log_service: &LoggingService) {
         let request_path = collection_path.join(name);
-        info!(
-            target: "session",
-            collection = collection_path.to_string_lossy().to_string(),
-            request = request_path.to_string_lossy().to_string(),
-            message = format!(
-                "Created request {} at {}",
-                name,
-                request_path.to_string_lossy().to_string()
-            )
+        log_service.info(
+            LogScope::Session,
+            LogPayload {
+                collection: Some(collection_path.to_path_buf()),
+                request: Some(request_path.clone()),
+                message: format!(
+                    "Created request {} at {}",
+                    name,
+                    request_path.to_string_lossy().to_string()
+                ),
+            },
         );
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn something_terrible(collection_path: &Path, request_path: &Path) {
-        warn!(
-            target: "app",
-            collection = collection_path.to_string_lossy().to_string(),
-            request = request_path.to_string_lossy().to_string(),
-            message = "Something bad!"
+    async fn something_terrible(
+        collection_path: &Path,
+        request_path: &Path,
+        log_service: &LoggingService,
+    ) {
+        log_service.warn(
+            LogScope::App,
+            LogPayload {
+                collection: Some(collection_path.to_path_buf()),
+                request: Some(request_path.to_path_buf()),
+                message: "Something bad!".to_string(),
+            },
         );
-        error!(
-            target: "app",
-            collection = collection_path.to_string_lossy().to_string(),
-            request = request_path.to_string_lossy().to_string(),
-            message = "Something terrible!"
-        )
+        log_service.error(
+            LogScope::App,
+            LogPayload {
+                collection: Some(collection_path.to_path_buf()),
+                request: Some(request_path.to_path_buf()),
+                message: "Something terrible!".to_string(),
+            },
+        );
     }
 
     const TEST_SESSION_LOG_FOLDER: &'static str = "logs/session";
@@ -335,9 +487,9 @@ mod tests {
         let request_path = Path::new("").join("TestCollection").join("TestRequest");
 
         runtime.block_on(async {
-            create_collection(Path::new(""), "TestCollection").await;
-            create_request(&collection_path, "TestRequest").await;
-            something_terrible(&collection_path, &request_path).await;
+            create_collection(Path::new(""), "TestCollection", &logging_service).await;
+            create_request(&collection_path, "TestRequest", &logging_service).await;
+            something_terrible(&collection_path, &request_path, &logging_service).await;
         });
 
         let filter = LogFilter::new()
