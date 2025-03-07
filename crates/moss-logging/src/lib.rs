@@ -1,34 +1,29 @@
 mod models;
 
+use crate::models::operations::{ListLogsInput, ListLogsOutput};
+use crate::models::types::{LogEntry, LogLevel};
 use anyhow::Result;
-use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
+use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::AppService;
 use moss_session::SessionService;
 use serde_json::Value as JsonValue;
 use std::any::Any;
 use std::collections::HashSet;
 use std::ffi::OsStr;
-use std::fmt::{write, Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use std::sync::Arc;
 use std::{fs, io};
 use tracing::{debug, error, info, trace, warn};
 #[allow(unused_imports)] // Apparently these imports are used
 use tracing::{event, instrument, Instrument, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::Rotation;
-use tracing_subscriber::field::MakeVisitor;
 use tracing_subscriber::filter::filter_fn;
 use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::prelude::*;
-use serde::{Deserialize, Serialize};
-use ts_rs::TS;
-use crate::models::operations::{ListLogsInput, ListLogsOutput};
-use crate::models::types::{LogEntry, LogLevel};
 pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";
 pub const REQUEST_LIT: &'static str = "request";
@@ -64,21 +59,13 @@ impl From<ListLogsInput> for LogFilter {
             dates: input
                 .dates
                 .into_iter()
-                .map(|date| NaiveDate::from_ymd_opt(
-                    date.year as i32, date.month, date.day
-                ).unwrap())
+                .map(|date| {
+                    NaiveDate::from_ymd_opt(date.year as i32, date.month, date.day).unwrap()
+                })
                 .collect(),
-            levels: input
-                .levels
-                .into_iter()
-                .map(get_level)
-                .collect(),
-            collection: input
-                .collection
-                .map(PathBuf::from),
-            request: input
-                .request
-                .map(PathBuf::from),
+            levels: input.levels.into_iter().map(get_level).collect(),
+            collection: input.collection.map(PathBuf::from),
+            request: input.request.map(PathBuf::from),
         }
     }
 }
@@ -114,7 +101,6 @@ impl LogFilter {
             ..self
         }
     }
-
 }
 
 pub struct LogPayload {
@@ -141,8 +127,7 @@ impl LoggingService {
         records: &mut Vec<(DateTime<FixedOffset>, JsonValue)>,
         path: &Path,
         filter: &LogFilter,
-    )
-        -> Result<()> {
+    ) -> Result<()> {
         // In the log created by tracing-appender, each line is a JSON object for a JsonValue
         let file = File::open(path)?;
 
@@ -201,8 +186,7 @@ impl LoggingService {
         &self,
         path: &Path,
         filter: &LogFilter,
-    )
-        -> Result<Vec<(DateTime<FixedOffset>, JsonValue)>> {
+    ) -> Result<Vec<(DateTime<FixedOffset>, JsonValue)>> {
         let mut result = Vec::new();
         let mut log_files = Vec::new();
 
@@ -233,8 +217,7 @@ impl LoggingService {
     fn merge_logs_chronologically(
         a: Vec<(DateTime<FixedOffset>, JsonValue)>,
         b: Vec<(DateTime<FixedOffset>, JsonValue)>,
-    )
-        -> Vec<(DateTime<FixedOffset>, JsonValue)> {
+    ) -> Vec<(DateTime<FixedOffset>, JsonValue)> {
         let (mut i, mut j) = (0, 0);
         let mut merged = Vec::with_capacity(a.len() + b.len());
         while i < a.len() && j < b.len() {
@@ -254,7 +237,6 @@ impl LoggingService {
         }
         merged
     }
-
 }
 
 impl LoggingService {
@@ -262,8 +244,7 @@ impl LoggingService {
         app_log_path: &Path,
         session_log_path: &Path,
         session_service: &SessionService,
-    )
-        -> Result<LoggingService> {
+    ) -> Result<LoggingService> {
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -340,8 +321,7 @@ impl LoggingService {
         let filter: LogFilter = input.clone().into();
         let app_logs = self.combine_logs(&self.app_log_path, &filter)?;
         let session_logs = self.combine_logs(&self.session_path, &filter)?;
-        let merged_logs =
-            LoggingService::merge_logs_chronologically(app_logs, session_logs);
+        let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs);
 
         let log_entries: Vec<LogEntry> = merged_logs
             .into_iter()
@@ -350,7 +330,6 @@ impl LoggingService {
         Ok(ListLogsOutput {
             contents: log_entries,
         })
-
     }
 }
 
