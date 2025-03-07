@@ -30,11 +30,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
-  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
-    node,
-    onNodeUpdate
-  );
-
   const {
     isAddingFileNode,
     isAddingFolderNode,
@@ -43,6 +38,20 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     handleAddFormSubmit,
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
+
+  const {
+    isAddingFileNode: isAddingRootFileNode,
+    isAddingFolderNode: isAddingRootFolderNode,
+    setIsAddingFileNode: setIsAddingRootFileNode,
+    setIsAddingFolderNode: setIsAddingRootFolderNode,
+    handleAddFormSubmit: handleAddFormRootSubmit,
+    handleAddFormCancel: handleAddFormRootCancel,
+  } = useNodeAddForm(node, onNodeUpdate);
+
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
+    node,
+    onNodeUpdate
+  );
 
   const {
     isRenamingNode: isRenamingRootNode,
@@ -146,8 +155,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               </DropdownMenu.Trigger>
 
               <DropdownMenu.Content>
-                <DropdownMenu.Item label="Add File" />
-                <DropdownMenu.Item label="Add Folder" />
+                <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
+                <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
                 <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
               </DropdownMenu.Content>
             </DropdownMenu.Root>
@@ -166,6 +175,20 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   depth={0}
                 />
               ))}
+              {(isAddingRootFileNode || isAddingRootFolderNode) && (
+                <div
+                  className="flex w-full min-w-0 items-center gap-1"
+                  style={{ paddingLeft: `${depth * nodeOffset + horizontalPadding}px` }}
+                >
+                  <Icon icon={isAddingRootFolderNode ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+                  <NodeAddForm
+                    isFolder={isAddingRootFolderNode}
+                    restrictedNames={node.childNodes.map((childNode) => childNode.id)}
+                    onSubmit={handleAddFormRootSubmit}
+                    onCancel={handleAddFormRootCancel}
+                  />
+                </div>
+              )}
             </ul>
           </Scrollbar>
         )}

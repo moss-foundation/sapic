@@ -11,7 +11,6 @@ export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNod
     onNodeUpdate({
       ...node,
       isExpanded: true,
-      isRoot: false,
       childNodes: sortNodes([...node.childNodes, prepareCollectionForTree(newNode, false)]),
     });
 

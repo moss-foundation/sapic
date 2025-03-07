@@ -39,10 +39,6 @@ export const Tree = ({
   const treeId = useId();
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
-  console.log({
-    tree,
-  });
-
   const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
   }, []);
