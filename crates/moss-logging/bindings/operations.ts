@@ -2,8 +2,13 @@
 import type { LogDate } from "./types";
 import type { LogLevel } from "./types";
 
-export type ListLogsInput = { dates: Array<LogDate>, levels: Array<LogLevel>, CollectionPath?: string, RequestPath?: string, };
+export type ListLogsInput = {
+  dates: Array<LogDate>;
+  levels: Array<LogLevel>;
+  CollectionPath?: string;
+  RequestPath?: string;
+};
 
-export type ListLogsOutput = { contents: Array<LogEntry>, };
+export type ListLogsOutput = { contents: Array<LogEntry> };
 
-export type LogEntry = { timestamp: string, level: string, request?: string, collection?: string, message: string, };
+export type LogEntry = { timestamp: string; level: string; request?: string; collection?: string; message: string };

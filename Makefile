@@ -57,6 +57,7 @@ define gen_models
 gen-$(1)-models:
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
 	@$(CARGO) build --manifest-path $($(2))/Cargo.toml
+	@cd $($(2)) && @$(PNPM) format
 endef
 
 COLLECTION_MODELS_DIR := crates/moss-collection
