@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
 
-import { ContextMenu, Icon, Scrollbar, TreeContext } from "..";
+import { ContextMenu, DropdownMenu, Icon, Scrollbar, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -44,6 +44,13 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
 
+  const {
+    isRenamingNode: isRenamingRootNode,
+    setIsRenamingNode: setIsRenamingRootNode,
+    handleRenamingFormSubmit: handleRenamingRootFormSubmit,
+    handleRenamingFormCancel: handleRenamingRootFormCancel,
+  } = useNodeRenamingForm(node, onNodeUpdate);
+
   useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
@@ -83,16 +90,32 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     return (
       <div className="flex flex-col w-full h-full ">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
-          <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
-            <Icon
-              icon="TreeChevronRightIcon"
-              className={cn("text-[#717171]", {
-                "rotate-90": shouldRenderChildNodes,
-              })}
-            />
+          {isRenamingRootNode ? (
+            <div className="flex gap-1 items-center grow cursor-pointer">
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("text-[#717171]", {
+                  "rotate-90": shouldRenderChildNodes,
+                })}
+              />
+              <NodeRenamingForm
+                onSubmit={handleRenamingRootFormSubmit}
+                onCancel={handleRenamingRootFormCancel}
+                currentName={node.id}
+              />
+            </div>
+          ) : (
+            <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("text-[#717171]", {
+                  "rotate-90": shouldRenderChildNodes,
+                })}
+              />
 
-            <NodeLabel label={node.id} searchInput={searchInput} />
-          </button>
+              <NodeLabel label={node.id} searchInput={searchInput} />
+            </button>
+          )}
 
           <div className="flex gap-1 items-center">
             {node.isExpanded && !searchInput && (
@@ -116,9 +139,18 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 )}
               </>
             )}
-            <button className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
-              <Icon icon="TreeDetailIcon" />
-            </button>
+
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
+                <Icon icon="TreeDetailIcon" />
+              </DropdownMenu.Trigger>
+
+              <DropdownMenu.Content>
+                <DropdownMenu.Item label="Add File" />
+                <DropdownMenu.Item label="Add Folder" />
+                <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
 
