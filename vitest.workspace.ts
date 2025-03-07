@@ -13,7 +13,7 @@ export default defineWorkspace([
   },
   {
     test: {
-      name: "view/desktop/src/lib/moss-tabs",
+      name: "moss-tabs",
       include: ["view/desktop/src/lib/moss-tabs/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
       globals: true,
       environment: "jsdom",
