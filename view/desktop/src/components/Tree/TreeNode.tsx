@@ -79,7 +79,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     });
   };
 
-  if (node.id === "root") {
+  if (node.isRoot) {
     return (
       <div className="flex flex-col w-full h-full">
         <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
@@ -187,6 +187,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                         order: 0,
                         isFolder: false,
                         isExpanded: false,
+                        isRoot: false,
                         id: "-",
                       }}
                       node={{ ...node, childNodes: [] }}

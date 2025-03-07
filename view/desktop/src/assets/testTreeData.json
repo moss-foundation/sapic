@@ -5,6 +5,7 @@
     "type": "folder",
     "isFolder": true,
     "isExpanded": true,
+    "isRoot": true,
     "childNodes": [
       {
         "id": "view",
@@ -12,6 +13,7 @@
         "type": "folder",
         "isFolder": true,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": [
           {
             "id": "desktop",
@@ -19,6 +21,7 @@
             "type": "folder",
             "isFolder": true,
             "isExpanded": true,
+            "isRoot": false,
             "childNodes": [
               {
                 "id": "file1",
@@ -26,6 +29,7 @@
                 "type": "file",
                 "isFolder": false,
                 "isExpanded": true,
+                "isRoot": false,
                 "childNodes": []
               },
               {
@@ -34,6 +38,7 @@
                 "type": "file",
                 "isFolder": false,
                 "isExpanded": true,
+                "isRoot": false,
                 "childNodes": []
               },
               {
@@ -42,6 +47,7 @@
                 "type": "folder",
                 "isFolder": true,
                 "isExpanded": true,
+                "isRoot": false,
                 "childNodes": [
                   {
                     "id": "file3",
@@ -49,6 +55,7 @@
                     "type": "file",
                     "isFolder": false,
                     "isExpanded": true,
+                    "isRoot": false,
                     "childNodes": []
                   }
                 ]
@@ -61,6 +68,7 @@
             "type": "file",
             "isFolder": false,
             "isExpanded": true,
+            "isRoot": false,
             "childNodes": []
           },
           {
@@ -69,6 +77,7 @@
             "type": "folder",
             "isFolder": true,
             "isExpanded": true,
+            "isRoot": false,
             "childNodes": [
               {
                 "id": "file3",
@@ -76,6 +85,7 @@
                 "type": "file",
                 "isFolder": false,
                 "isExpanded": true,
+                "isRoot": false,
                 "childNodes": []
               }
             ]
@@ -88,6 +98,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -96,6 +107,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -104,6 +116,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -112,6 +125,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -120,6 +134,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -128,6 +143,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       },
       {
@@ -136,6 +152,7 @@
         "type": "file",
         "isFolder": false,
         "isExpanded": true,
+        "isRoot": false,
         "childNodes": []
       }
     ]

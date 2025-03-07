@@ -1,5 +1,5 @@
 export * from "./Resizable";
-export * from "./Tabs";
+export * as Tabs from "./Tabs";
 export * from "./DropIndicator";
 export * from "./Scrollbar";
 export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";

@@ -1,13 +1,19 @@
 import { createContext, useCallback, useEffect, useId, useState } from "react";
 
 import TreeNode from "./TreeNode.tsx";
-import { MoveNodeEventDetail, TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
+import {
+  CreateNewCollectionFromTreeNodeEvent,
+  MoveNodeEventDetail,
+  TreeContextProps,
+  TreeNodeProps,
+  TreeProps,
+} from "./types.ts";
 import {
   addNodeToFolder,
-  addUniqueIdToTree,
   checkIfAllFoldersAreCollapsed,
   checkIfAllFoldersAreExpanded,
   hasDescendant,
+  prepareCollectionForTree,
   removeNodeFromTree,
   removeUniqueIdFromTree,
   sortNode,
@@ -31,7 +37,11 @@ export const Tree = ({
   searchInput,
 }: TreeProps) => {
   const treeId = useId();
-  const [tree, setTree] = useState<TreeNodeProps>(sortNode(addUniqueIdToTree(initialTree)));
+  const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
+
+  console.log({
+    tree,
+  });
 
   const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
@@ -67,9 +77,22 @@ export const Tree = ({
       }
     };
 
+    const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
+      const { source } = event.detail;
+      if (source.treeId === treeId) {
+        setTree((prevTree) => removeNodeFromTree(prevTree, source.node.uniqueId));
+      }
+    };
+
     window.addEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
+    window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
+
     return () => {
       window.removeEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
+      window.removeEventListener(
+        "createNewCollectionFromTreeNode",
+        handleCreateNewCollectionFromTreeNode as EventListener
+      );
     };
   }, [treeId]);
 

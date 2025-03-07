@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { NodeProps, TreeNodeProps } from "../types";
-import { addUniqueIdToTree, sortNodes } from "../utils";
+import { prepareCollectionForTree, sortNodes } from "../utils";
 
 export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps) => void) => {
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
@@ -11,7 +11,8 @@ export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNod
     onNodeUpdate({
       ...node,
       isExpanded: true,
-      childNodes: sortNodes([...node.childNodes, addUniqueIdToTree(newNode)]),
+      isRoot: false,
+      childNodes: sortNodes([...node.childNodes, prepareCollectionForTree(newNode, false)]),
     });
 
     setIsAddingFileNode(false);

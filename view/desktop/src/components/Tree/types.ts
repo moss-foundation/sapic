@@ -12,6 +12,7 @@ export interface NodeProps {
 export interface TreeNodeProps extends NodeProps {
   uniqueId: string;
   childNodes: TreeNodeProps[];
+  isRoot: boolean;
 }
 
 export interface TreeProps {
@@ -47,6 +48,13 @@ export interface MoveNodeEventDetail {
     treeId: string;
   };
   target: {
+    node: TreeNodeProps;
+    treeId: string;
+  };
+}
+
+export interface CreateNewCollectionFromTreeNodeEvent {
+  source: {
     node: TreeNodeProps;
     treeId: string;
   };

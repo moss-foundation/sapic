@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import TestTreeData from "./assets/testTreeData.json";
-import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Scrollbar, Tree } from "./components";
+import { Resizable, ResizablePanel } from "./components";
 import Tabs from "./components/Tabs";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
@@ -11,7 +10,7 @@ import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import TestDropTarget from "./components/TestDropTarget";
+import SidebarExplorer from "./components/SidebarExplorer";
 
 interface ListItem {
   id: number;
@@ -96,7 +95,7 @@ function App() {
             <Tabs.Panels className="text-[var(--moss-primary)]">
               {DNDList.map((item) => (
                 <Tabs.Panel {...item} key={item.id} className="">
-                  {item.id === 1 ? <IsolatedTreeComponent /> : <div>{`Panel ${item.id}`}</div>}
+                  {item.id === 1 ? <SidebarExplorer /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}
             </Tabs.Panels>
@@ -111,42 +110,3 @@ function App() {
 }
 
 export default App;
-
-const IsolatedTreeComponent = () => {
-  const [searchInput, setSearchInput] = useState<string>("");
-
-  return (
-    <div className="flex flex-col h-full ">
-      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
-        <Input
-          iconLeft="Search"
-          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-          placeholder="Search"
-          size="sm"
-        />
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
-            <Icon icon="Plus" />
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content>
-            <DropdownMenu.Item label="Item" />
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </div>
-
-      <Resizable vertical className="grow">
-        <ResizablePanel>
-          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
-        </ResizablePanel>
-        <ResizablePanel>
-          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
-        </ResizablePanel>
-        <ResizablePanel>
-          <Tree tree={TestTreeData.tree} searchInput={searchInput} />
-        </ResizablePanel>
-      </Resizable>
-
-      <TestDropTarget />
-    </div>
-  );
-};
