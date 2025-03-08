@@ -1,6 +1,6 @@
 use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 use anyhow::Result;
-use moss_db::redb::EncryptedBincodeStore;
+use moss_db::encrypted_bincode_store::EncryptedBincodeStore;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
