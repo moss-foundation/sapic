@@ -23,7 +23,7 @@ use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
@@ -45,7 +45,7 @@ pub fn run() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {}));
+        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}));
 
     #[cfg(target_os = "macos")]
     {
