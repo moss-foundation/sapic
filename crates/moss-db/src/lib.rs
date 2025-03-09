@@ -8,12 +8,10 @@ pub mod sled;
 
 use anyhow::Result;
 use redb::{
-    Database, Key as ReDbKey, ReadTransaction as InnerReadTransaction,
-    WriteTransaction as InnerWriteTransaction,
+    Database, ReadTransaction as InnerReadTransaction, WriteTransaction as InnerWriteTransaction,
 };
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use std::{borrow::Borrow, path::Path};
+
+use std::{path::Path, sync::Arc};
 
 pub enum Transaction {
     Read(InnerReadTransaction),
@@ -34,11 +32,11 @@ pub trait DatabaseClient: Sized {
     fn begin_read(&self) -> Result<InnerReadTransaction>;
 }
 
-pub struct ReDbClient(Database);
+pub struct ReDbClient(Arc<Database>);
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        Ok(Self(Database::create(path)?))
+        Ok(Self(Arc::new(Database::create(path)?)))
     }
 }
 
@@ -50,20 +48,4 @@ impl DatabaseClient for ReDbClient {
     fn begin_read(&self) -> Result<InnerReadTransaction> {
         Ok(self.0.begin_read()?)
     }
-}
-
-pub trait Store<'a, K, V>
-where
-    K: ReDbKey + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned,
-{
-    type Table;
-    type Options;
-
-    fn write<F, T>(&self, f: F) -> Result<T>
-    where
-        F: FnOnce(Transaction, &Self::Table, &Self::Options) -> Result<T>;
-    fn read<F, T>(&self, f: F) -> Result<T>
-    where
-        F: FnOnce(Transaction, &Self::Table, &Self::Options) -> Result<T>;
 }

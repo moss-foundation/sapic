@@ -3,11 +3,10 @@ use redb::Key;
 use serde::{de::DeserializeOwned, Serialize};
 use std::borrow::Borrow;
 
-use crate::{bincode_table::BincodeTable, DatabaseClient, ReDbClient, Store, Transaction};
+use crate::{bincode_table::BincodeTable, DatabaseClient, ReDbClient, Transaction};
 
 pub struct BincodeStore<'a, K, V>
 where
-    'a: 'static,
     K: Key + 'static + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
@@ -20,34 +19,24 @@ where
     K: Key + 'static + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
-    pub fn new(client: ReDbClient, table: BincodeTable<K, V>) -> Self {
+    pub fn new(client: ReDbClient, table: BincodeTable<'a, K, V>) -> Self {
         Self { client, table }
     }
-}
 
-impl<'a, K, V> Store<'a, K, V> for BincodeStore<'a, K, V>
-where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned,
-{
-    type Table = BincodeTable<'a, K, V>;
-    type Options = ();
-
-    fn write<F, T>(&self, f: F) -> Result<T>
+    pub fn begin_write<F, T>(&self, f: F) -> Result<T>
     where
-        F: FnOnce(Transaction, &Self::Table, &Self::Options) -> Result<T>,
+        F: FnOnce(Transaction, &BincodeTable<'a, K, V>) -> Result<T>,
     {
         let write_txn = self.client.begin_write()?;
-        f(Transaction::Write(write_txn), &self.table, &())
+        f(Transaction::Write(write_txn), &self.table)
     }
 
-    fn read<F, T>(&self, f: F) -> Result<T>
+    pub fn begin_read<F, T>(&self, f: F) -> Result<T>
     where
-        F: FnOnce(Transaction, &Self::Table, &Self::Options) -> Result<T>,
+        F: FnOnce(Transaction, &BincodeTable<'a, K, V>) -> Result<T>,
     {
         let read_txn = self.client.begin_read()?;
-        f(Transaction::Read(read_txn), &self.table, &())
+        f(Transaction::Read(read_txn), &self.table)
     }
 }
 
@@ -70,7 +59,7 @@ mod tests {
         let vault_store = BincodeStore::new(client, TABLE_VAULT);
 
         vault_store
-            .write(|mut txn, table, _| -> Result<()> {
+            .begin_write(|mut txn, table| -> Result<()> {
                 table.insert(&mut txn, "my_key", &MyStruct { val: 42 })?;
 
                 Ok(txn.commit()?)
@@ -95,7 +84,7 @@ mod tests {
         let vault_store = BincodeStore::new(client, TABLE_VAULT);
 
         let r = vault_store
-            .read(|txn, table, _| {
+            .begin_write(|txn, table| {
                 // let t = txn.open_table(table.table)?;
 
                 // let r = t.get("my_key")?.unwrap();

@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use moss_app::service::AppService;
-use moss_db::redb::EncryptedBincodeStore;
+use moss_db::encrypted_bincode_store::EncryptedBincodeStore;
 use moss_fs::ports::FileSystem;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;

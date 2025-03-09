@@ -3100,7 +3100,10 @@ name = "moss_vault"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_app",
+ "moss_db",
  "redb",
+ "serde",
 ]
 
 [[package]]

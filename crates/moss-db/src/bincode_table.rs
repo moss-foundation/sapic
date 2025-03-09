@@ -8,7 +8,6 @@ use crate::Transaction;
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>
 where
-    'a: 'static,
     K: Key + 'static + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
@@ -18,7 +17,6 @@ where
 
 impl<'a, K, V> BincodeTable<'a, K, V>
 where
-    'a: 'static,
     K: Key + 'static + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {

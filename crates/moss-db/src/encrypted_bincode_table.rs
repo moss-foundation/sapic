@@ -11,8 +11,8 @@ use rand::RngCore;
 use redb::{Key, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::borrow::Borrow;
 use std::fmt::Debug;
+use std::{borrow::Borrow, cell::OnceCell};
 use zeroize::Zeroizing;
 
 use crate::Transaction;
@@ -38,90 +38,39 @@ impl Default for EncryptionOptions {
     }
 }
 
-pub struct WriteOnlyEncryptedBincodeTable<'a, K, V>(EncryptedBincodeTable<'a, K, V>)
-where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned;
-
-impl<'a, K, V> WriteOnlyEncryptedBincodeTable<'a, K, V>
-where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned,
-{
-    pub fn new(table: EncryptedBincodeTable<'a, K, V>) -> Self {
-        Self(table)
-    }
-
-    pub fn write(
-        &self,
-        txn: &mut Transaction,
-        key: K,
-        value: &V,
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<()> {
-        self.0.write(txn, key, value, password, aad, config)
-    }
-}
-
-pub struct ReadOnlyEncryptedBincodeTable<'a, K, V>(EncryptedBincodeTable<'a, K, V>)
-where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned;
-
-impl<'a, K, V> ReadOnlyEncryptedBincodeTable<'a, K, V>
-where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
-    V: Serialize + DeserializeOwned,
-{
-    pub fn new(table: EncryptedBincodeTable<'a, K, V>) -> Self {
-        Self(table)
-    }
-
-    pub fn read(
-        &self,
-        txn: &Transaction,
-        key: K,
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<V> {
-        self.0.read(txn, key, password, aad, config)
-    }
-}
-
 #[derive(Clone)]
 pub struct EncryptedBincodeTable<'a, K, V>
 where
-    'a: 'static,
     K: Key + 'static + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
     table: TableDefinition<'a, K, Vec<u8>>,
+    options: OnceCell<EncryptionOptions>,
     _marker: std::marker::PhantomData<V>,
 }
 
 impl<'a, K, V> EncryptedBincodeTable<'a, K, V>
 where
-    'a: 'static,
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
+    K: Key + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
     pub const fn new(table_name: &'static str) -> Self {
         Self {
             table: TableDefinition::new(table_name),
+            options: OnceCell::new(),
             _marker: std::marker::PhantomData,
         }
+    }
+
+    pub fn set_options(&self, options: EncryptionOptions) -> Result<()> {
+        self.options.set(options).unwrap();
+        Ok(())
     }
 
     pub fn clone(&self) -> Self {
         Self {
             table: self.table.clone(),
+            options: self.options.clone(),
             _marker: std::marker::PhantomData,
         }
     }
