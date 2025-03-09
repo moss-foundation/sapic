@@ -58,3 +58,4 @@ crates/moss-git/test-repo-lab/
 crates/moss-git-hosting-provider/github_oauth.json
 crates/moss-git-hosting-provider/gitlab_oauth.json
 /logs/
+/crates/moss-collection/Collections

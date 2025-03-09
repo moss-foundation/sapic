@@ -1,5 +1,5 @@
 use crate::models::types::request_types::{
-    HeaderItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody,
+    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody,
 };
 use serde::Serialize;
 use std::path::PathBuf;
@@ -33,7 +33,7 @@ pub enum CreateRequestProtocolSpecificPayload {
         method: HttpMethod,
         query_params: Vec<QueryParamItem>,
         path_params: Vec<PathParamItem>,
-        headers: Vec<HeaderItem>,
+        headers: Vec<HeaderParamItem>,
         body: Option<RequestBody>,
     },
 }
