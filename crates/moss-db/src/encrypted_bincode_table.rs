@@ -11,11 +11,19 @@ use rand::RngCore;
 use redb::{Key, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::borrow::Borrow;
 use std::fmt::Debug;
-use std::{borrow::Borrow, cell::OnceCell};
 use zeroize::Zeroizing;
 
 use crate::Transaction;
+
+pub const DEFAULT_ENCRYPTION_OPTIONS: EncryptionOptions = EncryptionOptions {
+    memory_cost: 65536, // 64MB
+    time_cost: 10,
+    parallelism: 4,
+    salt_len: 32,
+    nonce_len: 12,
+};
 
 #[derive(Debug, Clone)]
 pub struct EncryptionOptions {
@@ -45,7 +53,7 @@ where
     V: Serialize + DeserializeOwned,
 {
     table: TableDefinition<'a, K, Vec<u8>>,
-    options: OnceCell<EncryptionOptions>,
+    options: EncryptionOptions,
     _marker: std::marker::PhantomData<V>,
 }
 
@@ -54,17 +62,12 @@ where
     K: Key + Borrow<K::SelfType<'a>>,
     V: Serialize + DeserializeOwned,
 {
-    pub const fn new(table_name: &'static str) -> Self {
+    pub const fn new(table_name: &'static str, options: EncryptionOptions) -> Self {
         Self {
             table: TableDefinition::new(table_name),
-            options: OnceCell::new(),
+            options,
             _marker: std::marker::PhantomData,
         }
-    }
-
-    pub fn set_options(&self, options: EncryptionOptions) -> Result<()> {
-        self.options.set(options).unwrap();
-        Ok(())
     }
 
     pub fn clone(&self) -> Self {

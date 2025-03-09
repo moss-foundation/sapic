@@ -15,7 +15,6 @@ use moss_app::service::InstantiationType;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
 use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
-use moss_db::redb::{EncryptedBincodeStore, ReDbClient};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
@@ -29,20 +28,14 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::Layer;
 use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-use moss_db::redb::{EncryptedBincodeTable, EncryptionConfig};
 use moss_logging::LoggingService;
 use moss_session::SessionService;
-
-const TABLE_VAULT_2: EncryptedBincodeTable<&str, moss_app::manager::MockVault> =
-    EncryptedBincodeTable::new("vault_2");
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -76,28 +69,29 @@ pub fn run() {
             let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
             // Now we put `logs` folder at the project root for easier development
-            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR").expect("Environment variable APP_LOG_DIR is not set").into();
-            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR").expect("Environment variable SESSION_LOG_DIR is not set").into();
-            let logging_service = LoggingService::new(
-                &app_log_dir,
-                &session_log_dir,
-                &session_service,
-            )?;
+            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
+                .expect("Environment variable APP_LOG_DIR is not set")
+                .into();
+            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
+                .expect("Environment variable SESSION_LOG_DIR is not set")
+                .into();
+            let logging_service =
+                LoggingService::new(&app_log_dir, &session_log_dir, &session_service)?;
 
-            let client = ReDbClient::new("encrypted.db").unwrap();
-            let store = EncryptedBincodeStore::new(
-                client,
-                TABLE_VAULT_2,
-                EncryptionConfig {
-                    memory_cost: 65536,
-                    time_cost: 10,
-                    parallelism: 4,
-                    salt_len: 32,
-                    nonce_len: 12,
-                },
-            );
+            // let client = ReDbClient::new("encrypted.db").unwrap();
+            // let store = EncryptedBincodeStore::new(
+            //     client,
+            //     TABLE_VAULT_2,
+            //     EncryptionConfig {
+            //         memory_cost: 65536,
+            //         time_cost: 10,
+            //         parallelism: 4,
+            //         salt_len: 32,
+            //         nonce_len: 12,
+            //     },
+            // );
 
-            let app_manager = AppManager::new(app_handle.clone(), store)
+            let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);

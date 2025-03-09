@@ -58,6 +58,8 @@ where
 mod tests {
     use serde::{Deserialize, Serialize};
 
+    use crate::encrypted_bincode_table::DEFAULT_ENCRYPTION_OPTIONS;
+
     use super::*;
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -66,7 +68,7 @@ mod tests {
     }
 
     const TABLE_VAULT_2: EncryptedBincodeTable<&str, MyStruct> =
-        EncryptedBincodeTable::new("vault_2");
+        EncryptedBincodeTable::new("vault_2", DEFAULT_ENCRYPTION_OPTIONS);
     const TEST_PASSWORD: &[u8] = b"test_password_123";
     const TEST_AAD: &[u8] = b"additional_authenticated_data";
 

@@ -2925,7 +2925,6 @@ dependencies = [
  "derive_more 2.0.1",
  "fnv",
  "log",
- "moss_db",
  "parking_lot 0.12.3",
  "serde",
  "tauri",
@@ -3046,7 +3045,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_app",
- "moss_db",
  "moss_fs",
  "serde",
  "serde_json",

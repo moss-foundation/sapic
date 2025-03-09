@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-moss_db.workspace = true
 moss_app.workspace = true
 moss_fs.workspace = true
 ts-rs.workspace = true
