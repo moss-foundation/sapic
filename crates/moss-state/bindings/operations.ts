@@ -2,4 +2,4 @@
 import type { Defaults } from "./types";
 import type { Preferences } from "./types";
 
-export type DescribeAppStateOutput = { preferences: Preferences, defaults: Defaults, };
+export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults };

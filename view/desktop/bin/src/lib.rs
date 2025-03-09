@@ -76,8 +76,13 @@ pub fn run() {
             let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
             // Now we put `logs` folder at the project root for easier development
-            let logging_service =
-                LoggingService::new(Path::new("../../../logs"), &session_service)?;
+            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR").expect("Environment variable APP_LOG_DIR is not set").into();
+            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR").expect("Environment variable SESSION_LOG_DIR is not set").into();
+            let logging_service = LoggingService::new(
+                &app_log_dir,
+                &session_log_dir,
+                &session_service,
+            )?;
 
             let client = ReDbClient::new("encrypted.db").unwrap();
             let store = EncryptedBincodeStore::new(

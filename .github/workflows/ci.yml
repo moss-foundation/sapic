@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -43,7 +43,6 @@ jobs:
             **.js
             **.jsx
             package.json
-
 
   rust-general-workflows:
     name: Rust General Workflows
@@ -91,11 +90,11 @@ jobs:
           - name: Lint
             command: pnpm run lint -- --quiet
 
-          - name: Test Packages (Vitest)
+          - name: Test Packages
             command: pnpm run test --project packages
 
-          - name: Test Desktop (Vitest)
-            command: pnpm run test --project desktop
+          - name: Test Moss-Tabs
+            command: pnpm run test --project moss-tabs
 
     timeout-minutes: 30
     steps:
