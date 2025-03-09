@@ -1,8 +1,7 @@
+use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use ts_rs::TS;
 
 #[derive(Clone, Debug, Default)]
 pub struct Url {
@@ -239,14 +238,19 @@ pub struct HttpRequestFile {
     pub query_params: HashMap<String, QueryParamBody>,
     pub path_params: HashMap<String, PathParamBody>,
     pub headers: HashMap<String, HeaderParamBody>,
+    pub body: Option<RequestBody>,
 }
 
 impl ToString for HttpRequestFile {
     fn to_string(&self) -> String {
+        // FIXME: We need to autoformat the document, but it will mess up with raw string
+        // So we have to autoformat each relevant node
+        // Maybe there's a more elegant solution
         let mut document = KdlDocument::new();
         let nodes = document.nodes_mut();
 
-        let url_node: KdlNode = self.url.clone().into();
+        let mut url_node: KdlNode = self.url.clone().into();
+        url_node.autoformat();
         nodes.push(url_node);
 
         let mut query_params_node = KdlNode::new(PARAMS_LIT);
@@ -258,6 +262,7 @@ impl ToString for HttpRequestFile {
             children.nodes_mut().push(param_node);
         }
         query_params_node.set_children(children);
+        query_params_node.autoformat();
         nodes.push(query_params_node);
 
         let mut path_params_node = KdlNode::new(PARAMS_LIT);
@@ -269,6 +274,7 @@ impl ToString for HttpRequestFile {
             children.nodes_mut().push(param_node);
         }
         path_params_node.set_children(children);
+        path_params_node.autoformat();
         nodes.push(path_params_node);
 
         let mut headers_node = KdlNode::new(HEADERS_LIT);
@@ -279,9 +285,13 @@ impl ToString for HttpRequestFile {
             children.nodes_mut().push(header_node);
         }
         headers_node.set_children(children);
+        headers_node.autoformat();
         nodes.push(headers_node);
 
-        document.autoformat();
+        if let Some(body) = self.body.clone() {
+            nodes.push(body.into());
+        }
+
         document
             .into_iter()
             .map(|node| node.to_string())

@@ -1,7 +1,6 @@
 use crate::models::collection::HttpRequestType::{Delete, Get, Post, Put};
 use crate::models::collection::RequestType;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -88,4 +87,11 @@ pub struct HeaderItem {
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: HeaderOptions,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub enum RequestBody {
+    Json(String),
 }
