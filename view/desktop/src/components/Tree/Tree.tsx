@@ -30,13 +30,15 @@ export const TreeContext = createContext<TreeContextProps>({
 });
 
 export const Tree = ({
+  id,
   tree: initialTree,
   horizontalPadding = 16,
   nodeOffset = 16,
   onTreeUpdate,
   searchInput,
 }: TreeProps) => {
-  const treeId = useId();
+  const reactUniqueId = useId();
+  const treeId = id || reactUniqueId;
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
   const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {

@@ -1,5 +1,12 @@
 export type SortTypes = "none" | "order" | "alphabetically";
 
+export interface Collection {
+  id: number | string;
+  "type": "collection",
+  "order": number,
+  "tree": NodeProps
+}
+
 export interface NodeProps {
   id: string | number;
   type: string;
@@ -16,6 +23,7 @@ export interface TreeNodeProps extends NodeProps {
 }
 
 export interface TreeProps {
+  id?: string | number;
   tree: NodeProps;
   horizontalPadding?: number;
   nodeOffset?: number;
@@ -24,7 +32,7 @@ export interface TreeProps {
 }
 
 export interface TreeContextProps {
-  treeId: string;
+  treeId: string | number;
   horizontalPadding: number;
   nodeOffset: number;
   searchInput?: string;

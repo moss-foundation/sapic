@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
-import { DropdownMenu, Icon, Input, Resizable, ResizablePanel, Tree } from "@/components";
+import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "../assets/testTreeData.json";
+import TestTreeData2 from "../assets/testTreeData2.json";
+import TestTreeData3 from "../assets/testTreeData3.json";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import { cn } from "@/utils";
+import { cn, swapListById } from "@/utils";
+import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 
-import { CreateNewCollectionFromTreeNodeEvent, NodeProps } from "./Tree/types";
+import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
 export const SidebarExplorer = () => {
@@ -18,12 +22,15 @@ export const SidebarExplorer = () => {
 
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [collections, setCollections] = useState<NodeProps[]>([TestTreeData.tree, TestTreeData.tree]);
+  const [collections, setCollections] = useState<Collection[]>([
+    TestTreeData as Collection,
+    TestTreeData2 as Collection,
+    TestTreeData3 as Collection,
+  ]);
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
     if (!element) return;
-
     return dropTargetForElements({
       element,
       getData: () => ({
@@ -31,19 +38,33 @@ export const SidebarExplorer = () => {
         data: {},
       }),
       canDrop({ source }) {
-        return source.data.type === "TreeNode";
+        return ["TreeNode", "TreeNodeRoot"].includes(source.data.type as string);
       },
-      onDragStart() {
-        setShowCollectionCreationZone(true);
+      onDragStart({ source }) {
+        if (source.data.type === "TreeNode") setShowCollectionCreationZone(true);
       },
-      onDragEnter() {
-        setShowCollectionCreationZone(true);
+      onDragEnter({ source }) {
+        if (source.data.type === "TreeNode") setShowCollectionCreationZone(true);
       },
       onDragLeave() {
         setShowCollectionCreationZone(false);
       },
-      onDrop() {
+      onDrop({ location, source }) {
         setShowCollectionCreationZone(false);
+
+        if (location.current.dropTargets.length === 0) return;
+
+        const sourceCollectionId = getActualDropSourceTarget(source).treeId;
+        const locationCollectionId = location.current.dropTargets[0].data.treeId as string;
+        const closestEdge = location.current.dropTargets[0].data.closestEdge as Edge;
+
+        if (locationCollectionId === sourceCollectionId || !sourceCollectionId || !locationCollectionId) {
+          return;
+        }
+
+        setCollections(
+          (prevCollections) => swapListById(sourceCollectionId, locationCollectionId, prevCollections, closestEdge)!
+        );
       },
     });
   }, []);
@@ -55,13 +76,18 @@ export const SidebarExplorer = () => {
       setCollections((prevCollections) => [
         ...prevCollections,
         {
-          "id": "New Collection",
-          "order": prevCollections.length + 1,
-          "type": "folder",
-          "isFolder": true,
-          "isExpanded": true,
-          "isRoot": true,
-          "childNodes": [source.node],
+          id: `collectionId${prevCollections.length + 1}`,
+          type: "collection",
+          order: prevCollections.length + 1,
+          tree: {
+            "id": "New Collection",
+            "order": prevCollections.length + 1,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": true,
+            "isRoot": true,
+            "childNodes": [source.node],
+          },
         },
       ]);
     };
@@ -95,20 +121,15 @@ export const SidebarExplorer = () => {
         </DropdownMenu.Root>
       </div>
 
-      <Resizable vertical className="grow">
+      <Scrollbar className="h-full">
         {collections.map((collection) => (
-          <ResizablePanel>
-            <Tree tree={collection} searchInput={searchInput} />
-          </ResizablePanel>
+          <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
         ))}
-      </Resizable>
-
+      </Scrollbar>
       {showCollectionCreationZone && <CollectionCreationZone />}
     </div>
   );
 };
-
-export default SidebarExplorer;
 
 const CollectionCreationZone = () => {
   const [canDrop, setCanDrop] = useState<boolean | null>(null);
@@ -174,3 +195,5 @@ const CollectionCreationZone = () => {
     </div>
   );
 };
+
+export default SidebarExplorer;

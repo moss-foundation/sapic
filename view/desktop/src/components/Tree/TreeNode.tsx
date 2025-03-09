@@ -3,8 +3,9 @@ import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
 
-import { ContextMenu, DropdownMenu, Icon, Scrollbar, TreeContext } from "..";
+import { ContextMenu, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
+import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
@@ -26,6 +27,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
+  const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
@@ -60,6 +62,12 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     handleRenamingFormCancel: handleRenamingRootFormCancel,
   } = useNodeRenamingForm(node, onNodeUpdate);
 
+  const { closestEdge, isDragging: isRootDragging } = useDraggableRootNode(
+    draggableRootRef,
+    node,
+    treeId,
+    isRenamingRootNode
+  );
   useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
@@ -97,8 +105,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className="flex flex-col w-full h-full ">
-        <div className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] ">
+      <div className="flex flex-col w-full relative">
+        <div
+          ref={draggableRootRef}
+          className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] "
+        >
           {isRenamingRootNode ? (
             <div className="flex gap-1 items-center grow cursor-pointer">
               <Icon
@@ -161,6 +172,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           </div>
+          {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
         </div>
 
         {shouldRenderChildNodes && (

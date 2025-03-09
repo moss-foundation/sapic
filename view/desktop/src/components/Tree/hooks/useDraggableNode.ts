@@ -6,7 +6,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 export const useDraggableNode = (
     draggableRef: React.RefObject<HTMLButtonElement>,
     node: NodeProps,
-    treeId: string,
+    treeId: string | number,
     isRenamingNode: boolean,
     setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
