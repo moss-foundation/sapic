@@ -28,7 +28,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
-  const draggableRef = useRef<HTMLButtonElement>(null);
+  const draggableNodeRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
@@ -68,7 +68,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     treeId,
     isRenamingRootNode
   );
-  useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
+  useDraggableNode(draggableNodeRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const shouldRenderChildNodes =
@@ -224,7 +224,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger asChild>
             <button
-              ref={draggableRef}
+              ref={draggableNodeRef}
               style={{ paddingLeft, paddingRight }}
               onClick={node.isFolder ? handleFolderClick : undefined}
               className="flex gap-1 w-full min-w-0 grow items-center cursor-pointer focus-within:outline-none focus-within:bg-[#ebecf0] dark:focus-within:bg-[#747474] relative hover:bg-[#ebecf0] dark:hover:bg-[#434343]"
