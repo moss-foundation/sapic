@@ -9,9 +9,9 @@ sled.workspace = true
 redb.workspace = true
 bincode.workspace = true
 serde = { workspace = true, features = ["derive"] }
-aes-gcm = "0.10.3"
-rand = "0.8.5"
-pbkdf2 = "0.12.2"
-sha2 = "0.10.8"
-argon2 = "0.5.1"
+aes-gcm.workspace = true
+rand.workspace = true
+pbkdf2.workspace = true
+sha2.workspace = true
+argon2.workspace = true
 zeroize = { version = "1.7", features = ["zeroize_derive"] }
