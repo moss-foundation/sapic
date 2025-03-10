@@ -23,13 +23,11 @@ use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::Layer;
 use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
@@ -47,7 +45,7 @@ pub fn run() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {}));
+        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}));
 
     #[cfg(target_os = "macos")]
     {
@@ -71,13 +69,27 @@ pub fn run() {
             let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
             // Now we put `logs` folder at the project root for easier development
-            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR").expect("Environment variable APP_LOG_DIR is not set").into();
-            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR").expect("Environment variable SESSION_LOG_DIR is not set").into();
-            let logging_service = LoggingService::new(
-                &app_log_dir,
-                &session_log_dir,
-                &session_service,
-            )?;
+            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
+                .expect("Environment variable APP_LOG_DIR is not set")
+                .into();
+            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
+                .expect("Environment variable SESSION_LOG_DIR is not set")
+                .into();
+            let logging_service =
+                LoggingService::new(&app_log_dir, &session_log_dir, &session_service)?;
+
+            // let client = ReDbClient::new("encrypted.db").unwrap();
+            // let store = EncryptedBincodeStore::new(
+            //     client,
+            //     TABLE_VAULT_2,
+            //     EncryptionConfig {
+            //         memory_cost: 65536,
+            //         time_cost: 10,
+            //         parallelism: 4,
+            //         salt_len: 32,
+            //         nonce_len: 12,
+            //     },
+            // );
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
