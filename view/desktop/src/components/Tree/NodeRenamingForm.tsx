@@ -63,7 +63,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="grow w-full">
+    <form onSubmit={handleSubmit} className="w-full grow">
       <input
         ref={inputRef}
         value={value}
@@ -71,7 +71,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         autoFocus
         minLength={1}
         maxLength={100}
-        className="flex gap-1 w-full min-w-0 grow items-center focus-within:outline-none relative bg-transparent"
+        className="relative flex w-full min-w-0 grow items-center gap-1 bg-transparent focus-within:outline-none"
         onKeyUp={handleKeyUp}
         onBlur={isMac ? undefined : handleBlur}
         required

@@ -61,7 +61,7 @@ export function DropIndicator({
       className={cn(
         `pointer-events-none absolute z-10 box-border bg-sky-700`,
         {
-          "before:absolute before:h-(--terminal-size) before:w-(--terminal-size) before:rounded-full before:border-(length:--line-thickness) before:border-solid before:border-sky-700  before:content-['']":
+          "before:absolute before:h-(--terminal-size) before:w-(--terminal-size) before:rounded-full before:border-(length:--line-thickness) before:border-solid before:border-sky-700 before:content-['']":
             noTerminal === false,
         },
         orientationStyles[orientation],

@@ -6,4 +6,4 @@ export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";
 export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
 export * from "./Icon";
 export * from "./Tree/Tree";
-export * from "./Input"
+export * from "./Input";

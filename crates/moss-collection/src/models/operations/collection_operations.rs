@@ -1,5 +1,6 @@
-use crate::kdl::foundations::http::Url;
-use crate::models::types::request_types::{HeaderItem, HttpMethod, PathParamItem, QueryParamItem};
+use crate::models::types::request_types::{
+    HeaderItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody,
+};
 use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
@@ -33,6 +34,7 @@ pub enum CreateRequestProtocolSpecificPayload {
         query_params: Vec<QueryParamItem>,
         path_params: Vec<PathParamItem>,
         headers: Vec<HeaderItem>,
+        body: Option<RequestBody>,
     },
 }
 

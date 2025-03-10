@@ -41,7 +41,7 @@ dist/
 **/*.rs.bk
 
 /*.txt
-/*.db*
+*.db
 /*.session*
 
 ### IDEs and Editors

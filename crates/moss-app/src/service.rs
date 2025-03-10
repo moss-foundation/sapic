@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use derive_more::{Deref, DerefMut};
 use fnv::FnvHashMap;
+use log::debug;
 use parking_lot::RwLock;
 use std::{
     any::{Any, TypeId},
@@ -10,7 +11,6 @@ use std::{
     },
 };
 use tauri::AppHandle;
-use tracing::{event, Level};
 
 pub enum InstantiationType {
     Instant,
@@ -148,7 +148,7 @@ impl ServiceCollection {
                     .services
                     .insert(type_id.clone(), Arc::new(service));
 
-                event!(Level::DEBUG, "Service {service_name} was activated");
+                debug!("Service {service_name} was activated");
             }
             InstantiationType::Delayed => {
                 state_lock.pending_services.insert(
@@ -205,8 +205,7 @@ impl ServiceCollection {
 
                 state_lock.services.insert(type_id, Arc::clone(&service));
                 service_metadata.set_instantiation_mode(ServiceInstantiationMode::Active);
-                event!(
-                    Level::DEBUG,
+                debug!(
                     "Service {} was activated upon request",
                     service_metadata.service_name
                 );

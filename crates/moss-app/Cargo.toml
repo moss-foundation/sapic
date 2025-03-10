@@ -5,8 +5,10 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
+serde = { workspace = true, features = ["derive"] }
 derive_more = { workspace = true, features = ["full"] }
 fnv.workspace = true
 parking_lot.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 tracing.workspace = true
+log.workspace = true
