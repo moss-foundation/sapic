@@ -31,6 +31,7 @@ export const SidebarExplorer = () => {
   useEffect(() => {
     const element = dropTargetToggleRef.current;
     if (!element) return;
+
     return dropTargetForElements({
       element,
       getData: () => ({

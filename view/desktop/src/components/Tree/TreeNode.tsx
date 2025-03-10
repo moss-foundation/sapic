@@ -175,7 +175,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
         </div>
 
-        {shouldRenderChildNodes && (
+        {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="w-full h-full">
             <ul ref={dropTargetFolderRef} className="h-full w-full">
               {filteredChildNodes.map((childNode) => (
