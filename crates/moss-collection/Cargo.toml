@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 moss_fs.workspace = true
 moss_app.workspace = true
+moss_db.workspace = true
 anyhow.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }

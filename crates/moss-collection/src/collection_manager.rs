@@ -6,6 +6,7 @@ use std::{path::PathBuf, sync::Arc};
 use thiserror::Error;
 use tokio::sync::OnceCell;
 
+use crate::storage::CollectionStore;
 use crate::{
     collection_handle::{CollectionHandle, CollectionState},
     indexing::CollectionIndexer,
@@ -36,6 +37,8 @@ pub enum CollectionOperationError {
 
 pub struct CollectionManager {
     fs: Arc<dyn FileSystem>,
+    new_collection_store: Arc<dyn CollectionStore>, // FIXME: rename to collection_store after refactoring
+
     collection_store: Arc<dyn CollectionMetadataStore>,
     // TODO: extract request store
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
@@ -46,12 +49,14 @@ pub struct CollectionManager {
 impl CollectionManager {
     pub fn new(
         fs: Arc<dyn FileSystem>,
+        new_collection_store: Arc<dyn CollectionStore>,
         collection_store: Arc<dyn CollectionMetadataStore>,
         collection_request_substore: Arc<dyn CollectionRequestSubstore>,
         indexer: Arc<dyn CollectionIndexer>,
     ) -> Result<Self> {
         Ok(Self {
             fs,
+            new_collection_store,
             collection_store,
             collection_request_substore,
             collections: OnceCell::new(),
@@ -180,8 +185,12 @@ impl CollectionManager {
         if input.name.trim().is_empty() {
             return Err(CollectionOperationError::EmptyName.into());
         }
+
         let full_path = input.path.join(&input.name);
         let collections = self.collections().await?;
+
+        let (mut txn, table) = self.new_collection_store.begin_write()?;
+
         {
             let read_lock = collections.read().await;
             if read_lock.contains_key(&full_path) {
@@ -192,16 +201,18 @@ impl CollectionManager {
                 .into());
             }
         }
-        self.fs.create_dir(&full_path).await?;
-        // TODO: init repo
 
-        self.collection_store.put_collection_item(
-            full_path.clone(),
-            CollectionMetadataEntity {
+        table.insert(
+            &mut txn,
+            full_path.to_string_lossy().to_string(),
+            &CollectionMetadataEntity {
                 order: None,
                 requests: Default::default(),
             },
         )?;
+
+        self.fs.create_dir(&full_path).await?;
+        // TODO: init repo
 
         {
             let mut write_lock = collections.write().await;
@@ -216,7 +227,50 @@ impl CollectionManager {
             );
         }
 
-        Ok(())
+        Ok(txn.commit()?)
+
+        // if input.name.trim().is_empty() {
+        //     return Err(CollectionOperationError::EmptyName.into());
+        // }
+
+        // let full_path = input.path.join(&input.name);
+        // let collections = self.collections().await?;
+
+        // {
+        //     let read_lock = collections.read().await;
+        //     if read_lock.contains_key(&full_path) {
+        //         return Err(CollectionOperationError::DuplicateName {
+        //             name: input.name,
+        //             path: full_path,
+        //         }
+        //         .into());
+        //     }
+        // }
+        // self.fs.create_dir(&full_path).await?;
+        // // TODO: init repo
+
+        // self.collection_store.put_collection_item(
+        //     full_path.clone(),
+        //     CollectionMetadataEntity {
+        //         order: None,
+        //         requests: Default::default(),
+        //     },
+        // )?;
+
+        // {
+        //     let mut write_lock = collections.write().await;
+        //     (*write_lock).insert(
+        //         full_path.clone(),
+        //         CollectionHandle::new(
+        //             Arc::clone(&self.fs),
+        //             Arc::clone(&self.collection_request_substore),
+        //             input.name,
+        //             None,
+        //         ),
+        //     );
+        // }
+
+        // Ok(())
     }
 
     // TODO: In the future, we need to test the impact of this on the user experience
@@ -342,6 +396,7 @@ impl AppService for CollectionManager {
 
 #[cfg(test)]
 mod tests {
+    use dashmap::DashMap;
     use moss_fs::adapters::disk::DiskFileSystem;
     use std::collections::HashMap;
 

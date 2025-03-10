@@ -10,8 +10,7 @@ pub struct RequestMetadataEntity {
     pub order: Option<usize>,
     pub variants: HashMap<String, RequestVariantEntity>,
 }
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CollectionMetadataEntity {
     pub order: Option<usize>,
     pub requests: HashMap<Vec<u8>, RequestMetadataEntity>,
