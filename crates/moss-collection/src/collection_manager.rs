@@ -211,9 +211,6 @@ impl CollectionManager {
             },
         )?;
 
-        self.fs.create_dir(&full_path).await?;
-        // TODO: init repo
-
         {
             let mut write_lock = collections.write().await;
             (*write_lock).insert(
@@ -226,6 +223,9 @@ impl CollectionManager {
                 ),
             );
         }
+
+        self.fs.create_dir(&full_path).await?;
+        // TODO: init repo
 
         Ok(txn.commit()?)
 
