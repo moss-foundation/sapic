@@ -1,3 +1,4 @@
+use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::foundations::http::{
     HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
     QueryParamBody, QueryParamOptions, Url,
@@ -7,7 +8,6 @@ use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
 use thiserror::Error;
-
 // FIXME: `KDLDocument::get_arg` assumes a node has only one argument
 // So it cannot handle arrays such as `data 1 2 3 4 5`
 
@@ -17,6 +17,14 @@ pub enum ParseError {
     MissingParamsType,
     #[error("A `params` node has invalid type")]
     InvalidParamsType,
+    #[error("A `body` node is missing type")]
+    MissingBodyType,
+    #[error("A `body` node has invalid type")]
+    InvalidBodyType,
+    #[error("A `body` node is empty")]
+    EmptyBody,
+    #[error("A `body` node is ill-formatted")]
+    IllFormattedBody,
 }
 
 #[macro_export]
@@ -219,6 +227,43 @@ fn parse_header_options(node: &KdlNode) -> Result<HeaderOptions> {
     }
 }
 
+fn parse_body_node(node: &KdlNode) -> Result<RequestBody> {
+    let typ = node
+        .get("type")
+        .ok_or_else(|| ParseError::MissingBodyType)
+        .map(|value| value.as_string())?
+        // If the type's value is not a string
+        .ok_or_else(|| ParseError::InvalidBodyType)?;
+    match typ {
+        BODY_TYPE_JSON => parse_json_body(node),
+        _ => Err(ParseError::InvalidBodyType.into()),
+    }
+}
+
+fn parse_json_body(node: &KdlNode) -> Result<RequestBody> {
+    let raw_content = node
+        .children()
+        .ok_or(ParseError::EmptyBody)?
+        .nodes()
+        .into_iter()
+        .next()
+        .ok_or(ParseError::EmptyBody)?
+        .name()
+        .to_string();
+
+    let json = raw_content
+        .strip_prefix(RAW_STRING_PREFIX)
+        .ok_or(ParseError::IllFormattedBody)?
+        .strip_suffix(RAW_STRING_SUFFIX)
+        .ok_or(ParseError::IllFormattedBody)?
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Ok(RequestBody::Json(json.to_string()))
+}
+
 pub fn parse(input: &str) -> Result<HttpRequestFile> {
     let document: KdlDocument = input.parse()?;
     let mut request = HttpRequestFile::default();
@@ -232,7 +277,9 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
                 // FIXME: Should we handle duplicate query/path param nodes?
                 let typ = node
                     .get("type")
-                    .and_then(|value| value.as_string())
+                    .ok_or_else(|| ParseError::MissingParamsType)
+                    .map(|value| value.as_string())?
+                    // If the type's value is not a string
                     .ok_or_else(|| ParseError::InvalidParamsType)?;
 
                 match typ {
@@ -245,9 +292,13 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
                     _ => return Err(ParseError::InvalidParamsType.into()),
                 }
             }
+            BODY_LIT => {
+                request.body = Some(parse_body_node(&node)?);
+            }
             HEADERS_LIT => {
                 request.headers = parse_headers_node(&node)?;
             }
+
             _ => {}
         }
     }
@@ -257,7 +308,9 @@ pub fn parse(input: &str) -> Result<HttpRequestFile> {
 
 #[cfg(test)]
 mod tests {
+    use crate::kdl::foundations::body::RequestBody;
     use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
+
     use kdl::{KdlDocument, KdlNode};
     use miette::{Diagnostic, NamedSource, SourceSpan};
     use std::fs;
@@ -336,5 +389,22 @@ mod tests {
         .unwrap();
         let request = super::parse(&content).unwrap();
         println!("{}", request.to_string());
+    }
+
+    #[test]
+    fn test_body() {
+        let json = "{\n    \"key\": \"value\"\n}";
+
+        let body = RequestBody::Json(json.to_string());
+        let node: KdlNode = body.into();
+        fs::write("test_output.kdl", node.to_string()).unwrap();
+    }
+
+    #[test]
+    fn test_raw_string() {
+        let document = KdlDocument::parse(&fs::read_to_string("test.kdl").unwrap()).unwrap();
+        let body_node = document.nodes().into_iter().next().unwrap();
+        let inner = body_node.children().unwrap();
+        dbg!(inner.nodes().into_iter().next().unwrap());
     }
 }

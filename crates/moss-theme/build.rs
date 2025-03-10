@@ -23,5 +23,22 @@ fn main() -> ExitCode {
         .unwrap_or_else(|err| {
             eprintln!("Failed to execute command: {}", err);
             ExitCode::FAILURE
+        });
+    Command::new(python_cmd)
+        .args(["../../misc/ts_exports_injector.py"])
+        .status()
+        .map(|status| {
+            if status.success() {
+                ExitCode::SUCCESS
+            } else {
+                eprintln!("Command exited with non-zero status: {:?}", status);
+                status
+                    .code()
+                    .map_or(ExitCode::FAILURE, |code| ExitCode::from(code as u8))
+            }
+        })
+        .unwrap_or_else(|err| {
+            eprintln!("Failed to execute command: {}", err);
+            ExitCode::FAILURE
         })
 }
