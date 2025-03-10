@@ -1,5 +1,5 @@
 use aes_gcm::{
-    aead::{Aead, KeyInit, Payload},
+    aead::{rand_core::RngCore, Aead, KeyInit, Payload},
     Aes256Gcm, Key as AesKey, Nonce,
 };
 use anyhow::{anyhow, Context as _, Result};
@@ -7,7 +7,6 @@ use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
-use rand::RngCore;
 use redb::{Key, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;

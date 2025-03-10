@@ -85,7 +85,7 @@ chrono = "0.4.40"
 uuid = "1.15.1"
 webbrowser = "1.0.3"
 miette = "7.5.0"
-
+zeroize = "1.7"
 aes-gcm = "0.10.3"
 pbkdf2 = "0.12.2"
 sha2 = "0.10.8"
