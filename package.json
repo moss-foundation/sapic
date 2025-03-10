@@ -13,8 +13,7 @@
     "test": "vitest --globals"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,css,md,json}": "prettier --plugin=prettier-plugin-tailwindcss --write",
-    "*.rs": "rustfmt"
+    "*.{js,jsx,ts,tsx,css,md,json}": "prettier --plugin=prettier-plugin-tailwindcss --write"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",

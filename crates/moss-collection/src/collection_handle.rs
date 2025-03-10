@@ -1,4 +1,5 @@
 use crate::models::collection::RequestType;
+use crate::models::types::request_types::RequestBody;
 use crate::{
     kdl::foundations::http::{
         HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -17,7 +18,6 @@ use anyhow::Result;
 use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use parking_lot::RwLock;
 use patricia_tree::PatriciaMap;
-use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
 
@@ -144,6 +144,7 @@ fn create_http_requestfile(
     query_params: Vec<QueryParamItem>,
     path_params: Vec<PathParamItem>,
     headers: Vec<HeaderItem>,
+    body: Option<RequestBody>,
 ) -> Result<HttpRequestFile> {
     let mut transformed_query_params = HashMap::new();
     for item in &query_params {
@@ -198,6 +199,9 @@ fn create_http_requestfile(
         query_params: transformed_query_params,
         path_params: transformed_path_params,
         headers: transformed_headers,
+        body: body.map(|b| match b {
+            RequestBody::Json(s) => crate::kdl::body::RequestBody::Json(s),
+        }),
     })
 }
 
@@ -280,12 +284,14 @@ impl CollectionHandle {
                 query_params,
                 path_params,
                 headers,
+                body,
             }) => {
                 let request_file = create_http_requestfile(
                     input.url.as_deref(),
                     query_params,
                     path_params,
                     headers,
+                    body,
                 )?;
                 self.create_http_request_handle(&key, &name, &method)?;
                 (
@@ -477,6 +483,7 @@ mod tests {
                     disabled: false,
                     options: HeaderOptions { propagate: true },
                 }],
+                body: None,
             }),
         };
 
@@ -689,27 +696,5 @@ fn method_to_request_type_str(method: &HttpMethod) -> String {
         HttpMethod::Get => "get".to_string(),
         HttpMethod::Put => "put".to_string(),
         HttpMethod::Delete => "del".to_string(),
-    }
-}
-
-// TODO: Delete this
-mod t {
-    use std::path::PathBuf;
-    use tokio::fs::OpenOptions;
-
-    #[test]
-    fn test_create_dir_all() {
-        let path_buf = PathBuf::from("Collections\\Pre-renaming\\requests\\1.request\\1.get.sapic");
-
-        let mut opts = OpenOptions::new();
-        opts.write(true).create(true);
-
-        tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on(async {
-                let mut file = opts.open(path_buf).await.unwrap();
-            })
     }
 }
