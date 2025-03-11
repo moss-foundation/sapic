@@ -18,13 +18,122 @@
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
-  @apply flex overflow-hidden;
+  @apply flex;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar {
   display: none;
+}
+
+/* Action containers */
+.dv-tabs-and-actions-container .dv-right-actions-container,
+.dv-tabs-and-actions-container .dv-left-actions-container,
+.dv-tabs-and-actions-container .dv-pre-actions-container {
+  @apply flex items-center;
+}
+
+/* Void container */
+.dv-tabs-and-actions-container .dv-void-container {
+  @apply flex grow cursor-grab;
+}
+
+/* Single tab mode */
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
+  @apply grow;
+}
+
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
+  @apply grow;
+}
+
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
+  @apply grow-0;
+}
+
+/* Tab styles */
+.dv-tab {
+  @apply relative box-border min-w-[75px] shrink-0 cursor-pointer outline-hidden;
+  -webkit-user-drag: element;
+}
+
+.dv-tab:not(:first-child)::before {
+  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] bg-[var(--moss-tab-divider-color)] content-[''];
+}
+
+.dv-tab .dv-default-tab {
+  @apply relative flex h-full min-w-20 items-center px-2 text-ellipsis whitespace-nowrap;
+}
+
+.dv-tab .dv-default-tab .dv-default-tab-content {
+  @apply grow px-2;
+}
+
+.dv-tab .dv-default-tab .dv-default-tab-action {
+  @apply box-border flex items-center justify-center p-1;
+}
+
+.dv-tab .dv-default-tab .dv-default-tab-action:hover {
+  @apply rounded-sm bg-[var(--moss-icon-hover-background-color)];
+}
+
+.dv-tab.dv-active-tab .dv-default-tab .dv-default-tab-action {
+  @apply visible;
+}
+
+.dv-tab.dv-inactive-tab .dv-default-tab .dv-default-tab-action {
+  @apply invisible;
+}
+
+.dv-tab.dv-inactive-tab .dv-default-tab:hover .dv-default-tab-action {
+  @apply visible;
+}
+
+/* Focus styles */
+.dv-tab:focus-within,
+.dv-tab:focus {
+  @apply relative;
+}
+
+.dv-tab:focus-within::after,
+.dv-tab:focus::after {
+  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-full !outline !outline-1 outline-offset-[-1px] !outline-[var(--moss-tab-divider-color)] content-[''];
+}
+
+/* Dragging styles */
+.dv-tab.dv-tab-dragging {
+  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+}
+
+.dv-tab.dv-tab-dragging .dv-default-tab-action {
+  @apply bg-[var(--moss-activegroup-visiblepanel-tab-color)];
+}
+
+/* Active/Inactive group styles */
+.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
+  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+}
+
+.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
+  @apply bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+}
+
+.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
+  @apply bg-[var(--moss-inactivegroup-visiblepanel-tab-background-color)] text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+}
+
+.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
+  @apply bg-[var(--moss-inactivegroup-hiddenpanel-tab-background-color)] text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+}
+
+/* Scrollbar wrapper styles */
+.dv-tabs-scrollbar-wrapper {
+  @apply flex min-h-0 grow overflow-hidden;
+}
+
+.dv-tabs-scrollbar-content {
+  @apply flex min-h-0 grow;
 }
 
 /*-------------------dv-svg---------------------*/
@@ -460,33 +569,6 @@
 
 .dv-split-view-container.dv-separator-border .dv-view:not(:first-child)::before {
   @apply pointer-events-none absolute top-0 left-0 z-[5] bg-[var(--moss-separator-border)] content-[''];
-}
-
-/*--------------------dv-split-view-contain--------------------*/
-
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
-  @apply grow;
-}
-
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
-  @apply grow;
-}
-
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
-  @apply grow-0;
-}
-
-.dv-tabs-and-actions-container .dv-void-container {
-  @apply flex grow cursor-grab;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container .dv-tab {
-  @apply relative box-border min-w-[75px] cursor-pointer outline-hidden;
-  -webkit-user-drag: element;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container .dv-tab:not(:first-child)::before {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] bg-[var(--moss-tab-divider-color)] content-[''];
 }
 
 /*--------------------dv-dragged--------------------*/
