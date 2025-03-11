@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import TestTreeData from "../assets/testTreeData.json";
@@ -104,8 +103,8 @@ export const SidebarExplorer = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-full relative " ref={dropTargetToggleRef}>
-      <div className="py-1.5 pl-4 pr-2 flex items-center gap-3">
+    <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
+      <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
         <Input
           iconLeft="Search"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
@@ -113,7 +112,7 @@ export const SidebarExplorer = () => {
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] p-[5px] rounded flex items-center justify-center cursor-pointer">
+          <DropdownMenu.Trigger className="flex cursor-pointer items-center justify-center rounded p-[5px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E]">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
@@ -173,19 +172,19 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-0 left-0 w-full h-[100px]   ")} ref={ref}>
-      <div className="relative w-full h-full grid place-items-center">
+    <div className={cn("absolute bottom-0 left-0 h-[100px] w-full")} ref={ref}>
+      <div className="relative grid h-full w-full place-items-center">
         <div
           className={cn(
-            "absolute w-full h-full opacity-50 bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] z-10 bg-white",
+            "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
             {
-              "bg-green-300 animate-move opacity-100": canDrop,
+              "animate-move bg-green-300 opacity-100": canDrop,
               "bg-red-300 opacity-100": canDrop === false,
             }
           )}
         />
 
-        <div className="bg-white px-2 py-0.5 rounded z-20 text-center w-3/4">
+        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center">
           {canDrop === false ? (
             <span>Cannot create new collection from this</span>
           ) : (
