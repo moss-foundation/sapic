@@ -1,5 +1,32 @@
 @config "@repo/tailwind-config";
 @import "tailwindcss";
+@import "overlayscrollbars/styles/overlayscrollbars.css";
+
+/* Custom scrollbar theme */
+.os-theme-dark {
+  --os-handle-bg: var(--moss-scrollbar-thumb-color, rgba(127, 127, 127, 0.4));
+  --os-handle-bg-hover: var(--moss-scrollbar-thumb-hover-color, rgba(127, 127, 127, 0.7));
+  --os-handle-bg-active: var(--moss-scrollbar-thumb-active-color, rgba(127, 127, 127, 0.7));
+  --os-track-bg: var(--moss-scrollbar-track-color, transparent);
+}
+
+/* Tabs container styles */
+.dv-tabs-and-actions-container {
+  @apply box-border flex shrink-0 bg-[var(--moss-tabs-and-actions-container-background-color)];
+  height: var(--dv-tabs-and-actions-container-height);
+  font-size: var(--dv-tabs-and-actions-container-font-size);
+}
+
+.dv-tabs-and-actions-container .dv-tabs-container {
+  @apply flex overflow-hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
 /*-------------------dv-svg---------------------*/
 
 .dv-svg {
@@ -437,10 +464,6 @@
 
 /*--------------------dv-split-view-contain--------------------*/
 
-.dv-tabs-and-actions-container {
-  @apply box-border flex h-[var(--moss-tabs-and-actions-container-height)] shrink-0 bg-[var(--moss-tabs-and-actions-container-background-color)] text-[var(--moss-tabs-and-actions-container-font-size)];
-}
-
 .dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
   @apply grow;
 }
@@ -455,23 +478,6 @@
 
 .dv-tabs-and-actions-container .dv-void-container {
   @apply flex grow cursor-grab;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container {
-  @apply flex overflow-x-auto overflow-y-hidden;
-  scrollbar-width: thin;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar {
-  @apply h-[3px];
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-thumb {
-  @apply bg-[var(--moss-tabs-container-scrollbar-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {

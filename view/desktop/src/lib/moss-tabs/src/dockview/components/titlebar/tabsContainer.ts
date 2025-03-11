@@ -184,13 +184,20 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this.tabContainer.className = "dv-tabs-container";
     this.tabContainer.style.overflow = "hidden"; // Disable native scrolling
 
+    // Create a wrapper div for the scrollbar
     const scrollbarWrapper = document.createElement("div");
     scrollbarWrapper.style.flexGrow = "1";
     scrollbarWrapper.style.overflow = "hidden";
+    scrollbarWrapper.style.display = "flex";
+    scrollbarWrapper.style.minHeight = "0"; // Important for proper scrolling
 
+    // Create the React component instance
     const scrollbarElement = document.createElement("div");
+    scrollbarElement.style.flexGrow = "1";
+    scrollbarElement.style.minHeight = "0"; // Important for proper scrolling
     scrollbarWrapper.appendChild(scrollbarElement);
 
+    // Move tabs into the scrollbar wrapper
     scrollbarWrapper.appendChild(this.tabContainer);
 
     this.voidContainer = new VoidContainer(this.accessor, this.group);
@@ -201,6 +208,7 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this._element.appendChild(this.voidContainer.element);
     this._element.appendChild(this.rightActionsContainer);
 
+    // Mount the React component
     const root = ReactDOM.createRoot(scrollbarElement);
     const tabsContainer = React.createElement("div", {
       ref: (el: HTMLDivElement | null) => {
@@ -208,9 +216,15 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
           el.appendChild(this.tabContainer);
         }
       },
+      style: {
+        display: "flex",
+        flexGrow: 1,
+        minHeight: "0",
+      },
     });
     root.render(React.createElement(TabsScrollbar, { children: tabsContainer }));
 
+    // Clean up React component on dispose
     this.addDisposables({
       dispose: () => {
         root.unmount();
