@@ -23,12 +23,13 @@ DESKTOP_DIR := view/desktop
 ICONS_DIR := tools/icongen
 # --- Tool Directories ---
 XTASK_DIR := tools/xtask
-
+TS_IMPORT_INJECTOR := misc/ts_imports_injector.py
+TS_EXPORT_INJECTOR := misc/ts_exports_injector.py
 # --- Executables ---
 PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
-
+PYTHON := python
 # --- Commands ---
 
 .PHONY: ready
@@ -56,7 +57,8 @@ define gen_models
 .PHONY: gen-$(1)-model
 gen-$(1)-models:
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
-	@$(CARGO) build --manifest-path $($(2))/Cargo.toml
+	@cd $($(2)) && $(PYTHON) ../../$(TS_IMPORT_INJECTOR) package.json
+	@cd $($(2)) && $(PYTHON) ../../$(TS_EXPORT_INJECTOR)
 	@cd $($(2)) && $(PNPM) format
 endef
 
