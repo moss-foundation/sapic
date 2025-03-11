@@ -13,14 +13,5 @@
     "dependencies": {
       "typescript": "^5.7.2"
     },
-    "tsImportRules": {
-      "bindings/operations/collection.ts": {
-        "../types/request": {
-          "types": [
-            "QueryParamItem"
-          ],
-          "is_type_import": true
-        }
-      }
-    }
+    "tsImportRules": {}
   }
