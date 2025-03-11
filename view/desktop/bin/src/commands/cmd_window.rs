@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
 use moss_nls::{
@@ -22,9 +23,10 @@ use moss_theme::{
     primitives::ThemeId,
     theme_service::ThemeService,
 };
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, Value};
 use tauri::{AppHandle, Emitter, EventTarget, Manager, State, Window};
-
+use moss_state::command::CommandContext;
+use moss_text::{quote, ReadOnlyStr};
 use crate::{create_child_window, menu};
 
 // According to https://docs.rs/tauri/2.1.1/tauri/webview/struct.WebviewWindowBuilder.html
@@ -127,4 +129,20 @@ pub async fn get_translations(
     let locale_service = app_manager.service::<LocaleService>()?;
 
     Ok(locale_service.get_translations(&input).await?)
+}
+
+#[tauri::command]
+#[instrument(level = "trace", skip(app_handle, app_state), fields(window = window.label()))]
+pub fn execute_command(
+    app_handle: AppHandle,
+    app_state: State<'_, AppStateManager>,
+    window: Window,
+    cmd: ReadOnlyStr,
+    args: HashMap<String, Value>,
+) -> Result<Value, String> {
+    if let Some(command_handler) = app_state.get_command(&cmd) {
+        command_handler(CommandContext::new(app_handle, window, args), &app_state)
+    } else {
+        Err(format!("command with id {} is not found", quote!(cmd)))
+    }
 }

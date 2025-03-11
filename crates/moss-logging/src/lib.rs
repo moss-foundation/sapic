@@ -71,9 +71,9 @@ impl From<ListLogsInput> for LogFilter {
 }
 
 pub struct LogPayload {
-    collection: Option<PathBuf>,
-    request: Option<PathBuf>,
-    message: String,
+    pub collection: Option<PathBuf>,
+    pub request: Option<PathBuf>,
+    pub message: String,
 }
 
 pub enum LogScope {

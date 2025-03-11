@@ -4,9 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+moss_text.workspace = true
 moss_theme.workspace = true
 moss_nls.workspace = true
 
+anyhow.workspace = true
+tauri.workspace = true
+thiserror.workspace = true
 ts-rs.workspace = true
 serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
 parking_lot.workspace = true
+dashmap.workspace = true

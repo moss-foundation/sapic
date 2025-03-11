@@ -23,19 +23,24 @@ use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use serde_json::Value;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Layer;
 use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-use moss_logging::LoggingService;
+use moss_state::command::{CommandContext, CommandDecl};
+use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_session::SessionService;
+use moss_text::read_only_str;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -58,7 +63,15 @@ pub fn run() {
             let themes_dir: PathBuf = std::env::var("THEMES_DIR")
                 .expect("Environment variable THEMES_DIR is not set")
                 .into();
-            let app_state = AppStateManager::new(&themes_dir);
+            let app_state =
+                AppStateManager::new(&themes_dir)
+                // An example for `commands` system
+                    .with_commands(vec![
+                        CommandDecl {
+                            name: read_only_str!("example.generateLog"),
+                            callback: generate_log,
+                        }
+                    ]);
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
@@ -159,6 +172,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::execute_command,
             commands::change_color_theme,
             commands::change_color_theme,
             commands::get_color_theme,
@@ -232,4 +246,17 @@ fn create_child_window(app_handle: &AppHandle, url: &str) -> Result<WebviewWindo
     };
 
     Ok(create_window(app_handle, config))
+}
+
+fn generate_log(ctx: CommandContext, manager: &AppStateManager) -> Result<Value, String> {
+
+    ctx.app_handle.state::<AppManager>().service::<LoggingService>().unwrap().info(
+        LogScope::App,
+        LogPayload {
+            collection: None,
+            request: None,
+            message: "Generate a log from the frontend".to_string(),
+        }
+    );
+    Ok(Value::String("Successfully generated a log!".to_string()))
 }
