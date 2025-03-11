@@ -1200,7 +1200,6 @@ dependencies = [
  "moss_text",
  "moss_theme",
  "objc",
- "once_cell",
  "rand 0.9.0",
  "serde_json",
  "sled",
