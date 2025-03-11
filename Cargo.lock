@@ -3072,6 +3072,7 @@ dependencies = [
  "anyhow",
  "dashmap",
  "moss_nls",
+ "moss_tauri",
  "moss_text",
  "moss_theme",
  "parking_lot 0.12.3",
@@ -3089,6 +3090,7 @@ dependencies = [
  "anyhow",
  "moss_app",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

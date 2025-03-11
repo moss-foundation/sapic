@@ -4,7 +4,7 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 #[serde(transparent)]
-pub struct TauriError(String);
+pub struct TauriError(pub String);
 
 impl std::fmt::Display for TauriError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -14,6 +14,12 @@ impl std::fmt::Display for TauriError {
 
 impl From<anyhow::Error> for TauriError {
     fn from(e: anyhow::Error) -> Self {
+        TauriError(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for TauriError {
+    fn from(e: serde_json::Error) -> Self {
         TauriError(e.to_string())
     }
 }

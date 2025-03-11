@@ -1,11 +1,7 @@
+use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 use anyhow::Result;
 use tauri::AppHandle;
-use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 
-#[derive(Debug, Clone)]
-pub struct MockVault {}
-
-    
 pub struct AppManager {
     services: ServiceCollection,
     // TODO: Registry

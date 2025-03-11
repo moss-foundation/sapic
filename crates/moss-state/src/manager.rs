@@ -1,11 +1,12 @@
-use std::path::PathBuf;
-use std::sync::Arc;
 use dashmap::DashMap;
 use moss_nls::models::types::LocaleDescriptor;
+use moss_text::ReadOnlyStr;
 use moss_theme::models::types::{ThemeDescriptor, ThemeMode};
 use parking_lot::RwLock;
-use moss_text::ReadOnlyStr;
-use crate::command::{CommandDecl, CommandHandler};
+use std::path::PathBuf;
+use std::sync::Arc;
+
+use crate::command::{CommandCallback, CommandDecl};
 
 pub struct AppPreferences {
     pub theme: RwLock<Option<ThemeDescriptor>>,
@@ -18,7 +19,7 @@ pub struct AppDefaults {
 }
 
 pub struct AppStateManager {
-    commands: DashMap<ReadOnlyStr, CommandHandler>,
+    commands: DashMap<ReadOnlyStr, CommandCallback>,
     pub preferences: AppPreferences,
     pub defaults: AppDefaults,
 }
@@ -45,7 +46,7 @@ impl AppStateManager {
                     direction: Some("ltr".to_string()),
                 },
             },
-            commands: DashMap::new()
+            commands: DashMap::new(),
         }
     }
 
@@ -60,19 +61,14 @@ impl AppStateManager {
     }
 
     pub fn with_commands(self, decls: impl IntoIterator<Item = CommandDecl>) -> Self {
-        let mut commands = DashMap::new();
+        let commands = DashMap::new();
         for decl in decls {
-            commands.insert(decl.name, Arc::new(decl.callback) as CommandHandler);
+            commands.insert(decl.name, decl.callback as CommandCallback);
         }
-        Self {
-            commands,
-            ..self
-        }
+        Self { commands, ..self }
     }
 
-    pub fn get_command(&self, id: &ReadOnlyStr) -> Option<CommandHandler> {
-        self.commands
-            .get(id)
-            .map(|cmd| Arc::clone(&cmd))
+    pub fn get_command(&self, id: &ReadOnlyStr) -> Option<CommandCallback> {
+        self.commands.get(id).map(|cmd| Arc::clone(&cmd))
     }
 }
