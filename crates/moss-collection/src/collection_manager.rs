@@ -342,10 +342,6 @@ impl AppService for CollectionManager {
 
 #[cfg(test)]
 mod tests {
-    use dashmap::DashMap;
-    use moss_fs::adapters::disk::DiskFileSystem;
-    use std::collections::HashMap;
-
     use super::*;
     use crate::models::operations::collection_operations::CreateRequestInput;
     use crate::{
@@ -353,6 +349,9 @@ mod tests {
         models::storage::RequestMetadataEntity,
         storage::{MockCollectionMetadataStore, MockCollectionRequestSubstore},
     };
+    use dashmap::DashMap;
+    use moss_fs::adapters::disk::DiskFileSystem;
+    use std::collections::HashMap;
 
     const TEST_COLLECTION_PATH: &'static str = "TestCollection";
 
