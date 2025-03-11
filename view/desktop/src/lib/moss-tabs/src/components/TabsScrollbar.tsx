@@ -12,7 +12,6 @@ export const TabsScrollbar: React.FC<TabsScrollbarProps> = ({ children, classNam
       options={{
         scrollbars: {
           autoHide: "move",
-          theme: "os-theme-dark",
         },
         overflow: {
           x: "hidden", // Hide horizontal scrollbar
