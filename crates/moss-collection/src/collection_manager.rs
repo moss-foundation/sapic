@@ -342,6 +342,7 @@ impl AppService for CollectionManager {
 
 #[cfg(test)]
 mod tests {
+    use dashmap::DashMap;
     use moss_fs::adapters::disk::DiskFileSystem;
     use std::collections::HashMap;
 

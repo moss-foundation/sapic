@@ -1197,6 +1197,7 @@ dependencies = [
  "moss_session",
  "moss_state",
  "moss_tauri",
+ "moss_text",
  "moss_theme",
  "objc",
  "once_cell",
@@ -2922,12 +2923,16 @@ name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "dashmap",
  "derive_more 2.0.1",
  "fnv",
  "log",
+ "moss_text",
  "parking_lot 0.12.3",
  "serde",
+ "serde_json",
  "tauri",
+ "thiserror 2.0.12",
  "tracing",
 ]
 

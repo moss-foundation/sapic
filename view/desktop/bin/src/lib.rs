@@ -23,19 +23,23 @@ use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Layer;
 use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
+use moss_app::command::CommandDecl;
 use moss_logging::LoggingService;
 use moss_session::SessionService;
+use moss_text::read_only_str;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
