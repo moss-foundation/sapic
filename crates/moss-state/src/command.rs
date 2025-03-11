@@ -1,12 +1,15 @@
+use crate::manager::AppStateManager;
 use anyhow::Result;
+use moss_tauri::TauriResult;
 use moss_text::ReadOnlyStr;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::{cell::RefCell, sync::Arc};
 use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 use tauri::{AppHandle, Window};
 use thiserror::Error;
-use crate::manager::AppStateManager;
 
 #[derive(Error, Debug)]
 pub enum CommandContextError {
@@ -28,10 +31,9 @@ impl From<CommandContextError> for String {
 }
 
 pub struct CommandContext {
-    pub app_handle: AppHandle,
-    pub window: Window,
-
-    args: RefCell<HashMap<String, Value>>,
+    app_handle: AppHandle,
+    window: Window,
+    args: HashMap<String, Value>,
 }
 
 impl CommandContext {
@@ -39,18 +41,28 @@ impl CommandContext {
         Self {
             app_handle,
             window,
-            args: RefCell::new(args),
+            args,
         }
     }
 
-    pub fn take_arg<T>(&self, key: &str) -> Result<T, CommandContextError>
+    pub fn app_handle(&self) -> &AppHandle {
+        &self.app_handle
+    }
+
+    pub fn window(&self) -> &Window {
+        &self.window
+    }
+
+    pub fn take_arg<T>(&mut self, key: &str) -> Result<T, CommandContextError>
     where
         T: DeserializeOwned,
     {
-        let mut args = self.args.borrow_mut();
-        let value = args.remove(key).ok_or(CommandContextError::ArgNotFound {
-            key: key.to_string(),
-        })?;
+        let value = self
+            .args
+            .remove(key)
+            .ok_or(CommandContextError::ArgNotFound {
+                key: key.to_string(),
+            })?;
 
         serde_json::from_value(value).map_err(|e| CommandContextError::DeserializationError {
             key: key.to_string(),
@@ -62,8 +74,7 @@ impl CommandContext {
     where
         T: DeserializeOwned,
     {
-        let args = self.args.borrow();
-        let value = args.get(key).ok_or(CommandContextError::ArgNotFound {
+        let value = self.args.get(key).ok_or(CommandContextError::ArgNotFound {
             key: key.to_string(),
         })?;
 
@@ -76,11 +87,40 @@ impl CommandContext {
     }
 }
 
-pub type CommandHandler =
-Arc<dyn Fn(CommandContext, &AppStateManager) -> Result<Value, String> + Send + Sync>;
+#[macro_export]
+macro_rules! command {
+    ($name:expr, $callback:expr) => {
+        CommandDecl::new(read_only_str!($name), |ctx, state| {
+            Box::pin(async move {
+                let value = $callback(ctx, state).await?;
+                Ok(serde_json::to_value(value)?)
+            })
+        })
+    };
+}
 
-#[derive(Debug)]
+type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
+
+pub type CommandCallback = Arc<
+    dyn for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a> + Send + Sync,
+>;
+
 pub struct CommandDecl {
     pub name: ReadOnlyStr,
-    pub callback: fn(CommandContext, &AppStateManager) -> Result<serde_json::Value, String>,
+    pub callback: CommandCallback,
+}
+
+impl CommandDecl {
+    pub fn new<F>(name: ReadOnlyStr, f: F) -> Self
+    where
+        F: for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a>
+            + Send
+            + Sync
+            + 'static,
+    {
+        Self {
+            name,
+            callback: Arc::new(f),
+        }
+    }
 }

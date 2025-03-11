@@ -7,6 +7,7 @@ edition = "2021"
 moss_text.workspace = true
 moss_theme.workspace = true
 moss_nls.workspace = true
+moss_tauri.workspace = true
 
 anyhow.workspace = true
 tauri.workspace = true

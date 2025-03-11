@@ -1200,7 +1200,6 @@ dependencies = [
  "moss_text",
  "moss_theme",
  "objc",
- "once_cell",
  "rand 0.9.0",
  "serde_json",
  "sled",
@@ -3072,6 +3071,7 @@ dependencies = [
  "anyhow",
  "dashmap",
  "moss_nls",
+ "moss_tauri",
  "moss_text",
  "moss_theme",
  "parking_lot 0.12.3",
@@ -3089,6 +3089,7 @@ dependencies = [
  "anyhow",
  "moss_app",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
