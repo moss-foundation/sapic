@@ -3069,10 +3069,16 @@ dependencies = [
 name = "moss_state"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "dashmap",
  "moss_nls",
+ "moss_text",
  "moss_theme",
  "parking_lot 0.12.3",
  "serde",
+ "serde_json",
+ "tauri",
+ "thiserror 2.0.12",
  "ts-rs",
 ]
 

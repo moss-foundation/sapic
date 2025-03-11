@@ -6,7 +6,7 @@ use std::{cell::RefCell, sync::Arc};
 use std::collections::HashMap;
 use tauri::{AppHandle, Window};
 use thiserror::Error;
-use crate::manager::AppManager;
+use crate::manager::AppStateManager;
 
 #[derive(Error, Debug)]
 pub enum CommandContextError {
@@ -77,10 +77,10 @@ impl CommandContext {
 }
 
 pub type CommandHandler =
-Arc<dyn Fn(CommandContext, &AppManager) -> Result<Value, String> + Send + Sync>;
+Arc<dyn Fn(CommandContext, &AppStateManager) -> Result<Value, String> + Send + Sync>;
 
 #[derive(Debug)]
 pub struct CommandDecl {
     pub name: ReadOnlyStr,
-    pub callback: fn(CommandContext, &AppManager) -> Result<serde_json::Value, String>,
+    pub callback: fn(CommandContext, &AppStateManager) -> Result<serde_json::Value, String>,
 }
