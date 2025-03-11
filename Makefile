@@ -63,8 +63,8 @@ define gen_models
 .PHONY: gen-$(1)-model
 gen-$(1)-models:
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
-	@cd $($(2)) && $(PYTHON) ../../$(TS_IMPORT_INJECTOR) package.json
-	@cd $($(2)) && $(PYTHON) ../../$(TS_EXPORT_INJECTOR)
+	@cd $($(2)) && $(PYTHON) ${WORKSPACE_ROOT_DIR}/$(TS_IMPORT_INJECTOR) package.json
+	@cd $($(2)) && $(PYTHON) ${WORKSPACE_ROOT_DIR}/$(TS_EXPORT_INJECTOR)
 	@cd $($(2)) && $(PNPM) format
 endef
 
