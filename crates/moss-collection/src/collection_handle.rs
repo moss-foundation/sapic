@@ -2,14 +2,14 @@ use crate::models::collection::RequestType;
 use crate::models::types::request_types::RequestBody;
 use crate::{
     kdl::foundations::http::{
-        HeaderOptions, HeaderParamBody, HttpRequestFile, PathParamBody, PathParamOptions,
+        HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
         QueryParamBody, QueryParamOptions, Url,
     },
     models::{
         operations::collection_operations::{
             CreateRequestInput, CreateRequestProtocolSpecificPayload,
         },
-        types::request_types::{HeaderItem, HttpMethod, PathParamItem, QueryParamItem},
+        types::request_types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem},
     },
     request_handle::{RequestHandle, RequestState},
     storage::CollectionRequestSubstore,
@@ -143,7 +143,7 @@ fn create_http_requestfile(
     url: Option<&str>,
     query_params: Vec<QueryParamItem>,
     path_params: Vec<PathParamItem>,
-    headers: Vec<HeaderItem>,
+    headers: Vec<HeaderParamItem>,
     body: Option<RequestBody>,
 ) -> Result<HttpRequestFile> {
     let mut transformed_query_params = HashMap::new();
@@ -185,7 +185,7 @@ fn create_http_requestfile(
                 desc: item.desc.clone(),
                 order: item.order,
                 disabled: item.disabled,
-                options: HeaderOptions {
+                options: HeaderParamOptions {
                     propagate: item.options.propagate,
                 },
             },
@@ -422,12 +422,12 @@ impl CollectionHandle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::types::request_types::{HeaderItem, PathParamItem};
+    use crate::models::types::request_types::{HeaderParamItem, PathParamItem};
     use crate::{
         models::{
             operations::collection_operations::CreateRequestProtocolSpecificPayload,
             types::request_types::{
-                HeaderOptions, HttpMethod, PathParamOptions, QueryParamItem, QueryParamOptions,
+                HeaderParamOptions, HttpMethod, PathParamOptions, QueryParamItem, QueryParamOptions,
             },
         },
         storage::MockCollectionRequestSubstore,
@@ -475,13 +475,13 @@ mod tests {
                     disabled: false,
                     options: PathParamOptions { propagate: true },
                 }],
-                headers: vec![HeaderItem {
+                headers: vec![HeaderParamItem {
                     key: "user_agent".to_string(),
                     value: "".to_string(),
                     order: Some(1),
                     desc: None,
                     disabled: false,
-                    options: HeaderOptions { propagate: true },
+                    options: HeaderParamOptions { propagate: true },
                 }],
                 body: None,
             }),

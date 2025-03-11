@@ -71,14 +71,14 @@ pub struct PathParamItem {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
-pub struct HeaderOptions {
+pub struct HeaderParamOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
-pub struct HeaderItem {
+pub struct HeaderParamItem {
     pub key: String,
     pub value: String,
     #[ts(optional)]
@@ -86,7 +86,7 @@ pub struct HeaderItem {
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
-    pub options: HeaderOptions,
+    pub options: HeaderParamOptions,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
