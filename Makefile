@@ -29,7 +29,13 @@ TS_EXPORT_INJECTOR := misc/ts_exports_injector.py
 PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
-PYTHON := python
+
+ifeq ($(OS),Windows_NT)
+    PYTHON := python
+else
+    PYTHON := python3
+endif
+
 # --- Commands ---
 
 .PHONY: ready
