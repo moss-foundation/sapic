@@ -1,0 +1,13 @@
+[package]
+name = "moss_workspace"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+moss_db.workspace = true
+
+anyhow.workspace = true
+arc-swap.workspace = true
+dashmap.workspace = true
+serde = { workspace = true, features = ["derive"] }
+ts-rs.workspace = true
