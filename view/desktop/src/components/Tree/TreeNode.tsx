@@ -120,7 +120,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className="relative flex w-full flex-col">
+      <div className="group relative flex w-full flex-col">
         <div
           ref={draggableRootRef}
           className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
@@ -152,26 +152,24 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             </button>
           )}
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             {node.isExpanded && !searchInput && (
               <>
-                {!allFoldersAreExpanded && (
-                  <button
-                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
-                    onClick={handleExpandAll}
-                  >
-                    <Icon icon="TreeExpandAllIcon" />
-                  </button>
-                )}
+                <button
+                  disabled={allFoldersAreExpanded}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  onClick={handleExpandAll}
+                >
+                  <Icon icon="TreeExpandAllIcon" />
+                </button>
 
-                {!allFoldersAreCollapsed && (
-                  <button
-                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
-                    onClick={handleCollapseAll}
-                  >
-                    <Icon icon="TreeCollapseAllIcon" />
-                  </button>
-                )}
+                <button
+                  disabled={allFoldersAreCollapsed}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  onClick={handleCollapseAll}
+                >
+                  <Icon icon="TreeCollapseAllIcon" />
+                </button>
               </>
             )}
 
