@@ -1,3 +1,7 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+
+import { TabsScrollbar } from "../../../components/TabsScrollbar";
 import { getPanelData } from "../../../dnd/dataTransfer";
 import { toggleClass } from "../../../dom";
 import { addDisposableListener, Emitter, Event } from "../../../events";
@@ -179,13 +183,49 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
 
+    // Create scrollbar wrapper
+    const scrollbarWrapper = document.createElement("div");
+    scrollbarWrapper.className = "dv-tabs-scrollbar-wrapper";
+
+    // Create scrollbar content
+    const scrollbarContent = document.createElement("div");
+    scrollbarContent.className = "dv-tabs-scrollbar-content";
+
+    // Set up DOM structure
+    scrollbarContent.appendChild(this.tabContainer);
+    scrollbarWrapper.appendChild(scrollbarContent);
+
     this.voidContainer = new VoidContainer(this.accessor, this.group);
 
+    // Maintain original DOM structure
     this._element.appendChild(this.preActionsContainer);
-    this._element.appendChild(this.tabContainer);
+    this._element.appendChild(scrollbarWrapper);
     this._element.appendChild(this.leftActionsContainer);
     this._element.appendChild(this.voidContainer.element);
     this._element.appendChild(this.rightActionsContainer);
+
+    // Initialize the scrollbar
+    const root = ReactDOM.createRoot(scrollbarContent);
+    const tabsContainer = React.createElement("div", {
+      ref: (el: HTMLDivElement | null) => {
+        if (el) {
+          el.appendChild(this.tabContainer);
+        }
+      },
+    });
+    root.render(
+      React.createElement(TabsScrollbar, {
+        className: "dv-tabs-scrollbar-content",
+        children: tabsContainer,
+      })
+    );
+
+    // Clean up React component on dispose
+    this.addDisposables({
+      dispose: () => {
+        root.unmount();
+      },
+    });
 
     this.addDisposables(
       this._onWillShowOverlay,
