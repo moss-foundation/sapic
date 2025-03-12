@@ -182,39 +182,43 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
-    this.tabContainer.style.overflow = "hidden"; // Disable native scrolling
 
-    // Create a wrapper div for the scrollbar
+    // Create scrollbar wrapper
     const scrollbarWrapper = document.createElement("div");
     scrollbarWrapper.className = "dv-tabs-scrollbar-wrapper";
 
-    // Create the React component instance
-    const scrollbarElement = document.createElement("div");
-    scrollbarElement.className = "dv-tabs-scrollbar-content";
-    scrollbarWrapper.appendChild(scrollbarElement);
+    // Create scrollbar content
+    const scrollbarContent = document.createElement("div");
+    scrollbarContent.className = "dv-tabs-scrollbar-content";
 
-    // Move tabs into the scrollbar wrapper
-    scrollbarWrapper.appendChild(this.tabContainer);
+    // Set up DOM structure
+    scrollbarContent.appendChild(this.tabContainer);
+    scrollbarWrapper.appendChild(scrollbarContent);
 
     this.voidContainer = new VoidContainer(this.accessor, this.group);
 
+    // Maintain original DOM structure
     this._element.appendChild(this.preActionsContainer);
     this._element.appendChild(scrollbarWrapper);
     this._element.appendChild(this.leftActionsContainer);
     this._element.appendChild(this.voidContainer.element);
     this._element.appendChild(this.rightActionsContainer);
 
-    // Mount the React component
-    const root = ReactDOM.createRoot(scrollbarElement);
+    // Initialize the scrollbar
+    const root = ReactDOM.createRoot(scrollbarContent);
     const tabsContainer = React.createElement("div", {
       ref: (el: HTMLDivElement | null) => {
         if (el) {
           el.appendChild(this.tabContainer);
         }
       },
-      className: "dv-tabs-scrollbar-content",
     });
-    root.render(React.createElement(TabsScrollbar, { children: tabsContainer }));
+    root.render(
+      React.createElement(TabsScrollbar, {
+        className: "dv-tabs-scrollbar-content",
+        children: tabsContainer,
+      })
+    );
 
     // Clean up React component on dispose
     this.addDisposables({

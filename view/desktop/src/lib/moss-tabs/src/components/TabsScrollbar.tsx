@@ -11,14 +11,14 @@ export const TabsScrollbar: React.FC<TabsScrollbarProps> = ({ children, classNam
     <OverlayScrollbarsComponent
       options={{
         scrollbars: {
-          autoHide: "move",
+          autoHide: "scroll",
           theme: "os-theme-dark",
           dragScroll: true,
           clickScroll: true,
         },
         overflow: {
-          x: "hidden", // Hide horizontal scrollbar
-          y: "scroll", // Show vertical scrollbar
+          x: "scroll", // Show horizontal scrollbar
+          y: "hidden", // Hide vertical scrollbar
         },
       }}
       className={className}

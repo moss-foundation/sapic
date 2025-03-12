@@ -13,12 +13,13 @@
 /* Tabs container styles */
 .dv-tabs-and-actions-container {
   @apply box-border flex shrink-0 bg-[var(--moss-tabs-and-actions-container-background-color)];
-  height: var(--dv-tabs-and-actions-container-height);
-  font-size: var(--dv-tabs-and-actions-container-font-size);
+  height: 35px; /* Fixed height to match original */
+  font-size: 13px;
+  border-bottom: 1px solid var(--moss-tab-divider-color);
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
-  @apply flex;
+  @apply flex h-full;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -27,51 +28,40 @@
   display: none;
 }
 
-/* Action containers */
-.dv-tabs-and-actions-container .dv-right-actions-container,
-.dv-tabs-and-actions-container .dv-left-actions-container,
-.dv-tabs-and-actions-container .dv-pre-actions-container {
-  @apply flex items-center;
+/* Scrollbar wrapper styles */
+.dv-tabs-scrollbar-wrapper {
+  @apply flex h-full grow overflow-hidden;
 }
 
-/* Void container */
-.dv-tabs-and-actions-container .dv-void-container {
-  @apply flex grow cursor-grab;
-}
-
-/* Single tab mode */
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
-  @apply grow;
-}
-
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
-  @apply grow;
-}
-
-.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
-  @apply grow-0;
+.dv-tabs-scrollbar-content {
+  @apply flex h-full grow;
 }
 
 /* Tab styles */
 .dv-tab {
-  @apply relative box-border min-w-[75px] shrink-0 cursor-pointer outline-hidden;
+  @apply relative box-border h-full min-w-[75px] shrink-0 cursor-pointer outline-hidden;
   -webkit-user-drag: element;
 }
 
 .dv-tab:not(:first-child)::before {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] bg-[var(--moss-tab-divider-color)] content-[''];
+  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] content-[''];
+  background-color: transparent;
 }
 
 .dv-tab .dv-default-tab {
   @apply relative flex h-full min-w-20 items-center px-2 text-ellipsis whitespace-nowrap;
+  padding: 0 8px;
 }
 
 .dv-tab .dv-default-tab .dv-default-tab-content {
   @apply grow px-2;
+  line-height: 35px;
 }
 
 .dv-tab .dv-default-tab .dv-default-tab-action {
-  @apply box-border flex items-center justify-center p-1;
+  @apply box-border flex items-center justify-center;
+  padding: 4px;
+  margin-left: 4px;
 }
 
 .dv-tab .dv-default-tab .dv-default-tab-action:hover {
@@ -88,6 +78,51 @@
 
 .dv-tab.dv-inactive-tab .dv-default-tab:hover .dv-default-tab-action {
   @apply visible;
+}
+
+/* Action containers */
+.dv-tabs-and-actions-container .dv-right-actions-container,
+.dv-tabs-and-actions-container .dv-left-actions-container,
+.dv-tabs-and-actions-container .dv-pre-actions-container {
+  @apply flex h-full items-center;
+  padding: 0 8px;
+}
+
+/* Void container */
+.dv-tabs-and-actions-container .dv-void-container {
+  @apply flex h-full grow cursor-grab;
+}
+
+/* Single tab mode */
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container {
+  @apply grow;
+}
+
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-tabs-container .dv-tab {
+  @apply grow;
+}
+
+.dv-tabs-and-actions-container.dv-single-tab.dv-full-width-single-tab .dv-void-container {
+  @apply grow-0;
+}
+
+/* Active/Inactive group styles */
+.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
+  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+}
+
+.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
+  @apply bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  border-top: 2px solid transparent;
+}
+
+.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
+  @apply bg-[var(--moss-inactivegroup-visiblepanel-tab-background-color)] text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+}
+
+.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
+  @apply bg-[var(--moss-inactivegroup-hiddenpanel-tab-background-color)] text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  border-top: 2px solid transparent;
 }
 
 /* Focus styles */
@@ -108,32 +143,6 @@
 
 .dv-tab.dv-tab-dragging .dv-default-tab-action {
   @apply bg-[var(--moss-activegroup-visiblepanel-tab-color)];
-}
-
-/* Active/Inactive group styles */
-.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
-  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
-}
-
-.dv-groupview.dv-active-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
-  @apply bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
-}
-
-.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-active-tab {
-  @apply bg-[var(--moss-inactivegroup-visiblepanel-tab-background-color)] text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
-}
-
-.dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container .dv-tab.dv-inactive-tab {
-  @apply bg-[var(--moss-inactivegroup-hiddenpanel-tab-background-color)] text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
-}
-
-/* Scrollbar wrapper styles */
-.dv-tabs-scrollbar-wrapper {
-  @apply flex min-h-0 grow overflow-hidden;
-}
-
-.dv-tabs-scrollbar-content {
-  @apply flex min-h-0 grow;
 }
 
 /*-------------------dv-svg---------------------*/
