@@ -14,6 +14,8 @@ export const changeColorTheme = async (descriptor: ThemeDescriptor): Promise<voi
   await invokeTauriIpc("change_color_theme", {
     descriptor: descriptor,
   });
+
+  document.documentElement.setAttribute("data-theme", descriptor.mode);
 };
 
 export const useChangeColorTheme = () => {

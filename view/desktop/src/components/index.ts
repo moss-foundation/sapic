@@ -7,3 +7,4 @@ export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
 export * from "./Icon";
 export * from "./Tree/Tree";
 export * from "./Input";
+export * from "./Button";
