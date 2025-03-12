@@ -31,7 +31,7 @@ moss_session.workspace = true
 moss_theme.workspace = true
 moss_nls.workspace = true
 moss_state.workspace = true
-
+moss_text.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",
@@ -50,7 +50,6 @@ sled.workspace = true
 anyhow.workspace = true
 dirs.workspace = true
 log.workspace = true
-once_cell.workspace = true
 rand.workspace = true
 serde_json.workspace = true
 strum = { workspace = true, features = ["derive"] }
