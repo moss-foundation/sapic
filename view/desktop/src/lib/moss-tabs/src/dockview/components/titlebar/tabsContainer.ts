@@ -186,11 +186,11 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
     // Create a wrapper div for the scrollbar
     const scrollbarWrapper = document.createElement("div");
-    scrollbarWrapper.style.flexGrow = "1";
-    scrollbarWrapper.style.overflow = "hidden";
+    scrollbarWrapper.className = "dv-tabs-scrollbar-wrapper";
 
     // Create the React component instance
     const scrollbarElement = document.createElement("div");
+    scrollbarElement.className = "dv-tabs-scrollbar-content";
     scrollbarWrapper.appendChild(scrollbarElement);
 
     // Move tabs into the scrollbar wrapper
@@ -212,6 +212,7 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
           el.appendChild(this.tabContainer);
         }
       },
+      className: "dv-tabs-scrollbar-content",
     });
     root.render(React.createElement(TabsScrollbar, { children: tabsContainer }));
 
