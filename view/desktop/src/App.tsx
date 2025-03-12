@@ -10,7 +10,7 @@ import { swapObjectsById } from "./utils";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import SidebarExplorer from "./components/SidebarExplorer";
+import CollectionTreeView from "./components/CollectionTreeView";
 
 interface ListItem {
   id: number;
@@ -95,7 +95,7 @@ function App() {
             <Tabs.Panels className="text-[var(--moss-primary)]">
               {DNDList.map((item) => (
                 <Tabs.Panel {...item} key={item.id} className="">
-                  {item.id === 1 ? <SidebarExplorer /> : <div>{`Panel ${item.id}`}</div>}
+                  {item.id === 1 ? <CollectionTreeView /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}
             </Tabs.Panels>

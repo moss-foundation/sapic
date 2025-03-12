@@ -104,14 +104,18 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   };
 
   useEffect(() => {
-    window.addEventListener("newCollectionWasCreated", (event: Event) => {
+    const handleNewCollectionWasCreated = (event: Event) => {
       const customEvent = event as CustomEvent<{ treeId: string }>;
       if (node.isRoot && treeId === customEvent.detail.treeId) {
         setIsRenamingRootNode(true);
       }
-    });
+    };
 
-    return () => {};
+    window.addEventListener("newCollectionWasCreated", handleNewCollectionWasCreated);
+
+    return () => {
+      window.removeEventListener("newCollectionWasCreated", handleNewCollectionWasCreated as EventListener);
+    };
   }, [node.isRoot, setIsRenamingRootNode, treeId]);
 
   if (node.isRoot) {

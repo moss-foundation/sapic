@@ -15,7 +15,7 @@ import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
 import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
-export const SidebarExplorer = () => {
+export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
@@ -208,4 +208,4 @@ const CollectionCreationZone = () => {
   );
 };
 
-export default SidebarExplorer;
+export default CollectionTreeView;
