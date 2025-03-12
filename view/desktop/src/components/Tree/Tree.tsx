@@ -105,7 +105,9 @@ export const Tree = ({
         searchInput,
       }}
     >
-      <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+      <div>
+        <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+      </div>
     </TreeContext.Provider>
   );
 };

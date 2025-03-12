@@ -120,7 +120,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className="group relative flex w-full flex-col">
+      <div className="group relative w-full">
         <div
           ref={draggableRootRef}
           className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
