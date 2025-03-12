@@ -1,4 +1,4 @@
-import { useContext, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
@@ -103,15 +103,26 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     });
   };
 
+  useEffect(() => {
+    window.addEventListener("newCollectionWasCreated", (event: Event) => {
+      const customEvent = event as CustomEvent<{ treeId: string }>;
+      if (node.isRoot && treeId === customEvent.detail.treeId) {
+        setIsRenamingRootNode(true);
+      }
+    });
+
+    return () => {};
+  }, [node.isRoot, setIsRenamingRootNode, treeId]);
+
   if (node.isRoot) {
     return (
-      <div className="flex flex-col w-full relative">
+      <div className="relative flex w-full flex-col">
         <div
           ref={draggableRootRef}
-          className="flex w-full min-w-0 py-1 pr-2 items-center justify-between gap-1 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343] "
+          className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
         >
           {isRenamingRootNode ? (
-            <div className="flex gap-1 items-center grow cursor-pointer">
+            <div className="flex grow cursor-pointer items-center gap-1">
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("text-[#717171]", {
@@ -125,7 +136,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               />
             </div>
           ) : (
-            <button className="flex gap-1 items-center grow cursor-pointer" onClick={handleFolderClick}>
+            <button className="flex grow cursor-pointer items-center gap-1" onClick={handleFolderClick}>
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("text-[#717171]", {
@@ -161,7 +172,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             )}
 
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="size-[22px] text-[#717171] hover:text-[#6C707E] hover:bg-[#EBECF0] hover:dark:bg-black/30  flex items-center justify-center rounded-[3px] cursor-pointer">
+              <DropdownMenu.Trigger className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
                 <Icon icon="TreeDetailIcon" />
               </DropdownMenu.Trigger>
 
@@ -176,7 +187,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         </div>
 
         {shouldRenderChildNodes && !isRootDragging && (
-          <Scrollbar className="w-full h-full">
+          <Scrollbar className="h-full w-full">
             <ul ref={dropTargetFolderRef} className="h-full w-full">
               {filteredChildNodes.map((childNode) => (
                 <TreeNode

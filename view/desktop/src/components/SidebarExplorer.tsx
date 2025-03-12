@@ -72,24 +72,36 @@ export const SidebarExplorer = () => {
   useEffect(() => {
     const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
       const { source } = event.detail;
+      const newTreeId = `collectionId${collections.length + 1}`;
 
-      setCollections((prevCollections) => [
-        ...prevCollections,
-        {
-          id: `collectionId${prevCollections.length + 1}`,
-          type: "collection",
-          order: prevCollections.length + 1,
-          tree: {
-            "id": "New Collection",
-            "order": prevCollections.length + 1,
-            "type": "folder",
-            "isFolder": true,
-            "isExpanded": true,
-            "isRoot": true,
-            "childNodes": [source.node],
+      setCollections((prevCollections) => {
+        return [
+          ...prevCollections,
+          {
+            id: newTreeId,
+            type: "collection",
+            order: prevCollections.length + 1,
+            tree: {
+              "id": "New Collection",
+              "order": prevCollections.length + 1,
+              "type": "folder",
+              "isFolder": true,
+              "isExpanded": true,
+              "isRoot": true,
+              "childNodes": [source.node],
+            },
           },
-        },
-      ]);
+        ];
+      });
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("newCollectionWasCreated", {
+            detail: {
+              treeId: newTreeId,
+            },
+          })
+        );
+      }, 50);
     };
 
     window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
@@ -100,7 +112,7 @@ export const SidebarExplorer = () => {
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, []);
+  }, [collections.length]);
 
   return (
     <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
