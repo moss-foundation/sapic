@@ -46,14 +46,16 @@ export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabeti
   return nodes;
 };
 
-export const addUniqueIdToTree = (tree: NodeProps): TreeNodeProps => {
+export const prepareCollectionForTree = (collection: NodeProps, isFirstCollection: boolean = true): TreeNodeProps => {
   const id = "TreeNodeUniqueId-" + Math.random().toString(36).substring(2, 15);
-  return {
+
+  return sortNode({
+    ...collection,
     uniqueId: id,
-    ...tree,
-    childNodes: tree.childNodes.map((child) => addUniqueIdToTree(child)),
-  };
-};
+    isRoot: isFirstCollection,
+    childNodes: collection.childNodes.map(child => prepareCollectionForTree(child, false))
+  })
+}
 
 export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
