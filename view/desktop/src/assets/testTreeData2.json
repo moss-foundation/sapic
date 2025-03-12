@@ -1,9 +1,9 @@
 {
-  "id": "collectionId1",
+  "id": "collectionId2",
   "type": "collection",
   "order": 1,
   "tree": {
-    "id": "desktop",
+    "id": "desktop2",
     "order": 1,
     "type": "folder",
     "isFolder": true,
