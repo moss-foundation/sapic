@@ -177,12 +177,13 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <DropdownMenu.Trigger className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
                 <Icon icon="TreeDetailIcon" />
               </DropdownMenu.Trigger>
-
-              <DropdownMenu.Content>
-                <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
-                <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
-                <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
-              </DropdownMenu.Content>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content className="z-30">
+                  <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
+                  <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
+                  <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
             </DropdownMenu.Root>
           </div>
           {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
