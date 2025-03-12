@@ -152,7 +152,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             </button>
           )}
 
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+          <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
             {node.isExpanded && !searchInput && (
               <>
                 <button
