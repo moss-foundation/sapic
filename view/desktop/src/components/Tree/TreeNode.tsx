@@ -157,7 +157,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <>
                 <button
                   disabled={allFoldersAreExpanded}
-                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] border border-transparent text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
                   onClick={handleExpandAll}
                 >
                   <Icon icon="TreeExpandAllIcon" />
@@ -165,7 +165,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
                 <button
                   disabled={allFoldersAreCollapsed}
-                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] border border-transparent text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
                   onClick={handleCollapseAll}
                 >
                   <Icon icon="TreeCollapseAllIcon" />
