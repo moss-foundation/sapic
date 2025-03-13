@@ -1,4 +1,4 @@
-pub mod bincode_store;
+
 pub mod bincode_table;
 
 pub mod encrypted_bincode_store;
@@ -28,8 +28,8 @@ impl Transaction {
 }
 
 pub trait DatabaseClient: Sized {
-    fn begin_write(&self) -> Result<InnerWriteTransaction>;
-    fn begin_read(&self) -> Result<InnerReadTransaction>;
+    fn begin_write(&self) -> Result<Transaction>;
+    fn begin_read(&self) -> Result<Transaction>;
 }
 
 pub struct ReDbClient(Arc<Database>);
@@ -41,11 +41,11 @@ impl ReDbClient {
 }
 
 impl DatabaseClient for ReDbClient {
-    fn begin_write(&self) -> Result<InnerWriteTransaction> {
-        Ok(self.0.begin_write()?)
+    fn begin_write(&self) -> Result<Transaction> {
+        Ok(Transaction::Write(self.0.begin_write()?))
     }
 
-    fn begin_read(&self) -> Result<InnerReadTransaction> {
-        Ok(self.0.begin_read()?)
+    fn begin_read(&self) -> Result<Transaction> {
+        Ok(Transaction::Read(self.0.begin_read()?))
     }
 }
