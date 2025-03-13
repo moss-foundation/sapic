@@ -123,7 +123,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
       <div className="group relative w-full">
         <div
           ref={draggableRootRef}
-          className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
+          className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2"
         >
           {isRenamingRootNode ? (
             <div className="flex grow cursor-pointer items-center gap-1">
@@ -157,7 +157,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
                 <button
                   disabled={allFoldersAreExpanded}
-                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-treeNodeButton-text)`}
                   onClick={handleExpandAll}
                 >
                   <Icon icon="TreeExpandAllIcon" />
@@ -165,7 +165,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
                 <button
                   disabled={allFoldersAreCollapsed}
-                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-treeNodeButton-text)`}
                   onClick={handleCollapseAll}
                 >
                   <Icon icon="TreeCollapseAllIcon" />
@@ -241,7 +241,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableNodeRef}
               style={{ paddingLeft, paddingRight }}
               onClick={node.isFolder ? handleFolderClick : undefined}
-              className="relative flex w-full min-w-0 grow cursor-pointer items-center gap-1 focus-within:bg-[#ebecf0] focus-within:outline-none hover:bg-[#ebecf0] dark:focus-within:bg-[#747474] dark:hover:bg-[#434343]"
+              className="background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative flex w-full min-w-0 grow cursor-pointer items-center gap-1"
             >
               <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} />
 
@@ -259,7 +259,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
               {preview &&
                 createPortal(
-                  <ul className="bg-[#ebecf0] dark:bg-[#434343]">
+                  <ul className="background-(--moss-treeNode-bg-focus)">
                     <TreeNode
                       parentNode={{
                         uniqueId: "-",

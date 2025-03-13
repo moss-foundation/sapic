@@ -2,7 +2,6 @@ import { cva } from "class-variance-authority";
 import { Children, forwardRef, HTMLAttributes, isValidElement } from "react";
 
 import { cn } from "@/utils";
-import { css } from "@emotion/css";
 
 import Icon from "./Icon";
 
@@ -21,19 +20,19 @@ const buttonRootStyles = cva(
   "relative flex items-center cursor-pointer justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 outline-blue-600",
   {
     variants: {
-      // intent: {
-      //   primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--border-solid:var(--moss-button-primary-solid-border)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--text-outlined:var(--moss-button-primary-outlined-text)] [--bg-soft:var(--moss-button-primary-soft-background)] [--border-soft:var(--moss-button-primary-soft-border)] [--text-soft:var(--moss-button-primary-soft-text)] [--bg-ghost:var(--moss-button-primary-ghost-background)] [--border-ghost:var(--moss-button-primary-ghost-border)] [--text-ghost:var(--moss-button-primary-ghost-text)] [--boxShadow-solid:var(--moss-button-primary-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-primary-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-primary-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-primary-ghost-boxShadow)]`,
-      //   warning: `[--bg-solid:var(--moss-button-warning-solid-background)] [--border-solid:var(--moss-button-warning-solid-border)] [--text-solid:var(--moss-button-warning-solid-text)] [--bg-outlined:var(--moss-button-warning-outlined-background)] [--border-outlined:var(--moss-button-warning-outlined-border)] [--text-outlined:var(--moss-button-warning-outlined-text)] [--bg-soft:var(--moss-button-warning-soft-background)] [--border-soft:var(--moss-button-warning-soft-border)] [--text-soft:var(--moss-button-warning-soft-text)] [--bg-ghost:var(--moss-button-warning-ghost-background)] [--border-ghost:var(--moss-button-warning-ghost-border)] [--text-ghost:var(--moss-button-warning-ghost-text)] [--boxShadow-solid:var(--moss-button-warning-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-warning-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-warning-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-warning-ghost-boxShadow)]`,
-      //   success: `[--bg-solid:var(--moss-button-success-solid-background)] [--border-solid:var(--moss-button-success-solid-border)] [--text-solid:var(--moss-button-success-solid-text)] [--bg-outlined:var(--moss-button-success-outlined-background)] [--border-outlined:var(--moss-button-success-outlined-border)] [--text-outlined:var(--moss-button-success-outlined-text)] [--bg-soft:var(--moss-button-success-soft-background)] [--border-soft:var(--moss-button-success-soft-border)] [--text-soft:var(--moss-button-success-soft-text)] [--bg-ghost:var(--moss-button-success-ghost-background)] [--border-ghost:var(--moss-button-success-ghost-border)] [--text-ghost:var(--moss-button-success-ghost-text)] [--boxShadow-solid:var(--moss-button-success-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-success-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-success-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-success-ghost-boxShadow)]`,
-      //   danger: ` [--bg-solid:var(--moss-button-danger-solid-background)]  [--border-solid:var(--moss-button-danger-solid-border)]  [--text-solid:var(--moss-button-danger-solid-text)]  [--bg-outlined:var(--moss-button-danger-outlined-background)]  [--border-outlined:var(--moss-button-danger-outlined-border)]  [--text-outlined:var(--moss-button-danger-outlined-text)]  [--bg-soft:var(--moss-button-danger-soft-background)]  [--border-soft:var(--moss-button-danger-soft-border)]  [--text-soft:var(--moss-button-danger-soft-text)]  [--bg-ghost:var(--moss-button-danger-ghost-background)]  [--border-ghost:var(--moss-button-danger-ghost-border)]  [--text-ghost:var(--moss-button-danger-ghost-text)]  [--boxShadow-solid:var(--moss-button-danger-solid-boxShadow)]  [--boxShadow-outlined:var(--moss-button-danger-outlined-boxShadow)]  [--boxShadow-soft:var(--moss-button-danger-soft-boxShadow)]  [--boxShadow-ghost:var(--moss-button-danger-ghost-boxShadow)]`,
-      //   neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--bg-soft:var(--moss-button-neutral-soft-background)] [--border-soft:var(--moss-button-neutral-soft-border)] [--text-soft:var(--moss-button-neutral-soft-text)] [--bg-ghost:var(--moss-button-neutral-ghost-background)] [--border-ghost:var(--moss-button-neutral-ghost-border)] [--text-ghost:var(--moss-button-neutral-ghost-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-neutral-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-neutral-ghost-boxShadow)]`,
-      // },
-      // variant: {
-      //   solid: `   background-(--bg-solid)    text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]    dark:border-t dark:border-(--border-solid) hover:brightness-110 active:brightness-95 `,
-      //   outlined: `background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)] hover:brightness-[0.98] active:brightness-100 dark:hover:brightness-150 dark:active:background-(--bg-outlined)/70`,
-      //   soft: `    background-(--bg-soft)     text-(--text-soft)     [box-shadow:var(--boxShadow-soft)]     hover:brightness-95     active:brightness-105 dark:hover:brightness-120 dark:active:background-(--bg-soft)/70`,
-      //   ghost: `   background-transparent     text-(--text-ghost)    [box-shadow:var(--boxShadow-ghost)]    dark:border-(--border-ghost) hover:background-(--bg-ghost) hover:[box-shadow:var(--border-ghost)_0px_0px_0px_1px] active:brightness-150 `,
-      // },
+      intent: {
+        primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--border-solid:var(--moss-button-primary-solid-border)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--text-outlined:var(--moss-button-primary-outlined-text)] [--bg-soft:var(--moss-button-primary-soft-background)] [--border-soft:var(--moss-button-primary-soft-border)] [--text-soft:var(--moss-button-primary-soft-text)] [--bg-ghost:var(--moss-button-primary-ghost-background)] [--border-ghost:var(--moss-button-primary-ghost-border)] [--text-ghost:var(--moss-button-primary-ghost-text)] [--boxShadow-solid:var(--moss-button-primary-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-primary-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-primary-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-primary-ghost-boxShadow)]`,
+        warning: `[--bg-solid:var(--moss-button-warning-solid-background)] [--border-solid:var(--moss-button-warning-solid-border)] [--text-solid:var(--moss-button-warning-solid-text)] [--bg-outlined:var(--moss-button-warning-outlined-background)] [--border-outlined:var(--moss-button-warning-outlined-border)] [--text-outlined:var(--moss-button-warning-outlined-text)] [--bg-soft:var(--moss-button-warning-soft-background)] [--border-soft:var(--moss-button-warning-soft-border)] [--text-soft:var(--moss-button-warning-soft-text)] [--bg-ghost:var(--moss-button-warning-ghost-background)] [--border-ghost:var(--moss-button-warning-ghost-border)] [--text-ghost:var(--moss-button-warning-ghost-text)] [--boxShadow-solid:var(--moss-button-warning-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-warning-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-warning-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-warning-ghost-boxShadow)]`,
+        success: `[--bg-solid:var(--moss-button-success-solid-background)] [--border-solid:var(--moss-button-success-solid-border)] [--text-solid:var(--moss-button-success-solid-text)] [--bg-outlined:var(--moss-button-success-outlined-background)] [--border-outlined:var(--moss-button-success-outlined-border)] [--text-outlined:var(--moss-button-success-outlined-text)] [--bg-soft:var(--moss-button-success-soft-background)] [--border-soft:var(--moss-button-success-soft-border)] [--text-soft:var(--moss-button-success-soft-text)] [--bg-ghost:var(--moss-button-success-ghost-background)] [--border-ghost:var(--moss-button-success-ghost-border)] [--text-ghost:var(--moss-button-success-ghost-text)] [--boxShadow-solid:var(--moss-button-success-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-success-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-success-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-success-ghost-boxShadow)]`,
+        danger: ` [--bg-solid:var(--moss-button-danger-solid-background)]  [--border-solid:var(--moss-button-danger-solid-border)]  [--text-solid:var(--moss-button-danger-solid-text)]  [--bg-outlined:var(--moss-button-danger-outlined-background)]  [--border-outlined:var(--moss-button-danger-outlined-border)]  [--text-outlined:var(--moss-button-danger-outlined-text)]  [--bg-soft:var(--moss-button-danger-soft-background)]  [--border-soft:var(--moss-button-danger-soft-border)]  [--text-soft:var(--moss-button-danger-soft-text)]  [--bg-ghost:var(--moss-button-danger-ghost-background)]  [--border-ghost:var(--moss-button-danger-ghost-border)]  [--text-ghost:var(--moss-button-danger-ghost-text)]  [--boxShadow-solid:var(--moss-button-danger-solid-boxShadow)]  [--boxShadow-outlined:var(--moss-button-danger-outlined-boxShadow)]  [--boxShadow-soft:var(--moss-button-danger-soft-boxShadow)]  [--boxShadow-ghost:var(--moss-button-danger-ghost-boxShadow)]`,
+        neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--bg-soft:var(--moss-button-neutral-soft-background)] [--border-soft:var(--moss-button-neutral-soft-border)] [--text-soft:var(--moss-button-neutral-soft-text)] [--bg-ghost:var(--moss-button-neutral-ghost-background)] [--border-ghost:var(--moss-button-neutral-ghost-border)] [--text-ghost:var(--moss-button-neutral-ghost-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-neutral-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-neutral-ghost-boxShadow)]`,
+      },
+      variant: {
+        solid: `   background-(--bg-solid)    text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]    dark:border-t dark:border-(--border-solid) hover:brightness-110 active:brightness-95 `,
+        outlined: `background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)] hover:brightness-[0.98] active:brightness-100 dark:hover:brightness-150 dark:active:background-(--bg-outlined)/70`,
+        soft: `    background-(--bg-soft)     text-(--text-soft)     [box-shadow:var(--boxShadow-soft)]     hover:brightness-95     active:brightness-105 dark:hover:brightness-120 dark:active:background-(--bg-soft)/70`,
+        ghost: `   background-transparent     text-(--text-ghost)    [box-shadow:var(--boxShadow-ghost)]    dark:border-(--border-ghost) hover:background-(--bg-ghost) hover:[box-shadow:var(--border-ghost)_0px_0px_0px_1px] active:brightness-150 `,
+      },
       size: {
         "xs": "h-[22px]",
         "sm": "h-[26px]",
@@ -126,43 +125,6 @@ const loadingIconStyles = cva("animate-spin", {
   },
 });
 
-const regexp = /--[a-zA-Z0-9-]+/g;
-type Styles = {
-  [key: string]: string | { [key: string]: string };
-};
-
-const mapCssVarsToStyles = (intent: ButtonProps["intent"], variant: ButtonProps["variant"]) => {
-  const lsCssVars = localStorage.getItem("themeTest");
-
-  if (!lsCssVars) return;
-
-  const array = [...lsCssVars.matchAll(regexp)];
-  const arrayOfCssVars = array.map((item) => item[0]);
-
-  let neededStyles = arrayOfCssVars
-    .filter((item) => item.includes("--moss-button"))
-    .map((item) => item.replace("--moss-button-", "").split("-"));
-
-  // moss component intent variant attr
-  neededStyles = neededStyles.filter((item) => item[0] === intent && item[1] === variant);
-
-  const res: Styles = {};
-
-  neededStyles.forEach((item) => {
-    const [intent, variant, cssAttr, pseudoclass] = item;
-
-    if (pseudoclass) {
-      res[`&:${pseudoclass}`] = {
-        [cssAttr]: `var(--moss-button-${intent}-${variant}-${cssAttr}-hover)`,
-      };
-    } else {
-      res[cssAttr] = `var(--moss-button-${intent}-${variant}-${cssAttr})`;
-    }
-  });
-
-  return res;
-};
-
 export const Root = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProps>(
   (
     { className, variant = "solid", size = "md", disabled, loading, href, children, intent = "primary", ...props },
@@ -175,20 +137,13 @@ export const Root = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProp
 
     const content = typeof children === "string" ? <span>{children}</span> : children;
 
-    const mappedCssVariables = mapCssVarsToStyles(intent, variant);
-
     return (
       <Component
         ref={forwardedRef}
         href={disabled || loading ? undefined : href}
-        className={cn(
-          css(mappedCssVariables),
-          buttonRootStyles({ size, disabled, loading, Component, iconOnly }),
-          className
-        )}
+        className={cn(buttonRootStyles({ size, disabled, loading, Component, iconOnly, intent, variant }), className)}
         disabled={disabled || loading}
         {...props}
-        onClick={() => {}}
       >
         {content}
 

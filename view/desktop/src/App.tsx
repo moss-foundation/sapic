@@ -75,7 +75,7 @@ function App() {
   }, [DNDList]);
 
   return (
-    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
+    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto] text-(--moss-text)">
       <HeadBar />
       <Resizable>
         <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
@@ -92,7 +92,7 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-[var(--moss-primary)]">
+            <Tabs.Panels className="">
               {DNDList.map((item) => (
                 <Tabs.Panel {...item} key={item.id} className="">
                   {item.id === 1 ? <CollectionTreeView /> : <div>{`Panel ${item.id}`}</div>}

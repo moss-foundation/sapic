@@ -3,12 +3,14 @@
   --moss-test-background-2: #cbd5e0;
   --moss-test-text-1: #101828;
 
-  --moss-primary: rgba(0, 0, 0, 1);
+  --moss-text: black;
+  --moss-primary: #0065ff;
   --moss-page-background: rgba(255, 255, 255, 1);
   --moss-sideBar-background: rgba(244, 244, 245, 1);
   --moss-toolBar-background: rgba(224, 224, 224, 1);
   --moss-statusBar-background: #0f62fe;
 
+  --moss-button-icon-color: black;
   --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
   --moss-windowControlsLinux-background: rgba(218, 218, 218, 1);
   --moss-windowControlsLinux-text: rgba(61, 61, 61, 1);
@@ -41,7 +43,7 @@
 
   --moss-tabslist-background: #f4f4f4;
   --moss-tab-background: #f4f4f4;
-  /*--moss-tab-text: ;*/
+  --moss-tab-text: black;
   --moss-active-tab-background: white;
   /*--moss-active-tab-text: ;*/
   --moss-hover-inactive-tab-background: rgba(255, 255, 255, 0.5);
@@ -51,7 +53,6 @@
   --moss-button-primary-solid-border: null;
   --moss-button-primary-solid-text: white;
   --moss-button-primary-solid-boxShadow: rgba(255, 255, 255, 0.25) 0px 1px 0px 0px inset, #1d4ed8 0px 0px 0px 1px;
-  --moss-button-primary-solid-color-hover: limegreen;
   --moss-button-primary-outlined-background: radial-gradient(
     76% 151% at 52% -52%,
     rgba(255, 255, 255, 0.6) 0%,
@@ -153,37 +154,15 @@
   --moss-button-neutral-ghost-text: rgb(39, 39, 42);
   --moss-button-neutral-ghost-boxShadow: null;
 
-  --moss-input-bg-plain: transparent;
-  --moss-input-bg-soft: rgb(244, 244, 245);
-  --moss-input-bg-outlined: transparent;
-  --moss-input-bg-mixed: rgb(255, 255, 255);
-  --moss-input-bg-bottomOutlined: transparent;
-  --moss-input-border-plain: null;
-  --moss-input-border-soft: null;
-  --moss-input-border-outlined: rgb(228, 228, 231);
-  --moss-input-border-mixed: rgb(228, 228, 231);
-  --moss-input-border-bottomOutlined: rgb(228 228 231 / 1);
-  --moss-input-text-plain: black;
-  --moss-input-text-soft: black;
-  --moss-input-text-outlined: black;
-  --moss-input-text-mixed: black;
-  --moss-input-text-bottomOutlined: black;
-
-  --moss-textarea-bg-plain: transparent;
-  --moss-textarea-bg-soft: rgb(244, 244, 245);
-  --moss-textarea-bg-outlined: transparent;
-  --moss-textarea-bg-mixed: rgb(255, 255, 255);
-  --moss-textarea-bg-bottomOutlined: transparent;
-  --moss-textarea-border-plain: null;
-  --moss-textarea-border-soft: null;
-  --moss-textarea-border-outlined: rgb(228, 228, 231);
-  --moss-textarea-border-mixed: rgb(228, 228, 231);
-  --moss-textarea-border-bottomOutlined: rgb(228 228 231 / 1);
-  --moss-textarea-text-plain: black;
-  --moss-textarea-text-soft: black;
-  --moss-textarea-text-outlined: black;
-  --moss-textarea-text-mixed: black;
-  --moss-textarea-text-bottomOutlined: black;
+  --moss-controls-plain-bg: transparent;
+  --moss-controls-plain-border: null;
+  --moss-controls-plain-text: rgb(9, 9, 11);
+  --moss-controls-outlined-bg: transparent;
+  --moss-controls-outlined-border: rgb(228, 228, 231);
+  --moss-controls-outlined-text: rgb(9, 9, 11);
+  --moss-controls-text-invalid: rgb(220, 38, 38);
+  --moss-controls-border-invalid: rgb(220, 38, 38);
+  --moss-controls-placeholder: rgb(161, 161, 170);
 
   --moss-select-bg-soft: rgb(244, 244, 245);
   --moss-select-bg-outlined: transparent;
@@ -197,4 +176,20 @@
   --moss-select-text-outlined: black;
   --moss-select-text-mixed: black;
   --moss-select-text-bottomOutlined: black;
+
+  --moss-treeNode-bg: transparent;
+  --moss-treeNode-bg-hover: #ebecf0;
+  --moss-treeNode-bg-focus: #ebecf0;
+  --moss-treeNodeButton-bg: transparent;
+  --moss-treeNodeButton-bg-hover: #ebecf0;
+  --moss-treeNodeButton-text: #717171;
+  --moss-treeNode-bg-valid: #32cd32;
+  --moss-treeNode-bg-invalid: #e7000b;
+
+  --moss-menu-content-bg: white;
+  --moss-menu-content-border: #c9ccd6;
+  --moss-menu-content-text: black;
+  --moss-menu-item-bg-hover: #d4e2ff;
+  --moss-menu-item-color: #8d8d8d;
+  --moss-menu-separator-bg: #ebecf0;
 }

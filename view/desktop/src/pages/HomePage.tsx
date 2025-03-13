@@ -1,14 +1,15 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { ResizablePanel, Scrollbar } from "../components";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
+
+import { ResizablePanel, Scrollbar } from "../components";
 
 export const Home: React.FC = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   return (
-    <div className="p-5 text-[var(--moss-primary)]">
+    <div className="p-5">
       <h1 className="mb-3 text-2xl">{t("home")}</h1>
 
       <SessionComponent />

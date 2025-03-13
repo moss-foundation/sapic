@@ -133,7 +133,7 @@ const Tab = ({
       className={cn(
         "background-[var(--moss-tab-background)] relative box-border min-w-max grow cursor-pointer border-t px-3 pt-[7px] pb-2 text-[var(--moss-tab-text)] select-none",
         {
-          "background-[var(--moss-active-tab-background)] border-t-[#0065FF] text-[var(--moss-active-tab-text)]":
+          "background-[var(--moss-active-tab-background)] border-t-(--moss-primary) text-[var(--moss-active-tab-text)]":
             isActive,
           "hover:background-[var(--moss-hover-inactive-tab-background)] border-t-transparent": !isActive,
         },

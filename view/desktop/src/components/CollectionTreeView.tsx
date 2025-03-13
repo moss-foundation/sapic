@@ -117,16 +117,10 @@ export const CollectionTreeView = () => {
 
   return (
     <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
-      <div className="flex flex-wrap gap-3 p-2">
-        <Button intent="primary">Button</Button>
-        <Button intent="neutral">Button</Button>
-        <Button intent="danger">Button</Button>
-        <Button intent="warning">Button</Button>
-        <Button intent="success">Button</Button>
-      </div>
       <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
         <Input
           iconLeft="Search"
+          variant="outlined"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
           placeholder="Search"
           size="sm"
@@ -136,7 +130,38 @@ export const CollectionTreeView = () => {
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Item label="Item" />
+            <DropdownMenu.Item label="Edit" />
+            <DropdownMenu.Item label="Duplicate" />
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Archive" />
+            <DropdownMenu.Sub>
+              <DropdownMenu.SubTrigger label="More" />
+              <DropdownMenu.SubContent>
+                <DropdownMenu.Item label="Move to project…" />
+                <DropdownMenu.Item label="Move to folder…" />
+
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item label="Advanced options…" />
+              </DropdownMenu.SubContent>
+            </DropdownMenu.Sub>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Share" />
+            <DropdownMenu.Item label="Add to favorites" />
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Delete" />
+
+            <DropdownMenu.Separator />
+
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" />
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
+
+            <DropdownMenu.Separator />
+            <DropdownMenu.RadioGroup>
+              <DropdownMenu.RadioItem value="1" label="Hide from sidebar" checked={false} />
+              <DropdownMenu.RadioItem value="2" label="Hide from sidebar" checked={true} />
+              <DropdownMenu.RadioItem value="3" label="Hide from sidebar" checked={false} />
+            </DropdownMenu.RadioGroup>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
       </div>
@@ -198,13 +223,14 @@ const CollectionCreationZone = () => {
           className={cn(
             "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
             {
-              "animate-move bg-green-300 opacity-100": canDrop,
+              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
+              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
               "bg-red-300 opacity-100": canDrop === false,
             }
           )}
         />
 
-        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center">
+        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center text-(--moss-text) dark:bg-black">
           {canDrop === false ? (
             <span>Cannot create new collection from this</span>
           ) : (
