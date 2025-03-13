@@ -4,14 +4,14 @@ import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 export const useDraggableNode = (
-  draggableRef: React.RefObject<HTMLButtonElement>,
+  draggableNodeRef: React.RefObject<HTMLButtonElement>,
   node: NodeProps,
-  treeId: string,
+  treeId: string | number,
   isRenamingNode: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
   useEffect(() => {
-    const element = draggableRef.current;
+    const element = draggableNodeRef.current;
     if (!element || isRenamingNode) return;
 
     return draggable({
@@ -35,5 +35,5 @@ export const useDraggableNode = (
         });
       },
     });
-  }, [treeId, node, isRenamingNode, draggableRef, setPreview]);
-};
+  }, [treeId, node, isRenamingNode, draggableNodeRef, setPreview]);
+}

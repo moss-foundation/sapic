@@ -4,11 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+moss_text.workspace = true
+
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
 derive_more = { workspace = true, features = ["full"] }
 fnv.workspace = true
 parking_lot.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 tracing.workspace = true
 log.workspace = true
+thiserror.workspace = true
+dashmap.workspace = true

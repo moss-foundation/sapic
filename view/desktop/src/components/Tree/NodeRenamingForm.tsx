@@ -5,7 +5,7 @@ import { platform } from "@tauri-apps/plugin-os";
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
   onCancel: () => void;
-  restrictedNames: (string | number)[];
+  restrictedNames?: (string | number)[];
   currentName: string | number;
 }
 
@@ -29,7 +29,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
       return;
     }
 
-    if (restrictedNames.includes(newName)) {
+    if (restrictedNames?.includes(newName)) {
       inputRef.current?.setCustomValidity(`The name "${newName}" is already exists in this location`);
       inputRef.current?.reportValidity();
       return;
@@ -41,7 +41,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   const handleBlur = () => {
     const newName = value.trim();
 
-    if (restrictedNames.includes(newName)) {
+    if (restrictedNames?.includes(newName)) {
       onCancel();
     } else {
       onSubmit(newName);

@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { ResizablePanel, Scrollbar } from "../components";
+import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
 export const Home: React.FC = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -34,6 +35,14 @@ const SessionComponent = () => {
           {t("receivedData")}: {data}
         </p>
       )}
+      {/* An example of `mossCommand` */}
+      <button
+        onClick={() => {
+          invokeMossCommand("example.generateLog", {});
+        }}
+      >
+        Example Command
+      </button>
       <ResizablePanel>
         <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
           <Scrollbar>

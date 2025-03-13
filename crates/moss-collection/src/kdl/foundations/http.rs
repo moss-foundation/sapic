@@ -3,7 +3,7 @@ use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 use kdl::{KdlDocument, KdlEntry, KdlNode};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Url {
     pub raw: Option<String>,
     pub host: Option<String>,
@@ -38,7 +38,7 @@ impl Into<KdlNode> for Url {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct QueryParamBody {
     pub value: String,
     pub desc: Option<String>,
@@ -85,7 +85,7 @@ impl Into<KdlDocument> for QueryParamBody {
         doc
     }
 }
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct QueryParamOptions {
     pub propagate: bool,
 }
@@ -102,7 +102,7 @@ impl Into<KdlNode> for QueryParamOptions {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct PathParamBody {
     pub value: String,
     pub desc: Option<String>,
@@ -150,7 +150,7 @@ impl Into<KdlDocument> for PathParamBody {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct PathParamOptions {
     pub propagate: bool,
 }
@@ -167,13 +167,13 @@ impl Into<KdlNode> for PathParamOptions {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct HeaderParamBody {
     pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
-    pub options: HeaderOptions,
+    pub options: HeaderParamOptions,
 }
 
 impl Default for HeaderParamBody {
@@ -183,7 +183,7 @@ impl Default for HeaderParamBody {
             desc: None,
             order: None,
             disabled: false,
-            options: HeaderOptions::default(),
+            options: HeaderParamOptions::default(),
         }
     }
 }
@@ -215,12 +215,12 @@ impl Into<KdlDocument> for HeaderParamBody {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct HeaderOptions {
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct HeaderParamOptions {
     pub propagate: bool,
 }
 
-impl Into<KdlNode> for HeaderOptions {
+impl Into<KdlNode> for HeaderParamOptions {
     fn into(self) -> KdlNode {
         let mut node = KdlNode::new("options");
         let mut children = KdlDocument::new();

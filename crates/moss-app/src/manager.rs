@@ -1,13 +1,10 @@
 use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MockVault {}
 
 pub struct AppManager {
     services: ServiceCollection,
+    // TODO: Registry
 }
 
 unsafe impl Send for AppManager {}

@@ -21,6 +21,7 @@ use moss_fs::ports::FileSystem;
 use moss_nls::locale_service::LocaleService;
 use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
+use moss_tauri::TauriResult;
 use moss_theme::theme_service::ThemeService;
 use rand::random;
 use std::path::PathBuf;
@@ -36,8 +37,33 @@ use crate::plugins::*;
 pub use constants::*;
 use moss_collection::storage::collection_store::CollectionStoreImpl;
 use moss_db::ReDbClient;
-use moss_logging::LoggingService;
+use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_session::SessionService;
+use moss_state::{
+    command,
+    command::{CommandContext, CommandDecl},
+};
+use moss_text::read_only_str;
+
+async fn generate_log<'a>(
+    ctx: &mut CommandContext,
+    _manager: &'a AppStateManager,
+) -> TauriResult<String> {
+    ctx.app_handle()
+        .state::<AppManager>()
+        .service::<LoggingService>()
+        .unwrap()
+        .info(
+            LogScope::App,
+            LogPayload {
+                collection: None,
+                request: None,
+                message: "Generate a log from the frontend".to_string(),
+            },
+        );
+
+    Ok("Successfully generated a log!".to_string())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -60,7 +86,10 @@ pub fn run() {
             let themes_dir: PathBuf = std::env::var("THEMES_DIR")
                 .expect("Environment variable THEMES_DIR is not set")
                 .into();
-            let app_state = AppStateManager::new(&themes_dir);
+            let app_state = AppStateManager::new(&themes_dir).with_commands([
+                // FIXME: Remove this example command
+                command!("example.generateLog", generate_log),
+            ]);
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
@@ -79,19 +108,6 @@ pub fn run() {
                 .into();
             let logging_service =
                 LoggingService::new(&app_log_dir, &session_log_dir, &session_service)?;
-
-            // let client = ReDbClient::new("encrypted.db").unwrap();
-            // let store = EncryptedBincodeStore::new(
-            //     client,
-            //     TABLE_VAULT_2,
-            //     EncryptionConfig {
-            //         memory_cost: 65536,
-            //         time_cost: 10,
-            //         parallelism: 4,
-            //         salt_len: 32,
-            //         nonce_len: 12,
-            //     },
-            // );
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
@@ -163,6 +179,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::execute_command,
             commands::change_color_theme,
             commands::change_color_theme,
             commands::get_color_theme,
