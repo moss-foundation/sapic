@@ -1,7 +1,7 @@
 use crate::kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX};
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum RequestBody {
     Text(String),
     JavaScript(String),

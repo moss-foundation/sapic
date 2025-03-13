@@ -255,11 +255,14 @@ fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
         .name()
         .to_string();
 
-    Ok(raw_string.lines()
+    let result = raw_string.lines()
         .filter(|line| line.trim() != RAW_STRING_PREFIX && line.trim() != RAW_STRING_SUFFIX)
         .map(|line| line.strip_prefix(RAW_STRING_INDENT).ok_or(IllFormattedBody.into()))
         .collect::<Result<Vec<_>>>()?
-        .join("\n"))
+        .join("\n");
+
+    println!("{}", result);
+    Ok(result)
 }
 
 pub fn parse(input: &str) -> Result<HttpRequestFile> {
@@ -356,8 +359,9 @@ mod tests {
 
     #[test]
     fn test_parse_url_node_empty() {
-        let text = r#"url {
-        }"#;
+        let text =
+r#"url {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
@@ -372,9 +376,10 @@ mod tests {
 
     #[test]
     fn test_parse_url_node_incomplete() {
-        let text = r#"url {
-            raw "raw"
-        }"#;
+        let text =
+r#"url {
+    raw "raw"
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
@@ -388,10 +393,11 @@ mod tests {
 
     #[test]
     fn test_parse_url_node_normal() {
-        let text = r#"url {
-            raw "{{baseUrl}}/objects"
-            host "{{baseUrl}}"
-        }"#;
+        let text =
+r#"url {
+    raw "{{baseUrl}}/objects"
+    host "{{baseUrl}}"
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
@@ -405,8 +411,9 @@ mod tests {
 
     #[test]
     fn test_parse_query_param_body_empty() {
-        let text = r#"param {
-        }"#;
+        let text =
+r#"param {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_query_param_body(&node).unwrap();
         assert_eq!(
@@ -423,9 +430,10 @@ mod tests {
 
     #[test]
     fn test_parse_query_param_body_numeric_value() {
-        let text = r#"param {
-            value 1
-        }"#;
+        let text =
+r#"param {
+    value 1
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_query_param_body(&node).unwrap();
         assert_eq!(param_body.value, "1".to_string());
@@ -433,15 +441,16 @@ mod tests {
 
     #[test]
     fn test_parse_query_param_body_full() {
-        let text = r#"param {
-            value "value"
-            desc "desc"
-            order 1
-            disabled #true
-            options {
-                propagate #true
-            }
-        }"#;
+        let text =
+r#"param {
+    value "value"
+    desc "desc"
+    order 1
+    disabled #true
+    options {
+        propagate #true
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_query_param_body(&node).unwrap();
         assert_eq!(
@@ -458,8 +467,9 @@ mod tests {
 
     #[test]
     fn test_parse_query_param_options_empty() {
-        let text = r#"options {
-        }"#;
+        let text =
+r#"options {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_query_param_options(&node).unwrap();
         assert_eq!(param_options, QueryParamOptions::default())
@@ -467,9 +477,10 @@ mod tests {
 
     #[test]
     fn test_parse_query_param_options_normal() {
-        let text = r#"options {
-            propagate #true
-        }"#;
+        let text =
+r#"options {
+    propagate #true
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_query_param_options(&node).unwrap();
         assert_eq!(param_options, QueryParamOptions { propagate: true })
@@ -477,8 +488,9 @@ mod tests {
 
     #[test]
     fn test_parse_query_params_empty() {
-        let text = r#"params type=query {
-        }"#;
+        let text =
+r#"params type=query {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let query_params = parse_query_params(&node).unwrap();
         assert!(query_params.is_empty());
@@ -486,21 +498,23 @@ mod tests {
 
     #[test]
     fn test_parse_query_params_one_param() {
-        let text = r#"params type=query {
-            pageToken {}
-        }"#;
+        let text =
+r#"params type=query {
+    pageToken {}
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let query_params = parse_query_params(&node).unwrap();
         assert_eq!(query_params.len(), 1);
         assert_eq!(query_params["pageToken"], QueryParamBody::default());
-        let text = r#"params type=query {
-            visibleOnly {
-                value "true"
-                desc "desc"
-                disabled #true
-                order 2
-            }
-        }"#;
+        let text =
+r#"params type=query {
+    visibleOnly {
+        value "true"
+        desc "desc"
+        disabled #true
+        order 2
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let query_params = parse_query_params(&node).unwrap();
         assert_eq!(query_params.len(), 1);
@@ -518,15 +532,16 @@ mod tests {
 
     #[test]
     fn test_parse_query_params_two_params() {
-        let text = r#"params type=query {
-            param1 {
-                value "1"
-            }
+        let text =
+r#"params type=query {
+    param1 {
+        value "1"
+    }
 
-            param2 {
-                value "2"
-            }
-        }"#;
+    param2 {
+        value "2"
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let query_params = parse_query_params(&node).unwrap();
         assert_eq!(query_params.len(), 2);
@@ -549,8 +564,9 @@ mod tests {
     // TODO: Path
     #[test]
     fn test_parse_path_param_body_empty() {
-        let text = r#"param {
-        }"#;
+        let text =
+r#"param {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_path_param_body(&node).unwrap();
         assert_eq!(
@@ -567,9 +583,10 @@ mod tests {
 
     #[test]
     fn test_parse_path_param_body_numeric_value() {
-        let text = r#"param {
-            value 1
-        }"#;
+        let text =
+r#"param {
+    value 1
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_path_param_body(&node).unwrap();
         assert_eq!(param_body.value, "1".to_string());
@@ -577,15 +594,16 @@ mod tests {
 
     #[test]
     fn test_parse_path_param_body_full() {
-        let text = r#"param {
-            value "value"
-            desc "desc"
-            order 1
-            disabled #true
-            options {
-                propagate #true
-            }
-        }"#;
+        let text =
+r#"param {
+    value "value"
+    desc "desc"
+    order 1
+    disabled #true
+    options {
+        propagate #true
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_body = parse_path_param_body(&node).unwrap();
         assert_eq!(
@@ -602,8 +620,9 @@ mod tests {
 
     #[test]
     fn test_parse_path_param_options_empty() {
-        let text = r#"options {
-        }"#;
+        let text =
+r#"options {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_path_param_options(&node).unwrap();
         assert_eq!(param_options, PathParamOptions::default())
@@ -611,9 +630,10 @@ mod tests {
 
     #[test]
     fn test_parse_path_param_options_normal() {
-        let text = r#"options {
-            propagate #true
-        }"#;
+        let text =
+r#"options {
+    propagate #true
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_path_param_options(&node).unwrap();
         assert_eq!(param_options, PathParamOptions { propagate: true })
@@ -621,8 +641,9 @@ mod tests {
 
     #[test]
     fn test_parse_path_params_empty() {
-        let text = r#"params type=path {
-        }"#;
+        let text =
+r#"params type=path {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let path_params = parse_path_params(&node).unwrap();
         assert!(path_params.is_empty());
@@ -630,21 +651,23 @@ mod tests {
 
     #[test]
     fn test_parse_path_params_one_param() {
-        let text = r#"params type=path {
-            pageToken {}
-        }"#;
+        let text =
+r#"params type=path {
+    pageToken {}
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let path_params = parse_path_params(&node).unwrap();
         assert_eq!(path_params.len(), 1);
         assert_eq!(path_params["pageToken"], PathParamBody::default());
-        let text = r#"params type=path {
-            visibleOnly {
-                value "true"
-                desc "desc"
-                disabled #true
-                order 2
-            }
-        }"#;
+        let text =
+r#"params type=path {
+    visibleOnly {
+        value "true"
+        desc "desc"
+        disabled #true
+        order 2
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let path_params = parse_path_params(&node).unwrap();
         assert_eq!(path_params.len(), 1);
@@ -662,15 +685,16 @@ mod tests {
 
     #[test]
     fn test_parse_path_params_two_params() {
-        let text = r#"params type=path {
-            param1 {
-                value "1"
-            }
+        let text =
+r#"params type=path {
+    param1 {
+        value "1"
+    }
 
-            param2 {
-                value "2"
-            }
-        }"#;
+    param2 {
+        value "2"
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let path_params = parse_path_params(&node).unwrap();
         assert_eq!(path_params.len(), 2);
@@ -693,8 +717,9 @@ mod tests {
     // TODO: headers
     #[test]
     fn test_parse_header_body_empty() {
-        let text = r#"header {
-        }"#;
+        let text =
+r#"header {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_body = parse_header_param_body(&node).unwrap();
         assert_eq!(
@@ -711,9 +736,10 @@ mod tests {
 
     #[test]
     fn test_parse_header_body_numeric_value() {
-        let text = r#"header {
-            value 1
-        }"#;
+        let text =
+r#"header {
+    value 1
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_body = parse_header_param_body(&node).unwrap();
         assert_eq!(header_body.value, "1".to_string());
@@ -721,15 +747,16 @@ mod tests {
 
     #[test]
     fn test_parse_header_body_full() {
-        let text = r#"header {
-            value "value"
-            desc "desc"
-            order 1
-            disabled #true
-            options {
-                propagate #true
-            }
-        }"#;
+        let text =
+r#"header {
+    value "value"
+    desc "desc"
+    order 1
+    disabled #true
+    options {
+        propagate #true
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_body = parse_header_param_body(&node).unwrap();
         assert_eq!(
@@ -746,8 +773,9 @@ mod tests {
 
     #[test]
     fn test_parse_header_param_options_empty() {
-        let text = r#"options {
-        }"#;
+        let text =
+r#"options {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_header_param_options(&node).unwrap();
         assert_eq!(param_options, HeaderParamOptions::default())
@@ -755,9 +783,10 @@ mod tests {
 
     #[test]
     fn test_parse_header_param_options_normal() {
-        let text = r#"options {
-            propagate #true
-        }"#;
+        let text =
+r#"options {
+    propagate #true
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let param_options = parse_header_param_options(&node).unwrap();
         assert_eq!(param_options, HeaderParamOptions { propagate: true })
@@ -765,8 +794,9 @@ mod tests {
 
     #[test]
     fn test_parse_header_params_empty() {
-        let text = r#"headers {
-        }"#;
+        let text =
+r#"headers {
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_params = parse_header_params(&node).unwrap();
         assert!(header_params.is_empty());
@@ -774,21 +804,23 @@ mod tests {
 
     #[test]
     fn test_parse_header_params_one_param() {
-        let text = r#"headers {
-            pageToken {}
-        }"#;
+        let text =
+r#"headers {
+    pageToken {}
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_params = parse_header_params(&node).unwrap();
         assert_eq!(header_params.len(), 1);
         assert_eq!(header_params["pageToken"], HeaderParamBody::default());
-        let text = r#"headers {
-            visibleOnly {
-                value "true"
-                desc "desc"
-                disabled #true
-                order 2
-            }
-        }"#;
+        let text =
+r#"headers {
+    visibleOnly {
+        value "true"
+        desc "desc"
+        disabled #true
+        order 2
+    }
+}"#;
         let node = KdlNode::parse(&text).unwrap();
         let header_params = parse_header_params(&node).unwrap();
         assert_eq!(header_params.len(), 1);
@@ -834,31 +866,31 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn test_url_to_string() {
-    //     let url = Url {
-    //         raw: Some("raw".to_string()),
-    //         host: Some("host".to_string()),
-    //     };
-    //     let mut node: KdlNode = url.into();
-    //     node.autoformat();
-    //     println!("{}", node.to_string());
-    // }
-    //
-    // #[test]
-    // fn test_query_param_body_to_string() {
-    //     let body = QueryParamBody {
-    //         value: "value".into(),
-    //         desc: Some("desc".into()),
-    //         order: Some(1),
-    //         disabled: false,
-    //         options: QueryParamOptions { propagate: true },
-    //     };
-    //     let mut doc: KdlDocument = body.into();
-    //     doc.autoformat();
-    //     println!("{}", doc.to_string());
-    // }
-    //
+    #[test]
+    fn test_parse_body_json() {
+        let text =
+r###"body type=json {
+    #"""
+    {
+        "key": "value",
+        "object": {
+            "inner": "value"
+        }
+    }
+    """#
+}"###;
+        println!("{}", text);
+        let json =
+r#"{
+    "key": "value",
+    "object": {
+        "inner": "value"
+    }
+}"#;
+        let request = parse(text).unwrap();
+        dbg!(&request.body.unwrap());
+    }
+
     #[test]
     fn manual_test_read_request_from_file_and_writing_back() {
         let content = fs::read_to_string(
@@ -866,6 +898,9 @@ mod tests {
         )
         .unwrap();
         let request = super::parse(&content).unwrap();
+        println!("{:#?}", request.clone().body.unwrap());
         println!("{}", request.to_string());
     }
+
+
 }
