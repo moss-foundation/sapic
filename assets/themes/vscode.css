@@ -1,0 +1,201 @@
+:root {
+  /* Test Colors */
+  --moss-test-background-1: #1e1e1e;
+  --moss-test-background-2: #252526;
+  --moss-test-text-1: #d4d4d4;
+
+  /* Base Colors */
+  --moss-text: #d4d4d4;
+  --moss-primary: #007acc;
+  --moss-error: #f48771;
+
+  /* Layout */
+  --moss-page-background: #1e1e1e;
+  --moss-sideBar-background: #333333;
+  --moss-toolBar-background: #333333;
+  --moss-statusBar-background: #007acc;
+
+  /* Window Controls */
+  --moss-button-icon-color: #d4d4d4;
+  --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
+  --moss-windowControlsLinux-background: #333333;
+  --moss-windowControlsLinux-text: #d4d4d4;
+  --moss-windowControlsLinux-hoverBackground: #3c3c3c;
+  --moss-windowControlsLinux-activeBackground: #505050;
+
+  /* Tabs and Panels */
+  --moss-tabslist-background: #252526;
+  --moss-tab-background: #252526;
+  --moss-tab-text: #969696;
+  --moss-active-tab-background: #1e1e1e;
+  --moss-active-tab-text: #ffffff;
+  --moss-hover-inactive-tab-background: rgba(255, 255, 255, 0.1);
+  --moss-tab-panels-background: #1e1e1e;
+
+  /* Pane View */
+  --moss-paneview-active-outline-color: #007acc;
+  --moss-paneview-header-border-color: 13px;
+  --paneview-header-border-color: rgba(255, 255, 255, 0.1);
+
+  /* Drag and Drop */
+  --moss-drag-over-background-color: rgba(0, 122, 204, 0.2);
+  --moss-drag-over-border-color: #007acc;
+
+  /* Scrollbars and Icons */
+  --moss-tabs-container-scrollbar-color: #424242;
+  --moss-icon-hover-background-color: rgba(255, 255, 255, 0.1);
+
+  /* Group View */
+  --moss-group-view-background-color: #1e1e1e;
+  --moss-tabs-and-actions-container-background-color: #252526;
+  --moss-tabs-and-actions-container-height: 35px;
+
+  /* Tab States */
+  --moss-activegroup-visiblepanel-tab-background-color: #1e1e1e;
+  --moss-activegroup-hiddenpanel-tab-background-color: #2d2d2d;
+  --moss-inactivegroup-visiblepanel-tab-background-color: #1e1e1e;
+  --moss-inactivegroup-hiddenpanel-tab-background-color: #2d2d2d;
+  --moss-tab-divider-color: #1e1e1e;
+  --moss-activegroup-visiblepanel-tab-color: #ffffff;
+  --moss-activegroup-hiddenpanel-tab-color: #969696;
+  --moss-inactivegroup-visiblepanel-tab-color: #969696;
+  --moss-inactivegroup-hiddenpanel-tab-color: #424242;
+
+  /* Separators and Borders */
+  --moss-separator-border: #424242;
+
+  /* Overlay and Shadows */
+  --moss-floating-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --moss-overlay-z-index: 999;
+
+  /* Button System */
+  /* Primary Buttons */
+  --moss-button-primary-solid-background: #007acc;
+  --moss-button-primary-solid-border: #007acc;
+  --moss-button-primary-solid-text: #ffffff;
+  --moss-button-primary-solid-boxShadow: none;
+  --moss-button-primary-outlined-background: transparent;
+  --moss-button-primary-outlined-border: #007acc;
+  --moss-button-primary-outlined-text: #007acc;
+  --moss-button-primary-outlined-boxShadow: none;
+  --moss-button-primary-soft-background: rgba(0, 122, 204, 0.1);
+  --moss-button-primary-soft-border: transparent;
+  --moss-button-primary-soft-text: #007acc;
+  --moss-button-primary-soft-boxShadow: none;
+  --moss-button-primary-ghost-background: transparent;
+  --moss-button-primary-ghost-border: transparent;
+  --moss-button-primary-ghost-text: #007acc;
+  --moss-button-primary-ghost-boxShadow: none;
+
+  /* Warning Buttons */
+  --moss-button-warning-solid-background: #cca700;
+  --moss-button-warning-solid-border: #cca700;
+  --moss-button-warning-solid-text: #ffffff;
+  --moss-button-warning-solid-boxShadow: none;
+  --moss-button-warning-outlined-background: transparent;
+  --moss-button-warning-outlined-border: #cca700;
+  --moss-button-warning-outlined-text: #cca700;
+  --moss-button-warning-outlined-boxShadow: none;
+  --moss-button-warning-soft-background: rgba(204, 167, 0, 0.1);
+  --moss-button-warning-soft-border: transparent;
+  --moss-button-warning-soft-text: #cca700;
+  --moss-button-warning-soft-boxShadow: none;
+  --moss-button-warning-ghost-background: transparent;
+  --moss-button-warning-ghost-border: transparent;
+  --moss-button-warning-ghost-text: #cca700;
+  --moss-button-warning-ghost-boxShadow: none;
+
+  /* Success Buttons */
+  --moss-button-success-solid-background: #0d9373;
+  --moss-button-success-solid-border: #0d9373;
+  --moss-button-success-solid-text: #ffffff;
+  --moss-button-success-solid-boxShadow: none;
+  --moss-button-success-outlined-background: transparent;
+  --moss-button-success-outlined-border: #0d9373;
+  --moss-button-success-outlined-text: #0d9373;
+  --moss-button-success-outlined-boxShadow: none;
+  --moss-button-success-soft-background: rgba(13, 147, 115, 0.1);
+  --moss-button-success-soft-border: transparent;
+  --moss-button-success-soft-text: #0d9373;
+  --moss-button-success-soft-boxShadow: none;
+  --moss-button-success-ghost-background: transparent;
+  --moss-button-success-ghost-border: transparent;
+  --moss-button-success-ghost-text: #0d9373;
+  --moss-button-success-ghost-boxShadow: none;
+
+  /* Danger Buttons */
+  --moss-button-danger-solid-background: #f48771;
+  --moss-button-danger-solid-border: #f48771;
+  --moss-button-danger-solid-text: #ffffff;
+  --moss-button-danger-solid-boxShadow: none;
+  --moss-button-danger-outlined-background: transparent;
+  --moss-button-danger-outlined-border: #f48771;
+  --moss-button-danger-outlined-text: #f48771;
+  --moss-button-danger-outlined-boxShadow: none;
+  --moss-button-danger-soft-background: rgba(244, 135, 113, 0.1);
+  --moss-button-danger-soft-border: transparent;
+  --moss-button-danger-soft-text: #f48771;
+  --moss-button-danger-soft-boxShadow: none;
+  --moss-button-danger-ghost-background: transparent;
+  --moss-button-danger-ghost-border: transparent;
+  --moss-button-danger-ghost-text: #f48771;
+  --moss-button-danger-ghost-boxShadow: none;
+
+  /* Neutral Buttons */
+  --moss-button-neutral-solid-background: #424242;
+  --moss-button-neutral-solid-border: #424242;
+  --moss-button-neutral-solid-text: #ffffff;
+  --moss-button-neutral-solid-boxShadow: none;
+  --moss-button-neutral-outlined-background: transparent;
+  --moss-button-neutral-outlined-border: #424242;
+  --moss-button-neutral-outlined-text: #d4d4d4;
+  --moss-button-neutral-outlined-boxShadow: none;
+  --moss-button-neutral-soft-background: rgba(66, 66, 66, 0.1);
+  --moss-button-neutral-soft-border: transparent;
+  --moss-button-neutral-soft-text: #d4d4d4;
+  --moss-button-neutral-soft-boxShadow: none;
+  --moss-button-neutral-ghost-background: transparent;
+  --moss-button-neutral-ghost-border: transparent;
+  --moss-button-neutral-ghost-text: #d4d4d4;
+  --moss-button-neutral-ghost-boxShadow: none;
+
+  /* Form Controls */
+  --moss-controls-plain-bg: #3c3c3c;
+  --moss-controls-plain-border: #3c3c3c;
+  --moss-controls-plain-text: #d4d4d4;
+  --moss-controls-outlined-bg: #3c3c3c;
+  --moss-controls-outlined-border: #3c3c3c;
+  --moss-controls-outlined-text: #d4d4d4;
+  --moss-controls-placeholder: #969696;
+
+  /* Select Inputs */
+  --moss-select-bg-soft: #3c3c3c;
+  --moss-select-bg-outlined: #3c3c3c;
+  --moss-select-bg-mixed: #3c3c3c;
+  --moss-select-bg-bottomOutlined: #3c3c3c;
+  --moss-select-border-soft: #3c3c3c;
+  --moss-select-border-outlined: #3c3c3c;
+  --moss-select-border-mixed: #3c3c3c;
+  --moss-select-border-bottomOutlined: #3c3c3c;
+  --moss-select-text-soft: #d4d4d4;
+  --moss-select-text-outlined: #d4d4d4;
+  --moss-select-text-mixed: #d4d4d4;
+  --moss-select-text-bottomOutlined: #d4d4d4;
+
+  /* Tree View */
+  --moss-treeNode-bg: transparent;
+  --moss-treeNode-bg-hover: #2a2d2e;
+  --moss-treeNode-bg-focus: #37373d;
+  --moss-treeNodeButton-bg: transparent;
+  --moss-treeNodeButton-bg-hover: #2a2d2e;
+  --moss-treeNodeButton-text: #d4d4d4;
+  --moss-treeNode-bg-valid: #0d9373;
+
+  /* Menu */
+  --moss-menu-content-bg: #252526;
+  --moss-menu-content-border: #3c3c3c;
+  --moss-menu-content-text: #d4d4d4;
+  --moss-menu-item-bg-hover: #2a2d2e;
+  --moss-menu-item-color: #d4d4d4;
+  --moss-menu-separator-bg: #3c3c3c;
+}
