@@ -13,7 +13,7 @@ use crate::{
     models::{
         collection::CollectionRequestVariantEntry,
         operations::collection_operations::{CreateCollectionInput, OverviewCollectionOutput},
-        storage::CollectionMetadataEntity,
+        storage::CollectionEntity,
     },
     request_handle::{RequestHandle, RequestState},
     storage::{ CollectionRequestSubstore},
@@ -202,7 +202,7 @@ impl CollectionManager {
         table.insert(
             &mut txn,
             full_path.to_string_lossy().to_string(),
-            &CollectionMetadataEntity {
+            &CollectionEntity {
                 order: None,
                 requests: Default::default(),
             },
@@ -427,7 +427,7 @@ mod tests {
                     let (read_txn, table) = service.collection_store.begin_read().unwrap();
                     assert_eq!(
                         table.read(&read_txn, path.to_string_lossy().to_string()).unwrap(),
-                        CollectionMetadataEntity {
+                        CollectionEntity {
                             order: None,
                             requests: Default::default(),
                         }

@@ -5,11 +5,11 @@ use anyhow::Result;
 use moss_db::{bincode_table::BincodeTable, ReDbClient};
 use moss_db::{DatabaseClient, Transaction};
 
-use crate::models::storage::CollectionMetadataEntity;
+use crate::models::storage::CollectionEntity;
 
 use super::{CollectionStore, CollectionTable};
 
-const TABLE_COLLECTION: BincodeTable<String, CollectionMetadataEntity> =
+const TABLE_COLLECTION: BincodeTable<String, CollectionEntity> =
     BincodeTable::new("collection");
 
 pub struct CollectionStoreImpl {
@@ -47,29 +47,14 @@ impl CollectionStore for CollectionStoreImpl {
         Ok((read_txn, &self.table))
     }
 
-    fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionMetadataEntity)>> {
+    fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionEntity)>> {
         let read_txn = self.client.begin_read()?;
-
-        let iter = self.table.scan(&read_txn)?;
-        read_txn.commit()?;
         Ok(
-            iter.map(|(path, metadata)| (PathBuf::from(path), metadata))
+            self.table
+                .scan(&read_txn)?
+                .map(|(path, metadata)| (PathBuf::from(path), metadata))
                 .collect()
         )
     }
 
-    // async fn create_collection(
-    //     &self,
-    //     f: Box<
-    //         dyn FnOnce(
-    //                 Transaction,
-    //                 CollectionTable,
-    //             ) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>
-    //             + Send,
-    //     >,
-    // ) -> Result<()> {
-    //     let write_txn = self.client.begin_write()?;
-
-    //     f(Transaction::Write(write_txn), self.table.clone()).await
-    // }
 }
