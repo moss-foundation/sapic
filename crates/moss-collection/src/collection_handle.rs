@@ -201,6 +201,10 @@ fn create_http_requestfile(
         headers: transformed_headers,
         body: body.map(|b| match b {
             RequestBody::Json(s) => crate::kdl::body::RequestBody::Json(s),
+            RequestBody::Text(s) => {crate::kdl::body::RequestBody::Text(s)},
+            RequestBody::JavaScript(s) => {crate::kdl::body::RequestBody::JavaScript(s)},
+            RequestBody::HTML(s) => {crate::kdl::body::RequestBody::HTML(s)},
+            RequestBody::XML(s) => {crate::kdl::body::RequestBody::XML(s)},
         }),
     })
 }

@@ -93,5 +93,9 @@ pub struct HeaderParamItem {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
 pub enum RequestBody {
+    Text(String),
+    JavaScript(String),
     Json(String),
+    HTML(String),
+    XML(String),
 }

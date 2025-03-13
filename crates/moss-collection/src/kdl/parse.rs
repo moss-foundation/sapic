@@ -8,6 +8,7 @@ use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
 use thiserror::Error;
+use crate::kdl::parse::ParseError::IllFormattedBody;
 // FIXME: `KDLDocument::get_arg` assumes a node has only one argument
 // So it cannot handle arrays such as `data 1 2 3 4 5`
 
@@ -234,13 +235,17 @@ fn parse_body_node(node: &KdlNode) -> Result<RequestBody> {
         // If the type's value is not a string
         .ok_or_else(|| ParseError::InvalidBodyType)?;
     match typ {
-        BODY_TYPE_JSON => parse_json_body(node),
+        BODY_TYPE_TEXT => Ok(RequestBody::Text(parse_raw_body_content(&node)?)),
+        BODY_TYPE_JAVASCRIPT => Ok(RequestBody::JavaScript(parse_raw_body_content(&node)?)),
+        BODY_TYPE_JSON => Ok(RequestBody::Json(parse_raw_body_content(&node)?)),
+        BODY_TYPE_HTML => Ok(RequestBody::HTML(parse_raw_body_content(&node)?)),
+        BODY_TYPE_XML => Ok(RequestBody::XML(parse_raw_body_content(&node)?)),
         _ => Err(ParseError::InvalidBodyType.into()),
     }
 }
 
-fn parse_json_body(node: &KdlNode) -> Result<RequestBody> {
-    let raw_content = node
+fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
+    let raw_string = node
         .children()
         .ok_or(ParseError::EmptyBody)?
         .nodes()
@@ -250,17 +255,11 @@ fn parse_json_body(node: &KdlNode) -> Result<RequestBody> {
         .name()
         .to_string();
 
-    let json = raw_content
-        .strip_prefix(RAW_STRING_PREFIX)
-        .ok_or(ParseError::IllFormattedBody)?
-        .strip_suffix(RAW_STRING_SUFFIX)
-        .ok_or(ParseError::IllFormattedBody)?
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    Ok(RequestBody::Json(json.to_string()))
+    Ok(raw_string.lines()
+        .filter(|line| line.trim() != RAW_STRING_PREFIX && line.trim() != RAW_STRING_SUFFIX)
+        .map(|line| line.strip_prefix(RAW_STRING_INDENT).ok_or(IllFormattedBody.into()))
+        .collect::<Result<Vec<_>>>()?
+        .join("\n"))
 }
 
 pub fn parse(input: &str) -> Result<HttpRequestFile> {
