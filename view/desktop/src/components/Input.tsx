@@ -20,7 +20,7 @@ const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss
           py-0 rounded-sm
           background-(--moss-input-bg-plain)
           transition-[outline] outline-none
-          has-[input:data-[invalid]]:text-(--moss-controls-text-invalid)
+          has-[input:data-[invalid]]:text-(--moss-error)
         `,
       outlined: `
           text-(--moss-controls-outlined-text)
@@ -31,8 +31,8 @@ const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss
           has-[input:focus-within]:outline-(--moss-primary)
           has-[input:focus-within]:-outline-offset-1
           border border-(--moss-controls-outlined-border)
-          has-[input:data-[invalid]]:border-(--moss-controls-border-invalid)
-          has-[input:focus-within]:[data-[invalid]]:outline-(--moss-controls-border-invalid)
+          has-[input:data-[invalid]]:border-(--moss-error)
+          has-[input:focus-within]:[data-[invalid]]:outline-(--moss-error)
         `,
     },
     size: {

@@ -26,7 +26,7 @@ export const useDropTargetNode = (
         return source.data.type === "TreeNode";
       },
       onDragLeave() {
-        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-treeNode-bg-invalid)");
+        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
       },
       onDrag({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
@@ -37,13 +37,13 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-treeNode-bg-invalid)");
+          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
           element.classList.add("background-(--moss-treeNode-bg-valid)");
         } else {
-          element.classList.add("background-(--moss-treeNode-bg-invalid)");
+          element.classList.add("background-(--moss-error)");
         }
       },
       onDrop({ location, source }) {
@@ -55,7 +55,7 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-treeNode-bg-invalid)");
+          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
           return;
         }
 
@@ -70,7 +70,7 @@ export const useDropTargetNode = (
           );
         }
 
-        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-treeNode-bg-invalid)");
+        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
       },
     });
   }, [dropTargetFolderRef, dropTargetListRef, node, treeId]);

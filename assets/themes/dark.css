@@ -5,6 +5,8 @@
 
   --moss-text: white;
   --moss-primary: #0065ff;
+  --moss-error: #fb2c36;
+
   --moss-page-background: rgba(22, 24, 25, 1);
   --moss-sideBar-background: rgba(39, 39, 42, 1);
   --moss-toolBar-background: rgba(30, 32, 33, 1);
@@ -168,8 +170,6 @@
   --moss-controls-outlined-bg: transparent;
   --moss-controls-outlined-border: rgb(39, 39, 42);
   --moss-controls-outlined-text: white;
-  --moss-controls-text-invalid: rgb(248, 113, 113);
-  --moss-controls-border-invalid: rgb(239, 68, 68);
   --moss-controls-placeholder: rgb(82, 82, 91);
 
   --moss-select-bg-soft: rgb(39, 39, 42);
@@ -194,7 +194,6 @@
   --moss-treeNodeButton-bg-hover: #6c707e;
   --moss-treeNodeButton-text: #717171;
   --moss-treeNode-bg-valid: #32cd32;
-  --moss-treeNode-bg-invalid: #e7000b;
 
   --moss-menu-content-bg: rgb(24, 24, 27);
   --moss-menu-content-border: rgb(45, 45, 50);
