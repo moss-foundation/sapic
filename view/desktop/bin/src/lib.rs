@@ -14,7 +14,7 @@ use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
 use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexingService;
-use moss_collection::storage::{SledCollectionMetadataStore, SledCollectionRequestSubstore};
+use moss_collection::storage::{SledCollectionRequestSubstore};
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
@@ -35,6 +35,8 @@ use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
+use moss_collection::storage::collection_store::CollectionStoreImpl;
+use moss_db::ReDbClient;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_session::SessionService;
 use moss_state::{
@@ -130,7 +132,9 @@ pub fn run() {
                     {
                         let fs_clone = Arc::clone(&fs);
                         let collection_store =
-                            SledCollectionMetadataStore::new(sled_manager.collections_tree());
+                            CollectionStoreImpl::new(
+                                ReDbClient::new("collection_store.db").unwrap()
+                            );
                         let collection_request_substore =
                             SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 

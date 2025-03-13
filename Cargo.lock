@@ -2947,6 +2947,7 @@ dependencies = [
  "miette",
  "mockall",
  "moss_app",
+ "moss_db",
  "moss_fs",
  "parking_lot 0.12.3",
  "patricia_tree",
