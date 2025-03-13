@@ -51,6 +51,7 @@
   --moss-button-primary-solid-border: rgb(255, 255, 255, 0.3);
   --moss-button-primary-solid-text: white;
   --moss-button-primary-solid-boxShadow: rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
+  --moss-button-primary-solid-color-hover: crimson;
 
   --moss-button-primary-outlined-background: rgba(59, 130, 246, 0.05);
   --moss-button-primary-outlined-border: rgba(59, 130, 246, 0.05);

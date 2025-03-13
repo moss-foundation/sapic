@@ -51,6 +51,7 @@
   --moss-button-primary-solid-border: null;
   --moss-button-primary-solid-text: white;
   --moss-button-primary-solid-boxShadow: rgba(255, 255, 255, 0.25) 0px 1px 0px 0px inset, #1d4ed8 0px 0px 0px 1px;
+  --moss-button-primary-solid-color-hover: limegreen;
   --moss-button-primary-outlined-background: radial-gradient(
     76% 151% at 52% -52%,
     rgba(255, 255, 255, 0.6) 0%,

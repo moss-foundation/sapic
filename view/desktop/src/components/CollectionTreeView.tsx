@@ -12,6 +12,7 @@ import "@repo/moss-tabs/assets/styles.css";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 
+import Button from "./Button";
 import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
@@ -116,6 +117,13 @@ export const CollectionTreeView = () => {
 
   return (
     <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
+      <div className="flex flex-wrap gap-3 p-2">
+        <Button intent="primary">Button</Button>
+        <Button intent="neutral">Button</Button>
+        <Button intent="danger">Button</Button>
+        <Button intent="warning">Button</Button>
+        <Button intent="success">Button</Button>
+      </div>
       <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
         <Input
           iconLeft="Search"

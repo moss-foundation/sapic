@@ -13,6 +13,8 @@ export const applyTheme = async (id: string) => {
       const cssContent = result.data;
       let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
 
+      localStorage.setItem("themeTest", cssContent);
+
       if (styleTag) {
         styleTag.innerHTML = cssContent;
       } else {

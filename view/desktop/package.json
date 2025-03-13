@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@emotion/css": "^11.13.5",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-compose-refs": "^1.1.1",
     "@radix-ui/react-context": "^1.1.1",
@@ -38,12 +39,12 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/icongen": "workspace:*",
+    "@repo/moss-nls": "workspace:*",
+    "@repo/moss-state": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
     "@repo/moss-theme": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/moss-state": "workspace:*",
-    "@repo/moss-nls": "workspace:*",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.1",
