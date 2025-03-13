@@ -40,7 +40,7 @@ where
         F: FnOnce(Transaction, &EncryptedBincodeTable<'a, K, V>, &EncryptionOptions) -> Result<T>,
     {
         let write_txn = self.client.begin_write()?;
-        let result = f(Transaction::Write(write_txn), &self.table, &self.config)?;
+        let result = f(write_txn, &self.table, &self.config)?;
         Ok(result)
     }
 

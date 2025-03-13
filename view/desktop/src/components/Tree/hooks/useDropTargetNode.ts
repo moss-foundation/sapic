@@ -5,7 +5,7 @@ import { getActualDropSourceTarget, getActualDropTarget, canDropNode } from "../
 
 export const useDropTargetNode = (
   node: TreeNodeProps,
-  treeId: string,
+  treeId: string | number,
   dropTargetListRef: RefObject<HTMLLIElement>,
   dropTargetFolderRef: RefObject<HTMLUListElement>
 ) => {
@@ -22,6 +22,9 @@ export const useDropTargetNode = (
           node,
         },
       }),
+      canDrop({ source }) {
+        return source.data.type === "TreeNode";
+      },
       onDragLeave() {
         element.classList.remove("bg-green-600", "bg-red-600");
       },

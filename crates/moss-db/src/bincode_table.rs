@@ -1,23 +1,27 @@
 use anyhow::{anyhow, Context as _, Result};
-use redb::{Key, TableDefinition};
+use redb::{Key, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
-use std::borrow::Borrow;
+use std::hash::Hash;
+use std::{borrow::Borrow};
 
 use crate::Transaction;
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>
 where
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Hash,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
-    table: TableDefinition<'a, K, Vec<u8>>,
+    // FIXME: pub here in order to make the
+    pub table: TableDefinition<'a, K, Vec<u8>>,
     _marker: std::marker::PhantomData<V>,
 }
 
 impl<'a, K, V> BincodeTable<'a, K, V>
 where
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Hash,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
     pub const fn new(table_name: &'static str) -> Self {
@@ -46,6 +50,23 @@ where
         }
     }
 
+    pub fn remove(&self, txn: &mut Transaction, key: K) -> Result<V> {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table).context("Failed to open table")?;
+                let value = table
+                    .remove(key)
+                    .context("Failed to remove value from table")?
+                    .ok_or_else(|| anyhow!("No value found for the specified key"))?
+                    .value();
+
+                let result = bincode::deserialize(&value)?;
+                Ok(result)
+            }
+            Transaction::Read(_) => Err(anyhow!("Cannot remove from read transaction")),
+        }
+    }
+
     pub fn read(&self, txn: &Transaction, key: K) -> Result<V> {
         match txn {
             Transaction::Read(txn) => {
@@ -62,6 +83,49 @@ where
                 Ok(result)
             }
             Transaction::Write(_) => Err(anyhow!("Cannot read from write transaction")),
+        }
+    }
+
+    pub fn scan(&self, txn: &Transaction) -> Result<impl Iterator<Item = (K, V)>> {
+        match txn {
+            Transaction::Read(txn) => {
+                let table = txn.open_table(self.table).context("Failed to open table")?;
+                let mut result = Vec::new();
+
+
+                for entry in table.iter()? {
+                    let (key_guard, value_guard) = entry?;
+                    let value = bincode::deserialize(&value_guard.value())
+                        .context("Failed to deserialize value")?;
+                    result.push((key_guard.value().to_owned(), value));
+                }
+
+                Ok(result.into_iter())
+            }
+            Transaction::Write(_) => Err(anyhow!("Cannot read from write transaction")),
+        }
+    }
+}
+mod test {
+    use super::*;
+    use crate::{DatabaseClient, ReDbClient};
+
+    #[test]
+    fn test_scan() {
+        let client: ReDbClient = ReDbClient::new("test_scan.db").unwrap();
+        let mut bincode_table = BincodeTable::new("test");
+
+        {
+            let mut write = client.begin_write().unwrap();
+            bincode_table.insert(&mut write, "1".to_string(), &1).unwrap();
+            bincode_table.insert(&mut write, "2".to_string(), &2).unwrap();
+            bincode_table.insert(&mut write, "3".to_string(), &3).unwrap();
+            write.commit().unwrap();
+        }
+
+        {
+            let read = client.begin_read().unwrap();
+            println!("{:#?}", bincode_table.scan(&read).unwrap().collect::<Vec<_>>());
         }
     }
 }

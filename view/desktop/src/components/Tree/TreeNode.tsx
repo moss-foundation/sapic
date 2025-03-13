@@ -1,10 +1,11 @@
-import { useContext, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { cn } from "@/utils";
 
-import { ContextMenu, Icon, TreeContext } from "..";
+import { ContextMenu, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
+import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
@@ -26,14 +27,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
-  const draggableRef = useRef<HTMLButtonElement>(null);
+  const draggableRootRef = useRef<HTMLDivElement>(null);
+  const draggableNodeRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLUListElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
-
-  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
-    node,
-    onNodeUpdate
-  );
 
   const {
     isAddingFileNode,
@@ -44,7 +41,34 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
 
-  useDraggableNode(draggableRef, node, treeId, isRenamingNode, setPreview);
+  const {
+    isAddingFileNode: isAddingRootFileNode,
+    isAddingFolderNode: isAddingRootFolderNode,
+    setIsAddingFileNode: setIsAddingRootFileNode,
+    setIsAddingFolderNode: setIsAddingRootFolderNode,
+    handleAddFormSubmit: handleAddFormRootSubmit,
+    handleAddFormCancel: handleAddFormRootCancel,
+  } = useNodeAddForm(node, onNodeUpdate);
+
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
+    node,
+    onNodeUpdate
+  );
+
+  const {
+    isRenamingNode: isRenamingRootNode,
+    setIsRenamingNode: setIsRenamingRootNode,
+    handleRenamingFormSubmit: handleRenamingRootFormSubmit,
+    handleRenamingFormCancel: handleRenamingRootFormCancel,
+  } = useNodeRenamingForm(node, onNodeUpdate);
+
+  const { closestEdge, isDragging: isRootDragging } = useDraggableRootNode(
+    draggableRootRef,
+    node,
+    treeId,
+    isRenamingRootNode
+  );
+  useDraggableNode(draggableNodeRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const shouldRenderChildNodes =
@@ -79,68 +103,127 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     });
   };
 
-  if (node.id === "root") {
-    return (
-      <div className="flex h-full flex-col">
-        <div className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]">
-          <button className="flex grow cursor-pointer items-center gap-1" onClick={handleFolderClick}>
-            <Icon
-              icon="TreeChevronRightIcon"
-              className={cn("text-[#717171]", {
-                "rotate-90": shouldRenderChildNodes,
-              })}
-            />
+  useEffect(() => {
+    const handleNewCollectionWasCreated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ treeId: string }>;
+      if (node.isRoot && treeId === customEvent.detail.treeId) {
+        setIsRenamingRootNode(true);
+      }
+    };
 
-            <NodeLabel label={node.id} searchInput={searchInput} />
-          </button>
+    window.addEventListener("newCollectionWasCreated", handleNewCollectionWasCreated);
+
+    return () => {
+      window.removeEventListener("newCollectionWasCreated", handleNewCollectionWasCreated as EventListener);
+    };
+  }, [node.isRoot, setIsRenamingRootNode, treeId]);
+
+  if (node.isRoot) {
+    return (
+      <div className="group relative w-full">
+        <div
+          ref={draggableRootRef}
+          className="flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2 focus-within:bg-[#ebecf0] dark:focus-within:bg-[#434343]"
+        >
+          {isRenamingRootNode ? (
+            <div className="flex grow cursor-pointer items-center gap-1">
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("text-[#717171]", {
+                  "rotate-90": shouldRenderChildNodes,
+                })}
+              />
+              <NodeRenamingForm
+                onSubmit={handleRenamingRootFormSubmit}
+                onCancel={handleRenamingRootFormCancel}
+                currentName={node.id}
+              />
+            </div>
+          ) : (
+            <button className="flex grow cursor-pointer items-center gap-1" onClick={handleFolderClick}>
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("text-[#717171]", {
+                  "rotate-90": shouldRenderChildNodes,
+                })}
+              />
+
+              <NodeLabel label={node.id} searchInput={searchInput} />
+            </button>
+          )}
 
           <div className="flex items-center gap-1">
             {node.isExpanded && !searchInput && (
-              <>
-                {!allFoldersAreExpanded && (
-                  <button
-                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
-                    onClick={handleExpandAll}
-                  >
-                    <Icon icon="TreeExpandAllIcon" />
-                  </button>
-                )}
+              <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
+                <button
+                  disabled={allFoldersAreExpanded}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  onClick={handleExpandAll}
+                >
+                  <Icon icon="TreeExpandAllIcon" />
+                </button>
 
-                {!allFoldersAreCollapsed && (
-                  <button
-                    className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30"
-                    onClick={handleCollapseAll}
-                  >
-                    <Icon icon="TreeCollapseAllIcon" />
-                  </button>
-                )}
-              </>
+                <button
+                  disabled={allFoldersAreCollapsed}
+                  className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] disabled:cursor-default disabled:opacity-50 disabled:hover:text-[#717171] hover:dark:bg-black/30`}
+                  onClick={handleCollapseAll}
+                >
+                  <Icon icon="TreeCollapseAllIcon" />
+                </button>
+              </div>
             )}
-            <button className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
-              <Icon icon="TreeDetailIcon" />
-            </button>
+
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
+                <Icon icon="TreeDetailIcon" />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content className="z-30">
+                  <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
+                  <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
+                  <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
           </div>
+          {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
         </div>
 
-        {shouldRenderChildNodes && (
-          <ul ref={dropTargetFolderRef} className="grow">
-            {filteredChildNodes.map((childNode) => (
-              <TreeNode
-                parentNode={node}
-                onNodeUpdate={onNodeUpdate}
-                key={childNode.uniqueId}
-                node={childNode}
-                depth={0}
-              />
-            ))}
-          </ul>
+        {shouldRenderChildNodes && !isRootDragging && (
+          <Scrollbar className="h-full w-full">
+            <ul ref={dropTargetFolderRef} className="h-full w-full">
+              {filteredChildNodes.map((childNode) => (
+                <TreeNode
+                  parentNode={node}
+                  onNodeUpdate={onNodeUpdate}
+                  key={childNode.uniqueId}
+                  node={childNode}
+                  depth={0}
+                />
+              ))}
+              {(isAddingRootFileNode || isAddingRootFolderNode) && (
+                <div
+                  className="flex w-full min-w-0 items-center gap-1"
+                  style={{ paddingLeft: `${depth * nodeOffset + horizontalPadding}px` }}
+                >
+                  <Icon icon={isAddingRootFolderNode ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+                  <NodeAddForm
+                    isFolder={isAddingRootFolderNode}
+                    restrictedNames={node.childNodes.map((childNode) => childNode.id)}
+                    onSubmit={handleAddFormRootSubmit}
+                    onCancel={handleAddFormRootCancel}
+                  />
+                </div>
+              )}
+            </ul>
+          </Scrollbar>
         )}
       </div>
     );
   }
 
   return (
-    <li ref={dropTargetListRef}>
+    <li ref={dropTargetListRef} className="s">
       {isRenamingNode ? (
         <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
           <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
@@ -155,7 +238,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger asChild>
             <button
-              ref={draggableRef}
+              ref={draggableNodeRef}
               style={{ paddingLeft, paddingRight }}
               onClick={node.isFolder ? handleFolderClick : undefined}
               className="relative flex w-full min-w-0 grow cursor-pointer items-center gap-1 focus-within:bg-[#ebecf0] focus-within:outline-none hover:bg-[#ebecf0] dark:focus-within:bg-[#747474] dark:hover:bg-[#434343]"
@@ -185,6 +268,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                         order: 0,
                         isFolder: false,
                         isExpanded: false,
+                        isRoot: false,
                         id: "-",
                       }}
                       node={{ ...node, childNodes: [] }}

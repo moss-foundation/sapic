@@ -1,13 +1,19 @@
 import { createContext, useCallback, useEffect, useId, useState } from "react";
 
 import TreeNode from "./TreeNode.tsx";
-import { MoveNodeEventDetail, TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
+import {
+  CreateNewCollectionFromTreeNodeEvent,
+  MoveNodeEventDetail,
+  TreeContextProps,
+  TreeNodeProps,
+  TreeProps,
+} from "./types.ts";
 import {
   addNodeToFolder,
-  addUniqueIdToTree,
   checkIfAllFoldersAreCollapsed,
   checkIfAllFoldersAreExpanded,
   hasDescendant,
+  prepareCollectionForTree,
   removeNodeFromTree,
   removeUniqueIdFromTree,
   sortNode,
@@ -24,14 +30,16 @@ export const TreeContext = createContext<TreeContextProps>({
 });
 
 export const Tree = ({
+  id,
   tree: initialTree,
   horizontalPadding = 16,
   nodeOffset = 16,
   onTreeUpdate,
   searchInput,
 }: TreeProps) => {
-  const treeId = useId();
-  const [tree, setTree] = useState<TreeNodeProps>(sortNode(addUniqueIdToTree(initialTree)));
+  const reactUniqueId = useId();
+  const treeId = id || reactUniqueId;
+  const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
   const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
@@ -67,9 +75,22 @@ export const Tree = ({
       }
     };
 
+    const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
+      const { source } = event.detail;
+      if (source.treeId === treeId) {
+        setTree((prevTree) => removeNodeFromTree(prevTree, source.node.uniqueId));
+      }
+    };
+
     window.addEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
+    window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
+
     return () => {
       window.removeEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
+      window.removeEventListener(
+        "createNewCollectionFromTreeNode",
+        handleCreateNewCollectionFromTreeNode as EventListener
+      );
     };
   }, [treeId]);
 
@@ -84,7 +105,9 @@ export const Tree = ({
         searchInput,
       }}
     >
-      <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+      <div>
+        <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+      </div>
     </TreeContext.Provider>
   );
 };

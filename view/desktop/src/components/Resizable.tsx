@@ -5,3 +5,8 @@ import "allotment/dist/style.css";
 export const Resizable = Allotment;
 
 export const ResizablePanel = Allotment.Pane;
+
+export default {
+  Resizable,
+  ResizablePanel,
+};

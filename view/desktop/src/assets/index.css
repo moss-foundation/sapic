@@ -17,3 +17,14 @@
     overflow: hidden;
   }
 }
+@keyframes slide {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 16px 0; /* Moves one full cycle of the repeating pattern */
+  }
+}
+.animate-move {
+  animation: slide 0.4s linear infinite;
+}
