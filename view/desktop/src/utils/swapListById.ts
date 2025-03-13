@@ -30,10 +30,7 @@ export const swapListById = <T extends Identifiable>(
 
   if (!edge) {
     // Case 1: No edge provided, swap the items
-    [updatedItems[fromIndex], updatedItems[toIndex]] = [
-      updatedItems[toIndex],
-      updatedItems[fromIndex],
-    ];
+    [updatedItems[fromIndex], updatedItems[toIndex]] = [updatedItems[toIndex], updatedItems[fromIndex]];
   } else {
     // Case 2: Edge provided, reorder based on drop position
     // Remove the dragged item

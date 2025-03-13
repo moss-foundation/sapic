@@ -26,7 +26,7 @@ export const useDropTargetNode = (
         return source.data.type === "TreeNode";
       },
       onDragLeave() {
-        element.classList.remove("bg-green-600", "bg-red-600");
+        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
       },
       onDrag({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
@@ -37,13 +37,13 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
+          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add("bg-green-600");
+          element.classList.add("background-(--moss-treeNode-bg-valid)");
         } else {
-          element.classList.add("bg-red-600");
+          element.classList.add("background-(--moss-error)");
         }
       },
       onDrop({ location, source }) {
@@ -55,7 +55,7 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
+          element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
           return;
         }
 
@@ -70,7 +70,7 @@ export const useDropTargetNode = (
           );
         }
 
-        element.classList.remove("bg-green-600", "bg-red-600");
+        element.classList.remove("background-(--moss-treeNode-bg-valid)", "background-(--moss-error)");
       },
     });
   }, [dropTargetFolderRef, dropTargetListRef, node, treeId]);

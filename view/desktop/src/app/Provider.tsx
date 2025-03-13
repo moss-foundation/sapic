@@ -25,6 +25,8 @@ const useInitializeAppState = () => {
       const theme = data.preferences?.theme ?? data.defaults.theme;
       const languagePack = data.preferences?.locale ?? data.defaults.locale;
 
+      document.querySelector("html")?.setAttribute("data-theme", theme.mode);
+
       applyTheme(theme.identifier);
       applyLanguagePack(languagePack);
     }

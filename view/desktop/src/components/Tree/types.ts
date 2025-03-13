@@ -2,9 +2,9 @@ export type SortTypes = "none" | "order" | "alphabetically";
 
 export interface Collection {
   id: number | string;
-  "type": "collection",
-  "order": number,
-  "tree": NodeProps
+  "type": "collection";
+  "order": number;
+  "tree": NodeProps;
 }
 
 export interface NodeProps {

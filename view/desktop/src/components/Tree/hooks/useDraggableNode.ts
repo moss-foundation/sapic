@@ -36,4 +36,4 @@ export const useDraggableNode = (
       },
     });
   }, [treeId, node, isRenamingNode, draggableNodeRef, setPreview]);
-}
+};

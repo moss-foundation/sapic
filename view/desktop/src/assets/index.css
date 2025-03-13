@@ -22,9 +22,10 @@
     background-position: 0 0;
   }
   100% {
-    background-position: 16px 0; /* Moves one full cycle of the repeating pattern */
+    background-position: 16px 0;
   }
 }
+
 .animate-move {
   animation: slide 0.4s linear infinite;
 }

@@ -226,7 +226,11 @@ const DropdownMenuItem = React.forwardRef<CustomPrimitive.ItemElement, CustomPri
   (props, forwardedRef) => {
     const { __scopeDropdownMenu, ...itemProps } = props;
     const menuScope = useMenuScope(__scopeDropdownMenu);
-    return <CustomPrimitive.Item {...menuScope} {...itemProps} ref={forwardedRef} />;
+    return (
+      <CustomPrimitive.Item {...menuScope} {...itemProps} ref={forwardedRef}>
+        {props.children}
+      </CustomPrimitive.Item>
+    );
   }
 );
 
