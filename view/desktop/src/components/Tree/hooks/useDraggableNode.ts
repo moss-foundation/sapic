@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NodeProps } from "../types";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
@@ -10,6 +10,7 @@ export const useDraggableNode = (
   isRenamingNode: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
+  const [isDragging, setIsDragging] = useState<boolean>(false);
   useEffect(() => {
     const element = draggableNodeRef.current;
     if (!element || isRenamingNode) return;
@@ -23,8 +24,12 @@ export const useDraggableNode = (
           treeId,
         },
       }),
+      onDragStart() {
+        setIsDragging(true);
+      },
       onDrop: () => {
         setPreview(null);
+        setIsDragging(false);
       },
       onGenerateDragPreview({ nativeSetDragImage }) {
         setCustomNativeDragPreview({
@@ -36,4 +41,8 @@ export const useDraggableNode = (
       },
     });
   }, [treeId, node, isRenamingNode, draggableNodeRef, setPreview]);
+
+  return {
+    isDragging,
+  };
 };

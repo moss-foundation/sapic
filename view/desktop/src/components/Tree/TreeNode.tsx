@@ -67,7 +67,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     treeId,
     isRenamingRootNode
   );
-  useDraggableNode(draggableNodeRef, node, treeId, isRenamingNode, setPreview);
+  const { isDragging: isNodeDragging } = useDraggableNode(draggableNodeRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   const shouldRenderChildNodes =
@@ -250,7 +250,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <span
                 className={cn(
                   nodeStyle,
-                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative w-full cursor-pointer items-center gap-1 rounded-sm dark:hover:text-black"
+                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg)relative w-full cursor-pointer items-center gap-1 rounded-sm dark:hover:text-black",
+                  {
+                    "hover:background-(--moss-treeNode-bg-hover)": !isNodeDragging,
+                  }
                 )}
                 style={{
                   paddingLeft: 8,
