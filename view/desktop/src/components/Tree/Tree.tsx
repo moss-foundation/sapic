@@ -108,7 +108,7 @@ export const Tree = ({
         searchInput,
       }}
     >
-      <div>
+      <div className="select-none">
         <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
       </div>
     </TreeContext.Provider>
