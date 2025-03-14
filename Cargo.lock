@@ -3139,6 +3139,8 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "dashmap",
+ "moss_app",
+ "moss_collection",
  "moss_db",
  "moss_fs",
  "serde",

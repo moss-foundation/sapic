@@ -1,6 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use dashmap::DashSet;
+use moss_app::service::AppService;
 use moss_fs::ports::FileSystem;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -65,8 +66,53 @@ impl WorkspaceManager {
     }
 
     pub fn set_workspace(&self, input: SetWorkspaceInput) -> Result<()> {
-        let workspace = Workspace::new(input.path)?;
+        let workspace = Workspace::new(input.path, self.fs.clone())?;
         self.current_workspace.store(Some(Arc::new(workspace)));
         Ok(())
+    }
+
+    pub fn current_workspace(&self) -> Result<Arc<Workspace>> {
+        self.current_workspace
+            .load()
+            .clone()
+            .ok_or(anyhow::anyhow!("Current workspace not set"))
+    }
+}
+
+impl AppService for WorkspaceManager {
+    fn name(&self) -> &'static str {
+        std::any::type_name::<Self>()
+    }
+
+    fn dispose(&self) {}
+
+    fn as_any(&self) -> &(dyn std::any::Any + Send) {
+        self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::adapters::disk::DiskFileSystem;
+
+    use super::*;
+
+    #[test]
+    fn test_list_workspaces() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let dir: PathBuf =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
+
+        let workspace_manager = WorkspaceManager::new(fs, dir);
+
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let workspaces = workspace_manager.known_workspaces().await.unwrap();
+
+                assert_eq!(workspaces.len(), 2);
+            });
     }
 }

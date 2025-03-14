@@ -91,12 +91,12 @@ pub fn describe_app_state(
 ) -> Result<DescribeAppStateOutput, String> {
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
-            theme: state_manager.preferences.theme.read().clone(),
-            locale: state_manager.preferences.locale.read().clone(),
+            theme: state_manager.preferences().theme.read().clone(),
+            locale: state_manager.preferences().locale.read().clone(),
         },
         defaults: Defaults {
-            theme: state_manager.defaults.theme.clone(),
-            locale: state_manager.defaults.locale.clone(),
+            theme: state_manager.defaults().theme.clone(),
+            locale: state_manager.defaults().locale.clone(),
         },
     })
 }

@@ -1,5 +1,6 @@
 pub mod models;
 
+pub mod collection;
 pub mod indexing;
 pub mod kdl;
 pub mod storage;
