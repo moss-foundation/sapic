@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { DockviewApi } from "@/lib/moss-tabs/src";
 import { cn } from "@/utils";
 
 import { ContextMenu, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
@@ -20,7 +21,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     useContext(TreeContext);
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
-  const nodePaddingRight = useMemo(() => paddingRight + 4, [paddingRight]);
 
   const nodeStyle = useMemo(() => "flex w-full min-w-0 items-center gap-1 py-0.5", []);
 
@@ -28,7 +28,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
-  const dropTargetFolderRef = useRef<HTMLUListElement | HTMLDivElement>(null);
+  const dropTargetFolderRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
@@ -119,7 +119,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className={cn("group relative w-full border-b border-b-(--moss-tree-border)")} ref={dropTargetFolderRef}>
+      <div ref={dropTargetFolderRef} className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
         <div
           ref={draggableRootRef}
           className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
@@ -325,17 +325,19 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
       )}
 
       {shouldRenderChildNodes && (
-        <ul ref={dropTargetFolderRef} className="h-full">
-          {filteredChildNodes.map((childNode) => (
-            <TreeNode
-              parentNode={node}
-              onNodeUpdate={onNodeUpdate}
-              key={childNode.uniqueId}
-              node={childNode}
-              depth={depth + 1}
-            />
-          ))}
-        </ul>
+        <div className="contents" ref={dropTargetFolderRef}>
+          <ul className="h-full">
+            {filteredChildNodes.map((childNode) => (
+              <TreeNode
+                parentNode={node}
+                onNodeUpdate={onNodeUpdate}
+                key={childNode.uniqueId}
+                node={childNode}
+                depth={depth + 1}
+              />
+            ))}
+          </ul>
+        </div>
       )}
     </li>
   );

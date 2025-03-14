@@ -7,7 +7,7 @@ export const useDropTargetNode = (
   node: TreeNodeProps,
   treeId: string | number,
   dropTargetListRef: RefObject<HTMLLIElement>,
-  dropTargetFolderRef: RefObject<HTMLDivElement | HTMLUListElement>
+  dropTargetFolderRef: RefObject<HTMLDivElement>
 ) => {
   useEffect(() => {
     const element = dropTargetListRef.current || dropTargetFolderRef.current;
