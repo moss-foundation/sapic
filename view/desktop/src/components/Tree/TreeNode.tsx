@@ -1,7 +1,6 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { DockviewApi } from "@/lib/moss-tabs/src";
 import { cn } from "@/utils";
 
 import { ContextMenu, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
@@ -350,32 +349,6 @@ export default TreeNode;
 
 const TestCollectionIcon = ({ type, className }: { type: string; className?: string }) => {
   switch (type) {
-    case "doc":
-      return (
-        <svg
-          className={cn(className, "min-h-4 min-w-4")}
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect width="16" height="16" fill="white" fillOpacity="0.01" />
-          <path
-            d="M15 11.5H12C11.7349 11.4997 11.4807 11.3942 11.2932 11.2068C11.1058 11.0193 11.0003 10.7651 11 10.5V5.5C11.0003 5.23486 11.1057 4.98066 11.2932 4.79319C11.4807 4.60571 11.7349 4.50026 12 4.5H15V5.5H12V10.5H15V11.5Z"
-            fill="#208A3C"
-          />
-          <path
-            d="M9 11.5H7C6.73488 11.4997 6.4807 11.3942 6.29323 11.2068C6.10576 11.0193 6.0003 10.7651 6 10.5V5.5C6.00026 5.23486 6.10571 4.98066 6.29319 4.79319C6.48066 4.60571 6.73486 4.50026 7 4.5H9C9.26513 4.50026 9.51934 4.60571 9.70681 4.79319C9.89429 4.98066 9.99973 5.23486 10 5.5V10.5C9.9997 10.7651 9.89424 11.0193 9.70677 11.2068C9.5193 11.3942 9.26512 11.4997 9 11.5ZM7 5.5V10.5H9V5.5H7Z"
-            fill="#208A3C"
-          />
-          <path
-            d="M3 11.5H1V4.5H3C3.53025 4.5006 4.03861 4.7115 4.41356 5.08644C4.7885 5.46139 4.9994 5.96975 5 6.5V9.5C4.9994 10.0303 4.7885 10.5386 4.41356 10.9136C4.03861 11.2885 3.53025 11.4994 3 11.5ZM2 10.5H3C3.26514 10.4997 3.51934 10.3943 3.70681 10.2068C3.89429 10.0193 3.99974 9.76514 4 9.5V6.5C3.99974 6.23486 3.89429 5.98066 3.70681 5.79319C3.51934 5.60571 3.26514 5.50026 3 5.5H2V10.5Z"
-            fill="#208A3C"
-          />
-        </svg>
-      );
-
     case "folder":
       return (
         <svg
@@ -417,7 +390,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
         </svg>
       );
 
-    case "statistics":
+    default:
       return (
         <svg
           className={cn(className, "min-h-4 min-w-4")}
@@ -427,17 +400,20 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <rect width="16" height="16" fill="white" fillOpacity="0.01" />
           <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M11 6H14C14.5523 6 15 6.44772 15 7V13C15 13.5523 14.5523 14 14 14H3C2.44772 14 2 13.5523 2 13V5C2 4.44772 2.44772 4 3 4H6V3C6 2.44772 6.44772 2 7 2H10C10.5523 2 11 2.44772 11 3V6ZM10 3H7V13H10V3ZM11 7V13H14V7H11ZM6 5V13H3L3 5H6Z"
-            fill="#6C707E"
+            d="M15 11.5H12C11.7349 11.4997 11.4807 11.3942 11.2932 11.2068C11.1058 11.0193 11.0003 10.7651 11 10.5V5.5C11.0003 5.23486 11.1057 4.98066 11.2932 4.79319C11.4807 4.60571 11.7349 4.50026 12 4.5H15V5.5H12V10.5H15V11.5Z"
+            fill="#208A3C"
+          />
+          <path
+            d="M9 11.5H7C6.73488 11.4997 6.4807 11.3942 6.29323 11.2068C6.10576 11.0193 6.0003 10.7651 6 10.5V5.5C6.00026 5.23486 6.10571 4.98066 6.29319 4.79319C6.48066 4.60571 6.73486 4.50026 7 4.5H9C9.26513 4.50026 9.51934 4.60571 9.70681 4.79319C9.89429 4.98066 9.99973 5.23486 10 5.5V10.5C9.9997 10.7651 9.89424 11.0193 9.70677 11.2068C9.5193 11.3942 9.26512 11.4997 9 11.5ZM7 5.5V10.5H9V5.5H7Z"
+            fill="#208A3C"
+          />
+          <path
+            d="M3 11.5H1V4.5H3C3.53025 4.5006 4.03861 4.7115 4.41356 5.08644C4.7885 5.46139 4.9994 5.96975 5 6.5V9.5C4.9994 10.0303 4.7885 10.5386 4.41356 10.9136C4.03861 11.2885 3.53025 11.4994 3 11.5ZM2 10.5H3C3.26514 10.4997 3.51934 10.3943 3.70681 10.2068C3.89429 10.0193 3.99974 9.76514 4 9.5V6.5C3.99974 6.23486 3.89429 5.98066 3.70681 5.79319C3.51934 5.60571 3.26514 5.50026 3 5.5H2V10.5Z"
+            fill="#208A3C"
           />
         </svg>
       );
-
-    default:
-      //@ts-expect-error - This is a test icon
-      return <Icon icon="error" className={className} />;
   }
 };
