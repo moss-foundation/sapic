@@ -16,7 +16,7 @@ use crate::{
         storage::CollectionEntity,
     },
     request_handle::{RequestHandle, RequestState},
-    storage::{ CollectionRequestSubstore},
+    storage::CollectionRequestSubstore,
 };
 
 // TODO: Testing the performance impact of RwLock in this case
@@ -193,7 +193,7 @@ impl CollectionManager {
                     name: input.name,
                     path: full_path,
                 }
-                    .into());
+                .into());
             }
         }
 
@@ -224,7 +224,6 @@ impl CollectionManager {
         self.fs.create_dir(&full_path).await?;
 
         Ok(txn.commit()?)
-
     }
 
     // TODO: In the future, we need to test the impact of this on the user experience
@@ -260,7 +259,11 @@ impl CollectionManager {
 
         let (mut write_txn, table) = self.collection_store.begin_write()?;
         let metadata = table.remove(&mut write_txn, path_buf.to_string_lossy().to_string())?;
-        table.insert(&mut write_txn, new_path.to_string_lossy().to_string(), &metadata)?;
+        table.insert(
+            &mut write_txn,
+            new_path.to_string_lossy().to_string(),
+            &metadata,
+        )?;
 
         // Updating the key for every request within the collection
         {
@@ -356,16 +359,13 @@ impl AppService for CollectionManager {
 #[cfg(test)]
 mod tests {
 
-    use tokio::fs;
-    use moss_fs::adapters::disk::DiskFileSystem;
-    use moss_db::{ReDbClient};
     use super::*;
+    use crate::indexing::indexer::IndexingService;
     use crate::models::operations::collection_operations::CreateRequestInput;
-    use crate::{
-        indexing::indexer::IndexingService,
-    };
     use crate::storage::collection_store::CollectionStoreImpl;
-
+    use moss_db::ReDbClient;
+    use moss_fs::adapters::disk::DiskFileSystem;
+    use tokio::fs;
 
     const TEST_COLLECTION_PATH: &'static str = "TestCollection";
 
@@ -387,9 +387,7 @@ mod tests {
         // Ensure that each test starts afresh
         std::fs::remove_file("test_collection_manager.db").unwrap();
         let collection_store =
-            CollectionStoreImpl::new(
-                ReDbClient::new("test_collection_manager.db").unwrap()
-            );
+            CollectionStoreImpl::new(ReDbClient::new("test_collection_manager.db").unwrap());
         let collection_request_substore = TestCollectionRequestSubstore::new();
         let indexer = Arc::new(IndexingService::new(fs.clone()));
         CollectionManager::new(
@@ -426,7 +424,9 @@ mod tests {
                 {
                     let (read_txn, table) = service.collection_store.begin_read().unwrap();
                     assert_eq!(
-                        table.read(&read_txn, path.to_string_lossy().to_string()).unwrap(),
+                        table
+                            .read(&read_txn, path.to_string_lossy().to_string())
+                            .unwrap(),
                         CollectionEntity {
                             order: None,
                             requests: Default::default(),
@@ -491,8 +491,12 @@ mod tests {
                 }
                 {
                     let (read_txn, table) = service.collection_store.begin_read().unwrap();
-                    assert!(table.read(&read_txn, old_collection_path.to_string_lossy().to_string()).is_err());
-                    assert!(table.read(&read_txn, new_collection_path.to_string_lossy().to_string()).is_ok());
+                    assert!(table
+                        .read(&read_txn, old_collection_path.to_string_lossy().to_string())
+                        .is_err());
+                    assert!(table
+                        .read(&read_txn, new_collection_path.to_string_lossy().to_string())
+                        .is_ok());
                 }
             });
     }
@@ -522,7 +526,9 @@ mod tests {
                 }
                 {
                     let (read_txn, table) = service.collection_store.begin_read().unwrap();
-                    assert!(table.read(&read_txn, path.to_string_lossy().to_string()).is_err());
+                    assert!(table
+                        .read(&read_txn, path.to_string_lossy().to_string())
+                        .is_err());
                 }
             });
     }

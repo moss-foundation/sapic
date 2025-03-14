@@ -1,5 +1,5 @@
 use crate::models::collection::RequestType;
-use crate::models::types::request_types::RequestBody;
+use crate::models::types::request_types::{RawBodyType, RequestBody};
 use crate::{
     kdl::foundations::http::{
         HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -200,11 +200,20 @@ fn create_http_requestfile(
         path_params: transformed_path_params,
         headers: transformed_headers,
         body: body.map(|b| match b {
-            RequestBody::Json(s) => crate::kdl::body::RequestBody::Json(s),
-            RequestBody::Text(s) => {crate::kdl::body::RequestBody::Text(s)},
-            RequestBody::JavaScript(s) => {crate::kdl::body::RequestBody::JavaScript(s)},
-            RequestBody::HTML(s) => {crate::kdl::body::RequestBody::HTML(s)},
-            RequestBody::XML(s) => {crate::kdl::body::RequestBody::XML(s)},
+            RequestBody::Raw(raw) => match raw {
+                RawBodyType::Text(raw) => {
+                    crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Text(raw))
+                }
+                RawBodyType::Json(raw) => {
+                    crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Json(raw))
+                }
+                RawBodyType::Html(raw) => {
+                    crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Html(raw))
+                }
+                RawBodyType::Xml(raw) => {
+                    crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Xml(raw))
+                }
+            },
         }),
     })
 }

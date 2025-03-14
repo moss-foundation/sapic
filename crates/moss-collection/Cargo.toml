@@ -21,6 +21,8 @@ patricia_tree.workspace = true
 parking_lot.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 serde_json.workspace = true
+html5ever.workspace = true
+scraper.workspace = true
+xml-rs.workspace = true
 
-[dev-dependencies]
 mockall = "0.13.1"
