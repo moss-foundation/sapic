@@ -353,7 +353,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
     case "doc":
       return (
         <svg
-          className={className}
+          className={cn(className, "min-h-4 min-w-4")}
           width="16"
           height="16"
           viewBox="0 0 16 16"
@@ -379,7 +379,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
     case "folder":
       return (
         <svg
-          className={className}
+          className={cn(className, "min-h-4 min-w-4")}
           width="16"
           height="16"
           viewBox="0 0 16 16"
@@ -397,7 +397,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
     case "hdr":
       return (
         <svg
-          className={className}
+          className={cn(className, "min-h-4 min-w-4")}
           width="16"
           height="16"
           viewBox="0 0 16 16"
@@ -420,7 +420,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
     case "statistics":
       return (
         <svg
-          className={className}
+          className={cn(className, "min-h-4 min-w-4")}
           width="16"
           height="16"
           viewBox="0 0 16 16"
