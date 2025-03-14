@@ -36,11 +36,9 @@ const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss
         `,
     },
     size: {
-      xs: "h-6 px-2.5",
-      sm: "h-7 px-2.5",
-      md: "h-9 px-3",
-      lg: "h-10 px-4 text-base",
-      xl: "h-12 px-5 text-base",
+      xs: "h-6 px-1.5",
+      sm: "h-7 px-1.5",
+      md: "h-9 px-2",
     },
     disabled: {
       false: null,
