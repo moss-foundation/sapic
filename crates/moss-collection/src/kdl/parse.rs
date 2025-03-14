@@ -12,8 +12,6 @@ use std::collections::HashMap;
 use html5ever::tendril::TendrilSink;
 use html5ever::tree_builder::{QuirksMode, TreeSink};
 use thiserror::Error;
-// FIXME: `KDLDocument::get_arg` assumes a node has only one argument
-// So it cannot handle arrays such as `data 1 2 3 4 5`
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -33,7 +31,6 @@ pub enum ParseError {
     InvalidBodyContent { typ: String },
 }
 
-// TODO: Export this type to the frontend
 pub struct ParseOptions {
     html_parse_mode: HtmlParseMode,
 }
@@ -289,14 +286,8 @@ fn parse_raw_body_json(node: &KdlNode) -> Result<RawBodyType> {
 
 fn parse_raw_body_html(node: &KdlNode, html_parse_mode: &HtmlParseMode) -> Result<RawBodyType> {
     // Validate if the content is valid html
-    // FIXME: We are enabling quirks_mode so that we can handle html without doctype declarations
-    // But maybe this is not the optimal strategy
     let html_string = parse_raw_body_content(&node)?;
-    let html_sink = scraper::HtmlTreeSink::new(scraper::Html::new_document());
-    // Enabling Quirks mode so we can handle missing doctypes declaration
-    html_sink.set_quirks_mode(QuirksMode::Quirks);
-    let parser = html5ever::driver::parse_document(html_sink, html5ever::ParseOpts::default());
-    let parsed = parser.one(html_string.clone());
+    let parsed = scraper::Html::parse_document(&html_string);
     if html_parse_mode == &HtmlParseMode::Strict
         && !parsed
             .errors
