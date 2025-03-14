@@ -185,10 +185,10 @@
   /* Tree View */
   --moss-tree-border: #3c3c3c;
   --moss-treeNode-bg: transparent;
-  --moss-treeNode-bg-hover: #2a2d2e;
-  --moss-treeNode-bg-focus: #37373d;
+  --moss-treeNode-bg-hover: #d4e2ff;
+  --moss-treeNode-bg-focus: #d4e2ff;
   --moss-treeNodeButton-bg: transparent;
-  --moss-treeNodeButton-bg-hover: #2a2d2e;
+  --moss-treeNodeButton-bg-hover: #d4e2ff;
   --moss-treeNodeButton-text: #d4d4d4;
   --moss-treeNode-bg-valid: #0d9373;
 

@@ -246,25 +246,28 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 paddingRight: nodePaddingRight,
               }}
               onClick={node.isFolder ? handleFolderClick : undefined}
-              className={cn(
-                nodeStyle,
-                "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative cursor-pointer items-center gap-1"
-              )}
+              className="w-full"
             >
-              <TestCollectionIcon type={node.type} />
+              <span
+                className={cn(
+                  nodeStyle,
+                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative -mx-2 w-full cursor-pointer items-center gap-1 rounded-sm px-2 dark:hover:text-black"
+                )}
+              >
+                <TestCollectionIcon type={node.type} />
 
-              <NodeLabel label={node.id} searchInput={searchInput} />
+                <NodeLabel label={node.id} searchInput={searchInput} />
 
-              <span className="DragHandle h-full min-h-4 grow" />
+                <span className="DragHandle h-full min-h-4 grow" />
 
-              <Icon
-                icon="TreeChevronRightIcon"
-                className={cn("ml-auto text-[#717171]", {
-                  "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": !node.isFolder,
-                })}
-              />
-
+                <Icon
+                  icon="TreeChevronRightIcon"
+                  className={cn("ml-auto text-[#717171]", {
+                    "rotate-90": shouldRenderChildNodes,
+                    "opacity-0": !node.isFolder,
+                  })}
+                />
+              </span>
               {preview &&
                 createPortal(
                   <ul className="background-(--moss-treeNode-bg-focus)">
