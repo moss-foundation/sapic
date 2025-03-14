@@ -119,11 +119,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div
-        className={cn("group relative w-full border-b border-b-(--moss-tree-border)", {
-          "pb-2": node.childNodes.length > 0 && node.isExpanded,
-        })}
-      >
+      <div className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
         <div
           ref={draggableRootRef}
           className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
@@ -195,7 +191,12 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
         {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="h-full w-full">
-            <ul ref={dropTargetFolderRef} className="h-full w-full">
+            <ul
+              ref={dropTargetFolderRef}
+              className={cn("h-full w-full", {
+                "pb-2": node.childNodes.length > 0 && node.isExpanded,
+              })}
+            >
               {filteredChildNodes.map((childNode) => (
                 <TreeNode
                   parentNode={node}
@@ -243,7 +244,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableNodeRef}
               style={{
                 paddingLeft: nodePaddingLeft,
-                paddingRight: nodePaddingRight,
               }}
               onClick={node.isFolder ? handleFolderClick : undefined}
               className="w-full"
@@ -251,8 +251,15 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <span
                 className={cn(
                   nodeStyle,
-                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative -mx-2 w-full cursor-pointer items-center gap-1 rounded-sm px-2 dark:hover:text-black"
+                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative w-full cursor-pointer items-center gap-1 rounded-sm dark:hover:text-black"
                 )}
+                style={{
+                  paddingLeft: 8,
+                  marginLeft: -8,
+
+                  paddingRight: 3,
+                  marginRight: -3,
+                }}
               >
                 <TestCollectionIcon type={node.type} />
 
