@@ -16,14 +16,13 @@ import { TreeNodeComponentProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
-  const { treeId, horizontalPadding, nodeOffset, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
+  const { treeId, nodeOffset, paddingLeft, paddingRight, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
 
-  const paddingLeft = useMemo(
-    () => `${depth * nodeOffset + horizontalPadding}px`,
-    [depth, nodeOffset, horizontalPadding]
-  );
-  const paddingRight = useMemo(() => `${horizontalPadding}px`, [horizontalPadding]);
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingRight = useMemo(() => paddingRight + 4, [paddingRight]);
+
+  const nodeStyle = useMemo(() => "flex w-full min-w-0 items-center gap-1 py-0.5", []);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
 
@@ -120,10 +119,15 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className="group relative w-full">
+      <div
+        className={cn("group relative w-full border-b border-b-(--moss-tree-border)", {
+          "pb-2": node.childNodes.length > 0 && node.isExpanded,
+        })}
+      >
         <div
           ref={draggableRootRef}
-          className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-1 pr-2"
+          className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
+          style={{ paddingLeft, paddingRight }}
         >
           {isRenamingRootNode ? (
             <div className="flex grow cursor-pointer items-center gap-1">
@@ -140,7 +144,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               />
             </div>
           ) : (
-            <button className="flex grow cursor-pointer items-center gap-1" onClick={handleFolderClick}>
+            <button className="flex grow cursor-pointer items-center gap-1 overflow-hidden" onClick={handleFolderClick}>
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("text-[#717171]", {
@@ -202,11 +206,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 />
               ))}
               {(isAddingRootFileNode || isAddingRootFolderNode) && (
-                <div
-                  className="flex w-full min-w-0 items-center gap-1"
-                  style={{ paddingLeft: `${depth * nodeOffset + horizontalPadding}px` }}
-                >
-                  <Icon icon={isAddingRootFolderNode ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+                <div className={nodeStyle} style={{ paddingLeft: `${depth * nodeOffset + paddingLeft}px` }}>
+                  <TestCollectionIcon type={node.type} />
                   <NodeAddForm
                     isFolder={isAddingRootFolderNode}
                     restrictedNames={node.childNodes.map((childNode) => childNode.id)}
@@ -225,8 +226,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   return (
     <li ref={dropTargetListRef} className="s">
       {isRenamingNode ? (
-        <div className="flex w-full min-w-0 items-center gap-1" style={{ paddingLeft }}>
-          <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+        <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
+          <TestCollectionIcon type={node.type} />
+
           <NodeRenamingForm
             onSubmit={handleRenamingFormSubmit}
             onCancel={handleRenamingFormCancel}
@@ -239,11 +241,17 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           <ContextMenu.Trigger asChild>
             <button
               ref={draggableNodeRef}
-              style={{ paddingLeft, paddingRight }}
+              style={{
+                paddingLeft: nodePaddingLeft,
+                paddingRight: nodePaddingRight,
+              }}
               onClick={node.isFolder ? handleFolderClick : undefined}
-              className="background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative flex w-full min-w-0 grow cursor-pointer items-center gap-1"
+              className={cn(
+                nodeStyle,
+                "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) relative cursor-pointer items-center gap-1"
+              )}
             >
-              <Icon icon={node.isFolder ? "TreeFolderIcon" : "TreeFileIcon"} />
+              <TestCollectionIcon type={node.type} />
 
               <NodeLabel label={node.id} searchInput={searchInput} />
 
@@ -282,7 +290,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           </ContextMenu.Trigger>
 
           <ContextMenu.Portal>
-            <ContextMenu.Content className="text-white">
+            <ContextMenu.Content>
               {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
               {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
               <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
@@ -294,10 +302,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <div
-          style={{ paddingLeft: `${(depth + 1) * nodeOffset + horizontalPadding}px` }}
+          style={{ paddingLeft: `${(depth + 1) * nodeOffset + paddingLeft}px` }}
           className="flex w-full min-w-0 items-center gap-1"
         >
-          <Icon icon={isAddingFolderNode ? "TreeFolderIcon" : "TreeFileIcon"} className="ml-auto" />
+          <TestCollectionIcon type={node.type} className="ml-auto" />
           <NodeAddForm
             isFolder={isAddingFolderNode}
             restrictedNames={node.childNodes.map((childNode) => childNode.id)}
@@ -325,3 +333,18 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 };
 
 export default TreeNode;
+
+const TestCollectionIcon = ({ type, className }: { type: string; className?: string }) => {
+  switch (type) {
+    case "doc":
+      return <Icon icon="Doc" className={className} />;
+    case "folder":
+      return <Icon icon="TreeFolder" className={className} />;
+    case "hdr":
+      return <Icon icon="Hdr" className={className} />;
+    case "statistics":
+      return <Icon icon="Statistics" className={className} />;
+    default:
+      return <Icon icon="CheckIconGreen" className={className} />;
+  }
+};

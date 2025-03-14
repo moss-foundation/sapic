@@ -26,7 +26,7 @@
   /* Tabs and Panels */
   --moss-tabslist-background: #f4f4f4;
   --moss-tab-background: #f4f4f4;
-  --moss-tab-text: black;
+  --moss-tab-text: #525252;
   --moss-active-tab-background: white;
   --moss-active-tab-text: black;
   --moss-hover-inactive-tab-background: rgba(255, 255, 255, 0.5);
@@ -203,6 +203,7 @@
   --moss-select-text-bottomOutlined: black;
 
   /* Tree View */
+  --moss-tree-border: #e0e0e0;
   --moss-treeNode-bg: transparent;
   --moss-treeNode-bg-hover: #ebecf0;
   --moss-treeNode-bg-focus: #ebecf0;

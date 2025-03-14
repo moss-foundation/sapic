@@ -3,16 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import TestTreeData from "../assets/testTreeData.json";
-import TestTreeData2 from "../assets/testTreeData2.json";
-import TestTreeData3 from "../assets/testTreeData3.json";
+import AzureDevOpsTestCollection from "../assets/AzureDevOpsTestCollection.json";
+import SapicTestCollection from "../assets/SapicTestCollection.json";
+import WhatsAppBusinessTestCollection from "../assets/WhatsAppBusinessTestCollection.json";
 
 import "@repo/moss-tabs/assets/styles.css";
 
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 
-import Button from "./Button";
 import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
@@ -23,9 +22,9 @@ export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const [collections, setCollections] = useState<Collection[]>([
-    TestTreeData as Collection,
-    TestTreeData2 as Collection,
-    TestTreeData3 as Collection,
+    SapicTestCollection as Collection,
+    AzureDevOpsTestCollection as Collection,
+    WhatsAppBusinessTestCollection as Collection,
   ]);
 
   useEffect(() => {
@@ -116,7 +115,7 @@ export const CollectionTreeView = () => {
   }, [collections.length]);
 
   return (
-    <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
+    <div className="relative flex h-full flex-col pt-1" ref={dropTargetToggleRef}>
       <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
         <Input
           iconLeft="Search"
@@ -217,7 +216,7 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-0 left-0 h-[100px] w-full")} ref={ref}>
+    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
       <div className="relative grid h-full w-full place-items-center">
         <div
           className={cn(

@@ -16,7 +16,7 @@ import Scrollbar from "./Scrollbar";
 
 const Tabs = ({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div className={cn("flex h-full w-full flex-col", className)} {...props}>
+    <div className={cn("h-full w-full", className)} {...props}>
       {children}
     </div>
   );
@@ -131,11 +131,10 @@ const Tab = ({
       aria-controls={`panel-${id}`}
       tabIndex={isActive ? 0 : -1}
       className={cn(
-        "background-[var(--moss-tab-background)] relative box-border min-w-max grow cursor-pointer border-t px-3 pt-[7px] pb-2 text-[var(--moss-tab-text)] select-none",
+        "background-(--moss-tab-background) aria-selected:background-(--moss-active-tab-background) relative box-border min-w-max grow cursor-pointer border-t px-3 pt-[7px] pb-2 text-[var(--moss-tab-text)] select-none",
         {
-          "background-[var(--moss-active-tab-background)] border-t-(--moss-primary) text-[var(--moss-active-tab-text)]":
-            isActive,
-          "hover:background-[var(--moss-hover-inactive-tab-background)] border-t-transparent": !isActive,
+          "background-(--moss-active-tab-background) border-t-(--moss-primary) text-(--moss-active-tab-text)": isActive,
+          "hover:background-(--moss-hover-inactive-tab-background) border-t-transparent": !isActive,
         },
         className
       )}
@@ -156,7 +155,7 @@ const TabsPanels = ({ children, className, ...props }: TabsPanelsProps) => {
   return (
     <div
       className={cn(
-        "background-[var(--moss-tab-panels-background)] flex h-full w-full grow flex-col overflow-hidden",
+        "background-(--moss-tab-panels-background)] flex h-full w-full grow flex-col overflow-hidden",
         className
       )}
       {...props}

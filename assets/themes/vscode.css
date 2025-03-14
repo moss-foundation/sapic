@@ -183,6 +183,7 @@
   --moss-select-text-bottomOutlined: #d4d4d4;
 
   /* Tree View */
+  --moss-tree-border: #3c3c3c;
   --moss-treeNode-bg: transparent;
   --moss-treeNode-bg-hover: #2a2d2e;
   --moss-treeNode-bg-focus: #37373d;

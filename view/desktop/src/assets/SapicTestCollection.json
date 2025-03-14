@@ -1,0 +1,51 @@
+{
+  "id": "SapicTestCollection",
+  "type": "collection",
+  "order": 1,
+  "tree": {
+    "id": "SapicTestCollection",
+    "order": 1,
+    "type": "folder",
+    "isFolder": true,
+    "isExpanded": true,
+    "isRoot": true,
+    "childNodes": [
+      {
+        "id": "User",
+        "order": 1,
+        "type": "folder",
+        "isFolder": true,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      },
+      {
+        "id": "Plugin",
+        "order": 2,
+        "type": "folder",
+        "isFolder": true,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      },
+      {
+        "id": "UpdateDatabase",
+        "order": 3,
+        "type": "hdr",
+        "isFolder": false,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      },
+      {
+        "id": "Get frim Datrabase",
+        "order": 4,
+        "type": "doc",
+        "isFolder": false,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      }
+    ]
+  }
+}

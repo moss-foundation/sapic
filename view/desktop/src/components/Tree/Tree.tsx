@@ -22,8 +22,9 @@ import {
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
-  horizontalPadding: 16,
-  nodeOffset: 16,
+  paddingLeft: 12,
+  paddingRight: 8,
+  nodeOffset: 12,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: undefined,
@@ -32,8 +33,9 @@ export const TreeContext = createContext<TreeContextProps>({
 export const Tree = ({
   id,
   tree: initialTree,
-  horizontalPadding = 16,
-  nodeOffset = 16,
+  paddingLeft = 12,
+  paddingRight = 8,
+  nodeOffset = 12,
   onTreeUpdate,
   searchInput,
 }: TreeProps) => {
@@ -98,7 +100,8 @@ export const Tree = ({
     <TreeContext.Provider
       value={{
         treeId,
-        horizontalPadding,
+        paddingLeft,
+        paddingRight,
         nodeOffset,
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),

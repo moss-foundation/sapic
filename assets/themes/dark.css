@@ -195,6 +195,7 @@
   --moss-select-text-bottomOutlined: white;
 
   /* Tree View */
+  --moss-tree-border: #3c3c3c;
   --moss-treeNode-bg: transparent;
   --moss-treeNode-bg-hover: #434343;
   --moss-treeNode-bg-focus: #747474;
