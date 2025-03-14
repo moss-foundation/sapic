@@ -35,6 +35,34 @@
             "isExpanded": false,
             "isRoot": false,
             "childNodes": []
+          },
+          {
+            "id": "Plugin",
+            "order": 2,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": false,
+            "isRoot": false,
+            "childNodes": [
+              {
+                "id": "Update Plugin",
+                "order": 1,
+                "type": "hdr",
+                "isFolder": false,
+                "isExpanded": false,
+                "isRoot": false,
+                "childNodes": []
+              },
+              {
+                "id": "Get Plugin",
+                "order": 2,
+                "type": "doc",
+                "isFolder": false,
+                "isExpanded": false,
+                "isRoot": false,
+                "childNodes": []
+              }
+            ]
           }
         ]
       },

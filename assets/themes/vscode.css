@@ -8,6 +8,8 @@
   --moss-text: #d4d4d4;
   --moss-primary: #007acc;
   --moss-error: #f48771;
+  --moss-background-error: #f7d7d7;
+  --moss-background-success: #f2fcf3;
 
   /* Layout */
   --moss-page-background: #1e1e1e;

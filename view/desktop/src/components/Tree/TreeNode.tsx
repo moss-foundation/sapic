@@ -28,7 +28,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
-  const dropTargetFolderRef = useRef<HTMLUListElement>(null);
+  const dropTargetFolderRef = useRef<HTMLUListElement | HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
@@ -119,7 +119,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   if (node.isRoot) {
     return (
-      <div className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
+      <div className={cn("group relative w-full border-b border-b-(--moss-tree-border)")} ref={dropTargetFolderRef}>
         <div
           ref={draggableRootRef}
           className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
@@ -192,7 +192,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="h-full w-full">
             <ul
-              ref={dropTargetFolderRef}
               className={cn("h-full w-full", {
                 "pb-2": node.childNodes.length > 0 && node.isExpanded,
               })}
