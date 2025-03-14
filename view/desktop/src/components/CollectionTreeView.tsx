@@ -125,7 +125,7 @@ export const CollectionTreeView = () => {
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="flex cursor-pointer items-center justify-center rounded p-[5px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E]">
+          <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-treeNodeButton-text)">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>

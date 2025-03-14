@@ -210,9 +210,8 @@
   --moss-treeNode-bg-hover: #d4e2ff;
   --moss-treeNode-bg-focus: #d4e2ff;
   --moss-treeNodeButton-bg: transparent;
-  --moss-treeNodeButton-bg-hover: #d4e2ff;
+  --moss-treeNodeButton-bg-hover: #ebecf0;
   --moss-treeNodeButton-text: #717171;
-  --moss-treeNode-bg-valid: #32cd32;
 
   /* Menu */
   --moss-menu-content-bg: white;

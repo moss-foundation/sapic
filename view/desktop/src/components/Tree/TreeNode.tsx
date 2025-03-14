@@ -173,7 +173,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             )}
 
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E] hover:dark:bg-black/30">
+              <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text)">
                 <Icon icon="TreeDetailIcon" />
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
