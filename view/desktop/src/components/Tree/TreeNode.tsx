@@ -242,40 +242,30 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableNodeRef}
               style={{
                 paddingLeft: nodePaddingLeft,
+                paddingRight,
               }}
               onClick={node.isFolder ? handleFolderClick : undefined}
-              className="w-full"
+              className={cn(
+                nodeStyle,
+                "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) relative w-full cursor-pointer items-center gap-1 dark:hover:text-black",
+                {
+                  "hover:background-(--moss-treeNode-bg-hover)": !isNodeDragging,
+                }
+              )}
             >
-              <span
-                className={cn(
-                  nodeStyle,
-                  "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg)relative w-full cursor-pointer items-center gap-1 rounded-sm dark:hover:text-black",
-                  {
-                    "hover:background-(--moss-treeNode-bg-hover)": !isNodeDragging,
-                  }
-                )}
-                style={{
-                  paddingLeft: 8,
-                  marginLeft: -8,
+              <TestCollectionIcon type={node.type} />
 
-                  paddingRight: 3,
-                  marginRight: -3,
-                }}
-              >
-                <TestCollectionIcon type={node.type} />
+              <NodeLabel label={node.id} searchInput={searchInput} />
 
-                <NodeLabel label={node.id} searchInput={searchInput} />
+              <span className="DragHandle h-full min-h-4 grow" />
 
-                <span className="DragHandle h-full min-h-4 grow" />
-
-                <Icon
-                  icon="TreeChevronRightIcon"
-                  className={cn("ml-auto text-[#717171]", {
-                    "rotate-90": shouldRenderChildNodes,
-                    "opacity-0": !node.isFolder,
-                  })}
-                />
-              </span>
+              <Icon
+                icon="TreeChevronRightIcon"
+                className={cn("ml-auto text-[#717171]", {
+                  "rotate-90": shouldRenderChildNodes,
+                  "opacity-0": !node.isFolder,
+                })}
+              />
               {preview &&
                 createPortal(
                   <ul className="background-(--moss-treeNode-bg-focus)">
