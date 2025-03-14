@@ -360,7 +360,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect width="16" height="16" fill="white" fill-opacity="0.01" />
+          <rect width="16" height="16" fill="white" fillOpacity="0.01" />
           <path
             d="M15 11.5H12C11.7349 11.4997 11.4807 11.3942 11.2932 11.2068C11.1058 11.0193 11.0003 10.7651 11 10.5V5.5C11.0003 5.23486 11.1057 4.98066 11.2932 4.79319C11.4807 4.60571 11.7349 4.50026 12 4.5H15V5.5H12V10.5H15V11.5Z"
             fill="#208A3C"
@@ -404,7 +404,7 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect width="16" height="16" fill="white" fill-opacity="0.01" />
+          <rect width="16" height="16" fill="white" fillOpacity="0.01" />
           <path
             d="M15 7.5V5.5C15 5.23478 14.8946 4.98043 14.7071 4.79289C14.5196 4.60536 14.2652 4.5 14 4.5H11V11.5H12V8.5H12.74L13.91 11.5H15L13.835 8.5H14C14.2652 8.5 14.5196 8.39464 14.7071 8.20711C14.8946 8.01957 15 7.76522 15 7.5ZM12 5.5H14V7.5H12V5.5Z"
             fill="#DB3B4B"
@@ -428,8 +428,8 @@ const TestCollectionIcon = ({ type, className }: { type: string; className?: str
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
+            fillRule="evenodd"
+            clipRule="evenodd"
             d="M11 6H14C14.5523 6 15 6.44772 15 7V13C15 13.5523 14.5523 14 14 14H3C2.44772 14 2 13.5523 2 13V5C2 4.44772 2.44772 4 3 4H6V3C6 2.44772 6.44772 2 7 2H10C10.5523 2 11 2.44772 11 3V6ZM10 3H7V13H10V3ZM11 7V13H14V7H11ZM6 5V13H3L3 5H6Z"
             fill="#6C707E"
           />
