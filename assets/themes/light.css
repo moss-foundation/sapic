@@ -7,7 +7,9 @@
   /* Base Colors */
   --moss-text: black;
   --moss-primary: #0065ff;
-  --moss-error: #fb2c36;
+  --moss-error: #fff7f7;
+  --moss-background-error: #f7d7d7;
+  --moss-background-success: #f2fcf3;
 
   /* Layout */
   --moss-page-background: rgba(255, 255, 255, 1);
@@ -26,7 +28,7 @@
   /* Tabs and Panels */
   --moss-tabslist-background: #f4f4f4;
   --moss-tab-background: #f4f4f4;
-  --moss-tab-text: black;
+  --moss-tab-text: #525252;
   --moss-active-tab-background: white;
   --moss-active-tab-text: black;
   --moss-hover-inactive-tab-background: rgba(255, 255, 255, 0.5);
@@ -203,13 +205,13 @@
   --moss-select-text-bottomOutlined: black;
 
   /* Tree View */
+  --moss-tree-border: #e0e0e0;
   --moss-treeNode-bg: transparent;
-  --moss-treeNode-bg-hover: #ebecf0;
-  --moss-treeNode-bg-focus: #ebecf0;
+  --moss-treeNode-bg-hover: #d4e2ff;
+  --moss-treeNode-bg-focus: #d4e2ff;
   --moss-treeNodeButton-bg: transparent;
   --moss-treeNodeButton-bg-hover: #ebecf0;
   --moss-treeNodeButton-text: #717171;
-  --moss-treeNode-bg-valid: #32cd32;
 
   /* Menu */
   --moss-menu-content-bg: white;

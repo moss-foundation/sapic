@@ -25,7 +25,8 @@ export interface TreeNodeProps extends NodeProps {
 export interface TreeProps {
   id?: string | number;
   tree: NodeProps;
-  horizontalPadding?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
   nodeOffset?: number;
   searchInput?: string;
   onTreeUpdate?: (tree: NodeProps) => void;
@@ -33,7 +34,8 @@ export interface TreeProps {
 
 export interface TreeContextProps {
   treeId: string | number;
-  horizontalPadding: number;
+  paddingLeft: number;
+  paddingRight: number;
   nodeOffset: number;
   searchInput?: string;
   allFoldersAreCollapsed: boolean;

@@ -18,37 +18,19 @@ interface ListItem {
   isActive: boolean;
 }
 
-const initialList = Array.from({ length: 5 }, (_, i) => {
-  if (i === 0)
-    return {
-      id: i + 1,
-      label: `Explorer`,
-      isActive: i === 0,
-    };
-
-  if (i === 1)
-    return {
-      id: i + 1,
-      label: `Issues`,
-      isActive: false,
-    };
-
-  if (i === 2)
-    return {
-      id: i + 1,
-      label: `History`,
-      isActive: false,
-    };
-
-  return {
-    id: i + 1,
-    label: `Panel ${i + 1}`,
-    isActive: i === 0,
-  };
-});
-
 function App() {
-  const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
+  const [DNDList, setDNDList] = useState<ListItem[]>([
+    {
+      id: 1,
+      label: `Collections`,
+      isActive: true,
+    },
+    {
+      id: 2,
+      label: `Environments`,
+      isActive: false,
+    },
+  ]);
 
   const handleSetActive = (id: number) => {
     setDNDList([...DNDList.map((item) => ({ ...item, isActive: item.id === id }))]);
