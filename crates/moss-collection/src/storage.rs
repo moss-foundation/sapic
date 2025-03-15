@@ -9,7 +9,6 @@ use std::path::PathBuf;
 
 use crate::models::storage::CollectionEntity;
 
-
 #[cfg_attr(test, mockall::automock)]
 pub trait CollectionRequestSubstore: Send + Sync + 'static {}
 
