@@ -7,6 +7,6 @@ use crate::models::indexing::IndexedCollection;
 
 #[cfg_attr(test, mockall::automock)]
 #[async_trait::async_trait]
-pub trait CollectionIndexer: Send + Sync {
+pub trait Indexer: Send + Sync {
     async fn index(&self, path: &PathBuf) -> Result<IndexedCollection>;
 }

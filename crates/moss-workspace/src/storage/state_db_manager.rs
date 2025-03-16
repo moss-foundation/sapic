@@ -14,7 +14,6 @@ pub struct StateDbManagerImpl {
 impl StateDbManagerImpl {
     pub fn new(path: &PathBuf) -> Result<Self> {
         let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?;
-
         let collection_store = Arc::new(CollectionStoreImpl::new(db_client.clone()));
 
         Ok(Self { collection_store })

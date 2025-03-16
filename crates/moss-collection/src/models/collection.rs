@@ -1,7 +1,10 @@
 use anyhow::anyhow;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "collection.ts")]
 pub enum HttpRequestType {
     Post,
     Get,
@@ -20,7 +23,9 @@ impl ToString for HttpRequestType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "collection.ts")]
 pub enum RequestType {
     Http(HttpRequestType),
     WebSocket,

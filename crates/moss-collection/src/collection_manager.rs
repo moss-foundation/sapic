@@ -9,7 +9,7 @@ use tokio::sync::OnceCell;
 use crate::storage::CollectionStore;
 use crate::{
     collection_handle::{CollectionHandle, CollectionState},
-    indexing::CollectionIndexer,
+    indexing::Indexer,
     models::{
         collection::CollectionRequestVariantEntry,
         operations::collection_operations::{CreateCollectionInput, OverviewCollectionOutput},
@@ -41,7 +41,7 @@ pub struct CollectionManager {
     // TODO: extract request store
     collection_request_substore: Arc<dyn CollectionRequestSubstore>,
     collections: OnceCell<Arc<CollectionMap>>,
-    indexer: Arc<dyn CollectionIndexer>,
+    indexer: Arc<dyn Indexer>,
 }
 
 impl CollectionManager {
@@ -49,7 +49,7 @@ impl CollectionManager {
         fs: Arc<dyn FileSystem>,
         collection_store: Arc<dyn CollectionStore>,
         collection_request_substore: Arc<dyn CollectionRequestSubstore>,
-        indexer: Arc<dyn CollectionIndexer>,
+        indexer: Arc<dyn Indexer>,
     ) -> Result<Self> {
         Ok(Self {
             fs,
@@ -102,6 +102,7 @@ impl CollectionManager {
 }
 
 impl CollectionManager {
+    // done
     pub async fn overview_collections(&self) -> Result<Vec<OverviewCollectionOutput>> {
         let collections = self.collections().await?;
         let read_lock = collections.read().await;
@@ -123,6 +124,7 @@ impl CollectionManager {
     // collection descriptions should be sent to the frontend. This largely depends
     // on the library we choose to use for displaying hierarchical structures.
 
+    // done
     pub async fn index_collection(&self, path: PathBuf) -> Result<Arc<CollectionState>> {
         let collections = self.collections().await?;
         let read_lock = collections.read().await;
@@ -360,7 +362,7 @@ impl AppService for CollectionManager {
 mod tests {
 
     use super::*;
-    use crate::indexing::indexer::IndexingService;
+    use crate::indexing::indexer::IndexerImpl;
     use crate::models::operations::collection_operations::CreateRequestInput;
     use crate::storage::collection_store::CollectionStoreImpl;
     use moss_db::ReDbClient;
@@ -389,7 +391,7 @@ mod tests {
         let collection_store =
             CollectionStoreImpl::new(ReDbClient::new("test_collection_manager.db").unwrap());
         let collection_request_substore = TestCollectionRequestSubstore::new();
-        let indexer = Arc::new(IndexingService::new(fs.clone()));
+        let indexer = Arc::new(IndexerImpl::new(fs.clone()));
         CollectionManager::new(
             fs,
             Arc::new(collection_store),

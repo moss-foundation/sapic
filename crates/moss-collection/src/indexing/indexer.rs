@@ -4,7 +4,7 @@ use patricia_tree::PatriciaMap;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 
 use crate::{
-    indexing::CollectionIndexer,
+    indexing::Indexer,
     models::{
         collection::RequestType,
         indexing::{IndexedCollection, RequestEntry, RequestVariantEntry},
@@ -15,12 +15,12 @@ const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
 const REQUEST_FILE_EXT: &'static str = "sapic";
 
-pub struct IndexingService {
+pub struct IndexerImpl {
     fs: Arc<dyn FileSystem>,
 }
 
 #[async_trait::async_trait]
-impl CollectionIndexer for IndexingService {
+impl Indexer for IndexerImpl {
     async fn index(&self, path: &PathBuf) -> Result<IndexedCollection> {
         Ok(IndexedCollection {
             requests: self.index_requests(path.join(REQUESTS_DIR)).await?,
@@ -28,14 +28,14 @@ impl CollectionIndexer for IndexingService {
     }
 }
 
-impl IndexingService {
+impl IndexerImpl {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self { fs }
     }
 
     async fn index_requests(&self, root: PathBuf) -> Result<PatriciaMap<RequestEntry>> {
         let mut result = PatriciaMap::new();
-        let mut stack: Vec<PathBuf> = vec![root];
+        let mut stack: Vec<PathBuf> = vec![root.clone()];
 
         while let Some(current_dir) = stack.pop() {
             let mut dir = self.fs.read_dir(&current_dir).await?;
@@ -47,11 +47,20 @@ impl IndexingService {
                 }
 
                 let path = entry.path();
-                if path.extension().map_or(false, |ext| ext == REQUEST_DIR_EXT) {
-                    result.insert(
-                        path.to_string_lossy().to_string(),
-                        self.index_request_dir(path).await?,
-                    );
+
+                if path
+                    .extension()
+                    .map(|ext| ext == REQUEST_DIR_EXT)
+                    .unwrap_or(false)
+                {
+                    if let Ok(relative_path) = path.strip_prefix(&root) {
+                        let key = relative_path.to_string_lossy().into_owned();
+                        let request_entry = self.index_request_dir(path).await?;
+                        result.insert(key, request_entry);
+                    } else {
+                        // TODO: log error
+                        continue;
+                    }
                 } else {
                     stack.push(path);
                 }
@@ -177,7 +186,7 @@ mod tests {
             .build()
             .unwrap()
             .block_on(async {
-                let r = IndexingService::new(Arc::new(DiskFileSystem::new()));
+                let r = IndexerImpl::new(Arc::new(DiskFileSystem::new()));
                 let r = r
                     .index(&PathBuf::from("./tests/TestCollection"))
                     .await

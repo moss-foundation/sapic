@@ -1205,6 +1205,7 @@ dependencies = [
  "moss_tauri",
  "moss_text",
  "moss_theme",
+ "moss_workspace",
  "objc",
  "rand 0.9.0",
  "serde_json",
@@ -2946,6 +2947,7 @@ name = "moss_collection"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arc-swap",
  "async-trait",
  "bincode",
  "dashmap",
@@ -3143,7 +3145,10 @@ dependencies = [
  "moss_collection",
  "moss_db",
  "moss_fs",
+ "rand 0.9.0",
  "serde",
+ "slotmap",
+ "thiserror 2.0.12",
  "tokio",
  "ts-rs",
 ]
@@ -5030,6 +5035,15 @@ dependencies = [
  "libc",
  "log",
  "parking_lot 0.11.2",
+]
+
+[[package]]
+name = "slotmap"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbff4acf519f630b3a3ddcfaea6c06b42174d9a44bc70c620e9ed1649d58b82a"
+dependencies = [
+ "version_check",
 ]
 
 [[package]]

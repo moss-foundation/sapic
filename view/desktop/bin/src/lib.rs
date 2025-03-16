@@ -13,8 +13,8 @@ use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
 use moss_collection::collection_manager::CollectionManager;
-use moss_collection::indexing::indexer::IndexingService;
-use moss_collection::storage::{SledCollectionRequestSubstore};
+use moss_collection::indexing::indexer::IndexerImpl;
+use moss_collection::storage::SledCollectionRequestSubstore;
 use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_fs::ports::FileSystem;
@@ -23,6 +23,7 @@ use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
 use moss_tauri::TauriResult;
 use moss_theme::theme_service::ThemeService;
+use moss_workspace::workspace_manager::WorkspaceManager;
 use rand::random;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -113,6 +114,17 @@ pub fn run() {
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
+                        let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+                        let workspaces_dir: PathBuf =
+                            PathBuf::from(dir).join("samples").join("workspaces");
+
+                        move |_| WorkspaceManager::new(fs_clone, workspaces_dir)
+                    },
+                    InstantiationType::Instant,
+                )
+                .with_service(
+                    {
+                        let fs_clone = Arc::clone(&fs);
                         let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
                             .expect("Environment variable LOCALES_DIR is not set")
                             .into();
@@ -131,10 +143,9 @@ pub fn run() {
                 .with_service(
                     {
                         let fs_clone = Arc::clone(&fs);
-                        let collection_store =
-                            CollectionStoreImpl::new(
-                                ReDbClient::new("collection_store.db").unwrap()
-                            );
+                        let collection_store = CollectionStoreImpl::new(
+                            ReDbClient::new("collection_store.db").unwrap(),
+                        );
                         let collection_request_substore =
                             SledCollectionRequestSubstore::new(sled_manager.collections_tree());
 
@@ -143,7 +154,7 @@ pub fn run() {
                                 Arc::clone(&fs_clone) as Arc<dyn FileSystem>,
                                 Arc::new(collection_store),
                                 Arc::new(collection_request_substore),
-                                Arc::new(IndexingService::new(fs_clone)),
+                                Arc::new(IndexerImpl::new(fs_clone)),
                             )
                             .expect("failed to create the CollectionService")
                         }
