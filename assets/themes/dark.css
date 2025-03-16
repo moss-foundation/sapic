@@ -8,6 +8,8 @@
   --moss-text: white;
   --moss-primary: #0065ff;
   --moss-error: #fb2c36;
+  --moss-background-error: #f7d7d7;
+  --moss-background-success: #f2fcf3;
 
   /* Layout */
   --moss-page-background: rgba(22, 24, 25, 1);
@@ -195,13 +197,13 @@
   --moss-select-text-bottomOutlined: white;
 
   /* Tree View */
+  --moss-tree-border: #3c3c3c;
   --moss-treeNode-bg: transparent;
-  --moss-treeNode-bg-hover: #434343;
-  --moss-treeNode-bg-focus: #747474;
+  --moss-treeNode-bg-hover: #d4e2ff;
+  --moss-treeNode-bg-focus: #d4e2ff;
   --moss-treeNodeButton-bg: transparent;
-  --moss-treeNodeButton-bg-hover: #6c707e;
-  --moss-treeNodeButton-text: #717171;
-  --moss-treeNode-bg-valid: #32cd32;
+  --moss-treeNodeButton-bg-hover: rgba(0, 0, 0, 0.33);
+  --moss-treeNodeButton-text: #6c707e;
 
   /* Menu */
   --moss-menu-content-bg: rgb(24, 24, 27);
