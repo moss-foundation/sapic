@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
@@ -38,7 +38,10 @@ impl IndexerImpl {
         let mut stack: Vec<PathBuf> = vec![root.clone()];
 
         while let Some(current_dir) = stack.pop() {
-            let mut dir = self.fs.read_dir(&current_dir).await?;
+            let mut dir = self.fs.read_dir(&current_dir).await.context(format!(
+                "Failed to read the directory: {}",
+                current_dir.display()
+            ))?;
 
             while let Some(entry) = dir.next_entry().await? {
                 let file_type = entry.file_type().await?;

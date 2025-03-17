@@ -1,15 +1,13 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
 use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
-use scopeguard::defer;
-use slotmap::{KeyData, SlotMap};
-use std::collections::HashSet;
+use slotmap::KeyData;
 use std::path::PathBuf;
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{
     CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
     ListCollectionRequestsInput, ListCollectionRequestsOutput, ListCollectionsOutput,
@@ -41,33 +39,6 @@ impl std::fmt::Display for CollectionKey {
     }
 }
 
-struct Slot {
-    leased: AtomicBool,
-    data: Option<(Collection, CollectionMetadata)>,
-}
-
-type CollectionSlot = (Collection, CollectionMetadata);
-
-enum CollectionSlotState {
-    Available(CollectionSlot),
-    Leased,
-}
-
-impl CollectionSlotState {
-    pub fn as_available(self) -> Option<CollectionSlot> {
-        match self {
-            CollectionSlotState::Available(slot) => Some(slot),
-            CollectionSlotState::Leased => None,
-        }
-    }
-
-    pub fn is_available(&self) -> bool {
-        matches!(self, CollectionSlotState::Available(_))
-    }
-}
-
-type CollectionMap = SlotMap<CollectionKey, CollectionSlotState>;
-
 #[derive(Clone, Debug, Error)]
 pub enum CollectionOperationError {
     #[error("The name of a collection cannot be empty.")]
@@ -80,69 +51,13 @@ pub enum CollectionOperationError {
     NonexistentCollection { name: String, path: PathBuf },
 }
 
+type CollectionSlot = (Collection, CollectionMetadata);
+type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
+
 pub struct Workspace {
     fs: Arc<dyn FileSystem>,
     state_db_manager: Arc<dyn StateDbManager>,
     collections: OnceCell<Arc<RwLock<CollectionMap>>>,
-}
-
-pub struct LeaseGuard {
-    key: CollectionKey,
-    slot: Option<CollectionSlot>,
-    collections: Arc<RwLock<CollectionMap>>,
-}
-
-impl LeaseGuard {
-    pub fn collection(&self) -> &Collection {
-        &self
-            .slot
-            .as_ref()
-            .expect("LeaseGuard is not holding a collection")
-            .0
-    }
-
-    pub fn collection_mut(&mut self) -> &mut Collection {
-        &mut self
-            .slot
-            .as_mut()
-            .expect("LeaseGuard is not holding a collection")
-            .0
-    }
-
-    pub fn collection_metadata(&self) -> &CollectionMetadata {
-        &self
-            .slot
-            .as_ref()
-            .expect("LeaseGuard is not holding a collection")
-            .1
-    }
-}
-
-impl Drop for LeaseGuard {
-    fn drop(&mut self) {
-        let collections = self.collections.clone();
-        let key = self.key;
-        let slot = self.slot.take().unwrap();
-
-        tokio::spawn(async move {
-            let mut collections_lock = collections.write().await;
-
-            if let Some(state) = collections_lock.get_mut(key) {
-                match state {
-                    CollectionSlotState::Leased => {
-                        *state = CollectionSlotState::Available(slot);
-                    }
-                    CollectionSlotState::Available(_) => {
-                        // TODO: log here
-                        println!("Collection was not leased");
-                    }
-                }
-            } else {
-                // TODO: log here
-                println!("Collection not found");
-            }
-        });
-    }
 }
 
 impl Workspace {
@@ -157,52 +72,11 @@ impl Workspace {
         })
     }
 
-    async fn lease_collection(&self, key: CollectionKey) -> Result<LeaseGuard> {
-        let collections = self.collections().await?;
-
-        let mut collections_lock = collections.write().await;
-        match collections_lock.get_mut(key) {
-            Some(slot_state) => {
-                if let CollectionSlotState::Available(slot) =
-                    std::mem::replace(slot_state, CollectionSlotState::Leased)
-                {
-                    Ok(LeaseGuard {
-                        key,
-                        slot: Some(slot),
-                        collections: collections.clone(),
-                    })
-                } else {
-                    Err(anyhow!("Collection is leased").into())
-                }
-            }
-            None => Err(anyhow!("Collection not found").into()),
-        }
-    }
-
-    async fn release_collection(&self, key: CollectionKey, slot: CollectionSlot) -> Result<()> {
-        let collections = self.collections().await?;
-        let mut collections_lock = collections.write().await;
-
-        if let Some(state) = collections_lock.get_mut(key) {
-            match state {
-                CollectionSlotState::Leased => {
-                    *state = CollectionSlotState::Available(slot);
-                    Ok(())
-                }
-                CollectionSlotState::Available(_) => {
-                    Err(anyhow!("Collection was not leased").into())
-                }
-            }
-        } else {
-            Err(anyhow!("Collection not found").into())
-        }
-    }
-
     async fn collections(&self) -> Result<Arc<RwLock<CollectionMap>>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
-                let mut collections = SlotMap::with_key();
+                let mut collections = LeasedSlotMap::new();
 
                 for (collection_path, collection_data) in
                     self.state_db_manager.collection_store().scan()?
@@ -227,7 +101,7 @@ impl Workspace {
                         order: collection_data.order,
                     };
 
-                    collections.insert(CollectionSlotState::Available((collection, metadata)));
+                    collections.insert((collection, metadata));
                 }
 
                 Ok::<_, anyhow::Error>(Arc::new(RwLock::new(collections)))
@@ -246,15 +120,13 @@ impl Workspace {
         Ok(ListCollectionsOutput(
             collections_lock
                 .iter()
-                .filter_map(|(_, state)| match state {
-                    CollectionSlotState::Available((_, metadata)) => Some(CollectionInfo {
+                .filter(|(_, iter_slot)| !iter_slot.is_leased())
+                .map(|(key, iter_slot)| {
+                    let (_, metadata) = iter_slot.value();
+                    CollectionInfo {
+                        key: key.as_u64(),
                         name: metadata.name.clone(),
                         order: metadata.order,
-                    }),
-                    CollectionSlotState::Leased => {
-                        // TODO: logging
-                        println!("collection is leased");
-                        None
                     }
                 })
                 .collect(),
@@ -269,16 +141,9 @@ impl Workspace {
         let collection_key = CollectionKey::from(input.key);
 
         let collections_lock = collections.read().await;
-        let collection_value = collections_lock
-            .get(collection_key)
-            .ok_or(anyhow::anyhow!("Collection not found"))?;
-
-        let collection = match collection_value {
-            CollectionSlotState::Available((collection, _)) => collection,
-            CollectionSlotState::Leased => {
-                return Err(anyhow::anyhow!("Collection is leased").into());
-            }
-        };
+        let (collection, _) = collections_lock
+            .read(collection_key)
+            .context("Failed to get the collection")?;
 
         let requests = collection.list_requests().await?;
         let requests_lock = requests.read().await;
@@ -333,7 +198,7 @@ impl Workspace {
 
         let collection_key = {
             let mut collections_lock = collections.write().await;
-            collections_lock.insert(CollectionSlotState::Available((collection, metadata)))
+            collections_lock.insert((collection, metadata))
         };
 
         txn.commit()?;
@@ -350,56 +215,21 @@ impl Workspace {
             return Err(CollectionOperationError::EmptyName.into());
         }
 
-        dbg!(1);
-
-        // let collections = self
-        //     .collections()
-        //     .await
-        //     .context("Failed to get collections")?;
-
-        dbg!(2);
+        let collections = self
+            .collections()
+            .await
+            .context("Failed to get collections")?;
 
         let collection_key = CollectionKey::from(input.key);
-        let mut lease_guard = self.lease_collection(collection_key).await?;
-        // let lease_guard = scopeguard::guard(self.lease_collection(collection_key).await?, |slot| {
-        //     let collections_clone = collections.clone();
+        let mut collections_lock = collections.write().await;
+        let mut lease_guard = collections_lock
+            .lease(collection_key)
+            .context("Failed to lease the collection")?;
 
-        //     tokio::spawn(async move {
-        //         if let Err(e) = collections_clone.release(collection_key, slot).await {
-        //             eprintln!("Failed to release collection: {:?}", e);
-        //         }
-        //     });
-        // });
+        let (collection, metadata) = &mut *lease_guard;
+        metadata.name = input.new_name.clone();
 
-        // let collection = &mut lease_guard.0;
-        // let metadata = lease_guard.1;
-
-        // let target_collection_metadata = {
-        //     let collections_lock = collections.read().await;
-
-        //     let value = collections_lock.get(collection_key).ok_or({
-        //         // let old_name = input
-        //         //     .old_path
-        //         //     .file_name()
-        //         //     .ok_or(anyhow!("Failed to get the old collection name"))?;
-
-        //         // CollectionOperationError::NonexistentCollection {
-        //         //     name: old_name.to_string_lossy().to_string(),
-        //         //     path: input.old_path.clone(),
-        //         // }
-
-        //         anyhow::anyhow!("Collection not found")
-        //     })?;
-
-        //     match value {
-        //         CollectionValue::Available((_, metadata)) => metadata,
-        //         CollectionValue::Leased => {
-        //             return Err(anyhow::anyhow!("Collection is leased").into());
-        //         }
-        //     }
-        // };
-
-        let old_path = lease_guard.collection().path();
+        let old_path = collection.path();
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
@@ -415,7 +245,7 @@ impl Workspace {
             &mut txn,
             entity_key,
             &CollectionEntity {
-                order: lease_guard.collection_metadata().order,
+                order: metadata.order,
             },
         )?;
 
@@ -423,30 +253,9 @@ impl Workspace {
             .rename(&old_path, &new_path, RenameOptions::default())
             .await?;
 
-        dbg!(4);
-
-        lease_guard
-            .collection_mut()
+        collection
             .reset(new_path)
             .context("Failed to reset the collection")?;
-
-        // collections
-        //     .release(collection_key, (collection, metadata))
-        //     .await
-        //     .context("Failed to release the collection")?;
-
-        // let mut collections_lock = collections.state.write().await;
-        // let (collection, metadata) = collections_lock.remove(collection_key).unwrap(); // This is safe because we checked for the existence of the collection
-        // collection
-        //     .reset(new_path.clone())
-        //     .context("Failed to reset the collection")?;
-
-        // collections_lock.insert(
-        //     collection_key,
-        //     CollectionSlotState::Available((collection, metadata)),
-        // );
-
-        dbg!(5);
 
         Ok(txn.commit()?)
     }
@@ -455,25 +264,18 @@ impl Workspace {
         let collections = self.collections().await?;
         let collection_key = CollectionKey::from(input.key);
 
-        // Intentionally acquire the write mutex to ensure that no one else can access the collection being deleted.
         let mut collections_lock = collections.write().await;
-        let slot_state = collections_lock
-            .get(collection_key)
-            .context("Collection not found")?;
-        if !slot_state.is_available() {
-            return Err(anyhow!("Collection is leased").into());
-        }
-
         let (collection, _) = collections_lock
             .remove(collection_key)
-            .unwrap()
-            .as_available()
-            .unwrap(); // This is safe because we checked for the existence of the collection
+            .context("Failed to remove the collection")?;
 
         let collection_path = collection.path().clone();
         let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
 
+        // TODO: If any of the following operations fail, we should place the task
+        // in the dead queue and attempt the deletion later.
+
+        let (mut txn, table) = collection_store.begin_write()?;
         table.remove(&mut txn, collection_path.to_string_lossy().to_string())?;
 
         self.fs
@@ -486,7 +288,6 @@ impl Workspace {
             )
             .await?;
 
-        collections_lock.remove(collection_key);
         Ok(txn.commit()?)
     }
 }
@@ -542,106 +343,74 @@ mod tests {
         }
     }
 
-    // #[tokio::test]
-    // async fn test_rename_collection() {
-    //     let (workspace_path, workspace) = setup_test_workspace().await;
-    //     let old_name = random_collection_name();
-    //     let new_name = "New Test Collection".to_string(); // random_collection_name();
+    #[tokio::test]
+    async fn rename_collection() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let old_name = random_collection_name();
+        let new_name = "New Test Collection".to_string(); // random_collection_name();
 
-    //     // Create a test collection
-    //     workspace
-    //         .create_collection(CreateCollectionInput {
-    //             name: old_name.clone(),
-    //             path: workspace_path.clone(),
-    //         })
-    //         .await
-    //         .unwrap();
+        // Create a test collection
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: old_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await
+            .unwrap();
 
-    //     // Rename collection
-    //     let result = workspace
-    //         .rename_collection(RenameCollectionInput {
-    //             old_path: workspace_path.join(&old_name),
-    //             new_name: new_name.clone(),
-    //         })
-    //         .await
-    //         .unwrap();
+        // Rename collection
+        let result = workspace
+            .rename_collection(RenameCollectionInput {
+                key: create_collection_output.key,
+                new_name: new_name.clone(),
+            })
+            .await;
 
-    //     // assert!(result.is_ok());
+        assert!(result.is_ok());
 
-    //     // Verify rename
-    //     let collections = workspace.list_collections().await.unwrap();
-    //     assert_eq!(collections.0.len(), 1);
-    //     assert_eq!(collections.0[0].name, new_name);
+        // Verify rename
+        let collections = workspace.list_collections().await.unwrap();
 
-    //     // Clean up
-    //     {
-    //         workspace.truncate().unwrap();
-    //         std::fs::remove_dir_all(workspace_path.join(new_name)).unwrap();
-    //     }
-    // }
+        assert_eq!(collections.0.len(), 1);
+        assert_eq!(collections.0[0].name, new_name);
 
-    // #[tokio::test]
-    // async fn test_delete_collection() {
-    //     let (workspace_path, workspace) = setup_test_workspace().await;
-    //     let collection_name = random_collection_name();
+        // Clean up
+        {
+            workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path.join(new_name)).unwrap();
+        }
+    }
 
-    //     // Create a test collection
-    //     workspace
-    //         .create_collection(CreateCollectionInput {
-    //             name: collection_name.clone(),
-    //             path: workspace_path.clone(),
-    //         })
-    //         .await
-    //         .unwrap();
+    #[tokio::test]
+    async fn delete_collection() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let collection_name = random_collection_name();
 
-    //     // Delete collection
-    //     let result = workspace
-    //         .delete_collection(DeleteCollectionInput {
-    //             path: workspace_path.join(&collection_name),
-    //         })
-    //         .await;
+        // Create a test collection
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: collection_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await
+            .unwrap();
 
-    //     assert!(result.is_ok());
+        // Delete collection
+        let result = workspace
+            .delete_collection(DeleteCollectionInput {
+                key: create_collection_output.key,
+            })
+            .await;
 
-    //     // Verify deletion
-    //     let collections = workspace.list_collections().await.unwrap();
-    //     assert_eq!(collections.0.len(), 0);
+        assert!(result.is_ok());
 
-    //     // Clean up
-    //     {
-    //         workspace.truncate().unwrap();
-    //     }
-    // }
+        // Verify deletion
+        let collections = workspace.list_collections().await.unwrap();
+        assert_eq!(collections.0.len(), 0);
 
-    // #[tokio::test]
-    // async fn test_list_collection_requests() {
-    //     let (workspace_path, workspace) = setup_test_workspace().await;
-    //     let collection_name = random_collection_name();
-    //     let collection_path = workspace_path.join(&collection_name);
-
-    //     // Create a test collection
-    //     workspace
-    //         .create_collection(CreateCollectionInput {
-    //             name: collection_name.clone(),
-    //             path: workspace_path.clone(),
-    //         })
-    //         .await
-    //         .unwrap();
-
-    //     // List requests (should be empty initially)
-    //     let result = workspace
-    //         .list_collection_requests(ListCollectionRequestsInput {
-    //             path: collection_path.clone(),
-    //         })
-    //         .await;
-
-    //     assert!(result.is_ok());
-    //     assert_eq!(result.unwrap().0.len(), 0);
-
-    //     // Clean up
-    //     {
-    //         workspace.truncate().unwrap();
-    //         std::fs::remove_dir_all(collection_path).unwrap();
-    //     }
-    // }
+        // Clean up
+        {
+            workspace.truncate().unwrap();
+        }
+    }
 }

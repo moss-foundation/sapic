@@ -16,6 +16,7 @@ pub struct WorkspaceInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
     // pub path: PathBuf,
+    pub key: u64,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
