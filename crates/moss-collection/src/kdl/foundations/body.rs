@@ -5,10 +5,10 @@ use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RequestBody {
-    // TODO: Raw(RawType), Binary, Form, File ...
     Raw(RawBodyType),
     FormData(HashMap<String, FormDataBody>),
-    UrlEncoded(HashMap<String, UrlEncodedBody>)
+    UrlEncoded(HashMap<String, UrlEncodedBody>),
+    Binary(PathBuf)
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -246,6 +246,12 @@ fn prepare_urlencoded_body_node(node: &mut KdlNode, url_encoded: HashMap<String,
     node.autoformat();
 }
 
+fn prepare_binary_body_node(node: &mut KdlNode, path: PathBuf) {
+    node.push(KdlEntry::new_prop("type", "binary"));
+    node.push(KdlEntry::new_prop("path", path.to_string_lossy().to_string()));
+    node.autoformat();
+}
+
 impl Into<KdlNode> for RequestBody {
     fn into(self) -> KdlNode {
         let mut node = KdlNode::new(BODY_LIT);
@@ -258,6 +264,9 @@ impl Into<KdlNode> for RequestBody {
             }
             RequestBody::UrlEncoded(url_encoded) => {
                 prepare_urlencoded_body_node(&mut node, url_encoded);
+            }
+            RequestBody::Binary(path) => {
+                prepare_binary_body_node(&mut node, path);
             }
         }
         node
@@ -302,4 +311,10 @@ mod test {
         println!("{}", node.to_string());
     }
 
+    #[test]
+    fn test_writing_binary_body() {
+        let request_body = RequestBody::Binary(PathBuf::from("path/to/file"));
+        let node: KdlNode = request_body.into();
+        println!("{}", node.to_string());
+    }
 }

@@ -204,6 +204,7 @@ fn create_http_requestfile(
             RequestBody::Raw(raw) => map_raw_body_to_kdl(raw),
             RequestBody::FormData(items) => map_form_data_to_kdl(items),
             RequestBody::UrlEncoded(items) => map_urlencoded_to_kdl(items),
+            RequestBody::Binary(path) => map_binary_to_kdl(&path),
         })
     })
 }
@@ -261,6 +262,10 @@ fn map_urlencoded_to_kdl(items: Vec<UrlEncodedItem>) -> crate::kdl::body::Reques
         });
     }
     crate::kdl::body::RequestBody::UrlEncoded(map)
+}
+
+fn map_binary_to_kdl(path: &str) -> crate::kdl::body::RequestBody {
+    crate::kdl::body::RequestBody::Binary(PathBuf::from(path))
 }
 
 impl CollectionHandle {

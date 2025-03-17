@@ -31,8 +31,12 @@ pub enum ParseError {
     IllFormattedBody,
     #[error("A `body` node has invalid `{typ}` content")]
     InvalidBodyContent { typ: String },
-    #[error("A `form_data` node has invalid value type")]
-    InvalidFormDataType
+    #[error("A form data `body` node has invalid value type")]
+    InvalidFormDataType,
+    #[error("A binary `body` node has missing file path")]
+    MissingBinaryPath,
+    #[error("A binary `body` node has invalid file path")]
+    InvalidBinaryPath,
 }
 
 pub struct ParseOptions {
@@ -271,6 +275,7 @@ fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
         BODY_TYPE_XML => Ok(RequestBody::Raw(parse_raw_body_xml(&node)?)),
         BODY_TYPE_FORM_DATA => Ok(RequestBody::FormData(parse_form_data_params(&node)?)),
         BODY_TYPE_URLENCODED => Ok(RequestBody::UrlEncoded(parse_urlencoded_params(&node)?)),
+        BODY_TYPE_BINARY => Ok(RequestBody::Binary(parse_binary_path(&node)?)),
         _ => Err(ParseError::InvalidBodyType.into()),
     }
 }
@@ -445,6 +450,15 @@ fn parse_urlencoded_options(node: &KdlNode) -> Result<UrlEncodedOptions> {
     } else {
         Ok(UrlEncodedOptions::default())
     }
+}
+
+fn parse_binary_path(node: &KdlNode) -> Result<PathBuf> {
+    let path = node
+        .get("path")
+        .ok_or(ParseError::MissingBinaryPath)?
+        .as_string()
+        .ok_or(ParseError::InvalidBinaryPath)?;
+    Ok(PathBuf::from(path))
 }
 
 pub fn parse(input: &str, opts: &ParseOptions) -> Result<HttpRequestFile> {
@@ -1273,6 +1287,19 @@ mod tests {
         map.insert("key2".to_string(), body2);
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+    }
+
+    #[test]
+    fn test_parse_body_binary_missing_path() {
+        let text = r###"body type=binary"###;
+        assert!(parse(text, &ParseOptions::default()).is_err());
+    }
+
+    #[test]
+    fn test_parse_body_binary() {
+        let text = r###"body type=binary path="path/to/file""###;
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::Binary("path/to/file".into()))
     }
     #[test]
     fn manual_test_read_request_from_file_and_writing_back() {

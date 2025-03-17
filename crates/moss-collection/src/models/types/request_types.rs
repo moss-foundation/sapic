@@ -96,7 +96,8 @@ pub struct HeaderParamItem {
 pub enum RequestBody {
     Raw(RawBodyType),
     FormData(Vec<FormDataItem>),
-    UrlEncoded(Vec<UrlEncodedItem>)
+    UrlEncoded(Vec<UrlEncodedItem>),
+    Binary(String)
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
