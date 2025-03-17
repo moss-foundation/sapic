@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use arc_swap::ArcSwap;
 use moss_fs::ports::FileSystem;
 use patricia_tree::PatriciaMap;
 use std::{path::PathBuf, sync::Arc};
@@ -25,11 +24,6 @@ pub struct CollectionRequestData {
 }
 
 type RequestMap = PatriciaMap<Arc<CollectionRequestData>>;
-
-// struct ResetableState {
-//     state_db_manager: Arc<dyn StateDbManager>,
-//     path: PathBuf,
-// }
 
 pub struct Collection {
     path: PathBuf,

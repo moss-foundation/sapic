@@ -19,8 +19,6 @@ use crate::{
     storage::CollectionRequestSubstore,
 };
 
-// TODO: Testing the performance impact of RwLock in this case
-// Earlier we had used DashMap, but it doesn't work well in an async context
 type CollectionMap = tokio::sync::RwLock<HashMap<PathBuf, CollectionHandle>>;
 
 #[derive(Clone, Debug, Error)]
