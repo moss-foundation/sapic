@@ -7,7 +7,8 @@ use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 pub enum RequestBody {
     // TODO: Raw(RawType), Binary, Form, File ...
     Raw(RawBodyType),
-    FormData(HashMap<String, FormDataBody>)
+    FormData(HashMap<String, FormDataBody>),
+    UrlEncoded(HashMap<String, UrlEncodedBody>)
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -101,7 +102,84 @@ impl Into<KdlNode> for FormDataOptions {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct UrlEncodedBody {
+    pub value: String,
+    pub desc: Option<String>,
+    pub order: Option<usize>,
+    pub disabled: bool,
+    pub options: UrlEncodedOptions
+}
 
+impl Default for UrlEncodedBody {
+    fn default() -> Self {
+        Self {
+            value: "".to_string(),
+            desc: None,
+            order: None,
+            disabled: false,
+            options: UrlEncodedOptions::default()
+        }
+    }
+}
+
+impl Into<KdlDocument> for UrlEncodedBody {
+    fn into(self) -> KdlDocument {
+        let mut doc = KdlDocument::new();
+
+        let mut value_node = KdlNode::new("value");
+        value_node.push(KdlEntry::new(self.value));
+        doc.nodes_mut().push(value_node);
+
+        if let Some(desc) = self.desc {
+            let mut desc_node = KdlNode::new("desc");
+            desc_node.push(KdlEntry::new(desc));
+            doc.nodes_mut().push(desc_node);
+        }
+
+        if let Some(order) = self.order {
+            let mut order_node = KdlNode::new("order");
+            order_node.push(KdlEntry::new(order as i128));
+            doc.nodes_mut().push(order_node);
+        }
+
+        let mut disabled_node = KdlNode::new("disabled");
+        disabled_node.push(KdlEntry::new(self.disabled));
+        doc.nodes_mut().push(disabled_node);
+
+        let options_node: KdlNode = self.options.into();
+        doc.nodes_mut().push(options_node);
+
+        doc
+    }
+}
+
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct UrlEncodedOptions {
+    pub propagate: bool,
+}
+
+impl Default for UrlEncodedOptions {
+    fn default() -> Self {
+        Self {
+            propagate: false,
+        }
+    }
+}
+
+impl Into<KdlNode> for UrlEncodedOptions {
+    fn into(self) -> KdlNode {
+        let mut node = KdlNode::new("options");
+        let mut children = KdlDocument::new();
+        let mut propagate_node = KdlNode::new("propagate");
+        propagate_node.push(KdlEntry::new(self.propagate));
+        children.nodes_mut().push(propagate_node);
+        node.set_children(children);
+        node.autoformat();
+        node
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RawBodyType {
@@ -156,6 +234,18 @@ fn prepare_form_data_body_node(node: &mut KdlNode, form_data: HashMap<String, Fo
     node.autoformat();
 }
 
+fn prepare_urlencoded_body_node(node: &mut KdlNode, url_encoded: HashMap<String, UrlEncodedBody>) {
+    node.push(KdlEntry::new_prop("type", "urlencoded"));
+    let mut children = KdlDocument::new();
+    for (key, body) in url_encoded {
+        let mut param_node = KdlNode::new(key.clone());
+        param_node.set_children(body.clone().into());
+        children.nodes_mut().push(param_node);
+    }
+    node.set_children(children);
+    node.autoformat();
+}
+
 impl Into<KdlNode> for RequestBody {
     fn into(self) -> KdlNode {
         let mut node = KdlNode::new(BODY_LIT);
@@ -165,6 +255,9 @@ impl Into<KdlNode> for RequestBody {
             }
             RequestBody::FormData(form_data) => {
                 prepare_form_data_body_node(&mut node, form_data);
+            }
+            RequestBody::UrlEncoded(url_encoded) => {
+                prepare_urlencoded_body_node(&mut node, url_encoded);
             }
         }
         node

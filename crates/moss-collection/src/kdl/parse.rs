@@ -1,4 +1,4 @@
-use crate::kdl::body::{FormDataBody, FormDataOptions, FormDataValue, RawBodyType};
+use crate::kdl::body::{FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions};
 use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::foundations::http::{
     HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use html5ever::tendril::TendrilSink;
 use html5ever::tree_builder::{QuirksMode, TreeSink};
 use thiserror::Error;
+use crate::kdl::body::RequestBody::UrlEncoded;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -269,6 +270,7 @@ fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
         )?)),
         BODY_TYPE_XML => Ok(RequestBody::Raw(parse_raw_body_xml(&node)?)),
         BODY_TYPE_FORM_DATA => Ok(RequestBody::FormData(parse_form_data_params(&node)?)),
+        BODY_TYPE_URLENCODED => Ok(RequestBody::UrlEncoded(parse_urlencoded_params(&node)?)),
         _ => Err(ParseError::InvalidBodyType.into()),
     }
 }
@@ -395,6 +397,53 @@ fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
         Ok(FormDataOptions { propagate })
     } else {
         Ok(FormDataOptions::default())
+    }
+}
+
+fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBody>> {
+    let mut params: HashMap<String, UrlEncodedBody> = HashMap::new();
+    if let Some(document) = node.children(){
+        for param_node in document.nodes() {
+            let key = param_node.name().to_string();
+            let param_body = parse_urlencoded_body(param_node)?;
+            params.insert(key, param_body);
+        }
+    }
+    Ok(params)
+}
+
+fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
+    if let Some(fields) = node.children() {
+        let value = kdl_get_arg_as_string!(fields, "value").unwrap_or_default();
+        let desc = kdl_get_arg_as_string!(fields, "desc");
+        let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
+        let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
+        let options_node = fields.get("options");
+        let options = if let Some(options_node) = options_node {
+            parse_urlencoded_options(options_node)?
+        } else {
+            UrlEncodedOptions::default()
+        };
+
+        Ok(UrlEncodedBody {
+            value,
+            desc,
+            order,
+            disabled,
+            options
+        })
+
+    } else {
+        Ok(UrlEncodedBody::default())
+    }
+}
+
+fn parse_urlencoded_options(node: &KdlNode) -> Result<UrlEncodedOptions> {
+    if let Some(fields) = node.children() {
+        let propagate = kdl_get_arg_as_bool!(fields, "propagate").unwrap_or(false);
+        Ok(UrlEncodedOptions { propagate })
+    } else {
+        Ok(UrlEncodedOptions::default())
     }
 }
 
@@ -1175,6 +1224,55 @@ mod tests {
         map.insert("key2".to_string(), body2);
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(request.body.unwrap(), RequestBody::FormData(map))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_empty() {
+        let text = r###"body type=urlencoded {}"###;
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(HashMap::new()))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_single() {
+        let text = r###"body type=urlencoded {
+    key1 {
+        value "value"
+    }
+}"###;
+        let body1 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_multiple() {
+        let text = r###"body type=urlencoded {
+    key1 {
+        value "value"
+    }
+    key2 {
+        value "value"
+    }
+}"###;
+        let body1 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let body2 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        map.insert("key2".to_string(), body2);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
     }
     #[test]
     fn manual_test_read_request_from_file_and_writing_back() {

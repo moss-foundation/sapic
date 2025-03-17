@@ -1,5 +1,5 @@
 use crate::models::collection::RequestType;
-use crate::models::types::request_types::{FormDataItem, FormDataValue, RawBodyType, RequestBody};
+use crate::models::types::request_types::{FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem};
 use crate::{
     kdl::foundations::http::{
         HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -20,7 +20,7 @@ use parking_lot::RwLock;
 use patricia_tree::PatriciaMap;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
-use crate::kdl::body::{FormDataBody, FormDataOptions};
+use crate::kdl::body::{FormDataBody, FormDataOptions, UrlEncodedBody, UrlEncodedOptions};
 
 #[derive(Clone, Debug, Error)]
 pub enum RequestOperationError {
@@ -203,6 +203,7 @@ fn create_http_requestfile(
         body: body.map(|b| match b {
             RequestBody::Raw(raw) => map_raw_body_to_kdl(raw),
             RequestBody::FormData(items) => map_form_data_to_kdl(items),
+            RequestBody::UrlEncoded(items) => map_urlencoded_to_kdl(items),
         })
     })
 }
@@ -244,6 +245,24 @@ fn map_form_data_to_kdl(items: Vec<FormDataItem>) -> crate::kdl::body::RequestBo
     }
     crate::kdl::body::RequestBody::FormData(map)
 }
+
+fn map_urlencoded_to_kdl(items: Vec<UrlEncodedItem>) -> crate::kdl::body::RequestBody {
+    let mut map = HashMap::new();
+    for item in items {
+        let key = item.key.clone();
+        map.insert(key, UrlEncodedBody {
+            value: item.value,
+            desc: item.desc,
+            order: item.order,
+            disabled: item.disabled,
+            options: UrlEncodedOptions {
+                propagate: item.options.propagate,
+            }
+        });
+    }
+    crate::kdl::body::RequestBody::UrlEncoded(map)
+}
+
 impl CollectionHandle {
     fn create_http_request_handle(&self, key: &str, name: &str, method: &HttpMethod) -> Result<()> {
         self.state.insert_request_handle(
