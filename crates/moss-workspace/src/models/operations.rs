@@ -36,7 +36,8 @@ pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct ListCollectionRequestsInput {
-    pub path: PathBuf,
+    // pub path: PathBuf,
+    pub key: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
@@ -54,8 +55,18 @@ pub struct CreateCollectionInput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
+pub struct CreateCollectionOutput {
+    pub key: u64,
+    pub name: String,
+    pub path: PathBuf,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
 pub struct RenameCollectionInput {
-    pub old_path: PathBuf,
+    // pub old_path: PathBuf,
+    pub key: u64,
     pub new_name: String,
 }
 
@@ -63,5 +74,6 @@ pub struct RenameCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    pub path: PathBuf,
+    // pub path: PathBuf,
+    pub key: u64,
 }

@@ -17,6 +17,8 @@ ts-rs.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
 slotmap.workspace = true
+scopeguard.workspace = true
+parking_lot.workspace = true
 
 [dev-dependencies]
 rand.workspace = true

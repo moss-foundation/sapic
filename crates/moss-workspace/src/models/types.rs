@@ -15,7 +15,7 @@ pub struct WorkspaceInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    pub path: PathBuf,
+    // pub path: PathBuf,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
