@@ -21,14 +21,10 @@ export const Logs: React.FC = () => {
 
   return (
     <main className="p-4">
-      <h1 className="mb-3 mb-4 text-2xl text-[var(--moss-primary)]">{t("logs")}</h1>
+      <h1 className="mb-4 text-2xl">{t("logs")}</h1>
       <div className="rounded bg-gray-100 p-4">
         {logs.length > 0 ? (
-          logs.map((log, index) => (
-            <p key={index} className="text-[var(--moss-primary)]">
-              {log}
-            </p>
-          ))
+          logs.map((log, index) => <p key={index}>{log}</p>)
         ) : (
           <p className="text-secondary">{t("noLogs")}...</p>
         )}

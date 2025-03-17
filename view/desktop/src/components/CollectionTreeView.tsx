@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import TestTreeData from "../assets/testTreeData.json";
-import TestTreeData2 from "../assets/testTreeData2.json";
-import TestTreeData3 from "../assets/testTreeData3.json";
+import AzureDevOpsTestCollection from "../assets/AzureDevOpsTestCollection.json";
+import SapicTestCollection from "../assets/SapicTestCollection.json";
+import WhatsAppBusinessTestCollection from "../assets/WhatsAppBusinessTestCollection.json";
 
 import "@repo/moss-tabs/assets/styles.css";
 
@@ -22,9 +22,9 @@ export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const [collections, setCollections] = useState<Collection[]>([
-    TestTreeData as Collection,
-    TestTreeData2 as Collection,
-    TestTreeData3 as Collection,
+    SapicTestCollection as Collection,
+    AzureDevOpsTestCollection as Collection,
+    WhatsAppBusinessTestCollection as Collection,
   ]);
 
   useEffect(() => {
@@ -115,20 +115,52 @@ export const CollectionTreeView = () => {
   }, [collections.length]);
 
   return (
-    <div className="relative flex h-full flex-col" ref={dropTargetToggleRef}>
-      <div className="flex items-center gap-3 py-1.5 pr-2 pl-4">
+    <div className="relative flex h-full flex-col pt-1" ref={dropTargetToggleRef}>
+      <div className="flex items-center gap-[7px] py-1.5 pr-[7px] pl-4">
         <Input
           iconLeft="Search"
+          variant="outlined"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
           placeholder="Search"
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="flex cursor-pointer items-center justify-center rounded p-[5px] text-[#717171] hover:bg-[#EBECF0] hover:text-[#6C707E]">
+          <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-treeNodeButton-text)">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Item label="Item" />
+            <DropdownMenu.Item label="Edit" />
+            <DropdownMenu.Item label="Duplicate" />
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Archive" />
+            <DropdownMenu.Sub>
+              <DropdownMenu.SubTrigger label="More" />
+              <DropdownMenu.SubContent>
+                <DropdownMenu.Item label="Move to project…" />
+                <DropdownMenu.Item label="Move to folder…" />
+
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item label="Advanced options…" />
+              </DropdownMenu.SubContent>
+            </DropdownMenu.Sub>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Share" />
+            <DropdownMenu.Item label="Add to favorites" />
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item label="Delete" />
+
+            <DropdownMenu.Separator />
+
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" />
+            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
+
+            <DropdownMenu.Separator />
+            <DropdownMenu.RadioGroup>
+              <DropdownMenu.RadioItem value="1" label="Hide from sidebar" checked={false} />
+              <DropdownMenu.RadioItem value="2" label="Hide from sidebar" checked={true} />
+              <DropdownMenu.RadioItem value="3" label="Hide from sidebar" checked={false} />
+            </DropdownMenu.RadioGroup>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
       </div>
@@ -184,19 +216,20 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-0 left-0 h-[100px] w-full")} ref={ref}>
+    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
       <div className="relative grid h-full w-full place-items-center">
         <div
           className={cn(
             "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
             {
-              "animate-move bg-green-300 opacity-100": canDrop,
+              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
+              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
               "bg-red-300 opacity-100": canDrop === false,
             }
           )}
         />
 
-        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center">
+        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center text-(--moss-text) dark:bg-black">
           {canDrop === false ? (
             <span>Cannot create new collection from this</span>
           ) : (
