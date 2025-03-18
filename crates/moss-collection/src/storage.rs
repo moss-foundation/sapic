@@ -30,7 +30,7 @@ pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestEntity>;
 pub trait RequestStore: Send + Sync + 'static {
     fn begin_write(&self) -> Result<(Transaction, &RequestStoreTable)>;
     fn begin_read(&self) -> Result<(Transaction, &RequestStoreTable)>;
-    fn scan(&self) -> Result<HashMap<String, RequestEntity>>;
+    fn scan(&self) -> Result<HashMap<PathBuf, RequestEntity>>;
 }
 
 pub trait StateDbManager: Send + Sync + 'static {

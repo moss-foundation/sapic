@@ -1,5 +1,6 @@
 use anyhow::Result;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use moss_db::{bincode_table::BincodeTable, ReDbClient};
 use moss_db::{DatabaseClient, Transaction};
@@ -36,12 +37,12 @@ impl RequestStoreImpl {
 }
 
 impl RequestStore for RequestStoreImpl {
-    fn scan(&self) -> anyhow::Result<HashMap<String, RequestEntity>> {
+    fn scan(&self) -> anyhow::Result<HashMap<PathBuf, RequestEntity>> {
         let read_txn = self.client.begin_read()?;
         let result = self.table.scan(&read_txn)?;
 
         Ok(result
-            .map(|(path_str, request)| (path_str, request))
+            .map(|(path_str, request)| (PathBuf::from(path_str), request))
             .collect())
     }
 

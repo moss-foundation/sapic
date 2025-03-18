@@ -1,17 +1,16 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context as _, Result};
 use dashmap::DashSet;
 use moss_fs::ports::{CreateOptions, FileSystem, RenameOptions};
-use patricia_tree::PatriciaMap;
-use slotmap::{KeyData, SecondaryMap};
-use std::{path::PathBuf, sync::Arc};
+use slotmap::KeyData;
+use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::{
-    indexing::{indexer::IndexerImpl, Indexer},
     kdl::http::HttpRequestFile,
     leased_slotmap::LeasedSlotMap,
     models::{
         collection::{HttpRequestType, RequestType},
+        indexing::RequestEntry,
         operations::collection_operations::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
             RenameRequestInput,
@@ -22,7 +21,9 @@ use crate::{
     storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
 };
 
-const REQUEST_DIR: &str = "requests";
+const REQUESTS_DIR: &'static str = "requests";
+const REQUEST_DIR_EXT: &'static str = "request";
+const REQUEST_FILE_EXT: &'static str = "sapic";
 
 slotmap::new_key_type! {
     pub struct RequestKey;
@@ -79,7 +80,6 @@ type RequestMap = LeasedSlotMap<RequestKey, CollectionRequestData>;
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     path: PathBuf,
-    indexer: Arc<dyn Indexer>,
     requests: OnceCell<RwLock<RequestMap>>,
     known_requests_paths: DashSet<PathBuf>,
     state_db_manager: Arc<dyn StateDbManager>,
@@ -97,36 +97,107 @@ impl Collection {
         Ok(Self {
             fs: Arc::clone(&fs),
             path,
-            indexer: Arc::new(IndexerImpl::new(fs)),
             requests: OnceCell::new(),
             known_requests_paths: Default::default(),
             state_db_manager: Arc::new(state_db_manager_impl),
         })
     }
 
+    async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
+        let mut result = HashMap::new();
+        let mut stack: Vec<PathBuf> = vec![root.clone()];
+
+        while let Some(current_dir) = stack.pop() {
+            let mut dir = self.fs.read_dir(&current_dir).await.context(format!(
+                "Failed to read the directory: {}",
+                current_dir.display()
+            ))?;
+
+            while let Some(entry) = dir.next_entry().await? {
+                let file_type = entry.file_type().await?;
+                if !file_type.is_dir() {
+                    continue;
+                }
+
+                let path = entry.path();
+
+                if path
+                    .extension()
+                    .map(|ext| ext == REQUEST_DIR_EXT)
+                    .unwrap_or(false)
+                {
+                    if let Ok(relative_path) = path.strip_prefix(&root) {
+                        let request_entry = self.index_request_dir(&path).await?;
+                        result.insert(relative_path.to_path_buf(), request_entry);
+                    } else {
+                        // TODO: log error
+                        continue;
+                    }
+                } else {
+                    stack.push(path);
+                }
+            }
+        }
+
+        Ok(result)
+    }
+
+    async fn index_request_dir(&self, path: &PathBuf) -> Result<RequestEntry> {
+        let folder_name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .context("Failed to read the request folder name")?;
+
+        let mut request_entry = RequestEntry {
+            name: get_request_name(folder_name)?,
+            typ: None,
+            path: None,
+        };
+
+        let mut inner_dir = self.fs.read_dir(&path).await?;
+
+        while let Some(inner_entry) = inner_dir.next_entry().await? {
+            let file_path = inner_entry.path();
+            let file_metadata = inner_entry.metadata().await?;
+
+            if !file_metadata.is_file() || !is_sapic_file(&file_path) {
+                continue;
+            }
+
+            let file_name = if let Some(name) = file_path.file_name() {
+                name.to_owned()
+            } else {
+                // TODO: logging?
+                println!("Failed to read the request file name");
+                continue;
+            };
+
+            let parse_output = parse_request_folder_name(file_name)?;
+
+            request_entry.path = Some(file_path);
+            request_entry.typ = Some(parse_output.file_type);
+        }
+
+        Ok(request_entry)
+    }
+
     async fn requests(&self) -> Result<&RwLock<RequestMap>> {
         let result = self
             .requests
             .get_or_try_init(|| async move {
-                let indexed_requests = self.indexer.index(&self.path).await?;
+                let requests_dir_path = self.path.join(REQUESTS_DIR);
+                if !requests_dir_path.exists() {
+                    return Ok(RwLock::new(LeasedSlotMap::new()));
+                }
+
+                let indexed_requests = self.index_requests(&requests_dir_path).await?;
                 let restored_requests = self.state_db_manager.request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
-                for (raw_request_path, indexed_request_entry) in indexed_requests.requests {
-                    let request_path_str = match String::from_utf8(raw_request_path.clone()) {
-                        Ok(value) => value,
-                        Err(_err) => {
-                            // TODO: log error
-
-                            continue;
-                        }
-                    };
-
-                    let entity = restored_requests.get(&request_path_str);
-                    let request_dir_path = PathBuf::from(request_path_str.clone());
+                for (request_dir_path, indexed_request_entry) in indexed_requests {
+                    let entity = restored_requests.get(&request_dir_path);
 
                     self.known_requests_paths.insert(request_dir_path.clone());
-
                     requests.insert(CollectionRequestData {
                         name: indexed_request_entry.name,
                         request_dir_path,
@@ -155,7 +226,7 @@ impl Collection {
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput> {
         let request_dir_name = format!("{}.request", input.name);
         let request_dir_path = {
-            let mut requests_dir = self.path.join(REQUEST_DIR);
+            let mut requests_dir = self.path.join(REQUESTS_DIR);
             if let Some(relative_path) = input.relative_path {
                 requests_dir = requests_dir.join(relative_path);
             }
@@ -306,6 +377,50 @@ impl Collection {
         self.known_requests_paths.insert(request_dir_path_new);
 
         Ok(())
+    }
+}
+
+fn is_sapic_file(file_path: &PathBuf) -> bool {
+    file_path
+        .extension()
+        .map(|ext| ext == REQUEST_FILE_EXT)
+        .unwrap_or(false)
+}
+
+struct RequestFolderParseOutput {
+    name: String,
+    file_type: RequestType,
+}
+
+fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOutput> {
+    let file_name_str = file_name
+        .to_str()
+        .ok_or_else(|| anyhow!("failed to retrieve the request filename"))?;
+
+    let mut segments = file_name_str.split('.');
+
+    let name = segments
+        .next()
+        .ok_or_else(|| anyhow!("failed to retrieve the request name"))?
+        .to_string();
+
+    let file_type_str = segments
+        .next()
+        .ok_or_else(|| anyhow!("failed to retrieve the request type"))?;
+
+    Ok(RequestFolderParseOutput {
+        name,
+        file_type: RequestType::try_from(file_type_str)?,
+    })
+}
+
+fn get_request_name(folder_name: &str) -> Result<String> {
+    if let Some(prefix) = folder_name.strip_suffix(".request") {
+        Ok(prefix.to_string())
+    } else {
+        Err(anyhow!(
+            "failed to extract the request name from the directory name"
+        ))
     }
 }
 
