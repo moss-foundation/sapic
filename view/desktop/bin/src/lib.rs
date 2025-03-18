@@ -3,7 +3,6 @@ pub mod constants;
 mod mem;
 mod menu;
 mod plugins;
-mod utl;
 mod window;
 
 #[macro_use]
@@ -12,11 +11,7 @@ extern crate tracing;
 use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
-use moss_collection::indexing::indexer::IndexerImpl;
-use moss_collection::storage::SledCollectionRequestSubstore;
-use moss_db::sled::SledManager;
 use moss_fs::adapters::disk::DiskFileSystem;
-use moss_fs::ports::FileSystem;
 use moss_nls::locale_service::LocaleService;
 use moss_state::manager::AppStateManager;
 use moss_tauri::services::window_service::WindowService;
@@ -35,8 +30,6 @@ use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
-use moss_collection::storage::collection_store::CollectionStoreImpl;
-use moss_db::ReDbClient;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_session::SessionService;
 use moss_state::{
@@ -93,9 +86,6 @@ pub fn run() {
             app_handle.manage(app_state);
 
             let fs = Arc::new(DiskFileSystem::new());
-            let db: sled::Db =
-                sled::open("../../../sleddb").expect("failed to open a connection to the database");
-            let sled_manager = SledManager::new(db).expect("failed to create the Sled manager");
 
             let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
