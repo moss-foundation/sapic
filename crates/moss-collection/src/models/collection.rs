@@ -31,7 +31,6 @@ pub enum RequestType {
     WebSocket,
     GraphQL,
     Grpc,
-    Variant,
 }
 
 impl Default for RequestType {
@@ -47,7 +46,6 @@ impl ToString for RequestType {
             RequestType::WebSocket => "ws".to_string(),
             RequestType::GraphQL => "gql".to_string(),
             RequestType::Grpc => "grpc".to_string(),
-            RequestType::Variant => "variant".to_string(),
         }
     }
 }
@@ -66,8 +64,6 @@ impl TryFrom<&str> for RequestType {
             "gql" => Ok(Self::GraphQL),
             "grpc" => Ok(Self::Grpc),
 
-            "variant" => Ok(Self::Variant),
-
             _ => Err(anyhow!("unknown request file type extension: {}", value)),
         }
     }
@@ -77,13 +73,6 @@ impl RequestType {
     pub fn is_http(&self) -> bool {
         match self {
             RequestType::Http(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_variant(&self) -> bool {
-        match self {
-            RequestType::Variant => true,
             _ => false,
         }
     }

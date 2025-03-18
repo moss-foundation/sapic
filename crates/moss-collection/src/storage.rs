@@ -23,9 +23,13 @@ pub trait CollectionStore: Send + Sync + 'static {
     fn get_all_items(&self) -> Result<Vec<(PathBuf, CollectionEntity)>>;
 }
 
+// ------------------------------------------------------------------------------------------------
+
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestEntity>;
 
 pub trait RequestStore: Send + Sync + 'static {
+    fn begin_write(&self) -> Result<(Transaction, &RequestStoreTable)>;
+    fn begin_read(&self) -> Result<(Transaction, &RequestStoreTable)>;
     fn scan(&self) -> Result<HashMap<String, RequestEntity>>;
 }
 

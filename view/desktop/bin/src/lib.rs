@@ -12,7 +12,6 @@ extern crate tracing;
 use anyhow::Result;
 use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
-use moss_collection::collection_manager::CollectionManager;
 use moss_collection::indexing::indexer::IndexerImpl;
 use moss_collection::storage::SledCollectionRequestSubstore;
 use moss_db::sled::SledManager;
@@ -139,27 +138,6 @@ pub fn run() {
                         move |_| ThemeService::new(fs_clone, themes_dir)
                     },
                     InstantiationType::Delayed,
-                )
-                .with_service(
-                    {
-                        let fs_clone = Arc::clone(&fs);
-                        let collection_store = CollectionStoreImpl::new(
-                            ReDbClient::new("collection_store.db").unwrap(),
-                        );
-                        let collection_request_substore =
-                            SledCollectionRequestSubstore::new(sled_manager.collections_tree());
-
-                        move |_| {
-                            CollectionManager::new(
-                                Arc::clone(&fs_clone) as Arc<dyn FileSystem>,
-                                Arc::new(collection_store),
-                                Arc::new(collection_request_substore),
-                                Arc::new(IndexerImpl::new(fs_clone)),
-                            )
-                            .expect("failed to create the CollectionService")
-                        }
-                    },
-                    InstantiationType::Instant,
                 )
                 .with_service(|_| WindowService::new(), InstantiationType::Delayed)
                 .with_service(|_| session_service, InstantiationType::Instant)

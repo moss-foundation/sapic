@@ -7,7 +7,7 @@ use crate::{
     indexing::Indexer,
     models::{
         collection::RequestType,
-        indexing::{IndexedCollection, RequestEntry, RequestVariantEntry},
+        indexing::{IndexedCollection, RequestEntry},
     },
 };
 
@@ -35,8 +35,13 @@ impl IndexerImpl {
 
     async fn index_requests(&self, root: PathBuf) -> Result<PatriciaMap<RequestEntry>> {
         let mut result = PatriciaMap::new();
-        let mut stack: Vec<PathBuf> = vec![root.clone()];
+        if !root.exists() {
+            // If there is no request folder in the collection,
+            // indexing is not required as it is a new collection.
+            return Ok(result);
+        }
 
+        let mut stack: Vec<PathBuf> = vec![root.clone()];
         while let Some(current_dir) = stack.pop() {
             let mut dir = self.fs.read_dir(&current_dir).await.context(format!(
                 "Failed to read the directory: {}",
@@ -83,7 +88,6 @@ impl IndexerImpl {
             name: get_request_name(folder_name)?,
             typ: None,
             path: None,
-            variants: HashMap::new(),
         };
 
         let mut inner_dir = self.fs.read_dir(&path).await?;
@@ -115,17 +119,8 @@ impl IndexerImpl {
 
             let parse_output = parse_request_folder_name(file_name)?;
 
-            if !parse_output.file_type.is_variant() {
-                request_entry.path = Some(file_path);
-                request_entry.typ = Some(parse_output.file_type);
-            } else {
-                request_entry.variants.insert(
-                    file_path,
-                    RequestVariantEntry {
-                        name: parse_output.name,
-                    },
-                );
-            }
+            request_entry.path = Some(file_path);
+            request_entry.typ = Some(parse_output.file_type);
         }
 
         Ok(request_entry)

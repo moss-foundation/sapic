@@ -24,6 +24,8 @@ serde_json.workspace = true
 html5ever.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
+slotmap.workspace = true
+rand.workspace = true
 
 [dev-dependencies]
 mockall = "0.13.1"

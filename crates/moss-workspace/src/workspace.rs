@@ -133,33 +133,6 @@ impl Workspace {
         ))
     }
 
-    pub async fn list_collection_requests(
-        &self,
-        input: ListCollectionRequestsInput,
-    ) -> Result<ListCollectionRequestsOutput> {
-        let collections = self.collections().await?;
-        let collection_key = CollectionKey::from(input.key);
-
-        let collections_lock = collections.read().await;
-        let (collection, _) = collections_lock
-            .read(collection_key)
-            .context("Failed to get the collection")?;
-
-        let requests = collection.list_requests().await?;
-        let requests_lock = requests.read().await;
-
-        let requests_info: Vec<RequestInfo> = requests_lock
-            .iter()
-            .map(|(_, request)| RequestInfo {
-                name: request.name.clone(),
-                order: request.order,
-                typ: request.typ.clone(),
-            })
-            .collect();
-
-        Ok(ListCollectionRequestsOutput(requests_info))
-    }
-
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
@@ -322,19 +295,19 @@ mod tests {
         let collection_name = random_collection_name();
         let expected_path = workspace_path.join(&collection_name);
 
-        let result = workspace
+        let create_collection_result = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
                 path: workspace_path.clone(),
             })
             .await;
 
-        assert!(result.is_ok());
+        assert!(create_collection_result.is_ok());
 
-        let output = result.unwrap();
+        let create_collection_output = create_collection_result.unwrap();
 
-        assert_eq!(output.name, collection_name);
-        assert_eq!(output.path, expected_path.clone());
+        assert_eq!(create_collection_output.name, collection_name);
+        assert_eq!(create_collection_output.path, expected_path.clone());
 
         // Clean up
         {
@@ -359,14 +332,14 @@ mod tests {
             .unwrap();
 
         // Rename collection
-        let result = workspace
+        let rename_collection_result = workspace
             .rename_collection(RenameCollectionInput {
                 key: create_collection_output.key,
                 new_name: new_name.clone(),
             })
             .await;
 
-        assert!(result.is_ok());
+        assert!(rename_collection_result.is_ok());
 
         // Verify rename
         let collections = workspace.list_collections().await.unwrap();
@@ -396,13 +369,13 @@ mod tests {
             .unwrap();
 
         // Delete collection
-        let result = workspace
+        let delete_collection_result = workspace
             .delete_collection(DeleteCollectionInput {
                 key: create_collection_output.key,
             })
             .await;
 
-        assert!(result.is_ok());
+        assert!(delete_collection_result.is_ok());
 
         // Verify deletion
         let collections = workspace.list_collections().await.unwrap();
