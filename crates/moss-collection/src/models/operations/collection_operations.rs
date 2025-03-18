@@ -44,6 +44,24 @@ pub enum CreateRequestProtocolSpecificPayload {
 pub struct CreateRequestInput {
     pub name: String,
     #[ts(optional)]
+    pub relative_path: Option<PathBuf>,
+    #[ts(optional)]
     pub url: Option<String>,
+    #[ts(optional)]
     pub payload: Option<CreateRequestProtocolSpecificPayload>,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct CreateRequestOutput {
+    pub key: u64,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct RenameRequestInput {
+    pub key: u64,
+    pub new_name: String,
 }

@@ -15,3 +15,8 @@ pub struct CollectionEntity {
     pub order: Option<usize>,
     pub requests: HashMap<Vec<u8>, RequestMetadataEntity>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct RequestEntity {
+    pub order: Option<usize>,
+}

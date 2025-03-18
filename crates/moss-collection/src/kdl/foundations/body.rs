@@ -1,4 +1,7 @@
-use crate::kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX};
+use crate::{
+    kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
+    models::types,
+};
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -7,12 +10,33 @@ pub enum RequestBody {
     Raw(RawBodyType),
 }
 
+#[rustfmt::skip]
+impl From<types::request_types::RequestBody> for RequestBody {
+    fn from(body: types::request_types::RequestBody) -> Self {
+        match body {
+            types::request_types::RequestBody::Raw(raw_body) => RequestBody::Raw(RawBodyType::from(raw_body))
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum RawBodyType {
     Text(String),
     Json(String),
     Html(String),
     Xml(String),
+}
+
+#[rustfmt::skip]
+impl From<types::request_types::RawBodyType> for RawBodyType {
+    fn from(value: types::request_types::RawBodyType) -> Self {
+        match value {
+            types::request_types::RawBodyType::Text(text) => RawBodyType::Text(text),
+            types::request_types::RawBodyType::Json(json) => RawBodyType::Json(json),
+            types::request_types::RawBodyType::Html(html) => RawBodyType::Html(html),
+            types::request_types::RawBodyType::Xml(xml) => RawBodyType::Xml(xml),
+        }
+    }
 }
 
 fn format_raw_string(content: &str) -> String {

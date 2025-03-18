@@ -1,5 +1,7 @@
 use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
+use crate::models::types;
+use crate::models::types::request_types::{HeaderParamItem, PathParamItem, QueryParamItem};
 use kdl::{KdlDocument, KdlEntry, KdlNode};
 use std::collections::HashMap;
 
@@ -7,6 +9,15 @@ use std::collections::HashMap;
 pub struct Url {
     pub raw: Option<String>,
     pub host: Option<String>,
+}
+
+impl From<&str> for Url {
+    fn from(value: &str) -> Self {
+        Self {
+            raw: Some(value.to_string()),
+            host: None,
+        }
+    }
 }
 
 impl Url {
@@ -239,6 +250,78 @@ pub struct HttpRequestFile {
     pub path_params: HashMap<String, PathParamBody>,
     pub headers: HashMap<String, HeaderParamBody>,
     pub body: Option<RequestBody>,
+}
+
+impl HttpRequestFile {
+    pub fn new(
+        url: Option<&str>,
+        query_params: Vec<QueryParamItem>,
+        path_params: Vec<PathParamItem>,
+        headers: Vec<HeaderParamItem>,
+        body: Option<types::request_types::RequestBody>,
+    ) -> Self {
+        let query_params = query_params
+            .into_iter()
+            .map(|item| {
+                (
+                    item.key,
+                    QueryParamBody {
+                        value: item.value,
+                        desc: item.desc,
+                        order: item.order,
+                        disabled: item.disabled,
+                        options: QueryParamOptions {
+                            propagate: item.options.propagate,
+                        },
+                    },
+                )
+            })
+            .collect();
+
+        let path_params = path_params
+            .into_iter()
+            .map(|item| {
+                (
+                    item.key,
+                    PathParamBody {
+                        value: item.value,
+                        desc: item.desc,
+                        order: item.order,
+                        disabled: item.disabled,
+                        options: PathParamOptions {
+                            propagate: item.options.propagate,
+                        },
+                    },
+                )
+            })
+            .collect();
+
+        let headers = headers
+            .into_iter()
+            .map(|item| {
+                (
+                    item.key,
+                    HeaderParamBody {
+                        value: item.value,
+                        desc: item.desc,
+                        order: item.order,
+                        disabled: item.disabled,
+                        options: HeaderParamOptions {
+                            propagate: item.options.propagate,
+                        },
+                    },
+                )
+            })
+            .collect();
+
+        HttpRequestFile {
+            url: url.map(Url::from).unwrap_or_default(),
+            query_params,
+            path_params,
+            headers,
+            body: body.map(RequestBody::from),
+        }
+    }
 }
 
 impl ToString for HttpRequestFile {

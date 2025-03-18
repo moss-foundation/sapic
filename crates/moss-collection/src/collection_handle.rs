@@ -201,26 +201,27 @@ fn create_http_requestfile(
         headers: transformed_headers,
         body: body.map(|b| match b {
             RequestBody::Raw(raw) => map_raw_body_to_kdl(raw),
-        })
+        }),
     })
 }
 
-fn map_raw_body_to_kdl(raw: RawBodyType) -> crate::kdl::body::RequestBody {
-    match raw {
-        RawBodyType::Text(raw) => {
-            crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Text(raw))
-        }
-        RawBodyType::Json(raw) => {
-            crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Json(raw))
-        }
-        RawBodyType::Html(raw) => {
-            crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Html(raw))
-        }
-        RawBodyType::Xml(raw) => {
-            crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Xml(raw))
-        }
-    }
-}
+// fn map_raw_body_to_kdl(raw: RawBodyType) -> crate::kdl::body::RequestBody {
+//     match raw {
+//         RawBodyType::Text(raw) => {
+//             crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Text(raw))
+//         }
+//         RawBodyType::Json(raw) => {
+//             crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Json(raw))
+//         }
+//         RawBodyType::Html(raw) => {
+//             crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Html(raw))
+//         }
+//         RawBodyType::Xml(raw) => {
+//             crate::kdl::body::RequestBody::Raw(crate::kdl::body::RawBodyType::Xml(raw))
+//         }
+//     }
+// }
+
 impl CollectionHandle {
     fn create_http_request_handle(&self, key: &str, name: &str, method: &HttpMethod) -> Result<()> {
         self.state.insert_request_handle(

@@ -44,7 +44,7 @@ pub trait FileSystem: Send + Sync {
     async fn read_dir(&self, path: &Path) -> Result<ReadDir>;
     async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> Result<()>;
 
-    async fn rename(&self, source: &Path, target: &Path, options: RenameOptions) -> Result<()>;
+    async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> Result<()>;
 
     async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()>;
     async fn create_file_with(

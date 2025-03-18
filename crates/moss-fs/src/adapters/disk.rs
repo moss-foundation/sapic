@@ -80,16 +80,16 @@ impl FileSystem for DiskFileSystem {
         Ok(Box::new(std::fs::File::open(path)?))
     }
 
-    async fn rename(&self, source: &Path, target: &Path, options: RenameOptions) -> Result<()> {
-        if !options.overwrite && tokio::fs::metadata(target).await.is_ok() {
+    async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> Result<()> {
+        if !options.overwrite && tokio::fs::metadata(to).await.is_ok() {
             if options.ignore_if_exists {
                 return Ok(());
             } else {
-                return Err(anyhow!("{target:?} already exists"));
+                return Err(anyhow!("{to:?} already exists"));
             }
         }
 
-        Ok(tokio::fs::rename(source, target).await?)
+        Ok(tokio::fs::rename(from, to).await?)
     }
 
     async fn read_dir(&self, path: &Path) -> Result<ReadDir> {

@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context as _, Result};
 use redb::{Key, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
+use std::borrow::Borrow;
 use std::hash::Hash;
-use std::{borrow::Borrow};
 
 use crate::Transaction;
 
@@ -92,7 +92,6 @@ where
                 let table = txn.open_table(self.table).context("Failed to open table")?;
                 let mut result = Vec::new();
 
-
                 for entry in table.iter()? {
                     let (key_guard, value_guard) = entry?;
                     let value = bincode::deserialize(&value_guard.value())
@@ -103,6 +102,20 @@ where
                 Ok(result.into_iter())
             }
             Transaction::Write(_) => Err(anyhow!("Cannot read from write transaction")),
+        }
+    }
+
+    pub fn truncate(&self, txn: &mut Transaction) -> Result<()> {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table).context("Failed to open table")?;
+                table
+                    .retain(|_, _| false)
+                    .context("Failed to truncate table")?;
+
+                Ok(())
+            }
+            Transaction::Read(_) => Err(anyhow!("Cannot truncate table in read transaction")),
         }
     }
 }
@@ -117,15 +130,24 @@ mod test {
 
         {
             let mut write = client.begin_write().unwrap();
-            bincode_table.insert(&mut write, "1".to_string(), &1).unwrap();
-            bincode_table.insert(&mut write, "2".to_string(), &2).unwrap();
-            bincode_table.insert(&mut write, "3".to_string(), &3).unwrap();
+            bincode_table
+                .insert(&mut write, "1".to_string(), &1)
+                .unwrap();
+            bincode_table
+                .insert(&mut write, "2".to_string(), &2)
+                .unwrap();
+            bincode_table
+                .insert(&mut write, "3".to_string(), &3)
+                .unwrap();
             write.commit().unwrap();
         }
 
         {
             let read = client.begin_read().unwrap();
-            println!("{:#?}", bincode_table.scan(&read).unwrap().collect::<Vec<_>>());
+            println!(
+                "{:#?}",
+                bincode_table.scan(&read).unwrap().collect::<Vec<_>>()
+            );
         }
     }
 }

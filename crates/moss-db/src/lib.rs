@@ -1,4 +1,3 @@
-
 pub mod bincode_table;
 
 pub mod encrypted_bincode_store;
@@ -33,6 +32,12 @@ pub trait DatabaseClient: Sized {
 }
 
 pub struct ReDbClient(Arc<Database>);
+
+impl Clone for ReDbClient {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {

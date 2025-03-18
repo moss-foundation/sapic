@@ -20,8 +20,8 @@ pub struct AppDefaults {
 
 pub struct AppStateManager {
     commands: DashMap<ReadOnlyStr, CommandCallback>,
-    pub preferences: AppPreferences,
-    pub defaults: AppDefaults,
+    preferences: AppPreferences,
+    defaults: AppDefaults,
 }
 
 impl AppStateManager {
@@ -48,6 +48,14 @@ impl AppStateManager {
             },
             commands: DashMap::new(),
         }
+    }
+
+    pub fn preferences(&self) -> &AppPreferences {
+        &self.preferences
+    }
+
+    pub fn defaults(&self) -> &AppDefaults {
+        &self.defaults
     }
 
     pub fn set_color_theme(&self, theme_descriptor: ThemeDescriptor) {
