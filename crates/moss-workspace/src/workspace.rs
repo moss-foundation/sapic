@@ -9,11 +9,10 @@ use tokio::sync::{OnceCell, RwLock};
 
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{
-    CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
-    ListCollectionRequestsInput, ListCollectionRequestsOutput, ListCollectionsOutput,
+    CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
     RenameCollectionInput,
 };
-use crate::models::types::{CollectionInfo, RequestInfo};
+use crate::models::types::CollectionInfo;
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::{CollectionEntity, StateDbManager};
 
@@ -57,7 +56,7 @@ type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
 pub struct Workspace {
     fs: Arc<dyn FileSystem>,
     state_db_manager: Arc<dyn StateDbManager>,
-    collections: OnceCell<Arc<RwLock<CollectionMap>>>,
+    collections: OnceCell<RwLock<CollectionMap>>,
 }
 
 impl Workspace {
@@ -72,7 +71,7 @@ impl Workspace {
         })
     }
 
-    async fn collections(&self) -> Result<Arc<RwLock<CollectionMap>>> {
+    async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
@@ -104,11 +103,11 @@ impl Workspace {
                     collections.insert((collection, metadata));
                 }
 
-                Ok::<_, anyhow::Error>(Arc::new(RwLock::new(collections)))
+                Ok::<_, anyhow::Error>(RwLock::new(collections))
             })
             .await?;
 
-        Ok(Arc::clone(result))
+        Ok(result)
     }
 }
 

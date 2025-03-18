@@ -23,7 +23,6 @@ use crate::{
 };
 
 const REQUEST_DIR: &str = "requests";
-const REQUEST_DIR_EXTENSION: &str = ".request";
 
 slotmap::new_key_type! {
     pub struct RequestKey;
@@ -75,16 +74,13 @@ impl CollectionRequestData {
     }
 }
 
-// type RequestMap = PatriciaMap<Arc<CollectionRequestData>>;
-
 type RequestMap = LeasedSlotMap<RequestKey, CollectionRequestData>;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     path: PathBuf,
     indexer: Arc<dyn Indexer>,
-    // requests: RwLock<RequestMap>,
-    requests: OnceCell<Arc<RwLock<RequestMap>>>,
+    requests: OnceCell<RwLock<RequestMap>>,
     known_requests_paths: DashSet<PathBuf>,
     state_db_manager: Arc<dyn StateDbManager>,
 }
@@ -108,7 +104,7 @@ impl Collection {
         })
     }
 
-    async fn requests(&self) -> Result<Arc<RwLock<RequestMap>>> {
+    async fn requests(&self) -> Result<&RwLock<RequestMap>> {
         let result = self
             .requests
             .get_or_try_init(|| async move {
@@ -139,11 +135,11 @@ impl Collection {
                     });
                 }
 
-                Ok::<_, anyhow::Error>(Arc::new(RwLock::new(requests)))
+                Ok::<_, anyhow::Error>(RwLock::new(requests))
             })
             .await?;
 
-        Ok(Arc::clone(result))
+        Ok(result)
     }
 
     pub fn path(&self) -> &PathBuf {
@@ -155,36 +151,6 @@ impl Collection {
 
         Ok(())
     }
-
-    // pub async fn list_requests(&self) -> Result<&RwLock<RequestMap>> {
-    //     let indexed_collection = self.indexer.index(&self.path).await?;
-    //     let requests = self.state_db_manager.request_store().scan()?;
-
-    //     let mut request_map = PatriciaMap::new();
-    //     for (raw_request_path, indexed_request_entry) in indexed_collection.requests {
-    //         let request_path_str = match String::from_utf8(raw_request_path.clone()) {
-    //             Ok(value) => value,
-    //             Err(_err) => {
-    //                 // TODO: log error
-
-    //                 continue;
-    //             }
-    //         };
-
-    //         let entity = requests.get(&request_path_str);
-    //         let data = CollectionRequestData {
-    //             name: indexed_request_entry.name,
-    //             request_path_str,
-    //             order: entity.and_then(|e| e.order),
-    //             typ: indexed_request_entry.typ.unwrap(), // FIXME: get rid of Option type for typ
-    //         };
-
-    //         request_map.insert(raw_request_path, Arc::new(data));
-    //     }
-
-    //     self.requests.write().await.extend(request_map);
-    //     Ok(&self.requests)
-    // }
 
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput> {
         let request_dir_name = format!("{}.request", input.name);

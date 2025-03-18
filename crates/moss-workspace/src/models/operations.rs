@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-use super::types::{CollectionInfo, RequestInfo, WorkspaceInfo};
+use super::types::{CollectionInfo, WorkspaceInfo};
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -36,13 +36,8 @@ pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct ListCollectionRequestsInput {
-    // pub path: PathBuf,
     pub key: u64,
 }
-
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListCollectionRequestsOutput(pub Vec<RequestInfo>);
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -65,7 +60,6 @@ pub struct CreateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct RenameCollectionInput {
-    // pub old_path: PathBuf,
     pub key: u64,
     pub new_name: String,
 }
@@ -74,6 +68,5 @@ pub struct RenameCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    // pub path: PathBuf,
     pub key: u64,
 }
