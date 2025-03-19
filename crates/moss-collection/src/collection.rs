@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context as _, Result};
 use dashmap::DashSet;
-use moss_fs::ports::{CreateOptions, FileSystem, RenameOptions};
+use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use slotmap::KeyData;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
@@ -20,6 +20,7 @@ use crate::{
     },
     storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
 };
+use crate::models::operations::collection_operations::DeleteRequestInput;
 
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
@@ -388,6 +389,40 @@ impl Collection {
         Ok(())
     }
 
+    pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
+        let requests = self.requests().await?;
+        let mut requests_lock = requests.write().await;
+
+        let request_key = RequestKey::from(input.key);
+        let mut lease_request_data = requests_lock.lease(request_key.clone())?;
+
+        let request_dir_relative_path = lease_request_data.request_dir_relative_path.clone();
+        let request_dir_path = self.path.join(REQUESTS_DIR).join(&request_dir_relative_path);
+
+        // TODO: Add logging when the request was already deleted from the fs?
+        self.fs.remove_dir(
+            &request_dir_path,
+            RemoveOptions {
+                recursive: true,
+                ignore_if_not_exists: true,
+            }
+        ).await.context("Failed to remove the request directory")?;
+
+        let request_store = self.state_db_manager.request_store();
+        let (mut txn, table) = request_store.begin_write()?;
+        table.remove(
+            &mut txn,
+            request_dir_relative_path.to_string_lossy().to_string(),
+        )?;
+
+        std::mem::drop(lease_request_data);
+        requests_lock.remove(request_key)?;
+        self.known_requests_paths.remove(&request_dir_relative_path);
+
+        txn.commit()?;
+
+        Ok(())
+    }
 }
 
 fn is_sapic_file(file_path: &PathBuf) -> bool {

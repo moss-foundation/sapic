@@ -65,3 +65,10 @@ pub struct RenameRequestInput {
     pub key: u64,
     pub new_name: String,
 }
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct DeleteRequestInput {
+    pub key: u64,
+}
