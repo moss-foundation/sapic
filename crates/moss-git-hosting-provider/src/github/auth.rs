@@ -171,7 +171,7 @@ impl GitAuthAgent for GitHubAuthAgentImpl {
 }
 
 #[cfg(test)]
-mod github_tests {
+mod tests {
     use super::*;
 
     use moss_git::repo::RepoHandle;
@@ -180,7 +180,8 @@ mod github_tests {
     use std::sync::Arc;
 
     #[test]
-    fn cloning_with_oauth() -> Result<()> {
+    #[ignore]
+    fn manual_cloning_with_oauth() -> Result<()> {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo");

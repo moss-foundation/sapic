@@ -59,7 +59,7 @@ mod tests {
     impl SSHAuthAgent for DummySSHAuthAgent {}
 
     #[test]
-    fn test_github_client_name() {
+    fn github_client_name() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
         let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
@@ -68,7 +68,7 @@ mod tests {
     }
 
     #[test]
-    fn test_github_client_base_url() {
+    fn github_client_base_url() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
         let client = GitHubClient::new(client_auth_agent, ssh_auth_agent);
@@ -78,7 +78,8 @@ mod tests {
     }
 
     #[test]
-    fn test_github_client_with_ssh_auth_agent() {
+    #[ignore]
+    fn manual_github_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitHubAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
         let client = GitHubClient::new(client_auth_agent, Some(ssh_agent));
