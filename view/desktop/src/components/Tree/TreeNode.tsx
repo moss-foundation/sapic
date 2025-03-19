@@ -12,19 +12,31 @@ import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
-import { TreeNodeComponentProps } from "./types";
+import { TreeNodeComponentProps, TreeNodeProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
 
-export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
+export const TreeNode = ({
+  node,
+  onNodeUpdate,
+  depth,
+  parentNode,
+  onNodeAdd,
+  onNodeRemove,
+  onNodeRename,
+  onNodeClick,
+  onNodeDoubleClick,
+  onRootAdd,
+  onRootRemove,
+  onRootRename,
+  onRootClick,
+  onRootDoubleClick,
+}: TreeNodeComponentProps) => {
   const { treeId, nodeOffset, paddingLeft, paddingRight, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
-
   const nodeStyle = useMemo(() => "flex w-full min-w-0 items-center gap-1 py-0.5", []);
-
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
@@ -78,7 +90,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
-
     onNodeUpdate({
       ...node,
       isExpanded: !node.isExpanded,
@@ -108,9 +119,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         setIsRenamingRootNode(true);
       }
     };
-
     window.addEventListener("newCollectionWasCreated", handleNewCollectionWasCreated);
-
     return () => {
       window.removeEventListener("newCollectionWasCreated", handleNewCollectionWasCreated as EventListener);
     };
@@ -133,20 +142,29 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 })}
               />
               <NodeRenamingForm
-                onSubmit={handleRenamingRootFormSubmit}
+                onSubmit={(newName) => {
+                  handleRenamingRootFormSubmit(newName);
+                  onRootRename?.({ ...node, id: newName });
+                }}
                 onCancel={handleRenamingRootFormCancel}
                 currentName={node.id}
               />
             </div>
           ) : (
-            <button className="flex grow cursor-pointer items-center gap-1 overflow-hidden" onClick={handleFolderClick}>
+            <button
+              className="flex grow cursor-pointer items-center gap-1 overflow-hidden"
+              onClick={() => {
+                handleFolderClick();
+                onRootClick?.(node);
+              }}
+              onDoubleClick={() => onRootDoubleClick?.(node)}
+            >
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("text-[#717171]", {
                   "rotate-90": shouldRenderChildNodes,
                 })}
               />
-
               <NodeLabel label={node.id} searchInput={searchInput} />
             </button>
           )}
@@ -161,7 +179,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 >
                   <Icon icon="TreeExpandAllIcon" />
                 </button>
-
                 <button
                   disabled={allFoldersAreCollapsed}
                   className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-treeNodeButton-text)`}
@@ -171,7 +188,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 </button>
               </div>
             )}
-
             <DropdownMenu.Root>
               <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text)">
                 <Icon icon="TreeDetailIcon" />
@@ -190,11 +206,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
         {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="h-full w-full">
-            <ul
-              className={cn("h-full w-full", {
-                "pb-2": node.childNodes.length > 0 && node.isExpanded,
-              })}
-            >
+            <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
               {filteredChildNodes.map((childNode) => (
                 <TreeNode
                   parentNode={node}
@@ -202,6 +214,16 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   key={childNode.uniqueId}
                   node={childNode}
                   depth={0}
+                  onNodeAdd={onNodeAdd}
+                  onNodeRemove={onNodeRemove}
+                  onNodeRename={onNodeRename}
+                  onNodeClick={onNodeClick}
+                  onNodeDoubleClick={onNodeDoubleClick}
+                  onRootAdd={onRootAdd}
+                  onRootRemove={onRootRemove}
+                  onRootRename={onRootRename}
+                  onRootClick={onRootClick}
+                  onRootDoubleClick={onRootDoubleClick}
                 />
               ))}
               {(isAddingRootFileNode || isAddingRootFolderNode) && (
@@ -210,7 +232,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   <NodeAddForm
                     isFolder={isAddingRootFolderNode}
                     restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-                    onSubmit={handleAddFormRootSubmit}
+                    onSubmit={(newNode) => {
+                      handleAddFormRootSubmit(newNode);
+                      onRootAdd?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
+                    }}
                     onCancel={handleAddFormRootCancel}
                   />
                 </div>
@@ -227,9 +252,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
       {isRenamingNode ? (
         <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
           <TestCollectionIcon type={node.type} />
-
           <NodeRenamingForm
-            onSubmit={handleRenamingFormSubmit}
+            onSubmit={(newName) => {
+              handleRenamingFormSubmit(newName);
+              onNodeRename?.({ ...node, id: newName });
+            }}
             onCancel={handleRenamingFormCancel}
             restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
             currentName={node.id}
@@ -244,7 +271,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 paddingLeft: nodePaddingLeft,
                 paddingRight: paddingRight + 3,
               }}
-              onClick={node.isFolder ? handleFolderClick : undefined}
+              onClick={(e) => {
+                if (node.isFolder) handleFolderClick();
+                onNodeClick?.(node);
+              }}
+              onDoubleClick={(e) => onNodeDoubleClick?.(node)}
               className={cn(
                 nodeStyle,
                 "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) relative w-full cursor-pointer items-center gap-1 dark:hover:text-black",
@@ -254,11 +285,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               )}
             >
               <TestCollectionIcon type={node.type} />
-
               <NodeLabel label={node.id} searchInput={searchInput} />
-
               <span className="DragHandle h-full min-h-4 grow" />
-
               <Icon
                 icon="TreeChevronRightIcon"
                 className={cn("ml-auto text-[#717171]", {
@@ -283,6 +311,16 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                       node={{ ...node, childNodes: [] }}
                       onNodeUpdate={() => {}}
                       depth={0}
+                      onNodeAdd={onNodeAdd}
+                      onNodeRemove={onNodeRemove}
+                      onNodeRename={onNodeRename}
+                      onNodeClick={onNodeClick}
+                      onNodeDoubleClick={onNodeDoubleClick}
+                      onRootAdd={onRootAdd}
+                      onRootRemove={onRootRemove}
+                      onRootRename={onRootRename}
+                      onRootClick={onRootClick}
+                      onRootDoubleClick={onRootDoubleClick}
                     />
                   </ul>,
                   preview
@@ -310,7 +348,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           <NodeAddForm
             isFolder={isAddingFolderNode}
             restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-            onSubmit={handleAddFormSubmit}
+            onSubmit={(newNode) => {
+              handleAddFormSubmit(newNode);
+              onNodeAdd?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
+            }}
             onCancel={handleAddFormCancel}
           />
         </div>
@@ -326,6 +367,16 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={depth + 1}
+                onNodeAdd={onNodeAdd}
+                onNodeRemove={onNodeRemove}
+                onNodeRename={onNodeRename}
+                onNodeClick={onNodeClick}
+                onNodeDoubleClick={onNodeDoubleClick}
+                onRootAdd={onRootAdd}
+                onRootRemove={onRootRemove}
+                onRootRename={onRootRename}
+                onRootClick={onRootClick}
+                onRootDoubleClick={onRootDoubleClick}
               />
             ))}
           </ul>

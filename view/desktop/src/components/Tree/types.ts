@@ -30,6 +30,20 @@ export interface TreeProps {
   nodeOffset?: number;
   searchInput?: string;
   onTreeUpdate?: (tree: NodeProps) => void;
+
+  onRootAdd?: (node: TreeNodeProps) => void;
+  onRootRemove?: (node: TreeNodeProps) => void;
+  onRootRename?: (node: TreeNodeProps) => void;
+  onRootUpdate?: (node: TreeNodeProps) => void;
+  onRootClick?: (node: TreeNodeProps) => void;
+  onRootDoubleClick?: (node: TreeNodeProps) => void;
+
+  onNodeAdd?: (node: TreeNodeProps) => void;
+  onNodeRemove?: (node: TreeNodeProps) => void;
+  onNodeRename?: (node: TreeNodeProps) => void;
+  onNodeUpdate?: (node: TreeNodeProps) => void;
+  onNodeClick?: (node: TreeNodeProps) => void;
+  onNodeDoubleClick?: (node: TreeNodeProps) => void;
 }
 
 export interface TreeContextProps {
@@ -46,6 +60,18 @@ export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeNodeProps;
   depth: number;
   parentNode: TreeNodeProps;
+
+  onRootAdd?: (node: TreeNodeProps) => void;
+  onRootRemove?: (node: TreeNodeProps) => void;
+  onRootRename?: (node: TreeNodeProps) => void;
+  onRootClick?: (node: TreeNodeProps) => void;
+  onRootDoubleClick?: (node: TreeNodeProps) => void;
+
+  onNodeAdd?: (node: TreeNodeProps) => void;
+  onNodeRemove?: (node: TreeNodeProps) => void;
+  onNodeRename?: (node: TreeNodeProps) => void;
+  onNodeClick?: (node: TreeNodeProps) => void;
+  onNodeDoubleClick?: (node: TreeNodeProps) => void;
 }
 
 export interface NodeEvents {

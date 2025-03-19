@@ -36,25 +36,40 @@ export const Tree = ({
   paddingLeft = 12,
   paddingRight = 8,
   nodeOffset = 12,
-  onTreeUpdate,
   searchInput,
+
+  onTreeUpdate,
+  onRootAdd,
+  onRootRemove,
+  onRootRename,
+  onRootUpdate,
+  onRootClick,
+  onRootDoubleClick,
+
+  onNodeAdd,
+  onNodeRemove,
+  onNodeRename,
+  onNodeUpdate,
+  onNodeClick,
+  onNodeDoubleClick,
 }: TreeProps) => {
   const reactUniqueId = useId();
   const treeId = id || reactUniqueId;
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
-  const handleNodeUpdate = useCallback((updatedNode: TreeNodeProps) => {
+  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
-  }, []);
-
-  useEffect(() => {
-    onTreeUpdate?.(removeUniqueIdFromTree(tree));
-  }, [onTreeUpdate, tree]);
+    onTreeUpdate?.(removeUniqueIdFromTree(updatedNode));
+    if (updatedNode.isRoot) {
+      onRootUpdate?.(updatedNode);
+    } else {
+      onNodeUpdate?.(updatedNode);
+    }
+  };
 
   useEffect(() => {
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target } = event.detail;
-
       if (source.treeId === target.treeId && source.treeId === treeId) {
         if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
           return;
@@ -68,11 +83,24 @@ export const Tree = ({
         if (target.treeId === treeId) {
           setTree((prevTree) => {
             const updatedTree = addNodeToFolder(prevTree, target.node.uniqueId, source.node);
+            if (source.node.isRoot) {
+              onRootAdd?.(source.node);
+            } else {
+              onNodeAdd?.(source.node);
+            }
             return sortNode(updatedTree);
           });
         }
         if (source.treeId === treeId) {
-          setTree((prevTree) => removeNodeFromTree(prevTree, source.node.uniqueId));
+          setTree((prevTree) => {
+            const removedTree = removeNodeFromTree(prevTree, source.node.uniqueId);
+            if (source.node.isRoot) {
+              onRootRemove?.(source.node);
+            } else {
+              onNodeRemove?.(source.node);
+            }
+            return removedTree;
+          });
         }
       }
     };
@@ -80,7 +108,15 @@ export const Tree = ({
     const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
       const { source } = event.detail;
       if (source.treeId === treeId) {
-        setTree((prevTree) => removeNodeFromTree(prevTree, source.node.uniqueId));
+        setTree((prevTree) => {
+          const removedTree = removeNodeFromTree(prevTree, source.node.uniqueId);
+          if (source.node.isRoot) {
+            onRootRemove?.(source.node);
+          } else {
+            onNodeRemove?.(source.node);
+          }
+          return removedTree;
+        });
       }
     };
 
@@ -94,7 +130,7 @@ export const Tree = ({
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [treeId]);
+  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, treeId]);
 
   return (
     <TreeContext.Provider
@@ -109,7 +145,23 @@ export const Tree = ({
       }}
     >
       <div className="select-none">
-        <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+        <TreeNode
+          parentNode={tree}
+          onNodeUpdate={handleNodeUpdate}
+          key={`root-${treeId}`}
+          node={tree}
+          depth={0}
+          onNodeAdd={onNodeAdd}
+          onNodeRemove={onNodeRemove}
+          onNodeRename={onNodeRename}
+          onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
+          onRootAdd={onRootAdd}
+          onRootRemove={onRootRemove}
+          onRootRename={onRootRename}
+          onRootClick={onRootClick}
+          onRootDoubleClick={onRootDoubleClick}
+        />
       </div>
     </TreeContext.Provider>
   );
