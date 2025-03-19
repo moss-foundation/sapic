@@ -343,44 +343,75 @@ impl Into<KdlNode> for RequestBody {
 mod test {
     use std::path::Path;
     use super::*;
+    // FIXME: When outputing raw body type, there won't be a space between the type property and `{`
+    // It doesn't have any substantive difference, just that the look is a little bit inconsistent.
+    // I'm not sure how to fix it without messing up the raw string parsing and writing
     #[test]
-    fn test_writing_form_data_body() {
-        let form_data_body = FormDataBody {
-            value: FormDataValue::File(PathBuf::from("path/to/file")),
-            desc: Some("desc".to_string()),
-            order: Some(1),
-            disabled: false,
-            options: Default::default(),
-        };
-        let document: KdlDocument = form_data_body.into();
-        println!("{}", document.to_string());
+    fn test_writing_raw_text() {
+        let expected = r###"body type=text{
+    #"""
+    Raw Text
+    """#
+}"###;
 
+        let request_body = RequestBody::Raw(RawBodyType::Text("Raw Text".to_string()));
+        let node: KdlNode = request_body.into();
+        assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
 
     #[test]
     fn test_writing_form_data_node() {
+        let expected = r###"body type=form-data {
+    key {
+        type text
+        value value
+        disabled #false
+        options {
+            propagate #false
+        }
+    }
+}"###;
         let mut form_data = HashMap::new();
-        let body1 = FormDataBody {
-            value: FormDataValue::Text("value1".to_string()),
+        let body = FormDataBody {
+            value: FormDataValue::Text("value".to_string()),
             ..Default::default()
         };
-        let body2 = FormDataBody {
-            value: FormDataValue::File(PathBuf::from("value2")),
-            ..Default::default()
-        };
-        form_data.insert("key1".to_string(), body1);
-        form_data.insert("key2".to_string(), body2);
+        form_data.insert("key".to_string(), body);
         let request_body = RequestBody::FormData(
             form_data
         );
         let node: KdlNode = request_body.into();
-        println!("{}", node.to_string());
+        assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
 
     #[test]
-    fn test_writing_binary_body() {
+    fn test_writing_url_encoded_node() {
+        let expected = r###"body type=urlencoded {
+    key {
+        value value
+        disabled #false
+        options {
+            propagate #false
+        }
+    }
+}"###;
+        let mut urlencoded = HashMap::new();
+        let body = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        urlencoded.insert("key".to_string(), body);
+        let request_body = RequestBody::UrlEncoded(urlencoded);
+        let node: KdlNode = request_body.into();
+        assert_eq!(node.to_string().trim(), expected.to_string().trim());
+    }
+
+
+    #[test]
+    fn test_writing_binary_node() {
+        let expected = r###"body type=binary path="path/to/file""###;
         let request_body = RequestBody::Binary(PathBuf::from("path/to/file"));
         let node: KdlNode = request_body.into();
-        println!("{}", node.to_string());
+        assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
 }
