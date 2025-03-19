@@ -1,4 +1,4 @@
-use crate::kdl::body::RawBodyType;
+use crate::kdl::body::{FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions};
 use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::foundations::http::{
     HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -9,9 +9,11 @@ use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use html5ever::tendril::TendrilSink;
 use html5ever::tree_builder::{QuirksMode, TreeSink};
 use thiserror::Error;
+use crate::kdl::body::RequestBody::UrlEncoded;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -29,6 +31,12 @@ pub enum ParseError {
     IllFormattedBody,
     #[error("A `body` node has invalid `{typ}` content")]
     InvalidBodyContent { typ: String },
+    #[error("A form data `body` node has invalid value type")]
+    InvalidFormDataType,
+    #[error("A binary `body` node has missing file path")]
+    MissingBinaryPath,
+    #[error("A binary `body` node has invalid file path")]
+    InvalidBinaryPath,
 }
 
 pub struct ParseOptions {
@@ -258,7 +266,6 @@ fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
         // If the type's value is not a string
         .ok_or_else(|| ParseError::InvalidBodyType)?;
     match typ {
-        // TODO: Validate the content
         BODY_TYPE_TEXT => Ok(RequestBody::Raw(parse_raw_body_text(&node)?)),
         BODY_TYPE_JSON => Ok(RequestBody::Raw(parse_raw_body_json(&node)?)),
         BODY_TYPE_HTML => Ok(RequestBody::Raw(parse_raw_body_html(
@@ -266,6 +273,9 @@ fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
             &opts.html_parse_mode,
         )?)),
         BODY_TYPE_XML => Ok(RequestBody::Raw(parse_raw_body_xml(&node)?)),
+        BODY_TYPE_FORM_DATA => Ok(RequestBody::FormData(parse_form_data_params(&node)?)),
+        BODY_TYPE_URLENCODED => Ok(RequestBody::UrlEncoded(parse_urlencoded_params(&node)?)),
+        BODY_TYPE_BINARY => Ok(RequestBody::Binary(parse_binary_path(&node)?)),
         _ => Err(ParseError::InvalidBodyType.into()),
     }
 }
@@ -339,6 +349,116 @@ fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
         .join("\n");
 
     Ok(result)
+}
+
+fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBody>> {
+    let mut params: HashMap<String, FormDataBody> = HashMap::new();
+    if let Some(document) = node.children(){
+        for param_node in document.nodes() {
+            let key = param_node.name().to_string();
+            let param_body = parse_form_data_body(param_node)?;
+            params.insert(key, param_body);
+        }
+    }
+    Ok(params)
+}
+
+fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
+    if let Some(fields) = node.children() {
+        // FIXME: We now default to Text("") if we can't find type and value from the file
+        // Should we raise an error here?
+        let typ = kdl_get_arg_as_string!(fields, "type").unwrap_or("text".to_string());
+        let value = kdl_get_arg_as_string!(fields, "value").unwrap_or_default();
+        let desc = kdl_get_arg_as_string!(fields, "desc");
+        let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
+        let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
+        let options_node = fields.get("options");
+        let options = if let Some(options_node) = options_node {
+            parse_form_data_options(options_node)?
+        } else {
+            FormDataOptions::default()
+        };
+
+        Ok(FormDataBody {
+            value: match typ.as_ref() {
+                "text" => FormDataValue::Text(value.to_string()),
+                "file" => FormDataValue::File(PathBuf::from(value)),
+                _ => { return Err(ParseError::InvalidFormDataType.into()) }
+            },
+            desc,
+            order,
+            disabled,
+            options,
+        })
+    } else {
+        Ok(FormDataBody::default())
+    }
+    
+}
+
+fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
+    if let Some(fields) = node.children() {
+        let propagate = kdl_get_arg_as_bool!(fields, "propagate").unwrap_or(false);
+        Ok(FormDataOptions { propagate })
+    } else {
+        Ok(FormDataOptions::default())
+    }
+}
+
+fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBody>> {
+    let mut params: HashMap<String, UrlEncodedBody> = HashMap::new();
+    if let Some(document) = node.children(){
+        for param_node in document.nodes() {
+            let key = param_node.name().to_string();
+            let param_body = parse_urlencoded_body(param_node)?;
+            params.insert(key, param_body);
+        }
+    }
+    Ok(params)
+}
+
+fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
+    if let Some(fields) = node.children() {
+        let value = kdl_get_arg_as_string!(fields, "value").unwrap_or_default();
+        let desc = kdl_get_arg_as_string!(fields, "desc");
+        let order = kdl_get_arg_as_integer!(fields, "order").and_then(|value| Some(value as usize));
+        let disabled = kdl_get_arg_as_bool!(fields, "disabled").unwrap_or(false);
+        let options_node = fields.get("options");
+        let options = if let Some(options_node) = options_node {
+            parse_urlencoded_options(options_node)?
+        } else {
+            UrlEncodedOptions::default()
+        };
+
+        Ok(UrlEncodedBody {
+            value,
+            desc,
+            order,
+            disabled,
+            options
+        })
+
+    } else {
+        Ok(UrlEncodedBody::default())
+    }
+}
+
+fn parse_urlencoded_options(node: &KdlNode) -> Result<UrlEncodedOptions> {
+    if let Some(fields) = node.children() {
+        let propagate = kdl_get_arg_as_bool!(fields, "propagate").unwrap_or(false);
+        Ok(UrlEncodedOptions { propagate })
+    } else {
+        Ok(UrlEncodedOptions::default())
+    }
+}
+
+fn parse_binary_path(node: &KdlNode) -> Result<PathBuf> {
+    let path = node
+        .get("path")
+        .ok_or(ParseError::MissingBinaryPath)?
+        .as_string()
+        .ok_or(ParseError::InvalidBinaryPath)?;
+    Ok(PathBuf::from(path))
 }
 
 pub fn parse(input: &str, opts: &ParseOptions) -> Result<HttpRequestFile> {
@@ -1058,6 +1178,130 @@ mod tests {
         assert!(parse(text, &ParseOptions::default()).is_err());
     }
     #[test]
+    fn test_parse_body_form_data_empty() {
+        let text = r###"body type=form-data {}"###;
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::FormData(HashMap::new()))
+    }
+
+    #[test]
+    fn test_parse_body_form_data_invalid() {
+        let text = r###"body type=form-data {
+    key1 {
+        type "unknown"
+        value "value"
+    }
+}"###;
+        assert!(parse(text, &ParseOptions::default()).is_err());
+    }
+
+    #[test]
+    fn test_parse_body_form_data_single() {
+        let text = r###"body type=form-data {
+    key1 {
+        type "text"
+        value "value"
+    }
+}"###;
+        let body1 = FormDataBody {
+            value: FormDataValue::Text("value".to_string()),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::FormData(map))
+    }
+
+    #[test]
+    fn test_parse_body_form_data_multiple() {
+        let text = r###"body type=form-data {
+    key1 {
+        type "text"
+        value "value"
+    }
+    key2 {
+        type "file"
+        value "path/to/file"
+    }
+}"###;
+        let body1 = FormDataBody {
+            value: FormDataValue::Text("value".to_string()),
+            ..Default::default()
+        };
+        let body2 = FormDataBody {
+            value: FormDataValue::File(PathBuf::from("path/to/file")),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        map.insert("key2".to_string(), body2);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::FormData(map))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_empty() {
+        let text = r###"body type=urlencoded {}"###;
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(HashMap::new()))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_single() {
+        let text = r###"body type=urlencoded {
+    key1 {
+        value "value"
+    }
+}"###;
+        let body1 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+    }
+
+    #[test]
+    fn test_parse_body_urlencoded_multiple() {
+        let text = r###"body type=urlencoded {
+    key1 {
+        value "value"
+    }
+    key2 {
+        value "value"
+    }
+}"###;
+        let body1 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let body2 = UrlEncodedBody {
+            value: "value".to_string(),
+            ..Default::default()
+        };
+        let mut map = HashMap::new();
+        map.insert("key1".to_string(), body1);
+        map.insert("key2".to_string(), body2);
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+    }
+
+    #[test]
+    fn test_parse_body_binary_missing_path() {
+        let text = r###"body type=binary"###;
+        assert!(parse(text, &ParseOptions::default()).is_err());
+    }
+
+    #[test]
+    fn test_parse_body_binary() {
+        let text = r###"body type=binary path="path/to/file""###;
+        let request = parse(text, &ParseOptions::default()).unwrap();
+        assert_eq!(request.body.unwrap(), RequestBody::Binary("path/to/file".into()))
+    }
+    #[test]
     fn manual_test_read_request_from_file_and_writing_back() {
         let content = fs::read_to_string(
             "tests/TestCollection/requests/MyFolder/Test6.request/Test6.get.sapic",
@@ -1067,4 +1311,7 @@ mod tests {
         println!("{:#?}", request.clone().body.unwrap());
         println!("{}", request.to_string());
     }
+
+
+
 }
