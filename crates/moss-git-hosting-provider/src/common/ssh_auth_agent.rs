@@ -49,7 +49,8 @@ mod tests {
     use std::path::{Path, PathBuf};
     use std::sync::Arc;
     #[test]
-    fn github_cloning_with_ssh() {
+    #[ignore]
+    fn manual_github_cloning_with_ssh() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
@@ -67,7 +68,8 @@ mod tests {
     }
 
     #[test]
-    fn gitlab_cloning_with_ssh() {
+    #[ignore]
+    fn manual_gitlab_cloning_with_ssh() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo-lab");
