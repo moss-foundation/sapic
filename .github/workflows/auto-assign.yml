@@ -1,5 +1,7 @@
 name: Auto Assign PR Creator
 
+permissions:
+  pull-requests: write
 on:
   pull_request:
     types: [opened]
