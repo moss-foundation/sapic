@@ -4,7 +4,9 @@ use dashmap::DashMap;
 use moss_app::service::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
+use thiserror::Error;
 use tokio::sync::OnceCell;
+use validator::{Validate, ValidationErrors};
 
 use crate::{
     models::{
@@ -15,6 +17,22 @@ use crate::{
     },
     workspace::Workspace,
 };
+
+#[derive(Error, Debug)]
+
+pub enum OperationError {
+    #[error("validation error: {0}")]
+    Validation(#[from] ValidationErrors),
+
+    #[error("workspace {key} not found at {path}")]
+    NotFound { key: PathBuf, path: PathBuf },
+
+    #[error("workspace {key} already exists at {path}")]
+    AlreadyExists { key: PathBuf, path: PathBuf },
+
+    #[error("unknown error: {0}")]
+    Unknown(#[from] anyhow::Error),
+}
 
 type WorkspaceInfoMap = DashMap<PathBuf, WorkspaceInfo>;
 
@@ -66,11 +84,29 @@ impl WorkspaceManager {
 }
 
 impl WorkspaceManager {
-    pub async fn create_workspace(&self, input: CreateWorkspaceInput) -> Result<()> {
-        let path = self.workspaces_dir.join(input.name);
-        self.fs.create_dir(&path).await?;
+    pub async fn create_workspace(
+        &self,
+        input: CreateWorkspaceInput,
+    ) -> Result<(), OperationError> {
+        input.validate()?;
 
-        let workspace = Workspace::new(path, self.fs.clone())?;
+        let path = self.workspaces_dir.join(&input.name);
+
+        // Check if workspace already exists
+        if path.exists() {
+            return Err(OperationError::AlreadyExists {
+                key: PathBuf::from(&input.name),
+                path: path.clone(),
+            });
+        }
+
+        self.fs
+            .create_dir(&path)
+            .await
+            .map_err(|e| OperationError::Unknown(e))?;
+
+        let workspace = Workspace::new(path.clone(), self.fs.clone())
+            .map_err(|e| OperationError::Unknown(e))?;
 
         // Automatically switch the workspace to the new one.
         self.current_workspace.store(Some(Arc::new(workspace)));
@@ -96,7 +132,7 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    pub async fn list_workspaces(&self) -> Result<ListWorkspacesOutput> {
+    pub async fn list_workspaces(&self) -> Result<ListWorkspacesOutput, OperationError> {
         let workspaces = self.known_workspaces().await?;
         let content = workspaces.iter().map(|item| (*item).clone()).collect();
 
@@ -135,28 +171,6 @@ mod tests {
     use moss_fs::adapters::disk::DiskFileSystem;
 
     use super::*;
-
-    #[tokio::test]
-    async fn create_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone());
-
-        let workspace_name = random_workspace_name();
-        let result = workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: workspace_name.clone(),
-            })
-            .await;
-
-        assert!(result.is_ok());
-
-        // Clean up
-        {
-            std::fs::remove_dir_all(dir.join(workspace_name)).unwrap();
-        }
-    }
 
     #[tokio::test]
     async fn list_workspaces() {

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
+use validator::Validate;
 
 use super::types::{CollectionInfo, WorkspaceInfo};
 
@@ -15,10 +16,11 @@ pub struct OpenWorkspaceInput {
     pub path: PathBuf,
 }
 
-#[derive(Debug, Deserialize, Serialize, TS)]
+#[derive(Debug, Validate, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct CreateWorkspaceInput {
+    #[validate(length(min = 1))]
     pub name: String,
 }
 
