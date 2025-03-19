@@ -3,7 +3,6 @@ pub mod bincode_table;
 pub mod encrypted_bincode_store;
 pub mod encrypted_bincode_table;
 
-pub mod sled;
 
 use anyhow::Result;
 use redb::{
