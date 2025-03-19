@@ -55,7 +55,8 @@ pub struct CollectionMetadata {
 
 pub struct CollectionRequestData {
     pub name: String,
-    pub request_dir_path: PathBuf,
+    // TODO: More tests on the path
+    pub request_dir_relative_path: PathBuf, // Relative path from collection/requests
     pub order: Option<usize>,
     pub typ: RequestType,
 }
@@ -66,7 +67,7 @@ fn request_file_name(name: &str, typ: &RequestType) -> String {
 
 impl CollectionRequestData {
     fn request_file_path(&self) -> PathBuf {
-        self.request_dir_path
+        self.request_dir_relative_path
             .join(request_file_name(&self.name, &self.typ))
     }
 
@@ -200,7 +201,7 @@ impl Collection {
                     self.known_requests_paths.insert(request_dir_path.clone());
                     requests.insert(CollectionRequestData {
                         name: indexed_request_entry.name,
-                        request_dir_path,
+                        request_dir_relative_path: request_dir_path,
                         order: entity.and_then(|e| e.order),
                         typ: indexed_request_entry.typ.unwrap(), // FIXME: get rid of Option type for typ
                     });
@@ -225,20 +226,17 @@ impl Collection {
 
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput> {
         let request_dir_name = format!("{}.request", input.name);
-        let request_dir_path = {
-            let mut requests_dir = self.path.join(REQUESTS_DIR);
-            if let Some(relative_path) = input.relative_path {
-                requests_dir = requests_dir.join(relative_path);
-            }
-            requests_dir.join(request_dir_name)
-        };
 
-        if self.known_requests_paths.contains(&request_dir_path) {
+        let request_dir_relative_path = input.relative_path.unwrap_or_default().join(&request_dir_name);
+
+        if self.known_requests_paths.contains(&request_dir_relative_path) {
             return Err(anyhow::anyhow!(
                 "Request with name {} already exists",
                 input.name
             ));
         }
+
+        let request_dir_full_path = self.path.join(REQUESTS_DIR).join(&request_dir_relative_path);
 
         let (request_file_content, request_file_extension) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
@@ -278,18 +276,18 @@ impl Collection {
         let (mut txn, table) = request_store.begin_write()?;
         table.insert(
             &mut txn,
-            request_dir_path.to_string_lossy().to_string(),
+            request_dir_relative_path.to_string_lossy().to_string(),
             &RequestEntity { order: None },
         )?;
 
         let request_file_name = format!("{}.{}.sapic", input.name, request_file_extension);
         self.fs
-            .create_dir(&request_dir_path)
+            .create_dir(&request_dir_full_path)
             .await
             .context("Failed to create the collection directory")?;
         self.fs
             .create_file_with(
-                &request_dir_path.join(request_file_name),
+                &request_dir_full_path.join(request_file_name),
                 request_file_content,
                 CreateOptions::default(),
             )
@@ -302,12 +300,12 @@ impl Collection {
             let mut requests_lock = requests.write().await;
             requests_lock.insert(CollectionRequestData {
                 name: input.name,
-                request_dir_path: request_dir_path.clone(),
+                request_dir_relative_path: request_dir_relative_path.clone(),
                 order: None,
                 typ: RequestType::Http(HttpRequestType::Get), // FIXME:
             })
         };
-        self.known_requests_paths.insert(request_dir_path);
+        self.known_requests_paths.insert(request_dir_relative_path);
 
         Ok(CreateRequestOutput {
             key: request_key.as_u64(),
@@ -321,16 +319,30 @@ impl Collection {
         let request_key = RequestKey::from(input.key);
         let mut lease_request_data = requests_lock.lease(request_key)?;
 
-        let request_parent_dir = lease_request_data
-            .request_dir_path
-            .parent()
-            .context("Failed to get the parent directory")?;
+        let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
+        let request_dir_path_old =
+            self
+                .path
+                .join(REQUESTS_DIR)
+                .join(&request_dir_relative_path_old);
+
+        let request_dir_relative_path_new =
+            lease_request_data
+                .request_dir_relative_path
+                .parent()
+                .context("Failed to get the parent directory")?
+                .join(format!("{}.request", input.new_name));
 
         // Rename the request directory
-        let request_dir_path_new = request_parent_dir.join(format!("{}.request", input.new_name));
+        let request_dir_path_new =
+            self.path
+                .join(REQUESTS_DIR)
+                .join(&request_dir_relative_path_new);
+
+
         self.fs
             .rename(
-                &lease_request_data.request_dir_path,
+                &request_dir_path_old,
                 &request_dir_path_new,
                 RenameOptions::default(),
             )
@@ -338,13 +350,13 @@ impl Collection {
             .context("Failed to rename the request directory")?;
 
         // Rename the request file
-        let request_file_path_old = lease_request_data.request_file_path();
+        let request_file_path_old = request_dir_path_new.join(&lease_request_data.request_file_name());
         let request_file_name_new = request_file_name(&input.new_name, &lease_request_data.typ);
-
+        let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
         self.fs
             .rename(
-                &request_dir_path_new.join(lease_request_data.request_file_name()),
-                &request_dir_path_new.join(request_file_name_new),
+                &request_file_path_old,
+                &request_file_path_new,
                 RenameOptions::default(),
             )
             .await
@@ -354,15 +366,12 @@ impl Collection {
         let (mut txn, table) = request_store.begin_write()?;
         table.remove(
             &mut txn,
-            lease_request_data
-                .request_dir_path
-                .to_string_lossy()
-                .to_string(),
+            request_dir_relative_path_old.to_string_lossy().to_string(),
         )?;
 
         table.insert(
             &mut txn,
-            request_dir_path_new.to_string_lossy().to_string(),
+            request_dir_relative_path_new.to_string_lossy().to_string(),
             &RequestEntity {
                 order: lease_request_data.order,
             },
@@ -371,13 +380,14 @@ impl Collection {
         txn.commit()?;
 
         lease_request_data.name = input.new_name;
-        lease_request_data.request_dir_path = request_dir_path_new.clone();
+        lease_request_data.request_dir_relative_path = request_dir_relative_path_new.clone();
 
-        self.known_requests_paths.remove(&request_file_path_old);
-        self.known_requests_paths.insert(request_dir_path_new);
+        self.known_requests_paths.remove(&request_dir_relative_path_old);
+        self.known_requests_paths.insert(request_dir_relative_path_new);
 
         Ok(())
     }
+
 }
 
 fn is_sapic_file(file_path: &PathBuf) -> bool {
