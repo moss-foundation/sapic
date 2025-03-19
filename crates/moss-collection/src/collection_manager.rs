@@ -436,6 +436,7 @@ mod tests {
             });
     }
 
+
     #[test]
     fn test_rename_collection() {
         let service = generate_test_service();

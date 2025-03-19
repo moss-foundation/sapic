@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::mem;
 use crate::{
     kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
-    models::types,
+    models::types
 };
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RequestBody {
@@ -12,6 +14,74 @@ pub enum RequestBody {
     FormData(HashMap<String, FormDataBody>),
     UrlEncoded(HashMap<String, UrlEncodedBody>),
     Binary(PathBuf)
+}
+#[rustfmt::skip]
+impl From<types::request_types::RequestBody> for RequestBody {
+    fn from(body: types::request_types::RequestBody) -> Self {
+        match body {
+            types::request_types::RequestBody::Raw(raw_body) => RequestBody::Raw(RawBodyType::from(raw_body)),
+            types::request_types::RequestBody::Binary(path) => RequestBody::Binary(PathBuf::from(path)),
+            types::request_types::RequestBody::FormData(form_data) => map_form_data_to_kdl(form_data),
+            types::request_types::RequestBody::UrlEncoded(url_encoded) => map_url_encoded_to_kdl(url_encoded),
+        }
+    }
+}
+
+fn map_form_data_to_kdl(items: Vec<types::request_types::FormDataItem>) -> crate::kdl::body::RequestBody {
+    let map =
+        items
+            .into_iter()
+            .map(|mut item| (mem::take(&mut item.key), FormDataBody {
+                value: match item.value {
+                    types::request_types::FormDataValue::Text(s) => crate::kdl::body::FormDataValue::Text(s),
+                    types::request_types::FormDataValue::File(s) => crate::kdl::body::FormDataValue::File(PathBuf::from(s))
+                },
+                desc: mem::take(&mut item.desc),
+                order: mem::take(&mut item.order),
+                disabled: mem::take(&mut item.disabled),
+                options: FormDataOptions {
+                    propagate: mem::take(&mut item.options.propagate)
+                }
+            }))
+            .collect::<HashMap<_, _>>();
+    crate::kdl::body::RequestBody::FormData(map)
+}
+
+fn map_url_encoded_to_kdl(items: Vec<types::request_types::UrlEncodedItem>) -> crate::kdl::body::RequestBody {
+    let map =
+        items
+            .into_iter()
+            .map(|mut item| (mem::take(&mut item.key), UrlEncodedBody {
+                value: mem::take(&mut item.value),
+                desc: mem::take(&mut item.desc),
+                order: mem::take(&mut item.order),
+                disabled: mem::take(&mut item.disabled),
+                options: UrlEncodedOptions {
+                    propagate: mem::take(&mut item.options.propagate)
+                }
+            }))
+            .collect::<HashMap<_, _>>();
+    crate::kdl::body::RequestBody::UrlEncoded(map)
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum RawBodyType {
+    Text(String),
+    Json(String),
+    Html(String),
+    Xml(String),
+}
+
+#[rustfmt::skip]
+impl From<types::request_types::RawBodyType> for RawBodyType {
+    fn from(value: types::request_types::RawBodyType) -> Self {
+        match value {
+            types::request_types::RawBodyType::Text(text) => RawBodyType::Text(text),
+            types::request_types::RawBodyType::Json(json) => RawBodyType::Json(json),
+            types::request_types::RawBodyType::Html(html) => RawBodyType::Html(html),
+            types::request_types::RawBodyType::Xml(xml) => RawBodyType::Xml(xml),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -184,34 +254,6 @@ impl Into<KdlNode> for UrlEncodedOptions {
     }
 }
 
-#[rustfmt::skip]
-impl From<types::request_types::RequestBody> for RequestBody {
-    fn from(body: types::request_types::RequestBody) -> Self {
-        match body {
-            types::request_types::RequestBody::Raw(raw_body) => RequestBody::Raw(RawBodyType::from(raw_body))
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum RawBodyType {
-    Text(String),
-    Json(String),
-    Html(String),
-    Xml(String),
-}
-
-#[rustfmt::skip]
-impl From<types::request_types::RawBodyType> for RawBodyType {
-    fn from(value: types::request_types::RawBodyType) -> Self {
-        match value {
-            types::request_types::RawBodyType::Text(text) => RawBodyType::Text(text),
-            types::request_types::RawBodyType::Json(json) => RawBodyType::Json(json),
-            types::request_types::RawBodyType::Html(html) => RawBodyType::Html(html),
-            types::request_types::RawBodyType::Xml(xml) => RawBodyType::Xml(xml),
-        }
-    }
-}
 
 fn format_raw_string(content: &str) -> String {
     format!(
