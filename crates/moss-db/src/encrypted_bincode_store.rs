@@ -62,7 +62,7 @@ mod tests {
 
     use super::*;
 
-    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
     pub struct MyStruct {
         val: u64,
     }
@@ -73,7 +73,8 @@ mod tests {
     const TEST_AAD: &[u8] = b"additional_authenticated_data";
 
     #[test]
-    fn test_encrypted_write_read() {
+    fn encrypted_write_read() {
+        let test_data = MyStruct { val: 42 };
         let client = ReDbClient::new("sapic.db").unwrap();
         let store = EncryptedBincodeStore::new(
             client,
@@ -93,7 +94,7 @@ mod tests {
                     .write(
                         &mut txn,
                         "my_key",
-                        &MyStruct { val: 42 },
+                        &test_data,
                         TEST_PASSWORD,
                         TEST_AAD,
                         config,
@@ -112,6 +113,7 @@ mod tests {
             })
             .unwrap();
 
-        println!("{:?}", r);
+        assert_eq!(r, test_data);
+
     }
 }

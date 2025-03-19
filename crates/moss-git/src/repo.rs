@@ -271,7 +271,7 @@ impl RepoHandle {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::path::Path;
     use std::sync::Arc;
@@ -302,7 +302,7 @@ mod test {
 
     // cargo test test_clone_add_commit_push -- --nocapture
     #[test]
-    fn test_clone_add_commit_push() {
+    fn manual_clone_add_commit_push() {
         // TODO: Support verified signed commits using `gpg`
         // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
         // https://users.rust-lang.org/t/how-to-use-git2-push-correctly/97202/6
@@ -334,7 +334,7 @@ mod test {
     }
 
     #[test]
-    fn test_open_fetch_pull() {
+    fn manual_open_fetch_pull() {
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 

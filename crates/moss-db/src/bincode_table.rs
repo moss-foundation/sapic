@@ -119,12 +119,13 @@ where
         }
     }
 }
-mod test {
+#[cfg(test)]
+mod tests {
     use super::*;
     use crate::{DatabaseClient, ReDbClient};
 
     #[test]
-    fn test_scan() {
+    fn scan() {
         let client: ReDbClient = ReDbClient::new("test_scan.db").unwrap();
         let mut bincode_table = BincodeTable::new("test");
 
@@ -142,12 +143,12 @@ mod test {
             write.commit().unwrap();
         }
 
+        let expected = vec![("1".to_string(), 1), ("2".to_string(), 2), ("3".to_string(), 3)];
         {
             let read = client.begin_read().unwrap();
-            println!(
-                "{:#?}",
-                bincode_table.scan(&read).unwrap().collect::<Vec<_>>()
-            );
+
+            assert_eq!(bincode_table.scan(&read).unwrap().collect::<Vec<_>>(), expected);
+
         }
     }
 }

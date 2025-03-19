@@ -340,14 +340,14 @@ impl Into<KdlNode> for RequestBody {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use std::path::Path;
     use super::*;
     // FIXME: When outputing raw body type, there won't be a space between the type property and `{`
     // It doesn't have any substantive difference, just that the look is a little bit inconsistent.
     // I'm not sure how to fix it without messing up the raw string parsing and writing
     #[test]
-    fn test_writing_raw_text() {
+    fn writing_raw_text() {
         let expected = r###"body type=text{
     #"""
     Raw Text
@@ -360,7 +360,7 @@ mod test {
     }
 
     #[test]
-    fn test_writing_form_data_node() {
+    fn writing_form_data_node() {
         let expected = r###"body type=form-data {
     key {
         type text
@@ -385,7 +385,7 @@ mod test {
     }
 
     #[test]
-    fn test_writing_url_encoded_node() {
+    fn writing_url_encoded_node() {
         let expected = r###"body type=urlencoded {
     key {
         value value
@@ -408,7 +408,7 @@ mod test {
 
 
     #[test]
-    fn test_writing_binary_node() {
+    fn writing_binary_node() {
         let expected = r###"body type=binary path="path/to/file""###;
         let request_body = RequestBody::Binary(PathBuf::from("path/to/file"));
         let node: KdlNode = request_body.into();

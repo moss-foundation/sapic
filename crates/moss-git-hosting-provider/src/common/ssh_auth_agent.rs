@@ -43,7 +43,7 @@ impl GitAuthAgent for SSHAuthAgentImpl {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use moss_git::repo::RepoHandle;
     use std::path::{Path, PathBuf};
