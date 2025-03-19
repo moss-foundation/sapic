@@ -1,0 +1,42 @@
+{
+  "id": "AzureDevOps",
+  "type": "collection",
+  "order": 1,
+  "tree": {
+    "id": "Azure DevOps REST API v7.3",
+    "order": 1,
+    "type": "folder",
+    "isFolder": true,
+    "isExpanded": true,
+    "isRoot": true,
+    "childNodes": [
+      {
+        "id": "Issues",
+        "order": 1,
+        "type": "statistics",
+        "isFolder": false,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      },
+      {
+        "id": "Pull Requests",
+        "order": 2,
+        "type": "statistics",
+        "isFolder": false,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      },
+      {
+        "id": "Actions",
+        "order": 3,
+        "type": "statistics",
+        "isFolder": false,
+        "isExpanded": false,
+        "isRoot": false,
+        "childNodes": []
+      }
+    ]
+  }
+}

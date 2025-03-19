@@ -14,10 +14,12 @@ members = [
     "crates/moss-theme",
     "crates/moss-state",
     "crates/moss-nls",
-    "tools/xtask",
-    "view/desktop/bin",
     "crates/moss-logging",
     "crates/moss-session",
+    "crates/moss-workspace",
+
+    "tools/xtask",
+    "view/desktop/bin",
 ]
 
 [workspace.dependencies]
@@ -36,7 +38,7 @@ moss_session = { path = "crates/moss-session" }
 moss_theme = { path = "crates/moss-theme" }
 moss_state = { path = "crates/moss-state" }
 moss_nls = { path = "crates/moss-nls" }
-
+moss_workspace = { path = "crates/moss-workspace" }
 
 redb = "2.4.0"
 
@@ -89,6 +91,10 @@ aes-gcm = "0.10.3"
 pbkdf2 = "0.12.2"
 sha2 = "0.10.8"
 argon2 = "0.5.1"
-scraper = { version = "0.23.1", default-features = false, features = ["errors"]}
-html5ever = {version = "0.29.2", default-features = false}
-xml-rs = {version = "0.8.25", default-features = false, features = []}
+arc-swap = "1.7.1"
+slotmap = "1.0.7"
+scraper = { version = "0.23.1", default-features = false, features = [
+    "errors",
+] }
+html5ever = { version = "0.29.2", default-features = false }
+xml-rs = { version = "0.8.25", default-features = false, features = [] }

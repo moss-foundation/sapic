@@ -35,7 +35,7 @@ export const Settings = () => {
 
   return (
     <main>
-      <div className="p-5 text-[var(--moss-primary)]">
+      <div className="p-5">
         <h1 className="mb-3 text-2xl">{t("settings")}</h1>
 
         <div>

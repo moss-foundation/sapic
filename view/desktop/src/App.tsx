@@ -18,37 +18,19 @@ interface ListItem {
   isActive: boolean;
 }
 
-const initialList = Array.from({ length: 5 }, (_, i) => {
-  if (i === 0)
-    return {
-      id: i + 1,
-      label: `Explorer`,
-      isActive: i === 0,
-    };
-
-  if (i === 1)
-    return {
-      id: i + 1,
-      label: `Issues`,
-      isActive: false,
-    };
-
-  if (i === 2)
-    return {
-      id: i + 1,
-      label: `History`,
-      isActive: false,
-    };
-
-  return {
-    id: i + 1,
-    label: `Panel ${i + 1}`,
-    isActive: i === 0,
-  };
-});
-
 function App() {
-  const [DNDList, setDNDList] = useState<ListItem[]>(initialList);
+  const [DNDList, setDNDList] = useState<ListItem[]>([
+    {
+      id: 1,
+      label: `Collections`,
+      isActive: true,
+    },
+    {
+      id: 2,
+      label: `Environments`,
+      isActive: false,
+    },
+  ]);
 
   const handleSetActive = (id: number) => {
     setDNDList([...DNDList.map((item) => ({ ...item, isActive: item.id === id }))]);
@@ -75,7 +57,7 @@ function App() {
   }, [DNDList]);
 
   return (
-    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto]">
+    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto] text-(--moss-text)">
       <HeadBar />
       <Resizable>
         <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
@@ -92,7 +74,7 @@ function App() {
               ))}
             </Tabs.List>
 
-            <Tabs.Panels className="text-[var(--moss-primary)]">
+            <Tabs.Panels className="">
               {DNDList.map((item) => (
                 <Tabs.Panel {...item} key={item.id} className="">
                   {item.id === 1 ? <CollectionTreeView /> : <div>{`Panel ${item.id}`}</div>}

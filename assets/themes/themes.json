@@ -12,5 +12,12 @@
     "mode": "dark",
     "order": 2,
     "source": "dark.css"
+  },
+  {
+    "identifier": "moss.sapic-theme.vscode",
+    "displayName": "VS Code",
+    "mode": "dark",
+    "order": 3,
+    "source": "vscode.css"
   }
 ]

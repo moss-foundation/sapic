@@ -7,7 +7,7 @@ export const useDropTargetNode = (
   node: TreeNodeProps,
   treeId: string | number,
   dropTargetListRef: RefObject<HTMLLIElement>,
-  dropTargetFolderRef: RefObject<HTMLUListElement>
+  dropTargetFolderRef: RefObject<HTMLDivElement>
 ) => {
   useEffect(() => {
     const element = dropTargetListRef.current || dropTargetFolderRef.current;
@@ -26,7 +26,7 @@ export const useDropTargetNode = (
         return source.data.type === "TreeNode";
       },
       onDragLeave() {
-        element.classList.remove("bg-green-600", "bg-red-600");
+        element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
       },
       onDrag({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
@@ -37,13 +37,13 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
+          element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add("bg-green-600");
+          element.classList.add("background-(--moss-background-success)");
         } else {
-          element.classList.add("bg-red-600");
+          element.classList.add("background-(--moss-background-error)");
         }
       },
       onDrop({ location, source }) {
@@ -55,7 +55,7 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("bg-green-600", "bg-red-600");
+          element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
           return;
         }
 
@@ -70,7 +70,7 @@ export const useDropTargetNode = (
           );
         }
 
-        element.classList.remove("bg-green-600", "bg-red-600");
+        element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
       },
     });
   }, [dropTargetFolderRef, dropTargetListRef, node, treeId]);

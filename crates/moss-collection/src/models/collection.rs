@@ -1,7 +1,10 @@
 use anyhow::anyhow;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "collection.ts")]
 pub enum HttpRequestType {
     Post,
     Get,
@@ -20,13 +23,14 @@ impl ToString for HttpRequestType {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "collection.ts")]
 pub enum RequestType {
     Http(HttpRequestType),
     WebSocket,
     GraphQL,
     Grpc,
-    Variant,
 }
 
 impl Default for RequestType {
@@ -42,7 +46,6 @@ impl ToString for RequestType {
             RequestType::WebSocket => "ws".to_string(),
             RequestType::GraphQL => "gql".to_string(),
             RequestType::Grpc => "grpc".to_string(),
-            RequestType::Variant => "variant".to_string(),
         }
     }
 }
@@ -61,8 +64,6 @@ impl TryFrom<&str> for RequestType {
             "gql" => Ok(Self::GraphQL),
             "grpc" => Ok(Self::Grpc),
 
-            "variant" => Ok(Self::Variant),
-
             _ => Err(anyhow!("unknown request file type extension: {}", value)),
         }
     }
@@ -72,13 +73,6 @@ impl RequestType {
     pub fn is_http(&self) -> bool {
         match self {
             RequestType::Http(_) => true,
-            _ => false,
-        }
-    }
-
-    pub fn is_variant(&self) -> bool {
-        match self {
-            RequestType::Variant => true,
             _ => false,
         }
     }

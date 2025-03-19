@@ -53,9 +53,9 @@ export const prepareCollectionForTree = (collection: NodeProps, isFirstCollectio
     ...collection,
     uniqueId: id,
     isRoot: isFirstCollection,
-    childNodes: collection.childNodes.map(child => prepareCollectionForTree(child, false))
-  })
-}
+    childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, false)),
+  });
+};
 
 export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

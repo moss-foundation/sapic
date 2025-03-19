@@ -176,6 +176,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
 
 [[package]]
+name = "arc-swap"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
+
+[[package]]
 name = "arcstr"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1212,6 +1218,7 @@ dependencies = [
  "moss_tauri",
  "moss_text",
  "moss_theme",
+ "moss_workspace",
  "objc",
  "rand 0.9.0",
  "serde_json",
@@ -3008,10 +3015,12 @@ dependencies = [
  "moss_fs",
  "parking_lot 0.12.3",
  "patricia_tree",
+ "rand 0.9.0",
  "scraper",
  "serde",
  "serde_json",
  "sled",
+ "slotmap",
  "thiserror 2.0.12",
  "tokio",
  "ts-rs",
@@ -3183,6 +3192,25 @@ dependencies = [
  "moss_db",
  "redb",
  "serde",
+]
+
+[[package]]
+name = "moss_workspace"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arc-swap",
+ "dashmap",
+ "moss_app",
+ "moss_collection",
+ "moss_db",
+ "moss_fs",
+ "rand 0.9.0",
+ "serde",
+ "slotmap",
+ "thiserror 2.0.12",
+ "tokio",
+ "ts-rs",
 ]
 
 [[package]]
@@ -5119,6 +5147,15 @@ dependencies = [
  "libc",
  "log",
  "parking_lot 0.11.2",
+]
+
+[[package]]
+name = "slotmap"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbff4acf519f630b3a3ddcfaea6c06b42174d9a44bc70c620e9ed1649d58b82a"
+dependencies = [
+ "version_check",
 ]
 
 [[package]]

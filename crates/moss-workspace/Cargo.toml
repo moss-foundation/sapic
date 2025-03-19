@@ -1,0 +1,22 @@
+[package]
+name = "moss_workspace"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+moss_app.workspace = true
+moss_db.workspace = true
+moss_fs.workspace = true
+moss_collection.workspace = true
+
+anyhow.workspace = true
+arc-swap.workspace = true
+dashmap.workspace = true
+serde = { workspace = true, features = ["derive"] }
+ts-rs.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+slotmap.workspace = true
+
+[dev-dependencies]
+rand.workspace = true

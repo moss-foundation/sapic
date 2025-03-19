@@ -13,7 +13,7 @@ export const Content = forwardRef<ContentElement, ContentProps>((props, forwarde
     <MenuPrimitive.Content
       {...props}
       className={cn(
-        "z-50 rounded-lg border border-[#c9ccd6] bg-white px-3 py-1.5 shadow-lg dark:border-[rgb(45,45,50)] dark:bg-[rgb(24,24,27)]",
+        "background-(--moss-menu-content-bg) z-50 rounded-lg border border-(--moss-menu-content-border) px-3 py-1.5 text-(--moss-menu-content-text) shadow-lg",
         props.className
       )}
       ref={forwardedRef}
