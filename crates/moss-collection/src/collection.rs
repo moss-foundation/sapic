@@ -503,7 +503,7 @@ mod tests {
             Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
 
         let request_name = random_request_name();
-        let create_collection_result = collection
+        let create_request_result = collection
             .create_request(CreateRequestInput {
                 name: request_name.clone(),
                 relative_path: None,
@@ -512,9 +512,9 @@ mod tests {
             })
             .await;
 
-        assert!(create_collection_result.is_ok());
+        assert!(create_request_result.is_ok());
 
-        let create_request_output = create_collection_result.unwrap();
+        let create_request_output = create_request_result.unwrap();
 
         let requests = collection.requests().await.unwrap();
         let requests_lock = requests.read().await;
@@ -522,7 +522,7 @@ mod tests {
         let request = requests_lock.read(request_key).unwrap();
 
         assert_eq!(request.name, request_name);
-
+        assert!(collection.known_requests_paths.contains(&request.request_dir_relative_path));
         // Clean up
         {
             tokio::fs::remove_dir_all(collection_path).await.unwrap();
@@ -549,6 +549,7 @@ mod tests {
             .await
             .unwrap();
 
+        let old_request_path = PathBuf::from(format!("{}.request", request_name));
         let new_request_name = random_request_name();
         let rename_collection_result = collection
             .rename_request(RenameRequestInput {
@@ -556,7 +557,7 @@ mod tests {
                 new_name: new_request_name.clone(),
             })
             .await;
-
+        let new_request_path = PathBuf::from(format!("{}.request", new_request_name));
         assert!(rename_collection_result.is_ok());
 
         let requests = collection.requests().await.unwrap();
@@ -565,10 +566,55 @@ mod tests {
 
         let request = requests_lock.read(request_key).unwrap();
         assert_eq!(request.name, new_request_name);
+        assert!(!collection.known_requests_paths.contains(&old_request_path));
+        assert!(collection.known_requests_paths.contains(&new_request_path));
 
         // Clean up
         {
             tokio::fs::remove_dir_all(collection_path).await.unwrap();
         }
     }
+
+    #[tokio::test]
+    async fn delete_request() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        let request_path = PathBuf::from(format!("{}.request", request_name));
+        let create_request_output = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await.unwrap();
+
+        let delete_request_result = collection
+            .delete_request(DeleteRequestInput {
+                key: create_request_output.key,
+            })
+            .await;
+
+        assert!(delete_request_result.is_ok());
+
+        let requests = collection.requests().await.unwrap();
+        let requests_lock = requests.read().await;
+        let request_key = RequestKey::from(create_request_output.key);
+
+        assert!(requests_lock.read(request_key).is_err());
+        assert!(!collection.known_requests_paths.contains(&request_path));
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
 }
+
