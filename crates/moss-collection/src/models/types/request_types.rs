@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::models::collection::HttpRequestType::{Delete, Get, Post, Put};
 use crate::models::collection::RequestType;
 use serde::Serialize;
@@ -94,7 +95,61 @@ pub struct HeaderParamItem {
 #[ts(export, export_to = "types/request.ts")]
 pub enum RequestBody {
     Raw(RawBodyType),
+    FormData(Vec<FormDataItem>),
+    UrlEncoded(Vec<UrlEncodedItem>),
+    Binary(String)
 }
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub struct FormDataItem {
+    pub key: String,
+    pub value: FormDataValue,
+    #[ts(optional)]
+    pub order: Option<usize>,
+    #[ts(optional)]
+    pub desc: Option<String>,
+    pub disabled: bool,
+    pub options: FormDataOptions,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub enum FormDataValue {
+    Text(String),
+    File(String),
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub struct FormDataOptions {
+    pub propagate: bool,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub struct UrlEncodedItem {
+    pub key: String,
+    pub value: String,
+    #[ts(optional)]
+    pub order: Option<usize>,
+    #[ts(optional)]
+    pub desc: Option<String>,
+    pub disabled: bool,
+    pub options: UrlEncodedOptions,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types/request.ts")]
+pub struct UrlEncodedOptions {
+    pub propagate: bool
+}
+
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
