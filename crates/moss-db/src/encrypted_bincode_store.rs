@@ -114,6 +114,5 @@ mod tests {
             .unwrap();
 
         assert_eq!(r, test_data);
-
     }
 }

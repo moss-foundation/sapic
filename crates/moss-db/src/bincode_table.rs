@@ -143,12 +143,18 @@ mod tests {
             write.commit().unwrap();
         }
 
-        let expected = vec![("1".to_string(), 1), ("2".to_string(), 2), ("3".to_string(), 3)];
+        let expected = vec![
+            ("1".to_string(), 1),
+            ("2".to_string(), 2),
+            ("3".to_string(), 3),
+        ];
         {
             let read = client.begin_read().unwrap();
 
-            assert_eq!(bincode_table.scan(&read).unwrap().collect::<Vec<_>>(), expected);
-
+            assert_eq!(
+                bincode_table.scan(&read).unwrap().collect::<Vec<_>>(),
+                expected
+            );
         }
     }
 }

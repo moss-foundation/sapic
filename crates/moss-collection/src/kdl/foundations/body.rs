@@ -1,19 +1,18 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::mem;
 use crate::{
     kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
-    models::types
+    models::types,
 };
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
-
+use std::collections::HashMap;
+use std::mem;
+use std::path::PathBuf;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RequestBody {
     Raw(RawBodyType),
     FormData(HashMap<String, FormDataBody>),
     UrlEncoded(HashMap<String, UrlEncodedBody>),
-    Binary(PathBuf)
+    Binary(PathBuf),
 }
 #[rustfmt::skip]
 impl From<types::request_types::RequestBody> for RequestBody {
@@ -27,40 +26,56 @@ impl From<types::request_types::RequestBody> for RequestBody {
     }
 }
 
-fn map_form_data_to_kdl(items: Vec<types::request_types::FormDataItem>) -> crate::kdl::body::RequestBody {
-    let map =
-        items
-            .into_iter()
-            .map(|mut item| (mem::take(&mut item.key), FormDataBody {
-                value: match item.value {
-                    types::request_types::FormDataValue::Text(s) => crate::kdl::body::FormDataValue::Text(s),
-                    types::request_types::FormDataValue::File(s) => crate::kdl::body::FormDataValue::File(PathBuf::from(s))
+fn map_form_data_to_kdl(
+    items: Vec<types::request_types::FormDataItem>,
+) -> crate::kdl::body::RequestBody {
+    let map = items
+        .into_iter()
+        .map(|mut item| {
+            (
+                mem::take(&mut item.key),
+                FormDataBody {
+                    value: match item.value {
+                        types::request_types::FormDataValue::Text(s) => {
+                            crate::kdl::body::FormDataValue::Text(s)
+                        }
+                        types::request_types::FormDataValue::File(s) => {
+                            crate::kdl::body::FormDataValue::File(PathBuf::from(s))
+                        }
+                    },
+                    desc: mem::take(&mut item.desc),
+                    order: mem::take(&mut item.order),
+                    disabled: mem::take(&mut item.disabled),
+                    options: FormDataOptions {
+                        propagate: mem::take(&mut item.options.propagate),
+                    },
                 },
-                desc: mem::take(&mut item.desc),
-                order: mem::take(&mut item.order),
-                disabled: mem::take(&mut item.disabled),
-                options: FormDataOptions {
-                    propagate: mem::take(&mut item.options.propagate)
-                }
-            }))
-            .collect::<HashMap<_, _>>();
+            )
+        })
+        .collect::<HashMap<_, _>>();
     crate::kdl::body::RequestBody::FormData(map)
 }
 
-fn map_url_encoded_to_kdl(items: Vec<types::request_types::UrlEncodedItem>) -> crate::kdl::body::RequestBody {
-    let map =
-        items
-            .into_iter()
-            .map(|mut item| (mem::take(&mut item.key), UrlEncodedBody {
-                value: mem::take(&mut item.value),
-                desc: mem::take(&mut item.desc),
-                order: mem::take(&mut item.order),
-                disabled: mem::take(&mut item.disabled),
-                options: UrlEncodedOptions {
-                    propagate: mem::take(&mut item.options.propagate)
-                }
-            }))
-            .collect::<HashMap<_, _>>();
+fn map_url_encoded_to_kdl(
+    items: Vec<types::request_types::UrlEncodedItem>,
+) -> crate::kdl::body::RequestBody {
+    let map = items
+        .into_iter()
+        .map(|mut item| {
+            (
+                mem::take(&mut item.key),
+                UrlEncodedBody {
+                    value: mem::take(&mut item.value),
+                    desc: mem::take(&mut item.desc),
+                    order: mem::take(&mut item.order),
+                    disabled: mem::take(&mut item.disabled),
+                    options: UrlEncodedOptions {
+                        propagate: mem::take(&mut item.options.propagate),
+                    },
+                },
+            )
+        })
+        .collect::<HashMap<_, _>>();
     crate::kdl::body::RequestBody::UrlEncoded(map)
 }
 
@@ -90,7 +105,7 @@ pub struct FormDataBody {
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
-    pub options: FormDataOptions
+    pub options: FormDataOptions,
 }
 
 impl Default for FormDataBody {
@@ -100,7 +115,7 @@ impl Default for FormDataBody {
             desc: None,
             order: None,
             disabled: false,
-            options: FormDataOptions::default()
+            options: FormDataOptions::default(),
         }
     }
 }
@@ -138,7 +153,6 @@ impl Into<KdlDocument> for FormDataBody {
         let options_node: KdlNode = self.options.into();
         doc.nodes_mut().push(options_node);
         doc
-
     }
 }
 
@@ -148,7 +162,6 @@ pub enum FormDataValue {
     File(PathBuf),
 }
 
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct FormDataOptions {
     pub propagate: bool,
@@ -156,9 +169,7 @@ pub struct FormDataOptions {
 
 impl Default for FormDataOptions {
     fn default() -> Self {
-        Self {
-            propagate: false,
-        }
+        Self { propagate: false }
     }
 }
 
@@ -181,7 +192,7 @@ pub struct UrlEncodedBody {
     pub desc: Option<String>,
     pub order: Option<usize>,
     pub disabled: bool,
-    pub options: UrlEncodedOptions
+    pub options: UrlEncodedOptions,
 }
 
 impl Default for UrlEncodedBody {
@@ -191,7 +202,7 @@ impl Default for UrlEncodedBody {
             desc: None,
             order: None,
             disabled: false,
-            options: UrlEncodedOptions::default()
+            options: UrlEncodedOptions::default(),
         }
     }
 }
@@ -227,7 +238,6 @@ impl Into<KdlDocument> for UrlEncodedBody {
     }
 }
 
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct UrlEncodedOptions {
     pub propagate: bool,
@@ -235,9 +245,7 @@ pub struct UrlEncodedOptions {
 
 impl Default for UrlEncodedOptions {
     fn default() -> Self {
-        Self {
-            propagate: false,
-        }
+        Self { propagate: false }
     }
 }
 
@@ -253,7 +261,6 @@ impl Into<KdlNode> for UrlEncodedOptions {
         node
     }
 }
-
 
 fn format_raw_string(content: &str) -> String {
     format!(
@@ -314,7 +321,10 @@ fn prepare_urlencoded_body_node(node: &mut KdlNode, url_encoded: HashMap<String,
 
 fn prepare_binary_body_node(node: &mut KdlNode, path: PathBuf) {
     node.push(KdlEntry::new_prop("type", "binary"));
-    node.push(KdlEntry::new_prop("path", path.to_string_lossy().to_string()));
+    node.push(KdlEntry::new_prop(
+        "path",
+        path.to_string_lossy().to_string(),
+    ));
     node.autoformat();
 }
 
@@ -341,8 +351,8 @@ impl Into<KdlNode> for RequestBody {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
     use super::*;
+    use std::path::Path;
     // FIXME: When outputing raw body type, there won't be a space between the type property and `{`
     // It doesn't have any substantive difference, just that the look is a little bit inconsistent.
     // I'm not sure how to fix it without messing up the raw string parsing and writing
@@ -377,9 +387,7 @@ mod tests {
             ..Default::default()
         };
         form_data.insert("key".to_string(), body);
-        let request_body = RequestBody::FormData(
-            form_data
-        );
+        let request_body = RequestBody::FormData(form_data);
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
@@ -405,7 +413,6 @@ mod tests {
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
-
 
     #[test]
     fn writing_binary_node() {

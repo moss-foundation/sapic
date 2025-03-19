@@ -5,6 +5,7 @@ use slotmap::KeyData;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::models::operations::collection_operations::DeleteRequestInput;
 use crate::{
     kdl::http::HttpRequestFile,
     leased_slotmap::LeasedSlotMap,
@@ -20,7 +21,6 @@ use crate::{
     },
     storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
 };
-use crate::models::operations::collection_operations::DeleteRequestInput;
 
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
@@ -228,16 +228,25 @@ impl Collection {
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput> {
         let request_dir_name = format!("{}.request", input.name);
 
-        let request_dir_relative_path = input.relative_path.unwrap_or_default().join(&request_dir_name);
+        let request_dir_relative_path = input
+            .relative_path
+            .unwrap_or_default()
+            .join(&request_dir_name);
 
-        if self.known_requests_paths.contains(&request_dir_relative_path) {
+        if self
+            .known_requests_paths
+            .contains(&request_dir_relative_path)
+        {
             return Err(anyhow::anyhow!(
                 "Request with name {} already exists",
                 input.name
             ));
         }
 
-        let request_dir_full_path = self.path.join(REQUESTS_DIR).join(&request_dir_relative_path);
+        let request_dir_full_path = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path);
 
         let (request_file_content, request_file_extension) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
@@ -321,25 +330,22 @@ impl Collection {
         let mut lease_request_data = requests_lock.lease(request_key)?;
 
         let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
-        let request_dir_path_old =
-            self
-                .path
-                .join(REQUESTS_DIR)
-                .join(&request_dir_relative_path_old);
+        let request_dir_path_old = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path_old);
 
-        let request_dir_relative_path_new =
-            lease_request_data
-                .request_dir_relative_path
-                .parent()
-                .context("Failed to get the parent directory")?
-                .join(format!("{}.request", input.new_name));
+        let request_dir_relative_path_new = lease_request_data
+            .request_dir_relative_path
+            .parent()
+            .context("Failed to get the parent directory")?
+            .join(format!("{}.request", input.new_name));
 
         // Rename the request directory
-        let request_dir_path_new =
-            self.path
-                .join(REQUESTS_DIR)
-                .join(&request_dir_relative_path_new);
-
+        let request_dir_path_new = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path_new);
 
         self.fs
             .rename(
@@ -351,7 +357,8 @@ impl Collection {
             .context("Failed to rename the request directory")?;
 
         // Rename the request file
-        let request_file_path_old = request_dir_path_new.join(&lease_request_data.request_file_name());
+        let request_file_path_old =
+            request_dir_path_new.join(&lease_request_data.request_file_name());
         let request_file_name_new = request_file_name(&input.new_name, &lease_request_data.typ);
         let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
         self.fs
@@ -383,8 +390,10 @@ impl Collection {
         lease_request_data.name = input.new_name;
         lease_request_data.request_dir_relative_path = request_dir_relative_path_new.clone();
 
-        self.known_requests_paths.remove(&request_dir_relative_path_old);
-        self.known_requests_paths.insert(request_dir_relative_path_new);
+        self.known_requests_paths
+            .remove(&request_dir_relative_path_old);
+        self.known_requests_paths
+            .insert(request_dir_relative_path_new);
 
         Ok(())
     }
@@ -397,16 +406,22 @@ impl Collection {
         let mut lease_request_data = requests_lock.lease(request_key.clone())?;
 
         let request_dir_relative_path = lease_request_data.request_dir_relative_path.clone();
-        let request_dir_path = self.path.join(REQUESTS_DIR).join(&request_dir_relative_path);
+        let request_dir_path = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path);
 
         // TODO: Add logging when the request was already deleted from the fs?
-        self.fs.remove_dir(
-            &request_dir_path,
-            RemoveOptions {
-                recursive: true,
-                ignore_if_not_exists: true,
-            }
-        ).await.context("Failed to remove the request directory")?;
+        self.fs
+            .remove_dir(
+                &request_dir_path,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await
+            .context("Failed to remove the request directory")?;
 
         let request_store = self.state_db_manager.request_store();
         let (mut txn, table) = request_store.begin_write()?;
@@ -522,7 +537,9 @@ mod tests {
         let request = requests_lock.read(request_key).unwrap();
 
         assert_eq!(request.name, request_name);
-        assert!(collection.known_requests_paths.contains(&request.request_dir_relative_path));
+        assert!(collection
+            .known_requests_paths
+            .contains(&request.request_dir_relative_path));
         // Clean up
         {
             tokio::fs::remove_dir_all(collection_path).await.unwrap();
@@ -593,7 +610,8 @@ mod tests {
                 payload: None,
                 url: None,
             })
-            .await.unwrap();
+            .await
+            .unwrap();
 
         let delete_request_result = collection
             .delete_request(DeleteRequestInput {
@@ -615,6 +633,4 @@ mod tests {
             tokio::fs::remove_dir_all(collection_path).await.unwrap();
         }
     }
-
 }
-

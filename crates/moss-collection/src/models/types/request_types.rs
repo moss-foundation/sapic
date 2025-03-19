@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use crate::models::collection::HttpRequestType::{Delete, Get, Post, Put};
 use crate::models::collection::RequestType;
 use serde::Serialize;
+use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -97,7 +97,7 @@ pub enum RequestBody {
     Raw(RawBodyType),
     FormData(Vec<FormDataItem>),
     UrlEncoded(Vec<UrlEncodedItem>),
-    Binary(String)
+    Binary(String),
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -147,9 +147,8 @@ pub struct UrlEncodedItem {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types/request.ts")]
 pub struct UrlEncodedOptions {
-    pub propagate: bool
+    pub propagate: bool,
 }
-
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

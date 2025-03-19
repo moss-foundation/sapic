@@ -1,4 +1,7 @@
-use crate::kdl::body::{FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions};
+use crate::kdl::body::RequestBody::UrlEncoded;
+use crate::kdl::body::{
+    FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions,
+};
 use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::foundations::http::{
     HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -6,14 +9,13 @@ use crate::kdl::foundations::http::{
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
+use html5ever::tendril::TendrilSink;
+use html5ever::tree_builder::{QuirksMode, TreeSink};
 use kdl::{KdlDocument, KdlNode};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use html5ever::tendril::TendrilSink;
-use html5ever::tree_builder::{QuirksMode, TreeSink};
 use thiserror::Error;
-use crate::kdl::body::RequestBody::UrlEncoded;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -298,11 +300,7 @@ fn parse_raw_body_html(node: &KdlNode, html_parse_mode: &HtmlParseMode) -> Resul
     // Validate if the content is valid html
     let html_string = parse_raw_body_content(&node)?;
     let parsed = scraper::Html::parse_document(&html_string);
-    if html_parse_mode == &HtmlParseMode::Strict
-        && !parsed
-            .errors
-            .is_empty()
-    {
+    if html_parse_mode == &HtmlParseMode::Strict && !parsed.errors.is_empty() {
         dbg!(parsed.errors);
         return Err(ParseError::InvalidBodyContent {
             typ: "HTML".to_string(),
@@ -353,7 +351,7 @@ fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
 
 fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBody>> {
     let mut params: HashMap<String, FormDataBody> = HashMap::new();
-    if let Some(document) = node.children(){
+    if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
             let param_body = parse_form_data_body(param_node)?;
@@ -383,7 +381,7 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
             value: match typ.as_ref() {
                 "text" => FormDataValue::Text(value.to_string()),
                 "file" => FormDataValue::File(PathBuf::from(value)),
-                _ => { return Err(ParseError::InvalidFormDataType.into()) }
+                _ => return Err(ParseError::InvalidFormDataType.into()),
             },
             desc,
             order,
@@ -393,7 +391,6 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
     } else {
         Ok(FormDataBody::default())
     }
-    
 }
 
 fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
@@ -407,7 +404,7 @@ fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
 
 fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBody>> {
     let mut params: HashMap<String, UrlEncodedBody> = HashMap::new();
-    if let Some(document) = node.children(){
+    if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
             let param_body = parse_urlencoded_body(param_node)?;
@@ -435,9 +432,8 @@ fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
             desc,
             order,
             disabled,
-            options
+            options,
         })
-
     } else {
         Ok(UrlEncodedBody::default())
     }
@@ -1244,7 +1240,10 @@ mod tests {
     fn parse_body_urlencoded_empty() {
         let text = r###"body type=urlencoded {}"###;
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(HashMap::new()))
+        assert_eq!(
+            request.body.unwrap(),
+            RequestBody::UrlEncoded(HashMap::new())
+        )
     }
 
     #[test]
@@ -1299,7 +1298,10 @@ mod tests {
     fn parse_body_binary() {
         let text = r###"body type=binary path="path/to/file""###;
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::Binary("path/to/file".into()))
+        assert_eq!(
+            request.body.unwrap(),
+            RequestBody::Binary("path/to/file".into())
+        )
     }
     #[test]
     #[ignore]

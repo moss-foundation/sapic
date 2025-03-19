@@ -272,12 +272,12 @@ impl RepoHandle {
 
 #[cfg(test)]
 mod tests {
+    use crate::repo::RepoHandle;
+    use crate::GitAuthAgent;
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::path::Path;
     use std::sync::Arc;
     use std::time::SystemTime;
-    use crate::GitAuthAgent;
-    use crate::repo::RepoHandle;
 
     // This is so that we don't have circular dependency on git-hosting-provider when testing repo
     struct TestAuthAgent {}
@@ -310,7 +310,7 @@ mod tests {
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent{});
+        let mut auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
@@ -340,7 +340,7 @@ mod tests {
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent{});
+        let mut auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::open(repo_path, auth_agent).unwrap();
 
