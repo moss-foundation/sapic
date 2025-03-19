@@ -11,7 +11,6 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::storage::{CollectionEntity, RequestEntity};
 
-#[cfg_attr(test, mockall::automock)]
 pub trait CollectionRequestSubstore: Send + Sync + 'static {}
 
 pub(crate) type CollectionTable<'a> = BincodeTable<'a, String, CollectionEntity>;
