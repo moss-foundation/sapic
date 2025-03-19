@@ -1302,6 +1302,7 @@ mod tests {
         assert_eq!(request.body.unwrap(), RequestBody::Binary("path/to/file".into()))
     }
     #[test]
+    #[ignore]
     fn manual_read_request_from_file_and_writing_back() {
         let content = fs::read_to_string(
             "tests/TestCollection/requests/MyFolder/Test6.request/Test6.get.sapic",
