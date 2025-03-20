@@ -9,7 +9,8 @@ use crate::models::storage::RequestEntity;
 
 use super::{RequestStore, RequestStoreTable};
 
-const TABLE_REQUESTS: BincodeTable<String, RequestEntity> = BincodeTable::new("requests");
+#[rustfmt::skip]
+pub(super) const TABLE_REQUESTS: BincodeTable<String, RequestEntity> = BincodeTable::new("requests");
 
 pub struct RequestStoreImpl {
     client: ReDbClient,
@@ -18,17 +19,6 @@ pub struct RequestStoreImpl {
 
 impl RequestStoreImpl {
     pub fn new(client: ReDbClient) -> Self {
-        // Initialize by creating the table in the database
-        let table = TABLE_REQUESTS;
-        let inner_txn = match client.begin_write().unwrap() {
-            Transaction::Read(_) => {
-                unreachable!()
-            }
-            Transaction::Write(txn) => txn,
-        };
-        inner_txn.open_table(table.table).unwrap();
-        inner_txn.commit().unwrap();
-
         Self {
             client,
             table: TABLE_REQUESTS,
