@@ -110,20 +110,6 @@ impl Collection {
         self.state_db_manager.clone().ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
-    // We need to be able to temporarily drop the state_db_manager
-    // Since it will keep the state.db file open, preventing the collection folder to be renamed
-    pub fn drop_db(&mut self) {
-        let _ = self.state_db_manager.take();
-    }
-
-    pub fn reload_db(&mut self) -> Result<()> {
-        let state_db_manager_impl = StateDbManagerImpl::new(&self.path).context(format!(
-            "Failed to open the collection {} state database",
-            self.path.display()
-        ))?;
-        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
-        Ok(())
-    }
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
         let mut result = HashMap::new();
         let mut stack: Vec<PathBuf> = vec![root.clone()];
@@ -238,8 +224,20 @@ impl Collection {
         &self.path
     }
 
-    pub fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        self.path = new_path;
+    // Temporarily drop the db for fs renaming, and reloading it from the new path
+    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+        let _ = self.state_db_manager.take();
+
+        let old_path = std::mem::replace(&mut self.path, new_path.clone());
+        self.fs
+            .rename(&old_path, &new_path, RenameOptions::default())
+            .await?;
+
+        let state_db_manager_impl = StateDbManagerImpl::new(&self.path).context(format!(
+            "Failed to open the collection {} state database",
+            self.path.display()
+        ))?;
+        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
 
         Ok(())
     }

@@ -225,14 +225,9 @@ impl Workspace {
 
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
         // We need to temporarily drop it, and reload the database after that
-        collection.drop_db();
-        collection.reset(new_path.clone())?;
-        self.fs
-            .rename(&old_path, &new_path, RenameOptions::default())
-            .await?;
-        collection.reload_db()?;
         collection
             .reset(new_path)
+            .await
             .context("Failed to reset the collection")?;
 
         Ok(txn.commit()?)
