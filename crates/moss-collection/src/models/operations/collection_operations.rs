@@ -19,7 +19,7 @@ pub enum CreateRequestProtocolSpecificPayload {
     },
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct CreateRequestInput {
@@ -40,7 +40,7 @@ pub struct CreateRequestOutput {
     pub key: u64,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct RenameRequestInput {

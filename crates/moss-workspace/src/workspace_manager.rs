@@ -1,11 +1,12 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
 use moss_app::service::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
+use slotmap::KeyData;
 use thiserror::Error;
-use tokio::sync::OnceCell;
+use tokio::sync::{OnceCell, RwLock};
 use validator::{Validate, ValidationErrors};
 
 use crate::{
@@ -17,9 +18,33 @@ use crate::{
     },
     workspace::Workspace,
 };
+use crate::leased_slotmap::LeasedSlotMap;
+use crate::models::operations::CreateWorkspaceOutput;
+use crate::workspace::CollectionKey;
+
+slotmap::new_key_type! {
+    pub struct WorkspaceKey;
+}
+
+impl From<u64> for WorkspaceKey {
+    fn from(value: u64) -> Self {
+        Self(KeyData::from_ffi(value))
+    }
+}
+
+impl WorkspaceKey {
+    pub fn as_u64(self) -> u64 {
+        self.0.as_ffi()
+    }
+}
+
+impl std::fmt::Display for WorkspaceKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_u64())
+    }
+}
 
 #[derive(Error, Debug)]
-
 pub enum OperationError {
     #[error("validation error: {0}")]
     Validation(#[from] ValidationErrors),
@@ -34,13 +59,13 @@ pub enum OperationError {
     Unknown(#[from] anyhow::Error),
 }
 
-type WorkspaceInfoMap = DashMap<PathBuf, WorkspaceInfo>;
+type WorkspaceInfoMap = LeasedSlotMap<WorkspaceKey, WorkspaceInfo>;
 
 pub struct WorkspaceManager {
     fs: Arc<dyn FileSystem>,
     workspaces_dir: PathBuf,
     current_workspace: ArcSwapOption<Workspace>,
-    known_workspaces: OnceCell<WorkspaceInfoMap>,
+    known_workspaces: OnceCell<RwLock<WorkspaceInfoMap>>,
 }
 
 impl WorkspaceManager {
@@ -53,11 +78,11 @@ impl WorkspaceManager {
         }
     }
 
-    async fn known_workspaces(&self) -> Result<&WorkspaceInfoMap> {
+    async fn known_workspaces(&self) -> Result<&RwLock<WorkspaceInfoMap>> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
-                let workspaces = DashMap::new();
+                let mut workspaces = LeasedSlotMap::new();
                 let mut dir = self.fs.read_dir(&self.workspaces_dir).await?;
 
                 while let Some(entry) = dir.next_entry().await? {
@@ -68,16 +93,13 @@ impl WorkspaceManager {
 
                     let path = entry.path();
                     let file_name_str = entry.file_name().to_string_lossy().to_string();
-                    workspaces.insert(
-                        path.clone(),
-                        WorkspaceInfo {
-                            path,
-                            name: file_name_str,
-                        },
-                    );
+                    workspaces.insert(WorkspaceInfo {
+                        path,
+                        name: file_name_str,
+                    });
                 }
 
-                Ok::<WorkspaceInfoMap, anyhow::Error>(workspaces)
+                Ok::<_, anyhow::Error>(RwLock::new(workspaces))
             })
             .await?)
     }
@@ -87,7 +109,7 @@ impl WorkspaceManager {
     pub async fn create_workspace(
         &self,
         input: CreateWorkspaceInput,
-    ) -> Result<(), OperationError> {
+    ) -> Result<CreateWorkspaceOutput, OperationError> {
         input.validate()?;
 
         let path = self.workspaces_dir.join(&input.name);
@@ -111,15 +133,29 @@ impl WorkspaceManager {
         // Automatically switch the workspace to the new one.
         self.current_workspace.store(Some(Arc::new(workspace)));
 
-        Ok(())
+        let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
+        let key = {
+            let mut workspaces_lock = workspaces.write().await;
+            workspaces_lock.insert(WorkspaceInfo {
+                path,
+                name: input.name,
+            })
+        };
+        Ok(CreateWorkspaceOutput {key: key.as_u64()})
     }
 
     pub async fn delete_workspace(&self, input: DeleteWorkspaceInput) -> Result<()> {
         let workspaces = self.known_workspaces().await?;
+        let workspace_key = WorkspaceKey::from(input.key);
+
+        let mut workspaces_lock = workspaces.write().await;
+        let workspace_info = workspaces_lock.remove(workspace_key).context("Failed to remove the workspace")?;
+
+        let workspace_path = workspace_info.path;
 
         self.fs
             .remove_dir(
-                &input.path,
+                &workspace_path,
                 RemoveOptions {
                     recursive: true,
                     ignore_if_not_exists: true,
@@ -127,16 +163,22 @@ impl WorkspaceManager {
             )
             .await?;
 
-        workspaces.remove(&input.path);
-
         Ok(())
     }
 
     pub async fn list_workspaces(&self) -> Result<ListWorkspacesOutput, OperationError> {
         let workspaces = self.known_workspaces().await?;
-        let content = workspaces.iter().map(|item| (*item).clone()).collect();
+        let workspaces_lock = workspaces.read().await;
 
-        Ok(ListWorkspacesOutput(content))
+        Ok(ListWorkspacesOutput(
+            workspaces_lock
+                .iter()
+                .filter(|(_, iter_slot)| !iter_slot.is_leased())
+                .map(|(_, iter_slot)| {
+                    iter_slot.value().clone()
+                })
+                .collect()
+        ))
     }
 
     pub fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<()> {
@@ -182,21 +224,21 @@ mod tests {
         let workspace_name = random_workspace_name();
 
         // Pre-create a workspace to test that it is listed.
-        {
-            workspace_manager
-                .create_workspace(CreateWorkspaceInput {
-                    name: workspace_name.clone(),
-                })
-                .await
-                .unwrap();
-        }
+        let workspace_key = workspace_manager
+            .create_workspace(CreateWorkspaceInput {
+                name: workspace_name.clone(),
+            })
+            .await
+            .unwrap().key;
+
 
         let workspaces = workspace_manager.known_workspaces().await.unwrap();
-
+        let workspaces_lock = workspaces.read().await;
         let target_workspace_path = dir.join(workspace_name);
-        let found = workspaces
+
+        let found = workspaces_lock
             .iter()
-            .any(|entry| entry.key() == &target_workspace_path);
+            .any(|(key, info)| key.as_u64() == workspace_key);
 
         assert!(
             found,
@@ -221,17 +263,18 @@ mod tests {
         let workspace_path = dir.join(&workspace_name);
 
         // Create workspace first
-        workspace_manager
+        let create_workspace_output = workspace_manager
             .create_workspace(CreateWorkspaceInput {
                 name: workspace_name,
             })
             .await
             .unwrap();
 
+        let workspace_key = create_workspace_output.key;
         // Delete workspace
         let result = workspace_manager
             .delete_workspace(DeleteWorkspaceInput {
-                path: workspace_path.clone(),
+                key: workspace_key,
             })
             .await;
 
@@ -239,9 +282,10 @@ mod tests {
 
         // Verify workspace was deleted
         let workspaces = workspace_manager.known_workspaces().await.unwrap();
-        assert!(!workspaces
+        let workspaces_lock = workspaces.read().await;
+        assert!(!workspaces_lock
             .iter()
-            .any(|entry| entry.key() == &workspace_path));
+            .any(|(key, info)| key.as_u64() == workspace_key));
     }
 
     #[tokio::test]
