@@ -4,26 +4,7 @@ use crate::models::types::request_types::{
 use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
-pub struct CreateCollectionInput {
-    pub name: String,
-    pub path: PathBuf,
-    #[ts(optional)]
-    pub repo: Option<String>,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
-pub struct OverviewCollectionOutput {
-    pub name: String,
-    pub path: PathBuf,
-    #[ts(optional)]
-    pub order: Option<usize>,
-}
+use validator::Validate;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +23,7 @@ pub enum CreateRequestProtocolSpecificPayload {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct CreateRequestInput {
+    #[validate(length(min = 1))]
     pub name: String,
     #[ts(optional)]
     pub relative_path: Option<PathBuf>,
@@ -63,6 +45,7 @@ pub struct CreateRequestOutput {
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct RenameRequestInput {
     pub key: u64,
+    #[validate(length(min = 1))]
     pub new_name: String,
 }
 

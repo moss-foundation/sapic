@@ -45,6 +45,7 @@ pub struct ListCollectionRequestsInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionInput {
+    #[validate(length(min = 1))]
     pub name: String,
     pub path: PathBuf,
 }
@@ -63,6 +64,7 @@ pub struct CreateCollectionOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct RenameCollectionInput {
     pub key: u64,
+    #[validate(length(min = 1))]
     pub new_name: String,
 }
 
