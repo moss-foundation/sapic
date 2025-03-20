@@ -1,4 +1,7 @@
-use crate::kdl::body::{FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions};
+use crate::kdl::body::RequestBody::UrlEncoded;
+use crate::kdl::body::{
+    FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions,
+};
 use crate::kdl::foundations::body::RequestBody;
 use crate::kdl::foundations::http::{
     HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
@@ -6,14 +9,13 @@ use crate::kdl::foundations::http::{
 };
 use crate::kdl::tokens::*;
 use anyhow::Result;
+use html5ever::tendril::TendrilSink;
+use html5ever::tree_builder::{QuirksMode, TreeSink};
 use kdl::{KdlDocument, KdlNode};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use html5ever::tendril::TendrilSink;
-use html5ever::tree_builder::{QuirksMode, TreeSink};
 use thiserror::Error;
-use crate::kdl::body::RequestBody::UrlEncoded;
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -298,11 +300,7 @@ fn parse_raw_body_html(node: &KdlNode, html_parse_mode: &HtmlParseMode) -> Resul
     // Validate if the content is valid html
     let html_string = parse_raw_body_content(&node)?;
     let parsed = scraper::Html::parse_document(&html_string);
-    if html_parse_mode == &HtmlParseMode::Strict
-        && !parsed
-            .errors
-            .is_empty()
-    {
+    if html_parse_mode == &HtmlParseMode::Strict && !parsed.errors.is_empty() {
         dbg!(parsed.errors);
         return Err(ParseError::InvalidBodyContent {
             typ: "HTML".to_string(),
@@ -353,7 +351,7 @@ fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
 
 fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBody>> {
     let mut params: HashMap<String, FormDataBody> = HashMap::new();
-    if let Some(document) = node.children(){
+    if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
             let param_body = parse_form_data_body(param_node)?;
@@ -383,7 +381,7 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
             value: match typ.as_ref() {
                 "text" => FormDataValue::Text(value.to_string()),
                 "file" => FormDataValue::File(PathBuf::from(value)),
-                _ => { return Err(ParseError::InvalidFormDataType.into()) }
+                _ => return Err(ParseError::InvalidFormDataType.into()),
             },
             desc,
             order,
@@ -393,7 +391,6 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
     } else {
         Ok(FormDataBody::default())
     }
-    
 }
 
 fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
@@ -407,7 +404,7 @@ fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
 
 fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBody>> {
     let mut params: HashMap<String, UrlEncodedBody> = HashMap::new();
-    if let Some(document) = node.children(){
+    if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
             let param_body = parse_urlencoded_body(param_node)?;
@@ -435,9 +432,8 @@ fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
             desc,
             order,
             disabled,
-            options
+            options,
         })
-
     } else {
         Ok(UrlEncodedBody::default())
     }
@@ -557,7 +553,7 @@ mod tests {
     // }
 
     #[test]
-    fn test_parse_url_node_empty() {
+    fn parse_url_node_empty() {
         let text = r#"url {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -573,7 +569,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_url_node_incomplete() {
+    fn parse_url_node_incomplete() {
         let text = r#"url {
     raw "raw"
 }"#;
@@ -589,7 +585,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_url_node_normal() {
+    fn parse_url_node_normal() {
         let text = r#"url {
     raw "{{baseUrl}}/objects"
     host "{{baseUrl}}"
@@ -606,7 +602,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_param_body_empty() {
+    fn parse_query_param_body_empty() {
         let text = r#"param {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -624,7 +620,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_param_body_numeric_value() {
+    fn parse_query_param_body_numeric_value() {
         let text = r#"param {
     value 1
 }"#;
@@ -634,7 +630,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_param_body_full() {
+    fn parse_query_param_body_full() {
         let text = r#"param {
     value "value"
     desc "desc"
@@ -659,7 +655,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_param_options_empty() {
+    fn parse_query_param_options_empty() {
         let text = r#"options {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -668,7 +664,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_param_options_normal() {
+    fn parse_query_param_options_normal() {
         let text = r#"options {
     propagate #true
 }"#;
@@ -678,7 +674,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_params_empty() {
+    fn parse_query_params_empty() {
         let text = r#"params type=query {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -687,7 +683,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_params_one_param() {
+    fn parse_query_params_one_param() {
         let text = r#"params type=query {
     pageToken {}
 }"#;
@@ -719,7 +715,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_query_params_two_params() {
+    fn parse_query_params_two_params() {
         let text = r#"params type=query {
     param1 {
         value "1"
@@ -750,7 +746,7 @@ mod tests {
 
     // TODO: Path
     #[test]
-    fn test_parse_path_param_body_empty() {
+    fn parse_path_param_body_empty() {
         let text = r#"param {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -768,7 +764,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_param_body_numeric_value() {
+    fn parse_path_param_body_numeric_value() {
         let text = r#"param {
     value 1
 }"#;
@@ -778,7 +774,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_param_body_full() {
+    fn parse_path_param_body_full() {
         let text = r#"param {
     value "value"
     desc "desc"
@@ -803,7 +799,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_param_options_empty() {
+    fn parse_path_param_options_empty() {
         let text = r#"options {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -812,7 +808,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_param_options_normal() {
+    fn parse_path_param_options_normal() {
         let text = r#"options {
     propagate #true
 }"#;
@@ -822,7 +818,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_params_empty() {
+    fn parse_path_params_empty() {
         let text = r#"params type=path {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -831,7 +827,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_params_one_param() {
+    fn parse_path_params_one_param() {
         let text = r#"params type=path {
     pageToken {}
 }"#;
@@ -863,7 +859,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_path_params_two_params() {
+    fn parse_path_params_two_params() {
         let text = r#"params type=path {
     param1 {
         value "1"
@@ -894,7 +890,7 @@ mod tests {
 
     // TODO: headers
     #[test]
-    fn test_parse_header_body_empty() {
+    fn parse_header_body_empty() {
         let text = r#"header {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -912,7 +908,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_body_numeric_value() {
+    fn parse_header_body_numeric_value() {
         let text = r#"header {
     value 1
 }"#;
@@ -922,7 +918,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_body_full() {
+    fn parse_header_body_full() {
         let text = r#"header {
     value "value"
     desc "desc"
@@ -947,7 +943,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_param_options_empty() {
+    fn parse_header_param_options_empty() {
         let text = r#"options {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -956,7 +952,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_param_options_normal() {
+    fn parse_header_param_options_normal() {
         let text = r#"options {
     propagate #true
 }"#;
@@ -966,7 +962,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_params_empty() {
+    fn parse_header_params_empty() {
         let text = r#"headers {
 }"#;
         let node = KdlNode::parse(&text).unwrap();
@@ -975,7 +971,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_params_one_param() {
+    fn parse_header_params_one_param() {
         let text = r#"headers {
     pageToken {}
 }"#;
@@ -1007,7 +1003,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_header_params_two_params() {
+    fn parse_header_params_two_params() {
         let text = r#"headers {
             param1 {
                 value "1"
@@ -1037,7 +1033,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_text() {
+    fn parse_body_text() {
         let text = r###"body type=text {
     #"""
     A test string
@@ -1051,7 +1047,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_json() {
+    fn parse_body_json() {
         let text = r###"body type=json {
     #"""
     {
@@ -1077,7 +1073,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_json_invalid() {
+    fn parse_body_json_invalid() {
         let text = r###"body type=json {
     #"""
     {
@@ -1089,7 +1085,7 @@ mod tests {
     // FIXME: Right now, an error will occur if the html does not contain `<!DOCTYPE>` delcaration
     // However, this is not necessarily an error, and should probably be separated from other errors in parsing
     #[test]
-    fn test_parse_body_html() {
+    fn parse_body_html() {
         let text = r###"body type=html {
     #"""
     <!DOCTYPE html>
@@ -1112,7 +1108,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_html_with_options() {
+    fn parse_body_html_with_options() {
         let malformed = r###"body type=html {
     #"""
     <head>
@@ -1142,7 +1138,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_xml() {
+    fn parse_body_xml() {
         let text = r###"body type=xml {
     #"""
     <note>
@@ -1167,7 +1163,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_xml_invalid() {
+    fn parse_body_xml_invalid() {
         let text = r###"body type=xml {
     #"""
     <note>
@@ -1178,14 +1174,14 @@ mod tests {
         assert!(parse(text, &ParseOptions::default()).is_err());
     }
     #[test]
-    fn test_parse_body_form_data_empty() {
+    fn parse_body_form_data_empty() {
         let text = r###"body type=form-data {}"###;
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(request.body.unwrap(), RequestBody::FormData(HashMap::new()))
     }
 
     #[test]
-    fn test_parse_body_form_data_invalid() {
+    fn parse_body_form_data_invalid() {
         let text = r###"body type=form-data {
     key1 {
         type "unknown"
@@ -1196,7 +1192,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_form_data_single() {
+    fn parse_body_form_data_single() {
         let text = r###"body type=form-data {
     key1 {
         type "text"
@@ -1214,7 +1210,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_form_data_multiple() {
+    fn parse_body_form_data_multiple() {
         let text = r###"body type=form-data {
     key1 {
         type "text"
@@ -1241,14 +1237,17 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_urlencoded_empty() {
+    fn parse_body_urlencoded_empty() {
         let text = r###"body type=urlencoded {}"###;
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(HashMap::new()))
+        assert_eq!(
+            request.body.unwrap(),
+            RequestBody::UrlEncoded(HashMap::new())
+        )
     }
 
     #[test]
-    fn test_parse_body_urlencoded_single() {
+    fn parse_body_urlencoded_single() {
         let text = r###"body type=urlencoded {
     key1 {
         value "value"
@@ -1265,7 +1264,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_urlencoded_multiple() {
+    fn parse_body_urlencoded_multiple() {
         let text = r###"body type=urlencoded {
     key1 {
         value "value"
@@ -1290,19 +1289,23 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_body_binary_missing_path() {
+    fn parse_body_binary_missing_path() {
         let text = r###"body type=binary"###;
         assert!(parse(text, &ParseOptions::default()).is_err());
     }
 
     #[test]
-    fn test_parse_body_binary() {
+    fn parse_body_binary() {
         let text = r###"body type=binary path="path/to/file""###;
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::Binary("path/to/file".into()))
+        assert_eq!(
+            request.body.unwrap(),
+            RequestBody::Binary("path/to/file".into())
+        )
     }
     #[test]
-    fn manual_test_read_request_from_file_and_writing_back() {
+    #[ignore]
+    fn manual_read_request_from_file_and_writing_back() {
         let content = fs::read_to_string(
             "tests/TestCollection/requests/MyFolder/Test6.request/Test6.get.sapic",
         )
@@ -1311,7 +1314,4 @@ mod tests {
         println!("{:#?}", request.clone().body.unwrap());
         println!("{}", request.to_string());
     }
-
-
-
 }
