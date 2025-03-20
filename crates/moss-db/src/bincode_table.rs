@@ -13,9 +13,19 @@ where
     for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
-    // FIXME: pub here in order to make the
-    pub table: TableDefinition<'a, K, Vec<u8>>,
+    table: TableDefinition<'a, K, Vec<u8>>,
     _marker: std::marker::PhantomData<V>,
+}
+
+impl<'a, K, V> From<&BincodeTable<'a, K, V>> for TableDefinition<'a, K, Vec<u8>>
+where
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Hash,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
+    V: Serialize + DeserializeOwned,
+{
+    fn from(value: &BincodeTable<'a, K, V>) -> Self {
+        value.table
+    }
 }
 
 impl<'a, K, V> BincodeTable<'a, K, V>

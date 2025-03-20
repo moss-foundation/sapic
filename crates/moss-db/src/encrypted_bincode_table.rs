@@ -56,6 +56,17 @@ where
     _marker: std::marker::PhantomData<V>,
 }
 
+impl<'a, K, V> From<&EncryptedBincodeTable<'a, K, V>> for TableDefinition<'a, K, Vec<u8>>
+where
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
+    V: Serialize + DeserializeOwned,
+{
+    fn from(value: &EncryptedBincodeTable<'a, K, V>) -> Self {
+        value.table
+    }
+}
+
 impl<'a, K, V> EncryptedBincodeTable<'a, K, V>
 where
     K: Key + Borrow<K::SelfType<'a>>,
