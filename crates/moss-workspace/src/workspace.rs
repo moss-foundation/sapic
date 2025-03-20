@@ -287,10 +287,21 @@ mod tests {
     use crate::utils::random_collection_name;
     use moss_fs::adapters::disk::DiskFileSystem;
 
+    fn random_string(length: usize) -> String {
+        use rand::{distr::Alphanumeric, Rng};
+
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect()
+    }
+
+
     async fn setup_test_workspace() -> (PathBuf, Workspace) {
         let fs = Arc::new(DiskFileSystem::new());
         let workspace_path: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces/My Workspace");
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../samples/workspaces/{}", random_string(10)));
         fs::create_dir_all(&workspace_path).unwrap();
         let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
         (workspace_path, workspace)
@@ -318,7 +329,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
-            std::fs::remove_dir_all(expected_path).unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 
@@ -355,7 +366,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path.join(new_name)).unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 
@@ -389,6 +400,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 }
