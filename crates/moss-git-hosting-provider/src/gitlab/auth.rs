@@ -227,7 +227,7 @@ fn compute_time_to_refresh(expires_in: Duration) -> Instant {
 }
 
 #[cfg(test)]
-mod gitlab_tests {
+mod tests {
     use std::path::Path;
     use std::sync::Arc;
 
@@ -237,7 +237,8 @@ mod gitlab_tests {
     use crate::gitlab::auth::GitLabAuthAgentImpl;
 
     #[test]
-    fn cloning_with_oauth() {
+    #[ignore]
+    fn manual_cloning_with_oauth() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
         let repo_path = Path::new("test-repo-lab");

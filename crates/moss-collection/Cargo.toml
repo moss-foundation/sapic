@@ -12,7 +12,6 @@ kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 miette = { workspace = true, features = ["fancy"] }
-sled.workspace = true
 bincode.workspace = true
 dashmap.workspace = true
 tokio.workspace = true
@@ -26,6 +25,3 @@ scraper.workspace = true
 xml-rs.workspace = true
 slotmap.workspace = true
 rand.workspace = true
-
-[dev-dependencies]
-mockall = "0.13.1"

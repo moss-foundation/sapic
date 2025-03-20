@@ -271,13 +271,13 @@ impl RepoHandle {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
+    use crate::repo::RepoHandle;
+    use crate::GitAuthAgent;
     use git2::{Cred, IndexAddOption, RemoteCallbacks, Signature};
     use std::path::Path;
     use std::sync::Arc;
     use std::time::SystemTime;
-    use crate::GitAuthAgent;
-    use crate::repo::RepoHandle;
 
     // This is so that we don't have circular dependency on git-hosting-provider when testing repo
     struct TestAuthAgent {}
@@ -302,14 +302,15 @@ mod test {
 
     // cargo test test_clone_add_commit_push -- --nocapture
     #[test]
-    fn test_clone_add_commit_push() {
+    #[ignore]
+    fn manual_clone_add_commit_push() {
         // TODO: Support verified signed commits using `gpg`
         // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
         // https://users.rust-lang.org/t/how-to-use-git2-push-correctly/97202/6
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent{});
+        let mut auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
@@ -334,11 +335,12 @@ mod test {
     }
 
     #[test]
-    fn test_open_fetch_pull() {
+    #[ignore]
+    fn manual_open_fetch_pull() {
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent{});
+        let mut auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::open(repo_path, auth_agent).unwrap();
 

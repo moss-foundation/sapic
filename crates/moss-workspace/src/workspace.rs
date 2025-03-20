@@ -201,7 +201,7 @@ impl Workspace {
         let (collection, metadata) = &mut *lease_guard;
         metadata.name = input.new_name.clone();
 
-        let old_path = collection.path();
+        let old_path = collection.path().to_owned();
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
@@ -220,13 +220,14 @@ impl Workspace {
                 order: metadata.order,
             },
         )?;
+        dbg!(&old_path);
+        dbg!(&new_path);
 
-        self.fs
-            .rename(&old_path, &new_path, RenameOptions::default())
-            .await?;
-
+        // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
+        // We need to temporarily drop it, and reload the database after that
         collection
             .reset(new_path)
+            .await
             .context("Failed to reset the collection")?;
 
         Ok(txn.commit()?)
@@ -276,14 +277,27 @@ impl Workspace {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
     use crate::utils::random_collection_name;
     use moss_fs::adapters::disk::DiskFileSystem;
 
+    fn random_string(length: usize) -> String {
+        use rand::{distr::Alphanumeric, Rng};
+
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect()
+    }
+
+
     async fn setup_test_workspace() -> (PathBuf, Workspace) {
         let fs = Arc::new(DiskFileSystem::new());
         let workspace_path: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces/My Workspace");
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../samples/workspaces/{}", random_string(10)));
+        fs::create_dir_all(&workspace_path).unwrap();
         let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
         (workspace_path, workspace)
     }
@@ -301,7 +315,6 @@ mod tests {
             })
             .await;
 
-        assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
 
@@ -311,7 +324,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
-            std::fs::remove_dir_all(expected_path).unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 
@@ -336,9 +349,8 @@ mod tests {
                 key: create_collection_output.key,
                 new_name: new_name.clone(),
             })
-            .await;
+            .await.unwrap();
 
-        assert!(rename_collection_result.is_ok());
 
         // Verify rename
         let collections = workspace.list_collections().await.unwrap();
@@ -349,7 +361,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path.join(new_name)).unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 
@@ -383,6 +395,7 @@ mod tests {
         // Clean up
         {
             workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
         }
     }
 }

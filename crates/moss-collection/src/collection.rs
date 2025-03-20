@@ -1,10 +1,11 @@
 use anyhow::{anyhow, Context as _, Result};
 use dashmap::DashSet;
-use moss_fs::ports::{CreateOptions, FileSystem, RenameOptions};
+use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use slotmap::KeyData;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::models::operations::collection_operations::DeleteRequestInput;
 use crate::{
     kdl::http::HttpRequestFile,
     leased_slotmap::LeasedSlotMap,
@@ -55,7 +56,8 @@ pub struct CollectionMetadata {
 
 pub struct CollectionRequestData {
     pub name: String,
-    pub request_dir_path: PathBuf,
+    // TODO: More tests on the path
+    pub request_dir_relative_path: PathBuf, // Relative path from collection/requests
     pub order: Option<usize>,
     pub typ: RequestType,
 }
@@ -66,7 +68,7 @@ fn request_file_name(name: &str, typ: &RequestType) -> String {
 
 impl CollectionRequestData {
     fn request_file_path(&self) -> PathBuf {
-        self.request_dir_path
+        self.request_dir_relative_path
             .join(request_file_name(&self.name, &self.typ))
     }
 
@@ -82,7 +84,8 @@ pub struct Collection {
     path: PathBuf,
     requests: OnceCell<RwLock<RequestMap>>,
     known_requests_paths: DashSet<PathBuf>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    // We have to use Option so that we can temporarily drop it
+    state_db_manager: Option<Arc<dyn StateDbManager>>,
 }
 
 impl Collection {
@@ -99,8 +102,12 @@ impl Collection {
             path,
             requests: OnceCell::new(),
             known_requests_paths: Default::default(),
-            state_db_manager: Arc::new(state_db_manager_impl),
+            state_db_manager: Some(Arc::new(state_db_manager_impl)),
         })
+    }
+
+    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
+        self.state_db_manager.clone().ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
@@ -191,16 +198,16 @@ impl Collection {
                 }
 
                 let indexed_requests = self.index_requests(&requests_dir_path).await?;
-                let restored_requests = self.state_db_manager.request_store().scan()?;
+                let restored_requests = self.state_db_manager()?.request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
-                for (request_dir_path, indexed_request_entry) in indexed_requests {
-                    let entity = restored_requests.get(&request_dir_path);
+                for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
+                    let entity = restored_requests.get(&request_dir_relative_path);
 
-                    self.known_requests_paths.insert(request_dir_path.clone());
+                    self.known_requests_paths.insert(request_dir_relative_path.clone());
                     requests.insert(CollectionRequestData {
                         name: indexed_request_entry.name,
-                        request_dir_path,
+                        request_dir_relative_path,
                         order: entity.and_then(|e| e.order),
                         typ: indexed_request_entry.typ.unwrap(), // FIXME: get rid of Option type for typ
                     });
@@ -217,28 +224,46 @@ impl Collection {
         &self.path
     }
 
-    pub fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        self.path = new_path;
+    // Temporarily drop the db for fs renaming, and reloading it from the new path
+    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+        let _ = self.state_db_manager.take();
+
+        let old_path = std::mem::replace(&mut self.path, new_path.clone());
+        self.fs
+            .rename(&old_path, &new_path, RenameOptions::default())
+            .await?;
+
+        let state_db_manager_impl = StateDbManagerImpl::new(&self.path).context(format!(
+            "Failed to open the collection {} state database",
+            self.path.display()
+        ))?;
+        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
 
         Ok(())
     }
 
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput> {
         let request_dir_name = format!("{}.request", input.name);
-        let request_dir_path = {
-            let mut requests_dir = self.path.join(REQUESTS_DIR);
-            if let Some(relative_path) = input.relative_path {
-                requests_dir = requests_dir.join(relative_path);
-            }
-            requests_dir.join(request_dir_name)
-        };
 
-        if self.known_requests_paths.contains(&request_dir_path) {
+        let request_dir_relative_path = input
+            .relative_path
+            .unwrap_or_default()
+            .join(&request_dir_name);
+
+        if self
+            .known_requests_paths
+            .contains(&request_dir_relative_path)
+        {
             return Err(anyhow::anyhow!(
                 "Request with name {} already exists",
                 input.name
             ));
         }
+
+        let request_dir_full_path = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path);
 
         let (request_file_content, request_file_extension) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
@@ -272,24 +297,24 @@ impl Collection {
             None => ("".to_string(), "get".to_string()),
         };
 
-        let request_store = self.state_db_manager.request_store();
+        let request_store = self.state_db_manager()?.request_store();
         let requests = self.requests().await?;
 
         let (mut txn, table) = request_store.begin_write()?;
         table.insert(
             &mut txn,
-            request_dir_path.to_string_lossy().to_string(),
+            request_dir_relative_path.to_string_lossy().to_string(),
             &RequestEntity { order: None },
         )?;
 
         let request_file_name = format!("{}.{}.sapic", input.name, request_file_extension);
         self.fs
-            .create_dir(&request_dir_path)
+            .create_dir(&request_dir_full_path)
             .await
             .context("Failed to create the collection directory")?;
         self.fs
             .create_file_with(
-                &request_dir_path.join(request_file_name),
+                &request_dir_full_path.join(request_file_name),
                 request_file_content,
                 CreateOptions::default(),
             )
@@ -302,12 +327,12 @@ impl Collection {
             let mut requests_lock = requests.write().await;
             requests_lock.insert(CollectionRequestData {
                 name: input.name,
-                request_dir_path: request_dir_path.clone(),
+                request_dir_relative_path: request_dir_relative_path.clone(),
                 order: None,
                 typ: RequestType::Http(HttpRequestType::Get), // FIXME:
             })
         };
-        self.known_requests_paths.insert(request_dir_path);
+        self.known_requests_paths.insert(request_dir_relative_path);
 
         Ok(CreateRequestOutput {
             key: request_key.as_u64(),
@@ -321,16 +346,27 @@ impl Collection {
         let request_key = RequestKey::from(input.key);
         let mut lease_request_data = requests_lock.lease(request_key)?;
 
-        let request_parent_dir = lease_request_data
-            .request_dir_path
+        let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
+        let request_dir_path_old = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path_old);
+
+        let request_dir_relative_path_new = lease_request_data
+            .request_dir_relative_path
             .parent()
-            .context("Failed to get the parent directory")?;
+            .context("Failed to get the parent directory")?
+            .join(format!("{}.request", input.new_name));
 
         // Rename the request directory
-        let request_dir_path_new = request_parent_dir.join(format!("{}.request", input.new_name));
+        let request_dir_path_new = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path_new);
+
         self.fs
             .rename(
-                &lease_request_data.request_dir_path,
+                &request_dir_path_old,
                 &request_dir_path_new,
                 RenameOptions::default(),
             )
@@ -338,31 +374,29 @@ impl Collection {
             .context("Failed to rename the request directory")?;
 
         // Rename the request file
-        let request_file_path_old = lease_request_data.request_file_path();
+        let request_file_path_old =
+            request_dir_path_new.join(&lease_request_data.request_file_name());
         let request_file_name_new = request_file_name(&input.new_name, &lease_request_data.typ);
-
+        let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
         self.fs
             .rename(
-                &request_dir_path_new.join(lease_request_data.request_file_name()),
-                &request_dir_path_new.join(request_file_name_new),
+                &request_file_path_old,
+                &request_file_path_new,
                 RenameOptions::default(),
             )
             .await
             .context("Failed to rename the request file")?;
 
-        let request_store = self.state_db_manager.request_store();
+        let request_store = self.state_db_manager()?.request_store();
         let (mut txn, table) = request_store.begin_write()?;
         table.remove(
             &mut txn,
-            lease_request_data
-                .request_dir_path
-                .to_string_lossy()
-                .to_string(),
+            request_dir_relative_path_old.to_string_lossy().to_string(),
         )?;
 
         table.insert(
             &mut txn,
-            request_dir_path_new.to_string_lossy().to_string(),
+            request_dir_relative_path_new.to_string_lossy().to_string(),
             &RequestEntity {
                 order: lease_request_data.order,
             },
@@ -371,10 +405,53 @@ impl Collection {
         txn.commit()?;
 
         lease_request_data.name = input.new_name;
-        lease_request_data.request_dir_path = request_dir_path_new.clone();
+        lease_request_data.request_dir_relative_path = request_dir_relative_path_new.clone();
 
-        self.known_requests_paths.remove(&request_file_path_old);
-        self.known_requests_paths.insert(request_dir_path_new);
+        self.known_requests_paths
+            .remove(&request_dir_relative_path_old);
+        self.known_requests_paths
+            .insert(request_dir_relative_path_new);
+
+        Ok(())
+    }
+
+    pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
+        let requests = self.requests().await?;
+        let mut requests_lock = requests.write().await;
+
+        let request_key = RequestKey::from(input.key);
+        let mut request_data = requests_lock.remove(request_key)?;
+        std::mem::drop(requests_lock);
+
+        let request_dir_relative_path = request_data.request_dir_relative_path.clone();
+        let request_dir_path = self
+            .path
+            .join(REQUESTS_DIR)
+            .join(&request_dir_relative_path);
+
+        // TODO: Add logging when the request was already deleted from the fs?
+        // TODO: Self-healing process
+        self.fs
+            .remove_dir(
+                &request_dir_path,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await
+            .context("Failed to remove the request directory")?;
+
+        let request_store = self.state_db_manager()?.request_store();
+        let (mut txn, table) = request_store.begin_write()?;
+        table.remove(
+            &mut txn,
+            request_dir_relative_path.to_string_lossy().to_string(),
+        )?;
+
+        self.known_requests_paths.remove(&request_dir_relative_path);
+
+        txn.commit()?;
 
         Ok(())
     }
@@ -458,7 +535,7 @@ mod tests {
             Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
 
         let request_name = random_request_name();
-        let create_collection_result = collection
+        let create_request_result = collection
             .create_request(CreateRequestInput {
                 name: request_name.clone(),
                 relative_path: None,
@@ -467,9 +544,9 @@ mod tests {
             })
             .await;
 
-        assert!(create_collection_result.is_ok());
+        assert!(create_request_result.is_ok());
 
-        let create_request_output = create_collection_result.unwrap();
+        let create_request_output = create_request_result.unwrap();
 
         let requests = collection.requests().await.unwrap();
         let requests_lock = requests.read().await;
@@ -477,7 +554,9 @@ mod tests {
         let request = requests_lock.read(request_key).unwrap();
 
         assert_eq!(request.name, request_name);
-
+        assert!(collection
+            .known_requests_paths
+            .contains(&request.request_dir_relative_path));
         // Clean up
         {
             tokio::fs::remove_dir_all(collection_path).await.unwrap();
@@ -504,6 +583,7 @@ mod tests {
             .await
             .unwrap();
 
+        let old_request_path = PathBuf::from(format!("{}.request", request_name));
         let new_request_name = random_request_name();
         let rename_collection_result = collection
             .rename_request(RenameRequestInput {
@@ -511,7 +591,7 @@ mod tests {
                 new_name: new_request_name.clone(),
             })
             .await;
-
+        let new_request_path = PathBuf::from(format!("{}.request", new_request_name));
         assert!(rename_collection_result.is_ok());
 
         let requests = collection.requests().await.unwrap();
@@ -520,6 +600,57 @@ mod tests {
 
         let request = requests_lock.read(request_key).unwrap();
         assert_eq!(request.name, new_request_name);
+        assert!(!collection.known_requests_paths.contains(&old_request_path));
+        assert!(collection.known_requests_paths.contains(&new_request_path));
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn delete_request() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        let request_path = PathBuf::from(format!("{}.request", request_name));
+        let create_request_output = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await
+            .unwrap();
+
+        let request_key = RequestKey::from(create_request_output.key);
+
+        {
+            let requests = collection.requests().await.unwrap();
+            let requests_lock = requests.read().await;
+            assert!(requests_lock.read(request_key).is_ok());
+        }
+
+        let delete_request_result = collection
+            .delete_request(DeleteRequestInput {
+                key: create_request_output.key,
+            })
+            .await;
+
+        assert!(delete_request_result.is_ok());
+
+        let requests = collection.requests().await.unwrap();
+        let requests_lock = requests.read().await;
+
+        assert!(requests_lock.read(request_key).is_err());
+        assert!(!collection.known_requests_paths.contains(&request_path));
 
         // Clean up
         {
