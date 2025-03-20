@@ -121,12 +121,28 @@ where
 }
 #[cfg(test)]
 mod tests {
+    use std::fs;
+    use std::path::PathBuf;
     use super::*;
     use crate::{DatabaseClient, ReDbClient};
 
+    fn random_string(length: usize) -> String {
+        use rand::{distr::Alphanumeric, Rng};
+
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect()
+    }
+
+    fn random_db_name() -> String { format!("Test_{}.db", random_string(10))}
     #[test]
     fn scan() {
-        let client: ReDbClient = ReDbClient::new("test_scan.db").unwrap();
+        let tests_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        fs::create_dir_all(&tests_path).unwrap();
+        let db_name = random_db_name();
+        let client: ReDbClient = ReDbClient::new(tests_path.join(&db_name)).unwrap();
         let mut bincode_table = BincodeTable::new("test");
 
         {
@@ -156,5 +172,6 @@ mod tests {
                 expected
             );
         }
+        std::fs::remove_file(tests_path.join(&db_name)).unwrap();
     }
 }

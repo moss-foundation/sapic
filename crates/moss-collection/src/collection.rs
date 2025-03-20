@@ -196,13 +196,13 @@ impl Collection {
                 let restored_requests = self.state_db_manager.request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
-                for (request_dir_path, indexed_request_entry) in indexed_requests {
-                    let entity = restored_requests.get(&request_dir_path);
+                for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
+                    let entity = restored_requests.get(&request_dir_relative_path);
 
-                    self.known_requests_paths.insert(request_dir_path.clone());
+                    self.known_requests_paths.insert(request_dir_relative_path.clone());
                     requests.insert(CollectionRequestData {
                         name: indexed_request_entry.name,
-                        request_dir_relative_path: request_dir_path,
+                        request_dir_relative_path,
                         order: entity.and_then(|e| e.order),
                         typ: indexed_request_entry.typ.unwrap(), // FIXME: get rid of Option type for typ
                     });
@@ -403,15 +403,17 @@ impl Collection {
         let mut requests_lock = requests.write().await;
 
         let request_key = RequestKey::from(input.key);
-        let mut lease_request_data = requests_lock.lease(request_key.clone())?;
+        let mut request_data = requests_lock.remove(request_key)?;
+        std::mem::drop(requests_lock);
 
-        let request_dir_relative_path = lease_request_data.request_dir_relative_path.clone();
+        let request_dir_relative_path = request_data.request_dir_relative_path.clone();
         let request_dir_path = self
             .path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 
         // TODO: Add logging when the request was already deleted from the fs?
+        // TODO: Self-healing process
         self.fs
             .remove_dir(
                 &request_dir_path,
@@ -430,8 +432,6 @@ impl Collection {
             request_dir_relative_path.to_string_lossy().to_string(),
         )?;
 
-        std::mem::drop(lease_request_data);
-        requests_lock.remove(request_key)?;
         self.known_requests_paths.remove(&request_dir_relative_path);
 
         txn.commit()?;
@@ -613,6 +613,14 @@ mod tests {
             .await
             .unwrap();
 
+        let request_key = RequestKey::from(create_request_output.key);
+
+        {
+            let requests = collection.requests().await.unwrap();
+            let requests_lock = requests.read().await;
+            assert!(requests_lock.read(request_key).is_ok());
+        }
+
         let delete_request_result = collection
             .delete_request(DeleteRequestInput {
                 key: create_request_output.key,
@@ -623,7 +631,6 @@ mod tests {
 
         let requests = collection.requests().await.unwrap();
         let requests_lock = requests.read().await;
-        let request_key = RequestKey::from(create_request_output.key);
 
         assert!(requests_lock.read(request_key).is_err());
         assert!(!collection.known_requests_paths.contains(&request_path));

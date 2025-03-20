@@ -9,8 +9,6 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::storage::{CollectionEntity, RequestEntity};
 
-pub trait CollectionRequestSubstore: Send + Sync + 'static {}
-
 pub(crate) type CollectionTable<'a> = BincodeTable<'a, String, CollectionEntity>;
 
 pub trait CollectionStore: Send + Sync + 'static {
