@@ -201,7 +201,7 @@ impl Workspace {
         let (collection, metadata) = &mut *lease_guard;
         metadata.name = input.new_name.clone();
 
-        let old_path = collection.path();
+        let old_path = collection.path().to_owned();
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
@@ -220,11 +220,17 @@ impl Workspace {
                 order: metadata.order,
             },
         )?;
+        dbg!(&old_path);
+        dbg!(&new_path);
 
+        // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
+        // We need to temporarily drop it, and reload the database after that
+        collection.drop_db();
+        collection.reset(new_path.clone())?;
         self.fs
             .rename(&old_path, &new_path, RenameOptions::default())
             .await?;
-
+        collection.reload_db()?;
         collection
             .reset(new_path)
             .context("Failed to reset the collection")?;
@@ -276,6 +282,7 @@ impl Workspace {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
     use crate::utils::random_collection_name;
     use moss_fs::adapters::disk::DiskFileSystem;
@@ -284,6 +291,7 @@ mod tests {
         let fs = Arc::new(DiskFileSystem::new());
         let workspace_path: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces/My Workspace");
+        fs::create_dir_all(&workspace_path).unwrap();
         let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
         (workspace_path, workspace)
     }
@@ -301,7 +309,6 @@ mod tests {
             })
             .await;
 
-        assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
 
@@ -336,9 +343,8 @@ mod tests {
                 key: create_collection_output.key,
                 new_name: new_name.clone(),
             })
-            .await;
+            .await.unwrap();
 
-        assert!(rename_collection_result.is_ok());
 
         // Verify rename
         let collections = workspace.list_collections().await.unwrap();

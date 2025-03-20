@@ -84,7 +84,8 @@ pub struct Collection {
     path: PathBuf,
     requests: OnceCell<RwLock<RequestMap>>,
     known_requests_paths: DashSet<PathBuf>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    // We have to use Option so that we can temporarily drop it
+    state_db_manager: Option<Arc<dyn StateDbManager>>,
 }
 
 impl Collection {
@@ -101,10 +102,28 @@ impl Collection {
             path,
             requests: OnceCell::new(),
             known_requests_paths: Default::default(),
-            state_db_manager: Arc::new(state_db_manager_impl),
+            state_db_manager: Some(Arc::new(state_db_manager_impl)),
         })
     }
 
+    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
+        self.state_db_manager.clone().ok_or(anyhow!("The state_db_manager has been dropped"))
+    }
+
+    // We need to be able to temporarily drop the state_db_manager
+    // Since it will keep the state.db file open, preventing the collection folder to be renamed
+    pub fn drop_db(&mut self) {
+        let _ = self.state_db_manager.take();
+    }
+
+    pub fn reload_db(&mut self) -> Result<()> {
+        let state_db_manager_impl = StateDbManagerImpl::new(&self.path).context(format!(
+            "Failed to open the collection {} state database",
+            self.path.display()
+        ))?;
+        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
+        Ok(())
+    }
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
         let mut result = HashMap::new();
         let mut stack: Vec<PathBuf> = vec![root.clone()];
@@ -193,7 +212,7 @@ impl Collection {
                 }
 
                 let indexed_requests = self.index_requests(&requests_dir_path).await?;
-                let restored_requests = self.state_db_manager.request_store().scan()?;
+                let restored_requests = self.state_db_manager()?.request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
                 for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
@@ -280,7 +299,7 @@ impl Collection {
             None => ("".to_string(), "get".to_string()),
         };
 
-        let request_store = self.state_db_manager.request_store();
+        let request_store = self.state_db_manager()?.request_store();
         let requests = self.requests().await?;
 
         let (mut txn, table) = request_store.begin_write()?;
@@ -370,7 +389,7 @@ impl Collection {
             .await
             .context("Failed to rename the request file")?;
 
-        let request_store = self.state_db_manager.request_store();
+        let request_store = self.state_db_manager()?.request_store();
         let (mut txn, table) = request_store.begin_write()?;
         table.remove(
             &mut txn,
@@ -425,7 +444,7 @@ impl Collection {
             .await
             .context("Failed to remove the request directory")?;
 
-        let request_store = self.state_db_manager.request_store();
+        let request_store = self.state_db_manager()?.request_store();
         let (mut txn, table) = request_store.begin_write()?;
         table.remove(
             &mut txn,
