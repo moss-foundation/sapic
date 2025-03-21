@@ -22,6 +22,7 @@ import { setGridState } from "./utils";
 
 import "./assets/styles.css";
 
+import { useDockviewStore } from "@/store/Dockview";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const DebugContext = React.createContext<boolean>(false);
@@ -165,6 +166,8 @@ const WatermarkComponent = () => {
 const TabbedPane = (props: { theme?: string }) => {
   const [logLines, setLogLines] = React.useState<{ text: string; timestamp?: Date; backgroundColor?: string }[]>([]);
 
+  const dockviewStore = useDockviewStore();
+
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
   const [api, setApi] = React.useState<DockviewApi>();
@@ -187,6 +190,13 @@ const TabbedPane = (props: { theme?: string }) => {
     setPending([]);
   }, [pending]);
 
+  // React.useEffect(() => {
+  //   if (!api) {
+  //     return;
+  //   }
+
+  // }, [api]);
+
   React.useEffect(() => {
     if (!api) {
       return;
@@ -199,6 +209,7 @@ const TabbedPane = (props: { theme?: string }) => {
       }),
       api.onDidActivePanelChange((event) => {
         setActivePanel(event?.id);
+        dockviewStore.setCurrentActivePanelId(event?.id || undefined);
         addLogLine(`Panel Activated ${event?.id}`);
       }),
       api.onDidRemovePanel((event) => {
@@ -248,20 +259,20 @@ const TabbedPane = (props: { theme?: string }) => {
         event.accept();
       }),
     ];
-
     const loadLayout = () => {
       defaultConfig(api);
     };
 
     loadLayout();
-
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api]);
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+    dockviewStore.setApi(event.api);
   };
 
   const dockviewRef = React.useRef<HTMLDivElement | null>(null);
