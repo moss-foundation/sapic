@@ -47,8 +47,11 @@ const components = {
       <div
         className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
       >
-        <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform text-[42px] opacity-50">
+        <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
           {props.api.title}
+          {props?.params.someRandomString && (
+            <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+          )}
         </span>
 
         {isDebug && (
