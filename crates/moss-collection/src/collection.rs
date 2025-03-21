@@ -233,7 +233,7 @@ impl Collection {
             .rename(&old_path, &new_path, RenameOptions::default())
             .await?;
 
-        let state_db_manager_impl = StateDbManagerImpl::new(&self.path).context(format!(
+        let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
             "Failed to open the collection {} state database",
             self.path.display()
         ))?;

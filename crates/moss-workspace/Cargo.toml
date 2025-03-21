@@ -17,6 +17,7 @@ ts-rs.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
 slotmap.workspace = true
+validator = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 rand.workspace = true
