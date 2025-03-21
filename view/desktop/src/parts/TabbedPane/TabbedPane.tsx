@@ -193,13 +193,6 @@ const TabbedPane = (props: { theme?: string }) => {
     setPending([]);
   }, [pending]);
 
-  // React.useEffect(() => {
-  //   if (!api) {
-  //     return;
-  //   }
-
-  // }, [api]);
-
   React.useEffect(() => {
     if (!api) {
       return;
