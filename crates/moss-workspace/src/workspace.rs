@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
 use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
 use slotmap::KeyData;
@@ -55,7 +55,9 @@ type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
 
 pub struct Workspace {
     fs: Arc<dyn FileSystem>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    path: PathBuf,
+    // We have to use Option so that we can temporarily drop it
+    state_db_manager: Option<Arc<dyn StateDbManager>>,
     collections: OnceCell<RwLock<CollectionMap>>,
 }
 
@@ -66,11 +68,14 @@ impl Workspace {
 
         Ok(Self {
             fs,
-            state_db_manager: Arc::new(state_db_manager),
+            path,
+            state_db_manager: Some(Arc::new(state_db_manager)),
             collections: OnceCell::new(),
         })
     }
-
+    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
+        self.state_db_manager.clone().ok_or(anyhow!("The state_db_manager has been dropped"))
+    }
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
@@ -78,7 +83,7 @@ impl Workspace {
                 let mut collections = LeasedSlotMap::new();
 
                 for (collection_path, collection_data) in
-                    self.state_db_manager.collection_store().scan()?
+                    self.state_db_manager()?.collection_store().scan()?
                 {
                     let name = match collection_path.file_name() {
                         Some(name) => name.to_string_lossy().to_string(),
@@ -108,6 +113,9 @@ impl Workspace {
             .await?;
 
         Ok(result)
+    }
+    pub fn path(&self) -> PathBuf {
+        self.path.clone()
     }
 }
 
@@ -148,7 +156,7 @@ impl Workspace {
 
         // TODO: is dir with the same name already exists
 
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         table.insert(
@@ -207,7 +215,7 @@ impl Workspace {
             .context("Parent directory not found")?
             .join(&input.new_name);
 
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         let entity_key = old_path.to_string_lossy().to_string();
@@ -220,8 +228,6 @@ impl Workspace {
                 order: metadata.order,
             },
         )?;
-        dbg!(&old_path);
-        dbg!(&new_path);
 
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
         // We need to temporarily drop it, and reload the database after that
@@ -243,7 +249,7 @@ impl Workspace {
             .context("Failed to remove the collection")?;
 
         let collection_path = collection.path().clone();
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.
@@ -263,12 +269,27 @@ impl Workspace {
 
         Ok(txn.commit()?)
     }
+    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+        let _ = self.state_db_manager.take();
+
+        let old_path = std::mem::replace(&mut self.path, new_path.clone());
+        self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+
+        let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
+            "Failed to open the workspace {} state database",
+            self.path.display()
+        ))?;
+        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
+
+        Ok(())
+    }
+
 }
 
 impl Workspace {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
         table.truncate(&mut txn)?;
         Ok(txn.commit()?)

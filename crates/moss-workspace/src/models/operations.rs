@@ -37,6 +37,15 @@ pub struct DeleteWorkspaceInput {
     pub key: u64
 }
 
+#[derive(Debug, Validate, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct RenameWorkspaceInput {
+    pub key: u64,
+    #[validate(length(min = 1))]
+    pub new_name: String
+}
+
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);

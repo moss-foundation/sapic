@@ -2,8 +2,9 @@ use anyhow::{Context, Result};
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
 use moss_app::service::AppService;
-use moss_fs::ports::{FileSystem, RemoveOptions};
+use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
 use std::{path::PathBuf, sync::Arc};
+use arc_swap::access::Access;
 use slotmap::KeyData;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
@@ -19,7 +20,7 @@ use crate::{
     workspace::Workspace,
 };
 use crate::leased_slotmap::LeasedSlotMap;
-use crate::models::operations::CreateWorkspaceOutput;
+use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
 use crate::workspace::CollectionKey;
 
 slotmap::new_key_type! {
@@ -122,6 +123,17 @@ impl WorkspaceManager {
             });
         }
 
+        // We have to call `known_workspaces` before creating the workspace folder
+        // Otherwise the method will create an extra entry for the workspace
+        let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
+        let key = {
+            let mut workspaces_lock = workspaces.write().await;
+            workspaces_lock.insert(WorkspaceInfo {
+                path: path.clone(),
+                name: input.name,
+            })
+        };
+
         self.fs
             .create_dir(&path)
             .await
@@ -133,14 +145,6 @@ impl WorkspaceManager {
         // Automatically switch the workspace to the new one.
         self.current_workspace.store(Some(Arc::new(workspace)));
 
-        let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
-        let key = {
-            let mut workspaces_lock = workspaces.write().await;
-            workspaces_lock.insert(WorkspaceInfo {
-                path,
-                name: input.name,
-            })
-        };
         Ok(CreateWorkspaceOutput {key: key.as_u64()})
     }
 
@@ -162,6 +166,39 @@ impl WorkspaceManager {
                 },
             )
             .await?;
+
+        Ok(())
+    }
+
+    pub async fn rename_workspace(&self, input: RenameWorkspaceInput) -> Result<()> {
+        let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
+
+        let workspace_key = WorkspaceKey::from(input.key);
+        let mut workspaces_lock = workspaces.write().await;
+        let mut workspace_info = workspaces_lock.read_mut(workspace_key).context("Failed to lease the workspace")?;
+
+        workspace_info.name = input.new_name.clone();
+
+        let old_path = workspace_info.path.clone();
+        let new_path = old_path.parent().context("Parent directory not found")?.join(&input.new_name);
+
+        workspace_info.path = new_path.clone();
+
+        // An opened workspace db will prevent its parent folder from being renamed
+        // If we are renaming the current workspace, we need to call the reset method
+        let current_workspace = self.current_workspace.swap(None);
+
+        // FIXME: This is probably not the best approach
+        if let Some(mut current_workspace) = current_workspace {
+            if current_workspace.path() == old_path {
+                Arc::get_mut(&mut current_workspace).unwrap().reset(new_path.clone()).await?;
+            } else {
+                self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+            }
+            self.current_workspace.store(Some(current_workspace))
+        } else {
+            self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+        }
 
         Ok(())
     }
@@ -314,5 +351,48 @@ mod tests {
         {
             std::fs::remove_dir_all(workspace_path).unwrap();
         }
+    }
+
+    #[tokio::test]
+    async fn rename_workspace() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let dir: PathBuf =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
+        let workspace_manager = WorkspaceManager::new(fs, dir.clone());
+
+        let old_workspace_name = random_workspace_name();
+        let old_workspace_path = dir.join(&old_workspace_name);
+        let new_workspace_name = "New Workspace".to_string();
+        let new_workspace_path = dir.join(&new_workspace_name);
+        // Pre-create a workspace to test that it is listed.
+        let workspace_key = workspace_manager
+            .create_workspace(CreateWorkspaceInput {
+                name: old_workspace_name.clone(),
+            })
+            .await
+            .unwrap().key;
+
+
+        let result = workspace_manager.rename_workspace(
+            RenameWorkspaceInput {
+                key: workspace_key,
+                new_name: new_workspace_name.clone(),
+            }
+        ).await;
+
+        assert!(result.is_ok());
+
+        // Verify old workspace name does not exist in WorkspaceInfoMap
+        let workspaces = workspace_manager.known_workspaces().await.unwrap();
+        let workspaces_lock = workspaces.read().await;
+        assert!(
+            !workspaces_lock.iter().any(|(key, info)| info.value().name == old_workspace_name)
+        );
+        assert!(
+            workspaces_lock.iter().any(|(key, info)| info.value().name == new_workspace_name)
+        );
+
+        // Check the currently active workspace's path is updated
+        assert_eq!(workspace_manager.current_workspace().unwrap().path(), new_workspace_path)
     }
 }
