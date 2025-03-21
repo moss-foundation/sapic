@@ -13,9 +13,19 @@ where
     for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
-    // FIXME: pub here in order to make the
-    pub table: TableDefinition<'a, K, Vec<u8>>,
+    table: TableDefinition<'a, K, Vec<u8>>,
     _marker: std::marker::PhantomData<V>,
+}
+
+impl<'a, K, V> From<&BincodeTable<'a, K, V>> for TableDefinition<'a, K, Vec<u8>>
+where
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Hash,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
+    V: Serialize + DeserializeOwned,
+{
+    fn from(value: &BincodeTable<'a, K, V>) -> Self {
+        value.table
+    }
 }
 
 impl<'a, K, V> BincodeTable<'a, K, V>
@@ -119,13 +129,30 @@ where
         }
     }
 }
-mod test {
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::PathBuf;
     use super::*;
     use crate::{DatabaseClient, ReDbClient};
 
+    fn random_string(length: usize) -> String {
+        use rand::{distr::Alphanumeric, Rng};
+
+        rand::rng()
+            .sample_iter(Alphanumeric)
+            .take(length)
+            .map(char::from)
+            .collect()
+    }
+
+    fn random_db_name() -> String { format!("Test_{}.db", random_string(10))}
     #[test]
-    fn test_scan() {
-        let client: ReDbClient = ReDbClient::new("test_scan.db").unwrap();
+    fn scan() {
+        let tests_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        fs::create_dir_all(&tests_path).unwrap();
+        let db_name = random_db_name();
+        let client: ReDbClient = ReDbClient::new(tests_path.join(&db_name)).unwrap();
         let mut bincode_table = BincodeTable::new("test");
 
         {
@@ -142,12 +169,19 @@ mod test {
             write.commit().unwrap();
         }
 
+        let expected = vec![
+            ("1".to_string(), 1),
+            ("2".to_string(), 2),
+            ("3".to_string(), 3),
+        ];
         {
             let read = client.begin_read().unwrap();
-            println!(
-                "{:#?}",
-                bincode_table.scan(&read).unwrap().collect::<Vec<_>>()
+
+            assert_eq!(
+                bincode_table.scan(&read).unwrap().collect::<Vec<_>>(),
+                expected
             );
         }
+        std::fs::remove_file(tests_path.join(&db_name)).unwrap();
     }
 }

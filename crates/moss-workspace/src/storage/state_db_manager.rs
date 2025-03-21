@@ -3,7 +3,10 @@ use std::{path::PathBuf, sync::Arc};
 
 use moss_db::ReDbClient;
 
-use super::{collection_store::CollectionStoreImpl, CollectionStore, StateDbManager};
+use super::{
+    collection_store::{self, CollectionStoreImpl},
+    CollectionStore, StateDbManager,
+};
 
 const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
@@ -13,7 +16,8 @@ pub struct StateDbManagerImpl {
 
 impl StateDbManagerImpl {
     pub fn new(path: &PathBuf) -> Result<Self> {
-        let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?;
+        let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?
+            .with_bincode_table(&collection_store::TABLE_COLLECTIONS)?;
         let collection_store = Arc::new(CollectionStoreImpl::new(db_client.clone()));
 
         Ok(Self { collection_store })

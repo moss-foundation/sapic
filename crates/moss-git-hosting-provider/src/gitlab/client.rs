@@ -58,7 +58,7 @@ mod tests {
     impl SSHAuthAgent for DummySSHAuthAgent {}
 
     #[test]
-    fn test_gitlab_client_name() {
+    fn gitlab_client_name() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
         let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
@@ -67,7 +67,7 @@ mod tests {
     }
 
     #[test]
-    fn test_gitlab_client_base_url() {
+    fn gitlab_client_base_url() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_auth_agent: Option<DummySSHAuthAgent> = None;
         let client = GitLabClient::new(client_auth_agent, ssh_auth_agent);
@@ -77,7 +77,8 @@ mod tests {
     }
 
     #[test]
-    fn test_gitlab_client_with_ssh_auth_agent() {
+    #[ignore]
+    fn manual_gitlab_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
         let client = GitLabClient::new(client_auth_agent, Some(ssh_agent));

@@ -5,7 +5,8 @@ use std::path::PathBuf;
 
 use super::{CollectionEntity, CollectionStore, CollectionStoreTable};
 
-const TABLE_COLLECTIONS: BincodeTable<String, CollectionEntity> = BincodeTable::new("collections");
+#[rustfmt::skip]
+pub(super) const TABLE_COLLECTIONS: BincodeTable<String, CollectionEntity> = BincodeTable::new("collections");
 
 pub struct CollectionStoreImpl {
     client: ReDbClient,
@@ -14,17 +15,6 @@ pub struct CollectionStoreImpl {
 
 impl CollectionStoreImpl {
     pub fn new(client: ReDbClient) -> Self {
-        // Initialize by creating the table in the database
-        let table = TABLE_COLLECTIONS;
-        let inner_txn = match client.begin_write().unwrap() {
-            Transaction::Read(_) => {
-                unreachable!()
-            }
-            Transaction::Write(txn) => txn,
-        };
-        inner_txn.open_table(table.table).unwrap();
-        inner_txn.commit().unwrap();
-
         Self {
             client,
             table: TABLE_COLLECTIONS,

@@ -18,7 +18,6 @@ pub mod plugin_log {
             .level_for("tao", log::LevelFilter::Info)
             .level_for("plugin_runtime", log::LevelFilter::Info)
             .level_for("tracing", log::LevelFilter::Warn)
-            .level_for("sled", log::LevelFilter::Info)
             .with_colors(ColoredLevelConfig::default())
             .level(if is_dev() {
                 log::LevelFilter::Trace
