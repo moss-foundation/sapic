@@ -281,7 +281,8 @@ export const TreeNode = ({
               }}
               onClick={(e) => {
                 if (node.isFolder) handleFolderClick();
-                else addPanel(node.id);
+                else addPanel({ id: `${node.id}` });
+
                 onNodeClick?.(node);
               }}
               onDoubleClick={(e) => onNodeDoubleClick?.(node)}

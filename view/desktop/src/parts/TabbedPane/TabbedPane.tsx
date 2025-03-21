@@ -22,8 +22,10 @@ import { setGridState } from "./utils";
 
 import "./assets/styles.css";
 
+import { DropNodeElement } from "@/components/Tree/types";
+import { getActualDropSourceTarget } from "@/components/Tree/utils";
 import { useDockviewStore } from "@/store/Dockview";
-import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const DebugContext = React.createContext<boolean>(false);
 
@@ -204,7 +206,7 @@ const TabbedPane = (props: { theme?: string }) => {
         addLogLine(`Panel Added ${event.id}`);
       }),
       api.onDidActivePanelChange((event) => {
-        setActivePanel(event?.id);
+        console.log("active panel change", event);
         dockviewStore.setCurrentActivePanelId(event?.id || undefined);
         addLogLine(`Panel Activated ${event?.id}`);
       }),
@@ -272,17 +274,13 @@ const TabbedPane = (props: { theme?: string }) => {
   };
 
   const dockviewRef = React.useRef<HTMLDivElement | null>(null);
-  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<
-    (ElementDragPayload & { pragmaticType: boolean }) | null
-  >(null);
+  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNodeElement | null>(null);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
-    if (!pragmaticDropElement || !pragmaticDropElement?.pragmaticType) return;
+    if (!pragmaticDropElement) return;
 
-    const newPanelId = (pragmaticDropElement.data?.label as string) || "test_pragmatic_panel";
-
-    event.api.addPanel({
-      id: newPanelId,
+    dockviewStore.addPanel({
+      id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {
         direction: positionToDirection(event.position),
@@ -300,13 +298,19 @@ const TabbedPane = (props: { theme?: string }) => {
     return dropTargetForElements({
       element: dockviewRef.current,
       onDragEnter({ source }) {
-        if (source) setPragmaticDropElement({ ...source, pragmaticType: true });
+        const sourceTarget = getActualDropSourceTarget(source);
+        if (source) setPragmaticDropElement(sourceTarget);
       },
+      canDrop({ source }) {
+        console.log(source);
+        return source?.data?.type === "TreeNode";
+      },
+
       onDragLeave() {
         setPragmaticDropElement(null);
       },
     });
-  }, [dockviewRef]);
+  }, [dockviewRef, dockviewStore]);
 
   const [watermark, setWatermark] = React.useState<boolean>(false);
 
