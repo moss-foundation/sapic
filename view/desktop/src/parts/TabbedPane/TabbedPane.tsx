@@ -264,6 +264,8 @@ const TabbedPane = (props: { theme?: string }) => {
     ];
     const loadLayout = () => {
       defaultConfig(api);
+      api.clear();
+      defaultConfig(api);
     };
 
     loadLayout();
