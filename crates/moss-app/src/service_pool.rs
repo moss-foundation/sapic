@@ -1,6 +1,7 @@
-use anyhow::{Context, Result};
-use arc_swap::ArcSwap;
+use anyhow::{anyhow, Context, Result};
 use fnv::FnvHashMap;
+use moss_tauri::TauriError;
+use parking_lot::Mutex;
 use slotmap::{SecondaryMap, SlotMap};
 use std::{
     any::{Any, TypeId},
@@ -9,7 +10,7 @@ use std::{
 };
 use tauri::AppHandle;
 use thiserror::Error;
-use tokio::sync::{Mutex, OnceCell};
+use tokio::sync::OnceCell;
 
 slotmap::new_key_type! {
     pub struct ServiceKey;
@@ -22,25 +23,34 @@ pub enum ServicePoolError {
     #[error("The service {0} must be registered before it can be used")]
     NotRegistered(String),
 
+    #[error("The service {0} was already initialized")]
+    AlreadyInitialized(String),
+
+    #[error("Type mismatch")]
+    TypeMismatch,
+
     #[error("Failed to get service")]
     Unknown(#[from] anyhow::Error),
 }
 
-type LazyServiceBuilder =
-    Box<dyn Fn(&ServicePool, &AppHandle) -> Arc<dyn Any + Send + Sync> + Send + Sync>;
-type ServiceSlot = Arc<dyn Any + Send + Sync>;
+impl From<ServicePoolError> for TauriError {
+    fn from(error: ServicePoolError) -> Self {
+        TauriError(error.to_string())
+    }
+}
 
-struct Opaque(());
+type AnyService = Arc<dyn Any + Send + Sync>;
+type LazyServiceBuilder = Box<dyn FnOnce(&ServicePool, &AppHandle) -> AnyService + Send + Sync>;
 
 pub struct ServicePool {
     app_handle: AppHandle,
-    services: SlotMap<ServiceKey, ArcSwap<ServiceSlot>>,
-    lazy_builders: SecondaryMap<ServiceKey, LazyServiceBuilder>,
+    services: SlotMap<ServiceKey, OnceCell<AnyService>>,
+    lazy_builders: Mutex<SecondaryMap<ServiceKey, LazyServiceBuilder>>,
     type_map: FnvHashMap<TypeId, ServiceKey>,
 }
 
 impl ServicePool {
-    pub fn get_key_by_type<T>(&self) -> Result<ServiceKey, ServicePoolError>
+    pub async fn get_by_type<T>(&self) -> Result<&T, ServicePoolError>
     where
         T: AppService_2,
     {
@@ -52,80 +62,41 @@ impl ServicePool {
                 std::any::type_name::<T>().to_string(),
             ))?;
 
-        Ok(*key)
+        self.get_by_key::<T>(*key).await
     }
 
-    pub fn get_by_type<T>(&self) -> Result<&T, ServicePoolError>
+    pub async fn get_by_key<T>(&self, key: ServiceKey) -> Result<&T, ServicePoolError>
     where
         T: AppService_2,
     {
-        let type_id = TypeId::of::<T>();
-        let key = self
-            .type_map
-            .get(&type_id)
-            .ok_or(ServicePoolError::NotRegistered(
-                std::any::type_name::<T>().to_string(),
-            ))?;
+        let cell = self.services.get(key).context("dd")?;
+        let any = cell
+            .get_or_try_init(|| async move {
+                let mut lazy_builders_lock = self.lazy_builders.lock();
+                let builder =
+                    lazy_builders_lock
+                        .remove(key)
+                        .ok_or(ServicePoolError::AlreadyInitialized(
+                            std::any::type_name::<T>().to_string(),
+                        ))?;
 
-        self.get_by_key::<T>(*key)
-    }
+                Ok::<_, ServicePoolError>(builder(&self, &self.app_handle))
+            })
+            .await?;
 
-    pub fn get_by_key<T>(&self, key: ServiceKey) -> Result<&T, ServicePoolError>
-    where
-        T: AppService_2,
-    {
-        let instance = self
-            .services
-            .get(key)
-            .ok_or(ServicePoolError::NotRegistered(
-                std::any::type_name::<T>().to_string(),
-            ))?;
-
-        let svc = instance.load_full();
-        if svc.is::<Opaque>() {
-            // SAFETY: This should never panic because we create the lazy builder when registering the service.
-            let builder = unsafe { self.lazy_builders.get_unchecked(key) };
-
-            let new_instance = builder(&self, &self.app_handle);
-            instance.store(Arc::new(new_instance));
-        }
-
-        // SAFETY: ArcSwap guarantees stable and valid pointers for the lifetime of the pool.
-        unsafe { Ok(&*(Arc::as_ptr(&svc) as *const T)) }
-    }
-
-    pub fn reset<T>(&self, key: ServiceKey) -> Result<&T, ServicePoolError>
-    where
-        T: AppService_2,
-    {
-        let instance = self
-            .services
-            .get(key)
-            .ok_or(ServicePoolError::NotRegistered(
-                std::any::type_name::<T>().to_string(),
-            ))?;
-
-        // SAFETY: This should never panic because we create the lazy builder when registering the service.
-        let builder = unsafe { self.lazy_builders.get_unchecked(key) };
-
-        let new_instance = builder(&self, &self.app_handle);
-        instance.store(Arc::new(new_instance));
-
-        let svc = instance.load_full();
-
-        // SAFETY: ArcSwap guarantees stable and valid pointers for the lifetime of the pool.
-        unsafe { Ok(&*(Arc::as_ptr(&svc) as *const T)) }
+        any.downcast_ref::<T>()
+            .ok_or(ServicePoolError::TypeMismatch)
     }
 }
 
 pub enum Instantiation<S, F>
 where
-    F: Fn(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+    S: AppService_2 + 'static,
+    F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
 {
     Instant(F),
     Lazy(F),
 }
-
 pub struct ServicePoolBuilder(ServicePool);
 
 impl ServicePoolBuilder {
@@ -133,15 +104,15 @@ impl ServicePoolBuilder {
         Self(ServicePool {
             app_handle,
             services: SlotMap::with_capacity_and_key(capacity),
-            lazy_builders: SecondaryMap::with_capacity(capacity),
+            lazy_builders: Mutex::new(SecondaryMap::with_capacity(capacity)),
             type_map: FnvHashMap::with_capacity_and_hasher(capacity, BuildHasherDefault::default()),
         })
     }
 
     pub fn register<S, F>(&mut self, builder: Instantiation<S, F>) -> ServiceKey
     where
-        S: AppService_2,
-        F: Fn(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        S: AppService_2 + 'static,
+        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
         match builder {
             Instantiation::Instant(builder) => self.register_instant(builder),
@@ -151,32 +122,30 @@ impl ServicePoolBuilder {
 
     fn register_instant<S, F>(&mut self, builder: F) -> ServiceKey
     where
-        S: AppService_2,
-        F: Fn(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        S: AppService_2 + 'static,
+        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
-        let slot: Arc<dyn Any + Send + Sync> = Arc::new(builder(&self.0, &self.0.app_handle));
-        let key = self.0.services.insert(ArcSwap::new(Arc::new(slot)));
+        let service: Arc<dyn Any + Send + Sync + 'static> =
+            Arc::new(builder(&self.0, &self.0.app_handle));
+        let cell = OnceCell::from(service);
+        let key = self.0.services.insert(cell);
 
-        self.register_internal(key, builder)
+        let type_id = TypeId::of::<S>();
+        self.0.type_map.insert(type_id, key);
+
+        key
     }
 
     fn register_lazy<S, F>(&mut self, builder: F) -> ServiceKey
     where
-        S: AppService_2,
-        F: Fn(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        S: AppService_2 + 'static,
+        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
-        let slot = Arc::new(Opaque(()));
-        let key = self.0.services.insert(ArcSwap::new(Arc::new(slot)));
+        let cell = OnceCell::new();
+        let key = self.0.services.insert(cell);
 
-        self.register_internal(key, builder)
-    }
-
-    fn register_internal<S, F>(&mut self, key: ServiceKey, builder: F) -> ServiceKey
-    where
-        S: AppService_2,
-        F: Fn(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
-    {
-        self.0.lazy_builders.insert(
+        let mut lazy_builders_lock = self.0.lazy_builders.lock();
+        lazy_builders_lock.insert(
             key,
             Box::new(move |pool, app_handle| Arc::new(builder(pool, app_handle))),
         );

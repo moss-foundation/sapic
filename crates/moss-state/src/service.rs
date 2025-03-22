@@ -26,20 +26,14 @@ pub struct StateService {
 }
 
 impl StateService {
-    pub fn new(themes_dir: &PathBuf) -> Self {
+    pub fn new(default_theme: ThemeDescriptor) -> Self {
         Self {
             preferences: AppPreferences {
                 theme: RwLock::new(None),
                 locale: RwLock::new(None),
             },
             defaults: AppDefaults {
-                theme: ThemeDescriptor {
-                    identifier: "moss.sapic-theme.lightDefault".to_string(),
-                    display_name: "Light Default".to_string(),
-                    order: Some(1),
-                    mode: ThemeMode::Light,
-                    source: themes_dir.join("light.css"),
-                },
+                theme: default_theme,
                 locale: LocaleDescriptor {
                     identifier: "moss.sapic-locale.en".to_string(),
                     code: "en".to_string(),

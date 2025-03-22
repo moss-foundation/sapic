@@ -15,11 +15,12 @@ use moss_app::service::InstantiationType;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_nls::locale_service::LocaleService;
 use moss_state::service::StateService;
-use moss_tauri::services::window_service::WindowService;
+
 use moss_tauri::TauriResult;
 use moss_theme::theme_service::ThemeService;
 use moss_workspace::workspace_manager::WorkspaceManager;
 use rand::random;
+use services::service_pool;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
@@ -40,25 +41,26 @@ use moss_state::{
 };
 use moss_text::read_only_str;
 
-async fn generate_log<'a>(
-    ctx: &mut CommandContext,
-    _manager: &'a StateService,
-) -> TauriResult<String> {
-    ctx.app_handle()
-        .state::<AppManager>()
-        .service::<LoggingService>()
-        .unwrap()
-        .info(
-            LogScope::App,
-            LogPayload {
-                collection: None,
-                request: None,
-                message: "Generate a log from the frontend".to_string(),
-            },
-        );
+// async fn generate_log<'a>(
+//     ctx: &mut CommandContext,
+//     _manager: &'a StateService,
+// ) -> TauriResult<String> {
 
-    Ok("Successfully generated a log!".to_string())
-}
+//     ctx.app_handle()
+//         .state::<AppManager>()
+//         .service::<LoggingService>()
+//         .unwrap()
+//         .info(
+//             LogScope::App,
+//             LogPayload {
+//                 collection: None,
+//                 request: None,
+//                 message: "Generate a log from the frontend".to_string(),
+//             },
+//         );
+
+//     Ok("Successfully generated a log!".to_string())
+// }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {
@@ -77,84 +79,89 @@ pub async fn run() {
 
     builder
         .setup(|app| {
+            let fs = Arc::new(DiskFileSystem::new());
             let app_handle = app.app_handle();
-            let themes_dir: PathBuf = std::env::var("THEMES_DIR")
-                .expect("Environment variable THEMES_DIR is not set")
-                .into();
-            let app_state = StateService::new(&themes_dir).with_commands([
-                // FIXME: Remove this example command
-                command!("example.generateLog", generate_log),
-            ]);
-            app_handle.manage(app_state);
-
-            let session_id = Uuid::new_v4();
-            let session_service = SessionService::new(session_id);
-
-            // FIXME: In the future, we will place logs at appropriate locations
-            // Now we put `logs` folder at the project root for easier development
-            let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
-                .expect("Environment variable APP_LOG_DIR is not set")
-                .into();
-            let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
-                .expect("Environment variable SESSION_LOG_DIR is not set")
-                .into();
-            let logging_service = LoggingService::new(&app_log_dir, &session_log_dir, &session_id)?;
-
-            let app_manager = AppManager::new(app_handle.clone())
-                .with_service(
-                    {
-                        let fs_clone = Arc::clone(&fs);
-                        let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-                        let workspaces_dir: PathBuf =
-                            PathBuf::from(dir).join("samples").join("workspaces");
-
-                        move |_| WorkspaceManager::new(fs_clone, workspaces_dir)
-                    },
-                    InstantiationType::Instant,
-                )
-                .with_service(
-                    {
-                        let fs_clone = Arc::clone(&fs);
-                        let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
-                            .expect("Environment variable LOCALES_DIR is not set")
-                            .into();
-                        move |_| LocaleService::new(fs_clone, locales_dir)
-                    },
-                    InstantiationType::Delayed,
-                )
-                .with_service(
-                    {
-                        let fs_clone = Arc::clone(&fs);
-
-                        move |_| ThemeService::new(fs_clone, themes_dir)
-                    },
-                    InstantiationType::Delayed,
-                )
-                .with_service(|_| WindowService::new(), InstantiationType::Delayed)
-                .with_service(|_| session_service, InstantiationType::Instant)
-                .with_service(|_| logging_service, InstantiationType::Instant);
+            let service_pool = service_pool(app_handle.clone(), fs.clone());
+            let app_manager = AppManager::new(service_pool);
             app_handle.manage(app_manager);
 
-            let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
+            // let themes_dir: PathBuf = std::env::var("THEMES_DIR")
+            //     .expect("Environment variable THEMES_DIR is not set")
+            //     .into();
+            // let app_state = StateService::new(&themes_dir).with_commands([
+            //     // FIXME: Remove this example command
+            //     command!("example.generateLog", generate_log),
+            // ]);
+            // app_handle.manage(app_state);
 
-            app.handle().plugin(
-                tauri_plugin_global_shortcut::Builder::new()
-                    .with_handler(move |app, shortcut, event| {
-                        println!("{:?}", shortcut);
-                        if shortcut == &ctrl_n_shortcut {
-                            match event.state() {
-                                ShortcutState::Pressed => {
-                                    tauri::async_runtime::spawn(cmd_window::create_new_window(
-                                        app.clone(),
-                                    ));
-                                }
-                                ShortcutState::Released => {}
-                            }
-                        }
-                    })
-                    .build(),
-            )?;
-            app.global_shortcut().register(ctrl_n_shortcut)?;
+            // let session_id = Uuid::new_v4();
+            // let session_service = SessionService::new(session_id);
+
+            // // FIXME: In the future, we will place logs at appropriate locations
+            // // Now we put `logs` folder at the project root for easier development
+            // let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
+            //     .expect("Environment variable APP_LOG_DIR is not set")
+            //     .into();
+            // let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
+            //     .expect("Environment variable SESSION_LOG_DIR is not set")
+            //     .into();
+            // let logging_service = LoggingService::new(&app_log_dir, &session_log_dir, &session_id)?;
+
+            // let app_manager = AppManager::new(app_handle.clone())
+            //     .with_service(
+            //         {
+            //             let fs_clone = Arc::clone(&fs);
+            //             let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+            //             let workspaces_dir: PathBuf =
+            //                 PathBuf::from(dir).join("samples").join("workspaces");
+
+            //             move |_| WorkspaceManager::new(fs_clone, workspaces_dir)
+            //         },
+            //         InstantiationType::Instant,
+            //     )
+            //     .with_service(
+            //         {
+            //             let fs_clone = Arc::clone(&fs);
+            //             let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
+            //                 .expect("Environment variable LOCALES_DIR is not set")
+            //                 .into();
+            //             move |_| LocaleService::new(fs_clone, locales_dir)
+            //         },
+            //         InstantiationType::Delayed,
+            //     )
+            //     .with_service(
+            //         {
+            //             let fs_clone = Arc::clone(&fs);
+
+            //             move |_| ThemeService::new(fs_clone, themes_dir)
+            //         },
+            //         InstantiationType::Delayed,
+            //     )
+            //     .with_service(|_| WindowService::new(), InstantiationType::Delayed)
+            //     .with_service(|_| session_service, InstantiationType::Instant)
+            //     .with_service(|_| logging_service, InstantiationType::Instant);
+            // app_handle.manage(app_manager);
+
+            // let ctrl_n_shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyN);
+
+            // app.handle().plugin(
+            //     tauri_plugin_global_shortcut::Builder::new()
+            //         .with_handler(move |app, shortcut, event| {
+            //             println!("{:?}", shortcut);
+            //             if shortcut == &ctrl_n_shortcut {
+            //                 match event.state() {
+            //                     ShortcutState::Pressed => {
+            //                         tauri::async_runtime::spawn(cmd_window::create_new_window(
+            //                             app.clone(),
+            //                         ));
+            //                     }
+            //                     ShortcutState::Released => {}
+            //                 }
+            //             }
+            //         })
+            //         .build(),
+            // )?;
+            // app.global_shortcut().register(ctrl_n_shortcut)?;
 
             Ok(())
         })

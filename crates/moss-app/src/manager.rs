@@ -37,6 +37,10 @@ impl AppManager {
         Self { service_pool }
     }
 
+    pub fn services(&self) -> &ServicePool {
+        &self.service_pool
+    }
+
     // pub fn with_service<T, F>(self, service: F, activation_type: InstantiationType) -> Self
     // where
     //     T: AppService + 'static,
@@ -46,7 +50,7 @@ impl AppManager {
     //     self
     // }
 
-    pub fn service_by_type<T: AppService_2>(&self) -> Result<&T> {
-        Ok(self.service_pool.get_by_type::<T>()?)
-    }
+    // pub fn service_by_type<T: AppService_2>(&self) -> Result<&T> {
+    //     Ok(self.service_pool.get_by_type::<T>()?)
+    // }
 }

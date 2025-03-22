@@ -1195,6 +1195,7 @@ dependencies = [
  "anyhow",
  "cocoa",
  "dirs",
+ "futures",
  "log",
  "macos-trampoline",
  "mimalloc",
@@ -2923,7 +2924,9 @@ dependencies = [
  "dashmap",
  "derive_more 2.0.1",
  "fnv",
+ "futures",
  "log",
+ "moss_tauri",
  "moss_text",
  "parking_lot",
  "serde",
@@ -3091,7 +3094,6 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "moss_app",
  "serde",
  "serde_json",
 ]
