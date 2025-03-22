@@ -29,38 +29,10 @@ use tauri_plugin_os;
 use uuid::Uuid;
 use window::{create_window, CreateWindowInput};
 
-use crate::commands::*;
 use crate::plugins::*;
 
 pub use constants::*;
 use moss_logging::{LogPayload, LogScope, LoggingService};
-use moss_session::SessionService;
-use moss_state::{
-    command,
-    command::{CommandContext, CommandDecl},
-};
-use moss_text::read_only_str;
-
-// async fn generate_log<'a>(
-//     ctx: &mut CommandContext,
-//     _manager: &'a StateService,
-// ) -> TauriResult<String> {
-
-//     ctx.app_handle()
-//         .state::<AppManager>()
-//         .service::<LoggingService>()
-//         .unwrap()
-//         .info(
-//             LogScope::App,
-//             LogPayload {
-//                 collection: None,
-//                 request: None,
-//                 message: "Generate a log from the frontend".to_string(),
-//             },
-//         );
-
-//     Ok("Successfully generated a log!".to_string())
-// }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run() {

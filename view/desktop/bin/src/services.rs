@@ -1,13 +1,16 @@
+use moss_app::manager::AppManager;
 use moss_app::service_pool::{Instantiation, ServiceKey, ServicePool, ServicePoolBuilder};
 use moss_fs::ports::FileSystem;
-use moss_logging::LoggingService;
+use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;
-use moss_state::service::StateService;
+use moss_state::{command, command::CommandContext, service::StateService};
+use moss_tauri::TauriResult;
+use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
 use moss_workspace::workspace_manager::WorkspaceManager;
 use std::{path::PathBuf, sync::Arc};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 pub fn service_pool(app_handle: AppHandle, fs: Arc<dyn FileSystem>) -> ServicePool {
     let mut builder = ServicePoolBuilder::new(app_handle, 10);
@@ -35,7 +38,10 @@ fn state_service(
             .unwrap()
             .clone();
 
-        StateService::new(default_theme)
+        StateService::new(default_theme).with_commands([
+            // FIXME: Remove this example command
+            command!("example.generateLog", generate_log),
+        ])
     }
 }
 
@@ -97,4 +103,23 @@ fn workspace_manager(
     let workspaces_dir: PathBuf = PathBuf::from(dir).join("samples").join("workspaces");
 
     move |_, _| WorkspaceManager::new(Arc::clone(&fs), workspaces_dir.clone())
+}
+
+async fn generate_log<'a>(ctx: &mut CommandContext) -> TauriResult<String> {
+    let app_manager = ctx.app_handle().state::<AppManager>();
+    let logging_service = app_manager
+        .services()
+        .get_by_type::<LoggingService>()
+        .await?;
+
+    logging_service.info(
+        LogScope::App,
+        LogPayload {
+            collection: None,
+            request: None,
+            message: "Generate a log from the frontend".to_string(),
+        },
+    );
+
+    Ok("Successfully generated a log!".to_string())
 }

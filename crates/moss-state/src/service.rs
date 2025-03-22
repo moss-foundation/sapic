@@ -2,9 +2,8 @@ use dashmap::DashMap;
 use moss_app::service_pool::AppService_2;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
-use moss_theme::models::types::{ThemeDescriptor, ThemeMode};
+use moss_theme::models::types::ThemeDescriptor;
 use parking_lot::RwLock;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::command::{CommandCallback, CommandDecl};

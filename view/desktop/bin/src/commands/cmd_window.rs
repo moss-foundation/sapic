@@ -1,4 +1,3 @@
-use crate::menu;
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
 use moss_nls::{
@@ -29,24 +28,16 @@ use serde_json::{Value as JsonValue, Value};
 use std::collections::HashMap;
 use tauri::{AppHandle, Emitter, EventTarget, Manager, State, Window};
 
-// According to https://docs.rs/tauri/2.1.1/tauri/webview/struct.WebviewWindowBuilder.html
-// We should call WebviewWindowBuilder from async commands
-// #[tauri::command(async)]
-// #[instrument(level = "trace", skip(app_handle))]
-// pub async fn create_new_window(app_handle: AppHandle) -> TauriResult<()> {
-//     let webview_window = create_child_window(&app_handle, "/")?;
-//     webview_window.on_menu_event(move |window, event| menu::handle_event(window, &event));
-//     Ok(())
-// }
-
 #[tauri::command]
-#[instrument(level = "trace", skip(app_handle, state_manager), fields(window = window.label()))]
-pub fn change_color_theme(
+#[instrument(level = "trace", skip(app_handle, app_manager), fields(window = window.label()))]
+pub async fn change_color_theme(
     app_handle: AppHandle,
-    state_manager: State<'_, StateService>,
+    app_manager: State<'_, AppManager>,
     window: Window,
-    descriptor: ThemeDescriptor,
+    descriptor: ThemeDescriptor, // FIXME: Should be something like ChangeColorThemeInput
 ) -> TauriResult<()> {
+    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+
     for (label, _) in app_handle.webview_windows() {
         if window.label() == &label {
             continue;
@@ -61,7 +52,7 @@ pub fn change_color_theme(
             .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
     }
 
-    state_manager.set_color_theme(descriptor);
+    state_service.set_color_theme(descriptor);
 
     Ok(())
 }
@@ -70,13 +61,9 @@ pub fn change_color_theme(
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn get_color_theme(
     app_manager: State<'_, AppManager>,
-    id: ThemeId,
+    id: ThemeId, // FIXME: Should be something like GetColorThemeInput
 ) -> TauriResult<String> {
-    let theme_service = app_manager
-        .services()
-        .get_by_type::<ThemeService>()
-        .await
-        .unwrap();
+    let theme_service = app_manager.services().get_by_type::<ThemeService>().await?;
 
     Ok(theme_service.read_color_theme(&id).await?)
 }
@@ -109,12 +96,14 @@ pub async fn describe_app_state(
 }
 
 #[tauri::command]
-#[instrument(level = "trace", skip(state_manager))]
-pub fn change_language_pack(
-    state_manager: State<'_, StateService>,
-    descriptor: LocaleDescriptor,
+#[instrument(level = "trace", skip(app_manager))]
+pub async fn change_language_pack(
+    app_manager: State<'_, AppManager>,
+    descriptor: LocaleDescriptor, // FIXME: Should be something like ChangeLanguagePackInput
 ) -> TauriResult<()> {
-    state_manager.set_language_pack(descriptor);
+    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+
+    state_service.set_language_pack(descriptor);
 
     Ok(())
 }
@@ -145,20 +134,18 @@ pub async fn get_translations(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle, app_state), fields(window = window.label()))]
+#[instrument(level = "trace", skip(app_handle, app_manager), fields(window = window.label()))]
 pub async fn execute_command(
     app_handle: AppHandle,
-    app_state: State<'_, StateService>,
+    app_manager: State<'_, AppManager>,
     window: Window,
     cmd: ReadOnlyStr,
     args: HashMap<String, Value>,
 ) -> TauriResult<Value> {
-    if let Some(command_handler) = app_state.get_command(&cmd) {
-        command_handler(
-            &mut CommandContext::new(app_handle, window, args),
-            &app_state,
-        )
-        .await
+    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+
+    if let Some(command_handler) = state_service.get_command(&cmd) {
+        command_handler(&mut CommandContext::new(app_handle, window, args)).await
     } else {
         Err(TauriError(format!(
             "command with id {} is not found",
