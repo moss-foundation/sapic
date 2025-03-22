@@ -42,7 +42,7 @@ const SessionComponent = () => {
           invokeMossCommand("example.generateLog", {});
         }}
       >
-        Example Command_________________________________________________
+        Example Command
       </button>
       <ResizablePanel>
         <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
