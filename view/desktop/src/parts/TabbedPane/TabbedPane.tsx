@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { Home, Logs, Settings } from "@/pages";
 import {
   DockviewApi,
@@ -46,7 +47,7 @@ const components = {
     const metadata = usePanelApiMetadata(props.api);
 
     return (
-      <div
+      <Scrollbar
         className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
       >
         <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
@@ -69,7 +70,7 @@ const components = {
             <Table data={metadata} />
           </div>
         )}
-      </div>
+      </Scrollbar>
     );
   },
   nested: () => {
@@ -119,10 +120,12 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
-  setGridState(props.containerApi);
+  React.useEffect(() => {
+    setGridState(props.containerApi);
+  }, [props.containerApi]);
 
   return (
-    <div
+    <Scrollbar
       className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
     >
       <span>{React.createElement(page)}</span>
@@ -140,7 +143,7 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
           <Table data={metadata} />
         </div>
       )}
-    </div>
+    </Scrollbar>
   );
 }
 
@@ -381,7 +384,7 @@ const TabbedPane = (props: { theme?: string }) => {
         </button>
       </div>
       <div className="flex h-0 grow">
-        <div className="flex h-full grow overflow-hidden">
+        <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>
             <DockviewReact
               ref={dockviewRef}
@@ -396,11 +399,11 @@ const TabbedPane = (props: { theme?: string }) => {
               onDidDrop={onDidDrop}
             />
           </DebugContext.Provider>
-        </div>
+        </Scrollbar>
 
         {showLogs && (
           <div className="ml-2 flex w-[400px] shrink-0 flex-col overflow-hidden bg-black font-mono text-white">
-            <div className="grow overflow-auto">
+            <Scrollbar className="grow overflow-auto">
               {logLines.map((line, i) => {
                 return (
                   <div
@@ -422,8 +425,8 @@ const TabbedPane = (props: { theme?: string }) => {
                   </div>
                 );
               })}
-            </div>
-            <div className="flex justify-end p-1">
+            </Scrollbar>
+            <Scrollbar className="flex justify-end p-1">
               <button
                 onClick={() => {
                   setLogLines([]);
@@ -431,7 +434,7 @@ const TabbedPane = (props: { theme?: string }) => {
               >
                 Clear
               </button>
-            </div>
+            </Scrollbar>
           </div>
         )}
       </div>

@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { DockviewApi, IDockviewPanel } from "@repo/moss-tabs";
 
 const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: string; panelId: string }) => {
@@ -143,9 +144,13 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
 export const PanelActions = (props: { panels: string[]; api: DockviewApi; activePanel?: string }) => {
   return (
     <div className="action-container">
-      {props.panels.map((id) => {
-        return <PanelAction key={id} {...props} panelId={id} />;
-      })}
+      <Scrollbar>
+        <div className="flex items-center gap-2">
+          {props.panels.map((id) => {
+            return <PanelAction key={id} {...props} panelId={id} />;
+          })}
+        </div>
+      </Scrollbar>
     </div>
   );
 };
