@@ -38,6 +38,7 @@ const SessionComponent = () => {
       )}
       {/* An example of `mossCommand` */}
       <button
+        className="background-[var(--moss-test-background-2)] hover:bg-opacity-80 rounded-md px-4 py-2 font-medium text-[var(--moss-test-text-1)] shadow-sm transition-colors duration-200"
         onClick={() => {
           invokeMossCommand("example.generateLog", {});
         }}

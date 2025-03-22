@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot, Root } from "react-dom/client";
 import { useTranslation } from "react-i18next";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
@@ -147,67 +148,71 @@ export const GridActions = (props: {
 
   return (
     <div className="action-container">
-      <button className="text-button" onClick={() => onAddPanel({ type: "Home" })}>
-        {t("home")}
-      </button>
-      <button className="text-button" onClick={() => onAddPanel({ type: "Settings" })}>
-        {t("settings")}
-      </button>
-      <button className="text-button" onClick={() => onAddPanel({ type: "Logs" })}>
-        {t("logs")}
-      </button>
-      <span className="grow" />
-      <div className="button-group">
-        <button className="text-button" onClick={() => onAddPanel()}>
-          Add Panel
-        </button>
-        <button className="demo-icon-button !rounded" onClick={() => onAddPanel({ advanced: true })}>
-          <span className="material-symbols-outlined">tune</span>
-        </button>
-      </div>
-      <button className="text-button" onClick={() => onAddPanel({ type: "nested" })}>
-        Add Nested Panel
-      </button>
-      <button className="text-button" onClick={onAddGroup}>
-        Add Group
-      </button>
-      <span className="button-action">
-        <button
-          className={props.hasCustomWatermark ? "demo-button selected !rounded" : "demo-button !rounded"}
-          onClick={props.toggleCustomWatermark}
-        >
-          Use Custom Watermark
-        </button>
-      </span>
-      <button className="text-button" onClick={onClear}>
-        Clear
-      </button>
-      <span className="flex-grow" />
-      <button className="text-button" onClick={onLoad}>
-        Load State
-      </button>
-      <button className="text-button" onClick={onSave}>
-        Save State
-      </button>
-      <button className="text-button" onClick={onReset}>
-        Use Default State
-      </button>
-      <span className="grow" />
-      <div className="flex items-center">
-        <span className="pr-1 text-[var(--moss-activegroup-visiblepanel-tab-color)]">Grid Gap</span>
-        <input
-          className="w-10 text-center"
-          type="number"
-          min={0}
-          max={99}
-          step={1}
-          value={gap}
-          onChange={(event) => setGap(Number(event.target.value))}
-        />
-        <button className="text-button" onClick={() => setGap(0)}>
-          Reset
-        </button>
-      </div>
+      <Scrollbar>
+        <div className="flex h-10 items-center gap-2">
+          <button className="text-button" onClick={() => onAddPanel({ type: "Home" })}>
+            {t("home")}
+          </button>
+          <button className="text-button" onClick={() => onAddPanel({ type: "Settings" })}>
+            {t("settings")}
+          </button>
+          <button className="text-button" onClick={() => onAddPanel({ type: "Logs" })}>
+            {t("logs")}
+          </button>
+          <span className="grow" />
+          <div className="button-group">
+            <button className="text-button" onClick={() => onAddPanel()}>
+              Add Panel
+            </button>
+            <button className="demo-icon-button !rounded" onClick={() => onAddPanel({ advanced: true })}>
+              <span className="material-symbols-outlined">tune</span>
+            </button>
+          </div>
+          <button className="text-button" onClick={() => onAddPanel({ type: "nested" })}>
+            Add Nested Panel
+          </button>
+          <button className="text-button" onClick={onAddGroup}>
+            Add Group
+          </button>
+          <span className="button-action">
+            <button
+              className={props.hasCustomWatermark ? "demo-button selected !rounded" : "demo-button !rounded"}
+              onClick={props.toggleCustomWatermark}
+            >
+              Use Custom Watermark
+            </button>
+          </span>
+          <button className="text-button" onClick={onClear}>
+            Clear
+          </button>
+          <span className="flex-grow" />
+          <button className="text-button" onClick={onLoad}>
+            Load State
+          </button>
+          <button className="text-button" onClick={onSave}>
+            Save State
+          </button>
+          <button className="text-button" onClick={onReset}>
+            Use Default State
+          </button>
+          <span className="grow" />
+          <div className="flex items-center">
+            <span className="pr-1 text-[var(--moss-activegroup-visiblepanel-tab-color)]">Grid Gap</span>
+            <input
+              className="w-10 text-center"
+              type="number"
+              min={0}
+              max={99}
+              step={1}
+              value={gap}
+              onChange={(event) => setGap(Number(event.target.value))}
+            />
+            <button className="text-button" onClick={() => setGap(0)}>
+              Reset
+            </button>
+          </div>
+        </div>
+      </Scrollbar>
     </div>
   );
 };
