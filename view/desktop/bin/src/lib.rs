@@ -40,7 +40,7 @@ pub async fn run() {
             let fs = Arc::new(DiskFileSystem::new());
             let app_handle = app.app_handle();
             let service_pool = service_pool(app_handle, fs.clone());
-            let app_manager = AppManager::new(service_pool);
+            let app_manager = AppManager::new(app_handle.clone(), service_pool);
             app_handle.manage(app_manager);
 
             Ok(())
