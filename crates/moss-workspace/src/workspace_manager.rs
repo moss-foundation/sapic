@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
-use moss_app::service_pool::AppService;
+use moss_app::service::prelude::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;

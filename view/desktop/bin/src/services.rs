@@ -1,5 +1,5 @@
 use moss_app::manager::AppManager;
-use moss_app::service_pool::{Instantiation, ServiceKey, ServicePool, ServicePoolBuilder};
+use moss_app::service::prelude::*;
 use moss_fs::ports::FileSystem;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::locale_service::LocaleService;
@@ -13,19 +13,32 @@ use moss_workspace::workspace_manager::WorkspaceManager;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager};
 
-pub fn service_pool(app_handle: AppHandle, fs: Arc<dyn FileSystem>) -> ServicePool {
-    let mut builder = ServicePoolBuilder::new(app_handle, 10);
+pub fn service_pool(app_handle: &AppHandle, fs: Arc<dyn FileSystem>) -> ServicePool {
+    let mut builder = ServicePoolBuilder::new();
 
-    let session_service_key = builder.register(Instantiation::Instant(session_service()));
-    let locale_service_key = builder.register(Instantiation::Instant(locale_service(fs.clone())));
-    let theme_service_key = builder.register(Instantiation::Instant(theme_service(fs.clone())));
+    let session_service_key =
+        builder.register(Instantiation::Instant(session_service()), app_handle);
+    let locale_service_key = builder.register(
+        Instantiation::Instant(locale_service(fs.clone())),
+        app_handle,
+    );
+    let theme_service_key = builder.register(
+        Instantiation::Instant(theme_service(fs.clone())),
+        app_handle,
+    );
 
-    builder.register(Instantiation::Instant(state_service(
-        theme_service_key,
-        locale_service_key,
-    )));
-    builder.register(Instantiation::Instant(logging_service(session_service_key)));
-    builder.register(Instantiation::Instant(workspace_manager(fs.clone())));
+    builder.register(
+        Instantiation::Instant(state_service(theme_service_key, locale_service_key)),
+        app_handle,
+    );
+    builder.register(
+        Instantiation::Instant(logging_service(session_service_key)),
+        app_handle,
+    );
+    builder.register(
+        Instantiation::Instant(workspace_manager(fs.clone())),
+        app_handle,
+    );
 
     builder.build()
 }
@@ -34,10 +47,10 @@ fn state_service(
     theme_service_key: ServiceKey,
     locale_service_key: ServiceKey,
 ) -> impl FnOnce(&ServicePool, &AppHandle) -> StateService + Send + Sync + 'static {
-    move |pool, _| {
+    move |pool, app_handle| {
         let default_theme = futures::executor::block_on(async move {
             let theme_service = pool
-                .get_by_key::<ThemeService>(theme_service_key)
+                .get_by_key::<ThemeService>(theme_service_key, app_handle)
                 .await
                 .expect("Theme service needs to be registered first");
 
@@ -49,7 +62,7 @@ fn state_service(
 
         let default_locale = futures::executor::block_on(async move {
             let locale_service = pool
-                .get_by_key::<LocaleService>(locale_service_key)
+                .get_by_key::<LocaleService>(locale_service_key, app_handle)
                 .await
                 .expect("Locale service needs to be registered first");
 
@@ -108,10 +121,11 @@ fn logging_service(
         .expect("Environment variable SESSION_LOG_DIR is not set")
         .into();
 
-    move |pool, _| {
-        let session_service =
-            futures::executor::block_on(pool.get_by_key::<SessionService>(session_service_key))
-                .expect("Session service needs to be registered first");
+    move |pool, app_handle| {
+        let session_service = futures::executor::block_on(
+            pool.get_by_key::<SessionService>(session_service_key, app_handle),
+        )
+        .expect("Session service needs to be registered first");
 
         LoggingService::new(
             &app_log_dir,
@@ -135,7 +149,7 @@ async fn generate_log<'a>(ctx: &mut CommandContext) -> TauriResult<String> {
     let app_manager = ctx.app_handle().state::<AppManager>();
     let logging_service = app_manager
         .services()
-        .get_by_type::<LoggingService>()
+        .get_by_type::<LoggingService>(&ctx.app_handle())
         .await?;
 
     logging_service.info(

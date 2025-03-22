@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_app::service_pool::AppService;
+use moss_app::service::prelude::AppService;
 use moss_db::{
     encrypted_bincode_store::EncryptedBincodeStore, encrypted_bincode_table::EncryptionOptions,
     ReDbClient,

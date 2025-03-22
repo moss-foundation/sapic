@@ -39,7 +39,7 @@ pub async fn run() {
         .setup(|app| {
             let fs = Arc::new(DiskFileSystem::new());
             let app_handle = app.app_handle();
-            let service_pool = service_pool(app_handle.clone(), fs.clone());
+            let service_pool = service_pool(app_handle, fs.clone());
             let app_manager = AppManager::new(service_pool);
             app_handle.manage(app_manager);
 

@@ -1,5 +1,4 @@
-use moss_app::service_pool::AppService;
-use std::any::Any;
+use moss_app::service::prelude::AppService;
 use uuid::Uuid;
 
 pub struct SessionService {

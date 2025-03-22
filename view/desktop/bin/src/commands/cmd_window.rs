@@ -36,7 +36,10 @@ pub async fn change_color_theme(
     window: Window,
     descriptor: ThemeDescriptor, // FIXME: Should be something like ChangeColorThemeInput
 ) -> TauriResult<()> {
-    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+    let state_service = app_manager
+        .services()
+        .get_by_type::<StateService>(&app_handle)
+        .await?;
 
     for (label, _) in app_handle.webview_windows() {
         if window.label() == &label {
@@ -58,30 +61,44 @@ pub async fn change_color_theme(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager))]
+#[instrument(level = "trace", skip(app_handle, app_manager))]
 pub async fn get_color_theme(
+    app_handle: AppHandle,
     app_manager: State<'_, AppManager>,
     id: ThemeId, // FIXME: Should be something like GetColorThemeInput
 ) -> TauriResult<String> {
-    let theme_service = app_manager.services().get_by_type::<ThemeService>().await?;
+    let theme_service = app_manager
+        .services()
+        .get_by_type::<ThemeService>(&app_handle)
+        .await?;
 
     Ok(theme_service.read_color_theme(&id).await?)
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager))]
-pub async fn list_themes(app_manager: State<'_, AppManager>) -> TauriResult<ListThemesOutput> {
-    let theme_service = app_manager.services().get_by_type::<ThemeService>().await?;
+#[instrument(level = "trace", skip(app_handle, app_manager))]
+pub async fn list_themes(
+    app_handle: AppHandle,
+    app_manager: State<'_, AppManager>,
+) -> TauriResult<ListThemesOutput> {
+    let theme_service = app_manager
+        .services()
+        .get_by_type::<ThemeService>(&app_handle)
+        .await?;
 
     Ok(theme_service.list_themes().await?)
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager))]
+#[instrument(level = "trace", skip(app_handle, app_manager))]
 pub async fn describe_app_state(
+    app_handle: AppHandle,
     app_manager: State<'_, AppManager>,
 ) -> TauriResult<DescribeAppStateOutput> {
-    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+    let state_service = app_manager
+        .services()
+        .get_by_type::<StateService>(&app_handle)
+        .await?;
 
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
@@ -96,12 +113,16 @@ pub async fn describe_app_state(
 }
 
 #[tauri::command]
-#[instrument(level = "trace", skip(app_manager))]
+#[instrument(level = "trace", skip(app_handle, app_manager))]
 pub async fn change_language_pack(
+    app_handle: AppHandle,
     app_manager: State<'_, AppManager>,
     descriptor: LocaleDescriptor, // FIXME: Should be something like ChangeLanguagePackInput
 ) -> TauriResult<()> {
-    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+    let state_service = app_manager
+        .services()
+        .get_by_type::<StateService>(&app_handle)
+        .await?;
 
     state_service.set_language_pack(descriptor);
 
@@ -109,25 +130,29 @@ pub async fn change_language_pack(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager))]
-pub async fn list_locales(app_manager: State<'_, AppManager>) -> TauriResult<ListLocalesOutput> {
+#[instrument(level = "trace", skip(app_handle, app_manager))]
+pub async fn list_locales(
+    app_handle: AppHandle,
+    app_manager: State<'_, AppManager>,
+) -> TauriResult<ListLocalesOutput> {
     let locale_service = app_manager
         .services()
-        .get_by_type::<LocaleService>()
+        .get_by_type::<LocaleService>(&app_handle)
         .await?;
 
     Ok(locale_service.list_locales().await?)
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager))]
+#[instrument(level = "trace", skip(app_handle, app_manager))]
 pub async fn get_translations(
+    app_handle: AppHandle,
     app_manager: State<'_, AppManager>,
     input: GetTranslationsInput,
 ) -> TauriResult<JsonValue> {
     let locale_service = app_manager
         .services()
-        .get_by_type::<LocaleService>()
+        .get_by_type::<LocaleService>(&app_handle)
         .await?;
 
     Ok(locale_service.get_translations(&input).await?)
@@ -142,7 +167,10 @@ pub async fn execute_command(
     cmd: ReadOnlyStr,
     args: HashMap<String, Value>,
 ) -> TauriResult<Value> {
-    let state_service = app_manager.services().get_by_type::<StateService>().await?;
+    let state_service = app_manager
+        .services()
+        .get_by_type::<StateService>(&app_handle)
+        .await?;
 
     if let Some(command_handler) = state_service.get_command(&cmd) {
         command_handler(&mut CommandContext::new(app_handle, window, args)).await

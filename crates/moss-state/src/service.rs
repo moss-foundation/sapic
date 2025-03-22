@@ -1,5 +1,5 @@
 use dashmap::DashMap;
-use moss_app::service_pool::AppService;
+use moss_app::service::prelude::AppService;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
 use moss_theme::models::types::ThemeDescriptor;
