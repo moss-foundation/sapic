@@ -120,7 +120,9 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
-  setGridState(props.containerApi);
+  React.useEffect(() => {
+    setGridState(props.containerApi);
+  }, [props.containerApi]);
 
   return (
     <Scrollbar
