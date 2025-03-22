@@ -1,11 +1,11 @@
-use anyhow::Result;
-use moss_db::ReDbClient;
-use std::{path::PathBuf, sync::Arc};
-use std::path::Path;
 use super::{
     request_store::{self, RequestStoreImpl},
     RequestStore, StateDbManager,
 };
+use anyhow::Result;
+use moss_db::ReDbClient;
+use std::path::Path;
+use std::{path::PathBuf, sync::Arc};
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 

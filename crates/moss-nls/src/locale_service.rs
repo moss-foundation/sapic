@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use moss_app::service::AppService;
+use moss_app::service::prelude::AppService;
 use moss_fs::ports::FileSystem;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -17,6 +17,7 @@ pub struct LocaleService {
     locales_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
     locales: OnceCell<HashMap<LocaleId, LocaleDescriptor>>,
+    default_locale: OnceCell<LocaleDescriptor>,
 }
 
 impl LocaleService {
@@ -24,10 +25,32 @@ impl LocaleService {
         Self {
             locales_dir,
             fs,
-            locales: OnceCell::new(),
+            locales: Default::default(),
+            default_locale: Default::default(),
         }
     }
 
+    pub async fn default_locale(&self) -> Result<&LocaleDescriptor> {
+        self.default_locale
+            .get_or_try_init(|| async move {
+                let locales = self.locales().await?;
+                let default_locale = locales
+                    .values()
+                    .find(|locale| locale.is_default.unwrap_or(false))
+                    .cloned();
+
+                Ok::<LocaleDescriptor, anyhow::Error>(
+                    default_locale.unwrap_or(
+                        locales
+                            .values()
+                            .next() // We take the first theme as the default theme if no default theme is found
+                            .expect("The app must have at least one theme")
+                            .clone(),
+                    ),
+                )
+            })
+            .await
+    }
     async fn locales(&self) -> Result<&HashMap<LocaleId, LocaleDescriptor>> {
         self.locales
             .get_or_try_init(|| async move {
@@ -93,14 +116,4 @@ impl LocaleService {
     }
 }
 
-impl AppService for LocaleService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn std::any::Any + Send) {
-        self
-    }
-}
+impl AppService for LocaleService {}

@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+moss_app.workspace = true
+
 anyhow.workspace = true
 chrono.workspace = true
 serde.workspace = true
@@ -13,5 +15,4 @@ tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono"] }
 tracing-appender.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
 ts-rs.workspace = true
-moss_app.workspace = true
-moss_session.workspace = true
+uuid = { workspace = true, features = ["v4"] }

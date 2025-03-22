@@ -1,32 +1,25 @@
-use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
-use anyhow::Result;
 use tauri::AppHandle;
 
+use crate::service::prelude::ServicePool;
+
 pub struct AppManager {
-    services: ServiceCollection,
-    // TODO: Registry
+    app_handle: AppHandle,
+    service_pool: ServicePool,
 }
 
-unsafe impl Send for AppManager {}
-unsafe impl Sync for AppManager {}
-
 impl AppManager {
-    pub fn new(app_handle: AppHandle) -> Self {
+    pub fn new(app_handle: AppHandle, service_pool: ServicePool) -> Self {
         Self {
-            services: ServiceCollection::new(app_handle),
+            app_handle,
+            service_pool,
         }
     }
 
-    pub fn with_service<T, F>(self, service: F, activation_type: InstantiationType) -> Self
-    where
-        T: AppService + 'static,
-        F: FnOnce(&AppHandle) -> T + 'static,
-    {
-        self.services.register(service, activation_type);
-        self
+    pub fn services(&self) -> &ServicePool {
+        &self.service_pool
     }
 
-    pub fn service<T: AppService>(&self) -> Result<ServiceHandle<T>> {
-        self.services.get()
+    pub fn app_handle(&self) -> &AppHandle {
+        &self.app_handle
     }
 }

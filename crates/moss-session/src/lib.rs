@@ -1,31 +1,20 @@
-use moss_app::service::AppService;
-use std::any::Any;
+use moss_app::service::prelude::AppService;
 use uuid::Uuid;
 
 pub struct SessionService {
-    uuid: Uuid,
+    session_id: Uuid,
 }
 
 impl SessionService {
     pub fn new() -> Self {
         Self {
-            uuid: Uuid::new_v4(),
+            session_id: Uuid::new_v4(),
         }
     }
 
-    pub fn get_session_uuid(&self) -> String {
-        self.uuid.to_string()
+    pub fn get_session_uuid(&self) -> &Uuid {
+        &self.session_id
     }
 }
 
-impl AppService for SessionService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn Any + Send) {
-        self
-    }
-}
+impl AppService for SessionService {}
