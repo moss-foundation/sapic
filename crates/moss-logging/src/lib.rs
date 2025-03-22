@@ -1,29 +1,35 @@
 mod models;
 
-use crate::models::operations::{ListLogsInput, ListLogsOutput};
-use crate::models::types::{LogEntry, LogLevel};
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::AppService;
-use moss_session::SessionService;
+use moss_app::service_pool::AppService_2;
 use serde_json::Value as JsonValue;
-use std::any::Any;
-use std::collections::HashSet;
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-use std::{fs, io};
+use std::{any::Any, collections::HashSet};
+use std::{
+    ffi::OsStr,
+    fs,
+    fs::File,
+    io::{self, BufRead, BufReader},
+    path::{Path, PathBuf},
+    str::FromStr,
+};
+use tracing::Level;
 use tracing::{debug, error, info, trace, warn};
-#[allow(unused_imports)] // Apparently these imports are used
-use tracing::{event, instrument, Instrument, Level};
-use tracing_appender::non_blocking::WorkerGuard;
-use tracing_appender::rolling::Rotation;
-use tracing_subscriber::filter::filter_fn;
-use tracing_subscriber::fmt::format::{FmtSpan, JsonFields};
-use tracing_subscriber::fmt::time::ChronoLocal;
+use tracing_appender::{non_blocking::WorkerGuard, rolling::Rotation};
 use tracing_subscriber::prelude::*;
+use tracing_subscriber::{
+    filter::filter_fn,
+    fmt::{
+        format::{FmtSpan, JsonFields},
+        time::ChronoLocal,
+    },
+};
+use uuid::Uuid;
+
+use crate::models::operations::{ListLogsInput, ListLogsOutput};
+use crate::models::types::{LogEntry, LogLevel};
+
 pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";
 pub const REQUEST_LIT: &'static str = "request";
@@ -219,7 +225,7 @@ impl LoggingService {
     pub fn new(
         app_log_path: &Path,
         session_log_path: &Path,
-        session_service: &SessionService,
+        session_id: &Uuid,
     ) -> Result<LoggingService> {
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
@@ -238,8 +244,7 @@ impl LoggingService {
             .compact()
             .with_ansi(true);
 
-        let session_id = session_service.get_session_uuid();
-        let session_path = session_log_path.join(session_id);
+        let session_path = session_log_path.join(session_id.to_string());
         let session_log_appender = tracing_appender::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
@@ -432,10 +437,12 @@ impl AppService for LoggingService {
     }
 }
 
+impl AppService_2 for LoggingService {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::Utc;
+    use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
     async fn create_collection(path: &Path, name: &str, log_service: &LoggingService) {
@@ -516,11 +523,11 @@ mod tests {
     const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
     #[test]
     fn test() {
-        let session_service = SessionService::new();
+        let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
             Path::new(TEST_APP_LOG_FOLDER),
             Path::new(TEST_SESSION_LOG_FOLDER),
-            &session_service,
+            &session_id,
         )
         .unwrap();
         let runtime = tokio::runtime::Builder::new_multi_thread()

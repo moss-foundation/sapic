@@ -10,11 +10,11 @@ use moss_nls::{
 };
 use moss_state::command::CommandContext;
 use moss_state::{
-    manager::AppStateManager,
     models::{
         operations::DescribeAppStateOutput,
         types::{Defaults, Preferences},
     },
+    service::StateService,
 };
 use moss_tauri::{TauriError, TauriResult};
 use moss_text::{quote, ReadOnlyStr};
@@ -43,7 +43,7 @@ pub async fn create_new_window(app_handle: AppHandle) -> TauriResult<()> {
 #[instrument(level = "trace", skip(app_handle, state_manager), fields(window = window.label()))]
 pub fn change_color_theme(
     app_handle: AppHandle,
-    state_manager: State<'_, AppStateManager>,
+    state_manager: State<'_, StateService>,
     window: Window,
     descriptor: ThemeDescriptor,
 ) -> TauriResult<()> {
@@ -73,7 +73,7 @@ pub async fn get_color_theme(
     id: ThemeId,
 ) -> TauriResult<String> {
     Ok(app_manager
-        .service::<ThemeService>()?
+        .service_by_type::<ThemeService>()?
         .read_color_theme(&id)
         .await?)
 }
@@ -81,13 +81,16 @@ pub async fn get_color_theme(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn list_themes(app_manager: State<'_, AppManager>) -> TauriResult<ListThemesOutput> {
-    Ok(app_manager.service::<ThemeService>()?.list_themes().await?)
+    Ok(app_manager
+        .service_by_type::<ThemeService>()?
+        .list_themes()
+        .await?)
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(state_manager))]
 pub fn describe_app_state(
-    state_manager: State<'_, AppStateManager>,
+    state_manager: State<'_, StateService>,
 ) -> Result<DescribeAppStateOutput, String> {
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
@@ -104,7 +107,7 @@ pub fn describe_app_state(
 #[tauri::command]
 #[instrument(level = "trace", skip(state_manager))]
 pub fn change_language_pack(
-    state_manager: State<'_, AppStateManager>,
+    state_manager: State<'_, StateService>,
     descriptor: LocaleDescriptor,
 ) -> TauriResult<()> {
     state_manager.set_language_pack(descriptor);
@@ -115,7 +118,7 @@ pub fn change_language_pack(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn list_locales(app_manager: State<'_, AppManager>) -> TauriResult<ListLocalesOutput> {
-    let locale_service = app_manager.service::<LocaleService>()?;
+    let locale_service = app_manager.service_by_type::<LocaleService>()?;
 
     Ok(locale_service.list_locales().await?)
 }
@@ -126,7 +129,7 @@ pub async fn get_translations(
     app_manager: State<'_, AppManager>,
     input: GetTranslationsInput,
 ) -> TauriResult<JsonValue> {
-    let locale_service = app_manager.service::<LocaleService>()?;
+    let locale_service = app_manager.service_by_type::<LocaleService>()?;
 
     Ok(locale_service.get_translations(&input).await?)
 }
@@ -135,7 +138,7 @@ pub async fn get_translations(
 #[instrument(level = "trace", skip(app_handle, app_state), fields(window = window.label()))]
 pub async fn execute_command(
     app_handle: AppHandle,
-    app_state: State<'_, AppStateManager>,
+    app_state: State<'_, StateService>,
     window: Window,
     cmd: ReadOnlyStr,
     args: HashMap<String, Value>,

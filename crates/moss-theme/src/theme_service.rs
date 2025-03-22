@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use moss_app::service::AppService;
+use moss_app::{service::AppService, service_pool::AppService_2};
 use moss_fs::ports::FileSystem;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -15,6 +15,7 @@ pub struct ThemeService {
     themes_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
     themes: OnceCell<HashMap<ThemeId, ThemeDescriptor>>,
+    default_theme: OnceCell<ThemeDescriptor>,
 }
 
 impl ThemeService {
@@ -23,7 +24,30 @@ impl ThemeService {
             themes_dir,
             fs,
             themes: Default::default(),
+            default_theme: Default::default(),
         }
+    }
+
+    pub async fn default_theme(&self) -> Result<&ThemeDescriptor> {
+        self.default_theme
+            .get_or_try_init(|| async move {
+                let themes = self.themes().await?;
+                let default_theme = themes
+                    .values()
+                    .find(|theme| theme.is_default.unwrap_or(false))
+                    .cloned();
+
+                Ok::<ThemeDescriptor, anyhow::Error>(
+                    default_theme.unwrap_or(
+                        themes
+                            .values()
+                            .next() // We take the first theme as the default theme if no default theme is found
+                            .expect("The app must have at least one theme")
+                            .clone(),
+                    ),
+                )
+            })
+            .await
     }
 
     async fn themes(&self) -> Result<&HashMap<ThemeId, ThemeDescriptor>> {
@@ -87,3 +111,5 @@ impl AppService for ThemeService {
         self
     }
 }
+
+impl AppService_2 for ThemeService {}

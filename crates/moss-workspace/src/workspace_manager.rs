@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
-use moss_app::service::AppService;
+use moss_app::{service::AppService, service_pool::AppService_2};
 use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -128,6 +128,8 @@ impl AppService for WorkspaceManager {
         self
     }
 }
+
+impl AppService_2 for WorkspaceManager {}
 
 #[cfg(test)]
 mod tests {

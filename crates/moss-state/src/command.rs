@@ -1,4 +1,4 @@
-use crate::manager::AppStateManager;
+use crate::service::StateService;
 use anyhow::Result;
 use moss_tauri::TauriResult;
 use moss_text::ReadOnlyStr;
@@ -102,7 +102,7 @@ macro_rules! command {
 type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
 
 pub type CommandCallback = Arc<
-    dyn for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a> + Send + Sync,
+    dyn for<'a> Fn(&'a mut CommandContext, &'a StateService) -> CommandResult<'a> + Send + Sync,
 >;
 
 pub struct CommandDecl {
@@ -113,7 +113,7 @@ pub struct CommandDecl {
 impl CommandDecl {
     pub fn new<F>(name: ReadOnlyStr, f: F) -> Self
     where
-        F: for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a>
+        F: for<'a> Fn(&'a mut CommandContext, &'a StateService) -> CommandResult<'a>
             + Send
             + Sync
             + 'static,

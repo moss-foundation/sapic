@@ -1,4 +1,5 @@
 use dashmap::DashMap;
+use moss_app::service_pool::AppService_2;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
 use moss_theme::models::types::{ThemeDescriptor, ThemeMode};
@@ -18,13 +19,13 @@ pub struct AppDefaults {
     pub locale: LocaleDescriptor,
 }
 
-pub struct AppStateManager {
+pub struct StateService {
     commands: DashMap<ReadOnlyStr, CommandCallback>,
     preferences: AppPreferences,
     defaults: AppDefaults,
 }
 
-impl AppStateManager {
+impl StateService {
     pub fn new(themes_dir: &PathBuf) -> Self {
         Self {
             preferences: AppPreferences {
@@ -80,3 +81,5 @@ impl AppStateManager {
         self.commands.get(id).map(|cmd| Arc::clone(&cmd))
     }
 }
+
+impl AppService_2 for StateService {}

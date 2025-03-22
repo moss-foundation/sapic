@@ -17,3 +17,6 @@ tracing.workspace = true
 log.workspace = true
 thiserror.workspace = true
 dashmap.workspace = true
+slotmap.workspace = true
+tokio.workspace = true
+arc-swap.workspace = true

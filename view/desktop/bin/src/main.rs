@@ -12,6 +12,6 @@ fn main() {
         .unwrap()
         .block_on(async {
             tauri::async_runtime::set(tokio::runtime::Handle::current());
-            desktop_app_lib::run();
+            desktop_app_lib::run().await;
         })
 }

@@ -3,6 +3,7 @@ pub mod constants;
 mod mem;
 mod menu;
 mod plugins;
+mod services;
 mod window;
 
 #[macro_use]
@@ -13,7 +14,7 @@ use moss_app::manager::AppManager;
 use moss_app::service::InstantiationType;
 use moss_fs::adapters::disk::DiskFileSystem;
 use moss_nls::locale_service::LocaleService;
-use moss_state::manager::AppStateManager;
+use moss_state::service::StateService;
 use moss_tauri::services::window_service::WindowService;
 use moss_tauri::TauriResult;
 use moss_theme::theme_service::ThemeService;
@@ -24,6 +25,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_os;
+use uuid::Uuid;
 use window::{create_window, CreateWindowInput};
 
 use crate::commands::*;
@@ -40,7 +42,7 @@ use moss_text::read_only_str;
 
 async fn generate_log<'a>(
     ctx: &mut CommandContext,
-    _manager: &'a AppStateManager,
+    _manager: &'a StateService,
 ) -> TauriResult<String> {
     ctx.app_handle()
         .state::<AppManager>()
@@ -59,7 +61,7 @@ async fn generate_log<'a>(
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub async fn run() {
     #[allow(unused_mut)]
     let mut builder = tauri::Builder::default()
         .plugin(plugin_log::init())
@@ -79,15 +81,15 @@ pub fn run() {
             let themes_dir: PathBuf = std::env::var("THEMES_DIR")
                 .expect("Environment variable THEMES_DIR is not set")
                 .into();
-            let app_state = AppStateManager::new(&themes_dir).with_commands([
+            let app_state = StateService::new(&themes_dir).with_commands([
                 // FIXME: Remove this example command
                 command!("example.generateLog", generate_log),
             ]);
             app_handle.manage(app_state);
 
-            let fs = Arc::new(DiskFileSystem::new());
+            let session_id = Uuid::new_v4();
+            let session_service = SessionService::new(session_id);
 
-            let session_service = SessionService::new();
             // FIXME: In the future, we will place logs at appropriate locations
             // Now we put `logs` folder at the project root for easier development
             let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
@@ -96,8 +98,7 @@ pub fn run() {
             let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
                 .expect("Environment variable SESSION_LOG_DIR is not set")
                 .into();
-            let logging_service =
-                LoggingService::new(&app_log_dir, &session_log_dir, &session_service)?;
+            let logging_service = LoggingService::new(&app_log_dir, &session_log_dir, &session_id)?;
 
             let app_manager = AppManager::new(app_handle.clone())
                 .with_service(
@@ -217,19 +218,19 @@ fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
     create_window(app_handle, config)
 }
 
-fn create_child_window(app_handle: &AppHandle, url: &str) -> Result<WebviewWindow> {
-    let app_manager = app_handle.state::<AppManager>();
-    let next_window_id = app_manager.service::<WindowService>()?.next_window_id() + 1;
-    let config = CreateWindowInput {
-        url,
-        label: &format!("{MAIN_WINDOW_PREFIX}{}", next_window_id),
-        title: "Sapic",
-        inner_size: (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT),
-        position: (
-            100.0 + random::<f64>() * 20.0,
-            100.0 + random::<f64>() * 20.0,
-        ),
-    };
+// fn create_child_window(app_handle: &AppHandle, url: &str) -> Result<WebviewWindow> {
+//     let app_manager = app_handle.state::<AppManager>();
+//     let next_window_id = app_manager.service::<WindowService>()?.next_window_id() + 1;
+//     let config = CreateWindowInput {
+//         url,
+//         label: &format!("{MAIN_WINDOW_PREFIX}{}", next_window_id),
+//         title: "Sapic",
+//         inner_size: (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT),
+//         position: (
+//             100.0 + random::<f64>() * 20.0,
+//             100.0 + random::<f64>() * 20.0,
+//         ),
+//     };
 
-    Ok(create_window(app_handle, config))
-}
+//     Ok(create_window(app_handle, config))
+// }

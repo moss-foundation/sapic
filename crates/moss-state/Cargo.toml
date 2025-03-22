@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+moss_app.workspace = true
 moss_text.workspace = true
 moss_theme.workspace = true
 moss_nls.workspace = true

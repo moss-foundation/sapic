@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use moss_app::service::AppService;
+use moss_app::{service::AppService, service_pool::AppService_2};
 use moss_fs::ports::FileSystem;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -104,3 +104,5 @@ impl AppService for LocaleService {
         self
     }
 }
+
+impl AppService_2 for LocaleService {}

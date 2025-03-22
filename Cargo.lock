@@ -1225,6 +1225,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
@@ -2918,6 +2919,7 @@ name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arc-swap",
  "dashmap",
  "derive_more 2.0.1",
  "fnv",
@@ -2926,8 +2928,10 @@ dependencies = [
  "parking_lot",
  "serde",
  "serde_json",
+ "slotmap",
  "tauri",
  "thiserror 2.0.12",
+ "tokio",
  "tracing",
 ]
 
@@ -3032,7 +3036,6 @@ dependencies = [
  "anyhow",
  "chrono",
  "moss_app",
- "moss_session",
  "serde",
  "serde_json",
  "tokio",
@@ -3040,6 +3043,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "ts-rs",
+ "uuid",
 ]
 
 [[package]]
@@ -3069,6 +3073,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dashmap",
+ "moss_app",
  "moss_nls",
  "moss_tauri",
  "moss_text",
