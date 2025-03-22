@@ -26,6 +26,7 @@ import "./assets/styles.css";
 import { DropNodeElement } from "@/components/Tree/types";
 import { getActualDropSourceTarget } from "@/components/Tree/utils";
 import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const DebugContext = React.createContext<boolean>(false);
@@ -173,6 +174,7 @@ const WatermarkComponent = () => {
 
 const TabbedPane = (props: { theme?: string }) => {
   const [logLines, setLogLines] = React.useState<{ text: string; timestamp?: Date; backgroundColor?: string }[]>([]);
+  const { showDebugPanels } = useTabbedPaneStore();
 
   const dockviewStore = useDockviewStore();
 
@@ -335,16 +337,22 @@ const TabbedPane = (props: { theme?: string }) => {
 
   return (
     <div
-      className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)] p-2"
+      className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
       style={{
         ...css,
       }}
     >
-      <div>
-        <GridActions api={api} toggleCustomWatermark={() => setWatermark(!watermark)} hasCustomWatermark={watermark} />
-        {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
-        {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
-        {/* <div>
+      {showDebugPanels && (
+        <>
+          <div>
+            <GridActions
+              api={api}
+              toggleCustomWatermark={() => setWatermark(!watermark)}
+              hasCustomWatermark={watermark}
+            />
+            {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
+            {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
+            {/* <div>
                   <button
                       onClick={() => {
                           setGapCheck(!gapCheck);
@@ -353,36 +361,38 @@ const TabbedPane = (props: { theme?: string }) => {
                       {gapCheck ? 'Disable Gap Check' : 'Enable Gap Check'}
                   </button>
               </div> */}
-      </div>
-      <div className="action-container mb-2 flex items-center justify-end p-1">
-        <button
-          className="mr-2 rounded"
-          onClick={() => {
-            setDebug(!debug);
-          }}
-        >
-          <span className="material-symbols-outlined">engineering</span>
-        </button>
-        {showLogs && (
-          <button
-            className="mr-1 rounded"
-            onClick={() => {
-              setLogLines([]);
-            }}
-          >
-            <span className="material-symbols-outlined">undo</span>
-          </button>
-        )}
-        <button
-          className="rounded p-1"
-          onClick={() => {
-            setShowLogs(!showLogs);
-          }}
-        >
-          <span className="pr-1">{`${showLogs ? "Hide" : "Show"} Events Log`}</span>
-          <span className="material-symbols-outlined">terminal</span>
-        </button>
-      </div>
+          </div>
+          <div className="action-container mb-2 flex items-center justify-end p-1">
+            <button
+              className="mr-2 rounded"
+              onClick={() => {
+                setDebug(!debug);
+              }}
+            >
+              <span className="material-symbols-outlined">engineering</span>
+            </button>
+            {showLogs && (
+              <button
+                className="mr-1 rounded"
+                onClick={() => {
+                  setLogLines([]);
+                }}
+              >
+                <span className="material-symbols-outlined">undo</span>
+              </button>
+            )}
+            <button
+              className="rounded p-1"
+              onClick={() => {
+                setShowLogs(!showLogs);
+              }}
+            >
+              <span className="pr-1">{`${showLogs ? "Hide" : "Show"} Events Log`}</span>
+              <span className="material-symbols-outlined">terminal</span>
+            </button>
+          </div>
+        </>
+      )}
       <div className="flex h-0 grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>

@@ -1,5 +1,6 @@
 import { useContext, type HTMLProps } from "react";
 
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { ControlButton } from "./ControlButton";
@@ -11,9 +12,16 @@ import { ControlsIcons } from "./icons";
 
 export function WindowsControls({ className, ...props }: HTMLProps<HTMLDivElement>) {
   const { isWindowMaximized, minimizeWindow, maximizeWindow, closeWindow } = useContext(ControlsContext);
+  const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
 
   return (
     <div className={cn("flex h-full", className)} {...props}>
+      <ControlButton
+        onClick={() => setShowDebugPanels(!showDebugPanels)}
+        className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
+      >
+        <span className="material-symbols-outlined">{showDebugPanels ? "hide_source" : "pest_control"}</span>
+      </ControlButton>
       <ControlButton
         onClick={minimizeWindow}
         className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
