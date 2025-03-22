@@ -2,9 +2,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use tauri::AppHandle;
 
-use crate::service_pool::{AppService_2, ServicePool};
-
-use super::service::{AppService, InstantiationType, ServiceCollection, ServiceHandle};
+use crate::service_pool::{AppService, ServicePool};
 
 pub struct AppInner {
     service_pool: ServicePool,

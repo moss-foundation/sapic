@@ -2,8 +2,7 @@ mod models;
 
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
-use moss_app::service::AppService;
-use moss_app::service_pool::AppService_2;
+use moss_app::service_pool::AppService;
 use serde_json::Value as JsonValue;
 use std::{any::Any, collections::HashSet};
 use std::{
@@ -423,21 +422,7 @@ impl LoggingService {
     }
 }
 
-impl AppService for LoggingService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {
-        // TODO: Dropping the session log folder here?
-    }
-
-    fn as_any(&self) -> &(dyn Any + Send) {
-        self
-    }
-}
-
-impl AppService_2 for LoggingService {}
+impl AppService for LoggingService {}
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use desktop_app_lib::{RUNTIME_MAX_BLOCKING_THREADS, RUNTIME_STACK_SIZE};
+const RUNTIME_MAX_BLOCKING_THREADS: usize = 512;
+const RUNTIME_STACK_SIZE: usize = 20 * 1024 * 1024;
 
 fn main() {
     tokio::runtime::Builder::new_multi_thread()

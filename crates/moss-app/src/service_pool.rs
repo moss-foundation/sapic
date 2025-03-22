@@ -16,7 +16,7 @@ slotmap::new_key_type! {
     pub struct ServiceKey;
 }
 
-pub trait AppService_2: Any + Send + Sync {}
+pub trait AppService: Any + Send + Sync {}
 
 #[derive(Error, Debug)]
 pub enum ServicePoolError {
@@ -52,7 +52,7 @@ pub struct ServicePool {
 impl ServicePool {
     pub async fn get_by_type<T>(&self) -> Result<&T, ServicePoolError>
     where
-        T: AppService_2,
+        T: AppService,
     {
         let type_id = TypeId::of::<T>();
         let key = self
@@ -67,7 +67,7 @@ impl ServicePool {
 
     pub async fn get_by_key<T>(&self, key: ServiceKey) -> Result<&T, ServicePoolError>
     where
-        T: AppService_2,
+        T: AppService,
     {
         let cell = self.services.get(key).context("dd")?;
         let any = cell
@@ -91,7 +91,7 @@ impl ServicePool {
 
 pub enum Instantiation<S, F>
 where
-    S: AppService_2 + 'static,
+    S: AppService + 'static,
     F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
 {
     Instant(F),
@@ -111,7 +111,7 @@ impl ServicePoolBuilder {
 
     pub fn register<S, F>(&mut self, builder: Instantiation<S, F>) -> ServiceKey
     where
-        S: AppService_2 + 'static,
+        S: AppService + 'static,
         F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
         match builder {
@@ -122,7 +122,7 @@ impl ServicePoolBuilder {
 
     fn register_instant<S, F>(&mut self, builder: F) -> ServiceKey
     where
-        S: AppService_2 + 'static,
+        S: AppService + 'static,
         F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
         let service: Arc<dyn Any + Send + Sync + 'static> =
@@ -138,7 +138,7 @@ impl ServicePoolBuilder {
 
     fn register_lazy<S, F>(&mut self, builder: F) -> ServiceKey
     where
-        S: AppService_2 + 'static,
+        S: AppService + 'static,
         F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
     {
         let cell = OnceCell::new();

@@ -4,6 +4,7 @@ use moss_fs::ports::FileSystem;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;
+use moss_state::service::AppDefaults;
 use moss_state::{command, command::CommandContext, service::StateService};
 use moss_tauri::TauriResult;
 use moss_text::read_only_str;
@@ -16,10 +17,13 @@ pub fn service_pool(app_handle: AppHandle, fs: Arc<dyn FileSystem>) -> ServicePo
     let mut builder = ServicePoolBuilder::new(app_handle, 10);
 
     let session_service_key = builder.register(Instantiation::Instant(session_service()));
-    let _locale_service_key = builder.register(Instantiation::Instant(locale_service(fs.clone())));
+    let locale_service_key = builder.register(Instantiation::Instant(locale_service(fs.clone())));
     let theme_service_key = builder.register(Instantiation::Instant(theme_service(fs.clone())));
 
-    builder.register(Instantiation::Instant(state_service(theme_service_key)));
+    builder.register(Instantiation::Instant(state_service(
+        theme_service_key,
+        locale_service_key,
+    )));
     builder.register(Instantiation::Instant(logging_service(session_service_key)));
     builder.register(Instantiation::Instant(workspace_manager(fs.clone())));
 
@@ -28,17 +32,39 @@ pub fn service_pool(app_handle: AppHandle, fs: Arc<dyn FileSystem>) -> ServicePo
 
 fn state_service(
     theme_service_key: ServiceKey,
-) -> impl Fn(&ServicePool, &AppHandle) -> StateService + Send + Sync + 'static {
+    locale_service_key: ServiceKey,
+) -> impl FnOnce(&ServicePool, &AppHandle) -> StateService + Send + Sync + 'static {
     move |pool, _| {
-        let theme_service =
-            futures::executor::block_on(pool.get_by_key::<ThemeService>(theme_service_key))
+        let default_theme = futures::executor::block_on(async move {
+            let theme_service = pool
+                .get_by_key::<ThemeService>(theme_service_key)
+                .await
                 .expect("Theme service needs to be registered first");
 
-        let default_theme = futures::executor::block_on(theme_service.default_theme())
-            .unwrap()
-            .clone();
+            theme_service
+                .default_theme()
+                .await
+                .expect("Failed to get default theme")
+        });
 
-        StateService::new(default_theme).with_commands([
+        let default_locale = futures::executor::block_on(async move {
+            let locale_service = pool
+                .get_by_key::<LocaleService>(locale_service_key)
+                .await
+                .expect("Locale service needs to be registered first");
+
+            locale_service
+                .default_locale()
+                .await
+                .expect("Failed to get default locale")
+        });
+
+        let defaults = AppDefaults {
+            theme: default_theme.clone(),
+            locale: default_locale.clone(),
+        };
+
+        StateService::new(defaults).with_commands([
             // FIXME: Remove this example command
             command!("example.generateLog", generate_log),
         ])
@@ -72,7 +98,7 @@ fn locale_service(
 
 fn logging_service(
     session_service_key: ServiceKey,
-) -> impl Fn(&ServicePool, &AppHandle) -> LoggingService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool, &AppHandle) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
     let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
@@ -98,11 +124,11 @@ fn logging_service(
 
 fn workspace_manager(
     fs: Arc<dyn FileSystem>,
-) -> impl Fn(&ServicePool, &AppHandle) -> WorkspaceManager + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool, &AppHandle) -> WorkspaceManager + Send + Sync + 'static {
     let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let workspaces_dir: PathBuf = PathBuf::from(dir).join("samples").join("workspaces");
 
-    move |_, _| WorkspaceManager::new(Arc::clone(&fs), workspaces_dir.clone())
+    move |_, _| WorkspaceManager::new(fs, workspaces_dir.clone())
 }
 
 async fn generate_log<'a>(ctx: &mut CommandContext) -> TauriResult<String> {

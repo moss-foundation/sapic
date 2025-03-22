@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_app::service::AppService;
+use moss_app::service_pool::AppService;
 use moss_db::{
     encrypted_bincode_store::EncryptedBincodeStore, encrypted_bincode_table::EncryptionOptions,
     ReDbClient,
@@ -42,14 +42,4 @@ impl VaultService {
     }
 }
 
-impl AppService for VaultService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn std::any::Any + Send) {
-        self
-    }
-}
+impl AppService for VaultService {}

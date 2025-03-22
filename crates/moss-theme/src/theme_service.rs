@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use moss_app::{service::AppService, service_pool::AppService_2};
+use moss_app::service_pool::AppService;
 use moss_fs::ports::FileSystem;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -100,16 +100,4 @@ impl ThemeService {
     }
 }
 
-impl AppService for ThemeService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn std::any::Any + Send) {
-        self
-    }
-}
-
-impl AppService_2 for ThemeService {}
+impl AppService for ThemeService {}

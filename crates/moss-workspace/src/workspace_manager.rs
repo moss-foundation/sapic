@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
-use moss_app::{service::AppService, service_pool::AppService_2};
+use moss_app::service_pool::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
@@ -117,19 +117,7 @@ impl WorkspaceManager {
     }
 }
 
-impl AppService for WorkspaceManager {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn std::any::Any + Send) {
-        self
-    }
-}
-
-impl AppService_2 for WorkspaceManager {}
+impl AppService for WorkspaceManager {}
 
 #[cfg(test)]
 mod tests {

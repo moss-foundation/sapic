@@ -1,5 +1,5 @@
 use dashmap::DashMap;
-use moss_app::service_pool::AppService_2;
+use moss_app::service_pool::AppService;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
 use moss_theme::models::types::ThemeDescriptor;
@@ -25,21 +25,13 @@ pub struct StateService {
 }
 
 impl StateService {
-    pub fn new(default_theme: ThemeDescriptor) -> Self {
+    pub fn new(defaults: AppDefaults) -> Self {
         Self {
             preferences: AppPreferences {
                 theme: RwLock::new(None),
                 locale: RwLock::new(None),
             },
-            defaults: AppDefaults {
-                theme: default_theme,
-                locale: LocaleDescriptor {
-                    identifier: "moss.sapic-locale.en".to_string(),
-                    code: "en".to_string(),
-                    display_name: "English".to_string(),
-                    direction: Some("ltr".to_string()),
-                },
-            },
+            defaults,
             commands: DashMap::new(),
         }
     }
@@ -75,4 +67,4 @@ impl StateService {
     }
 }
 
-impl AppService_2 for StateService {}
+impl AppService for StateService {}

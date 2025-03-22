@@ -1,4 +1,4 @@
-use moss_app::{service::AppService, service_pool::AppService_2};
+use moss_app::service_pool::AppService;
 use std::any::Any;
 use uuid::Uuid;
 
@@ -18,16 +18,4 @@ impl SessionService {
     }
 }
 
-impl AppService for SessionService {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn Any + Send) {
-        self
-    }
-}
-
-impl AppService_2 for SessionService {}
+impl AppService for SessionService {}
