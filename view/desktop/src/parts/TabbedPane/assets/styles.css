@@ -42,7 +42,7 @@
 }
 
 .dockview-demo .action-container .text-button {
-  @apply mx-1 my-0 rounded px-1;
+  @apply mx-1 my-0 min-w-[60px] overflow-hidden rounded px-2 text-sm text-ellipsis whitespace-nowrap;
 }
 
 .dockview-demo .action-container .button-action {
@@ -58,7 +58,7 @@
 }
 
 .dockview-demo .action-container .demo-button {
-  @apply flex min-w-[50px] grow items-center rounded-none px-[2px] py-0 !outline !outline-[#4c65d4];
+  @apply flex min-w-[60px] grow items-center overflow-hidden rounded-none px-2 py-0 text-sm text-ellipsis whitespace-nowrap !outline !outline-[#4c65d4];
 }
 
 .dockview-demo .action-container .demo-icon-button {
