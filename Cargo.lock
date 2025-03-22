@@ -2893,6 +2893,7 @@ dependencies = [
  "log",
  "moss_tauri",
  "moss_text",
+ "parking_lot",
  "serde",
  "serde_json",
  "slotmap",
