@@ -221,6 +221,9 @@ importers:
 
   view/desktop:
     dependencies:
+      '@atlaskit/pragmatic-drag-and-drop':
+        specifier: ^1.5.2
+        version: 1.5.2
       '@radix-ui/primitive':
         specifier: ^1.1.1
         version: 1.1.1
@@ -322,10 +325,10 @@ importers:
         specifier: ^22.10.1
         version: 22.13.1
       '@types/react':
-        specifier: ^18.3.1
+        specifier: ^18.3.18
         version: 18.3.18
       '@types/react-dom':
-        specifier: ^18.3.1
+        specifier: ^18.3.5
         version: 18.3.5(@types/react@18.3.18)
       '@types/react-i18next':
         specifier: ^8.1.0
@@ -400,6 +403,9 @@ packages:
 
   '@atlaskit/pragmatic-drag-and-drop@1.5.0':
     resolution: {integrity: sha512-VnHcgOBALm+mbL9CoJPI6wBNQeB0is+CkejdfAlaP8RfBoELe+0sQtE8j4Z4fPRqDzo11OEqUYKHkmx4Ttzozg==}
+
+  '@atlaskit/pragmatic-drag-and-drop@1.5.2':
+    resolution: {integrity: sha512-fDuTwlDD11r3ev5tLJ6JnzQUiG9v77c8zGcNdO7RRNtZZbOHam8CFhmyFGY4E/mLjvgYng0UkcyCrSBc4FXYZw==}
 
   '@atlaskit/tokens@4.3.2':
     resolution: {integrity: sha512-AD4Nw0iIxwJs64R39WLaX52UXD0CijxPhDeZ2CPs09gjKY2xJsPJe2EO1qdYGiT7024174A9omrsnP2n1otIkA==}
@@ -4351,6 +4357,12 @@ snapshots:
       - supports-color
 
   '@atlaskit/pragmatic-drag-and-drop@1.5.0':
+    dependencies:
+      '@babel/runtime': 7.26.7
+      bind-event-listener: 3.0.0
+      raf-schd: 4.0.3
+
+  '@atlaskit/pragmatic-drag-and-drop@1.5.2':
     dependencies:
       '@babel/runtime': 7.26.7
       bind-event-listener: 3.0.0
