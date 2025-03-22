@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { DockviewApi, DockviewGroupLocation, DockviewGroupPanel } from "@repo/moss-tabs";
 
 const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewApi; activeGroup?: string }) => {
@@ -139,9 +140,13 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
 export const GroupActions = (props: { groups: string[]; api: DockviewApi; activeGroup?: string }) => {
   return (
     <div className="action-container">
-      {props.groups.map((groupId) => {
-        return <GroupAction key={groupId} {...props} groupId={groupId} />;
-      })}
+      <Scrollbar>
+        <div className="flex items-center gap-2">
+          {props.groups.map((groupId) => {
+            return <GroupAction key={groupId} {...props} groupId={groupId} />;
+          })}
+        </div>
+      </Scrollbar>
     </div>
   );
 };
