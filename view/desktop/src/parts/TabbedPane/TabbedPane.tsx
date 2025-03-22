@@ -276,6 +276,7 @@ const TabbedPane = (props: { theme?: string }) => {
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
     dockviewStore.setApi(event.api);
+    useTabbedPaneStore.getState().setApi(event.api);
   };
 
   const dockviewRef = React.useRef<HTMLDivElement | null>(null);

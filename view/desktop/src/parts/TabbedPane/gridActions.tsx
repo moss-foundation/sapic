@@ -150,15 +150,6 @@ export const GridActions = (props: {
     <div className="action-container">
       <Scrollbar>
         <div className="flex h-10 items-center gap-2">
-          <button className="text-button" onClick={() => onAddPanel({ type: "Home" })}>
-            {t("home")}
-          </button>
-          <button className="text-button" onClick={() => onAddPanel({ type: "Settings" })}>
-            {t("settings")}
-          </button>
-          <button className="text-button" onClick={() => onAddPanel({ type: "Logs" })}>
-            {t("logs")}
-          </button>
           <span className="grow" />
           <div className="button-group">
             <button className="text-button" onClick={() => onAddPanel()}>
