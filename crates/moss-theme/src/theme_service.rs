@@ -7,7 +7,7 @@ use tokio::sync::OnceCell;
 use crate::{
     models::{
         operations::{GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput},
-        types::ColorThemeDescriptor,
+        types::ColorThemeInfo,
     },
     primitives::ThemeId,
 };
@@ -17,8 +17,8 @@ const THEMES_REGISTRY_FILE: &str = "themes.json";
 pub struct ThemeService {
     themes_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
-    themes: OnceCell<HashMap<ThemeId, ColorThemeDescriptor>>,
-    default_theme: OnceCell<ColorThemeDescriptor>,
+    themes: OnceCell<HashMap<ThemeId, ColorThemeInfo>>,
+    default_theme: OnceCell<ColorThemeInfo>,
 }
 
 impl ThemeService {
@@ -31,7 +31,7 @@ impl ThemeService {
         }
     }
 
-    pub async fn default_theme(&self) -> Result<&ColorThemeDescriptor> {
+    pub async fn default_theme(&self) -> Result<&ColorThemeInfo> {
         self.default_theme
             .get_or_try_init(|| async move {
                 let themes = self.themes().await?;
@@ -40,7 +40,7 @@ impl ThemeService {
                     .find(|theme| theme.is_default.unwrap_or(false))
                     .cloned();
 
-                Ok::<ColorThemeDescriptor, anyhow::Error>(
+                Ok::<ColorThemeInfo, anyhow::Error>(
                     default_theme.unwrap_or(
                         themes
                             .values()
@@ -53,14 +53,14 @@ impl ThemeService {
             .await
     }
 
-    async fn themes(&self) -> Result<&HashMap<ThemeId, ColorThemeDescriptor>> {
+    async fn themes(&self) -> Result<&HashMap<ThemeId, ColorThemeInfo>> {
         self.themes
             .get_or_try_init(|| async move {
                 let descriptors = self.parse_registry_file().await?;
                 let result = descriptors
                     .into_iter()
                     .map(|item| (item.identifier.clone(), item))
-                    .collect::<HashMap<ThemeId, ColorThemeDescriptor>>();
+                    .collect::<HashMap<ThemeId, ColorThemeInfo>>();
 
                 Ok::<_, anyhow::Error>(result)
             })
@@ -97,7 +97,7 @@ impl ThemeService {
         }
     }
 
-    async fn parse_registry_file(&self) -> Result<Vec<ColorThemeDescriptor>> {
+    async fn parse_registry_file(&self) -> Result<Vec<ColorThemeInfo>> {
         let reader = self
             .fs
             .open_file(&self.themes_dir.join(THEMES_REGISTRY_FILE))

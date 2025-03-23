@@ -1,6 +1,6 @@
 use crate::primitives::ThemeId;
 
-use super::types::ColorThemeDescriptor;
+use super::types::ColorThemeInfo;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -20,4 +20,4 @@ pub struct GetColorThemeOutput {
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListColorThemesOutput(pub Vec<ColorThemeDescriptor>);
+pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);

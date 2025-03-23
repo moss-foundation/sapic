@@ -7,9 +7,9 @@
 // If you need to add or modify imports, please update the imports.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { ThemeDescriptor } from "@repo/moss-theme";
-import type { LocaleDescriptor } from "@repo/moss-nls";
+import type { ColorThemeInfo } from "@repo/moss-theme";
+import type { LocaleInfo } from "@repo/moss-nls";
 
-export type Defaults = { theme: ThemeDescriptor; locale: LocaleDescriptor };
+export type Defaults = { theme: ColorThemeInfo; locale: LocaleInfo };
 
-export type Preferences = { theme?: ThemeDescriptor; locale?: LocaleDescriptor };
+export type Preferences = { theme?: ColorThemeInfo; locale?: LocaleInfo };

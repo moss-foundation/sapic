@@ -4,16 +4,13 @@ import type { EventCallback, EventName } from "@tauri-apps/api/event";
 
 // Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
-  | "change_color_theme"
-  | "change_language_pack"
+  | "set_color_theme"
+  | "set_locale"
   | "execute_command"
   | "get_translations"
   | "get_color_theme"
-  | "create_new_window"
-  | "sidebar_get_all_activities"
-  | "get_menu_items_by_namespace"
   | "list_locales"
-  | "get_state" // FIXME: Remove this
+  | "describe_app_state"
   | "list_color_themes";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };

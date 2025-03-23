@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 
-import { useGetAppState } from "@/hooks/useGetAppState";
+import { useDescribeAppState } from "@/hooks/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorTheme } from "@/utils/applyTheme";
 
@@ -18,7 +18,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
 };
 
 const useInitializeAppState = () => {
-  const { data } = useGetAppState();
+  const { data } = useDescribeAppState();
 
   useEffect(() => {
     if (data) {

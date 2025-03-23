@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use super::types::LocaleDescriptor;
+use super::types::LocaleInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -15,5 +15,5 @@ pub struct GetTranslationsInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLocalesOutput {
-    pub contents: Vec<LocaleDescriptor>,
+    pub contents: Vec<LocaleInfo>,
 }

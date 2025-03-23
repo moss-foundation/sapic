@@ -4,10 +4,13 @@ use moss_nls::{
     locale_service::LocaleService,
     models::{
         operations::{GetTranslationsInput, ListLocalesOutput},
-        types::LocaleDescriptor,
+        types::LocaleInfo,
     },
 };
-use moss_state::command::CommandContext;
+use moss_state::{
+    command::CommandContext,
+    models::operations::{SetColorThemeInput, SetLocaleInput},
+};
 use moss_state::{
     models::{
         operations::DescribeAppStateOutput,
@@ -21,9 +24,7 @@ use moss_theme::{
     models::{
         events::ColorThemeChangeEventPayload,
         operations::{GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput},
-        types::ColorThemeDescriptor,
     },
-    primitives::ThemeId,
     theme_service::ThemeService,
 };
 use serde_json::{Value as JsonValue, Value};
@@ -32,10 +33,10 @@ use tauri::{Emitter, EventTarget, Manager, State, Window};
 
 #[tauri::command]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
-pub async fn change_color_theme(
+pub async fn set_color_theme(
     app_manager: State<'_, AppManager>,
     window: Window,
-    descriptor: ColorThemeDescriptor, // FIXME: Should be something like ChangeColorThemeInput
+    input: SetColorThemeInput,
 ) -> TauriResult<()> {
     let app_handle = app_manager.app_handle();
     let state_service = app_manager
@@ -52,12 +53,12 @@ pub async fn change_color_theme(
             .emit_to(
                 EventTarget::webview_window(&label),
                 "core://color-theme-changed",
-                ColorThemeChangeEventPayload::new(&descriptor.identifier),
+                ColorThemeChangeEventPayload::new(&input.theme_info.identifier),
             )
             .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
     }
 
-    state_service.set_color_theme(descriptor);
+    state_service.set_color_theme(input);
 
     Ok(())
 }
@@ -116,9 +117,9 @@ pub async fn describe_app_state(
 
 #[tauri::command]
 #[instrument(level = "trace", skip(app_manager))]
-pub async fn change_language_pack(
+pub async fn set_locale(
     app_manager: State<'_, AppManager>,
-    descriptor: LocaleDescriptor, // FIXME: Should be something like ChangeLanguagePackInput
+    input: SetLocaleInput,
 ) -> TauriResult<()> {
     let app_handle = app_manager.app_handle();
     let state_service = app_manager
@@ -126,7 +127,7 @@ pub async fn change_language_pack(
         .get_by_type::<StateService>(app_handle)
         .await?;
 
-    state_service.set_language_pack(descriptor);
+    state_service.set_locale(input);
 
     Ok(())
 }
