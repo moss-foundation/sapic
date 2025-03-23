@@ -26,6 +26,7 @@ import "./assets/styles.css";
 import { DropNodeElement } from "@/components/Tree/types";
 import { getActualDropSourceTarget } from "@/components/Tree/utils";
 import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const DebugContext = React.createContext<boolean>(false);
@@ -48,7 +49,9 @@ const components = {
 
     return (
       <Scrollbar
-        className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
+        className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
+          props.api.isActive ? "select-text" : "select-none"
+        }`}
       >
         <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
           {props.api.title}
@@ -126,7 +129,9 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
 
   return (
     <Scrollbar
-      className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
+      className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
+        props.api.isActive ? "select-text" : "select-none"
+      }`}
     >
       <span>{React.createElement(page)}</span>
 
@@ -173,6 +178,7 @@ const WatermarkComponent = () => {
 
 const TabbedPane = (props: { theme?: string }) => {
   const [logLines, setLogLines] = React.useState<{ text: string; timestamp?: Date; backgroundColor?: string }[]>([]);
+  const { showDebugPanels } = useTabbedPaneStore();
 
   const dockviewStore = useDockviewStore();
 
@@ -216,14 +222,16 @@ const TabbedPane = (props: { theme?: string }) => {
       api.onDidRemovePanel((event) => {
         setPanels((_) => {
           const next = [..._];
-          next.splice(
-            next.findIndex((x) => x === event.id),
-            1
-          );
+          if (event && event.id) {
+            next.splice(
+              next.findIndex((x) => x === event.id),
+              1
+            );
+          }
 
           return next;
         });
-        addLogLine(`Panel Removed ${event.id}`);
+        addLogLine(`Panel Removed ${event?.id || "unknown"}`);
       }),
 
       api.onDidAddGroup((event) => {
@@ -260,13 +268,39 @@ const TabbedPane = (props: { theme?: string }) => {
         event.accept();
       }),
     ];
-    const loadLayout = () => {
-      defaultConfig(api);
+
+    const initializeLayout = async () => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        api.clear();
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        defaultConfig(api);
+      } catch (e) {
+        console.warn("Failed to initialize layout:", e);
+      }
     };
 
-    loadLayout();
+    const timeoutId = setTimeout(initializeLayout, 0);
+
     return () => {
+      clearTimeout(timeoutId);
       disposables.forEach((disposable) => disposable.dispose());
+
+      // Clean up when component unmounts
+      try {
+        setTimeout(() => {
+          try {
+            api.clear();
+          } catch (e) {
+            // Ignore cleanup errors during unmount
+          }
+        }, 100);
+      } catch (e) {
+        // Ignore cleanup errors during unmount
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api]);
@@ -274,6 +308,7 @@ const TabbedPane = (props: { theme?: string }) => {
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
     dockviewStore.setApi(event.api);
+    useTabbedPaneStore.getState().setApi(event.api);
   };
 
   const dockviewRef = React.useRef<HTMLDivElement | null>(null);
@@ -335,54 +370,53 @@ const TabbedPane = (props: { theme?: string }) => {
 
   return (
     <div
-      className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)] p-2"
+      className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
       style={{
         ...css,
       }}
     >
-      <div>
-        <GridActions api={api} toggleCustomWatermark={() => setWatermark(!watermark)} hasCustomWatermark={watermark} />
-        {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
-        {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
-        {/* <div>
-                  <button
-                      onClick={() => {
-                          setGapCheck(!gapCheck);
-                      }}
-                  >
-                      {gapCheck ? 'Disable Gap Check' : 'Enable Gap Check'}
-                  </button>
-              </div> */}
-      </div>
-      <div className="action-container mb-2 flex items-center justify-end p-1">
-        <button
-          className="mr-2 rounded"
-          onClick={() => {
-            setDebug(!debug);
-          }}
-        >
-          <span className="material-symbols-outlined">engineering</span>
-        </button>
-        {showLogs && (
-          <button
-            className="mr-1 rounded"
-            onClick={() => {
-              setLogLines([]);
-            }}
-          >
-            <span className="material-symbols-outlined">undo</span>
-          </button>
-        )}
-        <button
-          className="rounded p-1"
-          onClick={() => {
-            setShowLogs(!showLogs);
-          }}
-        >
-          <span className="pr-1">{`${showLogs ? "Hide" : "Show"} Events Log`}</span>
-          <span className="material-symbols-outlined">terminal</span>
-        </button>
-      </div>
+      {showDebugPanels && (
+        <>
+          <div>
+            <GridActions
+              api={api}
+              toggleCustomWatermark={() => setWatermark(!watermark)}
+              hasCustomWatermark={watermark}
+            />
+            {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
+            {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
+          </div>
+          <div className="action-container mb-2 flex items-center justify-end p-1 select-none">
+            <button
+              className="mr-2 rounded"
+              onClick={() => {
+                setDebug(!debug);
+              }}
+            >
+              <span className="material-symbols-outlined">engineering</span>
+            </button>
+            {showLogs && (
+              <button
+                className="mr-1 rounded"
+                onClick={() => {
+                  setLogLines([]);
+                }}
+              >
+                <span className="material-symbols-outlined">undo</span>
+              </button>
+            )}
+            <button
+              className="rounded p-1"
+              onClick={() => {
+                setShowLogs(!showLogs);
+              }}
+            >
+              <span className="pr-1">{`${showLogs ? "Hide" : "Show"} Events Log`}</span>
+              <span className="material-symbols-outlined">terminal</span>
+            </button>
+          </div>
+        </>
+      )}
       <div className="flex h-0 grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>

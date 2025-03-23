@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.5.2",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-compose-refs": "^1.1.1",
     "@radix-ui/react-context": "^1.1.1",
@@ -46,8 +47,8 @@
     "@repo/typescript-config": "workspace:*",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.1",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@types/react-i18next": "^8.1.0"
   },
   "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"

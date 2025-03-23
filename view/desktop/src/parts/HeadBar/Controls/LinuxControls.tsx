@@ -2,6 +2,7 @@ import { useContext, type HTMLProps } from "react";
 
 import { cn } from "@/utils";
 
+import { CommonControls } from "./CommonControls";
 import { ControlButton } from "./ControlButton";
 import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
@@ -11,6 +12,7 @@ export function LinuxControls({ className, ...props }: HTMLProps<HTMLDivElement>
 
   return (
     <div className={cn("mr-2.5 flex h-auto items-center space-x-[13px]", className)} {...props}>
+      <CommonControls />
       <ControlButton
         onClick={minimizeWindow}
         className="background-(--moss-windowControlsLinux-background) hover:background-(--moss-windowControlsLinux-hoverBackground) active:background-(--moss-windowControlsLinux-activeBackground) size-6 cursor-default rounded-full text-(--moss-windowControlsLinux-text) dark:bg-[#373737] dark:text-white dark:hover:bg-[#424242] dark:active:bg-[#565656]"
