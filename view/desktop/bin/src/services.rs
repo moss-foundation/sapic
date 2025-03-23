@@ -142,7 +142,7 @@ fn workspace_manager(
     let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let workspaces_dir: PathBuf = PathBuf::from(dir).join("samples").join("workspaces");
 
-    move |_, _| WorkspaceManager::new(fs, workspaces_dir.clone())
+    move |_, _| WorkspaceManager::new(fs, workspaces_dir.clone()).unwrap()
 }
 
 async fn generate_log<'a>(ctx: &mut CommandContext) -> TauriResult<String> {

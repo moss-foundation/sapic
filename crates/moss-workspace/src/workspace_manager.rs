@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context, Result};
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
-use moss_fs::ports::{FileSystem, RemoveOptions};
+use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
 use std::{path::PathBuf, sync::Arc};
 use arc_swap::access::Access;
 use slotmap::KeyData;
