@@ -216,11 +216,10 @@ const CollectionCreationZone = () => {
 
   return (
     <div
-      className={cn("absolute bottom-8 left-0 p-8 font-medium transition duration-100", {
-        "background-(--moss-primary)/10": canDrop,
-        "bg-[#F4F4F4] dark:bg-black/10": !canDrop,
-      })}
       ref={ref}
+      className={cn("absolute bottom-8 left-0 bg-[#F4F4F4] p-8 font-medium transition duration-100", {
+        "background-[#EDF6FF]": canDrop === true,
+      })}
     >
       <div className="flex flex-col items-center justify-center gap-3 text-center">
         <Icon
@@ -229,7 +228,7 @@ const CollectionCreationZone = () => {
             "text-(--moss-primary)": canDrop,
           })}
         />
-        <span>Drag & drop selected items here to create a new collection</span>
+        <span className="text-black">Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
   );
