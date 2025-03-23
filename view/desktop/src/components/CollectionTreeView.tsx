@@ -170,8 +170,7 @@ export const CollectionTreeView = () => {
           <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
         ))}
       </Scrollbar>
-      {/* {showCollectionCreationZone && <CollectionCreationZone />} */}
-      <CollectionCreationZone />
+      {showCollectionCreationZone && <CollectionCreationZone />}
     </div>
   );
 };
@@ -217,8 +216,9 @@ const CollectionCreationZone = () => {
 
   return (
     <div
-      className={cn("absolute bottom-8 left-0 bg-[#F4F4F4] p-8 font-medium transition duration-100", {
+      className={cn("absolute bottom-8 left-0 p-8 font-medium transition duration-100", {
         "background-(--moss-primary)/10": canDrop,
+        "bg-[#F4F4F4] dark:bg-black/10": !canDrop,
       })}
       ref={ref}
     >
