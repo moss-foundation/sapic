@@ -385,15 +385,6 @@ const TabbedPane = (props: { theme?: string }) => {
             />
             {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
             {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
-            {/* <div>
-                  <button
-                      onClick={() => {
-                          setGapCheck(!gapCheck);
-                      }}
-                  >
-                      {gapCheck ? 'Disable Gap Check' : 'Enable Gap Check'}
-                  </button>
-              </div> */}
           </div>
           <div className="action-container mb-2 flex items-center justify-end p-1 select-none">
             <button
