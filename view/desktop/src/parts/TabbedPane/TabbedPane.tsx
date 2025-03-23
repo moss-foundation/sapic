@@ -49,7 +49,9 @@ const components = {
 
     return (
       <Scrollbar
-        className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
+        className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
+          props.api.isActive ? "select-text" : "select-none"
+        }`}
       >
         <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
           {props.api.title}
@@ -127,7 +129,9 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
 
   return (
     <Scrollbar
-      className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
+      className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
+        props.api.isActive ? "select-text" : "select-none"
+      }`}
     >
       <span>{React.createElement(page)}</span>
 
