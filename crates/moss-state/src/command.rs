@@ -1,4 +1,4 @@
-use crate::manager::AppStateManager;
+use crate::service::StateService;
 use anyhow::Result;
 use moss_tauri::TauriResult;
 use moss_text::ReadOnlyStr;
@@ -90,9 +90,9 @@ impl CommandContext {
 #[macro_export]
 macro_rules! command {
     ($name:expr, $callback:expr) => {
-        CommandDecl::new(read_only_str!($name), |ctx, state| {
+        $crate::command::CommandDecl::new(read_only_str!($name), |ctx| {
             Box::pin(async move {
-                let value = $callback(ctx, state).await?;
+                let value = $callback(ctx).await?;
                 Ok(serde_json::to_value(value)?)
             })
         })
@@ -101,9 +101,8 @@ macro_rules! command {
 
 type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
 
-pub type CommandCallback = Arc<
-    dyn for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a> + Send + Sync,
->;
+pub type CommandCallback =
+    Arc<dyn for<'a> Fn(&'a mut CommandContext) -> CommandResult<'a> + Send + Sync>;
 
 pub struct CommandDecl {
     pub name: ReadOnlyStr,
@@ -113,10 +112,7 @@ pub struct CommandDecl {
 impl CommandDecl {
     pub fn new<F>(name: ReadOnlyStr, f: F) -> Self
     where
-        F: for<'a> Fn(&'a mut CommandContext, &'a AppStateManager) -> CommandResult<'a>
-            + Send
-            + Sync
-            + 'static,
+        F: for<'a> Fn(&'a mut CommandContext) -> CommandResult<'a> + Send + Sync + 'static,
     {
         Self {
             name,

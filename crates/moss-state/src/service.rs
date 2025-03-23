@@ -1,9 +1,9 @@
 use dashmap::DashMap;
+use moss_app::service::prelude::AppService;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
-use moss_theme::models::types::{ThemeDescriptor, ThemeMode};
+use moss_theme::models::types::ThemeDescriptor;
 use parking_lot::RwLock;
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::command::{CommandCallback, CommandDecl};
@@ -18,34 +18,20 @@ pub struct AppDefaults {
     pub locale: LocaleDescriptor,
 }
 
-pub struct AppStateManager {
+pub struct StateService {
     commands: DashMap<ReadOnlyStr, CommandCallback>,
     preferences: AppPreferences,
     defaults: AppDefaults,
 }
 
-impl AppStateManager {
-    pub fn new(themes_dir: &PathBuf) -> Self {
+impl StateService {
+    pub fn new(defaults: AppDefaults) -> Self {
         Self {
             preferences: AppPreferences {
                 theme: RwLock::new(None),
                 locale: RwLock::new(None),
             },
-            defaults: AppDefaults {
-                theme: ThemeDescriptor {
-                    identifier: "moss.sapic-theme.lightDefault".to_string(),
-                    display_name: "Light Default".to_string(),
-                    order: Some(1),
-                    mode: ThemeMode::Light,
-                    source: themes_dir.join("light.css"),
-                },
-                locale: LocaleDescriptor {
-                    identifier: "moss.sapic-locale.en".to_string(),
-                    code: "en".to_string(),
-                    display_name: "English".to_string(),
-                    direction: Some("ltr".to_string()),
-                },
-            },
+            defaults,
             commands: DashMap::new(),
         }
     }
@@ -80,3 +66,5 @@ impl AppStateManager {
         self.commands.get(id).map(|cmd| Arc::clone(&cmd))
     }
 }
+
+impl AppService for StateService {}

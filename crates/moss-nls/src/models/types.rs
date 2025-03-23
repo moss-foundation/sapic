@@ -10,4 +10,6 @@ pub struct LocaleDescriptor {
     pub code: String,
     #[ts(optional)]
     pub direction: Option<String>,
+    #[ts(optional)]
+    pub is_default: Option<bool>,
 }
