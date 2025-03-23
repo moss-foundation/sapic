@@ -14,7 +14,7 @@ pub struct GetTranslationsInput {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationsOutput(pub JsonValue);
+pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
