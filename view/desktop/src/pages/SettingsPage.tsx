@@ -20,7 +20,7 @@ export const Settings = () => {
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;
-    const selectedLocaleInfo = languages?.contents.find((lang: { code: string }) => lang.code === selectedLocaleCode);
+    const selectedLocaleInfo = languages?.find((lang: { code: string }) => lang.code === selectedLocaleCode);
     if (selectedLocaleInfo) {
       mutateChangeLanguagePack({
         localeInfo: selectedLocaleInfo,
@@ -53,7 +53,7 @@ export const Settings = () => {
             value={appState?.preferences.locale?.code || appState?.defaults.locale?.code}
             onChange={handleLanguageChange}
           >
-            {languages?.contents.map((lang: { code: string; displayName: string }) => (
+            {languages?.map((lang: { code: string; displayName: string }) => (
               <option key={lang.code} value={lang.code}>
                 {lang.displayName}
               </option>

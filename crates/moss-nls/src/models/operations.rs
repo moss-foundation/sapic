@@ -17,8 +17,5 @@ pub struct GetTranslationsInput {
 pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListLocalesOutput {
-    pub contents: Vec<LocaleInfo>,
-}
+pub struct ListLocalesOutput(pub Vec<LocaleInfo>);

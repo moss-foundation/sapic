@@ -14,4 +14,4 @@ export type GetTranslationsInput = { language: string; namespace: string };
 
 export type GetTranslationsOutput = JsonValue;
 
-export type ListLocalesOutput = { contents: Array<LocaleInfo> };
+export type ListLocalesOutput = Array<LocaleInfo>;

@@ -102,9 +102,9 @@ impl LocaleService {
     pub async fn list_locales(&self) -> Result<ListLocalesOutput> {
         let locales = self.locales().await?;
 
-        Ok(ListLocalesOutput {
-            contents: locales.into_iter().map(|(_, item)| item).cloned().collect(),
-        })
+        Ok(ListLocalesOutput(
+            locales.into_iter().map(|(_, item)| item).cloned().collect(),
+        ))
     }
 
     pub async fn get_translations(
