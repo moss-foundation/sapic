@@ -170,7 +170,8 @@ export const CollectionTreeView = () => {
           <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
         ))}
       </Scrollbar>
-      {showCollectionCreationZone && <CollectionCreationZone />}
+      {/* {showCollectionCreationZone && <CollectionCreationZone />} */}
+      <CollectionCreationZone />
     </div>
   );
 };
@@ -188,7 +189,6 @@ const CollectionCreationZone = () => {
       element,
       getData: () => ({
         type: "CollectionCreationZone",
-        data: {},
       }),
       canDrop({ source }) {
         return source.data.type === "TreeNode";
@@ -216,26 +216,20 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
-      <div className="relative grid h-full w-full place-items-center">
-        <div
-          className={cn(
-            "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
-            {
-              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
-              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
-              "bg-red-300 opacity-100": canDrop === false,
-            }
-          )}
+    <div
+      className={cn("absolute bottom-8 left-0 bg-[#F4F4F4] p-8 font-medium transition duration-100", {
+        "background-(--moss-primary)/10": canDrop,
+      })}
+      ref={ref}
+    >
+      <div className="flex flex-col items-center justify-center gap-3 text-center">
+        <Icon
+          icon="AddCircle"
+          className={cn("size-5 text-[#717171]", {
+            "text-(--moss-primary)": canDrop,
+          })}
         />
-
-        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center text-(--moss-text) dark:bg-black">
-          {canDrop === false ? (
-            <span>Cannot create new collection from this</span>
-          ) : (
-            <span>Drop to create new collection</span>
-          )}
-        </div>
+        <span>Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
   );
