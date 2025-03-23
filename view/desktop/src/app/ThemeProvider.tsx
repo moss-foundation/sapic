@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 
-import { applyTheme } from "@/utils/applyTheme";
+import { applyColorTheme } from "@/utils/applyTheme";
 import { ColorThemeChangeEventPayload } from "@repo/moss-theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -12,7 +12,7 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
     let unlisten: UnlistenFn | undefined;
 
     const handleColorThemeChanged = (event: { payload: ColorThemeChangeEventPayload }) => {
-      applyTheme(event.payload.id);
+      applyColorTheme(event.payload.id);
       queryClient.invalidateQueries({ queryKey: ["getState"] });
     };
 

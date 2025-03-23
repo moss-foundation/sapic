@@ -13,8 +13,8 @@ export type TauriIpcCommand =
   | "sidebar_get_all_activities"
   | "get_menu_items_by_namespace"
   | "list_locales"
-  | "get_state"
-  | "list_themes";
+  | "get_state" // FIXME: Remove this
+  | "list_color_themes";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

@@ -15,7 +15,7 @@ pub enum ThemeMode {
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct ThemeDescriptor {
+pub struct ColorThemeDescriptor {
     pub identifier: ThemeId,
     pub display_name: String,
     pub mode: ThemeMode,

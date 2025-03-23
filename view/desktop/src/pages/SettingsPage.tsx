@@ -1,15 +1,16 @@
 import { useTranslation } from "react-i18next";
 
-import { useChangeColorTheme, useGetColorThemes } from "@/hooks/useColorTheme";
+import { useChangeColorTheme, useListColorThemes } from "@/hooks/useColorTheme";
 import { useGetAppState } from "@/hooks/useGetAppState";
 import { useChangeLanguagePack, useGetLanguagePacks } from "@/hooks/useLanguagePack";
+import { ColorThemeDescriptor } from "@repo/moss-theme";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useGetAppState();
 
-  const { data: themes } = useGetColorThemes();
+  const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useChangeColorTheme();
 
   const { data: languages } = useGetLanguagePacks();
@@ -25,7 +26,7 @@ export const Settings = () => {
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
-    const selectedTheme = themes?.contents.find(
+    const selectedTheme = themes?.find(
       (theme: { identifier: string; displayName: string }) => theme.identifier === selectedId
     );
     if (selectedTheme) {
@@ -62,7 +63,7 @@ export const Settings = () => {
             value={appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier}
             onChange={handleThemeChange}
           >
-            {themes?.contents.map((theme: { identifier: string; displayName: string }) => (
+            {themes?.map((theme: ColorThemeDescriptor) => (
               <option key={theme.identifier} value={theme.identifier}>
                 {theme.displayName}
               </option>

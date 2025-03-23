@@ -19,7 +19,9 @@ use moss_tauri::{TauriError, TauriResult};
 use moss_text::{quote, ReadOnlyStr};
 use moss_theme::{
     models::{
-        events::ColorThemeChangeEventPayload, operations::ListThemesOutput, types::ThemeDescriptor,
+        events::ColorThemeChangeEventPayload,
+        operations::{GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput},
+        types::ColorThemeDescriptor,
     },
     primitives::ThemeId,
     theme_service::ThemeService,
@@ -33,7 +35,7 @@ use tauri::{Emitter, EventTarget, Manager, State, Window};
 pub async fn change_color_theme(
     app_manager: State<'_, AppManager>,
     window: Window,
-    descriptor: ThemeDescriptor, // FIXME: Should be something like ChangeColorThemeInput
+    descriptor: ColorThemeDescriptor, // FIXME: Should be something like ChangeColorThemeInput
 ) -> TauriResult<()> {
     let app_handle = app_manager.app_handle();
     let state_service = app_manager
@@ -64,27 +66,29 @@ pub async fn change_color_theme(
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn get_color_theme(
     app_manager: State<'_, AppManager>,
-    id: ThemeId, // FIXME: Should be something like GetColorThemeInput
-) -> TauriResult<String> {
+    input: GetColorThemeInput,
+) -> TauriResult<GetColorThemeOutput> {
     let app_handle = app_manager.app_handle();
     let theme_service = app_manager
         .services()
         .get_by_type::<ThemeService>(app_handle)
         .await?;
 
-    Ok(theme_service.read_color_theme(&id).await?)
+    Ok(theme_service.get_color_theme(input).await?)
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
-pub async fn list_themes(app_manager: State<'_, AppManager>) -> TauriResult<ListThemesOutput> {
+pub async fn list_color_themes(
+    app_manager: State<'_, AppManager>,
+) -> TauriResult<ListColorThemesOutput> {
     let app_handle = app_manager.app_handle();
     let theme_service = app_manager
         .services()
         .get_by_type::<ThemeService>(app_handle)
         .await?;
 
-    Ok(theme_service.list_themes().await?)
+    Ok(theme_service.list_color_themes().await?)
 }
 
 #[tauri::command(async)]

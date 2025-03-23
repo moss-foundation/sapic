@@ -1,7 +1,7 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
 import { ListLocalesOutput } from "@repo/moss-nls";
 import { DescribeAppStateOutput } from "@repo/moss-state";
-import { ListThemesOutput } from "@repo/moss-theme";
+import { ListColorThemesOutput } from "@repo/moss-theme";
 import { invoke } from "@tauri-apps/api/core";
 
 // App state
@@ -12,8 +12,8 @@ export const describeAppState = async (): Promise<DescribeAppStateOutput> => {
 
 //Color themes
 
-export const listThemes = async (): Promise<ListThemesOutput> => {
-  return await invoke<ListThemesOutput>("list_themes");
+export const listThemes = async (): Promise<ListColorThemesOutput> => {
+  return await invoke<ListColorThemesOutput>("list_color_themes");
 };
 
 export const getColorTheme = async (source: string): Promise<IpcResult<string, string>> => {

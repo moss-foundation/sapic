@@ -5,7 +5,10 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
 use crate::{
-    models::{operations::ListThemesOutput, types::ThemeDescriptor},
+    models::{
+        operations::{GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput},
+        types::ColorThemeDescriptor,
+    },
     primitives::ThemeId,
 };
 
@@ -14,8 +17,8 @@ const THEMES_REGISTRY_FILE: &str = "themes.json";
 pub struct ThemeService {
     themes_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
-    themes: OnceCell<HashMap<ThemeId, ThemeDescriptor>>,
-    default_theme: OnceCell<ThemeDescriptor>,
+    themes: OnceCell<HashMap<ThemeId, ColorThemeDescriptor>>,
+    default_theme: OnceCell<ColorThemeDescriptor>,
 }
 
 impl ThemeService {
@@ -28,7 +31,7 @@ impl ThemeService {
         }
     }
 
-    pub async fn default_theme(&self) -> Result<&ThemeDescriptor> {
+    pub async fn default_theme(&self) -> Result<&ColorThemeDescriptor> {
         self.default_theme
             .get_or_try_init(|| async move {
                 let themes = self.themes().await?;
@@ -37,7 +40,7 @@ impl ThemeService {
                     .find(|theme| theme.is_default.unwrap_or(false))
                     .cloned();
 
-                Ok::<ThemeDescriptor, anyhow::Error>(
+                Ok::<ColorThemeDescriptor, anyhow::Error>(
                     default_theme.unwrap_or(
                         themes
                             .values()
@@ -50,47 +53,51 @@ impl ThemeService {
             .await
     }
 
-    async fn themes(&self) -> Result<&HashMap<ThemeId, ThemeDescriptor>> {
+    async fn themes(&self) -> Result<&HashMap<ThemeId, ColorThemeDescriptor>> {
         self.themes
             .get_or_try_init(|| async move {
                 let descriptors = self.parse_registry_file().await?;
                 let result = descriptors
                     .into_iter()
                     .map(|item| (item.identifier.clone(), item))
-                    .collect::<HashMap<ThemeId, ThemeDescriptor>>();
+                    .collect::<HashMap<ThemeId, ColorThemeDescriptor>>();
 
-                Ok::<HashMap<ThemeId, ThemeDescriptor>, anyhow::Error>(result)
+                Ok::<_, anyhow::Error>(result)
             })
             .await
     }
 
-    pub async fn list_themes(&self) -> Result<ListThemesOutput> {
+    pub async fn list_color_themes(&self) -> Result<ListColorThemesOutput> {
         let themes = self.themes().await?;
 
-        Ok(ListThemesOutput {
-            contents: themes.into_iter().map(|(_, item)| item).cloned().collect(),
-        })
+        Ok(ListColorThemesOutput(
+            themes.into_iter().map(|(_, item)| item).cloned().collect(),
+        ))
     }
 
-    pub async fn read_color_theme(&self, id: &ThemeId) -> Result<String> {
+    pub async fn get_color_theme(&self, input: GetColorThemeInput) -> Result<GetColorThemeOutput> {
         let themes = self.themes().await?;
 
-        if let Some(descriptor) = themes.get(id) {
-            let mut reader = self
-                .fs
-                .open_file(&self.themes_dir.join(descriptor.source.clone()))
-                .await?;
+        if let Some(descriptor) = themes.get(&input.id) {
+            let css_content = {
+                let mut reader = self
+                    .fs
+                    .open_file(&self.themes_dir.join(descriptor.source.clone()))
+                    .await?;
 
-            let mut content = String::new();
-            reader.read_to_string(&mut content)?;
+                let mut content = String::new();
+                reader.read_to_string(&mut content)?;
 
-            Ok(content)
+                content
+            };
+
+            Ok(GetColorThemeOutput { css_content })
         } else {
-            Err(anyhow!("theme with id `{id}` was not found"))
+            Err(anyhow!("theme with id `{}` was not found", input.id))
         }
     }
 
-    async fn parse_registry_file(&self) -> Result<Vec<ThemeDescriptor>> {
+    async fn parse_registry_file(&self) -> Result<Vec<ColorThemeDescriptor>> {
         let reader = self
             .fs
             .open_file(&self.themes_dir.join(THEMES_REGISTRY_FILE))

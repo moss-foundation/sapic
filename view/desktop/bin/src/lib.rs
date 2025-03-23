@@ -48,9 +48,8 @@ pub async fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::execute_command,
             commands::change_color_theme,
-            commands::change_color_theme,
             commands::get_color_theme,
-            commands::list_themes,
+            commands::list_color_themes,
             commands::describe_app_state,
             commands::change_language_pack,
             commands::list_locales,

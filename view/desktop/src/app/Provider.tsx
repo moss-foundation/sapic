@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 
 import { useGetAppState } from "@/hooks/useGetAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { applyTheme } from "@/utils/applyTheme";
+import { applyColorTheme } from "@/utils/applyTheme";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -27,7 +27,7 @@ const useInitializeAppState = () => {
 
       document.querySelector("html")?.setAttribute("data-theme", theme.mode);
 
-      applyTheme(theme.identifier);
+      applyColorTheme(theme.identifier);
       applyLanguagePack(languagePack);
     }
   }, [data]);

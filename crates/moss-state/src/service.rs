@@ -2,19 +2,19 @@ use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
 use moss_nls::models::types::LocaleDescriptor;
 use moss_text::ReadOnlyStr;
-use moss_theme::models::types::ThemeDescriptor;
+use moss_theme::models::types::ColorThemeDescriptor;
 use parking_lot::RwLock;
 use std::sync::Arc;
 
 use crate::command::{CommandCallback, CommandDecl};
 
 pub struct AppPreferences {
-    pub theme: RwLock<Option<ThemeDescriptor>>,
+    pub theme: RwLock<Option<ColorThemeDescriptor>>,
     pub locale: RwLock<Option<LocaleDescriptor>>,
 }
 
 pub struct AppDefaults {
-    pub theme: ThemeDescriptor,
+    pub theme: ColorThemeDescriptor,
     pub locale: LocaleDescriptor,
 }
 
@@ -44,7 +44,7 @@ impl StateService {
         &self.defaults
     }
 
-    pub fn set_color_theme(&self, theme_descriptor: ThemeDescriptor) {
+    pub fn set_color_theme(&self, theme_descriptor: ColorThemeDescriptor) {
         let mut theme_descriptor_lock = self.preferences.theme.write();
         *theme_descriptor_lock = Some(theme_descriptor);
     }
