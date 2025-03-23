@@ -111,6 +111,9 @@ importers:
         specifier: ^5.7.2
         version: 5.7.3
     devDependencies:
+      '@repo/bindings-utils':
+        specifier: workspace:*
+        version: link:../../packages/bindings-utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -150,6 +153,16 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
+
+  packages/bindings-utils:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.2
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../config-typescript
 
   packages/config-eslint:
     devDependencies:

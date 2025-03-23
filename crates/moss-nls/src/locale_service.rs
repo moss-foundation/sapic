@@ -6,9 +6,9 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
 use crate::models::{
-    operations::{GetTranslationsInput, ListLocalesOutput},
+    operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
     primitives::LocaleId,
-    types::LocaleDescriptor,
+    types::LocaleInfo,
 };
 
 const LOCALES_REGISTRY_FILE: &str = "locales.json";
@@ -16,8 +16,8 @@ const LOCALES_REGISTRY_FILE: &str = "locales.json";
 pub struct LocaleService {
     locales_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
-    locales: OnceCell<HashMap<LocaleId, LocaleDescriptor>>,
-    default_locale: OnceCell<LocaleDescriptor>,
+    locales: OnceCell<HashMap<LocaleId, LocaleInfo>>,
+    default_locale: OnceCell<LocaleInfo>,
 }
 
 impl LocaleService {
@@ -30,7 +30,7 @@ impl LocaleService {
         }
     }
 
-    pub async fn default_locale(&self) -> Result<&LocaleDescriptor> {
+    pub async fn default_locale(&self) -> Result<&LocaleInfo> {
         self.default_locale
             .get_or_try_init(|| async move {
                 let locales = self.locales().await?;
@@ -39,7 +39,7 @@ impl LocaleService {
                     .find(|locale| locale.is_default.unwrap_or(false))
                     .cloned();
 
-                Ok::<LocaleDescriptor, anyhow::Error>(
+                Ok::<LocaleInfo, anyhow::Error>(
                     default_locale.unwrap_or(
                         locales
                             .values()
@@ -51,21 +51,21 @@ impl LocaleService {
             })
             .await
     }
-    async fn locales(&self) -> Result<&HashMap<LocaleId, LocaleDescriptor>> {
+    async fn locales(&self) -> Result<&HashMap<LocaleId, LocaleInfo>> {
         self.locales
             .get_or_try_init(|| async move {
                 let descriptors = self.parse_registry_file().await?;
                 let result = descriptors
                     .into_iter()
                     .map(|item| (item.identifier.clone(), item))
-                    .collect::<HashMap<LocaleId, LocaleDescriptor>>();
+                    .collect::<HashMap<LocaleId, LocaleInfo>>();
 
-                Ok::<HashMap<LocaleId, LocaleDescriptor>, anyhow::Error>(result)
+                Ok::<HashMap<LocaleId, LocaleInfo>, anyhow::Error>(result)
             })
             .await
     }
 
-    async fn parse_registry_file(&self) -> Result<Vec<LocaleDescriptor>> {
+    async fn parse_registry_file(&self) -> Result<Vec<LocaleInfo>> {
         let reader = self
             .fs
             .open_file(&self.locales_dir.join(LOCALES_REGISTRY_FILE))
@@ -102,17 +102,20 @@ impl LocaleService {
     pub async fn list_locales(&self) -> Result<ListLocalesOutput> {
         let locales = self.locales().await?;
 
-        Ok(ListLocalesOutput {
-            contents: locales.into_iter().map(|(_, item)| item).cloned().collect(),
-        })
+        Ok(ListLocalesOutput(
+            locales.into_iter().map(|(_, item)| item).cloned().collect(),
+        ))
     }
 
-    pub async fn get_translations(&self, input: &GetTranslationsInput) -> Result<JsonValue> {
+    pub async fn get_translations(
+        &self,
+        input: &GetTranslationsInput,
+    ) -> Result<GetTranslationsOutput> {
         let translations = self
             .read_translations_from_file(&input.language, &input.namespace)
             .await?;
 
-        Ok(translations)
+        Ok(GetTranslationsOutput(translations))
     }
 }
 
