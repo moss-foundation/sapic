@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { LocaleDescriptor } from "@repo/moss-nls";
+import { LocaleInfo } from "@repo/moss-nls";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
@@ -11,9 +12,9 @@ const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let unlisten: UnlistenFn | undefined;
 
-    const handleLanguageChange = (event: { payload: LocaleDescriptor }) => {
+    const handleLanguageChange = (event: { payload: LocaleInfo }) => {
       applyLanguagePack(event.payload);
-      queryClient.invalidateQueries({ queryKey: ["getState"] });
+      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
     };
 
     const setupListener = async () => {

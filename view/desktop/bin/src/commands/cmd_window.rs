@@ -2,10 +2,7 @@ use anyhow::anyhow;
 use moss_app::manager::AppManager;
 use moss_nls::{
     locale_service::LocaleService,
-    models::{
-        operations::{GetTranslationsInput, ListLocalesOutput},
-        types::LocaleInfo,
-    },
+    models::operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
 };
 use moss_state::{
     command::CommandContext,
@@ -149,7 +146,7 @@ pub async fn list_locales(app_manager: State<'_, AppManager>) -> TauriResult<Lis
 pub async fn get_translations(
     app_manager: State<'_, AppManager>,
     input: GetTranslationsInput,
-) -> TauriResult<JsonValue> {
+) -> TauriResult<GetTranslationsOutput> {
     let app_handle = app_manager.app_handle();
     let locale_service = app_manager
         .services()

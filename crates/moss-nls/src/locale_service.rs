@@ -6,7 +6,7 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
 use crate::models::{
-    operations::{GetTranslationsInput, ListLocalesOutput},
+    operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
     primitives::LocaleId,
     types::LocaleInfo,
 };
@@ -107,12 +107,15 @@ impl LocaleService {
         })
     }
 
-    pub async fn get_translations(&self, input: &GetTranslationsInput) -> Result<JsonValue> {
+    pub async fn get_translations(
+        &self,
+        input: &GetTranslationsInput,
+    ) -> Result<GetTranslationsOutput> {
         let translations = self
             .read_translations_from_file(&input.language, &input.namespace)
             .await?;
 
-        Ok(translations)
+        Ok(GetTranslationsOutput(translations))
     }
 }
 
