@@ -146,8 +146,8 @@ export const PanelActions = (props: { panels: string[]; api: DockviewApi; active
     <div className="action-container">
       <Scrollbar>
         <div className="flex items-center gap-2">
-          {props.panels.map((id) => {
-            return <PanelAction key={id} {...props} panelId={id} />;
+          {props.panels.map((id, index) => {
+            return <PanelAction key={`panel-${id}-${index}`} {...props} panelId={id} />;
           })}
         </div>
       </Scrollbar>

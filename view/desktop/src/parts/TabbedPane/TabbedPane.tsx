@@ -218,14 +218,16 @@ const TabbedPane = (props: { theme?: string }) => {
       api.onDidRemovePanel((event) => {
         setPanels((_) => {
           const next = [..._];
-          next.splice(
-            next.findIndex((x) => x === event.id),
-            1
-          );
+          if (event && event.id) {
+            next.splice(
+              next.findIndex((x) => x === event.id),
+              1
+            );
+          }
 
           return next;
         });
-        addLogLine(`Panel Removed ${event.id}`);
+        addLogLine(`Panel Removed ${event?.id || "unknown"}`);
       }),
 
       api.onDidAddGroup((event) => {
@@ -262,15 +264,46 @@ const TabbedPane = (props: { theme?: string }) => {
         event.accept();
       }),
     ];
-    const loadLayout = () => {
-      defaultConfig(api);
-      api.clear();
-      defaultConfig(api);
+
+    // Initialize layout only once when the component mounts
+    const initializeLayout = async () => {
+      try {
+        // Wait for a short time to ensure the component is ready
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Clear existing layout
+        api.clear();
+
+        // Wait again before setting up new layout
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Set up the new layout
+        defaultConfig(api);
+      } catch (e) {
+        console.warn("Failed to initialize layout:", e);
+      }
     };
 
-    loadLayout();
+    // Use setTimeout to ensure the component is fully mounted
+    const timeoutId = setTimeout(initializeLayout, 0);
+
     return () => {
+      clearTimeout(timeoutId);
       disposables.forEach((disposable) => disposable.dispose());
+
+      // Clean up when component unmounts
+      try {
+        // Wait for a short time before clearing
+        setTimeout(() => {
+          try {
+            api.clear();
+          } catch (e) {
+            // Ignore cleanup errors during unmount
+          }
+        }, 100);
+      } catch (e) {
+        // Ignore cleanup errors during unmount
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api]);

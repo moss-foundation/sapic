@@ -142,8 +142,8 @@ export const GroupActions = (props: { groups: string[]; api: DockviewApi; active
     <div className="action-container">
       <Scrollbar>
         <div className="flex items-center gap-2">
-          {props.groups.map((groupId) => {
-            return <GroupAction key={groupId} {...props} groupId={groupId} />;
+          {props.groups.map((groupId, index) => {
+            return <GroupAction key={`group-${groupId}-${index}`} {...props} groupId={groupId} />;
           })}
         </div>
       </Scrollbar>
