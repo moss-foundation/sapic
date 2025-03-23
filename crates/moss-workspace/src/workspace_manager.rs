@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Context, Result};
 use arc_swap::ArcSwapOption;
-use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
 use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
 use std::{path::PathBuf, sync::Arc};
@@ -23,8 +22,6 @@ use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
 use crate::storage::global_db_manager::GlobalDbManagerImpl;
 use crate::storage::{GlobalDbManager, WorkspaceEntity};
-use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::workspace::CollectionKey;
 
 slotmap::new_key_type! {
     pub struct WorkspaceKey;
@@ -272,8 +269,6 @@ impl WorkspaceManager {
         Ok(txn.commit()?)
     }
 
-
-
     pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
         let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
 
@@ -323,7 +318,7 @@ mod tests {
         let fs = Arc::new(DiskFileSystem::new());
         let dir: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone());
+        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
 
         let workspace_name = random_workspace_name();
         let result = workspace_manager

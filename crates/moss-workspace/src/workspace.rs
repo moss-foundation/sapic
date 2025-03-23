@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
-use validator::Validate;
+use validator::{Validate, ValidationErrors};
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{
     CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
@@ -38,16 +38,19 @@ impl std::fmt::Display for CollectionKey {
     }
 }
 
-#[derive(Clone, Debug, Error)]
-pub enum CollectionOperationError {
-    #[error("The name of a collection cannot be empty.")]
-    EmptyName,
-    #[error("`{name}` is an invalid name for a collection.")]
-    InvalidName { name: String }, // TODO: validate name
-    #[error("A collection named {name} already exists in {path}.")]
-    DuplicateName { name: String, path: PathBuf },
-    #[error("The collection named `{name}` does not exist in {path}")]
-    NonexistentCollection { name: String, path: PathBuf },
+#[derive(Error, Debug)]
+pub enum OperationError {
+    #[error("validation error: {0}")]
+    Validation(#[from] ValidationErrors),
+
+    #[error("collection {key} not found at {path}")]
+    NotFound { key: PathBuf, path: PathBuf },
+
+    #[error("collection {key} already exists at {path}")]
+    AlreadyExists { key: PathBuf, path: PathBuf },
+
+    #[error("unknown error: {0}")]
+    Unknown(#[from] anyhow::Error),
 }
 
 type CollectionSlot = (Collection, CollectionMetadata);
@@ -120,7 +123,7 @@ impl Workspace {
 }
 
 impl Workspace {
-    pub async fn list_collections(&self) -> Result<ListCollectionsOutput> {
+    pub async fn list_collections(&self) -> Result<ListCollectionsOutput, OperationError> {
         let collections = self.collections().await?;
         let collections_lock = collections.read().await;
 
@@ -143,15 +146,17 @@ impl Workspace {
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
-    ) -> Result<CreateCollectionOutput> {
-        // TODO: Validate input
-        if input.name.trim().is_empty() {
-            return Err(CollectionOperationError::EmptyName.into());
-        }
+    ) -> Result<CreateCollectionOutput, OperationError> {
+        input.validate()?;
 
         let full_path = input.path.join(&input.name);
 
-        // TODO: is dir with the same name already exists
+        if full_path.exists() {
+            return Err(OperationError::AlreadyExists {
+                key: PathBuf::from(&input.name),
+                path: full_path.clone()
+            });
+        }
 
         let collections = self
             .collections()
@@ -192,7 +197,7 @@ impl Workspace {
         })
     }
 
-    pub async fn rename_collection(&self, input: RenameCollectionInput) -> Result<()> {
+    pub async fn rename_collection(&self, input: RenameCollectionInput) -> Result<(), OperationError> {
         input.validate()?;
 
         let collections = self
@@ -239,7 +244,7 @@ impl Workspace {
         Ok(txn.commit()?)
     }
 
-    pub async fn delete_collection(&self, input: DeleteCollectionInput) -> Result<()> {
+    pub async fn delete_collection(&self, input: DeleteCollectionInput) -> Result<(), OperationError> {
         let collections = self.collections().await?;
         let collection_key = CollectionKey::from(input.key);
 
@@ -269,7 +274,7 @@ impl Workspace {
 
         Ok(txn.commit()?)
     }
-    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+    pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
         let _ = self.state_db_manager.take();
 
         let old_path = std::mem::replace(&mut self.path, new_path.clone());
@@ -300,18 +305,8 @@ impl Workspace {
 mod tests {
     use std::fs;
     use super::*;
-    use crate::utils::random_collection_name;
+    use crate::utils::{random_collection_name, random_string};
     use moss_fs::adapters::disk::DiskFileSystem;
-
-    fn random_string(length: usize) -> String {
-        use rand::{distr::Alphanumeric, Rng};
-
-        rand::rng()
-            .sample_iter(Alphanumeric)
-            .take(length)
-            .map(char::from)
-            .collect()
-    }
 
 
     async fn setup_test_workspace() -> (PathBuf, Workspace) {
