@@ -11,7 +11,8 @@ use moss_workspace::workspace_manager::*;
 #[tokio::test]
 async fn create_workspace_success() {
     let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    let workspaces_path: PathBuf =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
 
     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
 
@@ -33,7 +34,7 @@ async fn create_workspace_success() {
 #[tokio::test]
 async fn create_workspace_empty_name() {
     let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
 
     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
 
@@ -49,7 +50,7 @@ async fn create_workspace_empty_name() {
 #[tokio::test]
 async fn create_workspace_duplicate_name() {
     let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
 
     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
     let workspace_name = random_workspace_name();

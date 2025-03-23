@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
-
+use validator::Validate;
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{
     CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
@@ -144,17 +144,19 @@ impl Workspace {
         &self,
         input: CreateCollectionInput,
     ) -> Result<CreateCollectionOutput> {
+        // TODO: Validate input
         if input.name.trim().is_empty() {
             return Err(CollectionOperationError::EmptyName.into());
         }
 
         let full_path = input.path.join(&input.name);
+
+        // TODO: is dir with the same name already exists
+
         let collections = self
             .collections()
             .await
             .context("Failed to get collections")?;
-
-        // TODO: is dir with the same name already exists
 
         let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
@@ -191,9 +193,7 @@ impl Workspace {
     }
 
     pub async fn rename_collection(&self, input: RenameCollectionInput) -> Result<()> {
-        if input.new_name.trim().is_empty() {
-            return Err(CollectionOperationError::EmptyName.into());
-        }
+        input.validate()?;
 
         let collections = self
             .collections()

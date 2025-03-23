@@ -18,7 +18,7 @@ impl StateDbManagerImpl {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         let db_client = ReDbClient::new(path.as_ref().join(WORKSPACE_STATE_DB_NAME))?
             .with_bincode_table(&collection_store::TABLE_COLLECTIONS)?;
-        let collection_store = Arc::new(CollectionStoreImpl::new(db_client.clone()));
+        let collection_store = Arc::new(CollectionStoreImpl::new(db_client));
 
         Ok(Self { collection_store })
     }
