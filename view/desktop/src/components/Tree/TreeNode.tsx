@@ -36,7 +36,12 @@ export const TreeNode = ({
     useContext(TreeContext);
   const { currentActivePanelId, addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeftForAddForm = useMemo(
+    () => (depth + 1) * nodeOffset + paddingLeft,
+    [depth, nodeOffset, paddingLeft]
+  );
+
   const nodeStyle = useMemo(
     () =>
       cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
@@ -44,6 +49,7 @@ export const TreeNode = ({
       }),
     [currentActivePanelId, node.id]
   );
+
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
@@ -214,7 +220,7 @@ export const TreeNode = ({
 
         {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="h-full w-full">
-            <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
+            <ul className={cn("h-full w-full pl-1", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
               {filteredChildNodes.map((childNode) => (
                 <TreeNode
                   parentNode={node}
@@ -235,8 +241,13 @@ export const TreeNode = ({
                 />
               ))}
               {(isAddingRootFileNode || isAddingRootFolderNode) && (
-                <div className={nodeStyle} style={{ paddingLeft: `${depth * nodeOffset + paddingLeft}px` }}>
-                  <TestCollectionIcon type={node.type} />
+                <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
+                  <TestCollectionIcon
+                    type={node.type}
+                    className={cn({
+                      "opacity-0": isAddingRootFileNode,
+                    })}
+                  />
                   <NodeAddForm
                     isFolder={isAddingRootFolderNode}
                     restrictedNames={node.childNodes.map((childNode) => childNode.id)}
@@ -279,13 +290,13 @@ export const TreeNode = ({
                 paddingLeft: nodePaddingLeft,
                 paddingRight: paddingRight + 3,
               }}
-              onClick={(e) => {
+              onClick={() => {
                 if (node.isFolder) handleFolderClick();
                 else addPanel({ id: `${node.id}` });
 
                 onNodeClick?.(node);
               }}
-              onDoubleClick={(e) => onNodeDoubleClick?.(node)}
+              onDoubleClick={() => onNodeDoubleClick?.(node)}
               className={cn(
                 nodeStyle,
                 "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) relative w-full cursor-pointer items-center gap-1 dark:hover:text-black",
@@ -350,11 +361,13 @@ export const TreeNode = ({
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (
-        <div
-          style={{ paddingLeft: `${(depth + 1) * nodeOffset + paddingLeft}px` }}
-          className="flex w-full min-w-0 items-center gap-1"
-        >
-          <TestCollectionIcon type={node.type} className="ml-auto" />
+        <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
+          <TestCollectionIcon
+            type={node.type}
+            className={cn("ml-auto", {
+              "opacity-0": isAddingFileNode,
+            })}
+          />
           <NodeAddForm
             isFolder={isAddingFolderNode}
             restrictedNames={node.childNodes.map((childNode) => childNode.id)}
