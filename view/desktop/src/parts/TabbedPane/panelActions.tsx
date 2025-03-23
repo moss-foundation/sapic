@@ -21,6 +21,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         disposable.dispose();
       };
     }
+    return undefined;
   }, [props.api, props.panelId]);
 
   const [panel, setPanel] = React.useState<IDockviewPanel | undefined>(undefined);
@@ -46,7 +47,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
     return () => {
       list.forEach((l) => l.dispose());
     };
-  }, [props.api, props.panelId]);
+  }, [props.api, props.panelId, panel]);
 
   const [visible, setVisible] = React.useState<boolean>(true);
 
@@ -98,7 +99,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         >
           <span className="material-symbols-outlined">close</span>
         </button>
-        <button title="Panel visiblity cannot be edited manually." disabled={true} className="demo-icon-button">
+        <button title="Panel visibility cannot be edited manually." disabled={true} className="demo-icon-button">
           <span className="material-symbols-outlined">{visible ? "visibility" : "visibility_off"}</span>
         </button>
         <div>
