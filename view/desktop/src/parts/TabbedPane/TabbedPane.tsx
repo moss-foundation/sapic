@@ -265,26 +265,20 @@ const TabbedPane = (props: { theme?: string }) => {
       }),
     ];
 
-    // Initialize layout only once when the component mounts
     const initializeLayout = async () => {
       try {
-        // Wait for a short time to ensure the component is ready
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Clear existing layout
         api.clear();
 
-        // Wait again before setting up new layout
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Set up the new layout
         defaultConfig(api);
       } catch (e) {
         console.warn("Failed to initialize layout:", e);
       }
     };
 
-    // Use setTimeout to ensure the component is fully mounted
     const timeoutId = setTimeout(initializeLayout, 0);
 
     return () => {
@@ -293,7 +287,6 @@ const TabbedPane = (props: { theme?: string }) => {
 
       // Clean up when component unmounts
       try {
-        // Wait for a short time before clearing
         setTimeout(() => {
           try {
             api.clear();
