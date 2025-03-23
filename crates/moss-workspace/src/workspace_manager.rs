@@ -50,11 +50,11 @@ pub enum OperationError {
     #[error("validation error: {0}")]
     Validation(#[from] ValidationErrors),
 
-    #[error("workspace {key} not found at {path}")]
-    NotFound { key: PathBuf, path: PathBuf },
+    #[error("workspace {name} not found at {path}")]
+    NotFound { name: String, path: PathBuf },
 
-    #[error("workspace {key} already exists at {path}")]
-    AlreadyExists { key: PathBuf, path: PathBuf },
+    #[error("workspace {name} already exists at {path}")]
+    AlreadyExists { name: String, path: PathBuf },
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
@@ -147,8 +147,8 @@ impl WorkspaceManager {
         // Check if workspace already exists
         if full_path.exists() {
             return Err(OperationError::AlreadyExists {
-                key: PathBuf::from(&input.name),
-                path: full_path.clone(),
+                name: input.name,
+                path: full_path,
             });
         }
 
@@ -163,7 +163,7 @@ impl WorkspaceManager {
             &WorkspaceEntity {}
         )?;
 
-        self.fs.create_dir(&full_path).await.map_err(OperationError::Unknown)?;
+        self.fs.create_dir(&full_path).await.context("Failed to create the workspace directory")?;
 
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
@@ -198,12 +198,21 @@ impl WorkspaceManager {
         let mut workspaces_lock = workspaces.write().await;
         let mut workspace_info = workspaces_lock.read_mut(workspace_key).context("Failed to lease the workspace")?;
 
-        workspace_info.name = input.new_name.clone();
-
         let old_path = workspace_info.path.clone();
-        let new_path = old_path.parent().context("Parent directory not found")?.join(&input.new_name);
+        if !old_path.exists() {
+            return Err(OperationError::NotFound {
+                name: workspace_info.name.clone(),
+                path: old_path,
+            })
+        }
 
-        workspace_info.path = new_path.clone();
+        let new_path = old_path.parent().context("Parent directory not found")?.join(&input.new_name);
+        if new_path.exists() {
+            return Err(OperationError::AlreadyExists {
+                name: input.new_name,
+                path: new_path,
+            })
+        }
 
         let workspace_store = self.global_db_manager()?.workspace_store();
         let (mut txn, table) = workspace_store.begin_write()?;
@@ -237,6 +246,9 @@ impl WorkspaceManager {
             self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
         }
 
+        workspace_info.name = input.new_name.clone();
+        workspace_info.path = new_path.clone();
+
         Ok(txn.commit()?)
     }
 
@@ -256,6 +268,7 @@ impl WorkspaceManager {
         let (mut txn, table) = workspace_store.begin_write()?;
         table.remove(&mut txn, workspace_path.to_string_lossy().to_string())?;
 
+        // TODO: logging if the folder has already been removed from the filesystem
         self.fs
             .remove_dir(
                 &workspace_path,
@@ -270,6 +283,13 @@ impl WorkspaceManager {
     }
 
     pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
+        if !input.path.exists() {
+            return Err(OperationError::NotFound {
+                name: input.path.file_name().unwrap_or_default().to_string_lossy().to_string(),
+                path: input.path.clone()
+            });
+        }
+
         let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
 
         let known_workspaces = self.known_workspaces().await?;

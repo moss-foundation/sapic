@@ -24,4 +24,4 @@ scraper.workspace = true
 xml-rs.workspace = true
 slotmap.workspace = true
 rand.workspace = true
-validator.workspace = true
+validator = { workspace = true, features = ["derive"]}

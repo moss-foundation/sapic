@@ -71,8 +71,6 @@ pub struct CreateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub key: u64,
-    pub name: String,
-    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]

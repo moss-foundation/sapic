@@ -43,11 +43,11 @@ pub enum OperationError {
     #[error("validation error: {0}")]
     Validation(#[from] ValidationErrors),
 
-    #[error("collection {key} not found at {path}")]
-    NotFound { key: PathBuf, path: PathBuf },
+    #[error("collection {name} not found at {path}")]
+    NotFound { name: String, path: PathBuf },
 
-    #[error("collection {key} already exists at {path}")]
-    AlreadyExists { key: PathBuf, path: PathBuf },
+    #[error("collection {name} already exists at {path}")]
+    AlreadyExists { name: String, path: PathBuf },
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
@@ -153,7 +153,7 @@ impl Workspace {
 
         if full_path.exists() {
             return Err(OperationError::AlreadyExists {
-                key: PathBuf::from(&input.name),
+                name: input.name,
                 path: full_path.clone()
             });
         }
@@ -192,8 +192,6 @@ impl Workspace {
 
         Ok(CreateCollectionOutput {
             key: collection_key.as_u64(),
-            name: input.name,
-            path: full_path,
         })
     }
 
@@ -212,13 +210,25 @@ impl Workspace {
             .context("Failed to lease the collection")?;
 
         let (collection, metadata) = &mut *lease_guard;
-        metadata.name = input.new_name.clone();
 
         let old_path = collection.path().to_owned();
+        if !old_path.exists() {
+            return Err(OperationError::NotFound {
+                name: metadata.name.clone(),
+                path: old_path,
+            })
+        }
+
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
             .join(&input.new_name);
+        if new_path.exists() {
+            return Err(OperationError::AlreadyExists {
+                name: input.new_name,
+                path: new_path,
+            })
+        }
 
         let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
@@ -241,6 +251,8 @@ impl Workspace {
             .await
             .context("Failed to reset the collection")?;
 
+        metadata.name = input.new_name.clone();
+
         Ok(txn.commit()?)
     }
 
@@ -262,6 +274,7 @@ impl Workspace {
         let (mut txn, table) = collection_store.begin_write()?;
         table.remove(&mut txn, collection_path.to_string_lossy().to_string())?;
 
+        // TODO: logging if the folder has already been removed from the filesystem
         self.fs
             .remove_dir(
                 &collection_path,
