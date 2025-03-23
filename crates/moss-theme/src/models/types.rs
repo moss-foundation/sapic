@@ -22,4 +22,6 @@ pub struct ThemeDescriptor {
     #[ts(optional)]
     pub order: Option<usize>,
     pub source: PathBuf,
+    #[ts(optional)]
+    pub is_default: Option<bool>,
 }

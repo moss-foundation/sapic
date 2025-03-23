@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { Home, Logs, Settings } from "@/pages";
 import {
   DockviewApi,
@@ -22,7 +23,10 @@ import { setGridState } from "./utils";
 
 import "./assets/styles.css";
 
-import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { DropNodeElement } from "@/components/Tree/types";
+import { getActualDropSourceTarget } from "@/components/Tree/utils";
+import { useDockviewStore } from "@/store/Dockview";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const DebugContext = React.createContext<boolean>(false);
 
@@ -43,11 +47,14 @@ const components = {
     const metadata = usePanelApiMetadata(props.api);
 
     return (
-      <div
+      <Scrollbar
         className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
       >
-        <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform text-[42px] opacity-50">
+        <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
           {props.api.title}
+          {props?.params.someRandomString && (
+            <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+          )}
         </span>
 
         {isDebug && (
@@ -63,7 +70,7 @@ const components = {
             <Table data={metadata} />
           </div>
         )}
-      </div>
+      </Scrollbar>
     );
   },
   nested: () => {
@@ -113,10 +120,12 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
-  setGridState(props.containerApi);
+  React.useEffect(() => {
+    setGridState(props.containerApi);
+  }, [props.containerApi]);
 
   return (
-    <div
+    <Scrollbar
       className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""}`}
     >
       <span>{React.createElement(page)}</span>
@@ -134,7 +143,7 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
           <Table data={metadata} />
         </div>
       )}
-    </div>
+    </Scrollbar>
   );
 }
 
@@ -164,6 +173,8 @@ const WatermarkComponent = () => {
 
 const TabbedPane = (props: { theme?: string }) => {
   const [logLines, setLogLines] = React.useState<{ text: string; timestamp?: Date; backgroundColor?: string }[]>([]);
+
+  const dockviewStore = useDockviewStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -198,7 +209,8 @@ const TabbedPane = (props: { theme?: string }) => {
         addLogLine(`Panel Added ${event.id}`);
       }),
       api.onDidActivePanelChange((event) => {
-        setActivePanel(event?.id);
+        console.log("active panel change", event);
+        dockviewStore.setCurrentActivePanelId(event?.id || undefined);
         addLogLine(`Panel Activated ${event?.id}`);
       }),
       api.onDidRemovePanel((event) => {
@@ -248,34 +260,30 @@ const TabbedPane = (props: { theme?: string }) => {
         event.accept();
       }),
     ];
-
     const loadLayout = () => {
       defaultConfig(api);
     };
 
     loadLayout();
-
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api]);
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+    dockviewStore.setApi(event.api);
   };
 
   const dockviewRef = React.useRef<HTMLDivElement | null>(null);
-  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<
-    (ElementDragPayload & { pragmaticType: boolean }) | null
-  >(null);
+  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNodeElement | null>(null);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
-    if (!pragmaticDropElement || !pragmaticDropElement?.pragmaticType) return;
+    if (!pragmaticDropElement) return;
 
-    const newPanelId = (pragmaticDropElement.data?.label as string) || "test_pragmatic_panel";
-
-    event.api.addPanel({
-      id: newPanelId,
+    dockviewStore.addPanel({
+      id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {
         direction: positionToDirection(event.position),
@@ -293,13 +301,19 @@ const TabbedPane = (props: { theme?: string }) => {
     return dropTargetForElements({
       element: dockviewRef.current,
       onDragEnter({ source }) {
-        if (source) setPragmaticDropElement({ ...source, pragmaticType: true });
+        const sourceTarget = getActualDropSourceTarget(source);
+        if (source) setPragmaticDropElement(sourceTarget);
       },
+      canDrop({ source }) {
+        console.log(source);
+        return source?.data?.type === "TreeNode";
+      },
+
       onDragLeave() {
         setPragmaticDropElement(null);
       },
     });
-  }, [dockviewRef]);
+  }, [dockviewRef, dockviewStore]);
 
   const [watermark, setWatermark] = React.useState<boolean>(false);
 
@@ -370,7 +384,7 @@ const TabbedPane = (props: { theme?: string }) => {
         </button>
       </div>
       <div className="flex h-0 grow">
-        <div className="flex h-full grow overflow-hidden">
+        <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>
             <DockviewReact
               ref={dockviewRef}
@@ -385,11 +399,11 @@ const TabbedPane = (props: { theme?: string }) => {
               onDidDrop={onDidDrop}
             />
           </DebugContext.Provider>
-        </div>
+        </Scrollbar>
 
         {showLogs && (
           <div className="ml-2 flex w-[400px] shrink-0 flex-col overflow-hidden bg-black font-mono text-white">
-            <div className="grow overflow-auto">
+            <Scrollbar className="grow overflow-auto">
               {logLines.map((line, i) => {
                 return (
                   <div
@@ -411,8 +425,8 @@ const TabbedPane = (props: { theme?: string }) => {
                   </div>
                 );
               })}
-            </div>
-            <div className="flex justify-end p-1">
+            </Scrollbar>
+            <Scrollbar className="flex justify-end p-1">
               <button
                 onClick={() => {
                   setLogLines([]);
@@ -420,7 +434,7 @@ const TabbedPane = (props: { theme?: string }) => {
               >
                 Clear
               </button>
-            </div>
+            </Scrollbar>
           </div>
         )}
       </div>

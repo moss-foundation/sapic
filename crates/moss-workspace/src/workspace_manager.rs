@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context, Result};
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
-use moss_app::service::AppService;
-use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
+use moss_app::service::prelude::AppService;
+use moss_fs::ports::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
 use arc_swap::access::Access;
 use slotmap::KeyData;
@@ -309,17 +309,7 @@ impl WorkspaceManager {
     }
 }
 
-impl AppService for WorkspaceManager {
-    fn name(&self) -> &'static str {
-        std::any::type_name::<Self>()
-    }
-
-    fn dispose(&self) {}
-
-    fn as_any(&self) -> &(dyn std::any::Any + Send) {
-        self
-    }
-}
+impl AppService for WorkspaceManager {}
 
 #[cfg(test)]
 mod tests {
@@ -327,6 +317,28 @@ mod tests {
     use moss_fs::adapters::disk::DiskFileSystem;
 
     use super::*;
+
+    #[tokio::test]
+    async fn create_workspace() {
+        let fs = Arc::new(DiskFileSystem::new());
+        let dir: PathBuf =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
+        let workspace_manager = WorkspaceManager::new(fs, dir.clone());
+
+        let workspace_name = random_workspace_name();
+        let result = workspace_manager
+            .create_workspace(CreateWorkspaceInput {
+                name: workspace_name.clone(),
+            })
+            .await;
+
+        assert!(result.is_ok());
+
+        // Clean up
+        {
+            std::fs::remove_dir_all(dir.join(workspace_name)).unwrap();
+        }
+    }
 
     #[tokio::test]
     async fn list_workspaces() {

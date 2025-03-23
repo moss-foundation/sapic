@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { useDockviewStore } from "@/store/Dockview";
 import { cn } from "@/utils";
 
 import { ContextMenu, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
@@ -33,9 +34,16 @@ export const TreeNode = ({
 }: TreeNodeComponentProps) => {
   const { treeId, nodeOffset, paddingLeft, paddingRight, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
+  const { currentActivePanelId, addPanel } = useDockviewStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
-  const nodeStyle = useMemo(() => "flex w-full min-w-0 items-center gap-1 py-0.5", []);
+  const nodeStyle = useMemo(
+    () =>
+      cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
+        "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id,
+      }),
+    [currentActivePanelId, node.id]
+  );
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
@@ -273,6 +281,8 @@ export const TreeNode = ({
               }}
               onClick={(e) => {
                 if (node.isFolder) handleFolderClick();
+                else addPanel({ id: `${node.id}` });
+
                 onNodeClick?.(node);
               }}
               onDoubleClick={(e) => onNodeDoubleClick?.(node)}

@@ -56,7 +56,8 @@ strum = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing-subscriber.workspace = true
 tracing.workspace = true
-
+uuid = { workspace = true, features = ["v4"] }
+futures.workspace = true
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 mimalloc = { version = "0.1.39", default-features = false }

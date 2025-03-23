@@ -16,7 +16,6 @@ bincode.workspace = true
 dashmap.workspace = true
 tokio.workspace = true
 async-trait.workspace = true
-patricia_tree.workspace = true
 parking_lot.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 serde_json.workspace = true

@@ -3,7 +3,8 @@
     "identifier": "moss.sapic-locale.en",
     "displayName": "English",
     "code": "en",
-    "direction": "ltr"
+    "direction": "ltr",
+    "isDefault": true
   },
   {
     "identifier": "moss.sapic-locale.ru",

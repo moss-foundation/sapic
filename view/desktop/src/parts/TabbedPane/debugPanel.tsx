@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Scrollbar } from "@/components/Scrollbar";
 import { DockviewGroupLocation, DockviewPanelApi, DockviewPanelRenderer } from "@repo/moss-tabs";
 
 export interface PanelApiMetadata {
@@ -37,7 +38,7 @@ export interface PanelApiMetadata {
 
 export const Table = (props: { data: PanelApiMetadata }) => {
   return (
-    <div className="data-table">
+    <Scrollbar className="data-table">
       <table>
         <tr>
           <th>{"Key"}</th>
@@ -54,7 +55,7 @@ export const Table = (props: { data: PanelApiMetadata }) => {
           );
         })}
       </table>
-    </div>
+    </Scrollbar>
   );
 };
 
