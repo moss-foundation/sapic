@@ -24,7 +24,7 @@ export function CommonControls() {
   };
 
   return (
-    <>
+    <div className="select-none">
       <ControlButton
         onClick={() => onAddPanel("Home")}
         className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
@@ -52,6 +52,6 @@ export function CommonControls() {
       >
         <span className="material-symbols-outlined">{showDebugPanels ? "hide_source" : "pest_control"}</span>
       </ControlButton>
-    </>
+    </div>
   );
 }

@@ -395,7 +395,7 @@ const TabbedPane = (props: { theme?: string }) => {
                   </button>
               </div> */}
           </div>
-          <div className="action-container mb-2 flex items-center justify-end p-1">
+          <div className="action-container mb-2 flex items-center justify-end p-1 select-none">
             <button
               className="mr-2 rounded"
               onClick={() => {

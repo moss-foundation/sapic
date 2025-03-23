@@ -147,7 +147,7 @@ export const GridActions = (props: {
   }, [gap, props.api]);
 
   return (
-    <div className="action-container">
+    <div className="action-container select-none">
       <Scrollbar>
         <div className="flex h-10 items-center gap-2">
           <span className="grow" />

@@ -56,7 +56,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
   };
 
   return (
-    <div className="button-action">
+    <div className="button-action select-none">
       <div className="flex">
         <button
           className={props.activePanel === props.panelId ? "demo-button selected" : "demo-button"}
@@ -124,11 +124,11 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
   };
 
   return (
-    <div className="absolute top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform bg-black p-5">
+    <div className="absolute top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform bg-black p-5 select-none">
       <div>
         <span className="!text-white">Edit Panel Title</span>
       </div>
-      <input className="!text-black" value={title} onChange={onChange} />
+      <input className="!text-black select-text" value={title} onChange={onChange} />
       <div className="button-group">
         <button className="panel-builder-button" onClick={onClick}>
           Edit
@@ -143,7 +143,7 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
 
 export const PanelActions = (props: { panels: string[]; api: DockviewApi; activePanel?: string }) => {
   return (
-    <div className="action-container">
+    <div className="action-container select-none">
       <Scrollbar>
         <div className="flex items-center gap-2">
           {props.panels.map((id, index) => {
