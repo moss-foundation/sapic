@@ -25,3 +25,4 @@ xml-rs.workspace = true
 slotmap.workspace = true
 rand.workspace = true
 validator = { workspace = true, features = ["derive"]}
+regex = "1.11.1"

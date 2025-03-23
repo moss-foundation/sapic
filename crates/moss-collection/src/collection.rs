@@ -22,6 +22,7 @@ use crate::{
     },
     storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
 };
+use crate::sanitizer::{decode_directory_name, encode_directory_name};
 
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
@@ -79,7 +80,7 @@ pub struct CollectionRequestData {
 }
 
 fn request_file_name(name: &str, typ: &RequestType) -> String {
-    format!("{}.{}.sapic", name, typ.to_string())
+    format!("{}.{}.sapic", encode_directory_name(name), typ.to_string())
 }
 
 impl CollectionRequestData {
@@ -256,7 +257,7 @@ impl Collection {
     pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput, OperationError> {
         input.validate()?;
 
-        let request_dir_name = format!("{}.request", input.name);
+        let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
 
         let request_dir_relative_path = input
             .relative_path
@@ -317,7 +318,8 @@ impl Collection {
             &RequestEntity { order: None },
         )?;
 
-        let request_file_name = format!("{}.{}.sapic", input.name, request_file_extension);
+        // For consistency we are encoding both the directory and the request file
+        let request_file_name = format!("{}.{}.sapic", encode_directory_name(&input.name), request_file_extension);
         self.fs
             .create_dir(&request_dir_full_path)
             .await
@@ -373,7 +375,7 @@ impl Collection {
             .request_dir_relative_path
             .parent()
             .context("Failed to get the parent directory")?
-            .join(format!("{}.request", input.new_name));
+            .join(format!("{}.request", encode_directory_name(&input.new_name)));
 
         // Rename the request directory
         let request_dir_path_new = self
@@ -489,10 +491,10 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
     let mut segments = file_name_str.split('.');
 
-    let name = segments
+    let name = decode_directory_name(segments
         .next()
         .ok_or_else(|| anyhow!("failed to retrieve the request name"))?
-        .to_string();
+    )?;
 
     let file_type_str = segments
         .next()
@@ -506,7 +508,7 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
 fn get_request_name(folder_name: &str) -> Result<String> {
     if let Some(prefix) = folder_name.strip_suffix(".request") {
-        Ok(prefix.to_string())
+        Ok(decode_directory_name(prefix)?)
     } else {
         Err(anyhow!(
             "failed to extract the request name from the directory name"
@@ -575,6 +577,64 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn create_request_invalid_name() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = "".to_string();
+        let create_request_result = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await;
+
+        assert!(create_request_result.is_err());
+    }
+
+    #[tokio::test]
+    async fn create_request_with_forbidden_characters() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = format!("{}/name",random_request_name());
+        let create_request_result = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await;
+
+        assert!(create_request_result.is_ok());
+
+        let create_request_output = create_request_result.unwrap();
+
+        let requests = collection.requests().await.unwrap();
+        let requests_lock = requests.read().await;
+        let request_key = RequestKey::from(create_request_output.key);
+        let request = requests_lock.read(request_key).unwrap();
+
+        assert_eq!(request.name, request_name);
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
     async fn rename_request() {
         let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
         let collection_path = workspace_path.join(random_collection_name());
@@ -603,6 +663,80 @@ mod tests {
             })
             .await;
         let new_request_path = PathBuf::from(format!("{}.request", new_request_name));
+        rename_collection_result.unwrap();
+        // assert!(rename_collection_result.is_ok());
+
+        let requests = collection.requests().await.unwrap();
+        let requests_lock = requests.read().await;
+        let request_key = RequestKey::from(create_request_output.key);
+
+        let request = requests_lock.read(request_key).unwrap();
+        assert_eq!(request.name, new_request_name);
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn rename_request_invalid_name() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        let create_request_output = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await
+            .unwrap();
+
+        let new_request_name = "".to_string();
+        let rename_collection_result = collection
+            .rename_request(RenameRequestInput {
+                key: create_request_output.key,
+                new_name: new_request_name.clone(),
+            })
+            .await;
+        assert!(rename_collection_result.is_err());
+    }
+
+    #[tokio::test]
+    async fn rename_request_forbidden_characters() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        let create_request_output = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await
+            .unwrap();
+
+        let new_request_name = format!("{}/name", random_request_name());
+        let rename_collection_result = collection
+            .rename_request(RenameRequestInput {
+                key: create_request_output.key,
+                new_name: new_request_name.clone(),
+            })
+            .await;
+
         rename_collection_result.unwrap();
         // assert!(rename_collection_result.is_ok());
 
