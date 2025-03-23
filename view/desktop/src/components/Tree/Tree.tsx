@@ -39,6 +39,7 @@ export const Tree = ({
   searchInput,
 
   onTreeUpdate,
+
   onRootAdd,
   onRootRemove,
   onRootRename,

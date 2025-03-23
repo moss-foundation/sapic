@@ -18,14 +18,16 @@ import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "
 
 export const TreeNode = ({
   node,
-  onNodeUpdate,
   depth,
   parentNode,
+
+  onNodeUpdate,
   onNodeAdd,
   onNodeRemove,
   onNodeRename,
   onNodeClick,
   onNodeDoubleClick,
+
   onRootAdd,
   onRootRemove,
   onRootRename,
