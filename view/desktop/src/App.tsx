@@ -76,7 +76,7 @@ function App() {
 
             <Tabs.Panels className="">
               {DNDList.map((item) => (
-                <Tabs.Panel {...item} key={item.id} className="">
+                <Tabs.Panel {...item} key={item.id} className="relative">
                   {item.id === 1 ? <CollectionTreeView /> : <div>{`Panel ${item.id}`}</div>}
                 </Tabs.Panel>
               ))}

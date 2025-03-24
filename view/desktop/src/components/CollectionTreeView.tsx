@@ -166,11 +166,17 @@ export const CollectionTreeView = () => {
       </div>
 
       <Scrollbar className="h-full">
-        {collections.map((collection) => (
-          <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
-        ))}
+        <div className="flex h-full flex-col">
+          {collections.map((collection) => (
+            <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
+          ))}
+          {showCollectionCreationZone && (
+            <div className="flex grow flex-col justify-end">
+              <CollectionCreationZone />
+            </div>
+          )}
+        </div>
       </Scrollbar>
-      {showCollectionCreationZone && <CollectionCreationZone />}
     </div>
   );
 };
@@ -216,28 +222,22 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
-      <div className="relative grid h-full w-full place-items-center">
-        <div
-          className={cn(
-            "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
-            {
-              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
-              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
-              "bg-red-300 opacity-100": canDrop === false,
-            }
-          )}
+    <div
+      ref={ref}
+      className={cn("animate-move mb-8 grid h-max min-h-32 w-full place-items-center", {
+        "bg-[repeating-linear-gradient(45deg,#EDF6FF_0,#EDF6FF_6.5px,white_0,white_50%)] bg-[size:16px_16px]":
+          canDrop === true,
+        "bg-[#F4F4F4]": canDrop === null,
+      })}
+    >
+      <div className="flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
+        <Icon
+          icon="AddCircle"
+          className={cn("size-5 text-[#717171]", {
+            "text-(--moss-primary)": canDrop,
+          })}
         />
-
-        <div className="flex flex-col items-center justify-center gap-3 text-center">
-          <Icon
-            icon="AddCircle"
-            className={cn("size-5 text-[#717171]", {
-              "text-(--moss-primary)": canDrop,
-            })}
-          />
-          <span className="text-black">Drag & drop selected items here to create a new collection</span>
-        </div>
+        <span className="text-black">Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
   );
