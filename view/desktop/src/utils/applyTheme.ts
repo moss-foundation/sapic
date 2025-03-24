@@ -1,30 +1,33 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
+import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-theme";
 
-export const getColorTheme = async (id: string): Promise<IpcResult<string, string>> => {
+export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResult<GetColorThemeOutput, string>> => {
   return await invokeTauriIpc("get_color_theme", {
-    id: id,
+    input: input,
   });
 };
 
-export const applyTheme = async (id: string) => {
+export const applyColorTheme = async (themeId: string): Promise<void> => {
   try {
-    const result: IpcResult<string, string> = await getColorTheme(id);
-    if (result.status === "ok") {
-      const cssContent = result.data;
-      let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
-
-      if (styleTag) {
-        styleTag.innerHTML = cssContent;
-      } else {
-        styleTag = document.createElement("style");
-        styleTag.id = "theme-style";
-        styleTag.innerHTML = cssContent;
-        document.head.appendChild(styleTag);
-      }
-    } else {
-      console.error(`Error reading theme file for "${id}":`, result.error);
+    const getColorThemeOutput: IpcResult<GetColorThemeOutput, string> = await getColorTheme({
+      id: themeId,
+    });
+    if (getColorThemeOutput.status !== "ok") {
+      console.error(`Error reading theme file for "${themeId}":`, getColorThemeOutput.error);
+      return;
     }
+
+    const cssContent = getColorThemeOutput.data.cssContent;
+    let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
+
+    if (!styleTag) {
+      styleTag = document.createElement("style");
+      styleTag.id = "theme-style";
+      document.head.appendChild(styleTag);
+    }
+
+    styleTag.innerHTML = cssContent;
   } catch (error) {
-    console.error(`Failed to apply theme "${id}":`, error);
+    console.error(`Failed to apply theme "${themeId}":`, error);
   }
 };

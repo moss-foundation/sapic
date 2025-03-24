@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
+use moss_fs::{FileSystem, RemoveOptions};
 use slotmap::KeyData;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -327,16 +327,16 @@ impl Workspace {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
     use super::*;
-    use crate::utils::{random_collection_name, random_string};
-    use moss_fs::adapters::disk::DiskFileSystem;
+    use crate::utils::random_collection_name;
+    use moss_fs::RealFileSystem;
+    use std::fs;
 
 
     async fn setup_test_workspace() -> (PathBuf, Workspace) {
-        let fs = Arc::new(DiskFileSystem::new());
-        let workspace_path: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../samples/workspaces/{}", random_string(10)));
+        let fs = Arc::new(RealFileSystem::new());
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../../samples/workspaces/{}", random_string(10)));
         fs::create_dir_all(&workspace_path).unwrap();
         let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
         (workspace_path, workspace)

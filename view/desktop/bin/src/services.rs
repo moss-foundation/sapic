@@ -1,6 +1,6 @@
 use moss_app::manager::AppManager;
 use moss_app::service::prelude::*;
-use moss_fs::ports::FileSystem;
+use moss_fs::FileSystem;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;

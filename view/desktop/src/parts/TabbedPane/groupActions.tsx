@@ -58,7 +58,7 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
   }, [group]);
 
   return (
-    <div className="button-action">
+    <div className="button-action select-none">
       <div className="flex">
         <button onClick={onClick} className={isActive ? "demo-button selected" : "demo-button"}>
           {props.groupId}
@@ -139,11 +139,11 @@ const GroupAction = (props: { groupId: string; groups: string[]; api: DockviewAp
 
 export const GroupActions = (props: { groups: string[]; api: DockviewApi; activeGroup?: string }) => {
   return (
-    <div className="action-container">
+    <div className="action-container select-none">
       <Scrollbar>
         <div className="flex items-center gap-2">
-          {props.groups.map((groupId) => {
-            return <GroupAction key={groupId} {...props} groupId={groupId} />;
+          {props.groups.map((groupId, index) => {
+            return <GroupAction key={`group-${groupId}-${index}`} {...props} groupId={groupId} />;
           })}
         </div>
       </Scrollbar>

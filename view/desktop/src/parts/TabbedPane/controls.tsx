@@ -6,7 +6,7 @@ import { nextId } from "./defaultLayout";
 
 const Icon = (props: { icon: string; title?: string; onClick?: (event: React.MouseEvent) => void }) => {
   return (
-    <div title={props.title} className="action" onClick={props.onClick}>
+    <div title={props.title} className="action select-none" onClick={props.onClick}>
       <span style={{ fontSize: "inherit" }} className="material-symbols-outlined">
         {props.icon}
       </span>
@@ -65,7 +65,7 @@ export const RightControls = (props: IDockviewHeaderActionsProps) => {
   };
 
   return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)]">
+    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
       {props.isGroupActive && <Icon icon="star" />}
       {Component && <Component />}
       <Icon
@@ -97,7 +97,7 @@ export const LeftControls = (props: IDockviewHeaderActionsProps) => {
   };
 
   return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)]">
+    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
       <Icon onClick={onClick} icon="add" />
     </div>
   );
@@ -105,7 +105,7 @@ export const LeftControls = (props: IDockviewHeaderActionsProps) => {
 
 export const PrefixHeaderControls = (props: IDockviewHeaderActionsProps) => {
   return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)]">
+    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
       <Icon icon="Menu" />
     </div>
   );

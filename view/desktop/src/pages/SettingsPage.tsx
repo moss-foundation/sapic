@@ -1,35 +1,42 @@
 import { useTranslation } from "react-i18next";
 
-import { useChangeColorTheme, useGetColorThemes } from "@/hooks/useColorTheme";
-import { useGetAppState } from "@/hooks/useGetAppState";
-import { useChangeLanguagePack, useGetLanguagePacks } from "@/hooks/useLanguagePack";
+import { useDescribeAppState } from "@/hooks/useDescribeAppState";
+import { useListColorThemes } from "@/hooks/useListColorThemes";
+import { useListLocales } from "@/hooks/useListLocales";
+import { useSetColorTheme } from "@/hooks/useSetColorTheme";
+import { useSetLocale } from "@/hooks/useSetLocale";
+import { ColorThemeInfo } from "@repo/moss-theme";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
-  const { data: appState } = useGetAppState();
+  const { data: appState } = useDescribeAppState();
 
-  const { data: themes } = useGetColorThemes();
-  const { mutate: mutateChangeColorTheme } = useChangeColorTheme();
+  const { data: themes } = useListColorThemes();
+  const { mutate: mutateChangeColorTheme } = useSetColorTheme();
 
-  const { data: languages } = useGetLanguagePacks();
-  const { mutate: mutateChangeLanguagePack } = useChangeLanguagePack();
+  const { data: languages } = useListLocales();
+  const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedCode = event.target.value;
-    const selectedLang = languages?.contents.find((lang: { code: string }) => lang.code === selectedCode);
-    if (selectedLang) {
-      mutateChangeLanguagePack(selectedLang);
+    const selectedLocaleCode = event.target.value;
+    const selectedLocaleInfo = languages?.find((lang: { code: string }) => lang.code === selectedLocaleCode);
+    if (selectedLocaleInfo) {
+      mutateChangeLanguagePack({
+        localeInfo: selectedLocaleInfo,
+      });
     }
   };
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value;
-    const selectedTheme = themes?.contents.find(
+    const selectedTheme = themes?.find(
       (theme: { identifier: string; displayName: string }) => theme.identifier === selectedId
     );
     if (selectedTheme) {
-      mutateChangeColorTheme(selectedTheme);
+      mutateChangeColorTheme({
+        themeInfo: selectedTheme,
+      });
     }
   };
 
@@ -46,7 +53,7 @@ export const Settings = () => {
             value={appState?.preferences.locale?.code || appState?.defaults.locale?.code}
             onChange={handleLanguageChange}
           >
-            {languages?.contents.map((lang: { code: string; displayName: string }) => (
+            {languages?.map((lang: { code: string; displayName: string }) => (
               <option key={lang.code} value={lang.code}>
                 {lang.displayName}
               </option>
@@ -62,9 +69,9 @@ export const Settings = () => {
             value={appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier}
             onChange={handleThemeChange}
           >
-            {themes?.contents.map((theme: { identifier: string; displayName: string }) => (
-              <option key={theme.identifier} value={theme.identifier}>
-                {theme.displayName}
+            {themes?.map((theme_info: ColorThemeInfo) => (
+              <option key={theme_info.identifier} value={theme_info.identifier}>
+                {theme_info.displayName}
               </option>
             ))}
           </select>

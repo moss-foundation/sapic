@@ -10,7 +10,7 @@ mod window;
 extern crate tracing;
 
 use moss_app::manager::AppManager;
-use moss_fs::adapters::disk::DiskFileSystem;
+use moss_fs::RealFileSystem;
 use services::service_pool;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
@@ -37,7 +37,7 @@ pub async fn run() {
 
     builder
         .setup(|app| {
-            let fs = Arc::new(DiskFileSystem::new());
+            let fs = Arc::new(RealFileSystem::new());
             let app_handle = app.app_handle();
             let service_pool = service_pool(app_handle, fs.clone());
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
@@ -47,12 +47,11 @@ pub async fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::execute_command,
-            commands::change_color_theme,
-            commands::change_color_theme,
+            commands::set_color_theme,
             commands::get_color_theme,
-            commands::list_themes,
+            commands::list_color_themes,
             commands::describe_app_state,
-            commands::change_language_pack,
+            commands::set_locale,
             commands::list_locales,
             commands::get_translations,
         ])

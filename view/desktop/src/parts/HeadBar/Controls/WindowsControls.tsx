@@ -2,6 +2,7 @@ import { useContext, type HTMLProps } from "react";
 
 import { cn } from "@/utils";
 
+import { CommonControls } from "./CommonControls";
 import { ControlButton } from "./ControlButton";
 import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
@@ -14,6 +15,7 @@ export function WindowsControls({ className, ...props }: HTMLProps<HTMLDivElemen
 
   return (
     <div className={cn("flex h-full", className)} {...props}>
+      <CommonControls />
       <ControlButton
         onClick={minimizeWindow}
         className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"

@@ -1,10 +1,14 @@
 import { create } from "zustand";
 
-import { SerializedDockview } from "@repo/moss-tabs";
+import { DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
   setGridState: (state: SerializedDockview) => void;
+  showDebugPanels: boolean;
+  setShowDebugPanels: (show: boolean) => void;
+  api?: DockviewApi;
+  setApi: (api: DockviewApi) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set) => ({
@@ -24,4 +28,8 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set) => ({
     popoutGroups: [],
   } as SerializedDockview,
   setGridState: (state: SerializedDockview) => set({ gridState: state }),
+  showDebugPanels: false,
+  setShowDebugPanels: (show: boolean) => set({ showDebugPanels: show }),
+  api: undefined,
+  setApi: (api: DockviewApi) => set({ api }),
 }));

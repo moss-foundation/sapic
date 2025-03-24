@@ -1,21 +1,24 @@
 use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
-use moss_nls::models::types::LocaleDescriptor;
+use moss_nls::models::types::LocaleInfo;
 use moss_text::ReadOnlyStr;
-use moss_theme::models::types::ThemeDescriptor;
+use moss_theme::models::types::ColorThemeInfo;
 use parking_lot::RwLock;
 use std::sync::Arc;
 
-use crate::command::{CommandCallback, CommandDecl};
+use crate::{
+    command::{CommandCallback, CommandDecl},
+    models::operations::{SetColorThemeInput, SetLocaleInput},
+};
 
 pub struct AppPreferences {
-    pub theme: RwLock<Option<ThemeDescriptor>>,
-    pub locale: RwLock<Option<LocaleDescriptor>>,
+    pub theme: RwLock<Option<ColorThemeInfo>>,
+    pub locale: RwLock<Option<LocaleInfo>>,
 }
 
 pub struct AppDefaults {
-    pub theme: ThemeDescriptor,
-    pub locale: LocaleDescriptor,
+    pub theme: ColorThemeInfo,
+    pub locale: LocaleInfo,
 }
 
 pub struct StateService {
@@ -44,14 +47,14 @@ impl StateService {
         &self.defaults
     }
 
-    pub fn set_color_theme(&self, theme_descriptor: ThemeDescriptor) {
+    pub fn set_color_theme(&self, input: SetColorThemeInput) {
         let mut theme_descriptor_lock = self.preferences.theme.write();
-        *theme_descriptor_lock = Some(theme_descriptor);
+        *theme_descriptor_lock = Some(input.theme_info);
     }
 
-    pub fn set_language_pack(&self, locale_descriptor: LocaleDescriptor) {
+    pub fn set_locale(&self, input: SetLocaleInput) {
         let mut locale_lock = self.preferences.locale.write();
-        *locale_lock = Some(locale_descriptor);
+        *locale_lock = Some(input.locale_info);
     }
 
     pub fn with_commands(self, decls: impl IntoIterator<Item = CommandDecl>) -> Self {

@@ -115,7 +115,7 @@ export const CollectionTreeView = () => {
   }, [collections.length]);
 
   return (
-    <div className="relative flex h-full flex-col pt-1" ref={dropTargetToggleRef}>
+    <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>
       <div className="flex items-center gap-[7px] py-1.5 pr-[7px] pl-4">
         <Input
           iconLeft="Search"
