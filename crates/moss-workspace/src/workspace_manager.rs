@@ -241,12 +241,13 @@ impl WorkspaceManager {
         let current_entry = self.current_workspace.swap(None);
 
         // FIXME: This is probably not the best approach
+        // If the current workspace needs to be renamed
+        // We will first drop the workspace, do fs renaming, and reload it
         if let Some(mut entry) = current_entry {
             if entry.0 == workspace_key {
-                Arc::get_mut(&mut entry)
-                    .unwrap()
-                    .1
-                    .reset(new_path.clone()).await?;
+                std::mem::drop(entry);
+                self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+                entry = Arc::new((workspace_key, Workspace::new(new_path.clone(), self.fs.clone())?))
             } else {
                 self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
             }
@@ -255,8 +256,8 @@ impl WorkspaceManager {
             self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
         }
 
-        workspace_info.name = input.new_name.clone();
-        workspace_info.path = new_path.clone();
+        workspace_info.name = input.new_name;
+        workspace_info.path = new_path;
 
         Ok(txn.commit()?)
     }

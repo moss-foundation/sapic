@@ -63,7 +63,6 @@ pub struct ListCollectionRequestsInput {
 pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
-    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

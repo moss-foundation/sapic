@@ -96,10 +96,14 @@ impl CollectionRequestData {
 
 type RequestMap = LeasedSlotMap<RequestKey, CollectionRequestData>;
 
+
+
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    path: PathBuf,
+    // FIXME: Should we store the full path instead of relative path here?
+    abs_path: PathBuf,
     // We have to use Option so that we can temporarily drop it
+    // In the DbManager, we are storing relative paths
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     requests: OnceCell<RwLock<RequestMap>>,
 }
@@ -113,7 +117,7 @@ impl Collection {
 
         Ok(Self {
             fs: Arc::clone(&fs),
-            path,
+            abs_path: path,
             requests: OnceCell::new(),
             state_db_manager: Some(Arc::new(state_db_manager_impl)),
         })
@@ -205,7 +209,7 @@ impl Collection {
         let result = self
             .requests
             .get_or_try_init(|| async move {
-                let requests_dir_path = self.path.join(REQUESTS_DIR);
+                let requests_dir_path = self.abs_path.join(REQUESTS_DIR);
                 if !requests_dir_path.exists() {
                     return Ok(RwLock::new(LeasedSlotMap::new()));
                 }
@@ -233,21 +237,21 @@ impl Collection {
     }
 
     pub fn path(&self) -> &PathBuf {
-        &self.path
+        &self.abs_path
     }
 
     // Temporarily drop the db for fs renaming, and reloading it from the new path
     pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
         let _ = self.state_db_manager.take();
 
-        let old_path = std::mem::replace(&mut self.path, new_path.clone());
+        let old_path = std::mem::replace(&mut self.abs_path, new_path.clone());
         self.fs
             .rename(&old_path, &new_path, RenameOptions::default())
             .await?;
 
         let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
             "Failed to open the collection {} state database",
-            self.path.display()
+            self.abs_path.display()
         ))?;
         self.state_db_manager = Some(Arc::new(state_db_manager_impl));
 
@@ -265,7 +269,7 @@ impl Collection {
             .join(&request_dir_name);
 
         let request_dir_full_path = self
-            .path
+            .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 
@@ -361,7 +365,7 @@ impl Collection {
 
         let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
         let request_dir_path_old = self
-            .path
+            .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path_old);
         if !request_dir_path_old.exists() {
@@ -379,7 +383,7 @@ impl Collection {
 
         // Rename the request directory
         let request_dir_path_new = self
-            .path
+            .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path_new);
         if request_dir_path_new.exists() {
@@ -442,7 +446,7 @@ impl Collection {
 
         let request_dir_relative_path = request_data.request_dir_relative_path.clone();
         let request_dir_path = self
-            .path
+            .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 

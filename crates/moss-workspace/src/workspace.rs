@@ -61,6 +61,8 @@ pub struct Workspace {
     fs: Arc<dyn FileSystem>,
     path: PathBuf,
     // We have to use Option so that we can temporarily drop it
+    // TODO: implement is_external flag for absolute/relative path
+    // Right now, we are storing relative paths in the db_manager
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     collections: OnceCell<RwLock<CollectionMap>>,
 }
@@ -86,14 +88,14 @@ impl Workspace {
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
 
-                for (collection_path, collection_data) in
+                for (relative_path, collection_data) in
                     self.state_db_manager()?.collection_store().scan()?
                 {
-                    let name = match collection_path.file_name() {
+                    let name = match relative_path.file_name() {
                         Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", collection_path);
+                            println!("failed to get the collection {:?} name", relative_path);
                             continue;
                         }
                     };
@@ -103,7 +105,10 @@ impl Workspace {
                     // in the file system should be collected and deleted from the database in
                     // a parallel thread.
 
-                    let collection = Collection::new(collection_path.clone(), self.fs.clone())?;
+                    // TODO: implement is_external flag for relative/absolute path
+
+                    let full_path = self.path.join(relative_path);
+                    let collection = Collection::new(full_path, self.fs.clone())?;
                     let metadata = CollectionMetadata {
                         name,
                         order: collection_data.order,
@@ -150,7 +155,9 @@ impl Workspace {
     ) -> Result<CreateCollectionOutput, OperationError> {
         input.validate()?;
 
-        let full_path = input.path.join(encode_directory_name(&input.name));
+        let relative_path = encode_directory_name(&input.name);
+        // workspace_path/encoded_collection_folder
+        let full_path = self.path().join(&relative_path);
 
         if full_path.exists() {
             return Err(OperationError::AlreadyExists {
@@ -169,7 +176,7 @@ impl Workspace {
 
         table.insert(
             &mut txn,
-            full_path.to_string_lossy().to_string(),
+            relative_path,
             &CollectionEntity { order: None },
         )?;
 
@@ -212,34 +219,35 @@ impl Workspace {
 
         let (collection, metadata) = &mut *lease_guard;
 
-        let old_path = collection.path().to_owned();
-        if !old_path.exists() {
+        let old_full_path = collection.path().to_owned();
+        if !old_full_path.exists() {
             return Err(OperationError::NotFound {
                 name: metadata.name.clone(),
-                path: old_path,
+                path: old_full_path,
             })
         }
-
-        let new_path = old_path
-            .parent()
-            .context("Parent directory not found")?
+        let old_relative_path = old_full_path.strip_prefix(&self.path).unwrap();
+        let new_relative_path = old_relative_path.parent().context("Parent directory not found")?
             .join(encode_directory_name(&input.new_name));
-        if new_path.exists() {
+        let new_full_path = self.path.join(&new_relative_path);
+
+        if new_full_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
-                path: new_path,
+                path: new_full_path,
             })
         }
 
         let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
-        let entity_key = old_path.to_string_lossy().to_string();
+        let old_table_key = old_relative_path.to_string_lossy().to_string();
+        let new_table_key = new_relative_path.to_string_lossy().to_string();
 
-        table.remove(&mut txn, entity_key.clone())?;
+        table.remove(&mut txn, old_table_key)?;
         table.insert(
             &mut txn,
-            entity_key,
+            new_table_key,
             &CollectionEntity {
                 order: metadata.order,
             },
@@ -248,7 +256,7 @@ impl Workspace {
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
         // We need to temporarily drop it, and reload the database after that
         collection
-            .reset(new_path)
+            .reset(new_full_path)
             .await
             .context("Failed to reset the collection")?;
 
@@ -267,13 +275,15 @@ impl Workspace {
             .context("Failed to remove the collection")?;
 
         let collection_path = collection.path().clone();
+        let collection_relative_path = collection_path.strip_prefix(&self.path).unwrap();
         let collection_store = self.state_db_manager()?.collection_store();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.
 
         let (mut txn, table) = collection_store.begin_write()?;
-        table.remove(&mut txn, collection_path.to_string_lossy().to_string())?;
+        let table_key = collection_relative_path.to_string_lossy().to_string();
+        table.remove(&mut txn, table_key)?;
 
         // TODO: logging if the folder has already been removed from the filesystem
         self.fs
@@ -340,7 +350,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
-                path: workspace_path.clone(),
             })
             .await.unwrap();
 
@@ -366,7 +375,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
-                path: workspace_path.clone(),
             })
             .await.unwrap();
 
@@ -388,7 +396,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: old_name.clone(),
-                path: workspace_path.clone(),
             })
             .await
             .unwrap();
@@ -425,7 +432,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: old_name.clone(),
-                path: workspace_path.clone(),
             })
             .await
             .unwrap();
@@ -457,7 +463,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: old_name.clone(),
-                path: workspace_path.clone(),
             })
             .await
             .unwrap();
@@ -494,7 +499,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: old_name.clone(),
-                path: workspace_path.clone(),
             })
             .await
             .unwrap();
@@ -525,7 +529,6 @@ mod tests {
         let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
-                path: workspace_path.clone(),
             })
             .await
             .unwrap();
