@@ -1,9 +1,7 @@
 use std::path::PathBuf;
-use std::sync::Arc;
-use moss_fs::adapters::disk::DiskFileSystem;
 use moss_workspace::models::operations::{CreateWorkspaceInput, OpenWorkspaceInput};
-use moss_workspace::workspace_manager::{OperationError, WorkspaceManager};
-use crate::shared::{random_workspace_name, random_workspaces_path, setup_test_workspace_manager};
+use moss_workspace::workspace_manager::{OperationError};
+use crate::shared::{random_workspace_name, setup_test_workspace_manager};
 
 mod shared;
 

@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
-use moss_fs::adapters::disk::DiskFileSystem;
+use moss_fs::RealFileSystem;
 use moss_workspace::workspace::Workspace;
 use moss_workspace::workspace_manager::WorkspaceManager;
 
@@ -46,7 +46,7 @@ pub fn random_string(length: usize) -> String {
 
 
 pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager) {
-    let fs = Arc::new(DiskFileSystem::new());
+    let fs = Arc::new(RealFileSystem::new());
     let workspaces_path: PathBuf = random_workspaces_path();
     std::fs::create_dir_all(workspaces_path.clone()).unwrap();
     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone()).unwrap();
@@ -54,7 +54,7 @@ pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager) {
 }
 
 pub async fn setup_test_workspace() -> (PathBuf, Workspace) {
-    let fs = Arc::new(DiskFileSystem::new());
+    let fs = Arc::new(RealFileSystem::new());
     let workspace_path: PathBuf = random_workspace_path();
     fs::create_dir_all(&workspace_path).unwrap();
     let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
