@@ -21,6 +21,8 @@ async fn create_workspace_success() {
         })
         .await.unwrap();
 
+    assert!(expected_path.exists());
+
     // Check updating current workspace
     let current_workspace = workspace_manager.current_workspace().unwrap();
     assert_eq!(current_workspace.0.as_u64(), output.key);
@@ -121,6 +123,7 @@ async fn create_workspace_special_chars() {
             name: name.clone()
         }).await.unwrap();
 
+        assert!(expected_path.exists());
         // Check updating current workspace
         let current_workspace = workspace_manager.current_workspace().unwrap();
         assert_eq!(current_workspace.0.as_u64(), output.key);

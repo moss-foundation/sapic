@@ -11,6 +11,7 @@ async fn rename_workspace_success() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
+    let old_path = workspaces_path.join(&old_workspace_name);
     let output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
@@ -23,9 +24,12 @@ async fn rename_workspace_success() {
             key,
             new_name: new_workspace_name.clone(),
         }).await;
-
-    let expected_path = workspaces_path.join(&new_workspace_name);
     assert!(result.is_ok());
+
+    // Check filesystem rename
+    let expected_path = workspaces_path.join(&new_workspace_name);
+    assert!(expected_path.exists());
+    assert!(!old_path.exists());
 
     // Check updating current workspace
     let current_workspace = workspace_manager.current_workspace().unwrap();
@@ -49,11 +53,10 @@ async fn rename_workspace_empty_name() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let output = workspace_manager
+    let key = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
-        }).await.unwrap();
-    let key = output.key;
+        }).await.unwrap().key;
 
     let new_workspace_name = "".to_string();
     let result = workspace_manager
@@ -74,11 +77,10 @@ async fn rename_workspace_unchanged() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let output = workspace_manager
+    let key = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
-        }).await.unwrap();
-    let key = output.key;
+        }).await.unwrap().key;
 
     let new_workspace_name = old_workspace_name;
     let result = workspace_manager
@@ -87,6 +89,7 @@ async fn rename_workspace_unchanged() {
             new_name: new_workspace_name.clone(),
         }).await;
 
+    // This should be a no-op
     assert!(result.is_ok());
 
     let expected_path = workspaces_path.join(&new_workspace_name);
@@ -121,14 +124,13 @@ async fn rename_workspace_already_exists() {
 
     let new_workspace_name = random_workspace_name();
     // Create a workspace to test renaming
-    let output = workspace_manager.create_workspace(
+    let key = workspace_manager.create_workspace(
         CreateWorkspaceInput {
             name: new_workspace_name.clone(),
         }
-    ).await.unwrap();
+    ).await.unwrap().key;
 
     // Try renaming the new workspace to an existing workspace name
-    let key = output.key;
     let result = workspace_manager.rename_workspace(
         RenameWorkspaceInput {
             key,
@@ -148,12 +150,11 @@ async fn rename_workspace_special_chars() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
-    let output = workspace_manager.create_workspace(
+    let key = workspace_manager.create_workspace(
         CreateWorkspaceInput {
             name: workspace_name.clone(),
         }
-    ).await.unwrap();
-    let key = output.key;
+    ).await.unwrap().key;
 
     for char in SPECIAL_CHARS {
         let new_workspace_name = format!("{workspace_name}{char}");
@@ -172,7 +173,6 @@ async fn rename_workspace_special_chars() {
 
         // Checking updating known_workspaces
         let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-        dbg!(&workspaces_list);
         assert_eq!(workspaces_list.0.len(), 1);
         assert_eq!(workspaces_list.0[0], WorkspaceInfo {path: expected_path.clone(), name: new_workspace_name} );
     }

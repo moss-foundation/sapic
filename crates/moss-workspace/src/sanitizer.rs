@@ -1,3 +1,5 @@
+// TODO: Should we move this into a distinct crate
+// since it's used by both moss-collection and moss-workspace?
 use regex::Regex;
 
 // Function to encode forbidden characters and '%' in a directory name

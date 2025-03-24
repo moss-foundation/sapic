@@ -10,7 +10,7 @@ pub struct WorkspaceInfo {
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
