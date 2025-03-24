@@ -2,18 +2,18 @@ use anyhow::{anyhow, Result};
 use std::{io, path::Path};
 use tokio::{fs::ReadDir, io::AsyncWriteExt};
 
-use crate::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
-pub struct DiskFileSystem;
+pub struct RealFileSystem;
 
-impl DiskFileSystem {
+impl RealFileSystem {
     pub fn new() -> Self {
         Self
     }
 }
 
 #[async_trait::async_trait]
-impl FileSystem for DiskFileSystem {
+impl FileSystem for RealFileSystem {
     async fn create_dir(&self, path: &Path) -> Result<()> {
         Ok(tokio::fs::create_dir_all(path).await?)
     }
