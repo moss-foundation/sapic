@@ -10,7 +10,7 @@ mod window;
 extern crate tracing;
 
 use moss_app::manager::AppManager;
-use moss_fs::adapters::disk::DiskFileSystem;
+use moss_fs::RealFileSystem;
 use services::service_pool;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
@@ -37,7 +37,7 @@ pub async fn run() {
 
     builder
         .setup(|app| {
-            let fs = Arc::new(DiskFileSystem::new());
+            let fs = Arc::new(RealFileSystem::new());
             let app_handle = app.app_handle();
             let service_pool = service_pool(app_handle, fs.clone());
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
