@@ -181,7 +181,7 @@ export const TreeNode = ({
                   "rotate-90": shouldRenderChildNodes,
                 })}
               />
-              <NodeLabel label={node.id} searchInput={searchInput} />
+              <NodeLabel label={node.id} searchInput={searchInput} className="font-semibold" />
             </button>
           )}
 
