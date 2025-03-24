@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
 use slotmap::KeyData;
 use std::path::PathBuf;
 use std::sync::Arc;
