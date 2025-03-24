@@ -95,6 +95,16 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/moss-environment:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.2
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-logging:
     dependencies:
       typescript:

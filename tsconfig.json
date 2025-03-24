@@ -20,6 +20,9 @@
       "path": "crates/moss-logging"
     },
     {
+      "path": "crates/moss-environment"
+    },
+    {
       "path": "view/desktop"
     },
     {
