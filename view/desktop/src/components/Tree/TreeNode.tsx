@@ -38,9 +38,9 @@ export const TreeNode = ({
     useContext(TreeContext);
   const { currentActivePanelId, addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
   const nodePaddingLeftForAddForm = useMemo(
-    () => (depth + 1) * nodeOffset + paddingLeft,
+    () => (depth + 1) * nodeOffset + paddingLeft + 4,
     [depth, nodeOffset, paddingLeft]
   );
 
@@ -222,7 +222,7 @@ export const TreeNode = ({
 
         {shouldRenderChildNodes && !isRootDragging && (
           <Scrollbar className="h-full w-full">
-            <ul className={cn("h-full w-full pl-1", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
+            <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
               {filteredChildNodes.map((childNode) => (
                 <TreeNode
                   parentNode={node}

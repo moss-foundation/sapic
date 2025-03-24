@@ -188,6 +188,7 @@ const CollectionCreationZone = () => {
       element,
       getData: () => ({
         type: "CollectionCreationZone",
+        data: {},
       }),
       canDrop({ source }) {
         return source.data.type === "TreeNode";
@@ -215,20 +216,28 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className={cn("absolute bottom-8 left-0 bg-[#F4F4F4] p-8 font-medium transition duration-100", {
-        "background-[#EDF6FF]": canDrop === true,
-      })}
-    >
-      <div className="flex flex-col items-center justify-center gap-3 text-center">
-        <Icon
-          icon="AddCircle"
-          className={cn("size-5 text-[#717171]", {
-            "text-(--moss-primary)": canDrop,
-          })}
+    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
+      <div className="relative grid h-full w-full place-items-center">
+        <div
+          className={cn(
+            "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
+            {
+              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
+              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
+              "bg-red-300 opacity-100": canDrop === false,
+            }
+          )}
         />
-        <span className="text-black">Drag & drop selected items here to create a new collection</span>
+
+        <div className="flex flex-col items-center justify-center gap-3 text-center">
+          <Icon
+            icon="AddCircle"
+            className={cn("size-5 text-[#717171]", {
+              "text-(--moss-primary)": canDrop,
+            })}
+          />
+          <span className="text-black">Drag & drop selected items here to create a new collection</span>
+        </div>
       </div>
     </div>
   );
