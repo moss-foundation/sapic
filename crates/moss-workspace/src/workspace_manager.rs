@@ -20,6 +20,7 @@ use crate::{
 };
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
+use crate::sanitizer::{decode_directory_name, encode_directory_name};
 use crate::storage::global_db_manager::GlobalDbManagerImpl;
 use crate::storage::{GlobalDbManager, WorkspaceEntity};
 
@@ -64,6 +65,7 @@ type WorkspaceInfoMap = LeasedSlotMap<WorkspaceKey, WorkspaceInfo>;
 
 pub struct WorkspaceManager {
     fs: Arc<dyn FileSystem>,
+    // TODO: Should we allow creating workspaces at arbitrary locations?
     workspaces_dir: PathBuf,
     global_db_manager: Option<Arc<dyn GlobalDbManager>>,
     current_workspace: ArcSwapOption<(WorkspaceKey, Workspace)>,
@@ -73,7 +75,6 @@ pub struct WorkspaceManager {
 impl WorkspaceManager {
     pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Result<Self> {
         let global_db_manager = GlobalDbManagerImpl::new(&workspaces_dir).context("Failed to open the global state database")?;
-
 
         Ok(Self {
             fs,
@@ -97,7 +98,7 @@ impl WorkspaceManager {
                 for (workspace_path, _workspace_data) in
                     self.global_db_manager()?.workspace_store().scan()? {
                     let name = match workspace_path.file_name() {
-                        Some(name) => name.to_string_lossy().to_string(),
+                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
                             println!("failed to get the workspace {:?} name", workspace_path);
@@ -122,6 +123,7 @@ impl WorkspaceManager {
 }
 
 impl WorkspaceManager {
+    // TODO: (How) Should we write tests for this function?
     pub async fn list_workspaces(&self) -> Result<ListWorkspacesOutput, OperationError> {
         let workspaces = self.known_workspaces().await?;
         let workspaces_lock = workspaces.read().await;
@@ -142,7 +144,7 @@ impl WorkspaceManager {
     ) -> Result<CreateWorkspaceOutput, OperationError> {
         input.validate()?;
 
-        let full_path = self.workspaces_dir.join(&input.name);
+        let full_path = self.workspaces_dir.join(encode_directory_name(&input.name));
 
         // Check if workspace already exists
         if full_path.exists() {
@@ -165,6 +167,7 @@ impl WorkspaceManager {
 
         self.fs.create_dir(&full_path).await.context("Failed to create the workspace directory")?;
 
+        let current_workspace = Workspace::new(full_path.clone(), self.fs.clone())?;
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
             workspaces_lock.insert(WorkspaceInfo {
@@ -172,8 +175,6 @@ impl WorkspaceManager {
                 name: input.name,
             })
         };
-
-        let current_workspace = Workspace::new(full_path.clone(), self.fs.clone())?;
 
         // // Automatically switch the workspace to the new one.
         self.current_workspace.store(Some(Arc::new((workspace_key, current_workspace))));
@@ -198,6 +199,10 @@ impl WorkspaceManager {
         let mut workspaces_lock = workspaces.write().await;
         let mut workspace_info = workspaces_lock.read_mut(workspace_key).context("Failed to lease the workspace")?;
 
+        if workspace_info.name == input.new_name {
+            return Ok(())
+        }
+
         let old_path = workspace_info.path.clone();
         if !old_path.exists() {
             return Err(OperationError::NotFound {
@@ -206,7 +211,10 @@ impl WorkspaceManager {
             })
         }
 
-        let new_path = old_path.parent().context("Parent directory not found")?.join(&input.new_name);
+        let new_path = old_path
+            .parent()
+            .context("Parent directory not found")?
+            .join(encode_directory_name(&input.new_name));
         if new_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
@@ -218,12 +226,13 @@ impl WorkspaceManager {
         let (mut txn, table) = workspace_store.begin_write()?;
 
         let entity_key = old_path.to_string_lossy().to_string();
+        let new_entity_key = new_path.to_string_lossy().to_string();
 
-        table.remove(&mut txn, entity_key.clone())?;
+        let entity = table.remove(&mut txn, entity_key.clone())?;
         table.insert(
             &mut txn,
-            entity_key,
-            &WorkspaceEntity {}
+            new_entity_key,
+            &entity
         )?;
 
         // An opened workspace db will prevent its parent folder from being renamed
@@ -279,6 +288,15 @@ impl WorkspaceManager {
             )
             .await?;
 
+        // Deleting a workspace will remove it from current workspace if it is
+        let current_entry = self.current_workspace.swap(None);
+
+        if let Some(entry) = current_entry {
+            if entry.0 != workspace_key {
+                self.current_workspace.store(Some(entry))
+            }
+        }
+
         Ok(txn.commit()?)
     }
 
@@ -288,6 +306,12 @@ impl WorkspaceManager {
                 name: input.path.file_name().unwrap_or_default().to_string_lossy().to_string(),
                 path: input.path.clone()
             });
+        }
+
+        // Check if the workspace is already active
+        let current_workspace = self.current_workspace();
+        if current_workspace.is_ok() && current_workspace.unwrap().1.path() == input.path {
+            return Ok(())
         }
 
         let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
@@ -306,12 +330,12 @@ impl WorkspaceManager {
             key
         } else {
             workspaces_lock.insert(WorkspaceInfo {
-                name: input.path.file_name().unwrap().to_string_lossy().to_string(),
+                name: decode_directory_name(&input.path.file_name().unwrap().to_string_lossy().to_string())
+                    .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
                 path: input.path,
             })
         };
 
-        // get the key for the
         self.current_workspace.store(Some(Arc::new((workspace_key, workspace))));
         Ok(())
     }
@@ -326,181 +350,3 @@ impl WorkspaceManager {
 
 impl AppService for WorkspaceManager {}
 
-#[cfg(test)]
-mod tests {
-    use crate::utils::random_workspace_name;
-    use moss_fs::adapters::disk::DiskFileSystem;
-
-    use super::*;
-
-    #[tokio::test]
-    async fn create_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
-
-        let workspace_name = random_workspace_name();
-        let result = workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: workspace_name.clone(),
-            })
-            .await;
-
-        assert!(result.is_ok());
-
-        // Clean up
-        {
-            std::fs::remove_dir_all(dir.join(workspace_name)).unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn list_workspaces() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
-
-        let workspace_name = random_workspace_name();
-
-        // Pre-create a workspace to test that it is listed.
-        let workspace_key = workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: workspace_name.clone(),
-            })
-            .await
-            .unwrap().key;
-
-
-        let workspaces = workspace_manager.known_workspaces().await.unwrap();
-        let workspaces_lock = workspaces.read().await;
-        let target_workspace_path = dir.join(workspace_name);
-
-        let found = workspaces_lock
-            .iter()
-            .any(|(key, info)| key.as_u64() == workspace_key);
-
-        assert!(
-            found,
-            "Created workspace {} not found in list of workspaces",
-            target_workspace_path.display()
-        );
-
-        // Clean up
-        {
-            std::fs::remove_dir_all(target_workspace_path).unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn delete_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
-
-        let workspace_name = random_workspace_name();
-        let workspace_path = dir.join(&workspace_name);
-
-        // Create workspace first
-        let create_workspace_output = workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: workspace_name,
-            })
-            .await
-            .unwrap();
-
-        let workspace_key = create_workspace_output.key;
-        // Delete workspace
-        let result = workspace_manager
-            .delete_workspace(DeleteWorkspaceInput {
-                key: workspace_key,
-            })
-            .await;
-
-        assert!(result.is_ok());
-
-        // Verify workspace was deleted
-        let workspaces = workspace_manager.known_workspaces().await.unwrap();
-        let workspaces_lock = workspaces.read().await;
-        assert!(!workspaces_lock
-            .iter()
-            .any(|(key, info)| key.as_u64() == workspace_key));
-    }
-
-    #[tokio::test]
-    async fn open_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
-
-        let workspace_name = random_workspace_name();
-        let workspace_path = dir.join(&workspace_name);
-
-        // Create workspace first
-        workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: workspace_name.clone(),
-            })
-            .await
-            .unwrap();
-
-        // Verify current workspace is set
-        let current = workspace_manager.current_workspace();
-        assert!(current.is_ok());
-
-        // Clean up
-        {
-            std::fs::remove_dir_all(workspace_path).unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn rename_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
-        let dir: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
-        let workspace_manager = WorkspaceManager::new(fs, dir.clone()).unwrap();
-
-        let old_workspace_name = random_workspace_name();
-        let old_workspace_path = dir.join(&old_workspace_name);
-        let new_workspace_name = "New Workspace".to_string();
-        let new_workspace_path = dir.join(&new_workspace_name);
-        // Pre-create a workspace to test that it is listed.
-        let workspace_key = workspace_manager
-            .create_workspace(CreateWorkspaceInput {
-                name: old_workspace_name.clone(),
-            })
-            .await
-            .unwrap().key;
-
-
-        let result = workspace_manager.rename_workspace(
-            RenameWorkspaceInput {
-                key: workspace_key,
-                new_name: new_workspace_name.clone(),
-            }
-        ).await;
-
-        assert!(result.is_ok());
-
-        // Verify old workspace name does not exist in WorkspaceInfoMap
-        let workspaces = workspace_manager.known_workspaces().await.unwrap();
-        let workspaces_lock = workspaces.read().await;
-        assert!(
-            !workspaces_lock.iter().any(|(key, info)| info.value().name == old_workspace_name)
-        );
-        assert!(
-            workspaces_lock.iter().any(|(key, info)| info.value().name == new_workspace_name)
-        );
-
-        // Check the currently active workspace's path is updated
-        assert_eq!(workspace_manager.current_workspace().unwrap().1.path(), new_workspace_path);
-
-        {
-            std::fs::remove_dir_all(new_workspace_path).unwrap();
-        }
-    }
-}

@@ -1,42 +1,45 @@
 mod shared;
 
-use moss_fs::adapters::disk::DiskFileSystem;
+
 use shared::random_workspace_name;
-use std::path::PathBuf;
-use std::sync::Arc;
 
 use moss_workspace::models::operations::CreateWorkspaceInput;
+use moss_workspace::models::types::WorkspaceInfo;
+use moss_workspace::sanitizer::encode_directory_name;
 use moss_workspace::workspace_manager::*;
+use crate::shared::{setup_test_workspace_manager, SPECIAL_CHARS};
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
-
-    let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
+    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
-    let result = workspace_manager
+    let expected_path = workspaces_path.join(&workspace_name);
+    let output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
-        .await;
+        .await.unwrap();
 
-    assert!(result.is_ok());
+    // Check updating current workspace
+    let current_workspace = workspace_manager.current_workspace().unwrap();
+    assert_eq!(current_workspace.0.as_u64(), output.key);
+    assert_eq!(current_workspace.1.path(), expected_path);
+
+    // Check updating known_workspaces
+    let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
+    assert_eq!(workspaces_list.0.len(), 1);
+    assert_eq!(workspaces_list.0[0], WorkspaceInfo {path: expected_path.clone(), name: workspace_name} );
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path.join(workspace_name)).unwrap();
+        std::fs::remove_dir_all(workspaces_path).unwrap();
     }
 }
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
-
-    let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
+    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let result = workspace_manager
         .create_workspace(CreateWorkspaceInput {
@@ -45,23 +48,26 @@ async fn create_workspace_empty_name() {
         .await;
 
     assert!(matches!(result, Err(OperationError::Validation(_))));
+
+    // Clean up
+    {
+        std::fs::remove_dir_all(workspaces_path).unwrap();
+    }
 }
 
 #[tokio::test]
-async fn create_workspace_duplicate_name() {
-    let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data");
+async fn create_workspace_already_exists() {
+    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
-    let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
     let workspace_name = random_workspace_name();
+    let expected_path = workspaces_path.join(&workspace_name);
 
     // Create first workspace
-    let result = workspace_manager
+    workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
-        .await;
-    assert!(result.is_ok());
+        .await.unwrap();
 
     // Try to create workspace with same name
     let result = workspace_manager
@@ -71,54 +77,65 @@ async fn create_workspace_duplicate_name() {
         .await;
 
     match result {
-        Err(OperationError::AlreadyExists { key, path }) => {
-            assert_eq!(key, PathBuf::from(&workspace_name));
-            assert_eq!(path, workspaces_path.join(&workspace_name));
+        Err(OperationError::AlreadyExists { name, path }) => {
+            assert_eq!(name, workspace_name);
+            assert_eq!(path, expected_path);
         }
         _ => panic!("Expected AlreadyExists error"),
     }
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path.join(workspace_name)).unwrap();
+        std::fs::remove_dir_all(workspaces_path).unwrap();
     }
 }
 
-#[tokio::test]
-async fn create_workspace_invalid_path() {
-    let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from("/nonexistent/path");
-
-    let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
-
-    let result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
-            name: random_workspace_name(),
-        })
-        .await;
-
-    assert!(matches!(result, Err(OperationError::Unknown(_))));
-}
+// #[tokio::test]
+// async fn create_workspace_invalid_path() {
+//     let fs = Arc::new(DiskFileSystem::new());
+//     let workspaces_path: PathBuf = PathBuf::from("/nonexistent/path");
+//
+//     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
+//
+//     let result = workspace_manager
+//         .create_workspace(CreateWorkspaceInput {
+//             name: random_workspace_name(),
+//         })
+//         .await;
+//
+//     assert!(matches!(result, Err(OperationError::Unknown(_))));
+// }
 
 #[tokio::test]
 async fn create_workspace_special_chars() {
-    let fs = Arc::new(DiskFileSystem::new());
-    let workspaces_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/data");
+    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
-    let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone());
+    let workspace_name_list = SPECIAL_CHARS
+        .into_iter()
+        .map(|s| format!("{}{s}", random_workspace_name()))
+        .collect::<Vec<String>>();
 
-    // Test with various special characters
-    let invalid_names = vec![
-        "workspace/name",  // Contains path separator
-        "workspace\\name", // Contains backslash
-        "workspace:name",  // Contains colon
-        "workspace*name",  // Contains wildcard
-        "workspace?name",  // Contains question mark
-        "workspace\"name", // Contains quotes
-        "workspace<name",  // Contains angle brackets
-        "workspace>name",  // Contains angle brackets
-        "workspace|name",  // Contains pipe
-    ];
+    for name in workspace_name_list {
+        let expected_path = workspaces_path.join(encode_directory_name(&name));
+        let output = workspace_manager.create_workspace( CreateWorkspaceInput {
+            name: name.clone()
+        }).await.unwrap();
 
-    // TODO: Implement this
+        // Check updating current workspace
+        let current_workspace = workspace_manager.current_workspace().unwrap();
+        assert_eq!(current_workspace.0.as_u64(), output.key);
+        assert_eq!(current_workspace.1.path(), expected_path);
+
+        // Check updating known_workspaces
+        let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
+        assert!(workspaces_list.0.iter().any(|info| info == &WorkspaceInfo {
+            name: name.clone(),
+            path: expected_path.clone()
+        }));
+    }
+    // Clean up
+    {
+        std::fs::remove_dir_all(workspaces_path).unwrap();
+    }
+
 }

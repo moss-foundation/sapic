@@ -5,3 +5,5 @@ pub mod workspace;
 pub mod workspace_manager;
 
 pub mod leased_slotmap;
+pub mod sanitizer;
+

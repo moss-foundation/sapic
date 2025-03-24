@@ -599,7 +599,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_request_with_forbidden_characters() {
+    async fn create_request_forbidden_characters() {
         let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
         let collection_path = workspace_path.join(random_collection_name());
         tokio::fs::create_dir_all(&collection_path).await.unwrap();
@@ -627,6 +627,42 @@ mod tests {
         let request = requests_lock.read(request_key).unwrap();
 
         assert_eq!(request.name, request_name);
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn create_request_already_exists() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await.unwrap();
+
+        let create_request_result = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await;
+
+        assert!(create_request_result.is_err());
 
         // Clean up
         {
@@ -746,6 +782,43 @@ mod tests {
 
         let request = requests_lock.read(request_key).unwrap();
         assert_eq!(request.name, new_request_name);
+
+        // Clean up
+        {
+            tokio::fs::remove_dir_all(collection_path).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn rename_request_already_exists() {
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");
+        let collection_path = workspace_path.join(random_collection_name());
+        tokio::fs::create_dir_all(&collection_path).await.unwrap();
+
+        let collection =
+            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+
+        let request_name = random_request_name();
+        let create_request_output = collection
+            .create_request(CreateRequestInput {
+                name: request_name.clone(),
+                relative_path: None,
+                payload: None,
+                url: None,
+            })
+            .await
+            .unwrap();
+
+        let old_request_path = PathBuf::from(format!("{}.request", request_name));
+        let new_request_name = request_name.clone();
+        let rename_collection_result = collection
+            .rename_request(RenameRequestInput {
+                key: create_request_output.key,
+                new_name: new_request_name.clone(),
+            })
+            .await;
+
+        assert!(rename_collection_result.is_err());
 
         // Clean up
         {

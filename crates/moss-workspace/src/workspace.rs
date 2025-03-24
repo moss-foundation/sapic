@@ -13,6 +13,7 @@ use crate::models::operations::{
     RenameCollectionInput,
 };
 use crate::models::types::CollectionInfo;
+use crate::sanitizer::{decode_directory_name, encode_directory_name};
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::{CollectionEntity, StateDbManager};
 
@@ -89,7 +90,7 @@ impl Workspace {
                     self.state_db_manager()?.collection_store().scan()?
                 {
                     let name = match collection_path.file_name() {
-                        Some(name) => name.to_string_lossy().to_string(),
+                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
                             println!("failed to get the collection {:?} name", collection_path);
@@ -149,7 +150,7 @@ impl Workspace {
     ) -> Result<CreateCollectionOutput, OperationError> {
         input.validate()?;
 
-        let full_path = input.path.join(&input.name);
+        let full_path = input.path.join(encode_directory_name(&input.name));
 
         if full_path.exists() {
             return Err(OperationError::AlreadyExists {
@@ -222,7 +223,7 @@ impl Workspace {
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
-            .join(&input.new_name);
+            .join(encode_directory_name(&input.new_name));
         if new_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
@@ -332,36 +333,56 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_collection() {
+    async fn list_collections() {
         let (workspace_path, workspace) = setup_test_workspace().await;
         let collection_name = random_collection_name();
-        let expected_path = workspace_path.join(&collection_name);
 
-        let create_collection_result = workspace
+        let create_collection_output = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
                 path: workspace_path.clone(),
             })
-            .await;
+            .await.unwrap();
 
+        let list_collection_output = workspace.list_collections().await.unwrap().0;
 
-        let create_collection_output = create_collection_result.unwrap();
+        assert_eq!(list_collection_output.len(), 1);
+        assert_eq!(list_collection_output[0].key, create_collection_output.key);
+        assert_eq!(list_collection_output[0].name, collection_name);
+    }
 
-        assert_eq!(create_collection_output.name, collection_name);
-        assert_eq!(create_collection_output.path, expected_path.clone());
+    #[tokio::test]
+    async fn list_collections_empty() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let list_collections_output = workspace.list_collections().await.unwrap().0;
 
-        // Clean up
-        {
-            workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path).unwrap();
-        }
+        assert_eq!(list_collections_output.len(), 0);
+    }
+    #[tokio::test]
+    async fn list_collections_forbidden_characters() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let collection_name = format!("{}/name", random_collection_name());
+
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: collection_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await.unwrap();
+
+        let list_collection_output = workspace.list_collections().await.unwrap().0;
+
+        assert_eq!(list_collection_output.len(), 1);
+        assert_eq!(list_collection_output[0].key, create_collection_output.key);
+        assert_eq!(list_collection_output[0].name, collection_name);
+
     }
 
     #[tokio::test]
     async fn rename_collection() {
         let (workspace_path, workspace) = setup_test_workspace().await;
         let old_name = random_collection_name();
-        let new_name = "New Test Collection".to_string(); // random_collection_name();
+        let new_name = random_collection_name();
 
         // Create a test collection
         let create_collection_output = workspace
@@ -382,10 +403,111 @@ mod tests {
 
 
         // Verify rename
-        let collections = workspace.list_collections().await.unwrap();
+        let collections_lock = workspace.collections().await.unwrap().read().await;
+        let (collection, metadata) = collections_lock.read(CollectionKey::from(create_collection_output.key)).unwrap();
 
-        assert_eq!(collections.0.len(), 1);
-        assert_eq!(collections.0[0].name, new_name);
+        assert_eq!(metadata.name, new_name);
+
+        // Clean up
+        {
+            workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn rename_collection_invalid_name() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let old_name = random_collection_name();
+        let new_name = "".to_string();
+
+        // Create a test collection
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: old_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await
+            .unwrap();
+
+        // Rename collection
+        let rename_collection_result = workspace
+            .rename_collection(RenameCollectionInput {
+                key: create_collection_output.key,
+                new_name: new_name.clone(),
+            })
+            .await;
+
+        assert!(rename_collection_result.is_err());
+
+        // Clean up
+        {
+            workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn rename_collection_forbidden_characters() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let old_name = random_collection_name();
+        let new_name = format!("{}/name", random_collection_name());
+
+        // Create a test collection
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: old_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await
+            .unwrap();
+
+        // Rename collection
+        let rename_collection_result = workspace
+            .rename_collection(RenameCollectionInput {
+                key: create_collection_output.key,
+                new_name: new_name.clone(),
+            })
+            .await.unwrap();
+
+
+        // Verify rename
+        let collections_lock = workspace.collections().await.unwrap().read().await;
+        let (collection, metadata) = collections_lock.read(CollectionKey::from(create_collection_output.key)).unwrap();
+
+        assert_eq!(metadata.name, new_name);
+
+        // Clean up
+        {
+            workspace.truncate().unwrap();
+            std::fs::remove_dir_all(workspace_path).unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn rename_collection_already_exists() {
+        let (workspace_path, workspace) = setup_test_workspace().await;
+        let old_name = random_collection_name();
+        let new_name = old_name.clone();
+
+        // Create a test collection
+        let create_collection_output = workspace
+            .create_collection(CreateCollectionInput {
+                name: old_name.clone(),
+                path: workspace_path.clone(),
+            })
+            .await
+            .unwrap();
+
+        // Rename collection
+        let rename_collection_result = workspace
+            .rename_collection(RenameCollectionInput {
+                key: create_collection_output.key,
+                new_name: new_name.clone(),
+            })
+            .await;
+
+        assert!(rename_collection_result.is_err());
 
         // Clean up
         {
