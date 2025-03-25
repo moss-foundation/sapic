@@ -225,7 +225,7 @@ const CollectionCreationZone = () => {
     <div ref={ref} className={cn("relative mb-8 grid h-max min-h-32 w-full place-items-center")}>
       <div
         className={cn("animate-move absolute top-0 left-0 z-10 h-full w-full", {
-          "bg-[repeating-linear-gradient(45deg,#EDF6FF_0,#EDF6FF_6.5px,white_0,white_50%)] bg-[size:16px_16px]":
+          "bg-white bg-[repeating-linear-gradient(45deg,#edf6ff_0,#edf6ff_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px]":
             canDrop === true,
           "bg-[#F4F4F4]": canDrop === null,
         })}
