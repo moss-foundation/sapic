@@ -22,7 +22,7 @@ pub struct Environment {
 
 impl Environment {
     pub async fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self> {
-        if path.exists() {
+        if !path.exists() {
             fs.create_file_with(
                 &path,
                 serde_json::to_string(&EnvironmentFile::default())?,

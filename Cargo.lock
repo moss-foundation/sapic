@@ -2953,6 +2953,7 @@ dependencies = [
  "moss_app",
  "moss_db",
  "moss_fs",
+ "rand 0.9.0",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
