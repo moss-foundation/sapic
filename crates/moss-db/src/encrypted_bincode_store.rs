@@ -8,6 +8,8 @@ use crate::{
     DatabaseClient, ReDbClient, Transaction,
 };
 
+// FIXME: DON'T USE THIS
+// Must be removed later
 pub struct EncryptedBincodeStore<'a, K, V>
 where
     K: Key + 'static + Borrow<K::SelfType<'a>>,

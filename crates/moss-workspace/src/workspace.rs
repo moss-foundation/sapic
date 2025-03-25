@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
+use moss_environment::environment::{Environment, EnvironmentMetadata};
 use moss_fs::{FileSystem, RemoveOptions};
 use slotmap::KeyData;
 use std::path::PathBuf;
@@ -8,13 +9,14 @@ use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::leased_slotmap::LeasedSlotMap;
+use crate::models::entities::CollectionEntity;
 use crate::models::operations::{
     CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
     RenameCollectionInput,
 };
 use crate::models::types::CollectionInfo;
 use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::storage::{CollectionEntity, StateDbManager};
+use crate::storage::StateDbManager;
 
 slotmap::new_key_type! {
     pub struct CollectionKey;
@@ -53,10 +55,36 @@ pub enum CollectionOperationError {
 type CollectionSlot = (Collection, CollectionMetadata);
 type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
 
+slotmap::new_key_type! {
+    pub struct EnvironmentKey;
+}
+
+impl From<u64> for EnvironmentKey {
+    fn from(value: u64) -> Self {
+        Self(KeyData::from_ffi(value))
+    }
+}
+
+impl EnvironmentKey {
+    pub fn as_u64(self) -> u64 {
+        self.0.as_ffi()
+    }
+}
+
+impl std::fmt::Display for EnvironmentKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_u64())
+    }
+}
+
+type EnvironmentSlot = (Environment, EnvironmentMetadata);
+type EnvironmentMap = LeasedSlotMap<EnvironmentKey, EnvironmentSlot>;
+
 pub struct Workspace {
     fs: Arc<dyn FileSystem>,
     state_db_manager: Arc<dyn StateDbManager>,
     collections: OnceCell<RwLock<CollectionMap>>,
+    environments: OnceCell<RwLock<EnvironmentMap>>,
 }
 
 impl Workspace {
@@ -68,7 +96,12 @@ impl Workspace {
             fs,
             state_db_manager: Arc::new(state_db_manager),
             collections: OnceCell::new(),
+            environments: OnceCell::new(),
         })
+    }
+
+    async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
+        todo!()
     }
 
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {

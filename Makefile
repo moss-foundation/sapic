@@ -94,7 +94,7 @@ gen-models: \
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=$(EXCLUDE_DIRS) --include-ext=$(SRC_EXT) .
+	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts .
 
 ## Clean up merged Git branches except master, main, and dev
 .PHONY: cleanup-git
