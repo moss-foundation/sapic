@@ -1,92 +1,52 @@
-import { useEffect, useState } from "react";
-
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useState } from "react";
 
 import { Resizable, ResizablePanel } from "./components";
-import Tabs from "./components/Tabs";
+import CollectionTreeView from "./components/CollectionTreeView";
+import { SideBar } from "./components/SideBar";
 import { HeadBar } from "./parts/HeadBar/HeadBar";
 import TabbedPane from "./parts/TabbedPane/TabbedPane";
-import { swapObjectsById } from "./utils";
+import { useActivityBarStore } from "./store/activityBarStore";
+import { usePositionStore } from "./store/positionStore";
+import { useSideBarStore } from "./store/sideBarStore";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import CollectionTreeView from "./components/CollectionTreeView";
-
-interface ListItem {
-  id: number;
-  label: string;
-  isActive: boolean;
-}
-
 function App() {
-  const [DNDList, setDNDList] = useState<ListItem[]>([
-    {
-      id: 1,
-      label: `Collections`,
-      isActive: true,
-    },
-    {
-      id: 2,
-      label: `Environments`,
-      isActive: false,
-    },
-  ]);
+  const [activeId, setActiveId] = useState(1);
+  const { sideBarPosition } = useSideBarStore();
+  const { activityBarPosition } = useActivityBarStore();
 
-  const handleSetActive = (id: number) => {
-    setDNDList([...DNDList.map((item) => ({ ...item, isActive: item.id === id }))]);
+  const renderPanel = () => {
+    switch (activeId) {
+      case 1:
+        return <CollectionTreeView />;
+      case 2:
+        return <div>Environments Panel</div>;
+      case 3:
+        return <div>Mock Panel</div>;
+      default:
+        return null;
+    }
   };
-
-  useEffect(() => {
-    return monitorForElements({
-      onDrop({ location, source }) {
-        const target = location.current.dropTargets[0];
-        if (!target || target.data.draggableType !== "WidgetBarButton") return;
-
-        const sourceData = source.data as unknown as ListItem;
-        const targetData = target.data as unknown as ListItem;
-
-        if (!sourceData || !targetData) return;
-
-        const updatedItems = swapObjectsById(sourceData, targetData, DNDList);
-
-        if (!updatedItems) return;
-
-        setDNDList(updatedItems);
-      },
-    });
-  }, [DNDList]);
 
   return (
     <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto] text-(--moss-text)">
       <HeadBar />
-      <Resizable>
-        <ResizablePanel preferredSize={270} minSize={150} maxSize={400} snap>
-          <Tabs>
-            <Tabs.List>
-              {DNDList.map((item) => (
-                <Tabs.Tab
-                  {...item}
-                  key={item.id}
-                  isDraggable
-                  onClick={() => handleSetActive(item.id)}
-                  draggableType="WidgetBarButton"
-                />
-              ))}
-            </Tabs.List>
-
-            <Tabs.Panels className="">
-              {DNDList.map((item) => (
-                <Tabs.Panel {...item} key={item.id} className="">
-                  {item.id === 1 ? <CollectionTreeView /> : <div>{`Panel ${item.id}`}</div>}
-                </Tabs.Panel>
-              ))}
-            </Tabs.Panels>
-          </Tabs>
-        </ResizablePanel>
-        <ResizablePanel>
-          <TabbedPane theme="dockview-theme-light" />
-        </ResizablePanel>
-      </Resizable>
+      <div className="flex h-full">
+        <SideBar
+          position={sideBarPosition}
+          activityBarPosition={activityBarPosition}
+          activeId={activeId}
+          onSelect={setActiveId}
+        >
+          {renderPanel()}
+        </SideBar>
+        <Resizable>
+          <ResizablePanel>
+            <TabbedPane theme="dockview-theme-light" />
+          </ResizablePanel>
+        </Resizable>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,9 @@ import { useSetColorTheme } from "@/hooks/useSetColorTheme";
 import { useSetLocale } from "@/hooks/useSetLocale";
 import { ColorThemeInfo } from "@repo/moss-theme";
 
+import { ActivityBarPosition, useActivityBarStore } from "../store/activityBarStore";
+import { SideBarPosition, useSideBarStore } from "../store/sideBarStore";
+
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
@@ -18,9 +21,14 @@ export const Settings = () => {
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
+  const { sideBarPosition, setSideBarPosition } = useSideBarStore();
+  const { setActivityBarPosition, activityBarPosition } = useActivityBarStore();
+
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;
-    const selectedLocaleInfo = languages?.find((lang: { code: string }) => lang.code === selectedLocaleCode);
+    const selectedLocaleInfo = languages?.find(
+      (lang: { code: string; displayName: string }) => lang.code === selectedLocaleCode
+    );
     if (selectedLocaleInfo) {
       mutateChangeLanguagePack({
         localeInfo: selectedLocaleInfo,
@@ -37,6 +45,25 @@ export const Settings = () => {
       mutateChangeColorTheme({
         themeInfo: selectedTheme,
       });
+    }
+  };
+
+  const handleSideBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const position = event.target.value as SideBarPosition;
+    setSideBarPosition(position);
+    // Update ActivityBar position only if it's currently set to left or right
+    if (activityBarPosition === "left" || activityBarPosition === "right") {
+      setActivityBarPosition(position);
+    }
+  };
+
+  const handleActivityBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const position = event.target.value as ActivityBarPosition;
+    if (position === "default") {
+      // Set ActivityBar position to match SideBar position
+      setActivityBarPosition(sideBarPosition);
+    } else {
+      setActivityBarPosition(position);
     }
   };
 
@@ -74,6 +101,32 @@ export const Settings = () => {
                 {theme_info.displayName}
               </option>
             ))}
+          </select>
+        </div>
+
+        <div>
+          <h3>SideBar Position</h3>
+          <select
+            id="sidebar-position-select"
+            className="rounded border bg-gray-400 p-2"
+            onChange={handleSideBarPositionChange}
+          >
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+
+        <div>
+          <h3>ActivityBar Position</h3>
+          <select
+            id="activitybar-position-select"
+            className="rounded border bg-gray-400 p-2"
+            onChange={handleActivityBarPositionChange}
+          >
+            <option value="default">Default</option>
+            <option value="top">Top</option>
+            <option value="bottom">Bottom</option>
+            <option value="hidden">Hidden</option>
           </select>
         </div>
       </div>
