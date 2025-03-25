@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context as _, Result};
 use dashmap::DashSet;
-use moss_fs::ports::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use slotmap::KeyData;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
@@ -107,7 +107,9 @@ impl Collection {
     }
 
     pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
-        self.state_db_manager.clone().ok_or(anyhow!("The state_db_manager has been dropped"))
+        self.state_db_manager
+            .clone()
+            .ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
@@ -204,7 +206,8 @@ impl Collection {
                 for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
                     let entity = restored_requests.get(&request_dir_relative_path);
 
-                    self.known_requests_paths.insert(request_dir_relative_path.clone());
+                    self.known_requests_paths
+                        .insert(request_dir_relative_path.clone());
                     requests.insert(CollectionRequestData {
                         name: indexed_request_entry.name,
                         request_dir_relative_path,
@@ -503,7 +506,7 @@ fn get_request_name(folder_name: &str) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
-    use moss_fs::adapters::disk::DiskFileSystem;
+    use moss_fs::RealFileSystem;
 
     use super::*;
 
@@ -532,7 +535,7 @@ mod tests {
         tokio::fs::create_dir_all(&collection_path).await.unwrap();
 
         let collection =
-            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+            Collection::new(collection_path.clone(), Arc::new(RealFileSystem::new())).unwrap();
 
         let request_name = random_request_name();
         let create_request_result = collection
@@ -570,7 +573,7 @@ mod tests {
         tokio::fs::create_dir_all(&collection_path).await.unwrap();
 
         let collection =
-            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+            Collection::new(collection_path.clone(), Arc::new(RealFileSystem::new())).unwrap();
 
         let request_name = random_request_name();
         let create_request_output = collection
@@ -616,7 +619,7 @@ mod tests {
         tokio::fs::create_dir_all(&collection_path).await.unwrap();
 
         let collection =
-            Collection::new(collection_path.clone(), Arc::new(DiskFileSystem::new())).unwrap();
+            Collection::new(collection_path.clone(), Arc::new(RealFileSystem::new())).unwrap();
 
         let request_name = random_request_name();
         let request_path = PathBuf::from(format!("{}.request", request_name));

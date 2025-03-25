@@ -2,7 +2,7 @@ use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
-use moss_fs::ports::{FileSystem, RemoveOptions};
+use moss_fs::{FileSystem, RemoveOptions};
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
 
@@ -122,13 +122,13 @@ impl AppService for WorkspaceManager {}
 #[cfg(test)]
 mod tests {
     use crate::utils::random_workspace_name;
-    use moss_fs::adapters::disk::DiskFileSystem;
+    use moss_fs::RealFileSystem;
 
     use super::*;
 
     #[tokio::test]
     async fn create_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
+        let fs = Arc::new(RealFileSystem::new());
         let dir: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
         let workspace_manager = WorkspaceManager::new(fs, dir.clone());
@@ -150,7 +150,7 @@ mod tests {
 
     #[tokio::test]
     async fn list_workspaces() {
-        let fs = Arc::new(DiskFileSystem::new());
+        let fs = Arc::new(RealFileSystem::new());
         let dir: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
         let workspace_manager = WorkspaceManager::new(fs, dir.clone());
@@ -188,7 +188,7 @@ mod tests {
 
     #[tokio::test]
     async fn delete_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
+        let fs = Arc::new(RealFileSystem::new());
         let dir: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
         let workspace_manager = WorkspaceManager::new(fs, dir.clone());
@@ -222,7 +222,7 @@ mod tests {
 
     #[tokio::test]
     async fn open_workspace() {
-        let fs = Arc::new(DiskFileSystem::new());
+        let fs = Arc::new(RealFileSystem::new());
         let dir: PathBuf =
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../samples/workspaces");
         let workspace_manager = WorkspaceManager::new(fs, dir.clone());

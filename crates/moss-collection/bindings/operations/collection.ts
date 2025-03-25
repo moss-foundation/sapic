@@ -7,7 +7,14 @@ import type { RequestBody } from "../types/request";
 
 export type CreateCollectionInput = { name: string; path: string; repo?: string };
 
-export type CreateRequestInput = { name: string; url?: string; payload: CreateRequestProtocolSpecificPayload | null };
+export type CreateRequestInput = {
+  name: string;
+  relativePath?: string;
+  url?: string;
+  payload?: CreateRequestProtocolSpecificPayload;
+};
+
+export type CreateRequestOutput = { key: bigint };
 
 export type CreateRequestProtocolSpecificPayload = {
   "http": {
@@ -19,4 +26,8 @@ export type CreateRequestProtocolSpecificPayload = {
   };
 };
 
+export type DeleteRequestInput = { key: bigint };
+
 export type OverviewCollectionOutput = { name: string; path: string; order?: number };
+
+export type RenameRequestInput = { key: bigint; newName: string };

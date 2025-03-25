@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_fs::ports::{FileSystem, RemoveOptions, RenameOptions};
+use moss_fs::{FileSystem, RemoveOptions};
 use slotmap::KeyData;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -277,10 +277,10 @@ impl Workspace {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
     use super::*;
     use crate::utils::random_collection_name;
-    use moss_fs::adapters::disk::DiskFileSystem;
+    use moss_fs::RealFileSystem;
+    use std::fs;
 
     fn random_string(length: usize) -> String {
         use rand::{distr::Alphanumeric, Rng};
@@ -292,11 +292,10 @@ mod tests {
             .collect()
     }
 
-
     async fn setup_test_workspace() -> (PathBuf, Workspace) {
-        let fs = Arc::new(DiskFileSystem::new());
-        let workspace_path: PathBuf =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../samples/workspaces/{}", random_string(10)));
+        let fs = Arc::new(RealFileSystem::new());
+        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../../samples/workspaces/{}", random_string(10)));
         fs::create_dir_all(&workspace_path).unwrap();
         let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
         (workspace_path, workspace)
@@ -314,7 +313,6 @@ mod tests {
                 path: workspace_path.clone(),
             })
             .await;
-
 
         let create_collection_output = create_collection_result.unwrap();
 
@@ -349,8 +347,9 @@ mod tests {
                 key: create_collection_output.key,
                 new_name: new_name.clone(),
             })
-            .await.unwrap();
+            .await;
 
+        assert!(rename_collection_result.is_ok());
 
         // Verify rename
         let collections = workspace.list_collections().await.unwrap();

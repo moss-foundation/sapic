@@ -1,8 +1,8 @@
 import { ReactNode, useEffect } from "react";
 
-import { useGetAppState } from "@/hooks/useGetAppState";
+import { useDescribeAppState } from "@/hooks/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { applyTheme } from "@/utils/applyTheme";
+import { applyColorTheme } from "@/utils/applyTheme";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -18,7 +18,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
 };
 
 const useInitializeAppState = () => {
-  const { data } = useGetAppState();
+  const { data } = useDescribeAppState();
 
   useEffect(() => {
     if (data) {
@@ -27,7 +27,7 @@ const useInitializeAppState = () => {
 
       document.querySelector("html")?.setAttribute("data-theme", theme.mode);
 
-      applyTheme(theme.identifier);
+      applyColorTheme(theme.identifier);
       applyLanguagePack(languagePack);
     }
   }, [data]);
