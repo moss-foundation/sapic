@@ -222,15 +222,15 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className={cn("animate-move mb-8 grid h-max min-h-32 w-full place-items-center", {
-        "bg-[repeating-linear-gradient(45deg,#EDF6FF_0,#EDF6FF_6.5px,white_0,white_50%)] bg-[size:16px_16px]":
-          canDrop === true,
-        "bg-[#F4F4F4]": canDrop === null,
-      })}
-    >
-      <div className="flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
+    <div ref={ref} className={cn("relative mb-8 grid h-max min-h-32 w-full place-items-center")}>
+      <div
+        className={cn("animate-move absolute top-0 left-0 z-10 h-full w-full", {
+          "bg-[repeating-linear-gradient(45deg,#EDF6FF_0,#EDF6FF_6.5px,white_0,white_50%)] bg-[size:16px_16px]":
+            canDrop === true,
+          "bg-[#F4F4F4]": canDrop === null,
+        })}
+      />
+      <div className="z-20 flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
         <Icon
           icon="AddCircle"
           className={cn("size-5 text-[#717171]", {
