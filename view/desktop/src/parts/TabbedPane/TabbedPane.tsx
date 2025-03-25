@@ -215,7 +215,6 @@ const TabbedPane = (props: { theme?: string }) => {
         addLogLine(`Panel Added ${event.id}`);
       }),
       api.onDidActivePanelChange((event) => {
-        console.log("active panel change", event);
         dockviewStore.setCurrentActivePanelId(event?.id || undefined);
         addLogLine(`Panel Activated ${event?.id}`);
       }),
@@ -340,7 +339,6 @@ const TabbedPane = (props: { theme?: string }) => {
         if (source) setPragmaticDropElement(sourceTarget);
       },
       canDrop({ source }) {
-        console.log(source);
         return source?.data?.type === "TreeNode";
       },
 
