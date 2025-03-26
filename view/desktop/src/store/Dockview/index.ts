@@ -9,7 +9,9 @@ interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions,
 interface DockviewApiState {
   api: DockviewApi | undefined;
   currentActivePanelId: string | undefined;
+  currentActiveTreeId: string | undefined;
   setCurrentActivePanelId: (id: string | undefined) => void;
+  setCurrentActiveTreeId: (id: string | undefined) => void;
   addPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
   setApi: (api: DockviewApi) => void;
 }
@@ -17,6 +19,7 @@ interface DockviewApiState {
 export const useDockviewStore = create<DockviewApiState>((set, get) => ({
   api: undefined,
   currentActivePanelId: undefined,
+  currentActiveTreeId: undefined,
   addPanel: async (options) => {
     const someRandomString = await new Promise<string>((resolve) => {
       setTimeout(() => {
@@ -28,6 +31,7 @@ export const useDockviewStore = create<DockviewApiState>((set, get) => ({
       ...options,
       component: "Default",
       params: {
+        ...options.params,
         someRandomString,
       },
     } as AddPanelOptions);
@@ -36,7 +40,9 @@ export const useDockviewStore = create<DockviewApiState>((set, get) => ({
     set({ api });
   },
   setCurrentActivePanelId: (id: string | undefined) => {
-    if (id === undefined) return;
     set({ currentActivePanelId: id });
+  },
+  setCurrentActiveTreeId: (id: string | undefined) => {
+    set({ currentActiveTreeId: id });
   },
 }));

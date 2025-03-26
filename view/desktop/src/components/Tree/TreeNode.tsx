@@ -34,15 +34,15 @@ export const TreeNode = ({
 }: TreeNodeComponentProps) => {
   const { treeId, nodeOffset, paddingLeft, paddingRight, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
     useContext(TreeContext);
-  const { currentActivePanelId, addPanel } = useDockviewStore();
+  const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
   const nodeStyle = useMemo(
     () =>
       cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
-        "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id,
+        "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id && currentActiveTreeId === treeId,
       }),
-    [currentActivePanelId, node.id]
+    [currentActivePanelId, currentActiveTreeId, node.id, treeId]
   );
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const draggableRootRef = useRef<HTMLDivElement>(null);
@@ -279,13 +279,19 @@ export const TreeNode = ({
                 paddingLeft: nodePaddingLeft,
                 paddingRight: paddingRight + 3,
               }}
-              onClick={(e) => {
+              onClick={() => {
                 if (node.isFolder) handleFolderClick();
-                else addPanel({ id: `${node.id}` });
+                else
+                  addPanel({
+                    id: `${node.id}`,
+                    params: {
+                      treeId,
+                    },
+                  });
 
                 onNodeClick?.(node);
               }}
-              onDoubleClick={(e) => onNodeDoubleClick?.(node)}
+              onDoubleClick={() => onNodeDoubleClick?.(node)}
               className={cn(
                 nodeStyle,
                 "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) relative w-full cursor-pointer items-center gap-1 dark:hover:text-black",

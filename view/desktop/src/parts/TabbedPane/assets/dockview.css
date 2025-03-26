@@ -17,7 +17,7 @@
 .dockview-demo .data-table table th {
   padding: 0px 8px;
 }
-.dockview-demo button {
+/* .dockview-demo button {
   height: 25px;
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@
 }
 .dockview-demo button:hover {
   background-color: #222e62;
-}
+} */
 .dockview-demo input {
   outline: 1px solid #4c65d4;
   border: none;

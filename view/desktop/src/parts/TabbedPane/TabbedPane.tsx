@@ -23,6 +23,7 @@ import { setGridState } from "./utils";
 
 import "./assets/styles.css";
 
+import { Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
 import { getActualDropSourceTarget } from "@/components/Tree/utils";
 import { useDockviewStore } from "@/store/Dockview";
@@ -216,7 +217,14 @@ const TabbedPane = (props: { theme?: string }) => {
       }),
       api.onDidActivePanelChange((event) => {
         console.log("active panel change", event);
+
+        console.log({
+          id: event?.id,
+          treeId: event?.params?.treeId,
+        });
         dockviewStore.setCurrentActivePanelId(event?.id || undefined);
+        dockviewStore.setCurrentActiveTreeId(event?.params?.treeId || undefined);
+
         addLogLine(`Panel Activated ${event?.id}`);
       }),
       api.onDidRemovePanel((event) => {
@@ -417,6 +425,9 @@ const TabbedPane = (props: { theme?: string }) => {
           </div>
         </>
       )}
+
+      <Breadcrumbs />
+
       <div className="flex h-0 grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>

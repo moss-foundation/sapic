@@ -1,18 +1,14 @@
+import "@repo/moss-tabs/assets/styles.css";
+
 import { useEffect, useRef, useState } from "react";
 
 import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-
-import AzureDevOpsTestCollection from "../assets/AzureDevOpsTestCollection.json";
-import SapicTestCollection from "../assets/SapicTestCollection.json";
-import WhatsAppBusinessTestCollection from "../assets/WhatsAppBusinessTestCollection.json";
-
-import "@repo/moss-tabs/assets/styles.css";
-
+import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
+import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
 export const CollectionTreeView = () => {
@@ -21,11 +17,7 @@ export const CollectionTreeView = () => {
 
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [collections, setCollections] = useState<Collection[]>([
-    SapicTestCollection as Collection,
-    AzureDevOpsTestCollection as Collection,
-    WhatsAppBusinessTestCollection as Collection,
-  ]);
+  const { collections, setCollections } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -62,37 +54,32 @@ export const CollectionTreeView = () => {
           return;
         }
 
-        setCollections(
-          (prevCollections) => swapListById(sourceCollectionId, locationCollectionId, prevCollections, closestEdge)!
-        );
+        setCollections(swapListById(sourceCollectionId, locationCollectionId, collections, closestEdge)!);
       },
     });
-  }, []);
+  }, [collections, setCollections]);
 
   useEffect(() => {
     const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
       const { source } = event.detail;
       const newTreeId = `collectionId${collections.length + 1}`;
 
-      setCollections((prevCollections) => {
-        return [
-          ...prevCollections,
-          {
-            id: newTreeId,
-            type: "collection",
-            order: prevCollections.length + 1,
-            tree: {
-              "id": "New Collection",
-              "order": prevCollections.length + 1,
-              "type": "folder",
-              "isFolder": true,
-              "isExpanded": true,
-              "isRoot": true,
-              "childNodes": [source.node],
-            },
+      setCollections([
+        ...collections,
+        {
+          id: newTreeId,
+          type: "collection",
+          order: collections.length + 1,
+          tree: {
+            "id": "New Collection",
+            "order": collections.length + 1,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": true,
+            "childNodes": [source.node],
           },
-        ];
-      });
+        },
+      ]);
       setTimeout(() => {
         window.dispatchEvent(
           new CustomEvent("newCollectionWasCreated", {
@@ -112,7 +99,7 @@ export const CollectionTreeView = () => {
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [collections.length]);
+  }, [collections, setCollections]);
 
   return (
     <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>

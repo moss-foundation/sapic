@@ -1,4 +1,5 @@
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+
 import { DropNodeElement, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
 export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
@@ -65,6 +66,12 @@ export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
     ...treeWithoutUniqueId,
     childNodes: tree.childNodes.map((child) => removeUniqueIdFromTree(child)),
   };
+};
+
+export const findNodeById = (tree: NodeProps, id: string): NodeProps | undefined => {
+  if (tree.id === id) return tree;
+
+  return tree.childNodes.find((child) => findNodeById(child, id));
 };
 
 export const findNodeByUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {

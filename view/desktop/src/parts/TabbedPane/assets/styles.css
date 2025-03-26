@@ -17,7 +17,7 @@
   @apply px-2 py-0;
 }
 
-.dockview-demo button {
+/* .dockview-demo button {
   @apply flex h-[25px] cursor-pointer items-center justify-center border-none bg-[#1c254a] text-white outline outline-[#4c65d4];
 }
 
@@ -27,7 +27,7 @@
 
 .dockview-demo button:hover {
   @apply bg-[#222e62];
-}
+} */
 
 .dockview-demo input {
   @apply m-0 h-[25px] border-none outline outline-[#4c65d4];
