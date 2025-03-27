@@ -1,8 +1,8 @@
+use moss_fs::utils::encode_directory_name;
 use moss_workspace::workspace::OperationError;
 use moss_workspace::models::operations::{CreateCollectionInput, RenameCollectionInput};
 use moss_workspace::models::types::CollectionInfo;
-use moss_workspace::sanitizer::encode_directory_name;
-use crate::shared::{random_collection_name, random_workspace_name, setup_test_workspace, SPECIAL_CHARS};
+use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
 
 mod shared;
 
@@ -90,6 +90,8 @@ async fn rename_collection_unchanged() {
             new_name: new_collection_name.clone()
         }
     ).await;
+
+    assert!(result.is_ok());
 
     {
         std::fs::remove_dir_all(workspace_path).unwrap()

@@ -2919,7 +2919,6 @@ dependencies = [
  "moss_fs",
  "parking_lot",
  "rand 0.9.0",
- "regex",
  "scraper",
  "serde",
  "serde_json",
@@ -2953,6 +2952,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "regex",
  "tokio",
 ]
 
@@ -3109,7 +3109,6 @@ dependencies = [
  "moss_db",
  "moss_fs",
  "rand 0.9.0",
- "regex",
  "serde",
  "slotmap",
  "thiserror 2.0.12",

@@ -1,7 +1,7 @@
 use regex::Regex;
 
 // Function to encode forbidden characters and '%' in a directory name
-pub(crate) fn encode_directory_name(name: &str) -> String {
+pub fn encode_directory_name(name: &str) -> String {
     // List of forbidden characters, including '%' to avoid ambiguity
     let re = Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap();
     re.replace_all(name, |caps: &regex::Captures| {
@@ -11,7 +11,7 @@ pub(crate) fn encode_directory_name(name: &str) -> String {
 }
 
 // Function to decode an encoded directory name back to its original form
-pub(crate) fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
+pub fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
     let mut result = String::new();
     let mut chars = encoded.chars().peekable();
 

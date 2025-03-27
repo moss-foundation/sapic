@@ -8,7 +8,7 @@ use slotmap::KeyData;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
 use validator::{Validate, ValidationErrors};
-
+use moss_fs::utils::{decode_directory_name, encode_directory_name};
 use crate::{
     models::{
         operations::{
@@ -20,7 +20,6 @@ use crate::{
 };
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
-use crate::sanitizer::{decode_directory_name, encode_directory_name};
 use crate::storage::global_db_manager::GlobalDbManagerImpl;
 use crate::storage::{GlobalDbManager, WorkspaceEntity};
 
@@ -65,60 +64,45 @@ type WorkspaceInfoMap = LeasedSlotMap<WorkspaceKey, WorkspaceInfo>;
 
 pub struct WorkspaceManager {
     fs: Arc<dyn FileSystem>,
-    // TODO: Should we allow creating workspaces at arbitrary locations?
     workspaces_dir: PathBuf,
-    global_db_manager: Option<Arc<dyn GlobalDbManager>>,
     current_workspace: ArcSwapOption<(WorkspaceKey, Workspace)>,
     known_workspaces: OnceCell<RwLock<WorkspaceInfoMap>>,
 }
 
 impl WorkspaceManager {
     pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Result<Self> {
-        let global_db_manager = GlobalDbManagerImpl::new(&workspaces_dir).context("Failed to open the global state database")?;
-
         Ok(Self {
             fs,
             workspaces_dir,
-            global_db_manager: Some(Arc::new(global_db_manager)),
             current_workspace: ArcSwapOption::new(None),
             known_workspaces: Default::default(),
         })
     }
 
-    pub fn global_db_manager(&self) -> Result<Arc<dyn GlobalDbManager>> {
-        self.global_db_manager.clone().ok_or(anyhow!("The global_db_manager has been dropped"))
-    }
-
     async fn known_workspaces(&self) -> Result<&RwLock<WorkspaceInfoMap>> {
-        let result = self
+        Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
                 let mut workspaces = LeasedSlotMap::new();
+                let mut dir = self.fs.read_dir(&self.workspaces_dir).await?;
 
-                for (workspace_path, _workspace_data) in
-                    self.global_db_manager()?.workspace_store().scan()? {
-                    let name = match workspace_path.file_name() {
-                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
-                        None => {
-                            // TODO: logging
-                            println!("failed to get the workspace {:?} name", workspace_path);
-                            continue;
-                        }
-                    };
+                while let Some(entry) = dir.next_entry().await? {
+                    let file_type = entry.file_type().await?;
+                    if file_type.is_file() {
+                        continue;
+                    }
 
-                    // TODO:A self-healing mechanism needs to be implemented here similar to workspace.rs
-                    let workspace_info = WorkspaceInfo {
-                        name,
-                        path: workspace_path
-                    };
-                    workspaces.insert(workspace_info);
-
+                    let path = entry.path();
+                    let file_name_str = entry.file_name().to_string_lossy().to_string();
+                    workspaces.insert(WorkspaceInfo {
+                        path,
+                        name: file_name_str,
+                    });
                 }
 
                 Ok::<_, anyhow::Error>(RwLock::new(workspaces))
             })
-            .await?;
-        Ok(result)
+            .await?)
     }
 }
 
@@ -156,15 +140,6 @@ impl WorkspaceManager {
 
         let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
 
-        let workspace_store = self.global_db_manager()?.workspace_store();
-        let (mut txn, table) = workspace_store.begin_write()?;
-
-        table.insert(
-            &mut txn,
-            full_path.to_string_lossy().to_string(),
-            &WorkspaceEntity {}
-        )?;
-
         self.fs.create_dir(&full_path).await.context("Failed to create the workspace directory")?;
 
         let current_workspace = Workspace::new(full_path.clone(), self.fs.clone())?;
@@ -178,8 +153,6 @@ impl WorkspaceManager {
 
         // // Automatically switch the workspace to the new one.
         self.current_workspace.store(Some(Arc::new((workspace_key, current_workspace))));
-
-        txn.commit()?;
 
         Ok(CreateWorkspaceOutput {
             key: workspace_key.as_u64()
@@ -222,18 +195,9 @@ impl WorkspaceManager {
             })
         }
 
-        let workspace_store = self.global_db_manager()?.workspace_store();
-        let (mut txn, table) = workspace_store.begin_write()?;
 
         let entity_key = old_path.to_string_lossy().to_string();
         let new_entity_key = new_path.to_string_lossy().to_string();
-
-        let entity = table.remove(&mut txn, entity_key.clone())?;
-        table.insert(
-            &mut txn,
-            new_entity_key,
-            &entity
-        )?;
 
         // An opened workspace db will prevent its parent folder from being renamed
         // If we are renaming the current workspace, we need to call the reset method
@@ -259,7 +223,7 @@ impl WorkspaceManager {
         workspace_info.name = input.new_name;
         workspace_info.path = new_path;
 
-        Ok(txn.commit()?)
+        Ok(())
     }
 
     pub async fn delete_workspace(&self, input: DeleteWorkspaceInput) -> Result<(), OperationError> {
@@ -270,13 +234,9 @@ impl WorkspaceManager {
         let workspace_info = workspaces_lock.remove(workspace_key).context("Failed to remove the workspace")?;
 
         let workspace_path = workspace_info.path;
-        let workspace_store = self.global_db_manager()?.workspace_store();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.
-
-        let (mut txn, table) = workspace_store.begin_write()?;
-        table.remove(&mut txn, workspace_path.to_string_lossy().to_string())?;
 
         // TODO: logging if the folder has already been removed from the filesystem
         self.fs
@@ -298,7 +258,7 @@ impl WorkspaceManager {
             }
         }
 
-        Ok(txn.commit()?)
+        Ok(())
     }
 
     pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {

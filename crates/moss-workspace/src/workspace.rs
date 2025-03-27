@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
+use moss_fs::{
+    FileSystem, RemoveOptions, RenameOptions,
+    utils::{decode_directory_name, encode_directory_name},
+};
 use slotmap::KeyData;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -13,7 +16,6 @@ use crate::models::operations::{
     RenameCollectionInput,
 };
 use crate::models::types::CollectionInfo;
-use crate::sanitizer::{decode_directory_name, encode_directory_name};
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::{CollectionEntity, StateDbManager};
 
@@ -57,6 +59,9 @@ pub enum OperationError {
 type CollectionSlot = (Collection, CollectionMetadata);
 type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
 
+// TODO: create collections at workspace/collections
+
+// workspace1/collections/collection1/requests
 pub struct Workspace {
     fs: Arc<dyn FileSystem>,
     path: PathBuf,
@@ -88,6 +93,8 @@ impl Workspace {
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
 
+
+                // TODO: Support external collections with absolute path
                 for (relative_path, collection_data) in
                     self.state_db_manager()?.collection_store().scan()?
                 {

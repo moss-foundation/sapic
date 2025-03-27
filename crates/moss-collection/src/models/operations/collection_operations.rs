@@ -5,6 +5,7 @@ use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
+use crate::models::collection::RequestType;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -54,4 +55,20 @@ pub struct RenameRequestInput {
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct DeleteRequestInput {
     pub key: u64,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct ListRequestsOutput(pub Vec<RequestInfo>);
+
+#[derive(Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct RequestInfo {
+    // FIXME: What fields should this contain?
+    pub key: u64,
+    pub name: String,
+    pub request_dir_relative_path: PathBuf,
+    pub order: Option<usize>,
+    pub typ: RequestType
 }

@@ -77,7 +77,6 @@ async fn delete_collection_fs_already_deleted() {
     // Delete the collection
     std::fs::remove_dir_all(expected_path).unwrap();
 
-    // This should simply be a no-op
     let result = workspace.delete_collection(
         DeleteCollectionInput {
             key

@@ -1,6 +1,6 @@
+use moss_fs::utils::encode_directory_name;
 use moss_workspace::models::operations::CreateCollectionInput;
 use moss_workspace::models::types::CollectionInfo;
-use moss_workspace::sanitizer::encode_directory_name;
 use moss_workspace::workspace::OperationError;
 use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
 
