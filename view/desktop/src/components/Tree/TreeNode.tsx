@@ -16,24 +16,26 @@ import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TreeNodeComponentProps, TreeNodeProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
 
-export const TreeNode = ({
-  node,
-  onNodeUpdate,
-  depth,
-  parentNode,
-  onNodeAdd,
-  onNodeRemove,
-  onNodeRename,
-  onNodeClick,
-  onNodeDoubleClick,
-  onRootAdd,
-  onRootRemove,
-  onRootRename,
-  onRootClick,
-  onRootDoubleClick,
-}: TreeNodeComponentProps) => {
-  const { treeId, nodeOffset, paddingLeft, paddingRight, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput } =
-    useContext(TreeContext);
+export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
+  const {
+    treeId,
+    nodeOffset,
+    paddingLeft,
+    paddingRight,
+    allFoldersAreCollapsed,
+    allFoldersAreExpanded,
+    searchInput,
+    onNodeAdd,
+    onNodeRemove,
+    onNodeRename,
+    onNodeClick,
+    onNodeDoubleClick,
+    onRootAdd,
+    onRootRemove,
+    onRootRename,
+    onRootClick,
+    onRootDoubleClick,
+  } = useContext(TreeContext);
   const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
@@ -222,16 +224,6 @@ export const TreeNode = ({
                   key={childNode.uniqueId}
                   node={childNode}
                   depth={0}
-                  onNodeAdd={onNodeAdd}
-                  onNodeRemove={onNodeRemove}
-                  onNodeRename={onNodeRename}
-                  onNodeClick={onNodeClick}
-                  onNodeDoubleClick={onNodeDoubleClick}
-                  onRootAdd={onRootAdd}
-                  onRootRemove={onRootRemove}
-                  onRootRename={onRootRename}
-                  onRootClick={onRootClick}
-                  onRootDoubleClick={onRootDoubleClick}
                 />
               ))}
               {(isAddingRootFileNode || isAddingRootFolderNode) && (
@@ -327,16 +319,6 @@ export const TreeNode = ({
                       node={{ ...node, childNodes: [] }}
                       onNodeUpdate={() => {}}
                       depth={0}
-                      onNodeAdd={onNodeAdd}
-                      onNodeRemove={onNodeRemove}
-                      onNodeRename={onNodeRename}
-                      onNodeClick={onNodeClick}
-                      onNodeDoubleClick={onNodeDoubleClick}
-                      onRootAdd={onRootAdd}
-                      onRootRemove={onRootRemove}
-                      onRootRename={onRootRename}
-                      onRootClick={onRootClick}
-                      onRootDoubleClick={onRootDoubleClick}
                     />
                   </ul>,
                   preview
@@ -383,16 +365,6 @@ export const TreeNode = ({
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={depth + 1}
-                onNodeAdd={onNodeAdd}
-                onNodeRemove={onNodeRemove}
-                onNodeRename={onNodeRename}
-                onNodeClick={onNodeClick}
-                onNodeDoubleClick={onNodeDoubleClick}
-                onRootAdd={onRootAdd}
-                onRootRemove={onRootRemove}
-                onRootRename={onRootRename}
-                onRootClick={onRootClick}
-                onRootDoubleClick={onRootDoubleClick}
               />
             ))}
           </ul>

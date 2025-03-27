@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useId, useState } from "react";
+import { createContext, useEffect, useId, useState } from "react";
 
 import TreeNode from "./TreeNode.tsx";
 import {
@@ -39,6 +39,7 @@ export const Tree = ({
   searchInput,
 
   onTreeUpdate,
+
   onRootAdd,
   onRootRemove,
   onRootRename,
@@ -142,26 +143,23 @@ export const Tree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
         searchInput,
+        onRootAdd,
+        onRootRemove,
+        onRootRename,
+        onRootUpdate,
+        onRootClick,
+        onRootDoubleClick,
+
+        onNodeAdd,
+        onNodeRemove,
+        onNodeRename,
+        onNodeUpdate,
+        onNodeClick,
+        onNodeDoubleClick,
       }}
     >
       <div className="select-none">
-        <TreeNode
-          parentNode={tree}
-          onNodeUpdate={handleNodeUpdate}
-          key={`root-${treeId}`}
-          node={tree}
-          depth={0}
-          onNodeAdd={onNodeAdd}
-          onNodeRemove={onNodeRemove}
-          onNodeRename={onNodeRename}
-          onNodeClick={onNodeClick}
-          onNodeDoubleClick={onNodeDoubleClick}
-          onRootAdd={onRootAdd}
-          onRootRemove={onRootRemove}
-          onRootRename={onRootRename}
-          onRootClick={onRootClick}
-          onRootDoubleClick={onRootDoubleClick}
-        />
+        <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
       </div>
     </TreeContext.Provider>
   );

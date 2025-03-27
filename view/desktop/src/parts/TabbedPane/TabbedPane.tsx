@@ -348,7 +348,6 @@ const TabbedPane = (props: { theme?: string }) => {
         if (source) setPragmaticDropElement(sourceTarget);
       },
       canDrop({ source }) {
-        console.log(source);
         return source?.data?.type === "TreeNode";
       },
 
