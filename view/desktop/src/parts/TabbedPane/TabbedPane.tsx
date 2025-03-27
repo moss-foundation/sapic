@@ -216,12 +216,6 @@ const TabbedPane = (props: { theme?: string }) => {
         addLogLine(`Panel Added ${event.id}`);
       }),
       api.onDidActivePanelChange((event) => {
-        console.log("active panel change", event);
-
-        console.log({
-          id: event?.id,
-          treeId: event?.params?.treeId,
-        });
         dockviewStore.setCurrentActivePanelId(event?.id || undefined);
         dockviewStore.setCurrentActiveTreeId(event?.params?.treeId || undefined);
 

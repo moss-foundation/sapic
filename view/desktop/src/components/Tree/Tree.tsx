@@ -1,6 +1,6 @@
 import { createContext, useEffect, useId, useState } from "react";
 
-import TreeNode from "./TreeNode.tsx";
+import { TreeRootNode } from "./TreeRootNode.tsx";
 import {
   CreateNewCollectionFromTreeNodeEvent,
   MoveNodeEventDetail,
@@ -133,6 +133,8 @@ export const Tree = ({
     };
   }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, treeId]);
 
+  console.log(tree);
+
   return (
     <TreeContext.Provider
       value={{
@@ -143,23 +145,23 @@ export const Tree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
         searchInput,
-        onRootAdd,
-        onRootRemove,
-        onRootRename,
-        onRootUpdate,
-        onRootClick,
-        onRootDoubleClick,
+        onRootAddCallback: onRootAdd,
+        onRootRemoveCallback: onRootRemove,
+        onRootRenameCallback: onRootRename,
+        onRootUpdateCallback: onRootUpdate,
+        onRootClickCallback: onRootClick,
+        onRootDoubleClickCallback: onRootDoubleClick,
 
-        onNodeAdd,
-        onNodeRemove,
-        onNodeRename,
-        onNodeUpdate,
-        onNodeClick,
-        onNodeDoubleClick,
+        onNodeAddCallback: onNodeAdd,
+        onNodeRemoveCallback: onNodeRemove,
+        onNodeRenameCallback: onNodeRename,
+        onNodeUpdateCallback: onNodeUpdate,
+        onNodeClickCallback: onNodeClick,
+        onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
       <div className="select-none">
-        <TreeNode parentNode={tree} onNodeUpdate={handleNodeUpdate} key={`root-${treeId}`} node={tree} depth={0} />
+        <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>
   );

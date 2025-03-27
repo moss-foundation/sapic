@@ -1,9 +1,11 @@
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { RefObject, useEffect, useState } from "react";
-import { NodeProps } from "../types";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+
 import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+
+import { NodeProps } from "../types";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,
