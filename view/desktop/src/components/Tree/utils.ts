@@ -69,15 +69,26 @@ export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
 };
 
 export const findNodeById = (tree: NodeProps, id: string): NodeProps | undefined => {
-  if (tree.id === id) return tree;
+  if (tree.id === id) {
+    return tree;
+  }
+  for (const child of tree.childNodes) {
+    const found = findNodeById(child, id);
+    if (found) return found;
+  }
 
-  return tree.childNodes.find((child) => findNodeById(child, id));
+  return undefined;
 };
 
 export const findNodeByUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {
   if (tree.uniqueId === uniqueId) return tree;
 
-  return tree.childNodes.find((child) => findNodeByUniqueId(child, uniqueId));
+  for (const child of tree.childNodes) {
+    const found = findNodeByUniqueId(child, uniqueId);
+    if (found) return found;
+  }
+
+  return undefined;
 };
 
 export const findParentNodeByChildUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {
