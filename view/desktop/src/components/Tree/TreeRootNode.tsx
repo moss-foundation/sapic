@@ -195,9 +195,9 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             {(isAddingRootFileNode || isAddingRootFolderNode) && (
               <div
                 className="flex w-full min-w-0 items-center gap-1 py-0.5"
-                style={{ paddingLeft: `${nodeOffset + paddingLeft}px` }}
+                style={{ paddingLeft: `${paddingLeft + 4}px` }}
               >
-                <TestCollectionIcon type={node.type} />
+                <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
                 <NodeAddForm
                   isFolder={isAddingRootFolderNode}
                   restrictedNames={node.childNodes.map((childNode) => childNode.id)}
