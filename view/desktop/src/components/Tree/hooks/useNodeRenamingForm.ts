@@ -14,6 +14,7 @@ export const useNodeRenamingForm = (node: TreeNodeProps, onNodeUpdate: (node: Tr
   const handleRenamingFormCancel = () => {
     setIsRenamingNode(false);
   };
+
   return {
     isRenamingNode,
     setIsRenamingNode,

@@ -32,6 +32,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeftForAddForm = useMemo(
+    () => (depth + 1) * nodeOffset + paddingLeft + 4,
+    [depth, nodeOffset, paddingLeft]
+  );
+
   const nodeStyle = useMemo(
     () =>
       cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
@@ -168,11 +173,13 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (
-        <div
-          style={{ paddingLeft: `${(depth + 1) * nodeOffset + paddingLeft}px` }}
-          className="flex w-full min-w-0 items-center gap-1"
-        >
-          <TestCollectionIcon type={node.type} className="ml-auto" />
+        <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
+          <TestCollectionIcon
+            type={node.type}
+            className={cn("ml-auto", {
+              "opacity-0": isAddingFileNode,
+            })}
+          />
           <NodeAddForm
             isFolder={isAddingFolderNode}
             restrictedNames={node.childNodes.map((childNode) => childNode.id)}

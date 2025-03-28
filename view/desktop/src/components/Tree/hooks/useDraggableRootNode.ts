@@ -15,6 +15,7 @@ export const useDraggableRootNode = (
 ) => {
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+
   useEffect(() => {
     const element = draggableRef.current;
     if (!element || isRenamingNode) return;
