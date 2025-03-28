@@ -22,7 +22,12 @@ export const BreadcrumbTree = ({
   return (
     <ul>
       {tree.childNodes.map((childNode) => (
-        <BreadcrumbNode node={childNode} onNodeUpdate={handleNodeUpdate} onNodeClickCallback={onNodeClickCallback} />
+        <BreadcrumbNode
+          key={childNode.id}
+          node={childNode}
+          onNodeUpdate={handleNodeUpdate}
+          onNodeClickCallback={onNodeClickCallback}
+        />
       ))}
     </ul>
   );

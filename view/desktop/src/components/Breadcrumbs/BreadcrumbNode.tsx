@@ -67,6 +67,7 @@ export const BreadcrumbNode = ({
           <ul className="h-full">
             {node.childNodes.map((childNode) => (
               <BreadcrumbNode
+                key={childNode.id}
                 onNodeUpdate={onNodeUpdate}
                 node={childNode}
                 depth={depth + 1}

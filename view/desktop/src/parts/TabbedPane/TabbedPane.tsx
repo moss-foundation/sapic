@@ -49,32 +49,35 @@ const components = {
     const metadata = usePanelApiMetadata(props.api);
 
     return (
-      <Scrollbar
-        className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
-          props.api.isActive ? "select-text" : "select-none"
-        }`}
-      >
-        <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-          {props.api.title}
-          {props?.params.someRandomString && (
-            <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+      <>
+        <Breadcrumbs panelId={props.api.id} />
+        <Scrollbar
+          className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
+            props.api.isActive ? "select-text" : "select-none"
+          }`}
+        >
+          <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
+            {props.api.title}
+            {props?.params.someRandomString && (
+              <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+            )}
+          </span>
+
+          {isDebug && (
+            <div className="text-sm">
+              <Option
+                title="Panel Rendering Mode"
+                value={metadata.renderer.value}
+                onClick={() => {
+                  props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
+                }}
+              />
+
+              <Table data={metadata} />
+            </div>
           )}
-        </span>
-
-        {isDebug && (
-          <div className="text-sm">
-            <Option
-              title="Panel Rendering Mode"
-              value={metadata.renderer.value}
-              onClick={() => {
-                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-              }}
-            />
-
-            <Table data={metadata} />
-          </div>
-        )}
-      </Scrollbar>
+        </Scrollbar>
+      </>
     );
   },
   nested: () => {
@@ -120,7 +123,7 @@ const components = {
   },
 };
 
-function RenderPage(props: IDockviewPanelProps, page: React.FC) {
+const RenderPage = (props: IDockviewPanelProps, page: React.FC) => {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
@@ -151,7 +154,7 @@ function RenderPage(props: IDockviewPanelProps, page: React.FC) {
       )}
     </Scrollbar>
   );
-}
+};
 
 const headerComponents = {
   default: (props: IDockviewPanelHeaderProps) => {
@@ -370,12 +373,7 @@ const TabbedPane = (props: { theme?: string }) => {
   const [debug, setDebug] = React.useState<boolean>(false);
 
   return (
-    <div
-      className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
-      style={{
-        ...css,
-      }}
-    >
+    <div style={{ ...css }} className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]">
       {showDebugPanels && (
         <>
           <div>
@@ -418,9 +416,6 @@ const TabbedPane = (props: { theme?: string }) => {
           </div>
         </>
       )}
-
-      <Breadcrumbs />
-
       <div className="flex h-0 grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>
