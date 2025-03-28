@@ -1,4 +1,4 @@
-export * from "./Breadcrumbs";
+export * from "./Breadcrumbs/Breadcrumbs";
 export * from "./Button";
 export * from "./DropIndicator";
 export * from "./Icon";
