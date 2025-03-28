@@ -27,6 +27,13 @@ export const useDockviewStore = create<DockviewApiState>((set, get) => ({
       }, 50);
     });
 
+    const activePanel = get().api?.getPanel(options.id);
+
+    if (activePanel) {
+      activePanel.focus();
+      return;
+    }
+
     get().api?.addPanel({
       ...options,
       component: "Default",
