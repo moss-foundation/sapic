@@ -61,11 +61,9 @@ export const Tree = ({
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
     onTreeUpdate?.(removeUniqueIdFromTree(updatedNode));
-    if (updatedNode.isRoot) {
-      onRootUpdate?.(updatedNode);
-    } else {
-      onNodeUpdate?.(updatedNode);
-    }
+
+    if (updatedNode.isRoot) onRootUpdate?.(updatedNode);
+    else onNodeUpdate?.(updatedNode);
   };
 
   useEffect(() => {
@@ -143,6 +141,7 @@ export const Tree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
         searchInput,
+
         onRootAddCallback: onRootAdd,
         onRootRemoveCallback: onRootRemove,
         onRootRenameCallback: onRootRename,

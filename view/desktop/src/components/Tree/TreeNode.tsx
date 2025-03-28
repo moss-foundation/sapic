@@ -45,10 +45,14 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     [currentActivePanelId, currentActiveTreeId, node.id, treeId]
   );
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const draggableNodeRef = useRef<HTMLButtonElement>(null);
-  const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
+  const handleFolderClick = () => {
+    if (!node.isFolder || searchInput) return;
+
+    onNodeUpdate({
+      ...node,
+      isExpanded: !node.isExpanded,
+    });
+  };
 
   const {
     isAddingFileNode,
@@ -64,6 +68,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     onNodeUpdate
   );
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  const draggableNodeRef = useRef<HTMLButtonElement>(null);
+  const dropTargetFolderRef = useRef<HTMLDivElement>(null);
+  const dropTargetListRef = useRef<HTMLLIElement>(null);
+
   const { isDragging: isNodeDragging } = useDraggableNode(draggableNodeRef, node, treeId, isRenamingNode, setPreview);
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
@@ -73,14 +82,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-
-  const handleFolderClick = () => {
-    if (!node.isFolder || searchInput) return;
-    onNodeUpdate({
-      ...node,
-      isExpanded: !node.isExpanded,
-    });
-  };
 
   return (
     <li ref={dropTargetListRef}>

@@ -37,14 +37,14 @@ if (import.meta.env.MODE === "development") {
 }
 
 createRoot(document.getElementById("root") as HTMLElement).render(
-  //<StrictMode>
-  <QueryClientProvider client={queryClient}>
-    {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-    <GeneralProvider>
-      <Suspense fallback={<div />}>
-        <App />
-      </Suspense>
-    </GeneralProvider>
-  </QueryClientProvider>
-  // </StrictMode>
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
+      <GeneralProvider>
+        <Suspense fallback={<div />}>
+          <App />
+        </Suspense>
+      </GeneralProvider>
+    </QueryClientProvider>
+  </StrictMode>
 );

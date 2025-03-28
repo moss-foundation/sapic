@@ -33,6 +33,30 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
 
   const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
+  const handleExpandAll = () => {
+    const newNode = expandAllNodes(node);
+    onNodeUpdate({
+      ...node,
+      childNodes: newNode.childNodes,
+    });
+  };
+
+  const handleCollapseAll = () => {
+    const newNode = collapseAllNodes(node);
+    onNodeUpdate({
+      ...node,
+      childNodes: newNode.childNodes,
+    });
+  };
+
+  const handleFolderClick = () => {
+    if (!node.isFolder || searchInput) return;
+    onNodeUpdate({
+      ...node,
+      isExpanded: !node.isExpanded,
+    });
+  };
+
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
@@ -73,28 +97,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     };
   }, [setIsRenamingRootNode, treeId]);
 
-  const handleExpandAll = () => {
-    const newNode = expandAllNodes(node);
-    onNodeUpdate({
-      ...node,
-      childNodes: newNode.childNodes,
-    });
-  };
-
-  const handleCollapseAll = () => {
-    const newNode = collapseAllNodes(node);
-    onNodeUpdate({
-      ...node,
-      childNodes: newNode.childNodes,
-    });
-  };
-  const handleFolderClick = () => {
-    if (!node.isFolder || searchInput) return;
-    onNodeUpdate({
-      ...node,
-      isExpanded: !node.isExpanded,
-    });
-  };
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
