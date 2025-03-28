@@ -78,7 +78,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   };
 
   return (
-    <li ref={dropTargetListRef} className="s">
+    <li ref={dropTargetListRef}>
       {isRenamingNode ? (
         <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
           <TestCollectionIcon type={node.type} />

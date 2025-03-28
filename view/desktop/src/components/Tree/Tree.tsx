@@ -22,9 +22,9 @@ import {
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
-  paddingLeft: 12,
-  paddingRight: 8,
-  nodeOffset: 12,
+  paddingLeft: 0,
+  paddingRight: 0,
+  nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: undefined,
@@ -132,8 +132,6 @@ export const Tree = ({
       );
     };
   }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, treeId]);
-
-  console.log(tree);
 
   return (
     <TreeContext.Provider

@@ -99,6 +99,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
+
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
       <div
