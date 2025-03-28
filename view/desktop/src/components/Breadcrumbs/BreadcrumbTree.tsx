@@ -6,10 +6,10 @@ import BreadcrumbNode from "./BreadcrumbNode";
 
 export const BreadcrumbTree = ({
   tree: initialTree,
-  onNodeClickCallback,
+  onNodeClick: onNodeClickCallback,
 }: {
   tree: NodeProps;
-  onNodeClickCallback: (node: NodeProps) => void;
+  onNodeClick: (node: NodeProps) => void;
 }) => {
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree, false));
 

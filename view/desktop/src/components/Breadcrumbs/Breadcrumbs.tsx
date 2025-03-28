@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
+import { useDockviewStore } from "@/store/Dockview";
 
 import { DropdownMenu, Icon } from "..";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
@@ -11,7 +12,7 @@ import { BreadcrumbTree } from "./BreadcrumbTree";
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
-
+  const { addPanel } = useDockviewStore();
   const path = useMemo(() => {
     if (!panelId) return [];
 
@@ -38,7 +39,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
 
         if (lastItem) {
           return (
-            <div key={pathNode} className="flex items-center gap-1">
+            <div key={pathNode} className="flex items-center gap-1 font-medium">
               <TestCollectionIcon type={node.type} className="size-4.5" />
               <span>{pathNode}</span>
             </div>
@@ -48,9 +49,18 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
         return (
           <div key={pathNode} className="flex items-center">
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="cursor-pointer hover:underline">{pathNode}</DropdownMenu.Trigger>
+              <DropdownMenu.Trigger className="cursor-pointer font-medium hover:underline">
+                {pathNode}
+              </DropdownMenu.Trigger>
               <DropdownMenu.Content align="start">
-                <BreadcrumbTree tree={node} onNodeClickCallback={() => {}} />
+                <BreadcrumbTree
+                  tree={node}
+                  onNodeClick={(node) => {
+                    addPanel({
+                      id: `${node.id}`,
+                    });
+                  }}
+                />
               </DropdownMenu.Content>
             </DropdownMenu.Root>
             {!lastItem && (
