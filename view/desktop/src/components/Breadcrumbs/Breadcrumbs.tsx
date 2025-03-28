@@ -56,9 +56,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                 <BreadcrumbTree
                   tree={node}
                   onNodeClick={(node) => {
-                    addPanel({
-                      id: `${node.id}`,
-                    });
+                    if (!node.isFolder) addPanel({ id: `${node.id}` });
                   }}
                 />
               </DropdownMenu.Content>
