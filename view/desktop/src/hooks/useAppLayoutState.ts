@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+// FIXME: remove mock data
 export interface AppLayoutState {
   activeSidebar: "left" | "right" | "none";
 }

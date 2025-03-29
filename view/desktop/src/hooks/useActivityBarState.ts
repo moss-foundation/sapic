@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+// FIXME: remove mock data
 export type ActivityBarPosition = "top" | "bottom" | "hidden" | "default";
 
 export interface ActivityBarState {

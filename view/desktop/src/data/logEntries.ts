@@ -1,5 +1,5 @@
-// Mock log entries with current timestamps
-const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+// FIXME: remove mock log entries
+const today = new Date().toISOString().split("T")[0];
 
 export const logEntries = [
   { timestamp: `${today} 08:12:34`, level: "INFO", service: "ApiService", message: "Server started on port 3000" },

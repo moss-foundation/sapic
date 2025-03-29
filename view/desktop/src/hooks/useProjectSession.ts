@@ -13,6 +13,7 @@ interface ChangedView {
 export const USE_PROJECT_SESSION_STATE_QUERY_KEY = "projectSessionState";
 export const USE_CHANGE_PROJECT_SESSION_STATE_MUTATION_KEY = "changeProjectSessionState";
 
+// FIXME: remove mock data
 let projectSessionState = {
   "lastActiveGroup": "collections.groupId",
   changedViews: [

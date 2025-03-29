@@ -21,6 +21,7 @@ export const USE_VIEW_GROUPS_QUERY_KEY = "viewGroups";
 export const USE_CHANGE_VIEW_GROUPS_MUTATION_KEY = "changeViewGroups";
 export const USE_VIEW_GROUP_QUERY_KEY = "viewGroup";
 
+// FIXME: remove mock data
 let Views: Views = {
   "viewGroups": [
     {
