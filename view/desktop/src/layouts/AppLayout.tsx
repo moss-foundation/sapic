@@ -39,8 +39,9 @@ export const AppLayout = () => {
       {appLayoutState?.activeSidebar === "left" && (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={100}
-          preferredSize={sideBarGetWidth()}
+          minSize={150}
+          maxSize={400}
+          preferredSize={sideBarGetWidth() || 270}
           snap
           className="select-none"
         >
@@ -72,8 +73,9 @@ export const AppLayout = () => {
       {appLayoutState?.activeSidebar === "right" && (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={100}
-          preferredSize={sideBarGetWidth()}
+          minSize={150}
+          maxSize={400}
+          preferredSize={sideBarGetWidth() || 270}
           snap
           className="select-none"
         >

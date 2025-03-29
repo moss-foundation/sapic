@@ -18,7 +18,7 @@ export interface AppResizableLayoutStore {
 
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
   sideBar: {
-    width: 255,
+    width: 340,
     setWidth: (newWidth) =>
       set((state) => ({
         sideBar: {
