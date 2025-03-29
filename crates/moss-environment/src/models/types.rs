@@ -36,3 +36,4 @@ pub struct VariableInfo {
     pub order: Option<usize>,
     pub desc: Option<String>,
 }
+
