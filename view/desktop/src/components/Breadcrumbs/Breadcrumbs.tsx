@@ -32,14 +32,14 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   if (!activeTree) return null;
 
   return (
-    <div className="flex items-center gap-1 px-3 py-[5px] text-[#6F6F6F]">
+    <div className="flex items-center gap-1 px-3 py-[5px] text-[#6F6F6F] select-none">
       {path.map((pathNode, index) => {
         const node = findNodeById(activeTree, pathNode)!;
         const lastItem = index === path.length - 1;
 
         if (lastItem) {
           return (
-            <div key={pathNode} className="flex items-center gap-1 font-medium">
+            <div key={pathNode} className="contents">
               <TestCollectionIcon type={node.type} className="size-4.5" />
               <span>{pathNode}</span>
             </div>
@@ -47,11 +47,9 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
         }
 
         return (
-          <div key={pathNode} className="flex items-center">
+          <div key={pathNode} className="contents">
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="cursor-pointer font-medium hover:underline">
-                {pathNode}
-              </DropdownMenu.Trigger>
+              <DropdownMenu.Trigger className="cursor-pointer hover:underline">{pathNode}</DropdownMenu.Trigger>
               <DropdownMenu.Content align="start">
                 <BreadcrumbTree
                   tree={node}

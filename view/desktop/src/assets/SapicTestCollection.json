@@ -37,6 +37,15 @@
             "childNodes": []
           },
           {
+            "id": "Delete User",
+            "order": 3,
+            "type": "hdr",
+            "isFolder": false,
+            "isExpanded": false,
+            "isRoot": false,
+            "childNodes": []
+          },
+          {
             "id": "Plugin",
             "order": 2,
             "type": "folder",
