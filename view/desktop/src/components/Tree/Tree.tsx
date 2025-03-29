@@ -1,6 +1,6 @@
-import { createContext, useCallback, useEffect, useId, useState } from "react";
+import { createContext, useEffect, useId, useState } from "react";
 
-import TreeNode from "./TreeNode.tsx";
+import { TreeRootNode } from "./TreeRootNode.tsx";
 import {
   CreateNewCollectionFromTreeNodeEvent,
   MoveNodeEventDetail,
@@ -22,9 +22,9 @@ import {
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
-  paddingLeft: 12,
-  paddingRight: 8,
-  nodeOffset: 12,
+  paddingLeft: 0,
+  paddingRight: 0,
+  nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: undefined,
@@ -33,12 +33,13 @@ export const TreeContext = createContext<TreeContextProps>({
 export const Tree = ({
   id,
   tree: initialTree,
-  paddingLeft = 12,
+  paddingLeft = 16,
   paddingRight = 8,
   nodeOffset = 12,
   searchInput,
 
   onTreeUpdate,
+
   onRootAdd,
   onRootRemove,
   onRootRename,
@@ -60,11 +61,9 @@ export const Tree = ({
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
     setTree((prev) => updateTreeNode(prev, updatedNode));
     onTreeUpdate?.(removeUniqueIdFromTree(updatedNode));
-    if (updatedNode.isRoot) {
-      onRootUpdate?.(updatedNode);
-    } else {
-      onNodeUpdate?.(updatedNode);
-    }
+
+    if (updatedNode.isRoot) onRootUpdate?.(updatedNode);
+    else onNodeUpdate?.(updatedNode);
   };
 
   useEffect(() => {
@@ -142,26 +141,24 @@ export const Tree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
         searchInput,
+
+        onRootAddCallback: onRootAdd,
+        onRootRemoveCallback: onRootRemove,
+        onRootRenameCallback: onRootRename,
+        onRootUpdateCallback: onRootUpdate,
+        onRootClickCallback: onRootClick,
+        onRootDoubleClickCallback: onRootDoubleClick,
+
+        onNodeAddCallback: onNodeAdd,
+        onNodeRemoveCallback: onNodeRemove,
+        onNodeRenameCallback: onNodeRename,
+        onNodeUpdateCallback: onNodeUpdate,
+        onNodeClickCallback: onNodeClick,
+        onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
       <div className="select-none">
-        <TreeNode
-          parentNode={tree}
-          onNodeUpdate={handleNodeUpdate}
-          key={`root-${treeId}`}
-          node={tree}
-          depth={0}
-          onNodeAdd={onNodeAdd}
-          onNodeRemove={onNodeRemove}
-          onNodeRename={onNodeRename}
-          onNodeClick={onNodeClick}
-          onNodeDoubleClick={onNodeDoubleClick}
-          onRootAdd={onRootAdd}
-          onRootRemove={onRootRemove}
-          onRootRename={onRootRename}
-          onRootClick={onRootClick}
-          onRootDoubleClick={onRootDoubleClick}
-        />
+        <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>
   );

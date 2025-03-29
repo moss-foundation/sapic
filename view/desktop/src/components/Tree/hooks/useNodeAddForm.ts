@@ -3,12 +3,12 @@ import { useState } from "react";
 import { NodeProps, TreeNodeProps } from "../types";
 import { prepareCollectionForTree, sortNodes } from "../utils";
 
-export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps) => void) => {
+export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdateCallback: (node: TreeNodeProps) => void) => {
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = (newNode: NodeProps) => {
-    onNodeUpdate({
+    onNodeUpdateCallback({
       ...node,
       isExpanded: true,
       childNodes: sortNodes([...node.childNodes, prepareCollectionForTree(newNode, false)]),

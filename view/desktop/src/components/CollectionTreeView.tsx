@@ -1,18 +1,14 @@
+import "@repo/moss-tabs/assets/styles.css";
+
 import { useEffect, useRef, useState } from "react";
 
 import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-
-import AzureDevOpsTestCollection from "../assets/AzureDevOpsTestCollection.json";
-import SapicTestCollection from "../assets/SapicTestCollection.json";
-import WhatsAppBusinessTestCollection from "../assets/WhatsAppBusinessTestCollection.json";
-
-import "@repo/moss-tabs/assets/styles.css";
-
+import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { Collection, CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
+import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
 export const CollectionTreeView = () => {
@@ -21,11 +17,7 @@ export const CollectionTreeView = () => {
 
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [collections, setCollections] = useState<Collection[]>([
-    SapicTestCollection as Collection,
-    AzureDevOpsTestCollection as Collection,
-    WhatsAppBusinessTestCollection as Collection,
-  ]);
+  const { collections, setCollections } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -62,37 +54,32 @@ export const CollectionTreeView = () => {
           return;
         }
 
-        setCollections(
-          (prevCollections) => swapListById(sourceCollectionId, locationCollectionId, prevCollections, closestEdge)!
-        );
+        setCollections(swapListById(sourceCollectionId, locationCollectionId, collections, closestEdge)!);
       },
     });
-  }, []);
+  }, [collections, setCollections]);
 
   useEffect(() => {
     const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
       const { source } = event.detail;
       const newTreeId = `collectionId${collections.length + 1}`;
 
-      setCollections((prevCollections) => {
-        return [
-          ...prevCollections,
-          {
-            id: newTreeId,
-            type: "collection",
-            order: prevCollections.length + 1,
-            tree: {
-              "id": "New Collection",
-              "order": prevCollections.length + 1,
-              "type": "folder",
-              "isFolder": true,
-              "isExpanded": true,
-              "isRoot": true,
-              "childNodes": [source.node],
-            },
+      setCollections([
+        ...collections,
+        {
+          id: newTreeId,
+          type: "collection",
+          order: collections.length + 1,
+          tree: {
+            "id": "New Collection",
+            "order": collections.length + 1,
+            "type": "folder",
+            "isFolder": true,
+            "isExpanded": true,
+            "childNodes": [source.node],
           },
-        ];
-      });
+        },
+      ]);
       setTimeout(() => {
         window.dispatchEvent(
           new CustomEvent("newCollectionWasCreated", {
@@ -112,7 +99,7 @@ export const CollectionTreeView = () => {
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [collections.length]);
+  }, [collections, setCollections]);
 
   return (
     <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>
@@ -166,11 +153,17 @@ export const CollectionTreeView = () => {
       </div>
 
       <Scrollbar className="h-full">
-        {collections.map((collection) => (
-          <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
-        ))}
+        <div className="flex h-full flex-col">
+          {collections.map((collection) => (
+            <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
+          ))}
+          {showCollectionCreationZone && (
+            <div className="flex grow flex-col justify-end">
+              <CollectionCreationZone />
+            </div>
+          )}
+        </div>
       </Scrollbar>
-      {showCollectionCreationZone && <CollectionCreationZone />}
     </div>
   );
 };
@@ -216,26 +209,21 @@ const CollectionCreationZone = () => {
   }, []);
 
   return (
-    <div className={cn("absolute bottom-8 left-0 h-[100px] w-full")} ref={ref}>
-      <div className="relative grid h-full w-full place-items-center">
-        <div
-          className={cn(
-            "absolute z-10 h-full w-full bg-white bg-[repeating-linear-gradient(45deg,#000000_0,#000000_6.5px,transparent_0,transparent_50%)] bg-[size:16px_16px] opacity-50",
-            {
-              // eslint-disable-next-line mossLint/tw-no-bg-with-arbitrary-value
-              "animate-move bg-(--moss-treeNode-bg-valid) opacity-100": canDrop,
-              "bg-red-300 opacity-100": canDrop === false,
-            }
-          )}
+    <div
+      ref={ref}
+      className={cn("mb-8 grid h-max min-h-32 w-full place-items-center", {
+        "bg-[#edf6ff]": canDrop === true,
+        "bg-[#F4F4F4]": canDrop === null,
+      })}
+    >
+      <div className="flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
+        <Icon
+          icon="AddCircle"
+          className={cn("size-5 text-[#717171]", {
+            "text-(--moss-primary)": canDrop,
+          })}
         />
-
-        <div className="z-20 w-3/4 rounded bg-white px-2 py-0.5 text-center text-(--moss-text) dark:bg-black">
-          {canDrop === false ? (
-            <span>Cannot create new collection from this</span>
-          ) : (
-            <span>Drop to create new collection</span>
-          )}
-        </div>
+        <span className="text-black">Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
   );
