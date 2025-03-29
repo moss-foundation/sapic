@@ -2,10 +2,9 @@ pub mod api;
 
 use anyhow::{Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
+use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
+use moss_environment::models::types::VariableInfo;
 use moss_fs::{FileSystem, RemoveOptions};
-use moss_global_env::manager::{Environment, EnvironmentCache, VariableCache};
-
-use moss_global_env::models::types::VariableInfo;
 use slotmap::KeyData;
 use std::collections::HashMap;
 use std::ffi::OsStr;

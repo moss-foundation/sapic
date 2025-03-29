@@ -1,14 +1,10 @@
-use crate::workspace::{EnvironmentKey, Workspace};
 use anyhow::Result;
+use moss_environment::models::types::VariableInfo;
 
-pub struct DescribeEnvironmentInput {
-    pub key: u64,
-}
-
-pub struct DescribeEnvironmentOutput {
-    // pub variables:
-    // pub environment: EnvironmentInfo,
-}
+use crate::{
+    models::operations::{DescribeEnvironmentInput, DescribeEnvironmentOutput},
+    workspace::{EnvironmentKey, Workspace},
+};
 
 impl Workspace {
     pub async fn describe_environment(
@@ -21,10 +17,28 @@ impl Workspace {
         let environment_key = EnvironmentKey::from(input.key);
         let (environment, environment_cache) = environments_lock.read(environment_key)?;
 
-        // Ok(DescribeEnvironmentOutput {
-        //     environment: environment.into(),
-        // })
+        let variables_lock = environment.variables().read().await;
+        let variables: Vec<VariableInfo> = variables_lock
+            .iter()
+            .map(|(name, var)| {
+                let variable_cache = environment_cache
+                    .variables_cache
+                    .get(name)
+                    .cloned()
+                    .unwrap_or_default();
 
-        todo!()
+                VariableInfo {
+                    name: name.clone(),
+                    global_value: var.value.clone(),
+                    local_value: variable_cache.local_value,
+                    desc: var.desc.clone(),
+                    disabled: variable_cache.disabled,
+                    kind: var.kind.clone(),
+                    order: variable_cache.order,
+                }
+            })
+            .collect();
+
+        Ok(DescribeEnvironmentOutput { variables })
     }
 }

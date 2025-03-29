@@ -1,5 +1,5 @@
 [package]
-name = "moss_global_env"
+name = "moss_environment"
 version = "0.1.0"
 edition = "2021"
 

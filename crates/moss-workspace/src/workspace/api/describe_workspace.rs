@@ -62,46 +62,4 @@ impl Workspace {
 
         Ok(collections_info)
     }
-
-    // async fn describe_environments(&self) -> Result<Vec<EnvironmentInfo>> {
-    //     let environments = self.environments().await?;
-    //     let environments_lock = environments.read().await;
-
-    //     let mut environments_info = Vec::new();
-    //     for (key, iter_slot) in environments_lock
-    //         .iter()
-    //         .filter(|(_, iter_slot)| !iter_slot.is_leased())
-    //     {
-    //         let (env, cache) = iter_slot.value();
-    //         let variables_lock = env.variables().read().await;
-    //         let variables = variables_lock
-    //             .iter()
-    //             .map(|(name, var)| {
-    //                 let variable_cache =
-    //                     cache.variables_cache.get(name).cloned().unwrap_or_default();
-
-    //                 (
-    //                     name.clone(),
-    //                     VariableInfo {
-    //                         global_value: var.value.clone(),
-    //                         local_value: variable_cache.local_value,
-    //                         desc: var.desc.clone(),
-    //                         disabled: variable_cache.disabled,
-    //                         kind: var.kind.clone(),
-    //                         order: variable_cache.order,
-    //                     },
-    //                 )
-    //             })
-    //             .collect();
-
-    //         environments_info.push(EnvironmentInfo {
-    //             key: key.as_u64(),
-    //             name: cache.decoded_name.clone(),
-    //             order: cache.order,
-    //             variables,
-    //         });
-    //     }
-
-    //     Ok(environments_info)
-    // }
 }

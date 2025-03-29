@@ -1,8 +1,13 @@
+use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
 use super::types::{CollectionInfo, EnvironmentInfo, WorkspaceInfo};
+
+// ------------------------------------------------------------------
+// Workspace Manager operations
+// ------------------------------------------------------------------
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -27,6 +32,10 @@ pub struct CreateWorkspaceInput {
 pub struct DeleteWorkspaceInput {
     pub path: PathBuf,
 }
+
+// ------------------------------------------------------------------
+// Workspace operations
+// ------------------------------------------------------------------
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -77,4 +86,18 @@ pub struct DeleteCollectionInput {
 pub struct DescribeWorkspaceOutput {
     pub collections: Vec<CollectionInfo>,
     pub environments: Vec<EnvironmentInfo>,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeEnvironmentInput {
+    pub key: u64,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeEnvironmentOutput {
+    pub variables: Vec<VariableInfo>,
 }

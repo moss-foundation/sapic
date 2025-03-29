@@ -28,6 +28,7 @@ pub enum VariableValue {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
+    pub name: VariableName,
     pub global_value: VariableValue,
     pub local_value: VariableValue,
     pub disabled: bool,
