@@ -62,7 +62,7 @@ export const BreadcrumbNode = ({
         />
       </button>
 
-      {shouldRenderChildNodes && (
+      {shouldRenderChildNodes && node.childNodes && node.childNodes.length > 0 && (
         <div className="contents">
           <ul className="h-full">
             {node.childNodes.map((childNode) => (

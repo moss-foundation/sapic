@@ -18,6 +18,8 @@ export const BreadcrumbTree = ({ tree: initialTree, onNodeClick: onNodeClickCall
     onNodeClickCallback?.(updatedNode);
   };
 
+  if (!tree.childNodes || tree.childNodes.length === 0) return null;
+
   return (
     <ul>
       {tree.childNodes.map((childNode) => (
