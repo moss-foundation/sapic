@@ -57,7 +57,7 @@ export const ActivityBar = () => {
           setOrderedGroups(finalOrder);
           orderedGroupsInitialized.current = true;
 
-          if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "collections.groupId") {
+          if (!projectSessionState?.lastActiveGroup) {
             const firstGroup = finalOrder[0];
             if (firstGroup && changeProjectSessionState && projectSessionState) {
               changeProjectSessionState({
@@ -77,7 +77,7 @@ export const ActivityBar = () => {
     setOrderedGroups(initialOrder);
     orderedGroupsInitialized.current = true;
 
-    if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "collections.groupId") {
+    if (!projectSessionState?.lastActiveGroup) {
       const firstGroup = initialOrder[0];
       if (firstGroup && changeProjectSessionState && projectSessionState) {
         changeProjectSessionState({
@@ -187,10 +187,28 @@ export const ActivityBar = () => {
   const handleSelectPosition = (position: ActivityBarState["position"]) => {
     const currentIndex = positions.indexOf(position);
 
+    const activeGroup = projectSessionState?.lastActiveGroup;
+
     if (currentIndex === -1 || currentIndex >= positions.length - 1) {
-      changeActivityBarState({ position: positions[0] });
+      changeActivityBarState({
+        position: positions[0],
+        groupOrder: activityBarState?.groupOrder || [],
+      });
     } else {
-      changeActivityBarState({ position: positions[currentIndex + 1] });
+      changeActivityBarState({
+        position: positions[currentIndex + 1],
+        groupOrder: activityBarState?.groupOrder || [],
+      });
+    }
+
+    if (activeGroup && projectSessionState && changeProjectSessionState) {
+      // Small delay to ensure the state update happens after position change
+      setTimeout(() => {
+        changeProjectSessionState({
+          ...projectSessionState,
+          lastActiveGroup: activeGroup,
+        });
+      }, 0);
     }
   };
 

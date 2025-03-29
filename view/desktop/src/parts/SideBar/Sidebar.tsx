@@ -6,6 +6,7 @@ import { useGetAppLayoutState } from "@/hooks/useAppLayoutState";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useGetViewGroups } from "@/hooks/useViewGroups";
 import { cn } from "@/utils";
+import { useEffect, useRef } from "react";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -15,11 +16,22 @@ export const Sidebar = () => {
   const { data: viewGroups } = useGetViewGroups();
   const { data: projectSessionState } = useGetProjectSessionState();
 
-  const activeGroup = viewGroups?.viewGroups?.find((group) => group.id === projectSessionState?.lastActiveGroup);
-  const activeGroupTitle = activeGroup?.title || "Launchpad";
-  const activeGroupId = activeGroup?.id || "";
+  // Use a ref to preserve the lastActiveGroup when sidebar position changes
+  const lastActiveGroupRef = useRef<string | null>(null);
 
-  const isCollectionsActive = projectSessionState?.lastActiveGroup === "collections.groupId";
+  useEffect(() => {
+    if (projectSessionState?.lastActiveGroup) {
+      lastActiveGroupRef.current = projectSessionState.lastActiveGroup;
+    }
+  }, [projectSessionState?.lastActiveGroup]);
+
+  // When appLayoutState changes, ensure we're using the reference to preserve the active state
+  const activeGroupId = projectSessionState?.lastActiveGroup || lastActiveGroupRef.current || "";
+
+  const activeGroup = viewGroups?.viewGroups?.find((group) => group.id === activeGroupId);
+  const activeGroupTitle = activeGroup?.title || "Launchpad";
+
+  const isCollectionsActive = activeGroupId === "collections.groupId";
 
   const getEffectivePosition = () => {
     if (!activityBarState || !appLayoutState) return "left";
