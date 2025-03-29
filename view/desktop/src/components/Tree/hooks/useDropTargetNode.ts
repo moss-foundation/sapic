@@ -1,7 +1,9 @@
 import { RefObject, useEffect } from "react";
-import { TreeNodeProps } from "../types";
+
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getActualDropSourceTarget, getActualDropTarget, canDropNode } from "../utils";
+
+import { TreeNodeProps } from "../types";
+import { canDropNode, getActualDropSourceTarget, getActualDropTarget } from "../utils";
 
 export const useDropTargetNode = (
   node: TreeNodeProps,
@@ -17,10 +19,7 @@ export const useDropTargetNode = (
       element,
       getData: () => ({
         type: "TreeNode",
-        data: {
-          treeId,
-          node,
-        },
+        data: { treeId, node },
       }),
       canDrop({ source }) {
         return source.data.type === "TreeNode";
@@ -28,7 +27,7 @@ export const useDropTargetNode = (
       onDragLeave() {
         element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
       },
-      onDrag({ location, source }) {
+      onDropTargetChange({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
           return;
         }

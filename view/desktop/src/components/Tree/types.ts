@@ -16,6 +16,11 @@ export interface NodeProps {
   childNodes: NodeProps[];
 }
 
+export interface TreeRootNodeProps {
+  onNodeUpdate: (node: TreeNodeProps) => void;
+  node: TreeNodeProps;
+}
+
 export interface TreeNodeProps extends NodeProps {
   uniqueId: string;
   childNodes: TreeNodeProps[];
@@ -54,24 +59,24 @@ export interface TreeContextProps {
   searchInput?: string;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
+  onRootAddCallback?: (node: TreeNodeProps) => void;
+  onRootRemoveCallback?: (node: TreeNodeProps) => void;
+  onRootRenameCallback?: (node: TreeNodeProps) => void;
+  onRootUpdateCallback?: (node: TreeNodeProps) => void;
+  onRootClickCallback?: (node: TreeNodeProps) => void;
+  onRootDoubleClickCallback?: (node: TreeNodeProps) => void;
+  onNodeAddCallback?: (node: TreeNodeProps) => void;
+  onNodeRemoveCallback?: (node: TreeNodeProps) => void;
+  onNodeRenameCallback?: (node: TreeNodeProps) => void;
+  onNodeUpdateCallback?: (node: TreeNodeProps) => void;
+  onNodeClickCallback?: (node: TreeNodeProps) => void;
+  onNodeDoubleClickCallback?: (node: TreeNodeProps) => void;
 }
 
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeNodeProps;
   depth: number;
   parentNode: TreeNodeProps;
-
-  onRootAdd?: (node: TreeNodeProps) => void;
-  onRootRemove?: (node: TreeNodeProps) => void;
-  onRootRename?: (node: TreeNodeProps) => void;
-  onRootClick?: (node: TreeNodeProps) => void;
-  onRootDoubleClick?: (node: TreeNodeProps) => void;
-
-  onNodeAdd?: (node: TreeNodeProps) => void;
-  onNodeRemove?: (node: TreeNodeProps) => void;
-  onNodeRename?: (node: TreeNodeProps) => void;
-  onNodeClick?: (node: TreeNodeProps) => void;
-  onNodeDoubleClick?: (node: TreeNodeProps) => void;
 }
 
 export interface NodeEvents {
