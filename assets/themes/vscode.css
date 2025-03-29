@@ -182,6 +182,10 @@
   --moss-controls-outlined-text: #d4d4d4;
   --moss-controls-placeholder: #969696;
 
+  /* Input Fields */
+  --moss-input-bg-plain: #3c3c3c;
+  --moss-input-bg-outlined: #3c3c3c;
+
   /* Select Inputs */
   --moss-select-bg-soft: #3c3c3c;
   --moss-select-bg-outlined: #3c3c3c;

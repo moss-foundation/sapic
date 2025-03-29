@@ -189,10 +189,14 @@
   --moss-controls-plain-bg: transparent;
   --moss-controls-plain-border: rgb(39, 39, 42);
   --moss-controls-plain-text: white;
-  --moss-controls-outlined-bg: transparent;
+  --moss-controls-outlined-bg: rgba(39, 39, 42, 0.5);
   --moss-controls-outlined-border: rgb(39, 39, 42);
   --moss-controls-outlined-text: white;
   --moss-controls-placeholder: rgb(82, 82, 91);
+
+  /* Input Fields */
+  --moss-input-bg-plain: transparent;
+  --moss-input-bg-outlined: rgba(39, 39, 42, 0.5);
 
   /* Select Inputs */
   --moss-select-bg-soft: rgb(39, 39, 42);

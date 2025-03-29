@@ -197,8 +197,8 @@
   --moss-controls-plain-bg: transparent;
   --moss-controls-plain-border: null;
   --moss-controls-plain-text: rgb(9, 9, 11);
-  --moss-controls-outlined-bg: transparent;
-  --moss-controls-outlined-border: rgb(228, 228, 231);
+  --moss-controls-outlined-bg: #ffffff;
+  --moss-controls-outlined-border: #d4d4d8;
   --moss-controls-outlined-text: rgb(9, 9, 11);
   --moss-controls-placeholder: rgb(161, 161, 170);
 
@@ -245,4 +245,8 @@
   --moss-widgetBar-icon-color: #525252;
   --moss-widgetBar-label-color: #161616;
   --moss-widgetBar-active-text-color: #000000;
+
+  /* Input Fields */
+  --moss-input-bg-plain: transparent;
+  --moss-input-bg-outlined: #ffffff;
 }

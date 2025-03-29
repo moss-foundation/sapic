@@ -1,5 +1,5 @@
 import { LayoutPriority } from "allotment";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 import { useGetAppLayoutState } from "@/hooks/useAppLayoutState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
@@ -96,9 +96,15 @@ const MainContent = () => (
 );
 
 const BottomPaneContent = () => {
+  const [isHovering, setIsHovering] = useState(false);
+
   return (
-    <Scrollbar className="h-full overflow-auto">
-      <div className="p-2 font-mono text-sm">
+    <Scrollbar
+      className="h-full overflow-auto"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <div className={`p-2 font-mono text-sm ${isHovering ? "select-text" : "select-none"}`}>
         <div className="mb-2 font-semibold">Application Logs:</div>
         {logEntries.map((log, index) => (
           <div key={index} className="mb-1 flex">

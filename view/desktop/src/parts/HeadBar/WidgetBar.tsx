@@ -160,7 +160,7 @@ export const WidgetBar = ({ os, className, ...props }: WidgetBarProps) => {
 
   return (
     <div className={cn("flex items-center gap-1", className)} {...props}>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 select-none">
         <ActionsGroup label="My Workspace" actions={["1", "2"]} iconClassName="size-[22px] -my-[4px]" />
 
         <div className="flex w-full items-center justify-start gap-1">
