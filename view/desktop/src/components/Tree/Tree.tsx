@@ -33,12 +33,13 @@ export const TreeContext = createContext<TreeContextProps>({
 export const Tree = ({
   id,
   tree: initialTree,
-  paddingLeft = 12,
+  paddingLeft = 16,
   paddingRight = 8,
   nodeOffset = 12,
   searchInput,
 
   onTreeUpdate,
+
   onRootAdd,
   onRootRemove,
   onRootRename,

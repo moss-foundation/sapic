@@ -11,6 +11,7 @@ interface NodeRenamingFormProps {
 
 export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [value, setValue] = useState(String(currentName));
 
   const isMac = platform() === "macos";

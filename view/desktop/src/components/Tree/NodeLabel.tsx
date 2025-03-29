@@ -1,4 +1,14 @@
-export const NodeLabel = ({ label, searchInput }: { label: string | number; searchInput?: string }) => {
+import { cn } from "@/utils";
+
+export const NodeLabel = ({
+  label,
+  searchInput,
+  className,
+}: {
+  label: string | number;
+  searchInput?: string;
+  className?: string;
+}) => {
   const renderHighlightedLabel = () => {
     if (!searchInput) return String(label);
 
@@ -18,7 +28,7 @@ export const NodeLabel = ({ label, searchInput }: { label: string | number; sear
   };
 
   return (
-    <span className="w-max overflow-hidden text-ellipsis whitespace-nowrap">
+    <span className={cn("w-max overflow-hidden text-ellipsis whitespace-nowrap", className)}>
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );
