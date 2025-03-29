@@ -99,5 +99,6 @@ pub struct DescribeEnvironmentInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentOutput {
+    #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
 }
