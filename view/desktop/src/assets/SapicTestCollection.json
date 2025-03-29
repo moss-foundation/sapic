@@ -37,6 +37,15 @@
             "childNodes": []
           },
           {
+            "id": "Delete User",
+            "order": 3,
+            "type": "hdr",
+            "isFolder": false,
+            "isExpanded": false,
+            "isRoot": false,
+            "childNodes": []
+          },
+          {
             "id": "Plugin",
             "order": 2,
             "type": "folder",
@@ -45,7 +54,7 @@
             "isRoot": false,
             "childNodes": [
               {
-                "id": "Update Plugin",
+                "id": "Update Plugin 2",
                 "order": 1,
                 "type": "hdr",
                 "isFolder": false,
@@ -54,7 +63,7 @@
                 "childNodes": []
               },
               {
-                "id": "Get Plugin",
+                "id": "Get Plugin 2",
                 "order": 2,
                 "type": "doc",
                 "isFolder": false,
