@@ -12,7 +12,7 @@ interface CollectionsStoreState {
   setCollections: (collections: Collection[]) => void;
 }
 
-export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
+export const useCollectionsStore = create<CollectionsStoreState>((set) => ({
   collections: [
     SapicTestCollection as Collection,
     AzureDevOpsTestCollection as Collection,
