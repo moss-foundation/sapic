@@ -4,26 +4,8 @@ use crate::models::types::request_types::{
 use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
-pub struct CreateCollectionInput {
-    pub name: String,
-    pub path: PathBuf,
-    #[ts(optional)]
-    pub repo: Option<String>,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
-pub struct OverviewCollectionOutput {
-    pub name: String,
-    pub path: PathBuf,
-    #[ts(optional)]
-    pub order: Option<usize>,
-}
+use validator::Validate;
+use crate::models::collection::RequestType;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -38,10 +20,11 @@ pub enum CreateRequestProtocolSpecificPayload {
     },
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct CreateRequestInput {
+    #[validate(length(min = 1))]
     pub name: String,
     #[ts(optional)]
     pub relative_path: Option<PathBuf>,
@@ -58,11 +41,12 @@ pub struct CreateRequestOutput {
     pub key: u64,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct RenameRequestInput {
     pub key: u64,
+    #[validate(length(min = 1))]
     pub new_name: String,
 }
 
@@ -71,4 +55,20 @@ pub struct RenameRequestInput {
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct DeleteRequestInput {
     pub key: u64,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct ListRequestsOutput(pub Vec<RequestInfo>);
+
+#[derive(Debug, PartialEq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations/collection.ts")]
+pub struct RequestInfo {
+    // FIXME: What fields should this contain?
+    pub key: u64,
+    pub name: String,
+    pub request_dir_relative_path: PathBuf,
+    pub order: Option<usize>,
+    pub typ: RequestType
 }

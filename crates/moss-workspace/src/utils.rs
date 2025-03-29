@@ -12,7 +12,7 @@ pub(crate) fn random_collection_name() -> String {
 }
 
 #[cfg(test)]
-fn random_string(length: usize) -> String {
+pub(crate) fn random_string(length: usize) -> String {
     use rand::{distr::Alphanumeric, Rng};
 
     rand::rng()
