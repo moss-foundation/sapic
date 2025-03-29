@@ -1,5 +1,5 @@
 use moss_fs::utils::encode_directory_name;
-use moss_workspace::workspace::OperationError;
+use moss_workspace::workspace::{OperationError, COLLECTIONS_DIR};
 use moss_workspace::models::operations::{CreateCollectionInput, RenameCollectionInput};
 use moss_workspace::models::types::CollectionInfo;
 use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
@@ -11,7 +11,7 @@ async fn rename_collection_success() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
-    let old_path = workspace_path.join(&old_collection_name);
+    let old_path = workspace_path.join(COLLECTIONS_DIR).join(&old_collection_name);
     let key = workspace.create_collection(
         CreateCollectionInput {
             name: old_collection_name.clone()
@@ -28,7 +28,7 @@ async fn rename_collection_success() {
     assert!(result.is_ok());
 
     // Check filesystem rename
-    let expected_path = workspace_path.join(&new_collection_name);
+    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&new_collection_name);
     assert!(expected_path.exists());
     assert!(!old_path.exists());
 
@@ -147,7 +147,7 @@ async fn rename_collection_special_chars() {
 
     for char in SPECIAL_CHARS {
         let new_collection_name = format!("{collection_name}{char}");
-        let expected_path = workspace_path.join(encode_directory_name(&new_collection_name));
+        let expected_path = workspace_path.join(COLLECTIONS_DIR).join(encode_directory_name(&new_collection_name));
         workspace.rename_collection(
             RenameCollectionInput {
                 key,

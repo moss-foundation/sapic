@@ -1,4 +1,5 @@
 use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
+use moss_workspace::workspace::COLLECTIONS_DIR;
 use crate::shared::{random_collection_name, setup_test_workspace};
 
 mod shared;
@@ -8,7 +9,7 @@ async fn delete_collection_success() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let expected_path = workspace_path.join(&collection_name);
+    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&collection_name);
     let key = workspace.create_collection(
         CreateCollectionInput {
             name: collection_name.clone(),
@@ -67,7 +68,7 @@ async fn delete_collection_fs_already_deleted() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let expected_path = workspace_path.join(&collection_name);
+    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&collection_name);
     let key = workspace.create_collection(
         CreateCollectionInput {
             name: collection_name.clone(),

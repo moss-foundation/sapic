@@ -19,6 +19,8 @@ use crate::models::types::CollectionInfo;
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::{CollectionEntity, StateDbManager};
 
+pub const COLLECTIONS_DIR: &'static str = "collections";
+
 slotmap::new_key_type! {
     pub struct CollectionKey;
 }
@@ -162,8 +164,8 @@ impl Workspace {
     ) -> Result<CreateCollectionOutput, OperationError> {
         input.validate()?;
 
-        let relative_path = encode_directory_name(&input.name);
         // workspace_path/encoded_collection_folder
+        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_directory_name(&input.name));
         let full_path = self.path().join(&relative_path);
 
         if full_path.exists() {
@@ -183,7 +185,7 @@ impl Workspace {
 
         table.insert(
             &mut txn,
-            relative_path,
+            relative_path.to_string_lossy().to_string(),
             &CollectionEntity { order: None },
         )?;
 
@@ -237,6 +239,8 @@ impl Workspace {
                 path: old_full_path,
             })
         }
+
+        // requests/request_name
         let old_relative_path = old_full_path.strip_prefix(&self.path).unwrap();
         let new_relative_path = old_relative_path.parent().context("Parent directory not found")?
             .join(encode_directory_name(&input.new_name));

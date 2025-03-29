@@ -1,17 +1,18 @@
 use moss_fs::utils::encode_directory_name;
 use moss_workspace::models::operations::CreateCollectionInput;
 use moss_workspace::models::types::CollectionInfo;
-use moss_workspace::workspace::OperationError;
+use moss_workspace::workspace::{OperationError, COLLECTIONS_DIR};
 use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
 
 mod shared;
+
 
 #[tokio::test]
 async fn create_collection_success() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let expected_path = workspace_path.join(&collection_name);
+    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&collection_name);
     let output = workspace.create_collection(
         CreateCollectionInput {
             name: collection_name.clone()
@@ -86,7 +87,7 @@ async fn create_collection_special_chars() {
         .collect::<Vec<String>>();
 
     for name in collection_name_list {
-        let expected_path = workspace_path.join(encode_directory_name(&name));
+        let expected_path = workspace_path.join(COLLECTIONS_DIR).join(encode_directory_name(&name));
         let output = workspace.create_collection(
             CreateCollectionInput {
                 name: name.clone()
