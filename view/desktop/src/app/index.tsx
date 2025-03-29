@@ -1,9 +1,8 @@
 import "@/app/i18n";
 
 import { AppLayout, RootLayout } from "@/components";
+import { PageLoader } from "@/components/PageLoader";
 import { usePrepareWindow } from "@/hooks/usePrepareWindow";
-
-import { PageLoader } from "../components/PageLoader";
 
 const App = () => {
   const { isPreparing } = usePrepareWindow();

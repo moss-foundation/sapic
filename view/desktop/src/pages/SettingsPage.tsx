@@ -1,19 +1,45 @@
+import { ReactNode, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
+import { useGetAppLayoutState, useChangeAppLayoutState } from "@/hooks/useAppLayoutState";
+import { useChangeActivityBarState, useGetActivityBarState, ActivityBarState } from "@/hooks/useActivityBarState";
 import { useListColorThemes } from "@/hooks/useListColorThemes";
 import { useListLocales } from "@/hooks/useListLocales";
 import { useSetColorTheme } from "@/hooks/useSetColorTheme";
 import { useSetLocale } from "@/hooks/useSetLocale";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
 
-import { ActivityBarPosition, useActivityBarStore } from "../store/activityBarStore";
-import { SideBarPosition, useSideBarStore } from "../store/sideBarStore";
+interface SettingsDropdownProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  children: ReactNode;
+}
+
+const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDropdownProps) => (
+  <div className="mt-4">
+    <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{label}</h3>
+    <select
+      id={id}
+      className="w-full rounded border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm hover:bg-[var(--moss-select-hover-bg)] focus:border-[var(--moss-select-focus-border)] focus:ring-1 focus:ring-[var(--moss-select-focus-border)] focus:outline-none"
+      value={value}
+      onChange={onChange}
+    >
+      {children}
+    </select>
+  </div>
+);
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useDescribeAppState();
+  const { data: appLayoutState } = useGetAppLayoutState();
+  const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
+  const { bottomPane } = useAppResizableLayoutStore();
 
   const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
@@ -21,8 +47,8 @@ export const Settings = () => {
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
-  const { sideBarPosition, setSideBarPosition } = useSideBarStore();
-  const { setActivityBarPosition, activityBarPosition } = useActivityBarStore();
+  const { data: activityBarStateData } = useGetActivityBarState();
+  const { mutate: changeActivityBarState } = useChangeActivityBarState();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;
@@ -49,86 +75,115 @@ export const Settings = () => {
   };
 
   const handleSideBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const position = event.target.value as SideBarPosition;
-    setSideBarPosition(position);
-    // Update ActivityBar position only if it's currently set to left or right
-    if (activityBarPosition === "left" || activityBarPosition === "right") {
-      setActivityBarPosition(position);
+    const position = event.target.value as "left" | "right" | "hidden";
+
+    if (position === "hidden") {
+      changeAppLayoutState({
+        activeSidebar: "none",
+      });
+    } else {
+      changeAppLayoutState({
+        activeSidebar: position as "left" | "right",
+      });
     }
+  };
+
+  const handleBottomPaneVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const visibility = event.target.value === "opened";
+    bottomPane.setVisibility(visibility);
   };
 
   const handleActivityBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const position = event.target.value as ActivityBarPosition;
-    if (position === "default") {
-      // Set ActivityBar position to match SideBar position
-      setActivityBarPosition(sideBarPosition);
-    } else {
-      setActivityBarPosition(position);
-    }
+    const position = event.target.value as ActivityBarState["position"];
+
+    changeActivityBarState({ position });
   };
 
   return (
-    <main>
+    <main className="min-h-screen bg-[var(--moss-page-background)]">
       <div className="p-5">
-        <h1 className="mb-3 text-2xl">{t("settings")}</h1>
+        <h1 className="mb-5 text-2xl font-bold text-[var(--moss-text)]">{t("settings")}</h1>
 
-        <div>
-          <h3>{t("selectLanguage")}</h3>
-          <select
-            id="lang-select"
-            className="rounded border bg-gray-400 p-2"
-            value={appState?.preferences.locale?.code || appState?.defaults.locale?.code}
-            onChange={handleLanguageChange}
-          >
-            {languages?.map((lang: { code: string; displayName: string }) => (
-              <option key={lang.code} value={lang.code}>
-                {lang.displayName}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SettingsDropdown
+          id="lang-select"
+          label={t("selectLanguage")}
+          value={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
+          onChange={handleLanguageChange}
+        >
+          {languages?.map((lang: { code: string; displayName: string }) => (
+            <option key={lang.code} value={lang.code} className="text-[var(--moss-select-text-outlined)]">
+              {lang.displayName}
+            </option>
+          ))}
+        </SettingsDropdown>
 
-        <div>
-          <h3>{t("selectTheme")}</h3>
-          <select
-            id="theme-select"
-            className="rounded border bg-gray-400 p-2"
-            value={appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier}
-            onChange={handleThemeChange}
-          >
-            {themes?.map((theme_info: ColorThemeInfo) => (
-              <option key={theme_info.identifier} value={theme_info.identifier}>
-                {theme_info.displayName}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SettingsDropdown
+          id="theme-select"
+          label={t("selectTheme")}
+          value={appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || ""}
+          onChange={handleThemeChange}
+        >
+          {themes?.map((theme_info: ColorThemeInfo) => (
+            <option
+              key={theme_info.identifier}
+              value={theme_info.identifier}
+              className="text-[var(--moss-select-text-outlined)]"
+            >
+              {theme_info.displayName}
+            </option>
+          ))}
+        </SettingsDropdown>
 
-        <div>
-          <h3>SideBar Position</h3>
-          <select
-            id="sidebar-position-select"
-            className="rounded border bg-gray-400 p-2"
-            onChange={handleSideBarPositionChange}
-          >
-            <option value="left">Left</option>
-            <option value="right">Right</option>
-          </select>
-        </div>
+        <SettingsDropdown
+          id="sidebar-position-select"
+          label="SideBar Position"
+          value={appLayoutState?.activeSidebar === "none" ? "hidden" : appLayoutState?.activeSidebar || ""}
+          onChange={handleSideBarPositionChange}
+        >
+          <option value="left" className="text-[var(--moss-select-text-outlined)]">
+            Left
+          </option>
+          <option value="right" className="text-[var(--moss-select-text-outlined)]">
+            Right
+          </option>
+          <option value="hidden" className="text-[var(--moss-select-text-outlined)]">
+            Hidden
+          </option>
+        </SettingsDropdown>
 
-        <div>
-          <h3>ActivityBar Position</h3>
-          <select
-            id="activitybar-position-select"
-            className="rounded border bg-gray-400 p-2"
-            onChange={handleActivityBarPositionChange}
-          >
-            <option value="default">Default</option>
-            <option value="top">Top</option>
-            <option value="bottom">Bottom</option>
-            <option value="hidden">Hidden</option>
-          </select>
-        </div>
+        <SettingsDropdown
+          id="bottom-pane-select"
+          label="Bottom Pane"
+          value={bottomPane.visibility ? "opened" : "hidden"}
+          onChange={handleBottomPaneVisibilityChange}
+        >
+          <option value="opened" className="text-[var(--moss-select-text-outlined)]">
+            Opened
+          </option>
+          <option value="hidden" className="text-[var(--moss-select-text-outlined)]">
+            Hidden
+          </option>
+        </SettingsDropdown>
+
+        <SettingsDropdown
+          id="activitybar-position-select"
+          label="ActivityBar Position"
+          value={activityBarStateData?.position || "default"}
+          onChange={handleActivityBarPositionChange}
+        >
+          <option value="default" className="text-[var(--moss-select-text-outlined)]">
+            Default
+          </option>
+          <option value="top" className="text-[var(--moss-select-text-outlined)]">
+            Top
+          </option>
+          <option value="bottom" className="text-[var(--moss-select-text-outlined)]">
+            Bottom
+          </option>
+          <option value="hidden" className="text-[var(--moss-select-text-outlined)]">
+            Hidden
+          </option>
+        </SettingsDropdown>
       </div>
     </main>
   );

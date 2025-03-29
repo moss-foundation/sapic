@@ -13,9 +13,21 @@
 
   /* Layout */
   --moss-page-background: rgba(255, 255, 255, 1);
-  --moss-sideBar-background: rgba(244, 244, 245, 1);
+  --moss-sideBar-background: #f4f4f4;
+  --moss-sideBar-header-background: #f4f4f4;
+  --moss-sideBar-header-text: #78716c;
+  --moss-sideBar-header-button-hover: #e7e5e4;
+  --moss-headBar-background: #f4f4f4;
+  --moss-headBar-shadow: inset 0 -1px 0 0 #c6c6c6;
+  --moss-activityBar-background: #f4f4f4;
+  --moss-activityBar-border-color: #c6c6c6;
+  --moss-activityBar-active-item: #d4e2ff;
+  --moss-activityBar-hover-item: #d3d3d1;
+  --moss-activityBar-icon-inactive: #525252;
+  --moss-activityBar-active-icon: #0065ff;
+  --moss-activityBar-indicator-color: #0065ff;
   --moss-toolBar-background: rgba(224, 224, 224, 1);
-  --moss-statusBar-background: #0f62fe;
+  --moss-statusBar-background: #274323;
 
   /* Window Controls */
   --moss-button-icon-color: black;
@@ -192,7 +204,7 @@
 
   /* Select Inputs */
   --moss-select-bg-soft: rgb(244, 244, 245);
-  --moss-select-bg-outlined: transparent;
+  --moss-select-bg-outlined: white;
   --moss-select-bg-mixed: rgb(244, 244, 245);
   --moss-select-bg-bottomOutlined: transparent;
   --moss-select-border-soft: null;
@@ -203,6 +215,9 @@
   --moss-select-text-outlined: black;
   --moss-select-text-mixed: black;
   --moss-select-text-bottomOutlined: black;
+  --moss-select-focus-border: #3b82f6;
+  --moss-select-placeholder: #a1a1aa;
+  --moss-select-hover-bg: rgb(250, 250, 250);
 
   /* Tree View */
   --moss-tree-border: #e0e0e0;
@@ -220,4 +235,14 @@
   --moss-menu-item-bg-hover: #d4e2ff;
   --moss-menu-item-color: #8d8d8d;
   --moss-menu-separator-bg: #ebecf0;
+
+  /* WidgetBar */
+  --moss-widgetBar-item-hover-background: #d3d3d3;
+  --moss-widgetBar-item-active-background: #c8c8c8;
+  --moss-widgetBar-dropdown-background: white;
+  --moss-widgetBar-dropdown-border: #e6e6e6;
+  --moss-widgetBar-dropdown-text: #333333;
+  --moss-widgetBar-icon-color: #525252;
+  --moss-widgetBar-label-color: #161616;
+  --moss-widgetBar-active-text-color: #000000;
 }

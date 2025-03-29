@@ -2,18 +2,9 @@ import { create } from "zustand";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
-  primarySideBar: {
+  sideBar: {
     width: number;
-    visibility: boolean;
     setWidth: (newWidth: number) => void;
-    setVisibility: (visibility: boolean) => void;
-    getWidth: () => number;
-  };
-  secondarySideBar: {
-    width: number;
-    visibility: boolean;
-    setWidth: (newWidth: number) => void;
-    setVisibility: (visibility: boolean) => void;
     getWidth: () => number;
   };
   bottomPane: {
@@ -26,48 +17,17 @@ export interface AppResizableLayoutStore {
 }
 
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
-  primarySideBar: {
+  sideBar: {
     width: 255,
-    visibility: true,
     setWidth: (newWidth) =>
       set((state) => ({
-        primarySideBar: {
-          ...state.primarySideBar,
+        sideBar: {
+          ...state.sideBar,
           width: newWidth,
-          visibility: newWidth > 0,
-        },
-      })),
-    setVisibility: (visibility) =>
-      set((state) => ({
-        primarySideBar: {
-          ...state.primarySideBar,
-          visibility,
         },
       })),
     getWidth: () => {
-      return get().primarySideBar.width;
-    },
-  },
-  secondarySideBar: {
-    width: 255,
-    visibility: true,
-    setWidth: (newWidth) =>
-      set((state) => ({
-        secondarySideBar: {
-          ...state.secondarySideBar,
-          width: newWidth,
-          visibility: newWidth > 0,
-        },
-      })),
-    setVisibility: (visibility) =>
-      set((state) => ({
-        secondarySideBar: {
-          ...state.secondarySideBar,
-          visibility,
-        },
-      })),
-    getWidth: () => {
-      return get().secondarySideBar.width;
+      return get().sideBar.width;
     },
   },
   bottomPane: {
