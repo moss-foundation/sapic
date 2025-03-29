@@ -7,7 +7,6 @@ use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::storage::RequestEntity;
 
-
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestEntity>;
 
 pub trait RequestStore: Send + Sync + 'static {

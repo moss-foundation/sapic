@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
+pub type EnvironmentName = String;
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -14,8 +16,19 @@ pub struct WorkspaceInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    // pub path: PathBuf,
-    pub key: u64, // FIXME: Should we return key for list_xxx() api?
+    pub key: u64,
+    pub name: String,
+    #[ts(optional)]
+    pub order: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct EnvironmentInfo {
+    pub key: u64,
+    #[ts(optional)]
+    pub collection_key: Option<u64>,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,

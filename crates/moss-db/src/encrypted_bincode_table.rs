@@ -14,7 +14,7 @@ use std::borrow::Borrow;
 use std::fmt::Debug;
 use zeroize::Zeroizing;
 
-use crate::Transaction;
+use crate::{Table, Transaction};
 
 pub const DEFAULT_ENCRYPTION_OPTIONS: EncryptionOptions = EncryptionOptions {
     memory_cost: 65536, // 64MB
@@ -64,6 +64,17 @@ where
 {
     fn from(value: &EncryptedBincodeTable<'a, K, V>) -> Self {
         value.table
+    }
+}
+
+impl<'a, K, V> Table<'a, K, V> for EncryptedBincodeTable<'a, K, V>
+where
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
+    V: Serialize + DeserializeOwned,
+{
+    fn table_definition(&self) -> TableDefinition<'a, K, Vec<u8>> {
+        self.table.clone()
     }
 }
 

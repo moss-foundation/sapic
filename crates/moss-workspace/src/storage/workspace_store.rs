@@ -1,7 +1,7 @@
-use std::path::PathBuf;
+use crate::storage::{WorkspaceEntity, WorkspaceStore, WorkspaceStoreTable};
 use moss_db::bincode_table::BincodeTable;
 use moss_db::{DatabaseClient, ReDbClient, Transaction};
-use crate::storage::{WorkspaceEntity, WorkspaceStore, WorkspaceStoreTable};
+use std::path::PathBuf;
 
 use anyhow::Result;
 #[rustfmt::skip]

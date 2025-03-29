@@ -1,11 +1,9 @@
-use super::{
-    request_store::{self, RequestStoreImpl},
-    RequestStore, StateDbManager,
-};
+use super::request_store::TABLE_REQUESTS;
+use super::{request_store::RequestStoreImpl, RequestStore, StateDbManager};
 use anyhow::Result;
 use moss_db::ReDbClient;
 use std::path::Path;
-use std::{path::PathBuf, sync::Arc};
+use std::sync::Arc;
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
@@ -16,7 +14,7 @@ pub struct StateDbManagerImpl {
 impl StateDbManagerImpl {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
-            .with_bincode_table(&request_store::TABLE_REQUESTS)?;
+            .with_table(&TABLE_REQUESTS)?;
 
         let request_store = Arc::new(RequestStoreImpl::new(db_client));
 

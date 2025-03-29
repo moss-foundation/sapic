@@ -1,9 +1,14 @@
+use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
-use super::types::{CollectionInfo, WorkspaceInfo};
+use super::types::{CollectionInfo, EnvironmentInfo, WorkspaceInfo};
+
+// ------------------------------------------------------------------
+// Workspace Manager operations
+// ------------------------------------------------------------------
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -46,6 +51,10 @@ pub struct RenameWorkspaceInput {
     pub new_name: String
 }
 
+// ------------------------------------------------------------------
+// Workspace operations
+// ------------------------------------------------------------------
+
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
@@ -86,4 +95,27 @@ pub struct RenameCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
     pub key: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeWorkspaceOutput {
+    pub collections: Vec<CollectionInfo>,
+    pub environments: Vec<EnvironmentInfo>,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeEnvironmentInput {
+    pub key: u64,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeEnvironmentOutput {
+    #[ts(type = "VariableInfo")]
+    pub variables: Vec<VariableInfo>,
 }

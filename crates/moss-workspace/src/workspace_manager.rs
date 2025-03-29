@@ -1,14 +1,7 @@
-use anyhow::{anyhow, Context, Result};
-use arc_swap::ArcSwapOption;
-use moss_app::service::prelude::AppService;
-use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
-use std::{path::PathBuf, sync::Arc};
-use arc_swap::access::Access;
-use slotmap::KeyData;
-use thiserror::Error;
-use tokio::sync::{OnceCell, RwLock};
-use validator::{Validate, ValidationErrors};
-use moss_fs::utils::{decode_directory_name, encode_directory_name};
+use crate::leased_slotmap::LeasedSlotMap;
+use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
+// use crate::storage::global_db_manager::GlobalDbManagerImpl;
+use crate::storage::{GlobalDbManager, WorkspaceEntity};
 use crate::{
     models::{
         operations::{
@@ -18,10 +11,17 @@ use crate::{
     },
     workspace::Workspace,
 };
-use crate::leased_slotmap::LeasedSlotMap;
-use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
-use crate::storage::global_db_manager::GlobalDbManagerImpl;
-use crate::storage::{GlobalDbManager, WorkspaceEntity};
+use anyhow::{anyhow, Context, Result};
+use arc_swap::access::Access;
+use arc_swap::ArcSwapOption;
+use moss_app::service::prelude::AppService;
+use moss_fs::utils::{decode_directory_name, encode_directory_name};
+use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
+use slotmap::KeyData;
+use std::{path::PathBuf, sync::Arc};
+use thiserror::Error;
+use tokio::sync::{OnceCell, RwLock};
+use validator::{Validate, ValidationErrors};
 
 slotmap::new_key_type! {
     pub struct WorkspaceKey;
@@ -116,10 +116,8 @@ impl WorkspaceManager {
             workspaces_lock
                 .iter()
                 .filter(|(_, iter_slot)| !iter_slot.is_leased())
-                .map(|(_, iter_slot)| {
-                    iter_slot.value().clone()
-                })
-                .collect()
+                .map(|(_, iter_slot)| iter_slot.value().clone())
+                .collect(),
         ))
     }
     pub async fn create_workspace(
@@ -138,9 +136,15 @@ impl WorkspaceManager {
             });
         }
 
-        let workspaces = self.known_workspaces().await.context("Failed to get known workspaces")?;
+        let workspaces = self
+            .known_workspaces()
+            .await
+            .context("Failed to get known workspaces")?;
 
-        self.fs.create_dir(&full_path).await.context("Failed to create the workspace directory")?;
+        self.fs
+            .create_dir(&full_path)
+            .await
+            .context("Failed to create the workspace directory")?;
 
         let current_workspace = Workspace::new(full_path.clone(), self.fs.clone())?;
         let workspace_key = {
@@ -152,15 +156,18 @@ impl WorkspaceManager {
         };
 
         // // Automatically switch the workspace to the new one.
-        self.current_workspace.store(Some(Arc::new((workspace_key, current_workspace))));
+        self.current_workspace
+            .store(Some(Arc::new((workspace_key, current_workspace))));
 
         Ok(CreateWorkspaceOutput {
-            key: workspace_key.as_u64()
+            key: workspace_key.as_u64(),
         })
-
     }
 
-    pub async fn rename_workspace(&self, input: RenameWorkspaceInput) -> Result<(), OperationError> {
+    pub async fn rename_workspace(
+        &self,
+        input: RenameWorkspaceInput,
+    ) -> Result<(), OperationError> {
         input.validate()?;
 
         let workspaces = self
@@ -170,10 +177,12 @@ impl WorkspaceManager {
 
         let workspace_key = WorkspaceKey::from(input.key);
         let mut workspaces_lock = workspaces.write().await;
-        let mut workspace_info = workspaces_lock.read_mut(workspace_key).context("Failed to lease the workspace")?;
+        let mut workspace_info = workspaces_lock
+            .read_mut(workspace_key)
+            .context("Failed to lease the workspace")?;
 
         if workspace_info.name == input.new_name {
-            return Ok(())
+            return Ok(());
         }
 
         let old_path = workspace_info.path.clone();
@@ -181,7 +190,7 @@ impl WorkspaceManager {
             return Err(OperationError::NotFound {
                 name: workspace_info.name.clone(),
                 path: old_path,
-            })
+            });
         }
 
         let new_path = old_path
@@ -192,9 +201,8 @@ impl WorkspaceManager {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
                 path: new_path,
-            })
+            });
         }
-
 
         let entity_key = old_path.to_string_lossy().to_string();
         let new_entity_key = new_path.to_string_lossy().to_string();
@@ -210,14 +218,23 @@ impl WorkspaceManager {
         if let Some(mut entry) = current_entry {
             if entry.0 == workspace_key {
                 std::mem::drop(entry);
-                self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
-                entry = Arc::new((workspace_key, Workspace::new(new_path.clone(), self.fs.clone())?))
+                self.fs
+                    .rename(&old_path, &new_path, RenameOptions::default())
+                    .await?;
+                entry = Arc::new((
+                    workspace_key,
+                    Workspace::new(new_path.clone(), self.fs.clone())?,
+                ))
             } else {
-                self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+                self.fs
+                    .rename(&old_path, &new_path, RenameOptions::default())
+                    .await?;
             }
             self.current_workspace.store(Some(entry))
         } else {
-            self.fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
+            self.fs
+                .rename(&old_path, &new_path, RenameOptions::default())
+                .await?;
         }
 
         workspace_info.name = input.new_name;
@@ -226,12 +243,17 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    pub async fn delete_workspace(&self, input: DeleteWorkspaceInput) -> Result<(), OperationError> {
+    pub async fn delete_workspace(
+        &self,
+        input: DeleteWorkspaceInput,
+    ) -> Result<(), OperationError> {
         let known_workspaces = self.known_workspaces().await?;
         let workspace_key = WorkspaceKey::from(input.key);
 
         let mut workspaces_lock = known_workspaces.write().await;
-        let workspace_info = workspaces_lock.remove(workspace_key).context("Failed to remove the workspace")?;
+        let workspace_info = workspaces_lock
+            .remove(workspace_key)
+            .context("Failed to remove the workspace")?;
 
         let workspace_path = workspace_info.path;
 
@@ -264,15 +286,20 @@ impl WorkspaceManager {
     pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
         if !input.path.exists() {
             return Err(OperationError::NotFound {
-                name: input.path.file_name().unwrap_or_default().to_string_lossy().to_string(),
-                path: input.path.clone()
+                name: input
+                    .path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string(),
+                path: input.path.clone(),
             });
         }
 
         // Check if the workspace is already active
         let current_workspace = self.current_workspace();
         if current_workspace.is_ok() && current_workspace.unwrap().1.path() == input.path {
-            return Ok(())
+            return Ok(());
         }
 
         let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
@@ -287,17 +314,26 @@ impl WorkspaceManager {
         let workspace_key = if let Some((key, _)) = workspaces_lock
             .iter()
             .filter(|(_, info)| &info.value().path == &input.path)
-            .next() {
+            .next()
+        {
             key
         } else {
             workspaces_lock.insert(WorkspaceInfo {
-                name: decode_directory_name(&input.path.file_name().unwrap().to_string_lossy().to_string())
-                    .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
+                name: decode_directory_name(
+                    &input
+                        .path
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_string(),
+                )
+                .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
                 path: input.path,
             })
         };
 
-        self.current_workspace.store(Some(Arc::new((workspace_key, workspace))));
+        self.current_workspace
+            .store(Some(Arc::new((workspace_key, workspace))));
         Ok(())
     }
 
@@ -310,4 +346,3 @@ impl WorkspaceManager {
 }
 
 impl AppService for WorkspaceManager {}
-
