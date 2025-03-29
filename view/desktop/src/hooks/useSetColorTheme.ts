@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "./useDescribeAppState";
 
+export const USE_SET_COLOR_THEME_MUTATION_KEY = "setColorTheme";
+
 const setColorThemeFn = async (input: SetColorThemeInput): Promise<void> => {
   const result = await invokeTauriIpc("set_color_theme", {
     input: input,
@@ -18,7 +20,7 @@ const setColorThemeFn = async (input: SetColorThemeInput): Promise<void> => {
 export const useSetColorTheme = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, SetColorThemeInput>({
-    mutationKey: ["setColorTheme"],
+    mutationKey: [USE_SET_COLOR_THEME_MUTATION_KEY],
     mutationFn: setColorThemeFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });

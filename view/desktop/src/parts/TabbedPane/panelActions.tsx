@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 import { Scrollbar } from "@/components/Scrollbar";
 import { DockviewApi, IDockviewPanel } from "@repo/moss-tabs";
@@ -20,6 +21,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         disposable.dispose();
       };
     }
+    return undefined;
   }, [props.api, props.panelId]);
 
   const [panel, setPanel] = React.useState<IDockviewPanel | undefined>(undefined);
@@ -45,7 +47,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
     return () => {
       list.forEach((l) => l.dispose());
     };
-  }, [props.api, props.panelId]);
+  }, [props.api, props.panelId, panel]);
 
   const [visible, setVisible] = React.useState<boolean>(true);
 
@@ -97,7 +99,7 @@ const PanelAction = (props: { panels: string[]; api: DockviewApi; activePanel?: 
         >
           <span className="material-symbols-outlined">close</span>
         </button>
-        <button title="Panel visiblity cannot be edited manually." disabled={true} className="demo-icon-button">
+        <button title="Panel visibility cannot be edited manually." disabled={true} className="demo-icon-button">
           <span className="material-symbols-outlined">{visible ? "visibility" : "visibility_off"}</span>
         </button>
         <div>
@@ -123,21 +125,24 @@ const TitleEditPopup: React.FC<{ panel: IDockviewPanel; onClose: () => void }> =
     onClose();
   };
 
-  return (
-    <div className="absolute top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 transform bg-black p-5 select-none">
-      <div>
-        <span className="!text-white">Edit Panel Title</span>
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+      <div className="rounded-lg bg-black p-5 shadow-lg">
+        <div>
+          <span className="!text-white">Edit Panel Title</span>
+        </div>
+        <input className="bg-white !text-black select-text" value={title} onChange={onChange} />
+        <div className="button-group">
+          <button className="panel-builder-button" onClick={onClick}>
+            Edit
+          </button>
+          <button className="panel-builder-button" onClick={onClose}>
+            Close
+          </button>
+        </div>
       </div>
-      <input className="!text-black select-text" value={title} onChange={onChange} />
-      <div className="button-group">
-        <button className="panel-builder-button" onClick={onClick}>
-          Edit
-        </button>
-        <button className="panel-builder-button" onClick={onClose}>
-          Close
-        </button>
-      </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
