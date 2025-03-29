@@ -60,18 +60,25 @@ const changeViewGroupsFn = async (newViewGroups: Views): Promise<Views> => {
 const getViewGroupFn = async (groupId: string): Promise<GroupView | null> => {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  if (groupId === "explorer.groupId") {
+  if (groupId === "collections.groupId") {
     return {
-      "id": "explorer",
+      "id": "collections",
       "name": "My View1",
-      "component": "AccordionsList",
+      "component": "CollectionsList",
     };
   }
-  if (groupId === "activities.groupId") {
+  if (groupId === "environments.groupId") {
     return {
-      "id": "activities",
+      "id": "environments",
       "name": "My View2",
-      "component": "ActivitiesList",
+      "component": "EnvironmentsList",
+    };
+  }
+  if (groupId === "mock.groupId") {
+    return {
+      "id": "mock",
+      "name": "My View3",
+      "component": "MockServersList",
     };
   }
 

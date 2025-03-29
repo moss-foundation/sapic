@@ -57,7 +57,7 @@ export const ActivityBar = () => {
           setOrderedGroups(finalOrder);
           orderedGroupsInitialized.current = true;
 
-          if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "explorer.groupId") {
+          if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "collections.groupId") {
             const firstGroup = finalOrder[0];
             if (firstGroup && changeProjectSessionState && projectSessionState) {
               changeProjectSessionState({
@@ -77,7 +77,7 @@ export const ActivityBar = () => {
     setOrderedGroups(initialOrder);
     orderedGroupsInitialized.current = true;
 
-    if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "explorer.groupId") {
+    if (!projectSessionState?.lastActiveGroup || projectSessionState.lastActiveGroup === "collections.groupId") {
       const firstGroup = initialOrder[0];
       if (firstGroup && changeProjectSessionState && projectSessionState) {
         changeProjectSessionState({

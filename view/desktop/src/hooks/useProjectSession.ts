@@ -14,14 +14,18 @@ export const USE_PROJECT_SESSION_STATE_QUERY_KEY = "projectSessionState";
 export const USE_CHANGE_PROJECT_SESSION_STATE_MUTATION_KEY = "changeProjectSessionState";
 
 let projectSessionState = {
-  "lastActiveGroup": "explorer.groupId",
+  "lastActiveGroup": "collections.groupId",
   changedViews: [
     {
-      "id": "explorer.groupId",
+      "id": "collections.groupId",
       collapsed: false,
     },
     {
-      "id": "activities.groupId",
+      "id": "environments.groupId",
+      collapsed: false,
+    },
+    {
+      "id": "mock.groupId",
       collapsed: false,
     },
   ],
