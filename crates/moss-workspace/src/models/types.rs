@@ -10,12 +10,12 @@ pub struct WorkspaceInfo {
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
     // pub path: PathBuf,
-    pub key: u64,
+    pub key: u64, // FIXME: Should we return key for list_xxx() api?
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
