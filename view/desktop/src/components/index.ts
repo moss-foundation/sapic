@@ -11,7 +11,6 @@ export * from "../layouts/index";
 export * from "./ViewContainer";
 export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
-export * from "./ActionsGroup";
 export * from "./MenuItem";
 export * from "./Breadcrumbs/Breadcrumbs";
 export * from "./Button";

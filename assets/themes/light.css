@@ -19,6 +19,9 @@
   --moss-sideBar-header-button-hover: #e7e5e4;
   --moss-headBar-background: #f4f4f4;
   --moss-headBar-shadow: inset 0 -1px 0 0 #c6c6c6;
+  --moss-headBar-hover-background: #d3d3d3;
+  --moss-headBar-icon-color: #525252;
+  --moss-headBar-label-color: #161616;
   --moss-activityBar-background: #f4f4f4;
   --moss-activityBar-border-color: #c6c6c6;
   --moss-activityBar-active-item: #d4e2ff;
@@ -236,15 +239,17 @@
   --moss-menu-item-color: #8d8d8d;
   --moss-menu-separator-bg: #ebecf0;
 
-  /* WidgetBar */
-  --moss-widgetBar-item-hover-background: #d3d3d3;
-  --moss-widgetBar-item-active-background: #c8c8c8;
-  --moss-widgetBar-dropdown-background: white;
-  --moss-widgetBar-dropdown-border: #e6e6e6;
-  --moss-widgetBar-dropdown-text: #333333;
-  --moss-widgetBar-icon-color: #525252;
-  --moss-widgetBar-label-color: #161616;
-  --moss-widgetBar-active-text-color: #000000;
+  /* WidgetBar - Removed, transitioned to HeadBar */
+  /* 
+    --moss-widgetBar-item-hover-background: #d3d3d3;
+    --moss-widgetBar-item-active-background: #c8c8c8;
+    --moss-widgetBar-dropdown-background: white;
+    --moss-widgetBar-dropdown-border: #e6e6e6;
+    --moss-widgetBar-dropdown-text: #333333;
+    --moss-widgetBar-icon-color: #525252;
+    --moss-widgetBar-label-color: #161616;
+    --moss-widgetBar-active-text-color: #000000;
+  */
 
   /* Input Fields */
   --moss-input-bg-plain: transparent;

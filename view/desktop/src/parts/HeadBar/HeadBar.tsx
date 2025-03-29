@@ -1,16 +1,30 @@
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
+import { Icon } from "@/components";
+import { useChangeAppLayoutState, useGetAppLayoutState } from "@/hooks/useAppLayoutState";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
-import { ActionsBar } from "./ActionsBar";
 import { Controls } from "./Controls/Controls";
-import { WidgetBar } from "./WidgetBar";
 
 export const HeadBar = () => {
   const os = type();
+  const { data: appLayoutState } = useGetAppLayoutState();
+  const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
+  const { bottomPane } = useAppResizableLayoutStore((state) => state);
 
-  // os = "windows";
-  // os = "macos";
-  // os = "linux";
+  const toggleSidebar = (position: "left" | "right") => {
+    if (!appLayoutState) return;
+
+    if (appLayoutState.activeSidebar === position) {
+      changeAppLayoutState({
+        activeSidebar: "none",
+      });
+    } else {
+      changeAppLayoutState({
+        activeSidebar: position,
+      });
+    }
+  };
 
   return (
     <header
@@ -35,14 +49,42 @@ export const HeadBar = () => {
         }}
         data-tauri-drag-region
       >
-        <WidgetBar
-          os={os}
-          className="min-w-0 overflow-clip"
-          style={{
-            overflowClipMargin: 4,
-          }}
-        />
-        <ActionsBar className="z-50" />
+        <div className="z-50 flex items-center gap-3">
+          <div className="flex items-center">
+            {/* Left sidebar toggle button */}
+            <button
+              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+              onClick={() => toggleSidebar("left")}
+            >
+              <Icon
+                icon={appLayoutState?.activeSidebar === "left" ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
+                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+              />
+            </button>
+
+            {/* Bottom panel toggle button */}
+            <button
+              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+              onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
+            >
+              <Icon
+                icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
+                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+              />
+            </button>
+
+            {/* Right sidebar toggle button */}
+            <button
+              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+              onClick={() => toggleSidebar("right")}
+            >
+              <Icon
+                icon={appLayoutState?.activeSidebar === "right" ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
+                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       {os !== undefined && os !== "macos" && (os === "windows" || os === "linux") && <Controls os={os} />}
