@@ -5,6 +5,10 @@ use std::path::PathBuf;
 
 use super::{CollectionEntity, CollectionStore, CollectionStoreTable};
 
+// TODO: implement is_external flag
+// With is_external flag, we will store the absolute path
+// Otherwise we will store the relative path
+
 #[rustfmt::skip]
 pub(super) const TABLE_COLLECTIONS: BincodeTable<String, CollectionEntity> = BincodeTable::new("collections");
 

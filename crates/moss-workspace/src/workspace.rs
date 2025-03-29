@@ -1,18 +1,5 @@
 pub mod api;
 
-use anyhow::{Context, Result};
-use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
-use moss_environment::models::types::VariableInfo;
-use moss_fs::{FileSystem, RemoveOptions};
-use slotmap::KeyData;
-use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::path::PathBuf;
-use std::sync::Arc;
-use thiserror::Error;
-use tokio::sync::{OnceCell, RwLock};
-
 use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::entities::CollectionEntity;
 use crate::models::operations::{
@@ -22,6 +9,24 @@ use crate::models::operations::{
 use crate::models::types::CollectionInfo;
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::StateDbManager;
+use anyhow::{anyhow, Context, Result};
+use moss_collection::collection::{Collection, CollectionMetadata};
+use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
+use moss_environment::models::types::VariableInfo;
+use moss_fs::{
+    utils::{decode_directory_name, encode_directory_name},
+    FileSystem, RemoveOptions, RenameOptions,
+};
+use slotmap::KeyData;
+use std::collections::HashMap;
+use std::ffi::OsStr;
+use std::path::PathBuf;
+use std::sync::Arc;
+use thiserror::Error;
+use tokio::sync::{OnceCell, RwLock};
+use validator::{Validate, ValidationErrors};
+
+pub const COLLECTIONS_DIR: &'static str = "collections";
 
 slotmap::new_key_type! {
     pub struct CollectionKey;
@@ -45,16 +50,19 @@ impl std::fmt::Display for CollectionKey {
     }
 }
 
-#[derive(Clone, Debug, Error)]
-pub enum CollectionOperationError {
-    #[error("The name of a collection cannot be empty.")]
-    EmptyName,
-    #[error("`{name}` is an invalid name for a collection.")]
-    InvalidName { name: String }, // TODO: validate name
-    #[error("A collection named {name} already exists in {path}.")]
-    DuplicateName { name: String, path: PathBuf },
-    #[error("The collection named `{name}` does not exist in {path}")]
-    NonexistentCollection { name: String, path: PathBuf },
+#[derive(Error, Debug)]
+pub enum OperationError {
+    #[error("validation error: {0}")]
+    Validation(#[from] ValidationErrors),
+
+    #[error("collection {name} not found at {path}")]
+    NotFound { name: String, path: PathBuf },
+
+    #[error("collection {name} already exists at {path}")]
+    AlreadyExists { name: String, path: PathBuf },
+
+    #[error("unknown error: {0}")]
+    Unknown(#[from] anyhow::Error),
 }
 
 type CollectionSlot = (Collection, CollectionMetadata);
@@ -90,7 +98,10 @@ const ENVIRONMENTS_DIR: &str = "environments";
 pub struct Workspace {
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    // We have to use Option so that we can temporarily drop it
+    // TODO: implement is_external flag for absolute/relative path
+    // Right now, we are storing relative paths in the db_manager
+    state_db_manager: Option<Arc<dyn StateDbManager>>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
 }
@@ -103,7 +114,7 @@ impl Workspace {
         Ok(Self {
             path,
             fs,
-            state_db_manager: Arc::new(state_db_manager),
+            state_db_manager: Some(Arc::new(state_db_manager)),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
         })
@@ -134,7 +145,12 @@ impl Workspace {
                     }
                 }
 
-                let mut scan_result = self.state_db_manager.environment_store().scan()?;
+                let mut scan_result = self
+                    .state_db_manager
+                    .as_ref()
+                    .unwrap() // FIXME:
+                    .environment_store()
+                    .scan()?;
                 for (name, env) in envs_from_fs {
                     let environment_entity = scan_result.remove(&name);
 
@@ -166,20 +182,26 @@ impl Workspace {
         Ok(result)
     }
 
+    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
+        self.state_db_manager
+            .clone()
+            .ok_or(anyhow!("The state_db_manager has been dropped"))
+    }
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
 
-                for (collection_path, collection_data) in
-                    self.state_db_manager.collection_store().scan()?
+                // TODO: Support external collections with absolute path
+                for (relative_path, collection_data) in
+                    self.state_db_manager()?.collection_store().scan()?
                 {
-                    let name = match collection_path.file_name() {
-                        Some(name) => name.to_string_lossy().to_string(),
+                    let name = match relative_path.file_name() {
+                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", collection_path);
+                            println!("failed to get the collection {:?} name", relative_path);
                             continue;
                         }
                     };
@@ -189,7 +211,10 @@ impl Workspace {
                     // in the file system should be collected and deleted from the database in
                     // a parallel thread.
 
-                    let collection = Collection::new(collection_path.clone(), self.fs.clone())?;
+                    // TODO: implement is_external flag for relative/absolute path
+
+                    let full_path = self.path.join(relative_path);
+                    let collection = Collection::new(full_path, self.fs.clone())?;
                     let metadata = CollectionMetadata {
                         name,
                         order: collection_data.order,
@@ -204,31 +229,40 @@ impl Workspace {
 
         Ok(result)
     }
+    pub fn path(&self) -> PathBuf {
+        self.path.clone()
+    }
 }
 
 impl Workspace {
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
-    ) -> Result<CreateCollectionOutput> {
-        if input.name.trim().is_empty() {
-            return Err(CollectionOperationError::EmptyName.into());
+    ) -> Result<CreateCollectionOutput, OperationError> {
+        input.validate()?;
+
+        // workspace_path/encoded_collection_folder
+        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_directory_name(&input.name));
+        let full_path = self.path().join(&relative_path);
+
+        if full_path.exists() {
+            return Err(OperationError::AlreadyExists {
+                name: input.name,
+                path: full_path.clone(),
+            });
         }
 
-        let full_path = input.path.join(&input.name);
         let collections = self
             .collections()
             .await
             .context("Failed to get collections")?;
 
-        // TODO: is dir with the same name already exists
-
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         table.insert(
             &mut txn,
-            full_path.to_string_lossy().to_string(),
+            relative_path.to_string_lossy().to_string(),
             &CollectionEntity { order: None },
         )?;
 
@@ -252,15 +286,14 @@ impl Workspace {
 
         Ok(CreateCollectionOutput {
             key: collection_key.as_u64(),
-            name: input.name,
-            path: full_path,
         })
     }
 
-    pub async fn rename_collection(&self, input: RenameCollectionInput) -> Result<()> {
-        if input.new_name.trim().is_empty() {
-            return Err(CollectionOperationError::EmptyName.into());
-        }
+    pub async fn rename_collection(
+        &self,
+        input: RenameCollectionInput,
+    ) -> Result<(), OperationError> {
+        input.validate()?;
 
         let collections = self
             .collections()
@@ -274,41 +307,65 @@ impl Workspace {
             .context("Failed to lease the collection")?;
 
         let (collection, metadata) = &mut *lease_guard;
-        metadata.name = input.new_name.clone();
 
-        let old_path = collection.path().to_owned();
-        let new_path = old_path
+        if metadata.name == input.new_name {
+            return Ok(());
+        }
+
+        let old_full_path = collection.path().to_owned();
+        if !old_full_path.exists() {
+            return Err(OperationError::NotFound {
+                name: metadata.name.clone(),
+                path: old_full_path,
+            });
+        }
+
+        // requests/request_name
+        let old_relative_path = old_full_path.strip_prefix(&self.path).unwrap();
+        let new_relative_path = old_relative_path
             .parent()
             .context("Parent directory not found")?
-            .join(&input.new_name);
+            .join(encode_directory_name(&input.new_name));
+        let new_full_path = self.path.join(&new_relative_path);
 
-        let collection_store = self.state_db_manager.collection_store();
+        if new_full_path.exists() {
+            return Err(OperationError::AlreadyExists {
+                name: input.new_name,
+                path: new_full_path,
+            });
+        }
+
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
-        let entity_key = old_path.to_string_lossy().to_string();
+        let old_table_key = old_relative_path.to_string_lossy().to_string();
+        let new_table_key = new_relative_path.to_string_lossy().to_string();
 
-        table.remove(&mut txn, entity_key.clone())?;
+        table.remove(&mut txn, old_table_key)?;
         table.insert(
             &mut txn,
-            entity_key,
+            new_table_key,
             &CollectionEntity {
                 order: metadata.order,
             },
         )?;
-        dbg!(&old_path);
-        dbg!(&new_path);
 
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
         // We need to temporarily drop it, and reload the database after that
         collection
-            .reset(new_path)
+            .reset(new_full_path)
             .await
             .context("Failed to reset the collection")?;
+
+        metadata.name = input.new_name.clone();
 
         Ok(txn.commit()?)
     }
 
-    pub async fn delete_collection(&self, input: DeleteCollectionInput) -> Result<()> {
+    pub async fn delete_collection(
+        &self,
+        input: DeleteCollectionInput,
+    ) -> Result<(), OperationError> {
         let collections = self.collections().await?;
         let collection_key = CollectionKey::from(input.key);
 
@@ -318,14 +375,17 @@ impl Workspace {
             .context("Failed to remove the collection")?;
 
         let collection_path = collection.path().clone();
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_relative_path = collection_path.strip_prefix(&self.path).unwrap();
+        let collection_store = self.state_db_manager()?.collection_store();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.
 
         let (mut txn, table) = collection_store.begin_write()?;
-        table.remove(&mut txn, collection_path.to_string_lossy().to_string())?;
+        let table_key = collection_relative_path.to_string_lossy().to_string();
+        table.remove(&mut txn, table_key)?;
 
+        // TODO: logging if the folder has already been removed from the filesystem
         self.fs
             .remove_dir(
                 &collection_path,
@@ -338,138 +398,30 @@ impl Workspace {
 
         Ok(txn.commit()?)
     }
+    pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+        let _ = self.state_db_manager.take();
+
+        let old_path = std::mem::replace(&mut self.path, new_path.clone());
+        self.fs
+            .rename(&old_path, &new_path, RenameOptions::default())
+            .await?;
+
+        let state_db_manager_impl = StateDbManagerImpl::new(&new_path).context(format!(
+            "Failed to open the workspace {} state database",
+            self.path.display()
+        ))?;
+        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
+
+        Ok(())
+    }
 }
 
 impl Workspace {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager.collection_store();
+        let collection_store = self.state_db_manager()?.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
         table.truncate(&mut txn)?;
         Ok(txn.commit()?)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::utils::random_collection_name;
-    use moss_fs::RealFileSystem;
-    use std::fs;
-
-    fn random_string(length: usize) -> String {
-        use rand::{distr::Alphanumeric, Rng};
-
-        rand::rng()
-            .sample_iter(Alphanumeric)
-            .take(length)
-            .map(char::from)
-            .collect()
-    }
-
-    async fn setup_test_workspace() -> (PathBuf, Workspace) {
-        let fs = Arc::new(RealFileSystem::new());
-        let workspace_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join(format!("../../samples/workspaces/{}", random_string(10)));
-        fs::create_dir_all(&workspace_path).unwrap();
-        let workspace = Workspace::new(workspace_path.clone(), fs).unwrap();
-        (workspace_path, workspace)
-    }
-
-    #[tokio::test]
-    async fn create_collection() {
-        let (workspace_path, workspace) = setup_test_workspace().await;
-        let collection_name = random_collection_name();
-        let expected_path = workspace_path.join(&collection_name);
-
-        let create_collection_result = workspace
-            .create_collection(CreateCollectionInput {
-                name: collection_name.clone(),
-                path: workspace_path.clone(),
-            })
-            .await;
-
-        let create_collection_output = create_collection_result.unwrap();
-
-        assert_eq!(create_collection_output.name, collection_name);
-        assert_eq!(create_collection_output.path, expected_path.clone());
-
-        // Clean up
-        {
-            workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path).unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn rename_collection() {
-        let (workspace_path, workspace) = setup_test_workspace().await;
-        let old_name = random_collection_name();
-        let new_name = "New Test Collection".to_string(); // random_collection_name();
-
-        // Create a test collection
-        let create_collection_output = workspace
-            .create_collection(CreateCollectionInput {
-                name: old_name.clone(),
-                path: workspace_path.clone(),
-            })
-            .await
-            .unwrap();
-
-        // Rename collection
-        let rename_collection_result = workspace
-            .rename_collection(RenameCollectionInput {
-                key: create_collection_output.key,
-                new_name: new_name.clone(),
-            })
-            .await;
-
-        assert!(rename_collection_result.is_ok());
-
-        // Verify rename
-        let collections = workspace.list_collections().await.unwrap();
-
-        assert_eq!(collections.len(), 1);
-        assert_eq!(collections[0].name, new_name);
-
-        // Clean up
-        {
-            workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path).unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn delete_collection() {
-        let (workspace_path, workspace) = setup_test_workspace().await;
-        let collection_name = random_collection_name();
-
-        // Create a test collection
-        let create_collection_output = workspace
-            .create_collection(CreateCollectionInput {
-                name: collection_name.clone(),
-                path: workspace_path.clone(),
-            })
-            .await
-            .unwrap();
-
-        // Delete collection
-        let delete_collection_result = workspace
-            .delete_collection(DeleteCollectionInput {
-                key: create_collection_output.key,
-            })
-            .await;
-
-        assert!(delete_collection_result.is_ok());
-
-        // Verify deletion
-        let collections = workspace.list_collections().await.unwrap();
-        assert_eq!(collections.len(), 0);
-
-        // Clean up
-        {
-            workspace.truncate().unwrap();
-            std::fs::remove_dir_all(workspace_path).unwrap();
-        }
     }
 }

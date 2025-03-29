@@ -1,7 +1,7 @@
 use anyhow::Result;
-use std::{path::PathBuf, sync::Arc};
-
 use moss_db::ReDbClient;
+use std::path::Path;
+use std::{path::PathBuf, sync::Arc};
 
 use super::{
     collection_store::{CollectionStoreImpl, TABLE_COLLECTIONS},
