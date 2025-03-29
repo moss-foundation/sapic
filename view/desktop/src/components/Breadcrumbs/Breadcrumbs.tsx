@@ -32,41 +32,44 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   if (!activeTree) return null;
 
   return (
-    <div className="flex items-center gap-1 px-3 py-[5px] text-[#6F6F6F] select-none">
-      {path.map((pathNode, index) => {
-        const node = findNodeById(activeTree, pathNode)!;
-        const lastItem = index === path.length - 1;
+    <div className="flex items-center justify-between px-3 py-[5px]">
+      <div className="flex items-center gap-1 text-[#6F6F6F] select-none">
+        {path.map((pathNode, index) => {
+          const node = findNodeById(activeTree, pathNode)!;
+          const lastItem = index === path.length - 1;
 
-        if (lastItem) {
+          if (lastItem) {
+            return (
+              <div key={pathNode} className="contents">
+                <TestCollectionIcon type={node.type} className="size-4.5" />
+                <span>{pathNode}</span>
+              </div>
+            );
+          }
+
           return (
             <div key={pathNode} className="contents">
-              <TestCollectionIcon type={node.type} className="size-4.5" />
-              <span>{pathNode}</span>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger className="cursor-pointer hover:underline">{pathNode}</DropdownMenu.Trigger>
+                <DropdownMenu.Content align="start">
+                  <BreadcrumbTree
+                    tree={node}
+                    onNodeClick={(node) => {
+                      if (!node.isFolder) addPanel({ id: `${node.id}` });
+                    }}
+                  />
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+              {!lastItem && (
+                <span>
+                  <Icon icon="TreeChevronRightIcon" />
+                </span>
+              )}
             </div>
           );
-        }
-
-        return (
-          <div key={pathNode} className="contents">
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger className="cursor-pointer hover:underline">{pathNode}</DropdownMenu.Trigger>
-              <DropdownMenu.Content align="start">
-                <BreadcrumbTree
-                  tree={node}
-                  onNodeClick={(node) => {
-                    if (!node.isFolder) addPanel({ id: `${node.id}` });
-                  }}
-                />
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
-            {!lastItem && (
-              <span>
-                <Icon icon="TreeChevronRightIcon" />
-              </span>
-            )}
-          </div>
-        );
-      })}
+        })}
+      </div>
+      <TestBreadcrumbsNotifications />
     </div>
   );
 };
@@ -85,3 +88,19 @@ const findPath = (node: NodeProps, target: string): string[] | null => {
 };
 
 export default Breadcrumbs;
+
+const TestBreadcrumbsNotifications = () => {
+  return (
+    <div className="flex items-center">
+      <div className="flex items-center gap-2 px-2">
+        <div className="size-1.5 rounded bg-red-600" />
+        <span>2</span>
+      </div>
+
+      <div className="flex items-center gap-2 px-2">
+        <div className="size-1.5 rounded bg-blue-600" />
+        <span>15</span>
+      </div>
+    </div>
+  );
+};
