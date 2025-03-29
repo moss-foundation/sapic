@@ -1,10 +1,9 @@
 use anyhow::Result;
-use moss_global_env::models::types::VariableInfo;
 
 use crate::{
     models::{
         operations::DescribeWorkspaceOutput,
-        types::{CollectionInfo, EnvironmentInfoFull},
+        types::{CollectionInfo, EnvironmentInfo},
     },
     workspace::Workspace,
 };
@@ -12,17 +11,38 @@ use crate::{
 impl Workspace {
     pub async fn describe(&self) -> Result<DescribeWorkspaceOutput> {
         let collections_info = self.list_collections().await?;
-        // let environments_info = self.describe_environments().await?;
+        let environments_info = self.list_environments().await?;
 
         Ok(DescribeWorkspaceOutput {
             collections: collections_info,
-            // environments: environments_info,
+            environments: environments_info,
         })
     }
 
-    // async fn list_environments(&self) -> Result<Vec<EnvironmentInfo>> {
-    //     todo!()
-    // }
+    pub(crate) async fn list_environments(&self) -> Result<Vec<EnvironmentInfo>> {
+        let environments = self.environments().await?;
+        let environments_lock = environments.read().await;
+
+        let global_environments_info_iter = environments_lock
+            .iter()
+            .filter(|(_, iter_slot)| !iter_slot.is_leased())
+            .map(|(key, iter_slot)| {
+                let (_, cache) = iter_slot.value();
+                EnvironmentInfo {
+                    key: key.as_u64(),
+                    collection_key: None,
+                    name: cache.decoded_name.clone(),
+                    order: cache.order,
+                }
+            });
+
+        // TODO: get environments from collections
+
+        let mut environments_info = Vec::new();
+        environments_info.extend(global_environments_info_iter);
+
+        Ok(environments_info)
+    }
 
     pub(crate) async fn list_collections(&self) -> Result<Vec<CollectionInfo>> {
         let collections = self.collections().await?;

@@ -17,7 +17,6 @@ pub struct WorkspaceInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    // pub path: PathBuf,
     pub key: u64,
     pub name: String,
     #[ts(optional)]
@@ -29,18 +28,19 @@ pub struct CollectionInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
     pub key: u64,
+    #[ts(optional)]
     pub collection_key: Option<u64>,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct EnvironmentInfoFull {
-    pub key: u64,
-    pub name: String,
-    pub order: Option<usize>,
-    pub variables: HashMap<String, VariableInfo>,
-}
+// #[derive(Debug, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct EnvironmentInfoFull {
+//     pub key: u64,
+//     pub name: String,
+//     pub order: Option<usize>,
+//     pub variables: HashMap<String, VariableInfo>,
+// }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-use super::types::{CollectionInfo, EnvironmentInfoFull, WorkspaceInfo};
+use super::types::{CollectionInfo, EnvironmentInfo, WorkspaceInfo};
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -76,5 +76,5 @@ pub struct DeleteCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeWorkspaceOutput {
     pub collections: Vec<CollectionInfo>,
-    // pub environments: Vec<EnvironmentInfo>,
+    pub environments: Vec<EnvironmentInfo>,
 }
