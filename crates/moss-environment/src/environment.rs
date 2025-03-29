@@ -2,6 +2,7 @@ use anyhow::Result;
 use moss_fs::{CreateOptions, FileSystem, RenameOptions};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::models::{
@@ -32,12 +33,34 @@ pub struct EnvironmentCache {
     pub variables_cache: HashMap<VariableName, VariableCache>,
 }
 
-type VariableMap = HashMap<VariableName, EnvironmentFileVariable>;
-
 pub struct EnvironmentUpdateParams {
     pub new_file_name: Option<String>,
     pub variables_to_be_updated: HashMap<VariableName, EnvironmentFileVariableUpdate>,
     pub variables_to_be_deleted: Vec<VariableName>,
+}
+
+type VariableMap = HashMap<VariableName, EnvironmentFileVariable>;
+
+#[derive(Error, Debug)]
+pub enum EnvironmentError {
+    #[error("Failed to parse environment file as JSON: {0}")]
+    JsonParseError(#[from] serde_json::Error),
+
+    #[error("Failed to open environment file {path}: {err}")]
+    FileOpenError { err: anyhow::Error, path: PathBuf },
+
+    #[error("Failed to create environment file {path}: {err}")]
+    FileCreateError { err: anyhow::Error, path: PathBuf },
+
+    #[error("Failed to rename environment file {old_path} to {new_path}: {err}")]
+    FileRenameError {
+        old_path: PathBuf,
+        new_path: PathBuf,
+        err: anyhow::Error,
+    },
+
+    #[error("Unknown error: {0}")]
+    Unknown(anyhow::Error),
 }
 
 pub struct Environment {
@@ -46,11 +69,26 @@ pub struct Environment {
     variables: RwLock<VariableMap>,
 }
 
+impl std::fmt::Debug for Environment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Environment")
+            .field("path", &self.path)
+            .field("variables", &self.variables)
+            .finish()
+    }
+}
+
 impl Environment {
-    pub async fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self> {
+    pub async fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self, EnvironmentError> {
         let mut variables = HashMap::new();
         if path.exists() {
-            let reader = fs.open_file(&path).await?;
+            let reader =
+                fs.open_file(&path)
+                    .await
+                    .map_err(|err| EnvironmentError::FileOpenError {
+                        err: err.into(),
+                        path: path.clone(),
+                    })?;
             let environment_file: EnvironmentFile = serde_json::from_reader(reader)?;
             variables = environment_file.values;
         } else {
@@ -62,7 +100,11 @@ impl Environment {
                     ignore_if_exists: true,
                 },
             )
-            .await?;
+            .await
+            .map_err(|err| EnvironmentError::FileCreateError {
+                err: err.into(),
+                path: path.clone(),
+            })?;
         }
 
         Ok(Self {
@@ -76,7 +118,7 @@ impl Environment {
         &self.variables
     }
 
-    pub async fn update(&self, params: EnvironmentUpdateParams) -> Result<()> {
+    pub async fn update(&self, params: EnvironmentUpdateParams) -> Result<(), EnvironmentError> {
         self.update_variables(
             params.variables_to_be_updated,
             params.variables_to_be_deleted,
@@ -90,7 +132,7 @@ impl Environment {
         Ok(())
     }
 
-    async fn update_file_name(&self, new_file_name: String) -> Result<()> {
+    async fn update_file_name(&self, new_file_name: String) -> Result<(), EnvironmentError> {
         let old_path = self.path.read().await.clone();
         let new_path = old_path.with_file_name(new_file_name);
         self.fs
@@ -102,7 +144,12 @@ impl Environment {
                     ignore_if_exists: false,
                 },
             )
-            .await?;
+            .await
+            .map_err(|err| EnvironmentError::FileRenameError {
+                old_path: old_path.clone(),
+                new_path: new_path.clone(),
+                err: err.into(),
+            })?;
 
         *self.path.write().await = new_path;
 
@@ -113,7 +160,7 @@ impl Environment {
         &self,
         variables_to_be_updated: HashMap<VariableName, EnvironmentFileVariableUpdate>,
         variables_to_be_deleted: Vec<VariableName>,
-    ) -> Result<()> {
+    ) -> Result<(), EnvironmentError> {
         let mut variables = self.variables.write().await;
 
         for (name, update) in variables_to_be_updated {
@@ -135,6 +182,11 @@ impl Environment {
             variables.remove(&name);
         }
 
+        Ok(())
+    }
+
+    pub async fn clear(&self) -> Result<(), EnvironmentError> {
+        self.variables.write().await.clear();
         Ok(())
     }
 }
