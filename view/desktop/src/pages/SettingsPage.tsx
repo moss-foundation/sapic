@@ -2,8 +2,11 @@ import { ReactNode, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
-import { useGetAppLayoutState, useChangeAppLayoutState } from "@/hooks/useAppLayoutState";
-import { useChangeActivityBarState, useGetActivityBarState, ActivityBarState } from "@/hooks/useActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
+import { ActivityBarState } from "@/hooks/useActivityBarState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useListColorThemes } from "@/hooks/useListColorThemes";
 import { useListLocales } from "@/hooks/useListLocales";
 import { useSetColorTheme } from "@/hooks/useSetColorTheme";

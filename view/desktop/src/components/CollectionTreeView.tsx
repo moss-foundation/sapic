@@ -218,7 +218,7 @@ const CollectionCreationZone = () => {
     >
       <div className="flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
         <Icon
-          icon="AddCircle"
+          icon="Plus"
           className={cn("size-5 text-[#717171]", {
             "text-(--moss-primary)": canDrop,
           })}

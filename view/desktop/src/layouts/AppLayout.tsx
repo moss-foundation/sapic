@@ -1,7 +1,7 @@
 import { LayoutPriority } from "allotment";
 import { Suspense, useState } from "react";
 
-import { useGetAppLayoutState } from "@/hooks/useAppLayoutState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";

@@ -1,7 +1,8 @@
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
 import { Icon } from "@/components";
-import { useChangeAppLayoutState, useGetAppLayoutState } from "@/hooks/useAppLayoutState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import { Controls } from "./Controls/Controls";

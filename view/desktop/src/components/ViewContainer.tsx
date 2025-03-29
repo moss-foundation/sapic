@@ -1,4 +1,4 @@
-import { useGetViewGroup } from "@/hooks/useViewGroups";
+import { useGetViewGroup } from "@/hooks/useGetViewGroup";
 import React from "react";
 
 import * as components from "./index";

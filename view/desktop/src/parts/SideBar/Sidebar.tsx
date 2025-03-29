@@ -1,10 +1,10 @@
 import { ActivityBar } from "@/components/ActivityBar";
 import { ViewContainer } from "@/components/ViewContainer";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
-import { useGetActivityBarState } from "@/hooks/useActivityBarState";
-import { useGetAppLayoutState } from "@/hooks/useAppLayoutState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { useGetViewGroups } from "@/hooks/useViewGroups";
+import { useGetViewGroups } from "@/hooks/useGetViewGroups";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 

@@ -1,10 +1,12 @@
 import { ComponentPropsWithoutRef, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ActivityBarState, useChangeActivityBarState, useGetActivityBarState } from "@/hooks/useActivityBarState";
+import { ActivityBarState } from "@/hooks/useActivityBarState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { useGetAppLayoutState } from "@/hooks/useAppLayoutState";
-import { useGetViewGroups } from "@/hooks/useViewGroups";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useGetViewGroups } from "@/hooks/useGetViewGroups";
 import { cn } from "@/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { attachClosestEdge, extractClosestEdge, Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -47,9 +49,9 @@ export const ActivityBar = () => {
       const savedOrder = activityBarState.groupOrder;
 
       if (savedOrder && savedOrder.length > 0) {
-        const validOrder = savedOrder.filter((id) => activityBarGroups.some((group) => group.id === id));
+        const validOrder = savedOrder.filter((id: string) => activityBarGroups.some((group) => group.id === id));
 
-        const newGroupIds = activityBarGroups.map((group) => group.id).filter((id) => !validOrder.includes(id));
+        const newGroupIds = activityBarGroups.map((group) => group.id).filter((id: string) => !validOrder.includes(id));
 
         const finalOrder = [...validOrder, ...newGroupIds];
 
