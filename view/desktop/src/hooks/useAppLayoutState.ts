@@ -4,19 +4,29 @@ export interface AppLayoutState {
   activeSidebar: "left" | "right" | "none";
 }
 
+export const USE_APP_LAYOUT_STATE_QUERY_KEY = "appLayoutState";
+export const USE_CHANGE_APP_LAYOUT_STATE_MUTATION_KEY = "changeAppLayoutState";
+
 let AppLayoutState = {
   activeSidebar: "left",
 };
 
-const getAppLayoutState = async () => {
+const getAppLayoutStateFn = async (): Promise<AppLayoutState> => {
   await new Promise((resolve) => setTimeout(resolve, 0));
   return AppLayoutState as AppLayoutState;
 };
 
+const changeAppLayoutStateFn = async (newLayout: AppLayoutState): Promise<AppLayoutState> => {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  AppLayoutState = newLayout;
+  return newLayout;
+};
+
 export const useGetAppLayoutState = () => {
   return useQuery<AppLayoutState, Error>({
-    queryKey: ["getAppLayoutState"],
-    queryFn: getAppLayoutState,
+    queryKey: [USE_APP_LAYOUT_STATE_QUERY_KEY],
+    queryFn: getAppLayoutStateFn,
   });
 };
 
@@ -24,14 +34,10 @@ export const useChangeAppLayoutState = () => {
   const queryClient = useQueryClient();
 
   return useMutation<AppLayoutState, Error, AppLayoutState>({
-    mutationFn: async (newLayout) => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      AppLayoutState = newLayout;
-      return newLayout;
-    },
+    mutationKey: [USE_CHANGE_APP_LAYOUT_STATE_MUTATION_KEY],
+    mutationFn: changeAppLayoutStateFn,
     onSuccess() {
-      queryClient.invalidateQueries({ queryKey: ["getAppLayoutState"] });
+      queryClient.invalidateQueries({ queryKey: [USE_APP_LAYOUT_STATE_QUERY_KEY] });
     },
   });
 };

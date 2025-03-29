@@ -10,6 +10,9 @@ interface ChangedView {
   collapsed: boolean;
 }
 
+export const USE_PROJECT_SESSION_STATE_QUERY_KEY = "projectSessionState";
+export const USE_CHANGE_PROJECT_SESSION_STATE_MUTATION_KEY = "changeProjectSessionState";
+
 let projectSessionState = {
   "lastActiveGroup": "explorer.groupId",
   changedViews: [
@@ -24,13 +27,23 @@ let projectSessionState = {
   ],
 };
 
+const getProjectSessionStateFn = async (): Promise<ProjectSessionState> => {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  return projectSessionState;
+};
+
+const changeProjectSessionStateFn = async (newProjectState: ProjectSessionState): Promise<ProjectSessionState> => {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  projectSessionState = newProjectState;
+
+  return newProjectState;
+};
+
 export const useGetProjectSessionState = () => {
   return useQuery<ProjectSessionState, Error>({
-    queryKey: ["getProjectState"],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      return projectSessionState;
-    },
+    queryKey: [USE_PROJECT_SESSION_STATE_QUERY_KEY],
+    queryFn: getProjectSessionStateFn,
   });
 };
 
@@ -38,15 +51,10 @@ export const useChangeProjectSessionState = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ProjectSessionState, Error, ProjectSessionState>({
-    mutationFn: async (newProjectState) => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      projectSessionState = newProjectState;
-
-      return newProjectState;
-    },
+    mutationKey: [USE_CHANGE_PROJECT_SESSION_STATE_MUTATION_KEY],
+    mutationFn: changeProjectSessionStateFn,
     onSuccess(newProjectState) {
-      queryClient.setQueryData(["getProjectState"], newProjectState);
+      queryClient.setQueryData([USE_PROJECT_SESSION_STATE_QUERY_KEY], newProjectState);
     },
   });
 };
