@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
 import { useDockviewStore } from "@/store/Dockview";
@@ -13,20 +13,27 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
   const { addPanel } = useDockviewStore();
-  const path = useMemo(() => {
-    if (!panelId) return [];
+  const [path, setPath] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!panelId) {
+      setActiveTree(null);
+      setPath([]);
+      return;
+    }
 
     const target = String(panelId);
     for (const collection of collections) {
       const newPath = findPath(collection.tree, target);
       if (newPath) {
         setActiveTree(collection.tree);
-        return newPath;
+        setPath(newPath);
+        return;
       }
     }
 
     setActiveTree(null);
-    return [];
+    setPath([]);
   }, [collections, panelId]);
 
   if (!activeTree) return null;

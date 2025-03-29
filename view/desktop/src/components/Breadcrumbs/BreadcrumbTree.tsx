@@ -4,13 +4,12 @@ import { NodeProps, TreeNodeProps } from "../Tree/types";
 import { prepareCollectionForTree, updateTreeNode } from "../Tree/utils";
 import BreadcrumbNode from "./BreadcrumbNode";
 
-export const BreadcrumbTree = ({
-  tree: initialTree,
-  onNodeClick: onNodeClickCallback,
-}: {
+interface BreadcrumbTreeProps {
   tree: NodeProps;
   onNodeClick: (node: NodeProps) => void;
-}) => {
+}
+
+export const BreadcrumbTree = ({ tree: initialTree, onNodeClick: onNodeClickCallback }: BreadcrumbTreeProps) => {
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree, false));
 
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {

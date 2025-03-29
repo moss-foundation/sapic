@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { useDockviewStore } from "@/store/Dockview";
 import { cn } from "@/utils";
 
@@ -7,6 +5,16 @@ import Icon from "../Icon";
 import NodeLabel from "../Tree/NodeLabel";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
 import { TreeNodeProps } from "../Tree/types";
+
+interface BreadcrumbNodeProps {
+  node: TreeNodeProps;
+  onNodeUpdate: (node: TreeNodeProps) => void;
+  depth?: number;
+  onNodeClickCallback?: (node: TreeNodeProps) => void;
+  paddingLeft?: number;
+  paddingRight?: number;
+  nodeOffset?: number;
+}
 
 export const BreadcrumbNode = ({
   node,
@@ -16,18 +24,10 @@ export const BreadcrumbNode = ({
   paddingLeft = 12,
   paddingRight = 8,
   nodeOffset = 12,
-}: {
-  node: TreeNodeProps;
-  onNodeUpdate: (node: TreeNodeProps) => void;
-  depth?: number;
-  onNodeClickCallback: (node: TreeNodeProps) => void;
-  paddingLeft?: number;
-  paddingRight?: number;
-  nodeOffset?: number;
-}) => {
+}: BreadcrumbNodeProps) => {
   const { addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeft = depth * nodeOffset + paddingLeft + 4;
   const shouldRenderChildNodes = node.isFolder && node.isExpanded;
 
   const handleFolderClick = () => {
@@ -83,4 +83,5 @@ export const BreadcrumbNode = ({
     </li>
   );
 };
+
 export default BreadcrumbNode;
