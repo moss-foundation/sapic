@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-
-use moss_environment::models::types::VariableName;
-use moss_environment::models::types::VariableValue;
+use moss_global_env::manager::VariableCache;
+use moss_global_env::models::types::VariableName;
+use moss_global_env::models::types::VariableValue;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct CollectionEntity {
@@ -10,6 +10,24 @@ pub struct CollectionEntity {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct VariableState {
+    pub disabled: bool,
+    pub order: Option<usize>,
+    pub local_value: VariableValue,
+}
+
+impl From<VariableState> for VariableCache {
+    fn from(value: VariableState) -> Self {
+        Self {
+            disabled: value.disabled,
+            local_value: value.local_value,
+            order: value.order,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct EnvironmentEntity {
-    pub local_values: HashMap<VariableName, VariableValue>,
+    pub order: Option<usize>,
+    pub local_values: HashMap<VariableName, VariableState>,
 }

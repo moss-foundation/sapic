@@ -4,15 +4,12 @@ pub mod encrypted_bincode_store;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
-use bincode_table::BincodeTable;
-use encrypted_bincode_table::EncryptedBincodeTable;
 use redb::{
     Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
     WriteTransaction as InnerWriteTransaction,
 };
 use serde::{de::DeserializeOwned, Serialize};
 use std::borrow::Borrow;
-use std::hash::Hash;
 
 use std::{path::Path, sync::Arc};
 

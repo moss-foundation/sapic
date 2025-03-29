@@ -17,7 +17,7 @@ members = [
     "crates/moss-logging",
     "crates/moss-session",
     "crates/moss-workspace",
-    "crates/moss-environment",
+    "crates/moss-global-env",
 
     "tools/xtask",
     "view/desktop/bin",
@@ -40,7 +40,7 @@ moss_theme = { path = "crates/moss-theme" }
 moss_state = { path = "crates/moss-state" }
 moss_nls = { path = "crates/moss-nls" }
 moss_workspace = { path = "crates/moss-workspace" }
-moss_environment = { path = "crates/moss-environment" }
+moss_global_env = { path = "crates/moss-global-env" }
 
 redb = "2.4.0"
 

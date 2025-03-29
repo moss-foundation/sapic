@@ -2946,22 +2946,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_environment"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "moss_app",
- "moss_db",
- "moss_fs",
- "rand 0.9.0",
- "serde",
- "serde_json",
- "thiserror 2.0.12",
- "tokio",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_fs"
 version = "0.1.0"
 dependencies = [
@@ -3001,6 +2985,22 @@ dependencies = [
  "tokio",
  "url",
  "webbrowser",
+]
+
+[[package]]
+name = "moss_global_env"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_app",
+ "moss_db",
+ "moss_fs",
+ "rand 0.9.0",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "ts-rs",
 ]
 
 [[package]]
@@ -3121,8 +3121,8 @@ dependencies = [
  "moss_app",
  "moss_collection",
  "moss_db",
- "moss_environment",
  "moss_fs",
+ "moss_global_env",
  "rand 0.9.0",
  "serde",
  "slotmap",

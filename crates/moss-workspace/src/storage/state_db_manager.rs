@@ -23,6 +23,7 @@ impl StateDbManagerImpl {
 
         let collection_store = Arc::new(CollectionStoreImpl::new(db_client.clone()));
         let environment_store = Arc::new(EnvironmentStoreImpl::new(db_client.clone()));
+
         Ok(Self {
             collection_store,
             environment_store,

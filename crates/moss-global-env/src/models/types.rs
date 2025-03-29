@@ -2,6 +2,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Number;
 use ts_rs::TS;
 
+pub type VariableName = String;
+pub type EnvironmentName = String;
+
 #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
 #[ts(export, export_to = "types.ts")]
 pub enum VariableKind {
@@ -18,13 +21,17 @@ pub enum VariableValue {
     String(String),
     Number(Number),
     Boolean(bool),
+    Null,
 }
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct VariableInfo {
+    pub global_value: VariableValue,
+    pub local_value: VariableValue,
+    pub disabled: bool,
     pub kind: VariableKind,
-    pub value: VariableValue,
+    pub order: Option<usize>,
+    pub desc: Option<String>,
 }
-
-pub type VariableName = String;

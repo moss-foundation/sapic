@@ -8,7 +8,7 @@ moss_app.workspace = true
 moss_db.workspace = true
 moss_fs.workspace = true
 moss_collection.workspace = true
-moss_environment.workspace = true
+moss_global_env.workspace = true
 
 anyhow.workspace = true
 arc-swap.workspace = true

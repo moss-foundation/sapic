@@ -1,8 +1,14 @@
+pub mod api;
+
 use anyhow::{Context, Result};
 use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_environment::environment::{Environment, EnvironmentMetadata};
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_global_env::manager::{Environment, EnvironmentCache, VariableCache};
+
+use moss_global_env::models::types::VariableInfo;
 use slotmap::KeyData;
+use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
@@ -77,10 +83,13 @@ impl std::fmt::Display for EnvironmentKey {
     }
 }
 
-type EnvironmentSlot = (Environment, EnvironmentMetadata);
+type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<EnvironmentKey, EnvironmentSlot>;
 
+const ENVIRONMENTS_DIR: &str = "environments";
+
 pub struct Workspace {
+    path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state_db_manager: Arc<dyn StateDbManager>,
     collections: OnceCell<RwLock<CollectionMap>>,
@@ -93,6 +102,7 @@ impl Workspace {
             .context("Failed to open the workspace state database")?;
 
         Ok(Self {
+            path,
             fs,
             state_db_manager: Arc::new(state_db_manager),
             collections: OnceCell::new(),
@@ -101,7 +111,60 @@ impl Workspace {
     }
 
     async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
-        todo!()
+        let result = self
+            .environments
+            .get_or_try_init(|| async move {
+                let mut environments = LeasedSlotMap::new();
+
+                let mut envs_from_fs = HashMap::new();
+                let mut environment_dir =
+                    self.fs.read_dir(&self.path.join(ENVIRONMENTS_DIR)).await?;
+                while let Some(entry) = environment_dir.next_entry().await? {
+                    if entry.file_type().await?.is_dir() {
+                        continue;
+                    }
+
+                    let path = entry.path();
+
+                    if path.extension().map(|ext| ext == "json").unwrap_or(false) {
+                        let environment_name =
+                            path.file_name().unwrap().to_string_lossy().to_string(); // TODO: Is unwrap here is safe?
+
+                        let environment = Environment::new(path, self.fs.clone()).await?;
+                        envs_from_fs.insert(environment_name, environment);
+                    }
+                }
+
+                let mut scan_result = self.state_db_manager.environment_store().scan()?;
+                for (name, env) in envs_from_fs {
+                    let environment_entity = scan_result.remove(&name);
+
+                    let environment_cache = if let Some(environment_entity) = environment_entity {
+                        EnvironmentCache {
+                            decoded_name: name, // TODO: decode name
+                            order: environment_entity.order,
+                            variables_cache: environment_entity
+                                .local_values
+                                .into_iter()
+                                .map(|(name, state)| (name, VariableCache::from(state)))
+                                .collect(),
+                        }
+                    } else {
+                        EnvironmentCache {
+                            decoded_name: name, // TODO: decode name,
+                            order: None,
+                            variables_cache: HashMap::new(),
+                        }
+                    };
+
+                    environments.insert((env, environment_cache));
+                }
+
+                Ok::<_, anyhow::Error>(RwLock::new(environments))
+            })
+            .await?;
+
+        Ok(result)
     }
 
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
@@ -145,26 +208,6 @@ impl Workspace {
 }
 
 impl Workspace {
-    pub async fn list_collections(&self) -> Result<ListCollectionsOutput> {
-        let collections = self.collections().await?;
-        let collections_lock = collections.read().await;
-
-        Ok(ListCollectionsOutput(
-            collections_lock
-                .iter()
-                .filter(|(_, iter_slot)| !iter_slot.is_leased())
-                .map(|(key, iter_slot)| {
-                    let (_, metadata) = iter_slot.value();
-                    CollectionInfo {
-                        key: key.as_u64(),
-                        name: metadata.name.clone(),
-                        order: metadata.order,
-                    }
-                })
-                .collect(),
-        ))
-    }
-
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
@@ -387,8 +430,8 @@ mod tests {
         // Verify rename
         let collections = workspace.list_collections().await.unwrap();
 
-        assert_eq!(collections.0.len(), 1);
-        assert_eq!(collections.0[0].name, new_name);
+        assert_eq!(collections.len(), 1);
+        assert_eq!(collections[0].name, new_name);
 
         // Clean up
         {
@@ -422,7 +465,7 @@ mod tests {
 
         // Verify deletion
         let collections = workspace.list_collections().await.unwrap();
-        assert_eq!(collections.0.len(), 0);
+        assert_eq!(collections.len(), 0);
 
         // Clean up
         {

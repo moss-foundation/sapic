@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 
-use super::types::{CollectionInfo, WorkspaceInfo};
+use super::types::{CollectionInfo, EnvironmentInfoFull, WorkspaceInfo};
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -69,4 +69,12 @@ pub struct RenameCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
     pub key: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeWorkspaceOutput {
+    pub collections: Vec<CollectionInfo>,
+    // pub environments: Vec<EnvironmentInfo>,
 }
