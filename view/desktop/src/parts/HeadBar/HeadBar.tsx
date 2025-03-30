@@ -16,11 +16,12 @@ export const HeadBar = () => {
   const toggleSidebar = () => {
     if (!appLayoutState) return;
 
-    const sidebarType = appLayoutState.sidebarSetting || "left";
+    const currentSidebarSetting = appLayoutState.sidebarSetting || "left";
+    const isSidebarVisible = appLayoutState.activeSidebar !== "none";
 
     changeAppLayoutState({
-      activeSidebar: appLayoutState.activeSidebar === "none" ? sidebarType : "none",
-      sidebarSetting: sidebarType,
+      activeSidebar: isSidebarVisible ? "none" : currentSidebarSetting,
+      sidebarSetting: currentSidebarSetting,
     });
   };
 
@@ -34,7 +35,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header grid h-full w-screen items-center bg-[var(--moss-headBar-background)] shadow-[var(--moss-headBar-shadow)]",
+        "header z-50 grid h-full w-screen items-center bg-[var(--moss-headBar-background)] shadow-[var(--moss-headBar-shadow)]",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
@@ -53,7 +54,7 @@ export const HeadBar = () => {
         }}
         data-tauri-drag-region
       >
-        <div className="flex w-full items-center gap-3">
+        <div className="flex w-full items-center gap-3" data-tauri-drag-region>
           <div className="flex shrink-0 items-center gap-1">
             {/* First button - changes based on sidebar setting */}
             {isLeftSidebarMode ? (
@@ -109,6 +110,9 @@ export const HeadBar = () => {
               </button>
             )}
           </div>
+
+          {/* Add a draggable area that takes up remaining space */}
+          <div className="flex-grow" data-tauri-drag-region></div>
         </div>
       </div>
 
