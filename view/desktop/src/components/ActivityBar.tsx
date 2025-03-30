@@ -165,11 +165,10 @@ export const ActivityBar = () => {
       return activityBarState.position;
     }
 
-    if (appLayoutState.activeSidebar === "none") {
-      return "left";
-    }
-
-    return appLayoutState.activeSidebar === "right" ? ("right" as const) : ("left" as const);
+    // When in default mode, determine position based on sidebarSetting
+    // This ensures the ActivityBar shows in the correct position
+    // even when sidebar is hidden (activeSidebar === "none")
+    return appLayoutState.sidebarSetting === "right" ? "right" : "left";
   };
 
   const effectivePosition = getEffectivePosition();

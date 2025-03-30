@@ -2,6 +2,7 @@ import { LayoutPriority } from "allotment";
 import { Suspense, useState } from "react";
 
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
@@ -15,6 +16,7 @@ import { ContentLayout } from "./ContentLayout";
 
 export const AppLayout = () => {
   const { data: appLayoutState } = useGetAppLayoutState();
+  const { data: activityBarState } = useGetActivityBarState();
 
   const sideBarSetWidth = useAppResizableLayoutStore((state) => state.sideBar.setWidth);
   const sideBarGetWidth = useAppResizableLayoutStore((state) => state.sideBar.getWidth);
@@ -29,6 +31,10 @@ export const AppLayout = () => {
   const isLeftSidebar = sidebarSide === "left";
   const isRightSidebar = sidebarSide === "right";
 
+  // Check if we should display ActivityBar independently
+  // (sidebar hidden + ActivityBar in default position)
+  const shouldShowActivityBarAlone = !sidebarVisible && activityBarState?.position === "default";
+
   return (
     <Resizable
       onDragEnd={(sizes) => {
@@ -40,22 +46,31 @@ export const AppLayout = () => {
             const [_, __, rightWidth] = sizes;
             sideBarSetWidth(rightWidth);
           }
+        } else if (shouldShowActivityBarAlone) {
+          // When ActivityBar is shown alone, ensure width is saved
+          if (isLeftSidebar) {
+            const [leftWidth] = sizes;
+            sideBarSetWidth(leftWidth);
+          } else if (isRightSidebar) {
+            const [_, __, rightWidth] = sizes;
+            sideBarSetWidth(rightWidth);
+          }
         }
       }}
     >
-      {/* Left Sidebar - conditionally rendered */}
-      {sidebarVisible && isLeftSidebar && (
+      {/* Left Sidebar or standalone ActivityBar */}
+      {(sidebarVisible && isLeftSidebar) || (shouldShowActivityBarAlone && isLeftSidebar) ? (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={150}
-          maxSize={400}
-          preferredSize={sideBarGetWidth() || 270}
+          minSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 150}
+          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 400}
+          preferredSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : sideBarGetWidth() || 270}
           snap
           className="select-none"
         >
-          <SidebarContent />
+          <Sidebar />
         </ResizablePanel>
-      )}
+      ) : null}
 
       {/* Main Content + Bottom Pane */}
       <ResizablePanel priority={LayoutPriority["High"]}>
@@ -77,26 +92,24 @@ export const AppLayout = () => {
         </Resizable>
       </ResizablePanel>
 
-      {/* Right Sidebar - conditionally rendered */}
-      {sidebarVisible && isRightSidebar && (
+      {/* Right Sidebar or standalone ActivityBar */}
+      {(sidebarVisible && isRightSidebar) || (shouldShowActivityBarAlone && isRightSidebar) ? (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={150}
-          maxSize={400}
-          preferredSize={sideBarGetWidth() || 270}
+          minSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 150}
+          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 400}
+          preferredSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : sideBarGetWidth() || 270}
           snap
           className="select-none"
         >
-          <SidebarContent />
+          <Sidebar />
         </ResizablePanel>
-      )}
+      ) : null}
     </Resizable>
   );
 };
 
 // Common sidebar content that can appear in either the left or right sidebar
-const SidebarContent = () => <Sidebar />;
-
 const MainContent = () => (
   <ContentLayout className="relative flex h-full flex-col overflow-auto">
     <Suspense fallback={<div>Loading...</div>}>

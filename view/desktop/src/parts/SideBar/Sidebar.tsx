@@ -43,7 +43,18 @@ export const Sidebar = () => {
 
   const effectivePosition = getEffectivePosition();
   const isVisible = appLayoutState?.activeSidebar !== "none";
+  const isActivityBarInDefaultPosition = activityBarState?.position === "default";
 
+  // Show ActivityBar in default position even when sidebar is hidden
+  if (!isVisible && isActivityBarInDefaultPosition) {
+    return (
+      <div className="h-full">
+        <ActivityBar />
+      </div>
+    );
+  }
+
+  // If sidebar is hidden and ActivityBar is not in default position, hide everything
   if (!isVisible) {
     return null;
   }
