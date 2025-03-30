@@ -1,4 +1,4 @@
-import { ActivityBar } from "@/components/ActivityBar";
+import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
 import { ViewContainer } from "@/components/ViewContainer";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
@@ -45,16 +45,7 @@ export const Sidebar = () => {
   const isVisible = appLayoutState?.activeSidebar !== "none";
   const isActivityBarInDefaultPosition = activityBarState?.position === "default";
 
-  // Show ActivityBar in default position even when sidebar is hidden
-  if (!isVisible && isActivityBarInDefaultPosition) {
-    return (
-      <div className="h-full">
-        <ActivityBar />
-      </div>
-    );
-  }
-
-  // If sidebar is hidden and ActivityBar is not in default position, hide everything
+  // If sidebar is hidden, don't render anything in the Sidebar component
   if (!isVisible) {
     return null;
   }
@@ -65,6 +56,14 @@ export const Sidebar = () => {
       {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
     </>
   );
+
+  if (isActivityBarInDefaultPosition) {
+    return (
+      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+        <Content />
+      </div>
+    );
+  }
 
   if (effectivePosition === "hidden") {
     return (
@@ -77,7 +76,7 @@ export const Sidebar = () => {
   if (effectivePosition === "top") {
     return (
       <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
-        <ActivityBar />
+        <HorizontalActivityBar position="top" />
         <Content />
       </div>
     );
@@ -87,29 +86,25 @@ export const Sidebar = () => {
     return (
       <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
         <Content />
-        <ActivityBar />
+        <HorizontalActivityBar position="bottom" />
       </div>
     );
   }
 
+  // These cases should never happen due to isActivityBarInDefaultPosition check,
+  // but keeping them for completeness
   if (effectivePosition === "left") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full")}>
-        <ActivityBar />
-        <div className="w-full">
-          <Content />
-        </div>
+      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+        <Content />
       </div>
     );
   }
 
   if (effectivePosition === "right") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full")}>
-        <div className="w-[calc(100%-41px)]">
-          <Content />
-        </div>
-        <ActivityBar />
+      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+        <Content />
       </div>
     );
   }

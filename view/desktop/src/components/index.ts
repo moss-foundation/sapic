@@ -6,7 +6,7 @@ export * from "./Tree/Tree";
 export * from "./Input";
 export * from "./Button";
 export * from "./PageLoader";
-export * from "./ActivityBar";
+export * from "../parts/ActivityBar";
 export * from "../layouts/index";
 export * from "./ViewContainer";
 export * from "../parts/SideBar/Sidebar";

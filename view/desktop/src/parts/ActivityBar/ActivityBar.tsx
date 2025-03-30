@@ -14,7 +14,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import Icon, { Icons } from "./Icon";
+import { Icon, Icons } from "@/components/Icon";
 
 const positions = ["default", "top", "bottom", "hidden"] as const;
 
