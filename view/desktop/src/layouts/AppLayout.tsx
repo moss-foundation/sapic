@@ -23,20 +23,28 @@ export const AppLayout = () => {
   const bottomPaneSetHeight = useAppResizableLayoutStore((state) => state.bottomPane.setHeight);
   const bottomPaneGetHeight = useAppResizableLayoutStore((state) => state.bottomPane.getHeight);
 
+  // Determine if sidebar should be visible and which side it should be on
+  const sidebarVisible = appLayoutState?.activeSidebar !== "none";
+  const sidebarSide = appLayoutState?.sidebarSetting || "left";
+  const isLeftSidebar = sidebarSide === "left";
+  const isRightSidebar = sidebarSide === "right";
+
   return (
     <Resizable
       onDragEnd={(sizes) => {
-        if (appLayoutState?.activeSidebar === "left") {
-          const [leftWidth] = sizes;
-          sideBarSetWidth(leftWidth);
-        } else if (appLayoutState?.activeSidebar === "right") {
-          const [_, __, rightWidth] = sizes;
-          sideBarSetWidth(rightWidth);
+        if (sidebarVisible) {
+          if (isLeftSidebar) {
+            const [leftWidth] = sizes;
+            sideBarSetWidth(leftWidth);
+          } else if (isRightSidebar) {
+            const [_, __, rightWidth] = sizes;
+            sideBarSetWidth(rightWidth);
+          }
         }
       }}
     >
       {/* Left Sidebar - conditionally rendered */}
-      {appLayoutState?.activeSidebar === "left" && (
+      {sidebarVisible && isLeftSidebar && (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
           minSize={150}
@@ -70,7 +78,7 @@ export const AppLayout = () => {
       </ResizablePanel>
 
       {/* Right Sidebar - conditionally rendered */}
-      {appLayoutState?.activeSidebar === "right" && (
+      {sidebarVisible && isRightSidebar && (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
           minSize={150}

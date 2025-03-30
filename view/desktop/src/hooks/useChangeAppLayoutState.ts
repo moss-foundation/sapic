@@ -9,7 +9,7 @@ import {
 export const useChangeAppLayoutState = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<AppLayoutState, Error, AppLayoutState>({
+  return useMutation<AppLayoutState, Error, Partial<AppLayoutState>>({
     mutationKey: [USE_CHANGE_APP_LAYOUT_STATE_MUTATION_KEY],
     mutationFn: changeAppLayoutStateFn,
     onSuccess() {

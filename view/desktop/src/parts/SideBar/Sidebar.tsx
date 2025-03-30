@@ -16,7 +16,6 @@ export const Sidebar = () => {
   const { data: viewGroups } = useGetViewGroups();
   const { data: projectSessionState } = useGetProjectSessionState();
 
-  // Use a ref to preserve the lastActiveGroup when sidebar position changes
   const lastActiveGroupRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export const Sidebar = () => {
     }
   }, [projectSessionState?.lastActiveGroup]);
 
-  // When appLayoutState changes, ensure we're using the reference to preserve the active state
   const activeGroupId = projectSessionState?.lastActiveGroup || lastActiveGroupRef.current || "";
 
   const activeGroup = viewGroups?.viewGroups?.find((group) => group.id === activeGroupId);
@@ -40,10 +38,15 @@ export const Sidebar = () => {
       return activityBarState.position;
     }
 
-    return appLayoutState.activeSidebar === "right" ? "right" : "left";
+    return appLayoutState.sidebarSetting || "left";
   };
 
   const effectivePosition = getEffectivePosition();
+  const isVisible = appLayoutState?.activeSidebar !== "none";
+
+  if (!isVisible) {
+    return null;
+  }
 
   const Content = () => (
     <>

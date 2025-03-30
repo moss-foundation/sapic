@@ -13,19 +13,22 @@ export const HeadBar = () => {
   const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
   const { bottomPane } = useAppResizableLayoutStore((state) => state);
 
-  const toggleSidebar = (position: "left" | "right") => {
+  const toggleSidebar = () => {
     if (!appLayoutState) return;
 
-    if (appLayoutState.activeSidebar === position) {
-      changeAppLayoutState({
-        activeSidebar: "none",
-      });
-    } else {
-      changeAppLayoutState({
-        activeSidebar: position,
-      });
-    }
+    const sidebarType = appLayoutState.sidebarSetting || "left";
+
+    changeAppLayoutState({
+      activeSidebar: appLayoutState.activeSidebar === "none" ? sidebarType : "none",
+      sidebarSetting: sidebarType,
+    });
   };
+
+  // Determine which sidebar is currently set as the preferred one
+  const activeSidebarSetting = appLayoutState?.sidebarSetting || "left";
+  const isLeftSidebarMode = activeSidebarSetting === "left";
+
+  const isSidebarVisible = appLayoutState?.activeSidebar !== "none";
 
   return (
     <header
@@ -50,40 +53,61 @@ export const HeadBar = () => {
         }}
         data-tauri-drag-region
       >
-        <div className="z-50 flex items-center gap-3">
-          <div className="flex items-center">
-            {/* Left sidebar toggle button */}
-            <button
-              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
-              onClick={() => toggleSidebar("left")}
-            >
-              <Icon
-                icon={appLayoutState?.activeSidebar === "left" ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
-              />
-            </button>
+        <div className="flex w-full items-center gap-3">
+          <div className="flex shrink-0 items-center gap-1">
+            {/* First button - changes based on sidebar setting */}
+            {isLeftSidebarMode ? (
+              /* Left Sidebar Toggle */
+              <button
+                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                onClick={toggleSidebar}
+                title="Toggle Left Sidebar"
+              >
+                <Icon
+                  icon={isSidebarVisible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
+                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                />
+              </button>
+            ) : (
+              /* Bottom Panel Toggle */
+              <button
+                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
+                title="Toggle Bottom Panel"
+              >
+                <Icon
+                  icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                />
+              </button>
+            )}
 
-            {/* Bottom panel toggle button */}
-            <button
-              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
-              onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
-            >
-              <Icon
-                icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
-                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
-              />
-            </button>
-
-            {/* Right sidebar toggle button */}
-            <button
-              className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
-              onClick={() => toggleSidebar("right")}
-            >
-              <Icon
-                icon={appLayoutState?.activeSidebar === "right" ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-                className="size-[18px] text-[var(--moss-headBar-icon-color)]"
-              />
-            </button>
+            {/* Second button - changes based on sidebar setting */}
+            {isLeftSidebarMode ? (
+              /* Bottom Panel Toggle */
+              <button
+                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
+                title="Toggle Bottom Panel"
+              >
+                <Icon
+                  icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                />
+              </button>
+            ) : (
+              /* Right Sidebar Toggle */
+              <button
+                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                onClick={toggleSidebar}
+                title="Toggle Right Sidebar"
+              >
+                <Icon
+                  icon={isSidebarVisible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
+                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                />
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -77,22 +77,17 @@ export const Settings = () => {
     }
   };
 
-  const handleSideBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const position = event.target.value as "left" | "right" | "hidden";
+  const handleSidebarTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const sidebarType = event.target.value as "left" | "right";
 
-    if (position === "hidden") {
-      changeAppLayoutState({
-        activeSidebar: "none",
-      });
-    } else {
-      changeAppLayoutState({
-        activeSidebar: position as "left" | "right",
-      });
-    }
+    changeAppLayoutState({
+      sidebarSetting: sidebarType,
+      activeSidebar: appLayoutState?.activeSidebar !== "none" ? sidebarType : "none",
+    });
   };
 
   const handleBottomPaneVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const visibility = event.target.value === "opened";
+    const visibility = event.target.value === "visible";
     bottomPane.setVisibility(visibility);
   };
 
@@ -138,16 +133,33 @@ export const Settings = () => {
         </SettingsDropdown>
 
         <SettingsDropdown
-          id="sidebar-position-select"
-          label="SideBar Position"
-          value={appLayoutState?.activeSidebar === "none" ? "hidden" : appLayoutState?.activeSidebar || ""}
-          onChange={handleSideBarPositionChange}
+          id="sidebar-type-select"
+          label="Sidebar Type"
+          value={appLayoutState?.sidebarSetting || "left"}
+          onChange={handleSidebarTypeChange}
         >
           <option value="left" className="text-[var(--moss-select-text-outlined)]">
             Left
           </option>
           <option value="right" className="text-[var(--moss-select-text-outlined)]">
             Right
+          </option>
+        </SettingsDropdown>
+
+        <SettingsDropdown
+          id="sidebar-position-select"
+          label="Sidebar Visibility"
+          value={appLayoutState?.activeSidebar === "none" ? "hidden" : "visible"}
+          onChange={(event) => {
+            const isVisible = event.target.value === "visible";
+            changeAppLayoutState({
+              activeSidebar: isVisible ? appLayoutState?.sidebarSetting || "left" : "none",
+              sidebarSetting: appLayoutState?.sidebarSetting || "left",
+            });
+          }}
+        >
+          <option value="visible" className="text-[var(--moss-select-text-outlined)]">
+            Visible
           </option>
           <option value="hidden" className="text-[var(--moss-select-text-outlined)]">
             Hidden
@@ -156,12 +168,12 @@ export const Settings = () => {
 
         <SettingsDropdown
           id="bottom-pane-select"
-          label="Bottom Pane"
-          value={bottomPane.visibility ? "opened" : "hidden"}
+          label="Bottom Pane Visibility"
+          value={bottomPane.visibility ? "visible" : "hidden"}
           onChange={handleBottomPaneVisibilityChange}
         >
-          <option value="opened" className="text-[var(--moss-select-text-outlined)]">
-            Opened
+          <option value="visible" className="text-[var(--moss-select-text-outlined)]">
+            Visible
           </option>
           <option value="hidden" className="text-[var(--moss-select-text-outlined)]">
             Hidden
