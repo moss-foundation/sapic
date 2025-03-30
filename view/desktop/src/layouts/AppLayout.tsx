@@ -14,6 +14,18 @@ import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
 
+// Width and height constants
+const ACTIVITY_BAR_WIDTH = 41;
+const DEFAULT_SIDEBAR_WIDTH = 270;
+const MIN_SIDEBAR_WIDTH = 41;
+const MAX_SIDEBAR_WIDTH = 400;
+const MIN_BOTTOM_PANE_HEIGHT = 100;
+
+// Sidebar position constants
+const SIDEBAR_POSITION_LEFT = "left";
+const SIDEBAR_POSITION_RIGHT = "right";
+const SIDEBAR_POSITION_NONE = "none";
+
 export const AppLayout = () => {
   const { data: appLayoutState } = useGetAppLayoutState();
   const { data: activityBarState } = useGetActivityBarState();
@@ -26,10 +38,10 @@ export const AppLayout = () => {
   const bottomPaneGetHeight = useAppResizableLayoutStore((state) => state.bottomPane.getHeight);
 
   // Determine if sidebar should be visible and which side it should be on
-  const sidebarVisible = appLayoutState?.activeSidebar !== "none";
-  const sidebarSide = appLayoutState?.sidebarSetting || "left";
-  const isLeftSidebar = sidebarSide === "left";
-  const isRightSidebar = sidebarSide === "right";
+  const sidebarVisible = appLayoutState?.activeSidebar !== SIDEBAR_POSITION_NONE;
+  const sidebarSide = appLayoutState?.sidebarSetting || SIDEBAR_POSITION_LEFT;
+  const isLeftSidebar = sidebarSide === SIDEBAR_POSITION_LEFT;
+  const isRightSidebar = sidebarSide === SIDEBAR_POSITION_RIGHT;
 
   // Check if we should display ActivityBar independently
   // (sidebar hidden + ActivityBar in default position)
@@ -62,9 +74,13 @@ export const AppLayout = () => {
       {(sidebarVisible && isLeftSidebar) || (shouldShowActivityBarAlone && isLeftSidebar) ? (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 150}
-          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 400}
-          preferredSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : sideBarGetWidth() || 270}
+          minSize={shouldShowActivityBarAlone && !sidebarVisible ? ACTIVITY_BAR_WIDTH : MIN_SIDEBAR_WIDTH}
+          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? ACTIVITY_BAR_WIDTH : MAX_SIDEBAR_WIDTH}
+          preferredSize={
+            shouldShowActivityBarAlone && !sidebarVisible
+              ? ACTIVITY_BAR_WIDTH
+              : sideBarGetWidth() || DEFAULT_SIDEBAR_WIDTH
+          }
           snap
           className="select-none"
         >
@@ -85,7 +101,7 @@ export const AppLayout = () => {
             <MainContent />
           </ResizablePanel>
           {bottomPaneVisibility && (
-            <ResizablePanel preferredSize={bottomPaneGetHeight()} snap minSize={100}>
+            <ResizablePanel preferredSize={bottomPaneGetHeight()} snap minSize={MIN_BOTTOM_PANE_HEIGHT}>
               <BottomPaneContent />
             </ResizablePanel>
           )}
@@ -96,9 +112,13 @@ export const AppLayout = () => {
       {(sidebarVisible && isRightSidebar) || (shouldShowActivityBarAlone && isRightSidebar) ? (
         <ResizablePanel
           priority={LayoutPriority["Normal"]}
-          minSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 150}
-          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : 400}
-          preferredSize={shouldShowActivityBarAlone && !sidebarVisible ? 41 : sideBarGetWidth() || 270}
+          minSize={shouldShowActivityBarAlone && !sidebarVisible ? ACTIVITY_BAR_WIDTH : MIN_SIDEBAR_WIDTH}
+          maxSize={shouldShowActivityBarAlone && !sidebarVisible ? ACTIVITY_BAR_WIDTH : MAX_SIDEBAR_WIDTH}
+          preferredSize={
+            shouldShowActivityBarAlone && !sidebarVisible
+              ? ACTIVITY_BAR_WIDTH
+              : sideBarGetWidth() || DEFAULT_SIDEBAR_WIDTH
+          }
           snap
           className="select-none"
         >
