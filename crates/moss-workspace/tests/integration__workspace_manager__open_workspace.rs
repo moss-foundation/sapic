@@ -30,18 +30,19 @@ async fn open_workspace_success() {
         .unwrap();
 
     // Opening the first workspace
-    let result = workspace_manager
+    let open_workspace_result = workspace_manager
         .open_workspace(OpenWorkspaceInput {
             path: first_workspace_path.clone(),
         })
         .await;
-    assert!(result.is_ok());
+    assert!(open_workspace_result.is_ok());
 
     let current_workspace = workspace_manager.current_workspace().unwrap();
     assert_eq!(current_workspace.1.path(), first_workspace_path);
 
+    // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -49,15 +50,19 @@ async fn open_workspace_success() {
 async fn open_workspace_not_found() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
-    let result = workspace_manager
+    let open_workspace_result = workspace_manager
         .open_workspace(OpenWorkspaceInput {
             path: PathBuf::from("nonexistent/path"),
         })
         .await;
-    assert!(matches!(result, Err(OperationError::NotFound { .. })));
+    assert!(matches!(
+        open_workspace_result,
+        Err(OperationError::NotFound { .. })
+    ));
 
+    // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -74,15 +79,16 @@ async fn open_workspace_already_active() {
         .await
         .unwrap();
 
-    let result = workspace_manager
+    let open_workspace_result = workspace_manager
         .open_workspace(OpenWorkspaceInput {
             path: expected_path.clone(),
         })
         .await;
 
-    assert!(result.is_ok());
+    assert!(open_workspace_result.is_ok());
 
+    // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }

@@ -14,22 +14,22 @@ async fn rename_workspace_success() {
 
     let old_workspace_name = random_workspace_name();
     let old_path = workspaces_path.join(&old_workspace_name);
-    let output = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
         .unwrap();
-    let key = output.key;
+    let key = create_workspace_output.key;
 
     let new_workspace_name = random_workspace_name();
-    let result = workspace_manager
+    let rename_workspace_result = workspace_manager
         .rename_workspace(RenameWorkspaceInput {
             key,
             new_name: new_workspace_name.clone(),
         })
         .await;
-    assert!(result.is_ok());
+    assert!(rename_workspace_result.is_ok());
 
     // Check filesystem rename
     let expected_path = workspaces_path.join(&new_workspace_name);
@@ -42,10 +42,10 @@ async fn rename_workspace_success() {
     assert_eq!(current_workspace.1.path(), expected_path);
 
     // Check updating known_workspaces
-    let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-    assert_eq!(workspaces_list.0.len(), 1);
+    let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+    assert_eq!(list_workspaces_output.0.len(), 1);
     assert_eq!(
-        workspaces_list.0[0],
+        list_workspaces_output.0[0],
         WorkspaceInfo {
             path: expected_path.clone(),
             name: new_workspace_name
@@ -54,7 +54,7 @@ async fn rename_workspace_success() {
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -63,26 +63,30 @@ async fn rename_workspace_empty_name() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let key = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
-        .unwrap()
-        .key;
+        .unwrap();
+    let key = create_workspace_output.key;
 
     let new_workspace_name = "".to_string();
-    let result = workspace_manager
+    let rename_workspace_result = workspace_manager
         .rename_workspace(RenameWorkspaceInput {
             key,
             new_name: new_workspace_name.clone(),
         })
         .await;
 
-    assert!(matches!(result, Err(OperationError::Validation(_))));
+    assert!(matches!(
+        rename_workspace_result,
+        Err(OperationError::Validation(_))
+    ));
+
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -91,16 +95,16 @@ async fn rename_workspace_unchanged() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let key = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
-        .unwrap()
-        .key;
+        .unwrap();
+    let key = create_workspace_output.key;
 
     let new_workspace_name = old_workspace_name;
-    let result = workspace_manager
+    let rename_workspace_result = workspace_manager
         .rename_workspace(RenameWorkspaceInput {
             key,
             new_name: new_workspace_name.clone(),
@@ -108,7 +112,7 @@ async fn rename_workspace_unchanged() {
         .await;
 
     // This should be a no-op
-    assert!(result.is_ok());
+    assert!(rename_workspace_result.is_ok());
 
     let expected_path = workspaces_path.join(&new_workspace_name);
     // Check current workspace unchanged
@@ -129,7 +133,7 @@ async fn rename_workspace_unchanged() {
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -149,26 +153,29 @@ async fn rename_workspace_already_exists() {
 
     let new_workspace_name = random_workspace_name();
     // Create a workspace to test renaming
-    let key = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: new_workspace_name.clone(),
         })
         .await
-        .unwrap()
-        .key;
+        .unwrap();
+    let key = create_workspace_output.key;
 
     // Try renaming the new workspace to an existing workspace name
-    let result = workspace_manager
+    let rename_workspace_result = workspace_manager
         .rename_workspace(RenameWorkspaceInput {
             key,
             new_name: existing_workspace_name.clone(),
         })
         .await;
-    assert!(matches!(result, Err(OperationError::AlreadyExists { .. })));
+    assert!(matches!(
+        rename_workspace_result,
+        Err(OperationError::AlreadyExists { .. })
+    ));
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap();
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }
 
@@ -177,13 +184,13 @@ async fn rename_workspace_special_chars() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
-    let key = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
-        .unwrap()
-        .key;
+        .unwrap();
+    let key = create_workspace_output.key;
 
     for char in SPECIAL_CHARS {
         let new_workspace_name = format!("{workspace_name}{char}");
@@ -202,10 +209,10 @@ async fn rename_workspace_special_chars() {
         assert_eq!(current_workspace.1.path(), expected_path);
 
         // Checking updating known_workspaces
-        let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-        assert_eq!(workspaces_list.0.len(), 1);
+        let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+        assert_eq!(list_workspaces_output.0.len(), 1);
         assert_eq!(
-            workspaces_list.0[0],
+            list_workspaces_output.0[0],
             WorkspaceInfo {
                 path: expected_path.clone(),
                 name: new_workspace_name
@@ -215,6 +222,6 @@ async fn rename_workspace_special_chars() {
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspaces_path).unwrap()
+        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
     }
 }

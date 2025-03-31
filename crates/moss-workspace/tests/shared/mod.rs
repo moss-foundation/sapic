@@ -24,7 +24,9 @@ pub fn random_workspace_path() -> PathBuf {
 pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager) {
     let fs = Arc::new(RealFileSystem::new());
     let workspaces_path: PathBuf = random_workspaces_path();
-    std::fs::create_dir_all(workspaces_path.clone()).unwrap();
+    tokio::fs::create_dir_all(workspaces_path.clone())
+        .await
+        .unwrap();
     let workspace_manager = WorkspaceManager::new(fs, workspaces_path.clone()).unwrap();
     (workspaces_path, workspace_manager)
 }
