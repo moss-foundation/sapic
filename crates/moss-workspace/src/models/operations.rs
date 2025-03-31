@@ -33,13 +33,13 @@ pub struct CreateWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct CreateWorkspaceOutput {
-    pub key: u64
+    pub key: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    pub key: u64
+    pub key: u64,
 }
 
 #[derive(Debug, Validate, Deserialize, Serialize, TS)]
@@ -48,7 +48,7 @@ pub struct DeleteWorkspaceInput {
 pub struct RenameWorkspaceInput {
     pub key: u64,
     #[validate(length(min = 1))]
-    pub new_name: String
+    pub new_name: String,
 }
 
 // ------------------------------------------------------------------
@@ -79,6 +79,7 @@ pub struct CreateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub key: u64,
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -88,6 +89,13 @@ pub struct RenameCollectionInput {
     pub key: u64,
     #[validate(length(min = 1))]
     pub new_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct RenameCollectionOutput {
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

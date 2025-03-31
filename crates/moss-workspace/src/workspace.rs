@@ -4,7 +4,7 @@ use crate::leased_slotmap::LeasedSlotMap;
 use crate::models::entities::CollectionEntity;
 use crate::models::operations::{
     CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
-    RenameCollectionInput,
+    RenameCollectionInput, RenameCollectionOutput,
 };
 use crate::models::types::CollectionInfo;
 use crate::storage::state_db_manager::StateDbManagerImpl;
@@ -20,13 +20,14 @@ use moss_fs::{
 use slotmap::KeyData;
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
 use validator::{Validate, ValidationErrors};
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
+pub const ENVIRONMENTS_DIR: &str = "environments";
 
 slotmap::new_key_type! {
     pub struct CollectionKey;
@@ -93,8 +94,6 @@ impl std::fmt::Display for EnvironmentKey {
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<EnvironmentKey, EnvironmentSlot>;
 
-const ENVIRONMENTS_DIR: &str = "environments";
-
 pub struct Workspace {
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
@@ -125,6 +124,10 @@ impl Workspace {
             .environments
             .get_or_try_init(|| async move {
                 let mut environments = LeasedSlotMap::new();
+
+                if !self.path.join(ENVIRONMENTS_DIR).exists() {
+                    return Ok(RwLock::new(environments));
+                }
 
                 let mut envs_from_fs = HashMap::new();
                 let mut environment_dir =
@@ -187,11 +190,16 @@ impl Workspace {
             .clone()
             .ok_or(anyhow!("The state_db_manager has been dropped"))
     }
+
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
+
+                if !self.path.join(COLLECTIONS_DIR).exists() {
+                    return Ok(RwLock::new(collections));
+                }
 
                 // TODO: Support external collections with absolute path
                 for (relative_path, collection_data) in
@@ -235,169 +243,6 @@ impl Workspace {
 }
 
 impl Workspace {
-    pub async fn create_collection(
-        &self,
-        input: CreateCollectionInput,
-    ) -> Result<CreateCollectionOutput, OperationError> {
-        input.validate()?;
-
-        // workspace_path/encoded_collection_folder
-        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_directory_name(&input.name));
-        let full_path = self.path().join(&relative_path);
-
-        if full_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.name,
-                path: full_path.clone(),
-            });
-        }
-
-        let collections = self
-            .collections()
-            .await
-            .context("Failed to get collections")?;
-
-        let collection_store = self.state_db_manager()?.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
-
-        table.insert(
-            &mut txn,
-            relative_path.to_string_lossy().to_string(),
-            &CollectionEntity { order: None },
-        )?;
-
-        self.fs
-            .create_dir(&full_path)
-            .await
-            .context("Failed to create the collection directory")?;
-
-        let collection = Collection::new(full_path.clone(), self.fs.clone())?;
-        let metadata = CollectionMetadata {
-            name: input.name.clone(),
-            order: None,
-        };
-
-        let collection_key = {
-            let mut collections_lock = collections.write().await;
-            collections_lock.insert((collection, metadata))
-        };
-
-        txn.commit()?;
-
-        Ok(CreateCollectionOutput {
-            key: collection_key.as_u64(),
-        })
-    }
-
-    pub async fn rename_collection(
-        &self,
-        input: RenameCollectionInput,
-    ) -> Result<(), OperationError> {
-        input.validate()?;
-
-        let collections = self
-            .collections()
-            .await
-            .context("Failed to get collections")?;
-
-        let collection_key = CollectionKey::from(input.key);
-        let mut collections_lock = collections.write().await;
-        let mut lease_guard = collections_lock
-            .lease(collection_key)
-            .context("Failed to lease the collection")?;
-
-        let (collection, metadata) = &mut *lease_guard;
-
-        if metadata.name == input.new_name {
-            return Ok(());
-        }
-
-        let old_full_path = collection.path().to_owned();
-        if !old_full_path.exists() {
-            return Err(OperationError::NotFound {
-                name: metadata.name.clone(),
-                path: old_full_path,
-            });
-        }
-
-        // requests/request_name
-        let old_relative_path = old_full_path.strip_prefix(&self.path).unwrap();
-        let new_relative_path = old_relative_path
-            .parent()
-            .context("Parent directory not found")?
-            .join(encode_directory_name(&input.new_name));
-        let new_full_path = self.path.join(&new_relative_path);
-
-        if new_full_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.new_name,
-                path: new_full_path,
-            });
-        }
-
-        let collection_store = self.state_db_manager()?.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
-
-        let old_table_key = old_relative_path.to_string_lossy().to_string();
-        let new_table_key = new_relative_path.to_string_lossy().to_string();
-
-        table.remove(&mut txn, old_table_key)?;
-        table.insert(
-            &mut txn,
-            new_table_key,
-            &CollectionEntity {
-                order: metadata.order,
-            },
-        )?;
-
-        // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
-        // We need to temporarily drop it, and reload the database after that
-        collection
-            .reset(new_full_path)
-            .await
-            .context("Failed to reset the collection")?;
-
-        metadata.name = input.new_name.clone();
-
-        Ok(txn.commit()?)
-    }
-
-    pub async fn delete_collection(
-        &self,
-        input: DeleteCollectionInput,
-    ) -> Result<(), OperationError> {
-        let collections = self.collections().await?;
-        let collection_key = CollectionKey::from(input.key);
-
-        let mut collections_lock = collections.write().await;
-        let (collection, _) = collections_lock
-            .remove(collection_key)
-            .context("Failed to remove the collection")?;
-
-        let collection_path = collection.path().clone();
-        let collection_relative_path = collection_path.strip_prefix(&self.path).unwrap();
-        let collection_store = self.state_db_manager()?.collection_store();
-
-        // TODO: If any of the following operations fail, we should place the task
-        // in the dead queue and attempt the deletion later.
-
-        let (mut txn, table) = collection_store.begin_write()?;
-        let table_key = collection_relative_path.to_string_lossy().to_string();
-        table.remove(&mut txn, table_key)?;
-
-        // TODO: logging if the folder has already been removed from the filesystem
-        self.fs
-            .remove_dir(
-                &collection_path,
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await?;
-
-        Ok(txn.commit()?)
-    }
     pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
         let _ = self.state_db_manager.take();
 

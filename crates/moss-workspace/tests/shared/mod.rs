@@ -1,12 +1,11 @@
-use std::fs;
-use std::path::PathBuf;
-use std::sync::Arc;
 use moss_fs::RealFileSystem;
 use moss_workspace::workspace::Workspace;
 use moss_workspace::workspace_manager::WorkspaceManager;
+use std::fs;
+use std::path::PathBuf;
+use std::sync::Arc;
 
-pub const SPECIAL_CHARS: [&str; 10] =   [
-    // Test with various special characters
+pub const SPECIAL_CHARS: [&str; 10] = [
     ".",  // dot
     "/",  // path separator
     "\\", // backslash
@@ -28,11 +27,18 @@ pub fn random_collection_name() -> String {
 }
 
 pub fn random_workspaces_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data").join(random_string(10))
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join(random_string(10))
 }
 
 pub fn random_workspace_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests").join("data").join("workspaces").join(random_workspace_name())
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("workspaces")
+        .join(random_workspace_name())
 }
 pub fn random_string(length: usize) -> String {
     use rand::{distr::Alphanumeric, Rng};
@@ -43,7 +49,6 @@ pub fn random_string(length: usize) -> String {
         .map(char::from)
         .collect()
 }
-
 
 pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager) {
     let fs = Arc::new(RealFileSystem::new());

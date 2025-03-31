@@ -47,6 +47,7 @@ impl Workspace {
     pub(crate) async fn list_collections(&self) -> Result<Vec<CollectionInfo>> {
         let collections = self.collections().await?;
         let collections_lock = collections.read().await;
+
         let collections_info = collections_lock
             .iter()
             .filter(|(_, iter_slot)| !iter_slot.is_leased())
