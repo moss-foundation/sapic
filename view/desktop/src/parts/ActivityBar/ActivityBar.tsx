@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
+import { ActivityBarState } from "@/hooks/useActivityBarState";
 import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
@@ -187,6 +188,31 @@ export const ActivityBar = () => {
     (id: string) => {
       if (!projectSessionState) return;
 
+      const isAlreadyActive = projectSessionState.lastActiveGroup === id;
+
+      const isVerticalDefault =
+        activityBarState?.position === "default" && (effectivePosition === "left" || effectivePosition === "right");
+
+      if (isAlreadyActive && isVerticalDefault) {
+        if (appLayoutState?.activeSidebar !== "none") {
+          changeAppLayoutState({
+            activeSidebar: "none",
+            sidebarSetting: appLayoutState?.sidebarSetting || "left",
+          });
+        } else {
+          changeAppLayoutState({
+            activeSidebar: appLayoutState?.sidebarSetting || "left",
+            sidebarSetting: appLayoutState?.sidebarSetting || "left",
+          });
+          sideBarSetWidth(lastSidebarWidthRef.current);
+        }
+        return;
+      }
+
+      if (isAlreadyActive) {
+        return;
+      }
+
       changeProjectSessionState({
         ...projectSessionState,
         lastActiveGroup: id,
@@ -201,7 +227,15 @@ export const ActivityBar = () => {
         sideBarSetWidth(lastSidebarWidthRef.current);
       }
     },
-    [changeProjectSessionState, projectSessionState, appLayoutState, changeAppLayoutState, sideBarSetWidth]
+    [
+      changeProjectSessionState,
+      projectSessionState,
+      appLayoutState,
+      changeAppLayoutState,
+      sideBarSetWidth,
+      activityBarState,
+      effectivePosition,
+    ]
   );
 
   const getOrderedActivityBarGroups = () => {
@@ -246,6 +280,7 @@ export const ActivityBar = () => {
             orientation="horizontal"
             isDragActive={draggedItemId !== null}
             isBeingDragged={id === draggedItemId}
+            activityBarState={activityBarState}
           />
         ))}
       </div>
@@ -279,6 +314,7 @@ export const ActivityBar = () => {
           orientation="vertical"
           isDragActive={draggedItemId !== null}
           isBeingDragged={id === draggedItemId}
+          activityBarState={activityBarState}
         />
       ))}
     </div>
@@ -296,6 +332,7 @@ interface ActivityBarButtonProps extends ComponentPropsWithoutRef<"div"> {
   orientation?: "horizontal" | "vertical";
   isDragActive?: boolean;
   isBeingDragged?: boolean;
+  activityBarState?: ActivityBarState;
 }
 
 const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
@@ -311,6 +348,7 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
       orientation = "vertical",
       isDragActive = false,
       isBeingDragged = false,
+      activityBarState,
       ...props
     },
     ref
@@ -420,6 +458,11 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         data-draggable-type={draggableType}
         data-draggable-index={index}
         data-orientation={orientation}
+        title={
+          active && orientation === "vertical" && activityBarState?.position === "default"
+            ? "Click to toggle sidebar visibility"
+            : "Click to activate this view"
+        }
       >
         <Icon
           icon={icon}
