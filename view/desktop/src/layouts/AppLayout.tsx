@@ -5,6 +5,20 @@ import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import {
+  ACTIVITY_BAR_WIDTH,
+  DEFAULT_SIDEBAR_WIDTH,
+  MIN_SIDEBAR_WIDTH,
+  MAX_SIDEBAR_WIDTH,
+  MIN_BOTTOM_PANE_HEIGHT,
+  MIN_BOTTOM_PANE_DRAGGABLE_HEIGHT,
+  DEFAULT_BOTTOM_PANE_HEIGHT,
+  SIDEBAR_COLLAPSE_THRESHOLD,
+  BOTTOM_PANE_COLLAPSE_THRESHOLD,
+  SIDEBAR_POSITION_LEFT,
+  SIDEBAR_POSITION_RIGHT,
+  SIDEBAR_POSITION_NONE,
+} from "@/constants/layout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
@@ -12,21 +26,11 @@ import { Sidebar } from "@/components";
 import { VerticalActivityBar } from "@/parts/ActivityBar/VerticalActivityBar";
 import { SidebarEdgeHandler } from "@/parts/SideBar/SidebarEdgeHandler";
 import { BottomPane } from "@/parts/BottomPane/BottomPane";
+import { BottomPaneEdgeHandler } from "@/parts/BottomPane/BottomPaneEdgeHandler";
 
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
-
-const ACTIVITY_BAR_WIDTH = 41;
-const DEFAULT_SIDEBAR_WIDTH = 270;
-const MIN_SIDEBAR_WIDTH = 41;
-const MAX_SIDEBAR_WIDTH = 400;
-const MIN_BOTTOM_PANE_HEIGHT = 100;
-const SIDEBAR_COLLAPSE_THRESHOLD = 45;
-
-const SIDEBAR_POSITION_LEFT = "left";
-const SIDEBAR_POSITION_RIGHT = "right";
-const SIDEBAR_POSITION_NONE = "none";
 
 export const AppLayout = () => {
   const { data: appLayoutState } = useGetAppLayoutState();
@@ -42,6 +46,8 @@ export const AppLayout = () => {
   const bottomPaneVisibility = useAppResizableLayoutStore((state) => state.bottomPane.visibility);
   const bottomPaneSetHeight = useAppResizableLayoutStore((state) => state.bottomPane.setHeight);
   const bottomPaneGetHeight = useAppResizableLayoutStore((state) => state.bottomPane.getHeight);
+  const bottomPaneSetVisibility = useAppResizableLayoutStore((state) => state.bottomPane.setVisibility);
+  const lastBottomPaneHeightRef = useRef(bottomPaneGetHeight() || MIN_BOTTOM_PANE_HEIGHT);
 
   const sidebarVisible = appLayoutState?.activeSidebar !== SIDEBAR_POSITION_NONE;
   const sidebarSide = appLayoutState?.sidebarSetting || SIDEBAR_POSITION_LEFT;
@@ -58,6 +64,13 @@ export const AppLayout = () => {
     }
   }, [sidebarVisible, sideBarGetWidth]);
 
+  useEffect(() => {
+    // Only save the height if the pane is visible and the height is reasonable
+    if (bottomPaneVisibility && bottomPaneGetHeight() >= MIN_BOTTOM_PANE_HEIGHT) {
+      lastBottomPaneHeightRef.current = bottomPaneGetHeight();
+    }
+  }, [bottomPaneVisibility, bottomPaneGetHeight]);
+
   const handleShowSidebar = () => {
     changeAppLayoutState({
       activeSidebar: sidebarSide,
@@ -65,6 +78,11 @@ export const AppLayout = () => {
     });
 
     sideBarSetWidth(lastSidebarWidthRef.current);
+  };
+
+  const handleShowBottomPane = () => {
+    bottomPaneSetVisibility(true);
+    bottomPaneSetHeight(DEFAULT_BOTTOM_PANE_HEIGHT);
   };
 
   return (
@@ -141,13 +159,18 @@ export const AppLayout = () => {
                 setIsResizing(false);
                 const [_, bottomPaneHeight] = sizes;
                 bottomPaneSetHeight(bottomPaneHeight);
+
+                // If bottom pane is dragged to be very small, hide it
+                if (bottomPaneHeight < BOTTOM_PANE_COLLAPSE_THRESHOLD) {
+                  bottomPaneSetVisibility(false);
+                }
               }}
             >
               <ResizablePanel>
                 <MainContent />
               </ResizablePanel>
               {bottomPaneVisibility && (
-                <ResizablePanel preferredSize={bottomPaneGetHeight()} minSize={MIN_BOTTOM_PANE_HEIGHT}>
+                <ResizablePanel preferredSize={bottomPaneGetHeight()} minSize={MIN_BOTTOM_PANE_DRAGGABLE_HEIGHT}>
                   <BottomPane />
                 </ResizablePanel>
               )}
@@ -168,6 +191,9 @@ export const AppLayout = () => {
           ) : null}
         </Resizable>
       </div>
+
+      {/* Bottom pane edge handler - visible only when bottom pane is hidden */}
+      {!bottomPaneVisibility && <BottomPaneEdgeHandler onClick={handleShowBottomPane} />}
     </div>
   );
 };

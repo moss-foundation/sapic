@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { DEFAULT_BOTTOM_PANE_HEIGHT } from "@/constants/layout";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
@@ -31,7 +32,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     },
   },
   bottomPane: {
-    height: 333,
+    height: DEFAULT_BOTTOM_PANE_HEIGHT,
     visibility: true,
     setHeight: (newHeight) =>
       set((state) => ({

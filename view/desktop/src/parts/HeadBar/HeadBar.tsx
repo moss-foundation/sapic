@@ -4,6 +4,7 @@ import { Icon } from "@/components";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { DEFAULT_BOTTOM_PANE_HEIGHT } from "@/constants/layout";
 
 import { Controls } from "./Controls/Controls";
 
@@ -11,7 +12,9 @@ export const HeadBar = () => {
   const os = type();
   const { data: appLayoutState } = useGetAppLayoutState();
   const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
-  const { bottomPane } = useAppResizableLayoutStore((state) => state);
+  const bottomPaneVisibility = useAppResizableLayoutStore((state) => state.bottomPane.visibility);
+  const bottomPaneSetHeight = useAppResizableLayoutStore((state) => state.bottomPane.setHeight);
+  const bottomPaneSetVisibility = useAppResizableLayoutStore((state) => state.bottomPane.setVisibility);
 
   const toggleSidebar = () => {
     if (!appLayoutState) return;
@@ -23,6 +26,15 @@ export const HeadBar = () => {
       activeSidebar: isSidebarVisible ? "none" : currentSidebarSetting,
       sidebarSetting: currentSidebarSetting,
     });
+  };
+
+  const toggleBottomPane = () => {
+    if (!bottomPaneVisibility) {
+      bottomPaneSetVisibility(true);
+      bottomPaneSetHeight(DEFAULT_BOTTOM_PANE_HEIGHT);
+    } else {
+      bottomPaneSetVisibility(false);
+    }
   };
 
   // Determine which sidebar is currently set as the preferred one
@@ -73,11 +85,11 @@ export const HeadBar = () => {
               /* Bottom Panel Toggle */
               <button
                 className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
-                onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
+                onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
-                  icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
                   className="size-[18px] text-[var(--moss-headBar-icon-color)]"
                 />
               </button>
@@ -88,11 +100,11 @@ export const HeadBar = () => {
               /* Bottom Panel Toggle */
               <button
                 className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
-                onClick={() => bottomPane.setVisibility(!bottomPane.visibility)}
+                onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
-                  icon={bottomPane.visibility ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
                   className="size-[18px] text-[var(--moss-headBar-icon-color)]"
                 />
               </button>
