@@ -3,15 +3,15 @@ pub mod api;
 mod error;
 pub use error::*;
 
-use crate::{models::types::WorkspaceInfo, workspace::Workspace};
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_app::service::prelude::AppService;
-use moss_collection::leased_slotmap::LeasedSlotMap;
-use moss_common::leased_slotmap::ResourceKey;
+use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::FileSystem;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
+
+use crate::{models::types::WorkspaceInfo, workspace::Workspace};
 
 type WorkspaceInfoMap = LeasedSlotMap<ResourceKey, WorkspaceInfo>;
 

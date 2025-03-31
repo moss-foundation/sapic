@@ -2915,6 +2915,7 @@ dependencies = [
  "kdl",
  "miette",
  "moss_app",
+ "moss_common",
  "moss_db",
  "moss_fs",
  "parking_lot",

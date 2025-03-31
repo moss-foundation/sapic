@@ -6,11 +6,8 @@ pub use error::*;
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::StateDbManager;
 use anyhow::{anyhow, Context, Result};
-use moss_collection::{
-    collection::{Collection, CollectionMetadata},
-    leased_slotmap::LeasedSlotMap,
-};
-use moss_common::leased_slotmap::ResourceKey;
+use moss_collection::collection::{Collection, CollectionCache};
+use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_directory_name, FileSystem};
 use std::collections::HashMap;
@@ -21,7 +18,7 @@ use tokio::sync::{OnceCell, RwLock};
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
 
-type CollectionSlot = (Collection, CollectionMetadata);
+type CollectionSlot = (Collection, CollectionCache);
 type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 
 type EnvironmentSlot = (Environment, EnvironmentCache);
@@ -156,7 +153,7 @@ impl Workspace {
 
                     let full_path = self.path.join(relative_path);
                     let collection = Collection::new(full_path, self.fs.clone())?;
-                    let metadata = CollectionMetadata {
+                    let metadata = CollectionCache {
                         name,
                         order: collection_data.order,
                     };

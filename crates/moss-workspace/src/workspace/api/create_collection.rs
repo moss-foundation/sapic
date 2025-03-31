@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_collection::collection::{Collection, CollectionMetadata};
+use moss_collection::collection::{Collection, CollectionCache};
 use moss_fs::utils::encode_directory_name;
 use std::path::PathBuf;
 use validator::Validate;
@@ -50,7 +50,7 @@ impl Workspace {
             .context("Failed to create the collection directory")?;
 
         let collection = Collection::new(full_path.clone(), self.fs.clone())?;
-        let metadata = CollectionMetadata {
+        let metadata = CollectionCache {
             name: input.name.clone(),
             order: None,
         };

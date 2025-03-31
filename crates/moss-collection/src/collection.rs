@@ -1,25 +1,17 @@
+pub mod api;
+
+mod error;
+pub use error::*;
+
 use anyhow::{anyhow, Context as _, Result};
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use slotmap::KeyData;
-use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
-use thiserror::Error;
-use tokio::sync::{OnceCell, RwLock};
-use validator::{Validate, ValidationErrors};
+use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::utils::{decode_directory_name, encode_directory_name};
-use crate::models::operations::collection_operations::{DeleteRequestInput, ListRequestsOutput, RequestInfo};
+use moss_fs::{FileSystem, RenameOptions};
+use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
+use tokio::sync::{OnceCell, RwLock};
+
 use crate::{
-    kdl::http::HttpRequestFile,
-    leased_slotmap::LeasedSlotMap,
-    models::{
-        collection::{HttpRequestType, RequestType},
-        indexing::RequestEntry,
-        operations::collection_operations::{
-            CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
-            RenameRequestInput,
-        },
-        storage::RequestEntity,
-        types::request_types::HttpMethod,
-    },
+    models::{collection::RequestType, indexing::RequestEntry},
     storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
 };
 
@@ -27,45 +19,8 @@ const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
 const REQUEST_FILE_EXT: &'static str = "sapic";
 
-slotmap::new_key_type! {
-    pub struct RequestKey;
-}
-
-impl From<u64> for RequestKey {
-    fn from(value: u64) -> Self {
-        Self(KeyData::from_ffi(value))
-    }
-}
-
-impl RequestKey {
-    pub fn as_u64(self) -> u64 {
-        self.0.as_ffi()
-    }
-}
-
-impl std::fmt::Display for RequestKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_u64())
-    }
-}
-
-#[derive(Error, Debug)]
-pub enum OperationError {
-    #[error("validation error: {0}")]
-    Validation(#[from] ValidationErrors),
-
-    #[error("request {name} not found at {path}")]
-    NotFound { name: String, path: PathBuf },
-
-    #[error("request {name} already exists at {path}")]
-    AlreadyExists { name: String, path: PathBuf },
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
 #[derive(Clone, Debug)]
-pub struct CollectionMetadata {
+pub struct CollectionCache {
     pub name: String,
     pub order: Option<usize>,
 }
@@ -95,9 +50,7 @@ impl CollectionRequestData {
     }
 }
 
-type RequestMap = LeasedSlotMap<RequestKey, CollectionRequestData>;
-
-
+type RequestMap = LeasedSlotMap<ResourceKey, CollectionRequestData>;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
@@ -259,249 +212,6 @@ impl Collection {
 
         Ok(())
     }
-
-    pub async fn list_requests(&self) -> Result<ListRequestsOutput> {
-        let requests = self.requests().await?;
-        let requests_lock = requests.read().await;
-
-        Ok(ListRequestsOutput(
-            requests_lock
-                .iter()
-                .filter(|(_, iter_slot)| !iter_slot.is_leased())
-                .map(|(key, iter_slot)| {
-                    let request_data = iter_slot.value();
-                    RequestInfo {
-                        key: key.as_u64(),
-                        name: request_data.name.to_string(),
-                        request_dir_relative_path: request_data.request_dir_relative_path.clone(),
-                        order: request_data.order,
-                        typ: request_data.typ.clone(),
-                    }
-                })
-                .collect()
-        ))
-    }
-
-    pub async fn create_request(&self, input: CreateRequestInput) -> Result<CreateRequestOutput, OperationError> {
-        input.validate()?;
-
-        let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
-
-        let request_dir_relative_path = input
-            .relative_path
-            .unwrap_or_default()
-            .join(&request_dir_name);
-
-        let request_dir_full_path = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&request_dir_relative_path);
-
-        if request_dir_full_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.name,
-                path: request_dir_full_path,
-            });
-        }
-
-        let (request_file_content, request_file_extension, request_type) = match input.payload {
-            Some(CreateRequestProtocolSpecificPayload::Http {
-                method,
-                query_params,
-                path_params,
-                headers,
-                body,
-            }) => {
-                let request_file = HttpRequestFile::new(
-                    input.url.as_deref(),
-                    query_params,
-                    path_params,
-                    headers,
-                    body,
-                )
-                .to_string();
-
-                // FIXME:
-                let request_file_extension = match method {
-                    HttpMethod::Post => "post".to_string(),
-                    HttpMethod::Get => "get".to_string(),
-                    HttpMethod::Put => "put".to_string(),
-                    HttpMethod::Delete => "del".to_string(),
-                };
-
-                (request_file.to_string(), request_file_extension, method.into())
-            }
-
-            // FIXME:
-            None => ("".to_string(), "get".to_string(), RequestType::default()),
-        };
-
-        let request_store = self.state_db_manager()?.request_store();
-        let requests = self.requests().await?;
-
-        let (mut txn, table) = request_store.begin_write()?;
-        table.insert(
-            &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestEntity { order: None },
-        )?;
-
-        // For consistency we are encoding both the directory and the request file
-        let request_file_name = format!("{}.{}.sapic", encode_directory_name(&input.name), request_file_extension);
-        self.fs
-            .create_dir(&request_dir_full_path)
-            .await
-            .context("Failed to create the collection directory")?;
-        self.fs
-            .create_file_with(
-                &request_dir_full_path.join(request_file_name),
-                request_file_content,
-                CreateOptions::default(),
-            )
-            .await
-            .context("Failed to create the request file")?;
-
-        txn.commit()?;
-
-        let request_key = {
-            let mut requests_lock = requests.write().await;
-            requests_lock.insert(CollectionRequestData {
-                name: input.name,
-                request_dir_relative_path: request_dir_relative_path.clone(),
-                order: None,
-                typ: request_type,
-            })
-        };
-
-        Ok(CreateRequestOutput {
-            key: request_key.as_u64(),
-        })
-    }
-
-    pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
-        input.validate()?;
-
-        let requests = self.requests().await?;
-        let mut requests_lock = requests.write().await;
-
-        let request_key = RequestKey::from(input.key);
-        let mut lease_request_data = requests_lock.lease(request_key)?;
-
-        if lease_request_data.name == input.new_name {
-            return Ok(());
-        }
-
-        let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
-        let request_dir_path_old = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&request_dir_relative_path_old);
-        if !request_dir_path_old.exists() {
-            return Err(OperationError::NotFound {
-                name: lease_request_data.name.clone(),
-                path: request_dir_path_old
-            })
-        }
-
-        let request_dir_relative_path_new = lease_request_data
-            .request_dir_relative_path
-            .parent()
-            .context("Failed to get the parent directory")?
-            .join(format!("{}.request", encode_directory_name(&input.new_name)));
-
-        // Rename the request directory
-        let request_dir_path_new = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&request_dir_relative_path_new);
-        if request_dir_path_new.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.new_name,
-                path: request_dir_path_new
-            })
-        }
-
-        self.fs
-            .rename(
-                &request_dir_path_old,
-                &request_dir_path_new,
-                RenameOptions::default(),
-            )
-            .await
-            .context("Failed to rename the request directory")?;
-
-        // Rename the request file
-        let request_file_path_old =
-            request_dir_path_new.join(&lease_request_data.request_file_name());
-        let request_file_name_new = request_file_name(&input.new_name, &lease_request_data.typ);
-        let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
-        self.fs
-            .rename(
-                &request_file_path_old,
-                &request_file_path_new,
-                RenameOptions::default(),
-            )
-            .await
-            .context("Failed to rename the request file")?;
-
-        let request_store = self.state_db_manager()?.request_store();
-        let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
-            &mut txn,
-            request_dir_relative_path_old.to_string_lossy().to_string(),
-        )?;
-
-        table.insert(
-            &mut txn,
-            request_dir_relative_path_new.to_string_lossy().to_string(),
-            &RequestEntity {
-                order: lease_request_data.order,
-            },
-        )?;
-
-        lease_request_data.name = input.new_name;
-        lease_request_data.request_dir_relative_path = request_dir_relative_path_new.clone();
-        Ok(txn.commit()?)
-    }
-
-    pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
-        let requests = self.requests().await?;
-        let mut requests_lock = requests.write().await;
-
-        let request_key = RequestKey::from(input.key);
-        let mut request_data = requests_lock.remove(request_key)?;
-        std::mem::drop(requests_lock);
-
-        let request_dir_relative_path = request_data.request_dir_relative_path.clone();
-        let request_dir_path = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&request_dir_relative_path);
-
-        // TODO: Add logging when the request was already deleted from the fs?
-        // TODO: Self-healing process
-        self.fs
-            .remove_dir(
-                &request_dir_path,
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await
-            .context("Failed to remove the request directory")?;
-
-        let request_store = self.state_db_manager()?.request_store();
-        let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
-            &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-        )?;
-
-        txn.commit()?;
-
-        Ok(())
-    }
 }
 
 fn is_sapic_file(file_path: &PathBuf) -> bool {
@@ -523,9 +233,10 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
     let mut segments = file_name_str.split('.');
 
-    let name = decode_directory_name(segments
-        .next()
-        .ok_or_else(|| anyhow!("failed to retrieve the request name"))?
+    let name = decode_directory_name(
+        segments
+            .next()
+            .ok_or_else(|| anyhow!("failed to retrieve the request name"))?,
     )?;
 
     let file_type_str = segments

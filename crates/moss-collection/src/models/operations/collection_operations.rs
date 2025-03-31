@@ -1,11 +1,12 @@
+use crate::models::collection::RequestType;
 use crate::models::types::request_types::{
     HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody,
 };
+use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
-use crate::models::collection::RequestType;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -38,14 +39,14 @@ pub struct CreateRequestInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct CreateRequestOutput {
-    pub key: u64,
+    pub key: ResourceKey,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct RenameRequestInput {
-    pub key: u64,
+    pub key: ResourceKey,
     #[validate(length(min = 1))]
     pub new_name: String,
 }
@@ -54,7 +55,7 @@ pub struct RenameRequestInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct DeleteRequestInput {
-    pub key: u64,
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -65,10 +66,9 @@ pub struct ListRequestsOutput(pub Vec<RequestInfo>);
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations/collection.ts")]
 pub struct RequestInfo {
-    // FIXME: What fields should this contain?
-    pub key: u64,
+    pub key: ResourceKey,
     pub name: String,
     pub request_dir_relative_path: PathBuf,
     pub order: Option<usize>,
-    pub typ: RequestType
+    pub typ: RequestType,
 }
