@@ -1,0 +1,26 @@
+{
+    "name": "@repo/moss-common",
+    "exports": {
+      ".": "./index.ts"
+    },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
+    },
+    "devDependencies": {
+      "@repo/typescript-config": "workspace:*"
+    },
+    "dependencies": {
+      "typescript": "^5.7.2"
+    },
+    "tsImportRules": {
+      "bindings/operations.ts": {
+        "@repo/moss-environment": {
+          "types": [
+            "VariableInfo"
+          ],
+          "is_type_import": true
+        }
+      }
+    }
+  }

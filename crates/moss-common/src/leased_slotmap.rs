@@ -1,82 +1,15 @@
+mod recourse_key;
+pub use recourse_key::*;
+
+mod lease_guard;
+pub use lease_guard::*;
+
+mod iterator;
+pub use iterator::*;
+
 use anyhow::{anyhow, Context, Result};
-use slotmap::basic::Iter;
 use slotmap::SlotMap;
 use std::collections::HashSet;
-use std::ops::{Deref, DerefMut};
-
-pub struct LeaseGuard<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    key: K,
-    slotmap: &'a mut LeasedSlotMap<K, V>,
-}
-
-impl<'a, K, V> Drop for LeaseGuard<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    fn drop(&mut self) {
-        self.slotmap.leased_keys.remove(&self.key);
-    }
-}
-
-impl<'a, K, V> Deref for LeaseGuard<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    type Target = V;
-
-    fn deref(&self) -> &Self::Target {
-        &self.slotmap.inner[self.key]
-    }
-}
-
-impl<'a, K, V> DerefMut for LeaseGuard<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.slotmap.inner[self.key]
-    }
-}
-
-pub struct IterSlot<'a, V> {
-    value: &'a V,
-    is_leased: bool,
-}
-
-impl<'a, V> IterSlot<'a, V> {
-    pub fn value(&self) -> &'a V {
-        self.value
-    }
-
-    pub fn is_leased(&self) -> bool {
-        self.is_leased
-    }
-}
-
-pub struct LeasedSlotMapIter<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    iter: Iter<'a, K, V>,
-    leased_keys: &'a HashSet<K>,
-}
-
-impl<'a, K, V> Iterator for LeasedSlotMapIter<'a, K, V>
-where
-    K: slotmap::Key,
-{
-    type Item = (K, IterSlot<'a, V>);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(|(key, value)| {
-            let is_leased = self.leased_keys.contains(&key);
-            (key, IterSlot { value, is_leased })
-        })
-    }
-}
 
 pub struct LeasedSlotMap<K, V>
 where

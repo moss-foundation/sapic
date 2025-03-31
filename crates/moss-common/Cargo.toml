@@ -1,0 +1,10 @@
+[package]
+name = "moss_common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+slotmap.workspace = true
+anyhow.workspace = true
+serde = { workspace = true, features = ["derive"] }
+ts-rs.workspace = true
