@@ -14,7 +14,7 @@ impl Workspace {
         let environments = self.environments().await?;
         let environments_lock = environments.read().await;
 
-        let (environment, environment_cache) = environments_lock.read(input.key)?;
+        let (environment, environment_cache) = environments_lock.get(input.key)?;
 
         let variables_lock = environment.variables().read().await;
         let variables: Vec<VariableInfo> = variables_lock

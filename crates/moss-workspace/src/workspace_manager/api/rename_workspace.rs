@@ -22,7 +22,7 @@ impl WorkspaceManager {
 
         let mut workspaces_lock = workspaces.write().await;
         let workspace_info = workspaces_lock
-            .read_mut(input.key)
+            .get_mut(input.key)
             .context("Failed to lease the workspace")?;
 
         if workspace_info.name == input.new_name {

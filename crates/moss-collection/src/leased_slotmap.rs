@@ -119,7 +119,7 @@ where
         }
     }
 
-    pub fn read(&self, key: K) -> Result<&V> {
+    pub fn get(&self, key: K) -> Result<&V> {
         if self.leased_keys.contains(&key) {
             Err(anyhow!("Slot is currently leased"))
         } else {
@@ -127,7 +127,7 @@ where
         }
     }
 
-    pub fn read_mut(&mut self, key: K) -> Result<&mut V> {
+    pub fn get_mut(&mut self, key: K) -> Result<&mut V> {
         if self.leased_keys.contains(&key) {
             Err(anyhow!("Slot is currently leased"))
         } else {
