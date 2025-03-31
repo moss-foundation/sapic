@@ -25,5 +25,8 @@ html5ever.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
 slotmap.workspace = true
-rand.workspace = true
 validator = { workspace = true, features = ["derive"] }
+
+
+[dev-dependencies]
+moss_testutils.workspace = true

@@ -1,13 +1,15 @@
-use std::path::PathBuf;
-use moss_collection::collection::OperationError;
-use moss_collection::models::collection::{HttpRequestType, RequestType};
-use moss_collection::models::operations::collection_operations::{CreateRequestInput, CreateRequestProtocolSpecificPayload, RequestInfo};
-use moss_collection::models::types::request_types::HttpMethod;
-use moss_fs::utils::encode_directory_name;
-use crate::shared::{random_collection_name, random_request_name, request_relative_path, request_folder_name, set_up_test_collection, SPECIAL_CHARS};
-
 mod shared;
 
+use moss_collection::collection::OperationError;
+use moss_collection::models::collection::{HttpRequestType, RequestType};
+use moss_collection::models::operations::collection_operations::{
+    CreateRequestInput, CreateRequestProtocolSpecificPayload, RequestInfo,
+};
+use moss_collection::models::types::request_types::HttpMethod;
+use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
+use std::path::PathBuf;
+
+use crate::shared::{request_folder_name, request_relative_path, set_up_test_collection};
 
 #[tokio::test]
 async fn create_request_success() {
@@ -15,32 +17,37 @@ async fn create_request_success() {
 
     let request_name = random_request_name();
     let expected_path = collection_path.join(request_relative_path(&request_name, None));
-    let output = collection.create_request(
-        CreateRequestInput {
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap();
+        })
+        .await;
 
+    assert!(create_request_result.is_ok());
     assert!(expected_path.exists());
 
+    let create_request_output = create_request_result.unwrap();
+
     // Check updating requests
-    let requests = collection.list_requests().await.unwrap();
-    dbg!(&requests.0[0]);
-    assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0], RequestInfo {
-        key: output.key,
-        name: request_name.to_string(),
-        request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
-        order: None,
-        typ: Default::default(),
-    });
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestInfo {
+            key: create_request_output.key,
+            name: request_name.to_string(),
+            request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
+            order: None,
+            typ: Default::default(),
+        }
+    );
 
     // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -49,20 +56,23 @@ async fn create_request_empty_name() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = "".to_string();
-    let result = collection.create_request(
-        CreateRequestInput {
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await;
+        })
+        .await;
 
-    assert!(matches!(result, Err(OperationError::Validation(_))));
+    assert!(matches!(
+        create_request_result,
+        Err(OperationError::Validation(_))
+    ));
 
     // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -71,28 +81,33 @@ async fn create_request_already_exists() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    collection.create_request(
-        CreateRequestInput {
+    collection
+        .create_request(CreateRequestInput {
             name: request_name.clone(),
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap();
+        })
+        .await
+        .unwrap();
 
-    let result = collection.create_request(
-        CreateRequestInput {
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
             name: request_name.clone(),
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await;
+        })
+        .await;
 
-    assert!(matches!(result, Err(OperationError::AlreadyExists {..})));
+    assert!(matches!(
+        create_request_result,
+        Err(OperationError::AlreadyExists { .. })
+    ));
+
     // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -100,39 +115,42 @@ async fn create_request_already_exists() {
 async fn create_request_special_chars() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let request_name_list =
-        SPECIAL_CHARS
-            .into_iter()
-            .map(|s| format!("{}{s}", random_request_name()))
-            .collect::<Vec<String>>();
+    let request_name_list = SPECIAL_CHARS
+        .into_iter()
+        .map(|s| format!("{}{s}", random_request_name()))
+        .collect::<Vec<String>>();
 
     for name in request_name_list {
         let expected_path = collection_path.join(request_relative_path(&name, None));
         dbg!(&expected_path);
 
-        let output = collection.create_request(
-            CreateRequestInput {
+        let create_request_result = collection
+            .create_request(CreateRequestInput {
                 name: name.clone(),
                 relative_path: None,
                 url: None,
                 payload: None,
-            }
-        ).await.unwrap();
-        
+            })
+            .await;
+
+        assert!(create_request_result.is_ok());
         assert!(expected_path.exists());
-        
+
+        let create_request_output = create_request_result.unwrap();
+
         // Check updating requests
-        let requests = collection.list_requests().await.unwrap();
-        assert!(requests.0.iter().any(|info| info == &RequestInfo {
-            key: output.key,
-            name: name.clone(),
-            request_dir_relative_path: PathBuf::from(request_folder_name(&name)),
-            order: None,
-            typ: Default::default(),
-        }));
+        let list_requests_output = collection.list_requests().await.unwrap();
+        assert!(list_requests_output.0.iter().any(|info| info
+            == &RequestInfo {
+                key: create_request_output.key,
+                name: name.clone(),
+                request_dir_relative_path: PathBuf::from(request_folder_name(&name)),
+                order: None,
+                typ: Default::default(),
+            }));
     }
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -141,31 +159,40 @@ async fn create_request_with_relative_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let expected_path = collection_path.join(request_relative_path(&request_name, Some("relative")));
-    let output = collection.create_request(
-        CreateRequestInput {
+    let expected_path =
+        collection_path.join(request_relative_path(&request_name, Some("relative")));
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
             name: request_name.clone(),
             relative_path: Some(PathBuf::from("relative")),
             url: None,
             payload: None,
-        }
-    ).await.unwrap();
+        })
+        .await;
 
+    assert!(create_request_result.is_ok());
     assert!(expected_path.exists());
+
+    let create_request_output = create_request_result.unwrap();
+
     // Check updating requests
-    let requests = collection.list_requests().await.unwrap();
-    assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0], RequestInfo {
-        key: output.key,
-        name: request_name.clone(),
-        request_dir_relative_path: PathBuf::from("relative").join(request_folder_name(&request_name)),
-        order: None,
-        typ: Default::default(),
-    });
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestInfo {
+            key: create_request_output.key,
+            name: request_name.clone(),
+            request_dir_relative_path: PathBuf::from("relative")
+                .join(request_folder_name(&request_name)),
+            order: None,
+            typ: Default::default(),
+        }
+    );
 
     // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -175,8 +202,8 @@ async fn create_request_with_payload() {
     let request_name = random_request_name();
     let expected_path = collection_path.join(request_relative_path(&request_name, None));
 
-    let output = collection.create_request(
-        CreateRequestInput {
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
             name: request_name.clone(),
             relative_path: None,
             url: None,
@@ -187,21 +214,28 @@ async fn create_request_with_payload() {
                 headers: vec![],
                 body: None,
             }),
-        }
-    ).await.unwrap();
-    assert!(expected_path.exists());
-    let requests = collection.list_requests().await.unwrap();
+        })
+        .await;
 
-    assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0], RequestInfo {
-        key: output.key,
-        name: request_name.clone(),
-        request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
-        order: None,
-        typ: RequestType::Http(HttpRequestType::Post),
-    });
+    assert!(create_request_result.is_ok());
+    assert!(expected_path.exists());
+
+    let create_request_output = create_request_result.unwrap();
+    let list_requests_output = collection.list_requests().await.unwrap();
+
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestInfo {
+            key: create_request_output.key,
+            name: request_name.clone(),
+            request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
+            order: None,
+            typ: RequestType::Http(HttpRequestType::Post),
+        }
+    );
 
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
