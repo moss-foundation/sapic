@@ -31,6 +31,7 @@
   --moss-activityBar-indicator-color: #0065ff;
   --moss-toolBar-background: rgba(224, 224, 224, 1);
   --moss-statusBar-background: #274323;
+  --moss-bottomPane-background: white;
 
   /* Window Controls */
   --moss-button-icon-color: black;
