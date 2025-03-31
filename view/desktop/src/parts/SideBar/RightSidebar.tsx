@@ -1,44 +1,20 @@
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
 import { ViewContainer } from "@/components/ViewContainer";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useGetViewGroups } from "@/hooks/useGetViewGroups";
-import { cn } from "@/utils";
-import { useEffect, useRef, ReactNode } from "react";
+import { useEffect, useRef } from "react";
 
 import SidebarHeader from "./SidebarHeader";
+import { BaseSidebar } from "./Sidebar";
 
-export interface BaseSidebarProps {
+interface RightSidebarProps {
   isResizing?: boolean;
-  position?: "left" | "right";
-  className?: string;
-  children?: ReactNode;
 }
 
-export const BaseSidebar = ({ isResizing = false, position = "left", className, children }: BaseSidebarProps) => {
-  const { data: appLayoutState } = useGetAppLayoutState();
-
-  const sidebarSetting = appLayoutState?.sidebarSetting || "left";
-  const activeSidebar = appLayoutState?.activeSidebar || "none";
-  const isVisible =
-    activeSidebar !== "none" &&
-    ((position === "left" && sidebarSetting === "left" && activeSidebar === "left") ||
-      (position === "right" && sidebarSetting === "right" && activeSidebar === "right"));
-
-  const sidebarClasses = cn(
-    "background-(--moss-sideBar-background) flex h-full flex-col",
-    // Only apply transitions when not actively resizing
-    !isResizing && "transition-[width] duration-200",
-    !isVisible && "w-0 overflow-hidden",
-    className
-  );
-
-  return <div className={sidebarClasses}>{children}</div>;
-};
-
-export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
+export const RightSidebar = ({ isResizing = false }: RightSidebarProps) => {
   const { data: activityBarState } = useGetActivityBarState();
   const { data: appLayoutState } = useGetAppLayoutState();
   const { data: viewGroups } = useGetViewGroups();
@@ -79,9 +55,10 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
     </>
   );
 
+  // Using the BaseSidebar component with position="right"
   if (isActivityBarInDefaultPosition) {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar isResizing={isResizing} position="right">
         <Content />
       </BaseSidebar>
     );
@@ -89,7 +66,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "hidden") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar isResizing={isResizing} position="right">
         <Content />
       </BaseSidebar>
     );
@@ -97,7 +74,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "top") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar isResizing={isResizing} position="right">
         <HorizontalActivityBar position="top" />
         <Content />
       </BaseSidebar>
@@ -106,18 +83,19 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "bottom") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar isResizing={isResizing} position="right">
         <Content />
         <HorizontalActivityBar position="bottom" />
       </BaseSidebar>
     );
   }
 
+  // Default case
   return (
-    <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+    <BaseSidebar isResizing={isResizing} position="right">
       <Content />
     </BaseSidebar>
   );
 };
 
-export default Sidebar;
+export default RightSidebar;
