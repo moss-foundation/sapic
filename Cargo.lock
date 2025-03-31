@@ -3093,6 +3093,9 @@ dependencies = [
 [[package]]
 name = "moss_testutils"
 version = "0.1.0"
+dependencies = [
+ "rand 0.9.0",
+]
 
 [[package]]
 name = "moss_text"
@@ -3140,7 +3143,7 @@ dependencies = [
  "moss_db",
  "moss_environment",
  "moss_fs",
- "rand 0.9.0",
+ "moss_testutils",
  "serde",
  "slotmap",
  "thiserror 2.0.12",

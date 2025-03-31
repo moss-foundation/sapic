@@ -44,6 +44,7 @@ moss_nls = { path = "crates/moss-nls" }
 moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
+moss_testutils = { path = "crates/moss-testutils" }
 
 redb = "2.4.0"
 

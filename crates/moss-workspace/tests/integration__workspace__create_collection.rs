@@ -1,9 +1,11 @@
-use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
+mod shared;
+
+use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 use moss_workspace::models::types::CollectionInfo;
 use moss_workspace::workspace::OperationError;
 
-mod shared;
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn create_collection_success() {

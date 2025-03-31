@@ -1,30 +1,10 @@
 use moss_fs::RealFileSystem;
+use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workspace::workspace::Workspace;
 use moss_workspace::workspace_manager::WorkspaceManager;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
-
-pub const SPECIAL_CHARS: [&str; 10] = [
-    ".",  // dot
-    "/",  // path separator
-    "\\", // backslash
-    ":",  // colon
-    "*",  // wildcard
-    "?",  // question mark
-    "\"", // quotes
-    "<",  // angle brackets
-    ">",  // angle brackets
-    "|",  // pipe
-];
-
-pub fn random_workspace_name() -> String {
-    format!("Test_{}_Workspace", random_string(10))
-}
-
-pub fn random_collection_name() -> String {
-    format!("Test_{}_Collection", random_string(10))
-}
 
 pub fn random_workspaces_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -39,15 +19,6 @@ pub fn random_workspace_path() -> PathBuf {
         .join("data")
         .join("workspaces")
         .join(random_workspace_name())
-}
-pub fn random_string(length: usize) -> String {
-    use rand::{distr::Alphanumeric, Rng};
-
-    rand::rng()
-        .sample_iter(Alphanumeric)
-        .take(length)
-        .map(char::from)
-        .collect()
 }
 
 pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager) {

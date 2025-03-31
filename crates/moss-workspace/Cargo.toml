@@ -22,4 +22,4 @@ slotmap.workspace = true
 validator = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
-rand.workspace = true
+moss_testutils.workspace = true

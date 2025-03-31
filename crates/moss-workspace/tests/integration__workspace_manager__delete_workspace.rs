@@ -1,9 +1,9 @@
-use moss_workspace::models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput};
-
-use crate::shared::{random_workspace_name, setup_test_workspace_manager};
-
 mod shared;
 
+use moss_testutils::random_name::random_workspace_name;
+use moss_workspace::models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput};
+
+use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn delete_workspace_success() {
@@ -14,13 +14,13 @@ async fn delete_workspace_success() {
     let output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
-        }).await.unwrap();
+        })
+        .await
+        .unwrap();
     let key = output.key;
-    let result = workspace_manager.delete_workspace(
-        DeleteWorkspaceInput {
-            key
-        }
-    ).await;
+    let result = workspace_manager
+        .delete_workspace(DeleteWorkspaceInput { key })
+        .await;
     assert!(result.is_ok());
 
     // Check folder is removed
@@ -50,20 +50,19 @@ async fn delete_workspace_nonexistent_key() {
     let output = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
-        }).await.unwrap();
+        })
+        .await
+        .unwrap();
     let key = output.key;
 
-    workspace_manager.delete_workspace(
-        DeleteWorkspaceInput {
-            key
-        }
-    ).await.unwrap();
+    workspace_manager
+        .delete_workspace(DeleteWorkspaceInput { key })
+        .await
+        .unwrap();
 
-    let result = workspace_manager.delete_workspace(
-        DeleteWorkspaceInput {
-            key
-        }
-    ).await;
+    let result = workspace_manager
+        .delete_workspace(DeleteWorkspaceInput { key })
+        .await;
     assert!(result.is_err());
 
     {
@@ -72,7 +71,7 @@ async fn delete_workspace_nonexistent_key() {
 }
 
 #[tokio::test]
-async fn delete_workspace_fs_already_deleted(){
+async fn delete_workspace_fs_already_deleted() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
@@ -80,17 +79,18 @@ async fn delete_workspace_fs_already_deleted(){
     let key = workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
-        }).await.unwrap().key;
+        })
+        .await
+        .unwrap()
+        .key;
 
     // Delete the workspace folder
     std::fs::remove_dir_all(expected_path).unwrap();
 
     // This should simply be a no-op
-    let result = workspace_manager.delete_workspace(
-        DeleteWorkspaceInput {
-            key,
-        }
-    ).await;
+    let result = workspace_manager
+        .delete_workspace(DeleteWorkspaceInput { key })
+        .await;
     assert!(result.is_ok());
 
     // Check removing current workspace
