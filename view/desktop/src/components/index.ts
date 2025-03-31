@@ -7,6 +7,7 @@ export * from "./Input";
 export * from "./Button";
 export * from "./PageLoader";
 export * from "../parts/ActivityBar";
+export * from "../parts/BottomPane";
 export * from "../layouts/index";
 export * from "./ViewContainer";
 export * from "../parts/SideBar/Sidebar";

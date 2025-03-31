@@ -1,7 +1,6 @@
 import { ComponentPropsWithoutRef, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ActivityBarState } from "@/hooks/useActivityBarState";
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -17,8 +16,6 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { Icon, Icons } from "@/components/Icon";
-
-const positions = ["default", "top", "bottom", "hidden"] as const;
 
 interface ViewGroup {
   id: string;

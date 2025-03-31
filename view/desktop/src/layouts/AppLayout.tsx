@@ -8,10 +8,10 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import { Scrollbar, Sidebar, Icon } from "@/components";
+import { Sidebar } from "@/components";
 import { VerticalActivityBar } from "@/parts/ActivityBar/VerticalActivityBar";
-import { testLogEntries } from "@/assets/testLogEntries";
 import { SidebarEdgeHandler } from "@/parts/SideBar/SidebarEdgeHandler";
+import { BottomPane } from "@/parts/BottomPane/BottomPane";
 
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -148,7 +148,7 @@ export const AppLayout = () => {
               </ResizablePanel>
               {bottomPaneVisibility && (
                 <ResizablePanel preferredSize={bottomPaneGetHeight()} minSize={MIN_BOTTOM_PANE_HEIGHT}>
-                  <BottomPaneContent />
+                  <BottomPane />
                 </ResizablePanel>
               )}
             </Resizable>
@@ -180,39 +180,3 @@ const MainContent = () => (
     </Suspense>
   </ContentLayout>
 );
-
-const BottomPaneContent = () => {
-  const [isHovering, setIsHovering] = useState(false);
-
-  return (
-    <Scrollbar
-      className="h-full overflow-auto"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
-      <div className={`p-2 font-mono text-sm ${isHovering ? "select-text" : "select-none"}`}>
-        <div className="mb-2 font-semibold">Application Logs:</div>
-        {testLogEntries.map((log, index) => (
-          <div key={index} className="mb-1 flex">
-            <span className="mr-2 text-[var(--moss-text-secondary)]">{log.timestamp}</span>
-            <span
-              className={`mr-2 min-w-16 font-medium ${
-                log.level === "ERROR"
-                  ? "text-red-500"
-                  : log.level === "WARNING"
-                    ? "text-amber-500"
-                    : log.level === "DEBUG"
-                      ? "text-blue-500"
-                      : "text-green-500"
-              }`}
-            >
-              {log.level}
-            </span>
-            <span className="mr-2 min-w-32 font-semibold">{log.service}:</span>
-            <span>{log.message}</span>
-          </div>
-        ))}
-      </div>
-    </Scrollbar>
-  );
-};
