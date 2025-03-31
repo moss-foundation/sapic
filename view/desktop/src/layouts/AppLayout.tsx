@@ -1,15 +1,17 @@
 import { LayoutPriority } from "allotment";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import { Scrollbar, Sidebar } from "@/components";
+import { Scrollbar, Sidebar, Icon } from "@/components";
 import { VerticalActivityBar } from "@/parts/ActivityBar/VerticalActivityBar";
 import { testLogEntries } from "@/assets/testLogEntries";
+import { SidebarEdgeHandler } from "@/parts/SideBar/SidebarEdgeHandler";
 
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -20,6 +22,7 @@ const DEFAULT_SIDEBAR_WIDTH = 270;
 const MIN_SIDEBAR_WIDTH = 41;
 const MAX_SIDEBAR_WIDTH = 400;
 const MIN_BOTTOM_PANE_HEIGHT = 100;
+const SIDEBAR_COLLAPSE_THRESHOLD = 45;
 
 const SIDEBAR_POSITION_LEFT = "left";
 const SIDEBAR_POSITION_RIGHT = "right";
@@ -27,10 +30,14 @@ const SIDEBAR_POSITION_NONE = "none";
 
 export const AppLayout = () => {
   const { data: appLayoutState } = useGetAppLayoutState();
+  const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
   const { data: activityBarState } = useGetActivityBarState();
 
   const sideBarSetWidth = useAppResizableLayoutStore((state) => state.sideBar.setWidth);
   const sideBarGetWidth = useAppResizableLayoutStore((state) => state.sideBar.getWidth);
+  const lastSidebarWidthRef = useRef(sideBarGetWidth() || DEFAULT_SIDEBAR_WIDTH);
+
+  const [isResizing, setIsResizing] = useState(false);
 
   const bottomPaneVisibility = useAppResizableLayoutStore((state) => state.bottomPane.visibility);
   const bottomPaneSetHeight = useAppResizableLayoutStore((state) => state.bottomPane.setHeight);
@@ -42,10 +49,23 @@ export const AppLayout = () => {
   const isRightSidebar = sidebarSide === SIDEBAR_POSITION_RIGHT;
 
   const isActivityBarDefault = activityBarState?.position === "default";
-
   const shouldRenderStandaloneActivityBar = isActivityBarDefault;
-
   const shouldShowSidebar = sidebarVisible;
+
+  useEffect(() => {
+    if (sidebarVisible && sideBarGetWidth() > MIN_SIDEBAR_WIDTH) {
+      lastSidebarWidthRef.current = sideBarGetWidth();
+    }
+  }, [sidebarVisible, sideBarGetWidth]);
+
+  const handleShowSidebar = () => {
+    changeAppLayoutState({
+      activeSidebar: sidebarSide,
+      sidebarSetting: sidebarSide,
+    });
+
+    sideBarSetWidth(lastSidebarWidthRef.current);
+  };
 
   return (
     <div className="relative h-full w-full">
@@ -53,21 +73,48 @@ export const AppLayout = () => {
       {shouldRenderStandaloneActivityBar && <VerticalActivityBar position={sidebarSide} />}
 
       <div
-        className="h-full w-full"
+        className="relative h-full w-full"
         style={{
           paddingLeft: shouldRenderStandaloneActivityBar && isLeftSidebar ? ACTIVITY_BAR_WIDTH : 0,
           paddingRight: shouldRenderStandaloneActivityBar && isRightSidebar ? ACTIVITY_BAR_WIDTH : 0,
         }}
       >
+        {/* Edge handlers - visible only when sidebar is hidden */}
+        {!sidebarVisible && (
+          <SidebarEdgeHandler
+            position={sidebarSide}
+            onClick={handleShowSidebar}
+            activityBarOffset={shouldRenderStandaloneActivityBar ? ACTIVITY_BAR_WIDTH : 0}
+          />
+        )}
+
         <Resizable
+          onDragStart={() => setIsResizing(true)}
           onDragEnd={(sizes) => {
+            setIsResizing(false);
             if (sidebarVisible) {
               if (isLeftSidebar) {
-                const [leftWidth] = sizes;
+                const leftWidth = sizes[0];
                 sideBarSetWidth(leftWidth);
+
+                // If sidebar is dragged to be very small, change it to "none" state
+                if (leftWidth < SIDEBAR_COLLAPSE_THRESHOLD) {
+                  changeAppLayoutState({
+                    activeSidebar: SIDEBAR_POSITION_NONE,
+                    sidebarSetting: SIDEBAR_POSITION_LEFT,
+                  });
+                }
               } else if (isRightSidebar) {
-                const [_, __, rightWidth] = sizes;
+                const rightWidth = sizes[sizes.length - 1];
                 sideBarSetWidth(rightWidth);
+
+                // If sidebar is dragged to be very small, change it to "none" state
+                if (rightWidth < SIDEBAR_COLLAPSE_THRESHOLD) {
+                  changeAppLayoutState({
+                    activeSidebar: SIDEBAR_POSITION_NONE,
+                    sidebarSetting: SIDEBAR_POSITION_RIGHT,
+                  });
+                }
               }
             }
           }}
@@ -79,10 +126,9 @@ export const AppLayout = () => {
               minSize={MIN_SIDEBAR_WIDTH}
               maxSize={MAX_SIDEBAR_WIDTH}
               preferredSize={sideBarGetWidth() || DEFAULT_SIDEBAR_WIDTH}
-              snap
-              className="select-none"
+              className={`select-none ${isResizing ? "" : "transition-all duration-200"}`}
             >
-              <Sidebar />
+              <Sidebar isResizing={isResizing} />
             </ResizablePanel>
           ) : null}
 
@@ -90,7 +136,9 @@ export const AppLayout = () => {
           <ResizablePanel priority={LayoutPriority["High"]}>
             <Resizable
               vertical
+              onDragStart={() => setIsResizing(true)}
               onDragEnd={(sizes) => {
+                setIsResizing(false);
                 const [_, bottomPaneHeight] = sizes;
                 bottomPaneSetHeight(bottomPaneHeight);
               }}
@@ -99,7 +147,7 @@ export const AppLayout = () => {
                 <MainContent />
               </ResizablePanel>
               {bottomPaneVisibility && (
-                <ResizablePanel preferredSize={bottomPaneGetHeight()} snap minSize={MIN_BOTTOM_PANE_HEIGHT}>
+                <ResizablePanel preferredSize={bottomPaneGetHeight()} minSize={MIN_BOTTOM_PANE_HEIGHT}>
                   <BottomPaneContent />
                 </ResizablePanel>
               )}
@@ -113,10 +161,9 @@ export const AppLayout = () => {
               minSize={MIN_SIDEBAR_WIDTH}
               maxSize={MAX_SIDEBAR_WIDTH}
               preferredSize={sideBarGetWidth() || DEFAULT_SIDEBAR_WIDTH}
-              snap
-              className="select-none"
+              className={`select-none ${isResizing ? "" : "transition-all duration-200"}`}
             >
-              <Sidebar />
+              <Sidebar isResizing={isResizing} />
             </ResizablePanel>
           ) : null}
         </Resizable>

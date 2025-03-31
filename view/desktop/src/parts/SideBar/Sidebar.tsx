@@ -10,7 +10,11 @@ import { useEffect, useRef } from "react";
 
 import SidebarHeader from "./SidebarHeader";
 
-export const Sidebar = () => {
+interface SidebarProps {
+  isResizing?: boolean;
+}
+
+export const Sidebar = ({ isResizing = false }: SidebarProps) => {
   const { data: activityBarState } = useGetActivityBarState();
   const { data: appLayoutState } = useGetAppLayoutState();
   const { data: viewGroups } = useGetViewGroups();
@@ -46,10 +50,6 @@ export const Sidebar = () => {
   const isActivityBarInDefaultPosition = activityBarState?.position === "default";
 
   // If sidebar is hidden, don't render anything in the Sidebar component
-  if (!isVisible) {
-    return null;
-  }
-
   const Content = () => (
     <>
       <SidebarHeader title={activeGroupTitle} />
@@ -57,9 +57,16 @@ export const Sidebar = () => {
     </>
   );
 
+  const sidebarClasses = cn(
+    "background-(--moss-sideBar-background) flex h-full flex-col",
+    // Only apply transitions when not actively resizing
+    !isResizing && "transition-[width] duration-200",
+    !isVisible && "w-0 overflow-hidden"
+  );
+
   if (isActivityBarInDefaultPosition) {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <Content />
       </div>
     );
@@ -67,7 +74,7 @@ export const Sidebar = () => {
 
   if (effectivePosition === "hidden") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <Content />
       </div>
     );
@@ -75,7 +82,7 @@ export const Sidebar = () => {
 
   if (effectivePosition === "top") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <HorizontalActivityBar position="top" />
         <Content />
       </div>
@@ -84,7 +91,7 @@ export const Sidebar = () => {
 
   if (effectivePosition === "bottom") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <Content />
         <HorizontalActivityBar position="bottom" />
       </div>
@@ -95,7 +102,7 @@ export const Sidebar = () => {
   // but keeping them for completeness
   if (effectivePosition === "left") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <Content />
       </div>
     );
@@ -103,14 +110,14 @@ export const Sidebar = () => {
 
   if (effectivePosition === "right") {
     return (
-      <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+      <div className={sidebarClasses}>
         <Content />
       </div>
     );
   }
 
   return (
-    <div className={cn("background-(--moss-sideBar-background) flex h-full flex-col")}>
+    <div className={sidebarClasses}>
       <Content />
     </div>
   );

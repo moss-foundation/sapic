@@ -6,7 +6,9 @@ import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useGetViewGroups } from "@/hooks/useGetViewGroups";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { attachClosestEdge, extractClosestEdge, Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -29,10 +31,21 @@ export const ActivityBar = () => {
   const { data: activityBarState } = useGetActivityBarState();
   const { mutate: changeActivityBarState } = useChangeActivityBarState();
   const { data: appLayoutState } = useGetAppLayoutState();
+  const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
+  const sideBarSetWidth = useAppResizableLayoutStore((state) => state.sideBar.setWidth);
+  const sideBarGetWidth = useAppResizableLayoutStore((state) => state.sideBar.getWidth);
 
   const { data: viewGroups } = useGetViewGroups();
   const { data: projectSessionState } = useGetProjectSessionState();
   const { mutate: changeProjectSessionState } = useChangeProjectSessionState();
+
+  const lastSidebarWidthRef = useRef(sideBarGetWidth() || 270);
+
+  useEffect(() => {
+    if (appLayoutState?.activeSidebar !== "none" && sideBarGetWidth() > 45) {
+      lastSidebarWidthRef.current = sideBarGetWidth();
+    }
+  }, [appLayoutState?.activeSidebar, sideBarGetWidth]);
 
   const activityBarGroups = viewGroups?.viewGroups as ViewGroup[] | undefined;
   const [orderedGroups, setOrderedGroups] = useState<string[]>([]);
@@ -181,37 +194,18 @@ export const ActivityBar = () => {
         ...projectSessionState,
         lastActiveGroup: id,
       });
-    },
-    [changeProjectSessionState, projectSessionState]
-  );
 
-  const handleSelectPosition = (position: ActivityBarState["position"]) => {
-    const currentIndex = positions.indexOf(position);
-
-    const activeGroup = projectSessionState?.lastActiveGroup;
-
-    if (currentIndex === -1 || currentIndex >= positions.length - 1) {
-      changeActivityBarState({
-        position: positions[0],
-        groupOrder: activityBarState?.groupOrder || [],
-      });
-    } else {
-      changeActivityBarState({
-        position: positions[currentIndex + 1],
-        groupOrder: activityBarState?.groupOrder || [],
-      });
-    }
-
-    if (activeGroup && projectSessionState && changeProjectSessionState) {
-      // Small delay to ensure the state update happens after position change
-      setTimeout(() => {
-        changeProjectSessionState({
-          ...projectSessionState,
-          lastActiveGroup: activeGroup,
+      if (appLayoutState?.activeSidebar === "none" && appLayoutState?.sidebarSetting) {
+        changeAppLayoutState({
+          activeSidebar: appLayoutState.sidebarSetting,
+          sidebarSetting: appLayoutState.sidebarSetting,
         });
-      }, 0);
-    }
-  };
+
+        sideBarSetWidth(lastSidebarWidthRef.current);
+      }
+    },
+    [changeProjectSessionState, projectSessionState, appLayoutState, changeAppLayoutState, sideBarSetWidth]
+  );
 
   const getOrderedActivityBarGroups = () => {
     if (!activityBarGroups || orderedGroups.length === 0) return activityBarGroups || [];
@@ -241,7 +235,6 @@ export const ActivityBar = () => {
             : "border-t border-t-[var(--moss-activityBar-border-color)]",
           effectivePosition === "bottom" && "absolute right-0 bottom-0 left-0 z-10"
         )}
-        onDoubleClick={() => handleSelectPosition(activityBarState?.position || "default")}
       >
         {orderedActivityBarGroups.map(({ icon, id }, index) => (
           <ActivityBarButton
@@ -273,9 +266,8 @@ export const ActivityBar = () => {
         leftPosition
           ? "border-r border-r-[var(--moss-activityBar-border-color)]"
           : "border-l border-l-[var(--moss-activityBar-border-color)]",
-        "flex-shrink-0" // Prevent shrinking when sidebar is resized
+        "flex-shrink-0"
       )}
-      onDoubleClick={() => handleSelectPosition(activityBarState?.position || "default")}
     >
       {orderedActivityBarGroups.map(({ icon, id }, index) => (
         <ActivityBarButton

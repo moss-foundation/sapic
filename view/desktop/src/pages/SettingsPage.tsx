@@ -1,4 +1,4 @@
-import { ReactNode, ChangeEvent } from "react";
+import React, { ReactNode, ChangeEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
@@ -22,19 +22,59 @@ interface SettingsDropdownProps {
   children: ReactNode;
 }
 
-const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDropdownProps) => (
-  <div className="mt-4">
-    <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{label}</h3>
-    <select
-      id={id}
-      className="w-full rounded border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm hover:bg-[var(--moss-select-hover-bg)] focus:border-[var(--moss-select-focus-border)] focus:ring-1 focus:ring-[var(--moss-select-focus-border)] focus:outline-none"
-      value={value}
-      onChange={onChange}
-    >
-      {children}
-    </select>
-  </div>
-);
+const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="mt-4">
+      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{label}</h3>
+      <div className="relative">
+        <div
+          className="flex w-full cursor-pointer items-center justify-between rounded border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm hover:bg-[var(--moss-select-hover-bg)]"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span>
+            {children instanceof Array
+              ? (children as React.ReactElement[]).find((child) => child.props.value === value)?.props.children
+              : value}
+          </span>
+          <span className="ml-2 h-5 w-5 text-[var(--moss-select-text-outlined)]">{isOpen ? "▲" : "▼"}</span>
+        </div>
+
+        {isOpen && (
+          <div className="absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-md border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] shadow-lg">
+            <div className="py-1">
+              {React.Children.map(children, (child) => {
+                if (React.isValidElement(child)) {
+                  return (
+                    <div
+                      className={`cursor-pointer px-4 py-2 hover:bg-[var(--moss-select-hover-bg)] ${
+                        child.props.value === value ? "bg-[var(--moss-select-hover-bg)] font-medium" : ""
+                      }`}
+                      onClick={() => {
+                        onChange({
+                          target: { value: child.props.value },
+                        } as ChangeEvent<HTMLSelectElement>);
+                        setIsOpen(false);
+                      }}
+                    >
+                      {child.props.children}
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
+          </div>
+        )}
+
+        <select id={id} className="sr-only" value={value} onChange={onChange}>
+          {children}
+        </select>
+      </div>
+    </div>
+  );
+};
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
