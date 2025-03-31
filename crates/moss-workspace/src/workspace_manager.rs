@@ -1,7 +1,16 @@
-use crate::leased_slotmap::LeasedSlotMap;
+use anyhow::{anyhow, Context, Result};
+use arc_swap::ArcSwapOption;
+use moss_app::service::prelude::AppService;
+use moss_collection::leased_slotmap::LeasedSlotMap;
+use moss_common::leased_slotmap::ResourceKey;
+use moss_fs::utils::{decode_directory_name, encode_directory_name};
+use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
+use std::{path::PathBuf, sync::Arc};
+use thiserror::Error;
+use tokio::sync::{OnceCell, RwLock};
+use validator::{Validate, ValidationErrors};
+
 use crate::models::operations::{CreateWorkspaceOutput, RenameWorkspaceInput};
-// use crate::storage::global_db_manager::GlobalDbManagerImpl;
-use crate::storage::{GlobalDbManager, WorkspaceEntity};
 use crate::{
     models::{
         operations::{
@@ -11,39 +20,6 @@ use crate::{
     },
     workspace::Workspace,
 };
-use anyhow::{anyhow, Context, Result};
-use arc_swap::access::Access;
-use arc_swap::ArcSwapOption;
-use moss_app::service::prelude::AppService;
-use moss_fs::utils::{decode_directory_name, encode_directory_name};
-use moss_fs::{FileSystem, RemoveOptions, RenameOptions};
-use slotmap::KeyData;
-use std::{path::PathBuf, sync::Arc};
-use thiserror::Error;
-use tokio::sync::{OnceCell, RwLock};
-use validator::{Validate, ValidationErrors};
-
-slotmap::new_key_type! {
-    pub struct WorkspaceKey;
-}
-
-impl From<u64> for WorkspaceKey {
-    fn from(value: u64) -> Self {
-        Self(KeyData::from_ffi(value))
-    }
-}
-
-impl WorkspaceKey {
-    pub fn as_u64(self) -> u64 {
-        self.0.as_ffi()
-    }
-}
-
-impl std::fmt::Display for WorkspaceKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_u64())
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum OperationError {
@@ -60,12 +36,12 @@ pub enum OperationError {
     Unknown(#[from] anyhow::Error),
 }
 
-type WorkspaceInfoMap = LeasedSlotMap<WorkspaceKey, WorkspaceInfo>;
+type WorkspaceInfoMap = LeasedSlotMap<ResourceKey, WorkspaceInfo>;
 
 pub struct WorkspaceManager {
     fs: Arc<dyn FileSystem>,
     workspaces_dir: PathBuf,
-    current_workspace: ArcSwapOption<(WorkspaceKey, Workspace)>,
+    current_workspace: ArcSwapOption<(ResourceKey, Workspace)>,
     known_workspaces: OnceCell<RwLock<WorkspaceInfoMap>>,
 }
 
@@ -159,9 +135,7 @@ impl WorkspaceManager {
         self.current_workspace
             .store(Some(Arc::new((workspace_key, current_workspace))));
 
-        Ok(CreateWorkspaceOutput {
-            key: workspace_key.as_u64(),
-        })
+        Ok(CreateWorkspaceOutput { key: workspace_key })
     }
 
     pub async fn rename_workspace(
@@ -175,10 +149,9 @@ impl WorkspaceManager {
             .await
             .context("Failed to get known workspaces")?;
 
-        let workspace_key = WorkspaceKey::from(input.key);
         let mut workspaces_lock = workspaces.write().await;
         let mut workspace_info = workspaces_lock
-            .read_mut(workspace_key)
+            .read_mut(input.key)
             .context("Failed to lease the workspace")?;
 
         if workspace_info.name == input.new_name {
@@ -216,13 +189,13 @@ impl WorkspaceManager {
         // If the current workspace needs to be renamed
         // We will first drop the workspace, do fs renaming, and reload it
         if let Some(mut entry) = current_entry {
-            if entry.0 == workspace_key {
+            if entry.0 == input.key {
                 std::mem::drop(entry);
                 self.fs
                     .rename(&old_path, &new_path, RenameOptions::default())
                     .await?;
                 entry = Arc::new((
-                    workspace_key,
+                    input.key,
                     Workspace::new(new_path.clone(), self.fs.clone())?,
                 ))
             } else {
@@ -248,11 +221,10 @@ impl WorkspaceManager {
         input: DeleteWorkspaceInput,
     ) -> Result<(), OperationError> {
         let known_workspaces = self.known_workspaces().await?;
-        let workspace_key = WorkspaceKey::from(input.key);
 
         let mut workspaces_lock = known_workspaces.write().await;
         let workspace_info = workspaces_lock
-            .remove(workspace_key)
+            .remove(input.key)
             .context("Failed to remove the workspace")?;
 
         let workspace_path = workspace_info.path;
@@ -275,7 +247,7 @@ impl WorkspaceManager {
         let current_entry = self.current_workspace.swap(None);
 
         if let Some(entry) = current_entry {
-            if entry.0 != workspace_key {
+            if entry.0 != input.key {
                 self.current_workspace.store(Some(entry))
             }
         }
@@ -337,7 +309,7 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    pub fn current_workspace(&self) -> Result<Arc<(WorkspaceKey, Workspace)>> {
+    pub fn current_workspace(&self) -> Result<Arc<(ResourceKey, Workspace)>> {
         self.current_workspace
             .load()
             .clone()

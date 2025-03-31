@@ -29,7 +29,7 @@ impl Workspace {
             .map(|(key, iter_slot)| {
                 let (_, cache) = iter_slot.value();
                 EnvironmentInfo {
-                    key: key.as_u64(),
+                    key,
                     collection_key: None,
                     name: cache.decoded_name.clone(),
                     order: cache.order,
@@ -54,7 +54,7 @@ impl Workspace {
             .map(|(key, iter_slot)| {
                 let (_, metadata) = iter_slot.value();
                 CollectionInfo {
-                    key: key.as_u64(),
+                    key,
                     name: metadata.name.clone(),
                     order: metadata.order,
                 }

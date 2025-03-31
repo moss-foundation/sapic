@@ -9,7 +9,8 @@
     },
     "devDependencies": {
       "@repo/typescript-config": "workspace:*",
-      "@repo/moss-environment": "workspace:*"
+      "@repo/moss-environment": "workspace:*",
+      "@repo/bindings-utils": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.7.2"
@@ -19,6 +20,20 @@
         "@repo/moss-environment": {
           "types": [
             "VariableInfo"
+          ],
+          "is_type_import": true
+        },
+        "@repo/bindings-utils": {
+          "types": [
+            "ResourceKey"
+          ],
+          "is_type_import": true
+        }
+      },
+      "bindings/types.ts": {
+        "@repo/bindings-utils": {
+          "types": [
+            "ResourceKey"
           ],
           "is_type_import": true
         }

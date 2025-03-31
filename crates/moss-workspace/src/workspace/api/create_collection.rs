@@ -63,7 +63,7 @@ impl Workspace {
         txn.commit()?;
 
         Ok(CreateCollectionOutput {
-            key: collection_key.as_u64(),
+            key: collection_key,
             path: full_path,
         })
     }

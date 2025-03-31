@@ -3,7 +3,7 @@ use moss_environment::models::types::VariableInfo;
 
 use crate::{
     models::operations::{DescribeEnvironmentInput, DescribeEnvironmentOutput},
-    workspace::{EnvironmentKey, Workspace},
+    workspace::{ResourceKey, Workspace},
 };
 
 impl Workspace {
@@ -14,8 +14,7 @@ impl Workspace {
         let environments = self.environments().await?;
         let environments_lock = environments.read().await;
 
-        let environment_key = EnvironmentKey::from(input.key);
-        let (environment, environment_cache) = environments_lock.read(environment_key)?;
+        let (environment, environment_cache) = environments_lock.read(input.key)?;
 
         let variables_lock = environment.variables().read().await;
         let variables: Vec<VariableInfo> = variables_lock

@@ -3,10 +3,10 @@ mod shared;
 use moss_fs::utils::encode_directory_name;
 use shared::random_workspace_name;
 
+use crate::shared::{setup_test_workspace_manager, SPECIAL_CHARS};
 use moss_workspace::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceInfo;
 use moss_workspace::workspace_manager::*;
-use crate::shared::{setup_test_workspace_manager, SPECIAL_CHARS};
 
 #[tokio::test]
 async fn create_workspace_success() {
@@ -18,19 +18,26 @@ async fn create_workspace_success() {
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
-        .await.unwrap();
+        .await
+        .unwrap();
 
     assert!(expected_path.exists());
 
     // Check updating current workspace
     let current_workspace = workspace_manager.current_workspace().unwrap();
-    assert_eq!(current_workspace.0.as_u64(), output.key);
+    assert_eq!(current_workspace.0, output.key);
     assert_eq!(current_workspace.1.path(), expected_path);
 
     // Check updating known_workspaces
     let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
     assert_eq!(workspaces_list.0.len(), 1);
-    assert_eq!(workspaces_list.0[0], WorkspaceInfo {path: expected_path.clone(), name: workspace_name} );
+    assert_eq!(
+        workspaces_list.0[0],
+        WorkspaceInfo {
+            path: expected_path.clone(),
+            name: workspace_name
+        }
+    );
 
     // Clean up
     {
@@ -68,7 +75,8 @@ async fn create_workspace_already_exists() {
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
-        .await.unwrap();
+        .await
+        .unwrap();
 
     // Try to create workspace with same name
     let result = workspace_manager
@@ -118,26 +126,27 @@ async fn create_workspace_special_chars() {
 
     for name in workspace_name_list {
         let expected_path = workspaces_path.join(encode_directory_name(&name));
-        let output = workspace_manager.create_workspace( CreateWorkspaceInput {
-            name: name.clone()
-        }).await.unwrap();
+        let output = workspace_manager
+            .create_workspace(CreateWorkspaceInput { name: name.clone() })
+            .await
+            .unwrap();
 
         assert!(expected_path.exists());
         // Check updating current workspace
         let current_workspace = workspace_manager.current_workspace().unwrap();
-        assert_eq!(current_workspace.0.as_u64(), output.key);
+        assert_eq!(current_workspace.0, output.key);
         assert_eq!(current_workspace.1.path(), expected_path);
 
         // Check updating known_workspaces
         let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-        assert!(workspaces_list.0.iter().any(|info| info == &WorkspaceInfo {
-            name: name.clone(),
-            path: expected_path.clone()
-        }));
+        assert!(workspaces_list.0.iter().any(|info| info
+            == &WorkspaceInfo {
+                name: name.clone(),
+                path: expected_path.clone()
+            }));
     }
     // Clean up
     {
         std::fs::remove_dir_all(workspaces_path).unwrap();
     }
-
 }

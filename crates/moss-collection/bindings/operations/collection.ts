@@ -4,8 +4,7 @@ import type { HttpMethod } from "../types/request";
 import type { PathParamItem } from "../types/request";
 import type { QueryParamItem } from "../types/request";
 import type { RequestBody } from "../types/request";
-
-export type CreateCollectionInput = { name: string; path: string; repo?: string };
+import type { RequestType } from "../collection";
 
 export type CreateRequestInput = {
   name: string;
@@ -28,6 +27,14 @@ export type CreateRequestProtocolSpecificPayload = {
 
 export type DeleteRequestInput = { key: bigint };
 
-export type OverviewCollectionOutput = { name: string; path: string; order?: number };
+export type ListRequestsOutput = Array<RequestInfo>;
 
 export type RenameRequestInput = { key: bigint; newName: string };
+
+export type RequestInfo = {
+  key: bigint;
+  name: string;
+  requestDirRelativePath: string;
+  order: number | null;
+  typ: RequestType;
+};

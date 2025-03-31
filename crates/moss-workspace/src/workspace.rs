@@ -1,98 +1,31 @@
 pub mod api;
 
-use crate::leased_slotmap::LeasedSlotMap;
-use crate::models::entities::CollectionEntity;
-use crate::models::operations::{
-    CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput, ListCollectionsOutput,
-    RenameCollectionInput, RenameCollectionOutput,
-};
-use crate::models::types::CollectionInfo;
+mod error;
+pub use error::*;
+
 use crate::storage::state_db_manager::StateDbManagerImpl;
 use crate::storage::StateDbManager;
 use anyhow::{anyhow, Context, Result};
-use moss_collection::collection::{Collection, CollectionMetadata};
-use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
-use moss_environment::models::types::VariableInfo;
-use moss_fs::{
-    utils::{decode_directory_name, encode_directory_name},
-    FileSystem, RemoveOptions, RenameOptions,
+use moss_collection::{
+    collection::{Collection, CollectionMetadata},
+    leased_slotmap::LeasedSlotMap,
 };
-use slotmap::KeyData;
+use moss_common::leased_slotmap::ResourceKey;
+use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
+use moss_fs::{utils::decode_directory_name, FileSystem};
 use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
-use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock};
-use validator::{Validate, ValidationErrors};
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
 
-slotmap::new_key_type! {
-    pub struct CollectionKey;
-}
-
-impl From<u64> for CollectionKey {
-    fn from(value: u64) -> Self {
-        Self(KeyData::from_ffi(value))
-    }
-}
-
-impl CollectionKey {
-    pub fn as_u64(self) -> u64 {
-        self.0.as_ffi()
-    }
-}
-
-impl std::fmt::Display for CollectionKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_u64())
-    }
-}
-
-#[derive(Error, Debug)]
-pub enum OperationError {
-    #[error("validation error: {0}")]
-    Validation(#[from] ValidationErrors),
-
-    #[error("collection {name} not found at {path}")]
-    NotFound { name: String, path: PathBuf },
-
-    #[error("collection {name} already exists at {path}")]
-    AlreadyExists { name: String, path: PathBuf },
-
-    #[error("unknown error: {0}")]
-    Unknown(#[from] anyhow::Error),
-}
-
 type CollectionSlot = (Collection, CollectionMetadata);
-type CollectionMap = LeasedSlotMap<CollectionKey, CollectionSlot>;
-
-slotmap::new_key_type! {
-    pub struct EnvironmentKey;
-}
-
-impl From<u64> for EnvironmentKey {
-    fn from(value: u64) -> Self {
-        Self(KeyData::from_ffi(value))
-    }
-}
-
-impl EnvironmentKey {
-    pub fn as_u64(self) -> u64 {
-        self.0.as_ffi()
-    }
-}
-
-impl std::fmt::Display for EnvironmentKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_u64())
-    }
-}
+type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 
 type EnvironmentSlot = (Environment, EnvironmentCache);
-type EnvironmentMap = LeasedSlotMap<EnvironmentKey, EnvironmentSlot>;
+type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct Workspace {
     path: PathBuf,
@@ -242,24 +175,24 @@ impl Workspace {
     }
 }
 
-impl Workspace {
-    pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        let _ = self.state_db_manager.take();
+// impl Workspace {
+//     pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
+//         let _ = self.state_db_manager.take();
 
-        let old_path = std::mem::replace(&mut self.path, new_path.clone());
-        self.fs
-            .rename(&old_path, &new_path, RenameOptions::default())
-            .await?;
+//         let old_path = std::mem::replace(&mut self.path, new_path.clone());
+//         self.fs
+//             .rename(&old_path, &new_path, RenameOptions::default())
+//             .await?;
 
-        let state_db_manager_impl = StateDbManagerImpl::new(&new_path).context(format!(
-            "Failed to open the workspace {} state database",
-            self.path.display()
-        ))?;
-        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
+//         let state_db_manager_impl = StateDbManagerImpl::new(&new_path).context(format!(
+//             "Failed to open the workspace {} state database",
+//             self.path.display()
+//         ))?;
+//         self.state_db_manager = Some(Arc::new(state_db_manager_impl));
 
-        Ok(())
-    }
-}
+//         Ok(())
+//     }
+// }
 
 impl Workspace {
     #[cfg(test)]

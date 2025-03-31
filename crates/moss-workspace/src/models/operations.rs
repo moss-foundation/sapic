@@ -1,3 +1,4 @@
+use moss_common::leased_slotmap::ResourceKey;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -33,20 +34,23 @@ pub struct CreateWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct CreateWorkspaceOutput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Validate, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct RenameWorkspaceInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
     #[validate(length(min = 1))]
     pub new_name: String,
 }
@@ -63,7 +67,8 @@ pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct ListCollectionRequestsInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -78,7 +83,8 @@ pub struct CreateCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
     pub path: PathBuf,
 }
 
@@ -86,7 +92,8 @@ pub struct CreateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct RenameCollectionInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
     #[validate(length(min = 1))]
     pub new_name: String,
 }
@@ -102,7 +109,8 @@ pub struct RenameCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -117,7 +125,8 @@ pub struct DescribeWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, TS)]

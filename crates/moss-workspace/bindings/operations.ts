@@ -11,24 +11,27 @@ import type { CollectionInfo } from "./types";
 import type { EnvironmentInfo } from "./types";
 import type { WorkspaceInfo } from "./types";
 import type { VariableInfo } from "@repo/moss-environment";
+import type { ResourceKey } from "@repo/bindings-utils";
 
-export type CreateCollectionInput = { name: string; path: string };
+export type CreateCollectionInput = { name: string };
 
-export type CreateCollectionOutput = { key: bigint; name: string; path: string };
+export type CreateCollectionOutput = { key: ResourceKey; path: string };
 
 export type CreateWorkspaceInput = { name: string };
 
-export type DeleteCollectionInput = { key: bigint };
+export type CreateWorkspaceOutput = { key: ResourceKey };
 
-export type DeleteWorkspaceInput = { path: string };
+export type DeleteCollectionInput = { key: ResourceKey };
 
-export type DescribeEnvironmentInput = { key: bigint };
+export type DeleteWorkspaceInput = { key: ResourceKey };
+
+export type DescribeEnvironmentInput = { key: ResourceKey };
 
 export type DescribeEnvironmentOutput = { variables: VariableInfo };
 
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
-export type ListCollectionRequestsInput = { key: bigint };
+export type ListCollectionRequestsInput = { key: ResourceKey };
 
 export type ListCollectionsOutput = Array<CollectionInfo>;
 
@@ -36,4 +39,8 @@ export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
 export type OpenWorkspaceInput = { path: string };
 
-export type RenameCollectionInput = { key: bigint; newName: string };
+export type RenameCollectionInput = { key: ResourceKey; newName: string };
+
+export type RenameCollectionOutput = { path: string };
+
+export type RenameWorkspaceInput = { key: ResourceKey; newName: string };

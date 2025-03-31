@@ -1,3 +1,4 @@
+use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
@@ -16,7 +17,8 @@ pub struct WorkspaceInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
@@ -26,9 +28,10 @@ pub struct CollectionInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    pub key: u64,
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
     #[ts(optional)]
-    pub collection_key: Option<u64>,
+    pub collection_key: Option<ResourceKey>,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,

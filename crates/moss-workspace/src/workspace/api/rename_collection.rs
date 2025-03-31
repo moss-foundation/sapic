@@ -7,7 +7,7 @@ use crate::{
         entities::CollectionEntity,
         operations::{RenameCollectionInput, RenameCollectionOutput},
     },
-    workspace::{CollectionKey, OperationError, Workspace},
+    workspace::{OperationError, Workspace},
 };
 
 impl Workspace {
@@ -22,10 +22,9 @@ impl Workspace {
             .await
             .context("Failed to get collections")?;
 
-        let collection_key = CollectionKey::from(input.key);
         let mut collections_lock = collections.write().await;
         let mut lease_guard = collections_lock
-            .lease(collection_key)
+            .lease(input.key)
             .context("Failed to lease the collection")?;
 
         let (collection, metadata) = &mut *lease_guard;

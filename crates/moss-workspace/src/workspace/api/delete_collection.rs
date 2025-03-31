@@ -3,7 +3,7 @@ use moss_fs::RemoveOptions;
 
 use crate::{
     models::operations::DeleteCollectionInput,
-    workspace::{CollectionKey, OperationError, Workspace},
+    workspace::{OperationError, Workspace},
 };
 
 impl Workspace {
@@ -12,11 +12,10 @@ impl Workspace {
         input: DeleteCollectionInput,
     ) -> Result<(), OperationError> {
         let collections = self.collections().await?;
-        let collection_key = CollectionKey::from(input.key);
 
         let mut collections_lock = collections.write().await;
         let (collection, _) = collections_lock
-            .remove(collection_key)
+            .remove(input.key)
             .context("Failed to remove the collection")?;
 
         let collection_path = collection.path();
