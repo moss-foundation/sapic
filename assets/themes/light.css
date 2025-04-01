@@ -1,7 +1,7 @@
 :root {
   /* Base Colors */
   --moss-primary: #0065ff;
-  --moss-error: #fff7f7;
+  --moss-error: #fb2c36;
   --moss-error-bg: #f7d7d7;
   --moss-success-bg: #f2fcf3;
 
@@ -12,7 +12,7 @@
   --moss-primary-text: #161616;
 
   --moss-secondary-bg: #f4f4f4;
-  --moss-secondary-hover: #ebecf0;
+  --moss-secondary-bg-hover: #ebecf0;
   --moss-secondary-text: #6f6f6f;
 
   /* Icons */
@@ -23,8 +23,6 @@
 
   /* Layout */
   --moss-statusBar-background: #274323;
-  --moss-bottomPane-background: white;
-  --moss-headBar-shadow: inset 0 -1px 0 0 #c6c6c6;
 
   /* Window Controls */
   --moss-button-icon-color: black;

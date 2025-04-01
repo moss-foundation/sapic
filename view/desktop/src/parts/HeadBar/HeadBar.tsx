@@ -47,7 +47,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_#c6c6c6]",
+        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",

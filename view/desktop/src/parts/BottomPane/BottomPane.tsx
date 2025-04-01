@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Scrollbar } from "@/components";
+
 import { testLogEntries } from "@/assets/testLogEntries";
+import { Scrollbar } from "@/components";
 
 export const BottomPane = () => {
   const [isHovering, setIsHovering] = useState(false);
 
   return (
-    <div className="h-full w-full bg-[var(--moss-bottomPane-background)]">
+    <div className="background-(--moss-primary-bg) h-full w-full">
       <Scrollbar
         className="h-full overflow-auto"
         onMouseEnter={() => setIsHovering(true)}
