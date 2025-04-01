@@ -47,7 +47,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-(--moss-headBar-shadow)",
+        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_#c6c6c6]",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
@@ -72,25 +72,25 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Left Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleSidebar}
                 title="Toggle Left Sidebar"
               >
                 <Icon
                   icon={isSidebarVisible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-                  className="size-[18px] text-(--moss-icon-secondary-text)"
+                  className="size-[18px] text-(--moss-icon-primary-text)"
                 />
               </button>
             ) : (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
                   icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  className="size-[18px] text-(--moss-icon-secondary-text)"
+                  className="size-[18px] text-(--moss-icon-primary-text)"
                 />
               </button>
             )}
@@ -99,25 +99,25 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
                   icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  className="size-[18px] text-(--moss-icon-secondary-text)"
+                  className="size-[18px] text-(--moss-icon-primary-text)"
                 />
               </button>
             ) : (
               /* Right Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleSidebar}
                 title="Toggle Right Sidebar"
               >
                 <Icon
                   icon={isSidebarVisible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-                  className="size-[18px] text-(--moss-icon-secondary-text)"
+                  className="size-[18px] text-(--moss-icon-primary-text)"
                 />
               </button>
             )}
