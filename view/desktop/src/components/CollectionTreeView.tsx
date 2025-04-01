@@ -165,9 +165,6 @@ export const CollectionTreeView = () => {
               <CollectionCreationZone />
             </div>
           )}
-          {/* <div className="flex grow flex-col justify-end">
-            <CollectionCreationZone />
-          </div> */}
         </div>
       </Scrollbar>
     </div>
