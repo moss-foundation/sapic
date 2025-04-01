@@ -462,16 +462,7 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
             : "Click to activate this view"
         }
       >
-        <Icon
-          icon={icon}
-          className={cn(
-            {
-              "text-[var(--moss-activityBar-active-icon)]": active,
-              "text-[var(--moss-activityBar-icon-inactive)]": !active,
-            },
-            iconClassName
-          )}
-        />
+        <Icon icon={icon} className={cn("size-5", iconClassName)} />
         {isDraggable && closestEdge && !isBeingDragged && (
           <div
             className={cn("background-(--moss-primary) absolute z-10", {
