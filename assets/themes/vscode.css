@@ -14,8 +14,24 @@
   /* Layout */
   --moss-page-background: #1e1e1e;
   --moss-sideBar-background: #333333;
+  --moss-sideBar-header-background: #252526;
+  --moss-sideBar-header-text: #cccccc;
+  --moss-sideBar-header-button-hover: #3c3c3c;
+  --moss-headBar-background: #252526;
+  --moss-headBar-shadow: inset 0 -1px 0 0 #3c3c3c;
+  --moss-headBar-hover-background: #3c3c3c;
+  --moss-headBar-icon-color: #858585;
+  --moss-headBar-label-color: #cccccc;
+  --moss-activityBar-background: #333333;
+  --moss-activityBar-border-color: #252526;
+  --moss-activityBar-active-item: #007acc;
+  --moss-activityBar-hover-item: #1e1e1e;
+  --moss-activityBar-icon-inactive: #858585;
+  --moss-activityBar-active-icon: #ffffff;
+  --moss-activityBar-indicator-color: #007acc;
   --moss-toolBar-background: #333333;
-  --moss-statusBar-background: #007acc;
+  --moss-statusBar-background: #274323;
+  --moss-bottomPane-background: #333333;
 
   /* Window Controls */
   --moss-button-icon-color: #d4d4d4;
@@ -170,6 +186,10 @@
   --moss-controls-outlined-text: #d4d4d4;
   --moss-controls-placeholder: #969696;
 
+  /* Input Fields */
+  --moss-input-bg-plain: #3c3c3c;
+  --moss-input-bg-outlined: #3c3c3c;
+
   /* Select Inputs */
   --moss-select-bg-soft: #3c3c3c;
   --moss-select-bg-outlined: #3c3c3c;
@@ -183,6 +203,9 @@
   --moss-select-text-outlined: #d4d4d4;
   --moss-select-text-mixed: #d4d4d4;
   --moss-select-text-bottomOutlined: #d4d4d4;
+  --moss-select-focus-border: #007acc;
+  --moss-select-placeholder: #969696;
+  --moss-select-hover-bg: #505050;
 
   /* Tree View */
   --moss-tree-border: #3c3c3c;
@@ -200,4 +223,16 @@
   --moss-menu-item-bg-hover: #2a2d2e;
   --moss-menu-item-color: #d4d4d4;
   --moss-menu-separator-bg: #3c3c3c;
+
+  /* WidgetBar - Removed, transitioned to HeadBar */
+  /* 
+    --moss-widgetBar-item-hover-background: #3c3c3c;
+    --moss-widgetBar-item-active-background: #505050;
+    --moss-widgetBar-dropdown-background: #252526;
+    --moss-widgetBar-dropdown-border: #3c3c3c;
+    --moss-widgetBar-dropdown-text: #d4d4d4;
+    --moss-widgetBar-icon-color: #858585;
+    --moss-widgetBar-label-color: #cccccc;
+    --moss-widgetBar-active-text-color: #ffffff;
+  */
 }

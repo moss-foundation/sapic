@@ -1,7 +1,7 @@
-import { StrictMode, Suspense } from "react";
+import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
-import App from "./App";
+import { PageLoader } from "./components/PageLoader";
 
 import "overlayscrollbars/overlayscrollbars.css";
 import "./assets/index.css";
@@ -36,15 +36,20 @@ if (import.meta.env.MODE === "development") {
   document.head.appendChild(script);
 }
 
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-      <GeneralProvider>
-        <Suspense fallback={<div />}>
-          <App />
-        </Suspense>
-      </GeneralProvider>
-    </QueryClientProvider>
-  </StrictMode>
-);
+const App = lazy(() => import("@/app")); // lazy load the main App component
+const rootElement = document.getElementById("root") as HTMLElement; // cache the root element reference
+
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
+        <GeneralProvider>
+          <Suspense fallback={<PageLoader />}>
+            <App />
+          </Suspense>
+        </GeneralProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  );
+}
