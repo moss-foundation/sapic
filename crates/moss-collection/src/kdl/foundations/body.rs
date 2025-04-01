@@ -132,12 +132,6 @@ impl Into<KdlDocument> for FormDataBodyItem {
     }
 }
 
-// #[derive(Clone, Debug, PartialEq)]
-// pub enum FormDataValue {
-//     Text(String),
-//     File(PathBuf),
-// }
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct FormDataOptions {
     pub propagate: bool,
