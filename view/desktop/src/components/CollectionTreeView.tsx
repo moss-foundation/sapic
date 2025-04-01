@@ -112,7 +112,7 @@ export const CollectionTreeView = () => {
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-treeNodeButton-text)">
+          <DropdownMenu.Trigger className="background-(--moss-icon-primary-bg) hover:background-(--moss-icon-primary-bg-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-icon-primary-text)">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
@@ -211,7 +211,7 @@ const CollectionCreationZone = () => {
   return (
     <div
       ref={ref}
-      className={cn("mb-8 grid h-max min-h-32 w-full place-items-center", {
+      className={cn("grid h-max min-h-32 w-full place-items-center", {
         "bg-[#edf6ff]": canDrop === true,
         "bg-[#F4F4F4]": canDrop === null,
       })}
