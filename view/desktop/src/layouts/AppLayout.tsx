@@ -1,4 +1,3 @@
-import { LayoutPriority } from "allotment";
 import { Suspense, useState, useEffect, useRef } from "react";
 
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
