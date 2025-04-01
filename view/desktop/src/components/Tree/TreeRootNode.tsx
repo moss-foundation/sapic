@@ -103,7 +103,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   return (
-    <div ref={dropTargetFolderRef} className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
+    <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
         className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
