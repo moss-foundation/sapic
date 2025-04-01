@@ -120,27 +120,23 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 onNodeClickCallback?.(node);
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
-              className={cn(
-                nodeStyle,
-                "background-(--moss-treeNode-bg) focus-within:background-(--moss-treeNode-bg) relative w-full cursor-pointer items-center gap-1 dark:hover:text-black",
-                {
-                  "hover:background-(--moss-treeNode-bg-hover)": !isNodeDragging,
-                }
-              )}
+              className={cn(nodeStyle, "relative w-full cursor-pointer items-center gap-1 dark:hover:text-black", {
+                "hover:background-(--moss-primary-bg-hover)": !isNodeDragging,
+              })}
             >
               <TestCollectionIcon type={node.type} />
               <NodeLabel label={node.id} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />
               <Icon
                 icon="TreeChevronRightIcon"
-                className={cn("ml-auto text-[#717171]", {
+                className={cn("ml-auto text-(--moss-icon-primary-text)", {
                   "rotate-90": shouldRenderChildNodes,
                   "opacity-0": !node.isFolder,
                 })}
               />
               {preview &&
                 createPortal(
-                  <ul className="background-(--moss-treeNode-bg-focus)">
+                  <ul className="background-(--moss-primary-bg)">
                     <TreeNode
                       parentNode={{
                         uniqueId: "-",
