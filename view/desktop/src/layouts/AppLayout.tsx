@@ -1,35 +1,36 @@
-import { Suspense, useState, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import {
   ACTIVITY_BAR_WIDTH,
-  DEFAULT_SIDEBAR_WIDTH,
-  MIN_SIDEBAR_WIDTH,
-  MAX_SIDEBAR_WIDTH,
-  MIN_BOTTOM_PANE_HEIGHT,
-  MIN_BOTTOM_PANE_DRAGGABLE_HEIGHT,
-  DEFAULT_BOTTOM_PANE_HEIGHT,
-  SIDEBAR_COLLAPSE_THRESHOLD,
   BOTTOM_PANE_COLLAPSE_THRESHOLD,
+  DEFAULT_BOTTOM_PANE_HEIGHT,
+  DEFAULT_SIDEBAR_WIDTH,
+  MAX_SIDEBAR_WIDTH,
+  MIN_BOTTOM_PANE_DRAGGABLE_HEIGHT,
+  MIN_BOTTOM_PANE_HEIGHT,
+  MIN_SIDEBAR_WIDTH,
+  SIDEBAR_COLLAPSE_THRESHOLD,
   SIDEBAR_POSITION_LEFT,
-  SIDEBAR_POSITION_RIGHT,
   SIDEBAR_POSITION_NONE,
+  SIDEBAR_POSITION_RIGHT,
 } from "@/constants/layout";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
 import { LeftSidebar, RightSidebar } from "@/components";
 import { VerticalActivityBar } from "@/parts/ActivityBar/VerticalActivityBar";
-import { SidebarEdgeHandler } from "@/parts/SideBar/SidebarEdgeHandler";
 import { BottomPane } from "@/parts/BottomPane/BottomPane";
 import { BottomPaneEdgeHandler } from "@/parts/BottomPane/BottomPaneEdgeHandler";
+import { SidebarEdgeHandler } from "@/parts/SideBar/SidebarEdgeHandler";
+import { cn } from "@/utils";
+
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
-import { cn } from "@/utils";
 
 export const AppLayout = () => {
   const { data: appLayoutState } = useGetAppLayoutState();
@@ -184,7 +185,7 @@ export const AppLayout = () => {
   };
 
   return (
-    <div ref={appLayoutRef} className="relative h-full w-full overflow-hidden">
+    <div ref={appLayoutRef} className="relative h-full w-full overflow-hidden text-(--moss-primary-text)">
       {/* Standalone VerticalActivityBar */}
       {shouldRenderStandaloneActivityBar && (
         <div
@@ -271,7 +272,7 @@ export const AppLayout = () => {
 
           {/* Resize handle */}
           <div
-            className="absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:bg-blue-500 hover:opacity-20"
+            className="hover:background-(--moss-primary) absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:opacity-20"
             onMouseDown={startLeftSidebarResize}
           />
         </div>
@@ -294,7 +295,7 @@ export const AppLayout = () => {
 
           {/* Resize handle */}
           <div
-            className="absolute top-0 left-0 h-full w-2 cursor-ew-resize hover:bg-blue-500 hover:opacity-20"
+            className="hover:background-(--moss-primary) absolute top-0 left-0 h-full w-2 cursor-ew-resize hover:opacity-20"
             onMouseDown={startRightSidebarResize}
           />
         </div>

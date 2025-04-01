@@ -25,19 +25,19 @@ export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         ref={forwardedRef}
         className={cn("flex items-center gap-1.5 rounded px-2 py-1", {
           "cursor-not-allowed opacity-50": props.disabled,
-          "hover:background-(--moss-menu-item-bg-hover) cursor-pointer hover:outline-hidden": !props.disabled,
+          "hover:background-(--moss-primary-bg-hover) cursor-pointer hover:outline-hidden": !props.disabled,
         })}
       >
         {!hideIcon &&
           (props.icon ? (
-            <Icon icon={props.icon} className="text-(--moss-menu-item-color)" />
+            <Icon icon={props.icon} className="opacity-40" />
           ) : (
             <Icon icon="DropdownMenuRadioIndicator" className="opacity-0" />
           ))}
 
         <span>{props.label}</span>
 
-        <Icon icon="ArrowheadRight" className="ml-auto text-(--moss-menu-item-color)" />
+        <Icon icon="ArrowheadRight" className="ml-auto opacity-40" />
       </MenuPrimitive.SubTrigger>
     );
   }
@@ -59,7 +59,7 @@ export const SubContent = forwardRef<SubContentElement, SubContentProps>(
         sideOffset={16}
         style={{ ...props.style }}
         className={cn(
-          "background-(--moss-menu-content-bg) rounded border border-(--moss-menu-content-border) px-3 py-2 text-(--moss-menu-content-text) shadow-lg",
+          "background-(--moss-primary-bg) rounded border border-(--moss-border-color) px-3 py-2 shadow-lg",
           props.className
         )}
       />

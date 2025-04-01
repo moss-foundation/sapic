@@ -168,14 +168,6 @@
   --moss-select-placeholder: #a1a1aa;
   --moss-select-hover-bg: rgb(250, 250, 250);
 
-  /* Menu */
-  --moss-menu-content-bg: white;
-  --moss-menu-content-border: #c9ccd6;
-  --moss-menu-content-text: black;
-  --moss-menu-item-bg-hover: #d4e2ff;
-  --moss-menu-item-color: #8d8d8d;
-  --moss-menu-separator-bg: #ebecf0;
-
   /* Input Fields */
   --moss-input-bg-plain: transparent;
   --moss-input-bg-outlined: #ffffff;
