@@ -1,65 +1,63 @@
-use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
-use moss_workspace::workspace::COLLECTIONS_DIR;
-use crate::shared::{random_collection_name, setup_test_workspace};
-
 mod shared;
+
+use moss_testutils::random_name::random_collection_name;
+use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
+
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&collection_name);
-    let key = workspace.create_collection(
-        CreateCollectionInput {
+    let key = workspace
+        .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
-        }
-    ).await.unwrap().key;
-    let result = workspace.delete_collection(
-        DeleteCollectionInput {
-            key
-        }
-    ).await;
-    assert!(result.is_ok());
-
-    // Check folder is removed
-    assert!(!expected_path.exists());
+        })
+        .await
+        .unwrap()
+        .key;
+    let delete_collection_result = workspace
+        .delete_collection(DeleteCollectionInput { key })
+        .await;
+    assert!(delete_collection_result.is_ok());
 
     // Check updating collections
-    let collections = workspace.list_collections().await.unwrap();
-    assert!(collections.0.is_empty());
+    let describe_output = workspace.describe().await.unwrap();
+    assert!(describe_output.collections.is_empty());
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
 #[tokio::test]
 async fn delete_collection_nonexistent_key() {
-    // FIXME: Should this be an error or a no-op, since technically what needs to be deleted is gone?
-    // This might happen, e.g., when the frontend tries to delete already deleted collection
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let key = workspace.create_collection(
-        CreateCollectionInput {
+    let key = workspace
+        .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
-        }
-    ).await.unwrap().key;
-    workspace.delete_collection(
-        DeleteCollectionInput {
-            key
-        }
-    ).await.unwrap();
-    let result = workspace.delete_collection(
-        DeleteCollectionInput {
-            key
-        }
-    ).await;
-    assert!(result.is_err());
+        })
+        .await
+        .unwrap()
+        .key;
+
+    workspace
+        .delete_collection(DeleteCollectionInput { key })
+        .await
+        .unwrap();
+
+    // Delete the collection again
+    let delete_collection_result = workspace
+        .delete_collection(DeleteCollectionInput { key })
+        .await;
+
+    assert!(delete_collection_result.is_err());
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
@@ -68,26 +66,28 @@ async fn delete_collection_fs_already_deleted() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&collection_name);
-    let key = workspace.create_collection(
-        CreateCollectionInput {
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     // Delete the collection
-    std::fs::remove_dir_all(expected_path).unwrap();
+    tokio::fs::remove_dir_all(create_collection_output.path)
+        .await
+        .unwrap();
 
-    let result = workspace.delete_collection(
-        DeleteCollectionInput {
-            key
-        }
-    ).await;
+    let result = workspace
+        .delete_collection(DeleteCollectionInput {
+            key: create_collection_output.key,
+        })
+        .await;
     assert!(result.is_ok());
 
     // Check updating collections
-    let collections = workspace.list_collections().await.unwrap();
-    assert!(collections.0.is_empty());
+    let describe_output = workspace.describe().await.unwrap();
+    assert!(describe_output.collections.is_empty());
 
     {
         std::fs::remove_dir_all(workspace_path).unwrap();

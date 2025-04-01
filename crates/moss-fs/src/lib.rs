@@ -7,12 +7,14 @@ use anyhow::Result;
 use std::{io, path::Path};
 use tokio::fs::ReadDir;
 
+// TODO: Rename to RemoveParams
 #[derive(Copy, Clone, Default)]
 pub struct RemoveOptions {
     pub recursive: bool,
     pub ignore_if_not_exists: bool,
 }
 
+// TODO: Rename to CreateParams
 #[derive(Copy, Clone)]
 pub struct CreateOptions {
     pub overwrite: bool,
@@ -28,6 +30,7 @@ impl Default for CreateOptions {
     }
 }
 
+// TODO: Rename to RenameParams
 #[derive(Copy, Clone)]
 pub struct RenameOptions {
     pub overwrite: bool,

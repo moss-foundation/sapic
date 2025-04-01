@@ -4,7 +4,7 @@ use serde::{de::DeserializeOwned, Serialize};
 use std::borrow::Borrow;
 use std::hash::Hash;
 
-use crate::Transaction;
+use crate::{Table, Transaction};
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>
@@ -25,6 +25,17 @@ where
 {
     fn from(value: &BincodeTable<'a, K, V>) -> Self {
         value.table
+    }
+}
+
+impl<'a, K, V> Table<'a, K, V> for BincodeTable<'a, K, V>
+where
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Hash,
+    for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
+    V: Serialize + DeserializeOwned,
+{
+    fn table_definition(&self) -> TableDefinition<'a, K, Vec<u8>> {
+        self.table.clone()
     }
 }
 
@@ -131,10 +142,10 @@ where
 }
 #[cfg(test)]
 mod tests {
-    use std::fs;
-    use std::path::PathBuf;
     use super::*;
     use crate::{DatabaseClient, ReDbClient};
+    use std::fs;
+    use std::path::PathBuf;
 
     fn random_string(length: usize) -> String {
         use rand::{distr::Alphanumeric, Rng};
@@ -146,7 +157,9 @@ mod tests {
             .collect()
     }
 
-    fn random_db_name() -> String { format!("Test_{}.db", random_string(10))}
+    fn random_db_name() -> String {
+        format!("Test_{}.db", random_string(10))
+    }
     #[test]
     fn scan() {
         let tests_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests");

@@ -1,21 +1,20 @@
-use crate::kdl::body::RequestBody::UrlEncoded;
-use crate::kdl::body::{
-    FormDataBody, FormDataOptions, FormDataValue, RawBodyType, UrlEncodedBody, UrlEncodedOptions,
-};
-use crate::kdl::foundations::body::RequestBody;
-use crate::kdl::foundations::http::{
-    HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
-    QueryParamBody, QueryParamOptions, Url,
-};
-use crate::kdl::tokens::*;
 use anyhow::Result;
-use html5ever::tendril::TendrilSink;
-use html5ever::tree_builder::{QuirksMode, TreeSink};
 use kdl::{KdlDocument, KdlNode};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use thiserror::Error;
+
+use crate::kdl::body::{FormDataBodyItem, FormDataOptions, UrlEncodedBodyItem, UrlEncodedOptions};
+use crate::kdl::foundations::{
+    body::RequestBodyBlock,
+    http::{
+        HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
+        QueryParamBody, QueryParamOptions, UrlBlock,
+    },
+};
+use crate::kdl::tokens::*;
+use crate::models::types::{FormDataValue, RawBodyType};
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -53,11 +52,11 @@ impl Default for ParseOptions {
     }
 }
 
-// With `Strict` mode, we will return an error when parsing html content with errors
-// Otherwise we will ignore the errors
 #[derive(PartialEq)]
 pub enum HtmlParseMode {
+    /// Return an error when parsing html content with errors
     Strict,
+    /// Ignore the errors
     Relaxed,
 }
 
@@ -111,14 +110,14 @@ macro_rules! kdl_get_arg_as_helper {
     };
 }
 
-fn parse_url_node(node: &KdlNode) -> Result<Url> {
+fn parse_url_node(node: &KdlNode) -> Result<UrlBlock> {
     if let Some(document) = node.children() {
-        Ok(Url {
+        Ok(UrlBlock {
             raw: kdl_get_arg_as_string!(document, "raw"),
             host: kdl_get_arg_as_string!(document, "host"),
         })
     } else {
-        Ok(Url {
+        Ok(UrlBlock {
             raw: None,
             host: None,
         })
@@ -260,7 +259,7 @@ fn parse_header_param_options(node: &KdlNode) -> Result<HeaderParamOptions> {
     }
 }
 
-fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
+fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBodyBlock> {
     let typ = node
         .get("type")
         .ok_or_else(|| ParseError::MissingBodyType)
@@ -268,16 +267,18 @@ fn parse_body_node(node: &KdlNode, opts: &ParseOptions) -> Result<RequestBody> {
         // If the type's value is not a string
         .ok_or_else(|| ParseError::InvalidBodyType)?;
     match typ {
-        BODY_TYPE_TEXT => Ok(RequestBody::Raw(parse_raw_body_text(&node)?)),
-        BODY_TYPE_JSON => Ok(RequestBody::Raw(parse_raw_body_json(&node)?)),
-        BODY_TYPE_HTML => Ok(RequestBody::Raw(parse_raw_body_html(
+        BODY_TYPE_TEXT => Ok(RequestBodyBlock::Raw(parse_raw_body_text(&node)?)),
+        BODY_TYPE_JSON => Ok(RequestBodyBlock::Raw(parse_raw_body_json(&node)?)),
+        BODY_TYPE_HTML => Ok(RequestBodyBlock::Raw(parse_raw_body_html(
             &node,
             &opts.html_parse_mode,
         )?)),
-        BODY_TYPE_XML => Ok(RequestBody::Raw(parse_raw_body_xml(&node)?)),
-        BODY_TYPE_FORM_DATA => Ok(RequestBody::FormData(parse_form_data_params(&node)?)),
-        BODY_TYPE_URLENCODED => Ok(RequestBody::UrlEncoded(parse_urlencoded_params(&node)?)),
-        BODY_TYPE_BINARY => Ok(RequestBody::Binary(parse_binary_path(&node)?)),
+        BODY_TYPE_XML => Ok(RequestBodyBlock::Raw(parse_raw_body_xml(&node)?)),
+        BODY_TYPE_FORM_DATA => Ok(RequestBodyBlock::FormData(parse_form_data_params(&node)?)),
+        BODY_TYPE_URLENCODED => Ok(RequestBodyBlock::UrlEncoded(parse_urlencoded_params(
+            &node,
+        )?)),
+        BODY_TYPE_BINARY => Ok(RequestBodyBlock::Binary(parse_binary_path(&node)?)),
         _ => Err(ParseError::InvalidBodyType.into()),
     }
 }
@@ -349,8 +350,8 @@ fn parse_raw_body_content(node: &KdlNode) -> Result<String> {
     Ok(result)
 }
 
-fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBody>> {
-    let mut params: HashMap<String, FormDataBody> = HashMap::new();
+fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBodyItem>> {
+    let mut params: HashMap<String, FormDataBodyItem> = HashMap::new();
     if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
@@ -361,7 +362,7 @@ fn parse_form_data_params(node: &KdlNode) -> Result<HashMap<String, FormDataBody
     Ok(params)
 }
 
-fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
+fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBodyItem> {
     if let Some(fields) = node.children() {
         // FIXME: We now default to Text("") if we can't find type and value from the file
         // Should we raise an error here?
@@ -377,7 +378,7 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
             FormDataOptions::default()
         };
 
-        Ok(FormDataBody {
+        Ok(FormDataBodyItem {
             value: match typ.as_ref() {
                 "text" => FormDataValue::Text(value.to_string()),
                 "file" => FormDataValue::File(PathBuf::from(value)),
@@ -389,7 +390,7 @@ fn parse_form_data_body(node: &KdlNode) -> Result<FormDataBody> {
             options,
         })
     } else {
-        Ok(FormDataBody::default())
+        Ok(FormDataBodyItem::default())
     }
 }
 
@@ -402,8 +403,8 @@ fn parse_form_data_options(node: &KdlNode) -> Result<FormDataOptions> {
     }
 }
 
-fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBody>> {
-    let mut params: HashMap<String, UrlEncodedBody> = HashMap::new();
+fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedBodyItem>> {
+    let mut params: HashMap<String, UrlEncodedBodyItem> = HashMap::new();
     if let Some(document) = node.children() {
         for param_node in document.nodes() {
             let key = param_node.name().to_string();
@@ -414,7 +415,7 @@ fn parse_urlencoded_params(node: &KdlNode) -> Result<HashMap<String, UrlEncodedB
     Ok(params)
 }
 
-fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
+fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBodyItem> {
     if let Some(fields) = node.children() {
         let value = kdl_get_arg_as_string!(fields, "value").unwrap_or_default();
         let desc = kdl_get_arg_as_string!(fields, "desc");
@@ -427,7 +428,7 @@ fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
             UrlEncodedOptions::default()
         };
 
-        Ok(UrlEncodedBody {
+        Ok(UrlEncodedBodyItem {
             value,
             desc,
             order,
@@ -435,7 +436,7 @@ fn parse_urlencoded_body(node: &KdlNode) -> Result<UrlEncodedBody> {
             options,
         })
     } else {
-        Ok(UrlEncodedBody::default())
+        Ok(UrlEncodedBodyItem::default())
     }
 }
 
@@ -502,55 +503,11 @@ pub fn parse(input: &str, opts: &ParseOptions) -> Result<HttpRequestFile> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::kdl::foundations::body::RequestBody;
-    use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, Url};
-    use kdl::{KdlDocument, KdlNode};
-    use miette::{Diagnostic, NamedSource, SourceSpan};
+    use crate::kdl::foundations::body::RequestBodyBlock;
+    use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, UrlBlock};
+    use kdl::KdlNode;
 
     use std::fs;
-    use thiserror::Error;
-
-    use scraper::Html;
-
-    // #[derive(Error, Debug, Diagnostic)]
-    // #[error("oops!")]
-    // #[diagnostic(
-    //     code(oops::my::bad),
-    //     url(docsrs),
-    //     help("try doing it better next time?")
-    // )]
-    // struct MyBad {
-    //     // The Source that we're gonna be printing snippets out of.
-    //     // This can be a String if you don't have or care about file names.
-    //     #[source_code]
-    //     src: NamedSource<String>,
-    //     // Snippets and highlights can be included in the diagnostic!
-    //     #[label("This bit here")]
-    //     bad_bit: SourceSpan,
-    // }
-    //
-    // #[test]
-    // fn miette() -> miette::Result<()> {
-    //     // You can use plain strings as a `Source`, or anything that implements
-    //     // the one-method `Source` trait.
-    //     let src = "source\n  text\n    here".to_string();
-    //
-    //     Err(MyBad {
-    //         src: NamedSource::new("bad_file.rs", src),
-    //         bad_bit: (9, 4).into(),
-    //     })?;
-    //
-    //     Ok(())
-    // }
-    //
-    // #[test]
-    // fn de() {
-    //     let node =
-    //         fs::read_to_string("./tests/requests/TestRequest/TestRequest.http.sapic").unwrap();
-    //     // let doc: KdlDocument = content.parse().unwrap();
-    //
-    //     super::parse(&node).unwrap();
-    // }
 
     #[test]
     fn parse_url_node_empty() {
@@ -560,12 +517,12 @@ mod tests {
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
             url_node,
-            Url {
+            UrlBlock {
                 raw: None,
                 host: None
             }
         );
-        assert_eq!(url_node, Url::default())
+        assert_eq!(url_node, UrlBlock::default())
     }
 
     #[test]
@@ -577,7 +534,7 @@ mod tests {
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
             url_node,
-            Url {
+            UrlBlock {
                 raw: Some("raw".to_string()),
                 host: None
             }
@@ -594,7 +551,7 @@ mod tests {
         let url_node = parse_url_node(&node).unwrap();
         assert_eq!(
             url_node,
-            Url {
+            UrlBlock {
                 raw: Some("{{baseUrl}}/objects".to_string()),
                 host: Some("{{baseUrl}}".to_string())
             }
@@ -1042,7 +999,7 @@ mod tests {
         let request = parse(&text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Raw(RawBodyType::Text("A test string".to_string()))
+            RequestBodyBlock::Raw(RawBodyType::Text("A test string".to_string()))
         );
     }
 
@@ -1068,7 +1025,7 @@ mod tests {
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Raw(RawBodyType::Json(json.to_string()))
+            RequestBodyBlock::Raw(RawBodyType::Json(json.to_string()))
         );
     }
 
@@ -1103,7 +1060,7 @@ mod tests {
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Raw(RawBodyType::Html(html.to_string()))
+            RequestBodyBlock::Raw(RawBodyType::Html(html.to_string()))
         );
     }
 
@@ -1133,7 +1090,7 @@ mod tests {
         .unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Raw(RawBodyType::Html(html.to_string()))
+            RequestBodyBlock::Raw(RawBodyType::Html(html.to_string()))
         );
     }
 
@@ -1158,7 +1115,7 @@ mod tests {
         let request = parse(&text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Raw(RawBodyType::Xml(xml.to_string()))
+            RequestBodyBlock::Raw(RawBodyType::Xml(xml.to_string()))
         )
     }
 
@@ -1177,7 +1134,10 @@ mod tests {
     fn parse_body_form_data_empty() {
         let text = r###"body type=form-data {}"###;
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::FormData(HashMap::new()))
+        assert_eq!(
+            request.body.unwrap(),
+            RequestBodyBlock::FormData(HashMap::new())
+        )
     }
 
     #[test]
@@ -1199,14 +1159,14 @@ mod tests {
         value "value"
     }
 }"###;
-        let body1 = FormDataBody {
+        let body1 = FormDataBodyItem {
             value: FormDataValue::Text("value".to_string()),
             ..Default::default()
         };
         let mut map = HashMap::new();
         map.insert("key1".to_string(), body1);
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::FormData(map))
+        assert_eq!(request.body.unwrap(), RequestBodyBlock::FormData(map))
     }
 
     #[test]
@@ -1221,11 +1181,11 @@ mod tests {
         value "path/to/file"
     }
 }"###;
-        let body1 = FormDataBody {
+        let body1 = FormDataBodyItem {
             value: FormDataValue::Text("value".to_string()),
             ..Default::default()
         };
-        let body2 = FormDataBody {
+        let body2 = FormDataBodyItem {
             value: FormDataValue::File(PathBuf::from("path/to/file")),
             ..Default::default()
         };
@@ -1233,7 +1193,7 @@ mod tests {
         map.insert("key1".to_string(), body1);
         map.insert("key2".to_string(), body2);
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::FormData(map))
+        assert_eq!(request.body.unwrap(), RequestBodyBlock::FormData(map))
     }
 
     #[test]
@@ -1242,7 +1202,7 @@ mod tests {
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::UrlEncoded(HashMap::new())
+            RequestBodyBlock::UrlEncoded(HashMap::new())
         )
     }
 
@@ -1253,14 +1213,14 @@ mod tests {
         value "value"
     }
 }"###;
-        let body1 = UrlEncodedBody {
+        let body1 = UrlEncodedBodyItem {
             value: "value".to_string(),
             ..Default::default()
         };
         let mut map = HashMap::new();
         map.insert("key1".to_string(), body1);
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+        assert_eq!(request.body.unwrap(), RequestBodyBlock::UrlEncoded(map))
     }
 
     #[test]
@@ -1273,11 +1233,11 @@ mod tests {
         value "value"
     }
 }"###;
-        let body1 = UrlEncodedBody {
+        let body1 = UrlEncodedBodyItem {
             value: "value".to_string(),
             ..Default::default()
         };
-        let body2 = UrlEncodedBody {
+        let body2 = UrlEncodedBodyItem {
             value: "value".to_string(),
             ..Default::default()
         };
@@ -1285,7 +1245,7 @@ mod tests {
         map.insert("key1".to_string(), body1);
         map.insert("key2".to_string(), body2);
         let request = parse(text, &ParseOptions::default()).unwrap();
-        assert_eq!(request.body.unwrap(), RequestBody::UrlEncoded(map))
+        assert_eq!(request.body.unwrap(), RequestBodyBlock::UrlEncoded(map))
     }
 
     #[test]
@@ -1300,7 +1260,7 @@ mod tests {
         let request = parse(text, &ParseOptions::default()).unwrap();
         assert_eq!(
             request.body.unwrap(),
-            RequestBody::Binary("path/to/file".into())
+            RequestBodyBlock::Binary("path/to/file".into())
         )
     }
     #[test]

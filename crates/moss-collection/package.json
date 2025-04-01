@@ -8,16 +8,25 @@
       "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
     },
     "devDependencies": {
-      "@repo/typescript-config": "workspace:*"
+      "@repo/typescript-config": "workspace:*",
+      "@repo/bindings-utils": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.8.2"
     },
     "tsImportRules": {
-      "bindings/operations/collection.ts": {
-        "../types/request": {
+      "bindings/operations.ts": {
+        "@repo/bindings-utils": {
           "types": [
-            "QueryParamItem"
+            "ResourceKey"
+          ],
+          "is_type_import": true
+        }
+      },
+      "bindings/types.ts": {
+        "@repo/bindings-utils": {
+          "types": [
+            "ResourceKey"
           ],
           "is_type_import": true
         }
