@@ -80,11 +80,11 @@
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply border-b border-(--moss-activegroup-visiblepanel-tab-border-color) bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  @apply border-b border-(--moss-activegroup-hiddenpanel-tab-border-color) bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
@@ -136,7 +136,7 @@
 }
 
 .dv-tab .dv-default-tab {
-  @apply relative flex h-full min-w-20 items-center px-2 text-ellipsis whitespace-nowrap;
+  @apply relative flex h-full min-w-20 items-center border-b border-transparent px-2 text-ellipsis whitespace-nowrap;
 }
 
 .dv-tab .dv-default-tab .dv-default-tab-content {

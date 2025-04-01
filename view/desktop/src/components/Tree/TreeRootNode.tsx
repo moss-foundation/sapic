@@ -18,7 +18,6 @@ import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "
 export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   const {
     treeId,
-    nodeOffset,
     paddingLeft,
     paddingRight,
     allFoldersAreCollapsed,
@@ -103,7 +102,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
 
   return (
-    <div ref={dropTargetFolderRef} className={cn("group relative w-full border-b border-b-(--moss-tree-border)")}>
+    <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
         className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
@@ -150,14 +149,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
               <button
                 disabled={allFoldersAreExpanded}
-                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-treeNodeButton-text)`}
+                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
                 onClick={handleExpandAll}
               >
                 <Icon icon="TreeExpandAllIcon" />
               </button>
               <button
                 disabled={allFoldersAreCollapsed}
-                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-treeNodeButton-text)`}
+                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
                 onClick={handleCollapseAll}
               >
                 <Icon icon="TreeCollapseAllIcon" />
@@ -165,7 +164,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             </div>
           )}
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-treeNodeButton-text)">
+            <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)">
               <Icon icon="TreeDetailIcon" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>

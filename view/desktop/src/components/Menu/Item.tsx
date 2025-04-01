@@ -26,21 +26,21 @@ export const Item = forwardRef<ItemElement, ItemProps>(
           "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
           {
             "cursor-not-allowed grayscale-100": props.disabled,
-            "hover:background-(--moss-menu-item-bg-hover) cursor-pointer hover:outline-hidden": !props.disabled,
+            "hover:background-(--moss-primary-background-hover) cursor-pointer hover:outline-hidden": !props.disabled,
           },
           className
         )}
       >
         {!hideIcon &&
           (props.icon ? (
-            <Icon icon={props.icon} className={cn("shrink-0 text-(--moss-menu-item-color)", iconClassName)} />
+            <Icon icon={props.icon} className={cn("shrink-0 opacity-30", iconClassName)} />
           ) : (
             <Icon icon="DropdownMenuRadioIndicator" className={cn("shrink-0 opacity-0", iconClassName)} />
           ))}
         <div className="flex w-full items-center gap-2.5">
           <span>{props.label}</span>
 
-          {props.shortcut && <div className="ml-auto text-(--moss-menu-item-color)">{props.shortcut.join("")}</div>}
+          {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut.join("")}</div>}
         </div>
       </MenuPrimitive.Item>
     );

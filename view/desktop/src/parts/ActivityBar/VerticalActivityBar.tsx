@@ -15,7 +15,6 @@ export const VerticalActivityBar = ({ position }: VerticalActivityBarProps) => {
         [position]: 0,
         width: "41px",
         zIndex: 5,
-        boxShadow: position === "left" ? "1px 0 3px rgba(0,0,0,0.1)" : "-1px 0 3px rgba(0,0,0,0.1)",
         background: "var(--moss-activityBar-background)",
         borderRight: position === "left" ? "1px solid var(--moss-activityBar-border-color)" : "none",
         borderLeft: position === "right" ? "1px solid var(--moss-activityBar-border-color)" : "none",

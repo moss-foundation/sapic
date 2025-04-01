@@ -112,7 +112,7 @@ export const CollectionTreeView = () => {
           size="sm"
         />
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="background-(--moss-treeNodeButton-bg) hover:background-(--moss-treeNodeButton-bg-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-treeNodeButton-text)">
+          <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-icon-primary-text)">
             <Icon icon="Plus" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
@@ -155,7 +155,10 @@ export const CollectionTreeView = () => {
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
-            <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
+            <>
+              <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
+              <div className="background-(--moss-border-color) h-[1px] w-full" />
+            </>
           ))}
           {showCollectionCreationZone && (
             <div className="flex grow flex-col justify-end">
@@ -211,16 +214,17 @@ const CollectionCreationZone = () => {
   return (
     <div
       ref={ref}
-      className={cn("mb-8 grid h-max min-h-32 w-full place-items-center", {
-        "bg-[#edf6ff]": canDrop === true,
-        "bg-[#F4F4F4]": canDrop === null,
+      className={cn("grid h-max min-h-32 w-full place-items-center", {
+        "bg-[#EDF6FF]": canDrop === true,
+        "background-(--moss-primary-background)": canDrop === null,
       })}
     >
-      <div className="flex flex-col items-center justify-center gap-3 rounded p-8 text-center text-(--moss-text)">
+      <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
         <Icon
-          icon="Plus"
-          className={cn("size-5 text-[#717171]", {
-            "text-(--moss-primary)": canDrop,
+          icon="PlusCircle"
+          className={cn("size-5 rounded-full", {
+            "text-(--moss-primary)": canDrop === true,
+            "text-(--moss-icon-primary-text)": canDrop === null,
           })}
         />
         <span className="text-black">Drag & drop selected items here to create a new collection</span>

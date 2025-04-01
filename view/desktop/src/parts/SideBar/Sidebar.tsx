@@ -1,12 +1,13 @@
-import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
-import { ViewContainer } from "@/components/ViewContainer";
+import { ReactNode, useEffect, useRef } from "react";
+
 import { CollectionTreeView } from "@/components/CollectionTreeView";
+import { ViewContainer } from "@/components/ViewContainer";
 import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useGetViewGroups } from "@/hooks/useGetViewGroups";
+import { useGetProjectSessionState } from "@/hooks/useProjectSession";
+import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
 import { cn } from "@/utils";
-import { useEffect, useRef, ReactNode } from "react";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -28,7 +29,7 @@ export const BaseSidebar = ({ isResizing = false, position = "left", className, 
       (position === "right" && sidebarSetting === "right" && activeSidebar === "right"));
 
   const sidebarClasses = cn(
-    "background-(--moss-sideBar-background) flex h-full flex-col",
+    "background-(--moss-secondary-background) flex h-full flex-col",
     // Only apply transitions when not actively resizing
     !isResizing && "transition-[width] duration-200",
     !isVisible && "w-0 overflow-hidden",
