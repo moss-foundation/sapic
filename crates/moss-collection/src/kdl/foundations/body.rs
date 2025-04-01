@@ -1,45 +1,43 @@
-use crate::{
-    kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
-    models::types,
-};
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 use std::collections::HashMap;
 use std::mem;
 use std::path::PathBuf;
 
+use crate::{
+    kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
+    models::types::{FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem},
+};
+
 #[derive(Clone, Debug, PartialEq)]
-pub enum RequestBody {
+pub enum RequestBodyBlock {
     Raw(RawBodyType),
-    FormData(HashMap<String, FormDataBody>),
-    UrlEncoded(HashMap<String, UrlEncodedBody>),
+    FormData(HashMap<String, FormDataBodyItem>),
+    UrlEncoded(HashMap<String, UrlEncodedBodyItem>),
     Binary(PathBuf),
 }
+
 #[rustfmt::skip]
-impl From<types::request_types::RequestBody> for RequestBody {
-    fn from(body: types::request_types::RequestBody) -> Self {
+impl From<RequestBody> for RequestBodyBlock {
+    fn from(body: RequestBody) -> Self {
         match body {
-            types::request_types::RequestBody::Raw(raw_body) => RequestBody::Raw(RawBodyType::from(raw_body)),
-            types::request_types::RequestBody::Binary(path) => RequestBody::Binary(PathBuf::from(path)),
-            types::request_types::RequestBody::FormData(form_data) => map_form_data_to_kdl(form_data),
-            types::request_types::RequestBody::UrlEncoded(url_encoded) => map_url_encoded_to_kdl(url_encoded),
+            RequestBody::Raw(raw_body) => RequestBodyBlock::Raw(RawBodyType::from(raw_body)),
+            RequestBody::Binary(path) => RequestBodyBlock::Binary(PathBuf::from(path)),
+            RequestBody::FormData(form_data) => map_form_data_to_kdl(form_data),
+            RequestBody::UrlEncoded(url_encoded) => map_url_encoded_to_kdl(url_encoded),
         }
     }
 }
 
-fn map_form_data_to_kdl(
-    items: Vec<types::request_types::FormDataItem>,
-) -> crate::kdl::body::RequestBody {
+fn map_form_data_to_kdl(items: Vec<FormDataItem>) -> crate::kdl::body::RequestBodyBlock {
     let map = items
         .into_iter()
         .map(|mut item| {
             (
                 mem::take(&mut item.key),
-                FormDataBody {
+                FormDataBodyItem {
                     value: match item.value {
-                        types::request_types::FormDataValue::Text(s) => {
-                            crate::kdl::body::FormDataValue::Text(s)
-                        }
-                        types::request_types::FormDataValue::File(s) => {
+                        FormDataValue::Text(s) => crate::kdl::body::FormDataValue::Text(s),
+                        FormDataValue::File(s) => {
                             crate::kdl::body::FormDataValue::File(PathBuf::from(s))
                         }
                     },
@@ -53,18 +51,16 @@ fn map_form_data_to_kdl(
             )
         })
         .collect::<HashMap<_, _>>();
-    crate::kdl::body::RequestBody::FormData(map)
+    crate::kdl::body::RequestBodyBlock::FormData(map)
 }
 
-fn map_url_encoded_to_kdl(
-    items: Vec<types::request_types::UrlEncodedItem>,
-) -> crate::kdl::body::RequestBody {
+fn map_url_encoded_to_kdl(items: Vec<UrlEncodedItem>) -> crate::kdl::body::RequestBodyBlock {
     let map = items
         .into_iter()
         .map(|mut item| {
             (
                 mem::take(&mut item.key),
-                UrlEncodedBody {
+                UrlEncodedBodyItem {
                     value: mem::take(&mut item.value),
                     desc: mem::take(&mut item.desc),
                     order: mem::take(&mut item.order),
@@ -76,31 +72,11 @@ fn map_url_encoded_to_kdl(
             )
         })
         .collect::<HashMap<_, _>>();
-    crate::kdl::body::RequestBody::UrlEncoded(map)
+    crate::kdl::body::RequestBodyBlock::UrlEncoded(map)
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum RawBodyType {
-    Text(String),
-    Json(String),
-    Html(String),
-    Xml(String),
-}
-
-#[rustfmt::skip]
-impl From<types::request_types::RawBodyType> for RawBodyType {
-    fn from(value: types::request_types::RawBodyType) -> Self {
-        match value {
-            types::request_types::RawBodyType::Text(text) => RawBodyType::Text(text),
-            types::request_types::RawBodyType::Json(json) => RawBodyType::Json(json),
-            types::request_types::RawBodyType::Html(html) => RawBodyType::Html(html),
-            types::request_types::RawBodyType::Xml(xml) => RawBodyType::Xml(xml),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct FormDataBody {
+pub struct FormDataBodyItem {
     pub value: FormDataValue,
     pub desc: Option<String>,
     pub order: Option<usize>,
@@ -108,7 +84,7 @@ pub struct FormDataBody {
     pub options: FormDataOptions,
 }
 
-impl Default for FormDataBody {
+impl Default for FormDataBodyItem {
     fn default() -> Self {
         Self {
             value: FormDataValue::Text("".to_string()),
@@ -120,7 +96,7 @@ impl Default for FormDataBody {
     }
 }
 
-impl Into<KdlDocument> for FormDataBody {
+impl Into<KdlDocument> for FormDataBodyItem {
     fn into(self) -> KdlDocument {
         let (typ, value) = match self.value {
             FormDataValue::Text(s) => ("text", s),
@@ -157,12 +133,6 @@ impl Into<KdlDocument> for FormDataBody {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum FormDataValue {
-    Text(String),
-    File(PathBuf),
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct FormDataOptions {
     pub propagate: bool,
 }
@@ -187,7 +157,7 @@ impl Into<KdlNode> for FormDataOptions {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct UrlEncodedBody {
+pub struct UrlEncodedBodyItem {
     pub value: String,
     pub desc: Option<String>,
     pub order: Option<usize>,
@@ -195,7 +165,7 @@ pub struct UrlEncodedBody {
     pub options: UrlEncodedOptions,
 }
 
-impl Default for UrlEncodedBody {
+impl Default for UrlEncodedBodyItem {
     fn default() -> Self {
         Self {
             value: "".to_string(),
@@ -207,7 +177,7 @@ impl Default for UrlEncodedBody {
     }
 }
 
-impl Into<KdlDocument> for UrlEncodedBody {
+impl Into<KdlDocument> for UrlEncodedBodyItem {
     fn into(self) -> KdlDocument {
         let mut doc = KdlDocument::new();
 
@@ -295,7 +265,7 @@ fn prepare_raw_body_node(node: &mut KdlNode, raw_body: RawBodyType) {
     node.set_children(children);
 }
 
-fn prepare_form_data_body_node(node: &mut KdlNode, form_data: HashMap<String, FormDataBody>) {
+fn prepare_form_data_body_node(node: &mut KdlNode, form_data: HashMap<String, FormDataBodyItem>) {
     node.push(KdlEntry::new_prop("type", "form-data"));
     let mut children = KdlDocument::new();
     for (key, body) in form_data {
@@ -307,7 +277,10 @@ fn prepare_form_data_body_node(node: &mut KdlNode, form_data: HashMap<String, Fo
     node.autoformat();
 }
 
-fn prepare_urlencoded_body_node(node: &mut KdlNode, url_encoded: HashMap<String, UrlEncodedBody>) {
+fn prepare_urlencoded_body_node(
+    node: &mut KdlNode,
+    url_encoded: HashMap<String, UrlEncodedBodyItem>,
+) {
     node.push(KdlEntry::new_prop("type", "urlencoded"));
     let mut children = KdlDocument::new();
     for (key, body) in url_encoded {
@@ -328,20 +301,20 @@ fn prepare_binary_body_node(node: &mut KdlNode, path: PathBuf) {
     node.autoformat();
 }
 
-impl Into<KdlNode> for RequestBody {
+impl Into<KdlNode> for RequestBodyBlock {
     fn into(self) -> KdlNode {
         let mut node = KdlNode::new(BODY_LIT);
         match self {
-            RequestBody::Raw(raw_body) => {
+            RequestBodyBlock::Raw(raw_body) => {
                 prepare_raw_body_node(&mut node, raw_body);
             }
-            RequestBody::FormData(form_data) => {
+            RequestBodyBlock::FormData(form_data) => {
                 prepare_form_data_body_node(&mut node, form_data);
             }
-            RequestBody::UrlEncoded(url_encoded) => {
+            RequestBodyBlock::UrlEncoded(url_encoded) => {
                 prepare_urlencoded_body_node(&mut node, url_encoded);
             }
-            RequestBody::Binary(path) => {
+            RequestBodyBlock::Binary(path) => {
                 prepare_binary_body_node(&mut node, path);
             }
         }
@@ -364,7 +337,7 @@ mod tests {
     """#
 }"###;
 
-        let request_body = RequestBody::Raw(RawBodyType::Text("Raw Text".to_string()));
+        let request_body = RequestBodyBlock::Raw(RawBodyType::Text("Raw Text".to_string()));
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
@@ -382,12 +355,12 @@ mod tests {
     }
 }"###;
         let mut form_data = HashMap::new();
-        let body = FormDataBody {
+        let body = FormDataBodyItem {
             value: FormDataValue::Text("value".to_string()),
             ..Default::default()
         };
         form_data.insert("key".to_string(), body);
-        let request_body = RequestBody::FormData(form_data);
+        let request_body = RequestBodyBlock::FormData(form_data);
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
@@ -404,12 +377,12 @@ mod tests {
     }
 }"###;
         let mut urlencoded = HashMap::new();
-        let body = UrlEncodedBody {
+        let body = UrlEncodedBodyItem {
             value: "value".to_string(),
             ..Default::default()
         };
         urlencoded.insert("key".to_string(), body);
-        let request_body = RequestBody::UrlEncoded(urlencoded);
+        let request_body = RequestBodyBlock::UrlEncoded(urlencoded);
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
@@ -417,7 +390,7 @@ mod tests {
     #[test]
     fn writing_binary_node() {
         let expected = r###"body type=binary path="path/to/file""###;
-        let request_body = RequestBody::Binary(PathBuf::from("path/to/file"));
+        let request_body = RequestBodyBlock::Binary(PathBuf::from("path/to/file"));
         let node: KdlNode = request_body.into();
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }

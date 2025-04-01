@@ -1,33 +1,38 @@
-use std::path::PathBuf;
-use moss_collection::collection::OperationError;
-use moss_collection::models::operations::collection_operations::{CreateRequestInput, RenameRequestInput, RequestInfo};
-use crate::shared::{random_request_name, request_relative_path, request_folder_name, set_up_test_collection, SPECIAL_CHARS};
-
 mod shared;
+
+use moss_collection::collection::OperationError;
+use moss_collection::models::operations::{CreateRequestInput, RenameRequestInput};
+use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
+use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
+use std::path::PathBuf;
+
+use crate::shared::{request_folder_name, request_relative_path, set_up_test_collection};
+
 #[tokio::test]
 async fn rename_request_success() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
     let old_path = collection_path.join(request_relative_path(&request_name, None));
-    let key = collection.create_request(
-        CreateRequestInput {
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
 
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     let new_request_name = random_request_name();
-    let result = collection.rename_request(
-        RenameRequestInput {
-            key,
+    let rename_collection_result = collection
+        .rename_request(RenameRequestInput {
+            key: create_request_output.key,
             new_name: new_request_name.clone(),
-        }
-    ).await;
-    assert!(result.is_ok());
+        })
+        .await;
+    assert!(rename_collection_result.is_ok());
 
     // Check filesystem rename
     let expected_path = collection_path.join(request_relative_path(&new_request_name, None));
@@ -35,19 +40,23 @@ async fn rename_request_success() {
     assert!(!old_path.exists());
 
     // Check updating requests
-    let requests = collection.list_requests().await.unwrap();
-    assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0], RequestInfo {
-        key,
-        name: new_request_name.clone(),
-        request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestInfo {
+            key: create_request_output.key,
+            name: new_request_name.clone(),
+            request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
 
-        order: None,
-        typ: Default::default(),
-    });
+            order: None,
+            typ: RequestProtocol::Http(HttpMethod::Get),
+        }
+    );
 
+    // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -56,29 +65,33 @@ async fn rename_request_empty_name() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let old_path = collection_path.join(request_relative_path(&request_name, None));
-    let key = collection.create_request(
-        CreateRequestInput {
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
 
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     let new_name = "".to_string();
-    let result = collection.rename_request(
-        RenameRequestInput {
-            key,
+    let rename_collection_result = collection
+        .rename_request(RenameRequestInput {
+            key: create_request_output.key,
             new_name,
-        }
-    ).await;
+        })
+        .await;
 
-    assert!(matches!(result, Err(OperationError::Validation(_))));
+    assert!(matches!(
+        rename_collection_result,
+        Err(OperationError::Validation(_))
+    ));
 
+    // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -87,28 +100,30 @@ async fn rename_request_unchanged() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let key = collection.create_request(
-        CreateRequestInput {
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
 
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     let new_name = request_name;
-    let result = collection.rename_request(
-        RenameRequestInput {
-            key,
+    let rename_collection_result = collection
+        .rename_request(RenameRequestInput {
+            key: create_request_output.key,
             new_name,
-        }
-    ).await;
+        })
+        .await;
 
-    assert!(result.is_ok());
+    assert!(rename_collection_result.is_ok());
 
+    // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -118,39 +133,45 @@ async fn rename_request_already_exists() {
 
     let existing_request_name = random_request_name();
     // Create an existing request
-    collection.create_request(
-        CreateRequestInput {
+    collection
+        .create_request(CreateRequestInput {
             name: existing_request_name.to_string(),
 
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap();
+        })
+        .await
+        .unwrap();
 
     let new_request_name = random_request_name();
     // Create a request to test renaming
-    let key = collection.create_request(
-        CreateRequestInput {
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
             name: new_request_name,
 
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     // Try renaming the new request to an existing request name
-    let result = collection.rename_request(
-        RenameRequestInput {
-            key,
-            new_name: existing_request_name
-        }
-    ).await;
-    assert!(matches!(result, Err(OperationError::AlreadyExists {..})));
+    let rename_collection_result = collection
+        .rename_request(RenameRequestInput {
+            key: create_request_output.key,
+            new_name: existing_request_name,
+        })
+        .await;
+    assert!(matches!(
+        rename_collection_result,
+        Err(OperationError::AlreadyExists { .. })
+    ));
 
+    // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }
 
@@ -159,38 +180,43 @@ async fn rename_request_special_chars() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let old_path = collection_path.join(request_relative_path(&request_name, None));
-    let key = collection.create_request(
-        CreateRequestInput {
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
             payload: None,
-        }
-    ).await.unwrap().key;
+        })
+        .await
+        .unwrap();
 
     for char in SPECIAL_CHARS {
         let new_request_name = format!("{request_name}{char}");
-        collection.rename_request(
-            RenameRequestInput {
-                key,
+        collection
+            .rename_request(RenameRequestInput {
+                key: create_request_output.key,
                 new_name: new_request_name.clone(),
-            }
-        ).await.unwrap();
+            })
+            .await
+            .unwrap();
 
         // Checking updating requests
-        let requests = collection.list_requests().await.unwrap();
-        assert_eq!(requests.0.len(), 1);
-        assert_eq!(requests.0[0], RequestInfo {
-            key,
-            request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
-            name: new_request_name,
-            order: None,
-            typ: Default::default(),
-        });
+        let list_requests_output = collection.list_requests().await.unwrap();
+        assert_eq!(list_requests_output.0.len(), 1);
+        assert_eq!(
+            list_requests_output.0[0],
+            RequestInfo {
+                key: create_request_output.key,
+                request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
+                name: new_request_name,
+                order: None,
+                typ: RequestProtocol::Http(HttpMethod::Get),
+            }
+        );
     }
 
+    // Clean up
     {
-        std::fs::remove_dir_all(&collection_path).unwrap()
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
     }
 }

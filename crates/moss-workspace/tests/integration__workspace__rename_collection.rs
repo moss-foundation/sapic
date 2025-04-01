@@ -1,48 +1,52 @@
+mod shared;
+
 use moss_fs::utils::encode_directory_name;
-use moss_workspace::workspace::{OperationError, COLLECTIONS_DIR};
+use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::{CreateCollectionInput, RenameCollectionInput};
 use moss_workspace::models::types::CollectionInfo;
-use crate::shared::{random_collection_name, setup_test_workspace, SPECIAL_CHARS};
+use moss_workspace::workspace::{OperationError, COLLECTIONS_DIR};
 
-mod shared;
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn rename_collection_success() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
-    let old_path = workspace_path.join(COLLECTIONS_DIR).join(&old_collection_name);
-    let key = workspace.create_collection(
-        CreateCollectionInput {
-            name: old_collection_name.clone()
-        }
-    ).await.unwrap().key;
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
+            name: old_collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     let new_collection_name = random_collection_name();
-    let result = workspace.rename_collection(
-        RenameCollectionInput {
-            key,
-            new_name: new_collection_name.clone()
-        }
-    ).await;
+    let result = workspace
+        .rename_collection(RenameCollectionInput {
+            key: create_collection_output.key,
+            new_name: new_collection_name.clone(),
+        })
+        .await;
     assert!(result.is_ok());
 
-    // Check filesystem rename
-    let expected_path = workspace_path.join(COLLECTIONS_DIR).join(&new_collection_name);
-    assert!(expected_path.exists());
-    assert!(!old_path.exists());
+    let rename_collection_output = result.unwrap();
+    assert!(rename_collection_output.path.exists());
+    assert!(!create_collection_output.path.exists());
 
     // Check updating collections
-    let collections = workspace.list_collections().await.unwrap();
-    assert_eq!(collections.0.len(), 1);
-    assert_eq!(collections.0[0], CollectionInfo {
-        key,
-        name: new_collection_name,
-        order: None,
-    });
+    let describe_output = workspace.describe().await.unwrap();
+    assert_eq!(describe_output.collections.len(), 1);
+    assert_eq!(
+        describe_output.collections[0],
+        CollectionInfo {
+            key: create_collection_output.key,
+            name: new_collection_name,
+            order: None,
+        }
+    );
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
@@ -51,24 +55,28 @@ async fn rename_collection_empty_name() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
-    let key = workspace.create_collection(
-        CreateCollectionInput {
-            name: old_collection_name.clone()
-        }
-    ).await.unwrap().key;
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
+            name: old_collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     let new_collection_name = "".to_string();
-    let result = workspace.rename_collection(
-        RenameCollectionInput {
-            key,
-            new_name: new_collection_name.clone()
-        }
-    ).await;
+    let rename_collection_result = workspace
+        .rename_collection(RenameCollectionInput {
+            key: create_collection_output.key,
+            new_name: new_collection_name.clone(),
+        })
+        .await;
 
-    assert!(matches!(result, Err(OperationError::Validation(_))));
+    assert!(matches!(
+        rename_collection_result,
+        Err(OperationError::Validation(_))
+    ));
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
@@ -77,24 +85,25 @@ async fn rename_collection_unchanged() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
-    let key = workspace.create_collection(
-        CreateCollectionInput {
-            name: old_collection_name.clone()
-        }
-    ).await.unwrap().key;
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
+            name: old_collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     let new_collection_name = old_collection_name;
-    let result = workspace.rename_collection(
-        RenameCollectionInput {
-            key,
-            new_name: new_collection_name.clone()
-        }
-    ).await;
+    let rename_collection_result = workspace
+        .rename_collection(RenameCollectionInput {
+            key: create_collection_output.key,
+            new_name: new_collection_name,
+        })
+        .await;
 
-    assert!(result.is_ok());
+    assert!(rename_collection_result.is_ok());
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap()
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
@@ -105,32 +114,34 @@ async fn rename_collection_already_exists() {
     let existing_collection_name = random_collection_name();
 
     // Create an existing collection
-    workspace.create_collection(
-        CreateCollectionInput {
-            name: existing_collection_name.clone()
-        }
-    ).await.unwrap();
+    workspace
+        .create_collection(CreateCollectionInput {
+            name: existing_collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     let new_collection_name = random_collection_name();
     // Create a collection to test renaming
-    let key = workspace.create_collection(
-        CreateCollectionInput {
-            name: new_collection_name.clone()
-        }
-    ).await.unwrap().key;
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
+            name: new_collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     // Try renaming the new collection to an existing collection name
-    let result = workspace.rename_collection(
-        RenameCollectionInput {
-            key,
-            new_name: existing_collection_name.clone()
-        }
-    ).await;
-    assert!(matches!(result, Err(OperationError::AlreadyExists {..})));
+    let result = workspace
+        .rename_collection(RenameCollectionInput {
+            key: create_collection_output.key,
+            new_name: existing_collection_name.clone(),
+        })
+        .await;
+    assert!(matches!(result, Err(OperationError::AlreadyExists { .. })));
 
     // Clean up
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }
 
@@ -139,33 +150,42 @@ async fn rename_collection_special_chars() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let key = workspace.create_collection(
-        CreateCollectionInput {
-            name: collection_name.clone()
-        }
-    ).await.unwrap().key;
+    let create_collection_output = workspace
+        .create_collection(CreateCollectionInput {
+            name: collection_name.clone(),
+        })
+        .await
+        .unwrap();
 
     for char in SPECIAL_CHARS {
         let new_collection_name = format!("{collection_name}{char}");
-        let expected_path = workspace_path.join(COLLECTIONS_DIR).join(encode_directory_name(&new_collection_name));
-        workspace.rename_collection(
-            RenameCollectionInput {
-                key,
-                new_name: new_collection_name.clone()
-            }
-        ).await.unwrap();
+        let expected_path = workspace_path
+            .join(COLLECTIONS_DIR)
+            .join(encode_directory_name(&new_collection_name));
+
+        let rename_collection_result = workspace
+            .rename_collection(RenameCollectionInput {
+                key: create_collection_output.key,
+                new_name: new_collection_name.clone(),
+            })
+            .await;
+        assert!(rename_collection_result.is_ok());
+        assert!(expected_path.exists());
 
         // Checking updating collections
-        let collections = workspace.list_collections().await.unwrap();
-        assert_eq!(collections.0.len(), 1);
-        assert_eq!(collections.0[0], CollectionInfo {
-            key,
-            name: new_collection_name.clone(),
-            order: None,
-        });
+        let describe_output = workspace.describe().await.unwrap();
+        assert_eq!(describe_output.collections.len(), 1);
+        assert_eq!(
+            describe_output.collections[0],
+            CollectionInfo {
+                key: create_collection_output.key,
+                name: new_collection_name.clone(),
+                order: None,
+            }
+        );
     }
 
     {
-        std::fs::remove_dir_all(workspace_path).unwrap();
+        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
     }
 }

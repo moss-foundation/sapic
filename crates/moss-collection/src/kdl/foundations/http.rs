@@ -1,17 +1,16 @@
-use crate::kdl::foundations::body::RequestBody;
+use crate::kdl::foundations::body::RequestBodyBlock;
 use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
-use crate::models::types;
-use crate::models::types::request_types::{HeaderParamItem, PathParamItem, QueryParamItem};
+use crate::models::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody};
 use kdl::{KdlDocument, KdlEntry, KdlNode};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Url {
+pub struct UrlBlock {
     pub raw: Option<String>,
     pub host: Option<String>,
 }
 
-impl From<&str> for Url {
+impl From<&str> for UrlBlock {
     fn from(value: &str) -> Self {
         Self {
             raw: Some(value.to_string()),
@@ -20,7 +19,7 @@ impl From<&str> for Url {
     }
 }
 
-impl Url {
+impl UrlBlock {
     pub fn new(raw: String) -> Self {
         // TODO: implement this
         Self {
@@ -30,7 +29,7 @@ impl Url {
     }
 }
 
-impl Into<KdlNode> for Url {
+impl Into<KdlNode> for UrlBlock {
     fn into(self) -> KdlNode {
         let mut node = KdlNode::new(URL_LIT);
         let mut children = KdlDocument::new();
@@ -245,11 +244,11 @@ impl Into<KdlNode> for HeaderParamOptions {
 
 #[derive(Clone, Debug, Default)]
 pub struct HttpRequestFile {
-    pub url: Url,
+    pub url: UrlBlock,
     pub query_params: HashMap<String, QueryParamBody>,
     pub path_params: HashMap<String, PathParamBody>,
     pub headers: HashMap<String, HeaderParamBody>,
-    pub body: Option<RequestBody>,
+    pub body: Option<RequestBodyBlock>,
 }
 
 impl HttpRequestFile {
@@ -258,7 +257,7 @@ impl HttpRequestFile {
         query_params: Vec<QueryParamItem>,
         path_params: Vec<PathParamItem>,
         headers: Vec<HeaderParamItem>,
-        body: Option<types::request_types::RequestBody>,
+        body: Option<RequestBody>,
     ) -> Self {
         let query_params = query_params
             .into_iter()
@@ -315,11 +314,11 @@ impl HttpRequestFile {
             .collect();
 
         HttpRequestFile {
-            url: url.map(Url::from).unwrap_or_default(),
+            url: url.map(UrlBlock::from).unwrap_or_default(),
             query_params,
             path_params,
             headers,
-            body: body.map(RequestBody::from),
+            body: body.map(RequestBodyBlock::from),
         }
     }
 }

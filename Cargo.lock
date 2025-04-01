@@ -2915,10 +2915,11 @@ dependencies = [
  "kdl",
  "miette",
  "moss_app",
+ "moss_common",
  "moss_db",
  "moss_fs",
+ "moss_testutils",
  "parking_lot",
- "rand 0.9.0",
  "scraper",
  "serde",
  "serde_json",
@@ -2928,6 +2929,16 @@ dependencies = [
  "ts-rs",
  "validator",
  "xml-rs",
+]
+
+[[package]]
+name = "moss_common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "slotmap",
+ "ts-rs",
 ]
 
 [[package]]
@@ -2944,6 +2955,22 @@ dependencies = [
  "serde",
  "sha2",
  "zeroize",
+]
+
+[[package]]
+name = "moss_environment"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_app",
+ "moss_db",
+ "moss_fs",
+ "rand 0.9.0",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "ts-rs",
 ]
 
 [[package]]
@@ -3065,6 +3092,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_testutils"
+version = "0.1.0"
+dependencies = [
+ "rand 0.9.0",
+]
+
+[[package]]
 name = "moss_text"
 version = "0.1.0"
 dependencies = [
@@ -3106,9 +3140,11 @@ dependencies = [
  "dashmap",
  "moss_app",
  "moss_collection",
+ "moss_common",
  "moss_db",
+ "moss_environment",
  "moss_fs",
- "rand 0.9.0",
+ "moss_testutils",
  "serde",
  "slotmap",
  "thiserror 2.0.12",

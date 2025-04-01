@@ -8,6 +8,8 @@ moss_fs.workspace = true
 moss_app.workspace = true
 moss_db.workspace = true
 anyhow.workspace = true
+moss_common.workspace = true
+
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
@@ -23,5 +25,8 @@ html5ever.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
 slotmap.workspace = true
-rand.workspace = true
-validator = { workspace = true, features = ["derive"]}
+validator = { workspace = true, features = ["derive"] }
+
+
+[dev-dependencies]
+moss_testutils.workspace = true
