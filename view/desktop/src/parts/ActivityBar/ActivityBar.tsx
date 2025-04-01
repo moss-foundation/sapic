@@ -475,8 +475,13 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         )}
         {preview &&
           createPortal(
-            <div className="background-(--moss-icon-primary-bg-active) flex size-7 items-center justify-center rounded-md">
-              <Icon icon={icon} className="text-[var(--moss-activityBar-active-icon)]" />
+            <div
+              className={cn("flex size-7 items-center justify-center rounded-md", {
+                "background-(--moss-icon-primary-bg-active) text-white": active,
+                "background-(--moss-icon-primary-bg-hover)": !active,
+              })}
+            >
+              <Icon icon={icon} />
             </div>,
             preview
           )}
