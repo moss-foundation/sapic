@@ -32,8 +32,6 @@
   --moss-windowControlsLinux-hoverBackground: #3c3c3c;
   --moss-windowControlsLinux-activeBackground: #505050;
 
-  /* -------------------------------------------------------------------------------------------- */
-
   /* Dockview */
 
   /* Pane View */
@@ -71,9 +69,8 @@
   --moss-floating-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   --moss-overlay-z-index: 999;
 
-  /* -------------------------------------------------------------------------------------------- */
-
   /* Button System */
+
   /* Primary Buttons */
   --moss-button-primary-solid-background: #007acc;
   --moss-button-primary-solid-border: #007acc;
@@ -138,20 +135,9 @@
   --moss-controls-placeholder: #969696;
 
   /* Select Inputs */
-  --moss-select-bg-soft: #3c3c3c;
   --moss-select-bg-outlined: #3c3c3c;
-  --moss-select-bg-mixed: #3c3c3c;
-  --moss-select-bg-bottomOutlined: #3c3c3c;
-  --moss-select-border-soft: #3c3c3c;
   --moss-select-border-outlined: #3c3c3c;
-  --moss-select-border-mixed: #3c3c3c;
-  --moss-select-border-bottomOutlined: #3c3c3c;
-  --moss-select-text-soft: #d4d4d4;
   --moss-select-text-outlined: #d4d4d4;
-  --moss-select-text-mixed: #d4d4d4;
-  --moss-select-text-bottomOutlined: #d4d4d4;
-  --moss-select-focus-border: #007acc;
-  --moss-select-placeholder: #969696;
   --moss-select-hover-bg: #505050;
 
   /* Input Fields */

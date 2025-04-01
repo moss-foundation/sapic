@@ -72,7 +72,7 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Left Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleSidebar}
                 title="Toggle Left Sidebar"
               >
@@ -84,7 +84,7 @@ export const HeadBar = () => {
             ) : (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
@@ -99,7 +99,7 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
@@ -111,7 +111,7 @@ export const HeadBar = () => {
             ) : (
               /* Right Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded"
+                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleSidebar}
                 title="Toggle Right Sidebar"
               >

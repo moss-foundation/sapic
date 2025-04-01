@@ -32,8 +32,6 @@
   --moss-windowControlsLinux-hoverBackground: rgba(209, 209, 209, 1);
   --moss-windowControlsLinux-activeBackground: rgba(191, 191, 191, 1);
 
-  /* -------------------------------------------------------------------------------------------- */
-
   /* Dockview */
 
   /* Pane View */
@@ -71,9 +69,8 @@
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);
   --moss-overlay-z-index: 999;
 
-  /* -------------------------------------------------------------------------------------------- */
-
   /* Button System */
+
   /* Primary Buttons */
   --moss-button-primary-solid-background: linear-gradient(in oklab, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%);
   --moss-button-primary-solid-border: null;
@@ -150,20 +147,9 @@
   --moss-controls-placeholder: rgb(161, 161, 170);
 
   /* Select Inputs */
-  --moss-select-bg-soft: rgb(244, 244, 245);
   --moss-select-bg-outlined: white;
-  --moss-select-bg-mixed: rgb(244, 244, 245);
-  --moss-select-bg-bottomOutlined: transparent;
-  --moss-select-border-soft: null;
   --moss-select-border-outlined: rgb(228, 228, 231);
-  --moss-select-border-mixed: rgb(228, 228, 231);
-  --moss-select-border-bottomOutlined: rgb(228, 228, 231);
-  --moss-select-text-soft: black;
   --moss-select-text-outlined: black;
-  --moss-select-text-mixed: black;
-  --moss-select-text-bottomOutlined: black;
-  --moss-select-focus-border: #3b82f6;
-  --moss-select-placeholder: #a1a1aa;
   --moss-select-hover-bg: rgb(250, 250, 250);
 
   /* Input Fields */
