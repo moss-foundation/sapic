@@ -48,9 +48,6 @@ impl WorkspaceManager {
             });
         }
 
-        let entity_key = old_path.to_string_lossy().to_string();
-        let new_entity_key = new_path.to_string_lossy().to_string();
-
         // An opened workspace db will prevent its parent folder from being renamed
         // If we are renaming the current workspace, we need to call the reset method
 
