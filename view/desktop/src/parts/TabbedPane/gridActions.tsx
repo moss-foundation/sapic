@@ -1,6 +1,5 @@
 import React from "react";
-import { createRoot, Root } from "react-dom/client";
-import { useTranslation } from "react-i18next";
+import { createRoot } from "react-dom/client";
 
 import { Scrollbar } from "@/components/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -79,8 +78,6 @@ export const GridActions = (props: {
   hasCustomWatermark: boolean;
   toggleCustomWatermark: () => void;
 }) => {
-  const { t } = useTranslation(["ns1", "ns2"]);
-
   const onClear = () => {
     props.api?.clear();
   };
