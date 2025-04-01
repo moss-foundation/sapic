@@ -68,7 +68,7 @@ jobs:
         uses: dtolnay/rust-toolchain@f9f65f52341ba3c1d5e1901c77dc7a9e58186191 # stable
 
       - name: Use Linux Apt Cache
-        uses: awalsh128/cache-apt-pkgs-action@5902b33ae29014e6ca012c5d8025d4346556bd40 # latest
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
         with:
           packages: |
             libwebkit2gtk-4.0-dev
