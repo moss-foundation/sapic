@@ -1,22 +1,24 @@
 import { ComponentPropsWithoutRef, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
-import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
+import { Icon, Icons } from "@/components/Icon";
 import { ActivityBarState } from "@/hooks/useActivityBarState";
-import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useGetViewGroups } from "@/hooks/useGetViewGroups";
+import { useChangeProjectSessionState, useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { attachClosestEdge, extractClosestEdge, Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachClosestEdge, Edge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  draggable,
+  dropTargetForElements,
+  monitorForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-
-import { Icon, Icons } from "@/components/Icon";
 
 interface ViewGroup {
   id: string;
@@ -260,10 +262,8 @@ export const ActivityBar = () => {
       <div
         ref={DNDListRef}
         className={cn(
-          "flex h-[35px] w-full items-center gap-2 bg-[var(--moss-activityBar-background)] px-2 py-1",
-          topPosition
-            ? "border-b border-b-[var(--moss-activityBar-border-color)]"
-            : "border-t border-t-[var(--moss-activityBar-border-color)]",
+          "background-(--moss-secondary-bg) flex h-[35px] w-full items-center gap-2 px-2 py-1",
+          topPosition ? "border-b border-b-(--moss-border-color)" : "border-t border-t-(--moss-border-color)",
           effectivePosition === "bottom" && "absolute right-0 bottom-0 left-0 z-10"
         )}
       >
@@ -294,10 +294,8 @@ export const ActivityBar = () => {
     <div
       ref={DNDListRef}
       className={cn(
-        "flex h-full w-[41px] flex-col items-center gap-2 bg-[var(--moss-activityBar-background)] px-1 py-2",
-        leftPosition
-          ? "border-r border-r-[var(--moss-activityBar-border-color)]"
-          : "border-l border-l-[var(--moss-activityBar-border-color)]",
+        "background-(--moss-secondary-bg) flex h-full w-[41px] flex-col items-center gap-2 px-1 py-2",
+        leftPosition ? "border-r border-r-(--moss-border-color)" : "border-l border-l-(--moss-border-color)",
         "flex-shrink-0"
       )}
     >
@@ -449,8 +447,8 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         ref={elementRef as React.RefObject<HTMLDivElement>}
         {...props}
         className={cn("relative flex size-7 items-center justify-center rounded-md", {
-          "bg-[var(--moss-activityBar-active-item)]": active,
-          "hover:bg-[var(--moss-activityBar-hover-item)]": !active && !isDragging,
+          "background-(--moss-icon-primary-bg-active) text-white": active,
+          "hover:background-(--moss-icon-primary-bg-hover)": !active && !isDragging,
           "opacity-50": isBeingDragged,
           "cursor-grabbing": isDragActive,
         })}
@@ -476,7 +474,7 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         />
         {isDraggable && closestEdge && !isBeingDragged && (
           <div
-            className={cn("absolute z-10 bg-[var(--moss-activityBar-indicator-color)]", {
+            className={cn("background-(--moss-primary) absolute z-10", {
               "-top-1 right-0 left-0 h-0.5": closestEdge === "top",
               "right-0 -bottom-1 left-0 h-0.5": closestEdge === "bottom",
               "top-0 bottom-0 -left-1 w-0.5": closestEdge === "left",
@@ -486,7 +484,7 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         )}
         {preview &&
           createPortal(
-            <div className="flex size-7 items-center justify-center rounded-md bg-[var(--moss-activityBar-active-item)] shadow-lg">
+            <div className="background-(--moss-icon-primary-bg-active) flex size-7 items-center justify-center rounded-md">
               <Icon icon={icon} className="text-[var(--moss-activityBar-active-icon)]" />
             </div>,
             preview
