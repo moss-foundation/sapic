@@ -262,7 +262,7 @@ export const ActivityBar = () => {
       <div
         ref={DNDListRef}
         className={cn(
-          "background-(--moss-secondary-bg) flex h-[35px] w-full items-center gap-2 px-2 py-1",
+          "background-(--moss-secondary-background) flex h-[35px] w-full items-center gap-2 px-2 py-1",
           topPosition ? "border-b border-b-(--moss-border-color)" : "border-t border-t-(--moss-border-color)",
           effectivePosition === "bottom" && "absolute right-0 bottom-0 left-0 z-10"
         )}
@@ -294,7 +294,7 @@ export const ActivityBar = () => {
     <div
       ref={DNDListRef}
       className={cn(
-        "background-(--moss-secondary-bg) flex h-full w-[41px] flex-col items-center gap-2 px-1 py-2",
+        "background-(--moss-secondary-background) flex h-full w-[41px] flex-col items-center gap-2 px-1 py-2",
         leftPosition ? "border-r border-r-(--moss-border-color)" : "border-l border-l-(--moss-border-color)",
         "flex-shrink-0"
       )}
@@ -447,8 +447,8 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
         ref={elementRef as React.RefObject<HTMLDivElement>}
         {...props}
         className={cn("relative flex size-7 items-center justify-center rounded-md", {
-          "background-(--moss-icon-primary-bg-active) text-white": active,
-          "hover:background-(--moss-icon-primary-bg-hover)": !active && !isDragging,
+          "background-(--moss-icon-primary-background-active) text-white": active,
+          "hover:background-(--moss-icon-primary-background-hover)": !active && !isDragging,
           "opacity-50": isBeingDragged,
           "cursor-grabbing": isDragActive,
         })}
@@ -477,8 +477,8 @@ const ActivityBarButton = forwardRef<HTMLDivElement, ActivityBarButtonProps>(
           createPortal(
             <div
               className={cn("flex size-7 items-center justify-center rounded-md", {
-                "background-(--moss-icon-primary-bg-active) text-white": active,
-                "background-(--moss-icon-primary-bg-hover)": !active,
+                "background-(--moss-icon-primary-background-active) text-white": active,
+                "background-(--moss-icon-primary-background-hover)": !active,
               })}
             >
               <Icon icon={icon} />

@@ -29,7 +29,7 @@ export const BaseSidebar = ({ isResizing = false, position = "left", className, 
       (position === "right" && sidebarSetting === "right" && activeSidebar === "right"));
 
   const sidebarClasses = cn(
-    "background-(--moss-secondary-bg) flex h-full flex-col",
+    "background-(--moss-secondary-background) flex h-full flex-col",
     // Only apply transitions when not actively resizing
     !isResizing && "transition-[width] duration-200",
     !isVisible && "w-0 overflow-hidden",

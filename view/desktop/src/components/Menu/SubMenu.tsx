@@ -25,7 +25,7 @@ export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         ref={forwardedRef}
         className={cn("flex items-center gap-1.5 rounded px-2 py-1", {
           "cursor-not-allowed opacity-50": props.disabled,
-          "hover:background-(--moss-primary-bg-hover) cursor-pointer hover:outline-hidden": !props.disabled,
+          "hover:background-(--moss-primary-background-hover) cursor-pointer hover:outline-hidden": !props.disabled,
         })}
       >
         {!hideIcon &&
@@ -59,7 +59,7 @@ export const SubContent = forwardRef<SubContentElement, SubContentProps>(
         sideOffset={16}
         style={{ ...props.style }}
         className={cn(
-          "background-(--moss-primary-bg) rounded border border-(--moss-border-color) px-3 py-2 shadow-lg",
+          "background-(--moss-primary-background) rounded border border-(--moss-border-color) px-3 py-2 shadow-lg",
           props.className
         )}
       />

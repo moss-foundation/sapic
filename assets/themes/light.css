@@ -2,24 +2,24 @@
   /* Base Colors */
   --moss-primary: #0065ff;
   --moss-error: #fb2c36;
-  --moss-error-bg: #f7d7d7;
-  --moss-success-bg: #f2fcf3;
+  --moss-error-background: #f7d7d7;
+  --moss-success-background: #f2fcf3;
 
   --moss-border-color: #e0e0e0;
 
-  --moss-primary-bg: #ffffff;
-  --moss-primary-bg-hover: #d4e2ff;
+  --moss-primary-background: #ffffff;
+  --moss-primary-background-hover: #d4e2ff;
   --moss-primary-text: #161616;
 
-  --moss-secondary-bg: #f4f4f4;
-  --moss-secondary-bg-hover: #ebecf0;
+  --moss-secondary-background: #f4f4f4;
+  --moss-secondary-background-hover: #ebecf0;
   --moss-secondary-text: #6f6f6f;
 
   /* Icons */
-  --moss-icon-primary-bg: transparent;
+  --moss-icon-primary-background: transparent;
   --moss-icon-primary-text: #717171;
-  --moss-icon-primary-bg-hover: #ebecf0;
-  --moss-icon-primary-bg-active: #3574f0;
+  --moss-icon-primary-background-hover: #ebecf0;
+  --moss-icon-primary-background-active: #3574f0;
 
   /* Layout */
   --moss-statusBar-background: #274323;
@@ -40,23 +40,23 @@
 
   /* Drag and Drop */
   --moss-drag-over-background-color: rgba(83, 89, 93, 0.5);
-  --moss-drag-over-border-color: var(--moss-primary-bg);
+  --moss-drag-over-border-color: var(--moss-primary-background);
 
   /* Group View */
-  --moss-group-view-background-color: var(--moss-primary-bg);
-  --moss-tabs-and-actions-container-background-color: var(--moss-primary-bg);
+  --moss-group-view-background-color: var(--moss-primary-background);
+  --moss-tabs-and-actions-container-background-color: var(--moss-primary-background);
   --moss-tabs-and-actions-container-height: 35px;
 
   /* Tab States */
-  --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-bg-hover);
-  --moss-inactivegroup-visiblepanel-tab-background-color: var(--moss-primary-bg);
+  --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background-hover);
+  --moss-inactivegroup-visiblepanel-tab-background-color: var(--moss-primary-background);
   --moss-activegroup-visiblepanel-tab-color: var(--moss-primary-text);
   --moss-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
   --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
 
-  --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-bg);
-  --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-bg);
+  --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
+  --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-activegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
   --moss-inactivegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
 

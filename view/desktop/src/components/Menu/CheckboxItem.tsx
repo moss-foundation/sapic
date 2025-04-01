@@ -21,7 +21,7 @@ export const CheckboxItem = forwardRef<CheckboxItemElement, CheckboxItemProps>(
         ref={forwardedRef}
         className={cn("flex items-center gap-1.5 rounded px-2 py-1", {
           "cursor-not-allowed opacity-50": props.disabled,
-          "hover:background-(--moss-primary-bg-hover) cursor-pointer hover:outline-hidden": !props.disabled,
+          "hover:background-(--moss-primary-background-hover) cursor-pointer hover:outline-hidden": !props.disabled,
         })}
       >
         {props.checked ? <Icon icon="CheckIconGreen" /> : <Icon icon="CheckIconGreen" className="opacity-0" />}

@@ -7,7 +7,7 @@ export const BottomPane = () => {
   const [isHovering, setIsHovering] = useState(false);
 
   return (
-    <div className="background-(--moss-primary-bg) h-full w-full">
+    <div className="background-(--moss-primary-background) h-full w-full">
       <Scrollbar
         className="h-full overflow-auto"
         onMouseEnter={() => setIsHovering(true)}

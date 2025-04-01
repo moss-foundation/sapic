@@ -121,7 +121,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
               className={cn(nodeStyle, "relative w-full cursor-pointer items-center gap-1 dark:hover:text-black", {
-                "hover:background-(--moss-primary-bg-hover)": !isNodeDragging,
+                "hover:background-(--moss-primary-background-hover)": !isNodeDragging,
               })}
             >
               <TestCollectionIcon type={node.type} />
@@ -136,7 +136,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               />
               {preview &&
                 createPortal(
-                  <ul className="background-(--moss-primary-bg)">
+                  <ul className="background-(--moss-primary-background)">
                     <TreeNode
                       parentNode={{
                         uniqueId: "-",

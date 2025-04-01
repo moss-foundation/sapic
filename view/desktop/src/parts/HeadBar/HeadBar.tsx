@@ -47,7 +47,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
+        "header background-(--moss-secondary-background) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
@@ -72,7 +72,7 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Left Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
+                className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleSidebar}
                 title="Toggle Left Sidebar"
               >
@@ -84,7 +84,7 @@ export const HeadBar = () => {
             ) : (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
+                className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
@@ -99,7 +99,7 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Bottom Panel Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
+                className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
@@ -111,7 +111,7 @@ export const HeadBar = () => {
             ) : (
               /* Right Sidebar Toggle */
               <button
-                className="hover:background-(--moss-icon-primary-bg-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
+                className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
                 onClick={toggleSidebar}
                 title="Toggle Right Sidebar"
               >
