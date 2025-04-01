@@ -1,8 +1,10 @@
-@config "@repo/tailwind-config";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @import "tailwindcss";
 
 .dockview-demo .group-control .action {
-  @apply background-(--moss-color) box-border flex cursor-pointer items-center justify-center p-1 text-[18px];
+  @apply box-border flex cursor-pointer items-center justify-center bg-[--moss-color] p-1 text-[18px];
 }
 
 .dockview-demo .group-control .action:hover {
@@ -73,7 +75,7 @@
   @apply text-[16px];
 }
 
-/* Moss customm styles */
+/* Moss custom styles */
 .panel-builder-input {
   @apply text-center text-black;
 }

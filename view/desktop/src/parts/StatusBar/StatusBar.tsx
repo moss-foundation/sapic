@@ -69,7 +69,6 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       </div>
 
       <div className="flex h-full gap-1">
-        <StatusBarButton icon="StatusBarGitlens" label="2 weeks ago, you" />
         <StatusBarButton label="UTF-8" />
         <StatusBarButton label="24 Ln, 16 Col" />
         <StatusBarButton label="4 Spaces" />

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Views,
+  type Views,
   USE_VIEW_GROUPS_QUERY_KEY,
   USE_CHANGE_VIEW_GROUPS_MUTATION_KEY,
   changeViewGroupsFn,

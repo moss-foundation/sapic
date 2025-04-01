@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ActivityBarState,
+  type ActivityBarState,
   USE_ACTIVITY_BAR_STATE_QUERY_KEY,
   USE_CHANGE_ACTIVITY_BAR_STATE_MUTATION_KEY,
   changeActivityBarStateFn,

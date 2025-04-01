@@ -1,56 +1,22 @@
-export interface ViewGroup {
-  id: string;
-  title: string;
-  order: number;
-  icon: string;
-}
+import { type ViewGroup, type Views, type GroupView, MockViews, MockGroupViews } from "./mockData";
 
-export interface Views {
-  viewGroups: ViewGroup[];
-}
-
-export interface GroupView {
-  id: string;
-  name: string;
-  component: string;
-}
+export type { ViewGroup, Views, GroupView };
 
 export const USE_VIEW_GROUPS_QUERY_KEY = "viewGroups";
 export const USE_CHANGE_VIEW_GROUPS_MUTATION_KEY = "changeViewGroups";
 export const USE_VIEW_GROUP_QUERY_KEY = "viewGroup";
 
-// FIXME: remove mock data
-export let Views: Views = {
-  "viewGroups": [
-    {
-      "id": "collections.groupId",
-      "title": "Collections",
-      "order": 1,
-      "icon": "ActivityBarCollectionsIcon",
-    },
-    {
-      "id": "environments.groupId",
-      "title": "Environments",
-      "order": 2,
-      "icon": "ActivityBarEnvironmentsIcon",
-    },
-    {
-      "id": "mock.groupId",
-      "title": "Mock Servers",
-      "order": 3,
-      "icon": "ActivityBarMockIcon",
-    },
-  ],
-};
+export let viewsData: Views = MockViews;
+
 export const getViewGroupsFn = async (): Promise<Views> => {
   await new Promise((resolve) => setTimeout(resolve, 50));
-  return Views;
+  return viewsData;
 };
 
 export const changeViewGroupsFn = async (newViewGroups: Views): Promise<Views> => {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  Views = newViewGroups;
+  viewsData = newViewGroups;
 
   return newViewGroups;
 };
@@ -58,27 +24,5 @@ export const changeViewGroupsFn = async (newViewGroups: Views): Promise<Views> =
 export const getViewGroupFn = async (groupId: string): Promise<GroupView | null> => {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  if (groupId === "collections.groupId") {
-    return {
-      "id": "collections",
-      "name": "My View1",
-      "component": "CollectionsList",
-    };
-  }
-  if (groupId === "environments.groupId") {
-    return {
-      "id": "environments",
-      "name": "My View2",
-      "component": "EnvironmentsList",
-    };
-  }
-  if (groupId === "mock.groupId") {
-    return {
-      "id": "mock",
-      "name": "My View3",
-      "component": "MockServersList",
-    };
-  }
-
-  return null;
+  return MockGroupViews[groupId as keyof typeof MockGroupViews] || null;
 };

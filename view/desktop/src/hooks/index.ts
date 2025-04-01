@@ -21,3 +21,6 @@ export * from "./useSetLocale";
 export * from "./useListLocales";
 export * from "./useListColorThemes";
 export * from "./useDescribeAppState";
+
+// Mock data (centralized)
+export * from "./mockData";
