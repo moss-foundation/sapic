@@ -25,7 +25,7 @@ export const useDropTargetNode = (
         return source.data.type === "TreeNode";
       },
       onDragLeave() {
-        element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
+        element.classList.remove("background-(--moss-success-bg)", "background-(--moss-error-bg)");
       },
       onDropTargetChange({ location, source }) {
         if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
@@ -36,13 +36,13 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
+          element.classList.remove("background-(--moss-success-bg)", "background-(--moss-error-bg)");
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add("background-(--moss-background-success)");
+          element.classList.add("background-(--moss-success-bg)");
         } else {
-          element.classList.add("background-(--moss-background-error)");
+          element.classList.add("background-(--moss-error-bg)");
         }
       },
       onDrop({ location, source }) {
@@ -54,7 +54,7 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
+          element.classList.remove("background-(--moss-success-bg)", "background-(--moss-error-bg)");
           return;
         }
 
@@ -69,7 +69,7 @@ export const useDropTargetNode = (
           );
         }
 
-        element.classList.remove("background-(--moss-background-success)", "background-(--moss-background-error)");
+        element.classList.remove("background-(--moss-success-bg)", "background-(--moss-error-bg)");
       },
     });
   }, [dropTargetFolderRef, dropTargetListRef, node, treeId]);
