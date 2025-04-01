@@ -7,9 +7,6 @@ import { ControlButton } from "./ControlButton";
 import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
 
-// FIXME: fix opacity bg-[rgba(var(--moss-windows-close-button-background))]/90
-// FIXME: analyze and fix dark:...
-
 export function WindowsControls({ className, ...props }: HTMLProps<HTMLDivElement>) {
   const { isWindowMaximized, minimizeWindow, maximizeWindow, closeWindow } = useContext(ControlsContext);
 
@@ -33,7 +30,7 @@ export function WindowsControls({ className, ...props }: HTMLProps<HTMLDivElemen
       </ControlButton>
       <ControlButton
         onClick={closeWindow}
-        className="active:background-(--moss-windowsCloseButton-background)/90 hover:background-(--moss-windowsCloseButton-background) h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:text-white"
+        className="active:background-(--moss-windowsCloseButton-background)/90 hover:background-(--moss-windowsCloseButton-background) h-full w-[46px] cursor-default rounded-none text-(--moss-button-icon-color)/90 hover:text-white"
       >
         <ControlsIcons.closeWin />
       </ControlButton>
