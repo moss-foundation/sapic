@@ -3,7 +3,7 @@ use moss_environment::models::types::VariableInfo;
 
 use crate::{
     models::operations::{DescribeEnvironmentInput, DescribeEnvironmentOutput},
-    workspace::{ResourceKey, Workspace},
+    workspace::Workspace,
 };
 
 impl Workspace {

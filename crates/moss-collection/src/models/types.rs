@@ -5,14 +5,14 @@ use ts_rs::TS;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct QueryParamOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct QueryParamItem {
     pub key: String,
     pub value: String,
@@ -26,14 +26,14 @@ pub struct QueryParamItem {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct PathParamOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct PathParamItem {
     pub key: String,
     pub value: String,
@@ -47,14 +47,14 @@ pub struct PathParamItem {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct HeaderParamOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct HeaderParamItem {
     pub key: String,
     pub value: String,
@@ -68,7 +68,7 @@ pub struct HeaderParamItem {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum RequestBody {
     Raw(RawBodyType),
     FormData(Vec<FormDataItem>),
@@ -78,7 +78,7 @@ pub enum RequestBody {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct FormDataItem {
     pub key: String,
     pub value: FormDataValue,
@@ -92,7 +92,7 @@ pub struct FormDataItem {
 
 #[derive(Clone, Debug, Serialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum FormDataValue {
     Text(String),
     File(PathBuf),
@@ -100,14 +100,14 @@ pub enum FormDataValue {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct FormDataOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct UrlEncodedItem {
     pub key: String,
     pub value: String,
@@ -121,14 +121,14 @@ pub struct UrlEncodedItem {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct UrlEncodedOptions {
     pub propagate: bool,
 }
 
 #[derive(Clone, Debug, Serialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types/request.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum RawBodyType {
     Text(String),
     Json(String),
@@ -138,7 +138,7 @@ pub enum RawBodyType {
 
 #[derive(Debug, PartialEq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct RequestInfo {
     pub key: ResourceKey,
     pub name: String,
@@ -149,7 +149,7 @@ pub struct RequestInfo {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "collection.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum HttpMethod {
     Post,
     Get,
@@ -157,20 +157,9 @@ pub enum HttpMethod {
     Delete,
 }
 
-// impl HttpMethod {
-//     pub fn to_extension(&self) -> String {
-//         match self {
-//             HttpMethod::Post => "post".to_string(),
-//             HttpMethod::Get => "get".to_string(),
-//             HttpMethod::Put => "put".to_string(),
-//             HttpMethod::Delete => "del".to_string(),
-//         }
-//     }
-// }
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "collection.ts")]
+#[ts(export, export_to = "types.ts")]
 pub enum RequestProtocol {
     Http(HttpMethod),
     WebSocket,

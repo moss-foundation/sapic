@@ -10,7 +10,7 @@ use crate::models::types::{
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub enum CreateRequestProtocolSpecificPayload {
     Http {
         method: HttpMethod,
@@ -23,7 +23,7 @@ pub enum CreateRequestProtocolSpecificPayload {
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestInput {
     #[validate(length(min = 1))]
     pub name: String,
@@ -37,14 +37,14 @@ pub struct CreateRequestInput {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestOutput {
     pub key: ResourceKey,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct RenameRequestInput {
     pub key: ResourceKey,
     #[validate(length(min = 1))]
@@ -53,11 +53,11 @@ pub struct RenameRequestInput {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct DeleteRequestInput {
     pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations/collection.ts")]
+#[ts(export, export_to = "operations.ts")]
 pub struct ListRequestsOutput(pub Vec<RequestInfo>);
