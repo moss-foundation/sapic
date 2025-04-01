@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  AppLayoutState,
+  type AppLayoutState,
   USE_APP_LAYOUT_STATE_QUERY_KEY,
   USE_CHANGE_APP_LAYOUT_STATE_MUTATION_KEY,
   changeAppLayoutStateFn,
