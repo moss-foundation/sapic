@@ -1,10 +1,10 @@
+import { Icon } from "@/components";
+import { DEFAULT_BOTTOM_PANE_HEIGHT } from "@/constants/layout";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
-import { Icon } from "@/components";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { DEFAULT_BOTTOM_PANE_HEIGHT } from "@/constants/layout";
 
 import { Controls } from "./Controls/Controls";
 
@@ -47,7 +47,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header z-50 grid h-full w-screen items-center bg-[var(--moss-headBar-background)] shadow-[var(--moss-headBar-shadow)]",
+        "header background-(--moss-secondary-bg) z-50 grid h-full w-screen items-center shadow-(--moss-headBar-shadow)",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
@@ -72,25 +72,25 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Left Sidebar Toggle */
               <button
-                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleSidebar}
                 title="Toggle Left Sidebar"
               >
                 <Icon
                   icon={isSidebarVisible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                  className="size-[18px] text-(--moss-icon-secondary-text)"
                 />
               </button>
             ) : (
               /* Bottom Panel Toggle */
               <button
-                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
                   icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                  className="size-[18px] text-(--moss-icon-secondary-text)"
                 />
               </button>
             )}
@@ -99,25 +99,25 @@ export const HeadBar = () => {
             {isLeftSidebarMode ? (
               /* Bottom Panel Toggle */
               <button
-                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleBottomPane}
                 title="Toggle Bottom Panel"
               >
                 <Icon
                   icon={bottomPaneVisibility ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                  className="size-[18px] text-(--moss-icon-secondary-text)"
                 />
               </button>
             ) : (
               /* Right Sidebar Toggle */
               <button
-                className="flex size-[30px] items-center justify-center rounded hover:bg-[var(--moss-headBar-hover-background)]"
+                className="hover:background-(--moss-icon-secondary-bg-hover) flex size-[30px] items-center justify-center rounded"
                 onClick={toggleSidebar}
                 title="Toggle Right Sidebar"
               >
                 <Icon
                   icon={isSidebarVisible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-                  className="size-[18px] text-[var(--moss-headBar-icon-color)]"
+                  className="size-[18px] text-(--moss-icon-secondary-text)"
                 />
               </button>
             )}
