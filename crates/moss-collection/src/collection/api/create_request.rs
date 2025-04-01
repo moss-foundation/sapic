@@ -3,15 +3,17 @@ use moss_fs::{utils::encode_directory_name, CreateOptions};
 use validator::Validate;
 
 use crate::{
-    collection::{Collection, CollectionRequestData, OperationError, REQUESTS_DIR},
+    collection::{
+        primitives::EndpointFileExt, Collection, CollectionRequestData, OperationError,
+        REQUESTS_DIR,
+    },
     kdl::http::HttpRequestFile,
     models::{
-        collection::RequestType,
-        operations::collection_operations::{
+        operations::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
         storage::RequestEntity,
-        types::request_types::HttpMethod,
+        types::{HttpMethod, RequestProtocol},
     },
 };
 
@@ -41,7 +43,7 @@ impl Collection {
             });
         }
 
-        let (request_file_content, request_file_extension, request_type) = match input.payload {
+        let (file_content, file_ext, protocol) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
                 method,
                 query_params,
@@ -58,23 +60,21 @@ impl Collection {
                 )
                 .to_string();
 
-                // FIXME:
-                let request_file_extension = match method {
-                    HttpMethod::Post => "post".to_string(),
-                    HttpMethod::Get => "get".to_string(),
-                    HttpMethod::Put => "put".to_string(),
-                    HttpMethod::Delete => "del".to_string(),
-                };
+                let protocol = RequestProtocol::Http(method);
 
                 (
                     request_file.to_string(),
-                    request_file_extension,
-                    method.into(),
+                    EndpointFileExt::from(&protocol),
+                    protocol,
                 )
             }
 
             // FIXME:
-            None => ("".to_string(), "get".to_string(), RequestType::default()),
+            None => {
+                let protocol = RequestProtocol::Http(HttpMethod::Get);
+
+                ("".to_string(), EndpointFileExt::from(&protocol), protocol)
+            }
         };
 
         let request_store = self.state_db_manager()?.request_store();
@@ -91,7 +91,7 @@ impl Collection {
         let request_file_name = format!(
             "{}.{}.sapic",
             encode_directory_name(&input.name),
-            request_file_extension
+            file_ext.to_string()
         );
         self.fs
             .create_dir(&request_dir_full_path)
@@ -100,7 +100,7 @@ impl Collection {
         self.fs
             .create_file_with(
                 &request_dir_full_path.join(request_file_name),
-                request_file_content,
+                file_content,
                 CreateOptions::default(),
             )
             .await
@@ -114,7 +114,7 @@ impl Collection {
                 name: input.name,
                 request_dir_relative_path: request_dir_relative_path.clone(),
                 order: None,
-                typ: request_type,
+                protocol,
             })
         };
 

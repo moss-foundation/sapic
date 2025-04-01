@@ -1,11 +1,11 @@
 mod shared;
 
 use moss_collection::collection::OperationError;
-use moss_collection::models::collection::{HttpRequestType, RequestType};
-use moss_collection::models::operations::collection_operations::{
-    CreateRequestInput, CreateRequestProtocolSpecificPayload, RequestInfo,
+use moss_collection::models::operations::{
+    CreateRequestInput, CreateRequestProtocolSpecificPayload,
 };
-use moss_collection::models::types::request_types::HttpMethod;
+use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
+
 use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
 use std::path::PathBuf;
 
@@ -41,7 +41,7 @@ async fn create_request_success() {
             name: request_name.to_string(),
             request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
             order: None,
-            typ: Default::default(),
+            typ: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -146,7 +146,7 @@ async fn create_request_special_chars() {
                 name: name.clone(),
                 request_dir_relative_path: PathBuf::from(request_folder_name(&name)),
                 order: None,
-                typ: Default::default(),
+                typ: RequestProtocol::Http(HttpMethod::Get),
             }));
     }
     {
@@ -186,7 +186,7 @@ async fn create_request_with_relative_path() {
             request_dir_relative_path: PathBuf::from("relative")
                 .join(request_folder_name(&request_name)),
             order: None,
-            typ: Default::default(),
+            typ: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -231,7 +231,7 @@ async fn create_request_with_payload() {
             name: request_name.clone(),
             request_dir_relative_path: PathBuf::from(request_folder_name(&request_name)),
             order: None,
-            typ: RequestType::Http(HttpRequestType::Post),
+            typ: RequestProtocol::Http(HttpMethod::Post),
         }
     );
 

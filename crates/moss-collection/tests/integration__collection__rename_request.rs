@@ -1,9 +1,8 @@
 mod shared;
 
 use moss_collection::collection::OperationError;
-use moss_collection::models::operations::collection_operations::{
-    CreateRequestInput, RenameRequestInput, RequestInfo,
-};
+use moss_collection::models::operations::{CreateRequestInput, RenameRequestInput};
+use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
 use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
 use std::path::PathBuf;
 
@@ -51,7 +50,7 @@ async fn rename_request_success() {
             request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
 
             order: None,
-            typ: Default::default(),
+            typ: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -211,7 +210,7 @@ async fn rename_request_special_chars() {
                 request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
                 name: new_request_name,
                 order: None,
-                typ: Default::default(),
+                typ: RequestProtocol::Http(HttpMethod::Get),
             }
         );
     }

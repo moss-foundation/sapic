@@ -1,19 +1,20 @@
 pub mod api;
-
 mod error;
+mod primitives;
+mod utils;
+
 pub use error::*;
 
 use anyhow::{anyhow, Context as _, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
-use moss_fs::utils::{decode_directory_name, encode_directory_name};
+use moss_fs::utils::decode_directory_name;
 use moss_fs::{FileSystem, RenameOptions};
+use primitives::EndpointFileExt;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
-use crate::{
-    models::{collection::RequestType, indexing::RequestEntry},
-    storage::{state_db_manager::StateDbManagerImpl, StateDbManager},
-};
+use crate::models::types::RequestProtocol;
+use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
@@ -32,21 +33,21 @@ pub struct CollectionRequestData {
     pub request_dir_relative_path: PathBuf, // Relative path from collection/requests
     pub order: Option<usize>,
     // FIXME: Should we create separate backend/frontend types for RequestType?
-    pub typ: RequestType,
-}
-
-fn request_file_name(name: &str, typ: &RequestType) -> String {
-    format!("{}.{}.sapic", encode_directory_name(name), typ.to_string())
+    pub protocol: RequestProtocol,
 }
 
 impl CollectionRequestData {
     fn request_file_path(&self) -> PathBuf {
-        self.request_dir_relative_path
-            .join(request_file_name(&self.name, &self.typ))
+        let file_ext = EndpointFileExt::from(&self.protocol);
+        let file_name = utils::request_file_name(&self.name, &file_ext);
+
+        self.request_dir_relative_path.join(file_name)
     }
 
     fn request_file_name(&self) -> String {
-        request_file_name(&self.name, &self.typ)
+        let file_ext = EndpointFileExt::from(&self.protocol);
+
+        utils::request_file_name(&self.name, &file_ext)
     }
 }
 
@@ -59,6 +60,13 @@ pub struct Collection {
     // In the DbManager, we are storing relative paths
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     requests: OnceCell<RwLock<RequestMap>>,
+}
+
+#[derive(Debug)]
+pub struct IndexedEndpointDir {
+    pub name: String,
+    pub request_protocol: Option<RequestProtocol>,
+    pub path: Option<PathBuf>,
 }
 
 impl Collection {
@@ -82,7 +90,7 @@ impl Collection {
             .ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
-    async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, RequestEntry>> {
+    async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, IndexedEndpointDir>> {
         let mut result = HashMap::new();
         let mut stack: Vec<PathBuf> = vec![root.clone()];
 
@@ -121,15 +129,15 @@ impl Collection {
         Ok(result)
     }
 
-    async fn index_request_dir(&self, path: &PathBuf) -> Result<RequestEntry> {
+    async fn index_request_dir(&self, path: &PathBuf) -> Result<IndexedEndpointDir> {
         let folder_name = path
             .file_name()
             .and_then(|s| s.to_str())
             .context("Failed to read the request folder name")?;
 
-        let mut request_entry = RequestEntry {
+        let mut request_entry = IndexedEndpointDir {
             name: get_request_name(folder_name)?,
-            typ: None,
+            request_protocol: None,
             path: None,
         };
 
@@ -154,7 +162,7 @@ impl Collection {
             let parse_output = parse_request_folder_name(file_name)?;
 
             request_entry.path = Some(file_path);
-            request_entry.typ = Some(parse_output.file_type);
+            request_entry.request_protocol = Some(parse_output.file_ext.into());
         }
 
         Ok(request_entry)
@@ -180,7 +188,7 @@ impl Collection {
                         name: indexed_request_entry.name,
                         request_dir_relative_path,
                         order: entity.and_then(|e| e.order),
-                        typ: indexed_request_entry.typ.unwrap(), // FIXME: get rid of Option type for typ
+                        protocol: indexed_request_entry.request_protocol.unwrap(), // FIXME: get rid of Option type for typ
                     });
                 }
 
@@ -223,7 +231,7 @@ fn is_sapic_file(file_path: &PathBuf) -> bool {
 
 struct RequestFolderParseOutput {
     name: String,
-    file_type: RequestType,
+    file_ext: EndpointFileExt,
 }
 
 fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOutput> {
@@ -245,7 +253,7 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
     Ok(RequestFolderParseOutput {
         name,
-        file_type: RequestType::try_from(file_type_str)?,
+        file_ext: EndpointFileExt::try_from(file_type_str)?,
     })
 }
 

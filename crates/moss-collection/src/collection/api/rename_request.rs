@@ -3,11 +3,9 @@ use moss_fs::utils::encode_directory_name;
 use moss_fs::RenameOptions;
 use validator::Validate;
 
-use crate::collection::{request_file_name, Collection, OperationError, REQUESTS_DIR};
-
-use crate::models::{
-    operations::collection_operations::RenameRequestInput, storage::RequestEntity,
-};
+use crate::collection::primitives::EndpointFileExt;
+use crate::collection::{utils, Collection, OperationError, REQUESTS_DIR};
+use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
 
 impl Collection {
     pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
@@ -67,7 +65,8 @@ impl Collection {
         // Rename the request file
         let request_file_path_old =
             request_dir_path_new.join(&lease_request_data.request_file_name());
-        let request_file_name_new = request_file_name(&input.new_name, &lease_request_data.typ);
+        let file_ext = EndpointFileExt::from(&lease_request_data.protocol);
+        let request_file_name_new = utils::request_file_name(&input.new_name, &file_ext);
         let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
         self.fs
             .rename(

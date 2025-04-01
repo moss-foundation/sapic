@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::{
     collection::Collection,
-    models::operations::collection_operations::{ListRequestsOutput, RequestInfo},
+    models::{operations::ListRequestsOutput, types::RequestInfo},
 };
 
 impl Collection {
@@ -21,7 +21,7 @@ impl Collection {
                         name: request_data.name.to_string(),
                         request_dir_relative_path: request_data.request_dir_relative_path.clone(),
                         order: request_data.order,
-                        typ: request_data.typ.clone(),
+                        typ: request_data.protocol.clone(),
                     }
                 })
                 .collect(),

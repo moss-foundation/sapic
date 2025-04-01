@@ -1,8 +1,6 @@
 mod shared;
 
-use moss_collection::models::operations::collection_operations::{
-    CreateRequestInput, DeleteRequestInput,
-};
+use moss_collection::models::operations::{CreateRequestInput, DeleteRequestInput};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_testutils::random_name::random_request_name;
 
