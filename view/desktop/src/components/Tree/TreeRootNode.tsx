@@ -145,7 +145,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </button>
         )}
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center">
           {node.isExpanded && !searchInput && (
             <div className="flex items-center opacity-0 transition-opacity duration-100 group-hover:opacity-100">
               <TreeActionButton icon="TreePlus" onClick={() => setIsAddingRootFileNode(true)} />
