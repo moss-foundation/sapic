@@ -156,7 +156,12 @@ export const CollectionTreeView = () => {
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
             <>
-              <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
+              <Tree
+                tree={collection.tree}
+                id={collection.id}
+                key={`${collection.id}-${collection.tree.isExpanded}`}
+                searchInput={searchInput}
+              />
               <div className="background-(--moss-border-color) h-[1px] w-full" />
             </>
           ))}

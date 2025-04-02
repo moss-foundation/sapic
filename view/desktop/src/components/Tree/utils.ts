@@ -211,15 +211,15 @@ export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeE
   return true;
 };
 
-export const expandAllNodes = (node: TreeNodeProps): TreeNodeProps => {
+export const expandAllNodes = <T extends NodeProps>(node: T): T => {
   return {
     ...node,
     isExpanded: node.isFolder ? true : node.isExpanded,
-    childNodes: node.childNodes.map((child) => expandAllNodes(child)),
+    childNodes: node.childNodes.map((child) => expandAllNodes(child)) as T["childNodes"],
   };
 };
 
-export const collapseAllNodes = (node: TreeNodeProps): TreeNodeProps => {
+export const collapseAllNodes = <T extends NodeProps>(node: T): T => {
   return {
     ...node,
     isExpanded: node.isFolder ? false : node.isExpanded,
@@ -227,7 +227,7 @@ export const collapseAllNodes = (node: TreeNodeProps): TreeNodeProps => {
   };
 };
 
-export const checkIfAllFoldersAreExpanded = (nodes: TreeNodeProps[]): boolean => {
+export const checkIfAllFoldersAreExpanded = <T extends NodeProps>(nodes: T[]): boolean => {
   if (!nodes || nodes.length === 0) return true;
 
   for (const node of nodes) {
@@ -242,7 +242,7 @@ export const checkIfAllFoldersAreExpanded = (nodes: TreeNodeProps[]): boolean =>
   return true;
 };
 
-export const checkIfAllFoldersAreCollapsed = (nodes: TreeNodeProps[]): boolean => {
+export const checkIfAllFoldersAreCollapsed = <T extends NodeProps>(nodes: T[]): boolean => {
   if (!nodes || nodes.length === 0) return true;
 
   for (const node of nodes) {
@@ -255,4 +255,20 @@ export const checkIfAllFoldersAreCollapsed = (nodes: TreeNodeProps[]): boolean =
   }
 
   return true;
+};
+
+export const checkIfTreeIsCollapsed = <T extends NodeProps>(node: T): boolean => {
+  if (node.isFolder && !node.isExpanded) return true;
+
+  if (node.childNodes.length === 0) return false;
+
+  return node.childNodes.some((child) => checkIfTreeIsCollapsed(child));
+};
+
+export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => {
+  if (node.isFolder && node.isExpanded) return true;
+
+  if (node.childNodes.length === 0) return false;
+
+  return node.childNodes.some((child) => checkIfTreeIsExpanded(child));
 };
