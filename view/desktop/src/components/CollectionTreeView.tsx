@@ -1,8 +1,8 @@
 import "@repo/moss-tabs/assets/styles.css";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
+import { Icon, Input, Scrollbar, Tree } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
@@ -103,67 +103,22 @@ export const CollectionTreeView = () => {
 
   return (
     <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>
-      <div className="flex items-center gap-[7px] py-1.5 pr-[7px] pl-4">
+      <div className="flex items-center gap-[7px] px-2 py-1">
         <Input
-          iconLeft="Search"
-          variant="outlined"
+          variant="plain"
           onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
           placeholder="Search"
           size="sm"
         />
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-icon-primary-text)">
-            <Icon icon="Plus" />
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content>
-            <DropdownMenu.Item label="Edit" />
-            <DropdownMenu.Item label="Duplicate" />
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Archive" />
-            <DropdownMenu.Sub>
-              <DropdownMenu.SubTrigger label="More" />
-              <DropdownMenu.SubContent>
-                <DropdownMenu.Item label="Move to project…" />
-                <DropdownMenu.Item label="Move to folder…" />
-
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item label="Advanced options…" />
-              </DropdownMenu.SubContent>
-            </DropdownMenu.Sub>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Share" />
-            <DropdownMenu.Item label="Add to favorites" />
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Delete" />
-
-            <DropdownMenu.Separator />
-
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" />
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
-
-            <DropdownMenu.Separator />
-            <DropdownMenu.RadioGroup>
-              <DropdownMenu.RadioItem value="1" label="Hide from sidebar" checked={false} />
-              <DropdownMenu.RadioItem value="2" label="Hide from sidebar" checked={true} />
-              <DropdownMenu.RadioItem value="3" label="Hide from sidebar" checked={false} />
-            </DropdownMenu.RadioGroup>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
       </div>
 
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
-            <>
-              <Tree
-                tree={collection.tree}
-                id={collection.id}
-                key={`${collection.id}-${collection.tree.isExpanded}`}
-                searchInput={searchInput}
-              />
+            <React.Fragment key={`${collection.id}-${collection.tree.isExpanded}`}>
+              <Tree tree={collection.tree} id={collection.id} searchInput={searchInput} />
               <div className="background-(--moss-border-color) h-[1px] w-full" />
-            </>
+            </React.Fragment>
           ))}
           {showCollectionCreationZone && (
             <div className="flex grow flex-col justify-end">

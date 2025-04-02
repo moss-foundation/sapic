@@ -105,14 +105,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
-        className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
+        className="flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
         style={{ paddingLeft, paddingRight }}
       >
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">
             <Icon
               icon="TreeChevronRight"
-              className={cn("text-[#717171]", {
+              className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
@@ -127,7 +127,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </div>
         ) : (
           <button
-            className="flex grow cursor-pointer items-center gap-1 overflow-hidden"
+            className="flex grow cursor-pointer items-center gap-1 overflow-hidden font-semibold"
             onClick={() => {
               handleFolderClick();
               onRootClickCallback?.(node);
@@ -136,7 +136,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           >
             <Icon
               icon="TreeChevronRight"
-              className={cn("text-[#717171]", {
+              className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
@@ -148,7 +148,13 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           {node.isExpanded && !searchInput && (
             <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
               <button
-                disabled={allFoldersAreExpanded}
+                onClick={() => setIsAddingRootFileNode(true)}
+                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
+              >
+                <Icon icon="TreePlus" />
+              </button>
+              <button
+                disabled={allFoldersAreCollapsed}
                 className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
                 onClick={handleExpandAll}
               >
@@ -188,7 +194,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
                 onNodeUpdate={onNodeUpdate}
                 key={childNode.uniqueId}
                 node={childNode}
-                depth={0}
+                depth={1}
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (

@@ -31,9 +31,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft, [depth, nodeOffset, paddingLeft]);
   const nodePaddingLeftForAddForm = useMemo(
-    () => (depth + 1) * nodeOffset + paddingLeft + 4,
+    () => (depth + 1) * nodeOffset + paddingLeft,
     [depth, nodeOffset, paddingLeft]
   );
 

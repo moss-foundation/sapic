@@ -33,9 +33,9 @@ export const TreeContext = createContext<TreeContextProps>({
 export const Tree = ({
   id,
   tree: initialTree,
-  paddingLeft = 16,
+  paddingLeft = 8,
   paddingRight = 8,
-  nodeOffset = 12,
+  nodeOffset = 8,
   searchInput,
 
   onTreeUpdate,
