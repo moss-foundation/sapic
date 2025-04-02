@@ -111,7 +111,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">
             <Icon
-              icon="TreeChevronRightIcon"
+              icon="TreeChevronRight"
               className={cn("text-[#717171]", {
                 "rotate-90": shouldRenderChildNodes,
               })}
@@ -135,7 +135,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             onDoubleClick={() => onRootDoubleClickCallback?.(node)}
           >
             <Icon
-              icon="TreeChevronRightIcon"
+              icon="TreeChevronRight"
               className={cn("text-[#717171]", {
                 "rotate-90": shouldRenderChildNodes,
               })}
@@ -152,20 +152,20 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
                 className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
                 onClick={handleExpandAll}
               >
-                <Icon icon="TreeExpandAllIcon" />
+                <Icon icon="TreeExpandAll" />
               </button>
               <button
                 disabled={allFoldersAreCollapsed}
                 className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
                 onClick={handleCollapseAll}
               >
-                <Icon icon="TreeCollapseAllIcon" />
+                <Icon icon="TreeCollapseAll" />
               </button>
             </div>
           )}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)">
-              <Icon icon="TreeDetailIcon" />
+              <Icon icon="TreeDetail" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">

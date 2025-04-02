@@ -128,7 +128,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               <NodeLabel label={node.id} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />
               <Icon
-                icon="TreeChevronRightIcon"
+                icon="TreeChevronRight"
                 className={cn("ml-auto text-(--moss-icon-primary-text)", {
                   "rotate-90": shouldRenderChildNodes,
                   "opacity-0": !node.isFolder,
