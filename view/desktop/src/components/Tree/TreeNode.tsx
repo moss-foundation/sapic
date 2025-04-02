@@ -105,7 +105,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableNodeRef}
               style={{
                 paddingLeft: nodePaddingLeft,
-                paddingRight: paddingRight + 3,
+                paddingRight,
               }}
               onClick={() => {
                 if (node.isFolder) handleFolderClick();
