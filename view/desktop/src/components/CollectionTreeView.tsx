@@ -175,8 +175,8 @@ const CollectionCreationZone = () => {
     <div
       ref={ref}
       className={cn("grid h-max min-h-32 w-full place-items-center", {
-        "bg-[#EDF6FF]": canDrop === true,
-        "background-(--moss-primary-background)": canDrop === null,
+        "border-2 border-dashed border-(--moss-primary) bg-[#EDF6FF]": canDrop === true,
+        "background-(--moss-primary-background) border-2 border-dashed border-(--moss-border-color)": canDrop === null,
       })}
     >
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
