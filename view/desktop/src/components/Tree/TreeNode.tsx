@@ -39,7 +39,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const nodeStyle = useMemo(
     () =>
-      cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
+      cn("flex w-full min-w-0 items-center", {
         "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id && currentActiveTreeId === treeId,
       }),
     [currentActivePanelId, currentActiveTreeId, node.id, treeId]
@@ -103,10 +103,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           <ContextMenu.Trigger asChild>
             <button
               ref={draggableNodeRef}
-              style={{
-                paddingLeft: nodePaddingLeft,
-                paddingRight,
-              }}
               onClick={() => {
                 if (node.isFolder) handleFolderClick();
                 else
@@ -120,20 +116,31 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 onNodeClickCallback?.(node);
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
-              className={cn(nodeStyle, "relative w-full cursor-pointer items-center gap-1 dark:hover:text-black", {
-                "hover:background-(--moss-primary-background-hover)": !isNodeDragging,
-              })}
+              className={cn(
+                nodeStyle,
+                "group/treeNode relative h-full w-full cursor-pointer px-3 dark:hover:text-black"
+              )}
             >
-              <TestCollectionIcon type={node.type} />
-              <NodeLabel label={node.id} searchInput={searchInput} />
-              <span className="DragHandle h-full min-h-4 grow" />
-              <Icon
-                icon="TreeChevronRight"
-                className={cn("ml-auto text-(--moss-icon-primary-text)", {
-                  "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": !node.isFolder,
+              <span
+                className={cn("flex h-full w-full items-center gap-1 rounded py-0.5", {
+                  "group-hover/treeNode:background-(--moss-primary-background-hover)": !isNodeDragging,
                 })}
-              />
+                style={{
+                  paddingLeft: nodePaddingLeft,
+                  paddingRight,
+                }}
+              >
+                <TestCollectionIcon type={node.type} />
+                <NodeLabel label={node.id} searchInput={searchInput} />
+                <span className="DragHandle h-full min-h-4 grow" />
+                <Icon
+                  icon="TreeChevronRight"
+                  className={cn("ml-auto text-(--moss-icon-primary-text)", {
+                    "rotate-90": shouldRenderChildNodes,
+                    "opacity-0": !node.isFolder,
+                  })}
+                />
+              </span>
               {preview &&
                 createPortal(
                   <ul className="background-(--moss-primary-background)">
