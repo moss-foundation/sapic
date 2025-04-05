@@ -3,26 +3,29 @@ use parking_lot::Mutex;
 use slotmap::{SecondaryMap, SlotMap};
 use std::{
     any::{Any, TypeId},
+    marker::PhantomData,
     sync::Arc,
 };
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::OnceCell;
 
 use super::pool::{AppService, ServiceKey, ServicePool};
 
-pub enum Instantiation<S, F>
+pub enum Instantiation<R, S, F>
 where
+    R: TauriRuntime,
     S: AppService + 'static,
-    F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+    F: FnOnce(&ServicePool<R>, &AppHandle<R>) -> S + Send + Sync + 'static,
 {
-    Instant(F),
-    Lazy(F),
+    Instant(F, PhantomData<(R, S)>),
+    Lazy(F, PhantomData<(R, S)>),
 }
-pub struct ServicePoolBuilder(ServicePool);
 
-impl ServicePoolBuilder {
+pub struct ServicePoolBuilder<R: TauriRuntime>(ServicePool<R>);
+
+impl<R: TauriRuntime> ServicePoolBuilder<R> {
     pub fn new() -> Self {
-        Self(ServicePool {
+        Self(ServicePool::<R> {
             services: SlotMap::with_key(),
             lazy_builders: Mutex::new(SecondaryMap::new()),
             type_map: FnvHashMap::default(),
@@ -31,23 +34,25 @@ impl ServicePoolBuilder {
 
     pub fn register<S, F>(
         &mut self,
-        builder: Instantiation<S, F>,
-        app_handle: &AppHandle,
+        builder: Instantiation<R, S, F>,
+        app_handle: &AppHandle<R>,
     ) -> ServiceKey
     where
+        R: TauriRuntime,
         S: AppService + 'static,
-        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        F: FnOnce(&ServicePool<R>, &AppHandle<R>) -> S + Send + Sync + 'static,
     {
         match builder {
-            Instantiation::Instant(builder) => self.register_instant(builder, app_handle),
-            Instantiation::Lazy(builder) => self.register_lazy(builder),
+            Instantiation::Instant(builder, _) => self.register_instant(builder, app_handle),
+            Instantiation::Lazy(builder, _) => self.register_lazy(builder),
         }
     }
 
-    fn register_instant<S, F>(&mut self, builder: F, app_handle: &AppHandle) -> ServiceKey
+    fn register_instant<S, F>(&mut self, builder: F, app_handle: &AppHandle<R>) -> ServiceKey
     where
+        R: TauriRuntime,
         S: AppService + 'static,
-        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        F: FnOnce(&ServicePool<R>, &AppHandle<R>) -> S + Send + Sync + 'static,
     {
         let service: Arc<dyn Any + Send + Sync + 'static> = Arc::new(builder(&self.0, app_handle));
         let cell = OnceCell::from(service);
@@ -61,8 +66,9 @@ impl ServicePoolBuilder {
 
     fn register_lazy<S, F>(&mut self, builder: F) -> ServiceKey
     where
+        R: TauriRuntime,
         S: AppService + 'static,
-        F: FnOnce(&ServicePool, &AppHandle) -> S + Send + Sync + 'static,
+        F: FnOnce(&ServicePool<R>, &AppHandle<R>) -> S + Send + Sync + 'static,
     {
         let cell = OnceCell::new();
         let key = self.0.services.insert(cell);
@@ -79,7 +85,7 @@ impl ServicePoolBuilder {
         key
     }
 
-    pub fn build(self) -> ServicePool {
+    pub fn build(self) -> ServicePool<R> {
         self.0
     }
 }

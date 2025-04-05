@@ -10,43 +10,53 @@ use moss_tauri::TauriResult;
 use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
 use moss_workspace::workspace_manager::WorkspaceManager;
+use std::marker::PhantomData;
 use std::{path::PathBuf, sync::Arc};
+use tauri::Runtime as TauriRuntime;
 use tauri::{AppHandle, Manager};
 
-pub fn service_pool(app_handle: &AppHandle, fs: Arc<dyn FileSystem>) -> ServicePool {
+pub fn service_pool<R: TauriRuntime>(
+    app_handle: &AppHandle<R>,
+    fs: Arc<dyn FileSystem>,
+) -> ServicePool<R> {
     let mut builder = ServicePoolBuilder::new();
 
-    let session_service_key =
-        builder.register(Instantiation::Instant(session_service()), app_handle);
+    let session_service_key = builder.register(
+        Instantiation::Instant(session_service(), PhantomData),
+        app_handle,
+    );
     let locale_service_key = builder.register(
-        Instantiation::Instant(locale_service(fs.clone())),
+        Instantiation::Instant(locale_service(fs.clone()), PhantomData),
         app_handle,
     );
     let theme_service_key = builder.register(
-        Instantiation::Instant(theme_service(fs.clone())),
+        Instantiation::Instant(theme_service(fs.clone()), PhantomData),
         app_handle,
     );
 
     builder.register(
-        Instantiation::Instant(state_service(theme_service_key, locale_service_key)),
+        Instantiation::Instant(
+            state_service(theme_service_key, locale_service_key),
+            PhantomData,
+        ),
         app_handle,
     );
     builder.register(
-        Instantiation::Instant(logging_service(session_service_key)),
+        Instantiation::Instant(logging_service(session_service_key), PhantomData),
         app_handle,
     );
     builder.register(
-        Instantiation::Instant(workspace_manager(fs.clone())),
+        Instantiation::Instant(workspace_manager(fs.clone()), PhantomData),
         app_handle,
     );
 
     builder.build()
 }
 
-fn state_service(
+fn state_service<R: TauriRuntime>(
     theme_service_key: ServiceKey,
     locale_service_key: ServiceKey,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> StateService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> StateService<R> + Send + Sync + 'static {
     move |pool, app_handle| {
         let default_theme = futures::executor::block_on(async move {
             let theme_service = pool
@@ -84,14 +94,14 @@ fn state_service(
     }
 }
 
-fn session_service() -> impl Fn(&ServicePool, &AppHandle) -> SessionService + Send + Sync + 'static
-{
+fn session_service<R: TauriRuntime>(
+) -> impl Fn(&ServicePool<R>, &AppHandle<R>) -> SessionService + Send + Sync + 'static {
     move |_, _| SessionService::new()
 }
 
-fn theme_service<'a>(
+fn theme_service<R: TauriRuntime>(
     fs: Arc<dyn FileSystem>,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> ThemeService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> ThemeService + Send + Sync + 'static {
     let themes_dir: PathBuf = std::env::var("THEMES_DIR")
         .expect("Environment variable THEMES_DIR is not set")
         .into();
@@ -99,9 +109,9 @@ fn theme_service<'a>(
     move |_, _| ThemeService::new(fs, themes_dir.clone())
 }
 
-fn locale_service(
+fn locale_service<R: TauriRuntime>(
     fs: Arc<dyn FileSystem>,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> LocaleService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LocaleService + Send + Sync + 'static {
     let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
         .expect("Environment variable LOCALES_DIR is not set")
         .into();
@@ -109,9 +119,9 @@ fn locale_service(
     move |_, _| LocaleService::new(fs, locales_dir.clone())
 }
 
-fn logging_service(
+fn logging_service<R: TauriRuntime>(
     session_service_key: ServiceKey,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> LoggingService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
     let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
@@ -136,20 +146,23 @@ fn logging_service(
     }
 }
 
-fn workspace_manager(
+fn workspace_manager<R: tauri::Runtime>(
     fs: Arc<dyn FileSystem>,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> WorkspaceManager + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> WorkspaceManager<R> + Send + Sync + 'static {
     let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let workspaces_dir: PathBuf = PathBuf::from(dir).join("samples").join("workspaces");
 
-    move |_, _| WorkspaceManager::new(fs, workspaces_dir.clone()).unwrap()
+    move |_, app_handle| {
+        WorkspaceManager::new(app_handle.clone(), fs, workspaces_dir.clone()).unwrap()
+    }
 }
 
-async fn generate_log<'a>(ctx: &mut CommandContext) -> TauriResult<String> {
-    let app_manager = ctx.app_handle().state::<AppManager>();
+async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResult<String> {
+    let app_handle = ctx.app_handle();
+    let app_manager = app_handle.state::<AppManager<R>>();
     let logging_service = app_manager
         .services()
-        .get_by_type::<LoggingService>(&ctx.app_handle())
+        .get_by_type::<LoggingService>(app_handle)
         .await?;
 
     logging_service.info(

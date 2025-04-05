@@ -3,17 +3,22 @@ pub mod api;
 mod error;
 pub use error::*;
 
-use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::storage::StateDbManager;
 use anyhow::{anyhow, Context, Result};
-use moss_collection::collection::{Collection, CollectionCache};
+use moss_collection::{
+    collection::{Collection, CollectionCache},
+    indexer::{self, IndexJob, IndexedItem},
+};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_directory_name, FileSystem};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tokio::sync::{OnceCell, RwLock};
+use tauri::Runtime as TauriRuntime;
+use tokio::sync::{mpsc, OnceCell, RwLock};
+
+use crate::storage::state_db_manager::StateDbManagerImpl;
+use crate::storage::StateDbManager;
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -33,12 +38,24 @@ pub struct Workspace {
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
+
+    tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
 }
 
 impl Workspace {
-    pub fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self> {
+    pub fn new<R: TauriRuntime>(
+        path: PathBuf,
+        fs: Arc<dyn FileSystem>,
+        app_handle: tauri::AppHandle<R>,
+    ) -> Result<Self> {
         let state_db_manager = StateDbManagerImpl::new(&path)
             .context("Failed to open the workspace state database")?;
+
+        let fs_clone = Arc::clone(&fs);
+        let (tx, rx) = mpsc::unbounded_channel();
+        tauri::async_runtime::spawn(async move {
+            indexer::run(app_handle, fs_clone, rx).await;
+        });
 
         Ok(Self {
             path,
@@ -46,6 +63,7 @@ impl Workspace {
             state_db_manager: Some(Arc::new(state_db_manager)),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
+            tx,
         })
     }
 
@@ -128,7 +146,7 @@ impl Workspace {
                 let mut collections = LeasedSlotMap::new();
 
                 if !self.path.join(COLLECTIONS_DIR).exists() {
-                    return Ok(RwLock::new(collections));
+                    return Ok::<_, anyhow::Error>(RwLock::new(collections));
                 }
 
                 // TODO: Support external collections with absolute path
@@ -152,7 +170,7 @@ impl Workspace {
                     // TODO: implement is_external flag for relative/absolute path
 
                     let full_path = self.path.join(relative_path);
-                    let collection = Collection::new(full_path, self.fs.clone())?;
+                    let collection = Collection::new(full_path, self.fs.clone(), self.tx.clone())?;
                     let metadata = CollectionCache {
                         name,
                         order: collection_data.order,
@@ -167,6 +185,7 @@ impl Workspace {
 
         Ok(result)
     }
+
     pub fn path(&self) -> PathBuf {
         self.path.clone()
     }

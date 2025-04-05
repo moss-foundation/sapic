@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-use tauri::{AppHandle, Window};
+use tauri::{AppHandle, Runtime as TauriRuntime, Window};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -30,14 +30,14 @@ impl From<CommandContextError> for String {
     }
 }
 
-pub struct CommandContext {
-    app_handle: AppHandle,
+pub struct CommandContext<R: TauriRuntime> {
+    app_handle: AppHandle<R>,
     window: Window,
     args: HashMap<String, Value>,
 }
 
-impl CommandContext {
-    pub fn new(app_handle: AppHandle, window: Window, args: HashMap<String, Value>) -> Self {
+impl<R: TauriRuntime> CommandContext<R> {
+    pub fn new(app_handle: AppHandle<R>, window: Window, args: HashMap<String, Value>) -> Self {
         Self {
             app_handle,
             window,
@@ -45,7 +45,7 @@ impl CommandContext {
         }
     }
 
-    pub fn app_handle(&self) -> &AppHandle {
+    pub fn app_handle(&self) -> &AppHandle<R> {
         &self.app_handle
     }
 
@@ -101,18 +101,18 @@ macro_rules! command {
 
 type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
 
-pub type CommandCallback =
-    Arc<dyn for<'a> Fn(&'a mut CommandContext) -> CommandResult<'a> + Send + Sync>;
+pub type CommandCallback<R: TauriRuntime> =
+    Arc<dyn for<'a> Fn(&'a mut CommandContext<R>) -> CommandResult<'a> + Send + Sync>;
 
-pub struct CommandDecl {
+pub struct CommandDecl<R: TauriRuntime> {
     pub name: ReadOnlyStr,
-    pub callback: CommandCallback,
+    pub callback: CommandCallback<R>,
 }
 
-impl CommandDecl {
+impl<R: TauriRuntime> CommandDecl<R> {
     pub fn new<F>(name: ReadOnlyStr, f: F) -> Self
     where
-        F: for<'a> Fn(&'a mut CommandContext) -> CommandResult<'a> + Send + Sync + 'static,
+        F: for<'a> Fn(&'a mut CommandContext<R>) -> CommandResult<'a> + Send + Sync + 'static,
     {
         Self {
             name,

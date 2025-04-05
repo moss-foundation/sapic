@@ -2,8 +2,9 @@ use crate::{
     models::operations::ListWorkspacesOutput,
     workspace_manager::{OperationError, WorkspaceManager},
 };
+use tauri::Runtime as TauriRuntime;
 
-impl WorkspaceManager {
+impl<R: TauriRuntime> WorkspaceManager<R> {
     // TODO: (How) Should we write tests for this function?
     pub async fn list_workspaces(&self) -> Result<ListWorkspacesOutput, OperationError> {
         let workspaces = self.known_workspaces().await?;
