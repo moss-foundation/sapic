@@ -2,6 +2,7 @@ pub mod api;
 mod error;
 mod primitives;
 mod utils;
+mod visit;
 
 pub use error::*;
 
@@ -11,14 +12,15 @@ use moss_fs::utils::decode_directory_name;
 use moss_fs::{FileSystem, RenameOptions};
 use primitives::EndpointFileExt;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::{mpsc, OnceCell, RwLock};
 
+use crate::indexer::{IndexJob, IndexedItem};
 use crate::models::types::RequestProtocol;
 use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
-const REQUEST_FILE_EXT: &'static str = "sapic";
+const SAPIC_FILE_EXT: &'static str = "sapic";
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -60,17 +62,22 @@ pub struct Collection {
     // In the DbManager, we are storing relative paths
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     requests: OnceCell<RwLock<RequestMap>>,
+    tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
 }
 
 #[derive(Debug)]
-pub struct IndexedEndpointDir {
+pub struct IndexedRequestDir {
     pub name: String,
     pub request_protocol: Option<RequestProtocol>,
     pub path: Option<PathBuf>,
 }
 
 impl Collection {
-    pub fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self> {
+    pub fn new(
+        path: PathBuf,
+        fs: Arc<dyn FileSystem>,
+        tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
+    ) -> Result<Self> {
         let state_db_manager_impl = StateDbManagerImpl::new(&path).context(format!(
             "Failed to open the collection {} state database",
             path.display()
@@ -81,6 +88,7 @@ impl Collection {
             abs_path: path,
             requests: OnceCell::new(),
             state_db_manager: Some(Arc::new(state_db_manager_impl)),
+            tx,
         })
     }
 
@@ -90,7 +98,7 @@ impl Collection {
             .ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
-    async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, IndexedEndpointDir>> {
+    async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, IndexedRequestDir>> {
         let mut result = HashMap::new();
         let mut stack: Vec<PathBuf> = vec![root.clone()];
 
@@ -129,13 +137,13 @@ impl Collection {
         Ok(result)
     }
 
-    async fn index_request_dir(&self, path: &PathBuf) -> Result<IndexedEndpointDir> {
+    async fn index_request_dir(&self, path: &PathBuf) -> Result<IndexedRequestDir> {
         let folder_name = path
             .file_name()
             .and_then(|s| s.to_str())
             .context("Failed to read the request folder name")?;
 
-        let mut request_entry = IndexedEndpointDir {
+        let mut request_entry = IndexedRequestDir {
             name: get_request_name(folder_name)?,
             request_protocol: None,
             path: None,
@@ -225,7 +233,7 @@ impl Collection {
 fn is_sapic_file(file_path: &PathBuf) -> bool {
     file_path
         .extension()
-        .map(|ext| ext == REQUEST_FILE_EXT)
+        .map(|ext| ext == SAPIC_FILE_EXT)
         .unwrap_or(false)
 }
 

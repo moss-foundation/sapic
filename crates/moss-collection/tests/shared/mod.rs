@@ -4,6 +4,7 @@ use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_collection_name;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tokio::sync::mpsc;
 
 pub fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -16,7 +17,10 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     let fs = Arc::new(RealFileSystem::new());
     let collection_path = random_collection_path();
     std::fs::create_dir_all(collection_path.clone()).unwrap();
-    let collection = Collection::new(collection_path.clone(), fs).unwrap();
+
+    let (job_sender, _job_receiver) = mpsc::unbounded_channel();
+
+    let collection = Collection::new(collection_path.clone(), fs, job_sender).unwrap();
     (collection_path, collection)
 }
 

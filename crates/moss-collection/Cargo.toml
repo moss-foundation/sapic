@@ -26,7 +26,8 @@ scraper.workspace = true
 xml-rs.workspace = true
 slotmap.workspace = true
 validator = { workspace = true, features = ["derive"] }
-
+tauri.workspace = true
+tokio-stream.workspace = true
 
 [dev-dependencies]
 moss_testutils.workspace = true

@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use moss_fs::utils::decode_directory_name;
 use std::sync::Arc;
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::{operations::OpenWorkspaceInput, types::WorkspaceInfo},
@@ -8,7 +9,7 @@ use crate::{
     workspace_manager::{OperationError, WorkspaceManager},
 };
 
-impl WorkspaceManager {
+impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
         if !input.path.exists() {
             return Err(OperationError::NotFound {
@@ -28,7 +29,8 @@ impl WorkspaceManager {
             return Ok(());
         }
 
-        let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
+        let workspace =
+            Workspace::new(input.path.clone(), self.fs.clone(), self.app_handle.clone())?;
 
         let known_workspaces = self.known_workspaces().await?;
         let mut workspaces_lock = known_workspaces.write().await;

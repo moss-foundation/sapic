@@ -46,7 +46,7 @@ pub async fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::execute_command,
+            // commands::execute_command,
             commands::set_color_theme,
             commands::get_color_theme,
             commands::list_color_themes,

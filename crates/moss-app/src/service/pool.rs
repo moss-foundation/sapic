@@ -7,7 +7,7 @@ use std::{
     any::{Any, TypeId},
     sync::Arc,
 };
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::sync::OnceCell;
 
@@ -39,16 +39,17 @@ impl From<ServicePoolError> for TauriError {
 }
 
 type AnyService = Arc<dyn Any + Send + Sync>;
-type LazyServiceBuilder = Box<dyn FnOnce(&ServicePool, &AppHandle) -> AnyService + Send + Sync>;
+type LazyServiceBuilder<R> =
+    Box<dyn FnOnce(&ServicePool<R>, &AppHandle<R>) -> AnyService + Send + Sync>;
 
-pub struct ServicePool {
+pub struct ServicePool<R: TauriRuntime> {
     pub(super) services: SlotMap<ServiceKey, OnceCell<AnyService>>,
-    pub(super) lazy_builders: Mutex<SecondaryMap<ServiceKey, LazyServiceBuilder>>,
+    pub(super) lazy_builders: Mutex<SecondaryMap<ServiceKey, LazyServiceBuilder<R>>>,
     pub(super) type_map: FnvHashMap<TypeId, ServiceKey>,
 }
 
-impl ServicePool {
-    pub async fn get_by_type<T>(&self, app_handle: &AppHandle) -> Result<&T, ServicePoolError>
+impl<R: TauriRuntime> ServicePool<R> {
+    pub async fn get_by_type<T>(&self, app_handle: &AppHandle<R>) -> Result<&T, ServicePoolError>
     where
         T: AppService,
     {
@@ -66,7 +67,7 @@ impl ServicePool {
     pub async fn get_by_key<T>(
         &self,
         key: ServiceKey,
-        app_handle: &AppHandle,
+        app_handle: &AppHandle<R>,
     ) -> Result<&T, ServicePoolError>
     where
         T: AppService,

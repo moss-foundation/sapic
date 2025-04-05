@@ -1,3 +1,7 @@
+use crate::{
+    command::{CommandCallback, CommandDecl},
+    models::operations::{SetColorThemeInput, SetLocaleInput},
+};
 use dashmap::DashMap;
 use moss_app::service::prelude::AppService;
 use moss_nls::models::types::LocaleInfo;
@@ -5,11 +9,7 @@ use moss_text::ReadOnlyStr;
 use moss_theme::models::types::ColorThemeInfo;
 use parking_lot::RwLock;
 use std::sync::Arc;
-
-use crate::{
-    command::{CommandCallback, CommandDecl},
-    models::operations::{SetColorThemeInput, SetLocaleInput},
-};
+use tauri::Runtime as TauriRuntime;
 
 pub struct AppPreferences {
     pub theme: RwLock<Option<ColorThemeInfo>>,
@@ -21,13 +21,13 @@ pub struct AppDefaults {
     pub locale: LocaleInfo,
 }
 
-pub struct StateService {
-    commands: DashMap<ReadOnlyStr, CommandCallback>,
+pub struct StateService<R: TauriRuntime> {
+    commands: DashMap<ReadOnlyStr, CommandCallback<R>>,
     preferences: AppPreferences,
     defaults: AppDefaults,
 }
 
-impl StateService {
+impl<R: TauriRuntime> StateService<R> {
     pub fn new(defaults: AppDefaults) -> Self {
         Self {
             preferences: AppPreferences {
@@ -57,17 +57,17 @@ impl StateService {
         *locale_lock = Some(input.locale_info);
     }
 
-    pub fn with_commands(self, decls: impl IntoIterator<Item = CommandDecl>) -> Self {
+    pub fn with_commands(self, decls: impl IntoIterator<Item = CommandDecl<R>>) -> Self {
         let commands = DashMap::new();
         for decl in decls {
-            commands.insert(decl.name, decl.callback as CommandCallback);
+            commands.insert(decl.name, decl.callback as CommandCallback<R>);
         }
         Self { commands, ..self }
     }
 
-    pub fn get_command(&self, id: &ReadOnlyStr) -> Option<CommandCallback> {
+    pub fn get_command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {
         self.commands.get(id).map(|cmd| Arc::clone(&cmd))
     }
 }
 
-impl AppService for StateService {}
+impl<R: TauriRuntime> AppService for StateService<R> {}

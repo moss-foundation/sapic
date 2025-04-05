@@ -3,6 +3,7 @@ use moss_fs::RemoveOptions;
 
 use crate::collection::{Collection, REQUESTS_DIR};
 use crate::models::operations::DeleteRequestInput;
+
 impl Collection {
     pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
         let requests = self.requests().await?;
