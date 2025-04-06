@@ -46,7 +46,6 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         let current_workspace = Workspace::new(
             full_path.clone(),
             self.fs.clone(),
-            self.app_handle.clone(),
             self.activity_indicator.clone(),
         )?;
         let workspace_key = {

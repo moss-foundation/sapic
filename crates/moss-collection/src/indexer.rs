@@ -32,20 +32,16 @@ pub struct IndexingEvent {
 }
 
 pub async fn run<R: tauri::Runtime>(
-    app_handle: tauri::AppHandle<R>,
     activity_indicator: ActivityIndicator<R>,
     fs: Arc<dyn FileSystem>,
     mut rx: mpsc::UnboundedReceiver<IndexJob>,
 ) {
     while let Some(job) = rx.recv().await {
         let fs_clone = Arc::clone(&fs);
-        let app_handle_clone = app_handle.clone();
         let activity_indicator_clone = activity_indicator.clone();
 
         task::spawn(async move {
-            if let Err(e) =
-                process_job(fs_clone, app_handle_clone, activity_indicator_clone, job).await
-            {
+            if let Err(e) = process_job(fs_clone, activity_indicator_clone, job).await {
                 eprintln!("Indexing error: {}", e);
             }
         });
@@ -54,15 +50,15 @@ pub async fn run<R: tauri::Runtime>(
 
 async fn process_job<R: TauriRuntime>(
     fs: Arc<dyn FileSystem>,
-    app_handle: tauri::AppHandle<R>,
     activity_indicator: ActivityIndicator<R>,
     job: IndexJob,
 ) -> Result<()> {
     let total = count_entries(fs.as_ref(), &job.collection_abs_path.join("requests")).await?;
     let progress_counter = Arc::new(AtomicUsize::new(0));
 
+    let activity_id = format!("indexing/{}", job.collection_key);
     let activity_handle = activity_indicator.emit_continual(
-        INDEXING_ACTIVITY_ID,
+        &activity_id,
         "Indexing".to_string(),
         format!("0/{}", total),
         Some(0),
@@ -70,13 +66,14 @@ async fn process_job<R: TauriRuntime>(
 
     traverse_requests(
         fs.as_ref(),
-        activity_handle,
+        &activity_handle,
         &job.collection_abs_path.join("requests"),
-        job.collection_key,
         total,
         progress_counter,
     )
     .await?;
+
+    activity_handle.emit_finish()?;
 
     Ok(())
 }
@@ -107,9 +104,8 @@ async fn count_entries(fs: &dyn FileSystem, root: &PathBuf) -> Result<usize> {
 
 async fn traverse_requests<R: TauriRuntime>(
     fs: &dyn FileSystem,
-    activity_handle: ActivityHandle<'_, R>,
+    activity_handle: &ActivityHandle<'_, R>,
     root: &PathBuf,
-    collection_key: ResourceKey,
     total: usize,
     progress_counter: Arc<AtomicUsize>,
 ) -> Result<()> {

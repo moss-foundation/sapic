@@ -46,7 +46,6 @@ pub async fn setup_test_workspace() -> (PathBuf, Workspace<MockRuntime>) {
     let workspace_path: PathBuf = random_workspace_path();
     fs::create_dir_all(&workspace_path).unwrap();
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace =
-        Workspace::new(workspace_path.clone(), fs, app_handle, activity_indicator).unwrap();
+    let workspace = Workspace::new(workspace_path.clone(), fs, activity_indicator).unwrap();
     (workspace_path, workspace)
 }

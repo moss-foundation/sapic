@@ -49,7 +49,6 @@ impl<R: TauriRuntime> Workspace<R> {
     pub fn new(
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
-        app_handle: tauri::AppHandle<R>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
         let state_db_manager = StateDbManagerImpl::new(&path)
@@ -59,8 +58,9 @@ impl<R: TauriRuntime> Workspace<R> {
         tauri::async_runtime::spawn({
             let fs_clone = Arc::clone(&fs);
             let activity_indicator_clone = activity_indicator.clone();
+
             async move {
-                indexer::run(app_handle, activity_indicator_clone, fs_clone, rx).await;
+                indexer::run(activity_indicator_clone, fs_clone, rx).await;
             }
         });
 

@@ -1,28 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ActivityEvent } from "@repo/moss-workbench";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-
-type ProgressStreamPayload = {
-  collection_key: number;
-  progress_percent: number;
-  path: string;
-};
 
 export const Logs: React.FC = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<string[]>([]);
-  const [progressEvents, setProgressEvents] = useState<ProgressStreamPayload[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
     const unlistenLogsStream = listen<string>("logs-stream", (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 
-    const unlistenProgressStream = listen<ProgressStreamPayload>("progress-stream", (event) => {
-      console.log("progress-stream", event.payload.progress_percent);
-      setProgressEvents((prev) => [...prev, event.payload]);
+    const unlistenProgressStream = listen<ActivityEvent>("workbench://activity-indicator", (event) => {
+      setActivityEvents((prev) => [...prev, event.payload]);
     });
 
     return () => {
@@ -40,8 +34,6 @@ export const Logs: React.FC = () => {
     }
   };
 
-  const lastProgressEvent = progressEvents[progressEvents.length - 1];
-
   return (
     <main className="p-4">
       <h1 className="mb-4 text-2xl">{t("logs")}</h1>
@@ -51,32 +43,15 @@ export const Logs: React.FC = () => {
 
       <section className="mb-4">
         <h2 className="text-xl">{t("Last Progress Update")}</h2>
-        {lastProgressEvent ? (
-          <ul>
-            <li>
-              <strong>{t("Progress")}:</strong> {lastProgressEvent.progress_percent}%
-            </li>
-            <li>
-              <strong>{t("Path")}:</strong> {lastProgressEvent.path}
-            </li>
-          </ul>
-        ) : (
-          <p>{t("No progress updates yet")}</p>
-        )}
-      </section>
 
-      <section className="mb-4">
-        <h2 className="text-xl">All Progress Events</h2>
-        {progressEvents.length > 0 ? (
+        {activityEvents.length > 0 ? (
           <ul>
-            {progressEvents.map((event, index) => (
-              <li key={index}>
-                {`Collection: ${event.collection_key}, Progress: ${event.progress_percent}%, Path: ${event.path}`}
-              </li>
+            {activityEvents.map((activityEvent, index) => (
+              <li key={index}>{JSON.stringify(activityEvent)}</li>
             ))}
           </ul>
         ) : (
-          <p>{t("No progress events yet")}</p>
+          <p className="text-secondary">{t("noLogs")}...</p>
         )}
       </section>
 
