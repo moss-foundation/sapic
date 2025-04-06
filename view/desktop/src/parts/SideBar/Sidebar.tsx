@@ -12,13 +12,12 @@ import { cn } from "@/utils";
 import SidebarHeader from "./SidebarHeader";
 
 export interface BaseSidebarProps {
-  isResizing?: boolean;
   position?: "left" | "right";
   className?: string;
   children?: ReactNode;
 }
 
-export const BaseSidebar = ({ isResizing = false, position = "left", className, children }: BaseSidebarProps) => {
+export const BaseSidebar = ({ position = "left", className, children }: BaseSidebarProps) => {
   const { data: appLayoutState } = useGetAppLayoutState();
 
   const sidebarSetting = appLayoutState?.sidebarSetting || "left";
@@ -31,7 +30,6 @@ export const BaseSidebar = ({ isResizing = false, position = "left", className, 
   const sidebarClasses = cn(
     "background-(--moss-secondary-background)  flex h-full flex-col",
     // Only apply transitions when not actively resizing
-    !isResizing && "transition-[width] duration-200",
     !isVisible && "w-0 overflow-hidden",
     {
       "border-r border-(--moss-border-color)": position === "left",
@@ -43,7 +41,7 @@ export const BaseSidebar = ({ isResizing = false, position = "left", className, 
   return <div className={sidebarClasses}>{children}</div>;
 };
 
-export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
+export const Sidebar = () => {
   const { data: activityBarState } = useGetActivityBarState();
   const { data: appLayoutState } = useGetAppLayoutState();
   const { data: viewGroups } = useGetViewGroups();
@@ -86,7 +84,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (isActivityBarInDefaultPosition) {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
         <Content />
       </BaseSidebar>
     );
@@ -94,7 +92,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "hidden") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
         <Content />
       </BaseSidebar>
     );
@@ -102,7 +100,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "top") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
         <HorizontalActivityBar position="top" />
         <Content />
       </BaseSidebar>
@@ -111,7 +109,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
 
   if (effectivePosition === "bottom") {
     return (
-      <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
         <Content />
         <HorizontalActivityBar position="bottom" />
       </BaseSidebar>
@@ -119,7 +117,7 @@ export const Sidebar = ({ isResizing = false }: { isResizing?: boolean }) => {
   }
 
   return (
-    <BaseSidebar isResizing={isResizing} position={appLayoutState?.sidebarSetting as "left" | "right"}>
+    <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
       <Content />
     </BaseSidebar>
   );

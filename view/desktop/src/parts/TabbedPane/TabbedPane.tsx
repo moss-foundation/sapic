@@ -373,7 +373,10 @@ const TabbedPane = (props: { theme?: string }) => {
   const [debug, setDebug] = React.useState<boolean>(false);
 
   return (
-    <div style={{ ...css }} className="dockview-demo relative flex h-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]">
+    <div
+      style={{ ...css }}
+      className="dockview-demo relative flex h-full w-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
+    >
       {showDebugPanels && (
         <>
           <div>

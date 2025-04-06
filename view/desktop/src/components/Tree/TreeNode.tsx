@@ -118,7 +118,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
               className={cn(
                 nodeStyle,
-                "group/treeNode relative h-full w-full cursor-pointer px-3 dark:hover:text-black"
+                "group/treeNode relative h-full w-full cursor-pointer px-2 dark:hover:text-black"
               )}
             >
               <span

@@ -1,56 +1,89 @@
 import { create } from "zustand";
-import { DEFAULT_BOTTOM_PANE_HEIGHT } from "@/constants/layout";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
-  sideBar: {
+  primarySideBar: {
+    minWidth: number;
     width: number;
+    visible: boolean;
     setWidth: (newWidth: number) => void;
-    getWidth: () => number;
+    setVisible: (visible: boolean) => void;
+  };
+  secondarySideBar: {
+    minWidth: number;
+    width: number;
+    visible: boolean;
+    setWidth: (newWidth: number) => void;
+    setVisible: (visible: boolean) => void;
   };
   bottomPane: {
+    minHeight: number;
     height: number;
-    visibility: boolean;
+    visible: boolean;
     setHeight: (newHeight: number) => void;
-    setVisibility: (visibility: boolean) => void;
-    getHeight: () => number;
+    setVisible: (visible: boolean) => void;
   };
 }
 
-export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
-  sideBar: {
-    width: 340,
+export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set) => ({
+  primarySideBar: {
+    minWidth: 270,
+    width: 255,
+    visible: true,
     setWidth: (newWidth) =>
       set((state) => ({
-        sideBar: {
-          ...state.sideBar,
+        primarySideBar: {
+          ...state.primarySideBar,
           width: newWidth,
+          visible: newWidth > 0,
         },
       })),
-    getWidth: () => {
-      return get().sideBar.width;
-    },
+    setVisible: (visible) =>
+      set((state) => ({
+        primarySideBar: {
+          ...state.primarySideBar,
+          visible,
+        },
+      })),
+  },
+  secondarySideBar: {
+    minWidth: 270,
+    width: 255,
+    visible: true,
+    setWidth: (newWidth) =>
+      set((state) => ({
+        secondarySideBar: {
+          ...state.secondarySideBar,
+          width: newWidth,
+          visible: newWidth > 0,
+        },
+      })),
+    setVisible: (visible) =>
+      set((state) => ({
+        secondarySideBar: {
+          ...state.secondarySideBar,
+          visible,
+        },
+      })),
   },
   bottomPane: {
-    height: DEFAULT_BOTTOM_PANE_HEIGHT,
-    visibility: true,
+    minHeight: 100,
+    height: 333,
+    visible: true,
     setHeight: (newHeight) =>
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
           height: newHeight,
-          visibility: newHeight > 0,
+          visible: newHeight > 0,
         },
       })),
-    setVisibility: (visibility) =>
+    setVisible: (visible) =>
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
-          visibility,
+          visible,
         },
       })),
-    getHeight: () => {
-      return get().bottomPane.height;
-    },
   },
 }));

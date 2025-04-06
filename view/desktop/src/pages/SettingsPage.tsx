@@ -1,12 +1,12 @@
-import React, { ReactNode, ChangeEvent, useState } from "react";
+import React, { ChangeEvent, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useDescribeAppState } from "@/hooks/useDescribeAppState";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { ActivityBarState } from "@/hooks/useActivityBarState";
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
+import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
+import { useDescribeAppState } from "@/hooks/useDescribeAppState";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useListColorThemes } from "@/hooks/useListColorThemes";
 import { useListLocales } from "@/hooks/useListLocales";
 import { useSetColorTheme } from "@/hooks/useSetColorTheme";
@@ -128,7 +128,7 @@ export const Settings = () => {
 
   const handleBottomPaneVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const visibility = event.target.value === "visible";
-    bottomPane.setVisibility(visibility);
+    bottomPane.setVisible(visibility);
   };
 
   const handleActivityBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -209,7 +209,7 @@ export const Settings = () => {
         <SettingsDropdown
           id="bottom-pane-select"
           label="Bottom Pane Visibility"
-          value={bottomPane.visibility ? "visible" : "hidden"}
+          value={bottomPane.visible ? "visible" : "hidden"}
           onChange={handleBottomPaneVisibilityChange}
         >
           <option value="visible" className="text-[var(--moss-select-text-outlined)]">
