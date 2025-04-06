@@ -19,7 +19,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 export const ActivityBar = () => {
-  const { items, alignment, position, setPosition, setItems } = useActivityBarStore();
+  const { items, position, setPosition, setItems } = useActivityBarStore();
 
   useEffect(() => {
     return monitorForElements({

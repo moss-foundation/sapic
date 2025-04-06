@@ -15,6 +15,7 @@ interface ActivityBarStore {
   position: "default" | "top" | "bottom" | "hidden";
   setPosition: (position: ActivityBarStore["position"]) => void;
   setItems: (items: ActivityBarItem[]) => void;
+  setAlignment: (alignment: ActivityBarStore["alignment"]) => void;
 }
 
 export const useActivityBarStore = create<ActivityBarStore>((set) => ({
@@ -42,4 +43,5 @@ export const useActivityBarStore = create<ActivityBarStore>((set) => ({
   position: "default",
   setPosition: (position: ActivityBarStore["position"]) => set({ position }),
   setItems: (items: ActivityBarItem[]) => set({ items }),
+  setAlignment: (alignment: ActivityBarStore["alignment"]) => set({ alignment }),
 }));
