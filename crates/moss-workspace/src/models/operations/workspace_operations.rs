@@ -84,3 +84,19 @@ pub struct DescribeEnvironmentOutput {
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
 }
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct OpenCollectionInput {
+    pub path: PathBuf,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct OpenCollectionOutput {
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
+    pub path: PathBuf,
+}

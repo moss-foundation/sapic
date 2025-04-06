@@ -2919,6 +2919,7 @@ dependencies = [
  "moss_db",
  "moss_fs",
  "moss_testutils",
+ "moss_workbench",
  "parking_lot",
  "scraper",
  "serde",
@@ -3134,6 +3135,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_workbench"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "tauri",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_workspace"
 version = "0.1.0"
 dependencies = [
@@ -3147,6 +3158,7 @@ dependencies = [
  "moss_environment",
  "moss_fs",
  "moss_testutils",
+ "moss_workbench",
  "serde",
  "slotmap",
  "tauri",

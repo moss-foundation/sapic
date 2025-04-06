@@ -6,14 +6,15 @@ pub use error::*;
 use anyhow::{anyhow, Context, Result};
 use moss_collection::{
     collection::{Collection, CollectionCache},
-    indexer::{self, IndexJob, IndexedItem},
+    indexer::{self, IndexJob},
 };
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_directory_name, FileSystem};
-use std::collections::HashMap;
+use moss_workbench::activity_indicator::ActivityIndicator;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::{collections::HashMap, future::Future};
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
@@ -29,7 +30,7 @@ type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
-pub struct Workspace {
+pub struct Workspace<R: TauriRuntime> {
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
     // We have to use Option so that we can temporarily drop it
@@ -39,22 +40,28 @@ pub struct Workspace {
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
 
-    tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
+    activity_indicator: ActivityIndicator<R>,
+
+    tx: mpsc::UnboundedSender<IndexJob>,
 }
 
-impl Workspace {
-    pub fn new<R: TauriRuntime>(
+impl<R: TauriRuntime> Workspace<R> {
+    pub fn new(
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
         app_handle: tauri::AppHandle<R>,
+        activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
         let state_db_manager = StateDbManagerImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
-        let fs_clone = Arc::clone(&fs);
         let (tx, rx) = mpsc::unbounded_channel();
-        tauri::async_runtime::spawn(async move {
-            indexer::run(app_handle, fs_clone, rx).await;
+        tauri::async_runtime::spawn({
+            let fs_clone = Arc::clone(&fs);
+            let activity_indicator_clone = activity_indicator.clone();
+            async move {
+                indexer::run(app_handle, activity_indicator_clone, fs_clone, rx).await;
+            }
         });
 
         Ok(Self {
@@ -64,6 +71,7 @@ impl Workspace {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             tx,
+            activity_indicator,
         })
     }
 
@@ -139,7 +147,7 @@ impl Workspace {
             .ok_or(anyhow!("The state_db_manager has been dropped"))
     }
 
-    async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
+    pub async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
@@ -189,6 +197,22 @@ impl Workspace {
     pub fn path(&self) -> PathBuf {
         self.path.clone()
     }
+
+    pub async fn with_collection<T, Fut>(
+        &self,
+        key: ResourceKey,
+        f: impl FnOnce(&Collection) -> Fut,
+    ) -> Result<T>
+    where
+        Fut: Future<Output = Result<T>>,
+    {
+        let collections = self.collections().await?;
+        let collections_lock = collections.read().await;
+
+        let (collection, _cache) = collections_lock.get(key).context("Collection not found")?; // TODO: use operation error
+
+        f(collection).await
+    }
 }
 
 // impl Workspace {
@@ -210,7 +234,7 @@ impl Workspace {
 //     }
 // }
 
-impl Workspace {
+impl<R: TauriRuntime> Workspace<R> {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
         let collection_store = self.state_db_manager()?.collection_store();

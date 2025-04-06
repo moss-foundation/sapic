@@ -36,13 +36,19 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             .await
             .context("Failed to get known workspaces")?;
 
+        dbg!(&full_path);
+
         self.fs
             .create_dir(&full_path)
             .await
             .context("Failed to create the workspace directory")?;
 
-        let current_workspace =
-            Workspace::new(full_path.clone(), self.fs.clone(), self.app_handle.clone())?;
+        let current_workspace = Workspace::new(
+            full_path.clone(),
+            self.fs.clone(),
+            self.app_handle.clone(),
+            self.activity_indicator.clone(),
+        )?;
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
             workspaces_lock.insert(WorkspaceInfo {

@@ -101,7 +101,7 @@ macro_rules! command {
 
 type CommandResult<'a> = Pin<Box<dyn Future<Output = TauriResult<Value>> + Send + 'a>>;
 
-pub type CommandCallback<R: TauriRuntime> =
+pub type CommandCallback<R> =
     Arc<dyn for<'a> Fn(&'a mut CommandContext<R>) -> CommandResult<'a> + Send + Sync>;
 
 pub struct CommandDecl<R: TauriRuntime> {

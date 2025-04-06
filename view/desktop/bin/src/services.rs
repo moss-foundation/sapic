@@ -149,8 +149,8 @@ fn logging_service<R: TauriRuntime>(
 fn workspace_manager<R: tauri::Runtime>(
     fs: Arc<dyn FileSystem>,
 ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> WorkspaceManager<R> + Send + Sync + 'static {
-    let dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-    let workspaces_dir: PathBuf = PathBuf::from(dir).join("samples").join("workspaces");
+    let dir = std::env::var("DEV_APP_DIR").unwrap(); // FIXME: change to the actual path before release
+    let workspaces_dir: PathBuf = PathBuf::from(dir).join("workspaces");
 
     move |_, app_handle| {
         WorkspaceManager::new(app_handle.clone(), fs, workspaces_dir.clone()).unwrap()

@@ -62,7 +62,7 @@ pub struct Collection {
     // In the DbManager, we are storing relative paths
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     requests: OnceCell<RwLock<RequestMap>>,
-    tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
+    tx: mpsc::UnboundedSender<IndexJob>,
 }
 
 #[derive(Debug)]
@@ -76,7 +76,7 @@ impl Collection {
     pub fn new(
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
-        tx: mpsc::UnboundedSender<(mpsc::UnboundedSender<IndexedItem>, IndexJob)>,
+        tx: mpsc::UnboundedSender<IndexJob>,
     ) -> Result<Self> {
         let state_db_manager_impl = StateDbManagerImpl::new(&path).context(format!(
             "Failed to open the collection {} state database",
@@ -183,6 +183,17 @@ impl Collection {
                 let requests_dir_path = self.abs_path.join(REQUESTS_DIR);
                 if !requests_dir_path.exists() {
                     return Ok(RwLock::new(LeasedSlotMap::new()));
+                }
+
+                let (result_tx, mut result_rx) = mpsc::unbounded_channel();
+                self.tx.send(IndexJob {
+                    collection_key: ResourceKey::from(457895),
+                    collection_abs_path: self.abs_path.clone(),
+                    result_tx,
+                })?;
+
+                while let Some(indexed_item) = result_rx.recv().await {
+                    println!("Indexed item: {:?}", indexed_item);
                 }
 
                 let indexed_requests = self.index_requests(&requests_dir_path).await?;

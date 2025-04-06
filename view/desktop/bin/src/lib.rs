@@ -46,7 +46,7 @@ pub async fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            // commands::execute_command,
+            commands::execute_command,
             commands::set_color_theme,
             commands::get_color_theme,
             commands::list_color_themes,
@@ -54,6 +54,7 @@ pub async fn run() {
             commands::set_locale,
             commands::list_locales,
             commands::get_translations,
+            commands::collection::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]

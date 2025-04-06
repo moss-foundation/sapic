@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use moss_fs::utils::decode_directory_name;
+use moss_fs::utils::{decode_directory_name, encode_directory_name};
 use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 
@@ -10,27 +10,30 @@ use crate::{
 };
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
-        if !input.path.exists() {
+    pub async fn open_workspace(&self, input: &OpenWorkspaceInput) -> Result<(), OperationError> {
+        let encoded_dir_name = encode_directory_name(&input.name);
+        let full_path = self.workspaces_dir.join(&encoded_dir_name);
+
+        if !full_path.exists() {
             return Err(OperationError::NotFound {
-                name: input
-                    .path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string(),
-                path: input.path.clone(),
+                name: encoded_dir_name,
+                path: full_path,
             });
         }
 
         // Check if the workspace is already active
-        let current_workspace = self.current_workspace();
-        if current_workspace.is_ok() && current_workspace.unwrap().1.path() == input.path {
-            return Ok(());
+        if let Ok(current_workspace) = self.current_workspace() {
+            if current_workspace.1.path() == full_path {
+                return Ok(());
+            }
         }
 
-        let workspace =
-            Workspace::new(input.path.clone(), self.fs.clone(), self.app_handle.clone())?;
+        let workspace = Workspace::new(
+            full_path.clone(),
+            self.fs.clone(),
+            self.app_handle.clone(),
+            self.activity_indicator.clone(),
+        )?;
 
         let known_workspaces = self.known_workspaces().await?;
         let mut workspaces_lock = known_workspaces.write().await;
@@ -41,22 +44,17 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         // This would allow for opening a workspace in a non-default folder
         let workspace_key = if let Some((key, _)) = workspaces_lock
             .iter()
-            .filter(|(_, info)| &info.value().path == &input.path)
+            .filter(|(_, info)| &info.value().path == &full_path)
             .next()
         {
             key
         } else {
             workspaces_lock.insert(WorkspaceInfo {
                 name: decode_directory_name(
-                    &input
-                        .path
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .to_string(),
+                    &full_path.file_name().unwrap().to_string_lossy().to_string(),
                 )
                 .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
-                path: input.path,
+                path: full_path,
             })
         };
 

@@ -1,5 +1,6 @@
-export WORKSPACE_ROOT_DIR = ${CURDIR}
 export LOG_LEVEL = trace
+
+export DEV_APP_DIR = ${HOME}/.sapic
 
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR =  ${CURDIR}/assets/locales
@@ -63,8 +64,8 @@ define gen_models
 .PHONY: gen-$(1)-model
 gen-$(1)-models:
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
-	@cd $($(2)) && $(PYTHON) ${WORKSPACE_ROOT_DIR}/$(TS_IMPORT_INJECTOR) package.json
-	@cd $($(2)) && $(PYTHON) ${WORKSPACE_ROOT_DIR}/$(TS_EXPORT_INJECTOR)
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_IMPORT_INJECTOR) package.json
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_EXPORT_INJECTOR)
 	@cd $($(2)) && $(PNPM) format
 endef
 
@@ -76,6 +77,7 @@ LOGGING_MODELS_DIR := crates/moss-logging
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
+WORKBENCH_MODELS_DIR := crates/moss-workbench
 
 $(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_models,theme,THEME_MODELS_DIR))
@@ -85,6 +87,7 @@ $(eval $(call gen_models,logging,LOGGING_MODELS_DIR))
 $(eval $(call gen_models,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_models,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_models,common,COMMON_MODELS_DIR))
+$(eval $(call gen_models,workbench,WORKBENCH_MODELS_DIR))
 
 ## Generate All Models
 .PHONY: gen-models
@@ -97,6 +100,7 @@ gen-models: \
 	gen-environment-models \
 	gen-workspace-models \
 	gen-common-models \
+	gen-workbench-models \
 
 # Utility Commands
 

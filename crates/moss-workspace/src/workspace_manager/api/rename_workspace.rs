@@ -65,7 +65,12 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
                     .await?;
                 entry = Arc::new((
                     input.key,
-                    Workspace::new(new_path.clone(), self.fs.clone(), self.app_handle.clone())?,
+                    Workspace::new(
+                        new_path.clone(),
+                        self.fs.clone(),
+                        self.app_handle.clone(),
+                        self.activity_indicator.clone(),
+                    )?,
                 ))
             } else {
                 self.fs

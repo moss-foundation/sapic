@@ -9,6 +9,7 @@ moss_app.workspace = true
 moss_db.workspace = true
 anyhow.workspace = true
 moss_common.workspace = true
+moss_workbench.workspace = true
 
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
