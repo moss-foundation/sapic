@@ -43,7 +43,7 @@ export default tseslint.config(...tseslint.configs.recommended, {
     "prefer-const": "warn",
     "mossLint/tw-no-bg-with-arbitrary-value": "error",
     //FIXME: enable when tabs are completely implemented
-    "mossLint/only-valid-token-names": "off",
+    "mossLint/only-valid-token-names": "error",
     "mossLint/tw-no-old-syntax-for-arbitrary-values": "error",
   },
 });
