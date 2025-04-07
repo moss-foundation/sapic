@@ -29,11 +29,11 @@ export const ActivityBar = () => {
         const target = location.current.dropTargets[0];
         if (!target) return;
 
-        const sourceData = source.data;
-        const targetData = target.data;
+        const sourceData = source.data as { data: ActivityBarItem };
+        const targetData = target.data as { data: ActivityBarItem };
         const edge = extractClosestEdge(targetData);
 
-        if (!sourceData || !targetData) return;
+        if (!sourceData || !targetData || !sourceData.data || !targetData.data) return;
 
         const updatedItems = swapListById(sourceData.data.id, targetData.data.id, items, edge);
 
