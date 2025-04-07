@@ -19,7 +19,21 @@ export const AppLayout = () => {
   return (
     <div className="flex h-full w-full">
       {position === "default" && primarySideBarPosition === "left" && <ActivityBar />}
-      <Resizable smoothHide>
+      <Resizable
+        smoothHide
+        onDragEnd={(sizes) => {
+          const [leftPanelSize, _mainPanelSize, rightPanelSize] = sizes;
+          if (primarySideBarPosition === "left") {
+            primarySideBar.setWidth(leftPanelSize);
+          }
+          if (primarySideBarPosition === "right") {
+            primarySideBar.setWidth(rightPanelSize);
+          }
+        }}
+        onVisibleChange={() => {
+          primarySideBar.setVisible(!primarySideBar.visible);
+        }}
+      >
         <ResizablePanel
           visible={primarySideBar.visible && primarySideBarPosition === "left"}
           minSize={primarySideBar.minWidth}
