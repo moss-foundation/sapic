@@ -55,7 +55,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           minSize={primarySideBar.minWidth}
           snap
         >
-          {primarySideBarPosition === "left" && SideBarPaneContent}
+          {SideBarPaneContent}
         </ResizablePanel>
 
         <ResizablePanel>
@@ -73,7 +73,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           minSize={primarySideBar.minWidth}
           snap
         >
-          {primarySideBarPosition === "right" && SideBarPaneContent}
+          {SideBarPaneContent}
         </ResizablePanel>
       </Resizable>
 
