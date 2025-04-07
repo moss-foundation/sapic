@@ -121,7 +121,7 @@ export const CollectionTreeView = () => {
             </React.Fragment>
           ))}
           {showCollectionCreationZone && (
-            <div className="flex grow flex-col justify-end">
+            <div className="flex grow flex-col justify-end px-2">
               <CollectionCreationZone />
             </div>
           )}

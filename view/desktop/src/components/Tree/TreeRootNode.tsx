@@ -24,7 +24,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     allFoldersAreCollapsed,
     allFoldersAreExpanded,
     searchInput,
-
+    nodeOffset,
     onRootAddCallback,
     onRootRenameCallback,
     onRootClickCallback,
@@ -128,7 +128,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </div>
         ) : (
           <button
-            className="flex grow cursor-pointer items-center gap-1 overflow-hidden font-semibold"
+            className="flex grow cursor-pointer items-center gap-1 overflow-hidden font-medium"
             onClick={() => {
               handleFolderClick();
               onRootClickCallback?.(node);
@@ -184,7 +184,10 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (
-              <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft }}>
+              <div
+                className="flex w-full min-w-0 items-center gap-1 py-0.5"
+                style={{ paddingLeft: nodeOffset * 2 + paddingLeft }}
+              >
                 <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
                 <NodeAddForm
                   isFolder={isAddingRootFolderNode}

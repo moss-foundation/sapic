@@ -37,14 +37,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     [depth, nodeOffset, paddingLeft]
   );
 
-  const nodeStyle = useMemo(
-    () =>
-      cn("flex w-full min-w-0 items-center", {
-        "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id && currentActiveTreeId === treeId,
-      }),
-    [currentActivePanelId, currentActiveTreeId, node.id, treeId]
-  );
-
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
 
@@ -86,17 +78,19 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   return (
     <li ref={dropTargetListRef}>
       {isRenamingNode ? (
-        <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
-          <TestCollectionIcon type={node.type} />
-          <NodeRenamingForm
-            onSubmit={(newName) => {
-              handleRenamingFormSubmit(newName);
-              onNodeRenameCallback?.({ ...node, id: newName });
-            }}
-            onCancel={handleRenamingFormCancel}
-            restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
-            currentName={node.id}
-          />
+        <div className="w-full min-w-0" style={{ paddingLeft: nodePaddingLeft }}>
+          <span className="flex w-full items-center gap-1 px-2 py-0.5">
+            <TestCollectionIcon type={node.type} />
+            <NodeRenamingForm
+              onSubmit={(newName) => {
+                handleRenamingFormSubmit(newName);
+                onNodeRenameCallback?.({ ...node, id: newName });
+              }}
+              onCancel={handleRenamingFormCancel}
+              restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
+              currentName={node.id}
+            />
+          </span>
         </div>
       ) : (
         <ContextMenu.Root modal={false}>
@@ -117,13 +111,14 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
               className={cn(
-                nodeStyle,
-                "group/treeNode relative h-full w-full cursor-pointer px-2 dark:hover:text-black"
+                "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center px-2 dark:hover:text-black"
               )}
             >
               <span
                 className={cn("flex h-full w-full items-center gap-1 rounded py-0.5", {
                   "group-hover/treeNode:background-(--moss-primary-background-hover)": !isNodeDragging,
+                  "background-(--moss-primary-background-hover)":
+                    currentActivePanelId === node.id && currentActiveTreeId === treeId,
                 })}
                 style={{
                   paddingLeft: nodePaddingLeft,

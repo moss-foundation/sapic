@@ -6,7 +6,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] font-semibold text-(--moss-primary-text) uppercase">
-      <div className="font-bold text-(--moss-secondary-text)">{title}</div>
+      <div className="flex items-center leading-2 font-semibold text-(--moss-secondary-text)">{title}</div>
 
       <div className="flex">
         <TreeActionButton icon="TreeExpandAll" onClick={expandAll} />

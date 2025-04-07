@@ -13,7 +13,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import GeneralProvider from "./app/Provider";
 
 scan({
-  enabled: true,
+  enabled: false,
 });
 
 const ENABLE_REACT_QUERY_DEVTOOLS = true;
