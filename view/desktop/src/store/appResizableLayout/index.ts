@@ -34,7 +34,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       primarySideBarPosition: position,
     })),
   primarySideBar: {
-    minWidth: 270,
+    minWidth: 120,
     width: 255,
     visible: true,
     setWidth: (newWidth) =>
@@ -54,7 +54,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       })),
   },
   secondarySideBar: {
-    minWidth: 270,
+    minWidth: 120,
     width: 255,
     visible: true,
     setWidth: (newWidth) =>
