@@ -17,7 +17,7 @@ export const CollectionTreeView = () => {
 
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const { collections, setCollections } = useCollectionsStore();
+  const { collections, setCollections, updateCollection } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -116,7 +116,17 @@ export const CollectionTreeView = () => {
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
             <React.Fragment key={`${collection.id}-${collection.tree.isExpanded}`}>
-              <Tree tree={collection.tree} id={collection.id} searchInput={searchInput} />
+              <Tree
+                onTreeUpdate={(tree) => {
+                  updateCollection({
+                    ...collection,
+                    tree,
+                  });
+                }}
+                tree={collection.tree}
+                id={collection.id}
+                searchInput={searchInput}
+              />
               <div className="background-(--moss-border-color) h-[1px] w-full" />
             </React.Fragment>
           ))}

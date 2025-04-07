@@ -18,6 +18,7 @@ interface CollectionsStoreState {
   setCollections: (collections: Collection[]) => void;
   expandAll: () => void;
   collapseAll: () => void;
+  updateCollection: (collection: Collection) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -55,6 +56,11 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           tree: collapseAllNodes(collection.tree),
         };
       }),
+    }));
+  },
+  updateCollection: (collection: Collection) => {
+    set((state) => ({
+      collections: state.collections.map((c) => (c.id === collection.id ? collection : c)),
     }));
   },
 }));

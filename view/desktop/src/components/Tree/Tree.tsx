@@ -59,8 +59,11 @@ export const Tree = ({
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
-    setTree((prev) => updateTreeNode(prev, updatedNode));
-    onTreeUpdate?.(removeUniqueIdFromTree(updatedNode));
+    setTree((prev) => {
+      const newTree = updateTreeNode(prev, updatedNode);
+      onTreeUpdate?.(removeUniqueIdFromTree(newTree));
+      return newTree;
+    });
 
     if (updatedNode.isRoot) onRootUpdate?.(updatedNode);
     else onNodeUpdate?.(updatedNode);

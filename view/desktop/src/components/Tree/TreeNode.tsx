@@ -125,16 +125,16 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   paddingRight,
                 }}
               >
-                <TestCollectionIcon type={node.type} />
-                <NodeLabel label={node.id} searchInput={searchInput} />
-                <span className="DragHandle h-full min-h-4 grow" />
                 <Icon
                   icon="TreeChevronRight"
-                  className={cn("ml-auto text-(--moss-icon-primary-text)", {
+                  className={cn("text-(--moss-icon-primary-text)", {
                     "rotate-90": shouldRenderChildNodes,
                     "opacity-0": !node.isFolder,
                   })}
                 />
+                <TestCollectionIcon type={node.type} />
+                <NodeLabel label={node.id} searchInput={searchInput} />
+                <span className="DragHandle h-full min-h-4 grow" />
               </span>
               {preview &&
                 createPortal(
