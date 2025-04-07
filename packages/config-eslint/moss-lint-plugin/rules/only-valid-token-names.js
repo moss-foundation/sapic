@@ -1,14 +1,9 @@
-// FIXME: temporary solution with test.json file
-import themeInterface from "../test.json" with { type: "json" };
+import cssVariables from "../css_variables.json" with { type: "json" };
 
-const colorKeysToCssValues = (colors) => {
-  const keys = Object.keys(colors);
-  return keys.map((color) => "--moss-" + color.replaceAll(".", "-"));
-};
+const VALID_TOKENS = new Set(cssVariables);
 
-const VALID_TOKENS = new Set(colorKeysToCssValues(themeInterface.colors));
-
-const ANY_TW_SELECTOR_WITH_ARBITRARY_VALUE = /\b[\w|\-:]+\[(?:var\((--[\w-]+)\)|(--[\w-]+))\]/g;
+const ANY_TW_SELECTOR_WITH_ARBITRARY_VALUE =
+  /\b[\w\-:]+(?:\[(?:(?:var\((--[\w\-]+)\))|(--[\w\-]+))\]|-\((?:(?:var\((--[\w\-]+)\))|(--[\w\-]+))\))/g;
 
 const getTokensWithInvalidArbitraryValues = (str, loc) => {
   const invalidTokens = [];
@@ -16,7 +11,7 @@ const getTokensWithInvalidArbitraryValues = (str, loc) => {
 
   while ((arr = ANY_TW_SELECTOR_WITH_ARBITRARY_VALUE.exec(str)) !== null) {
     const className = arr[0];
-    const name = arr[1] || arr[2];
+    const name = arr.slice(1).find((item) => item !== undefined);
 
     const startColumn = loc.start.column + str.indexOf(className) + 1;
     const endColumn = startColumn + className.length;

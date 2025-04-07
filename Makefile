@@ -25,6 +25,7 @@ ICONS_DIR := tools/icongen
 XTASK_DIR := tools/xtask
 TS_IMPORT_INJECTOR := misc/ts_imports_injector.py
 TS_EXPORT_INJECTOR := misc/ts_exports_injector.py
+CSS_VARIABLES_EXPORTER := misc/css_variables_exporter.py
 # --- Executables ---
 PNPM := pnpm
 CARGO := cargo
@@ -99,6 +100,11 @@ gen-models: \
 	gen-common-models \
 
 # Utility Commands
+
+## Export css variables
+.PHONY: export-css-variables
+export-css-variables:
+	@cd misc && $(PYTHON) ${WORKSPACE_ROOT_DIR}/$(CSS_VARIABLES_EXPORTER)
 
 ## Count Lines of Code
 .PHONY: loc
