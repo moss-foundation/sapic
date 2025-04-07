@@ -6,8 +6,6 @@ edition = "2021"
 [dependencies]
 moss_git.workspace = true
 moss_keyring.workspace = true
-
-tokio.workspace = true
 anyhow.workspace = true
 parking_lot = { workspace = true, features = ["serde"] }
 git2.workspace = true
