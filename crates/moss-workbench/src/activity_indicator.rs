@@ -15,7 +15,8 @@ enum ActivityEvent<'a> {
     Oneshot {
         activity_id: &'a str,
         title: String,
-        detail: String,
+        #[ts(optional)]
+        detail: Option<String>,
     },
     /// This event is used when the activity is a long-running event
     /// and we want to track its progress, like indexing, scanning, etc.
@@ -23,7 +24,8 @@ enum ActivityEvent<'a> {
     Start {
         activity_id: &'a str,
         title: String,
-        detail: String,
+        #[ts(optional)]
+        detail: Option<String>,
         #[ts(optional)]
         initial_progress: Option<u8>, // 0-100
     },
@@ -32,7 +34,8 @@ enum ActivityEvent<'a> {
     #[serde(rename_all = "camelCase")]
     Progress {
         activity_id: &'a str,
-        detail: String,
+        #[ts(optional)]
+        detail: Option<String>,
         progress: u8, // 0-100
     },
     /// This event is used to notify the frontend that the long-running activity
@@ -54,7 +57,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
         }
     }
 
-    pub fn emit_progress(&self, progress: u8, detail: String) -> Result<()> {
+    pub fn emit_progress(&self, progress: u8, detail: Option<String>) -> Result<()> {
         self.app_handle.emit(
             ACTIVITY_INDICATOR_CHANNEL,
             ActivityEvent::Progress {
@@ -95,7 +98,12 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
         Self { app_handle }
     }
 
-    pub fn emit_oneshot(&self, activity_id: &str, title: String, detail: String) -> Result<()> {
+    pub fn emit_oneshot(
+        &self,
+        activity_id: &str,
+        title: String,
+        detail: Option<String>,
+    ) -> Result<()> {
         self.app_handle.emit(
             ACTIVITY_INDICATOR_CHANNEL,
             ActivityEvent::Oneshot {
@@ -112,7 +120,7 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
         &'a self,
         activity_id: &'a str,
         title: String,
-        detail: String,
+        detail: Option<String>,
         initial_progress: Option<u8>,
     ) -> Result<ActivityHandle<R>> {
         self.app_handle.emit(
