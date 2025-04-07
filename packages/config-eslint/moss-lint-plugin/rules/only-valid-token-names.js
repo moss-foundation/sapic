@@ -1,12 +1,6 @@
-// FIXME: temporary solution with test.json file
-import themeInterface from "../test.json" with { type: "json" };
+import cssVariables from "../css_variables.json" with { type: "json" };
 
-const colorKeysToCssValues = (colors) => {
-  const keys = Object.keys(colors);
-  return keys.map((color) => "--moss-" + color.replaceAll(".", "-"));
-};
-
-const VALID_TOKENS = new Set(colorKeysToCssValues(themeInterface.colors));
+const VALID_TOKENS = new Set(cssVariables);
 
 const ANY_TW_SELECTOR_WITH_ARBITRARY_VALUE = /\b[\w|\-:]+\[(?:var\((--[\w-]+)\)|(--[\w-]+))\]/g;
 
