@@ -115,14 +115,9 @@ export const CollectionTreeView = () => {
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
-            <React.Fragment key={`${collection.id}-${collection.tree.isExpanded}`}>
+            <React.Fragment key={collection.id}>
               <Tree
-                onTreeUpdate={(tree) => {
-                  updateCollection({
-                    ...collection,
-                    tree,
-                  });
-                }}
+                onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
                 tree={collection.tree}
                 id={collection.id}
                 searchInput={searchInput}

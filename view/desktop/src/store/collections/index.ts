@@ -58,9 +58,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       }),
     }));
   },
-  updateCollection: (collection: Collection) => {
+  updateCollection: (updatedCollection: Collection) => {
     set((state) => ({
-      collections: state.collections.map((c) => (c.id === collection.id ? collection : c)),
+      collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
     }));
   },
 }));

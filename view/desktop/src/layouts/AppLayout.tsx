@@ -55,7 +55,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           minSize={primarySideBar.minWidth}
           snap
         >
-          {SideBarPaneContent}
+          {primarySideBarPosition === "left" && SideBarPaneContent}
         </ResizablePanel>
 
         <ResizablePanel>
@@ -73,7 +73,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           minSize={primarySideBar.minWidth}
           snap
         >
-          {SideBarPaneContent}
+          {primarySideBarPosition === "right" && SideBarPaneContent}
         </ResizablePanel>
       </Resizable>
 
@@ -82,7 +82,6 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
   );
 };
 
-// Common sidebar content that can appear in either the left or right sidebar
 const SidebarContent = () => <Sidebar />;
 
 const MainContent = () => (
