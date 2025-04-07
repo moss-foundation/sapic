@@ -14,9 +14,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import GeneralProvider from "./app/Provider";
 
-scan({
-  enabled: false,
-});
+scan({ enabled: false, showToolbar: true });
 
 const ENABLE_REACT_QUERY_DEVTOOLS = true;
 
