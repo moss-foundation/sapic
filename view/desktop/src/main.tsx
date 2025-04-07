@@ -14,9 +14,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import GeneralProvider from "./app/Provider";
 
-scan({ enabled: false, showToolbar: true });
+scan({ enabled: import.meta.env.MODE === "development", showToolbar: true });
 
-const ENABLE_REACT_QUERY_DEVTOOLS = true;
+const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({

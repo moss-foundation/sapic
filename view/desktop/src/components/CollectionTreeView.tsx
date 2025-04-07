@@ -1,6 +1,6 @@
 import "@repo/moss-tabs/assets/styles.css";
 
-import React, { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import { Icon, Input, Scrollbar, Tree } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
@@ -12,10 +12,10 @@ import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
 export const CollectionTreeView = () => {
+  const dropTargetToggleRef = useRef<HTMLDivElement>(null);
+
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
-
-  const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const { collections, setCollections, updateCollection } = useCollectionsStore();
 
@@ -115,7 +115,7 @@ export const CollectionTreeView = () => {
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           {collections.map((collection) => (
-            <React.Fragment key={collection.id}>
+            <Fragment key={`${collection.id}-${Math.random()}`}>
               <Tree
                 onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
                 tree={collection.tree}
@@ -123,7 +123,7 @@ export const CollectionTreeView = () => {
                 searchInput={searchInput}
               />
               <div className="background-(--moss-border-color) h-[1px] w-full" />
-            </React.Fragment>
+            </Fragment>
           ))}
           {showCollectionCreationZone && (
             <div className="flex grow flex-col justify-end px-2">
