@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef } from "react";
 
+import { Scrollbar } from "@/components";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { ViewContainer } from "@/components/ViewContainer";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -57,10 +58,10 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <div className="flex grow flex-col">
+        <Scrollbar className="flex grow flex-col">
           <SidebarHeader title={activeGroupTitle} />
           {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-        </div>
+        </Scrollbar>
       </BaseSidebar>
     );
   }
@@ -68,10 +69,10 @@ export const Sidebar = () => {
   if (position === "bottom") {
     return (
       <BaseSidebar>
-        <div className="flex grow flex-col">
+        <Scrollbar className="flex grow flex-col">
           <SidebarHeader title={activeGroupTitle} />
           {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-        </div>
+        </Scrollbar>
         <ActivityBar />
       </BaseSidebar>
     );

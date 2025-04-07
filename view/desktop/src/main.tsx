@@ -1,5 +1,6 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
+import { scan } from "react-scan"; // must be imported before React and React DOM
 
 import { PageLoader } from "./components/PageLoader";
 
@@ -10,6 +11,10 @@ import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-qu
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import GeneralProvider from "./app/Provider";
+
+scan({
+  enabled: true,
+});
 
 const ENABLE_REACT_QUERY_DEVTOOLS = true;
 

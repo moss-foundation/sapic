@@ -13,56 +13,71 @@ import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
 
 export const AppLayout = () => {
+  return (
+    <DefaultLayout
+      SideBarPaneContent={<SidebarContent />}
+      MainPaneContent={<MainContent />}
+      BottomPaneContent={<BottomPaneContent />}
+      ActivityBar={<ActivityBar />}
+    />
+  );
+};
+
+interface DefaultLayoutProps {
+  SideBarPaneContent: JSX.Element;
+  MainPaneContent: JSX.Element;
+  BottomPaneContent: JSX.Element;
+  ActivityBar: JSX.Element;
+}
+
+const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent, ActivityBar }: DefaultLayoutProps) => {
   const { position } = useActivityBarStore();
   const { bottomPane, primarySideBar, primarySideBarPosition } = useAppResizableLayoutStore();
 
   return (
     <div className="flex h-full w-full">
-      {position === "default" && primarySideBarPosition === "left" && <ActivityBar />}
+      {position === "default" && primarySideBarPosition === "left" && ActivityBar}
       <Resizable
         smoothHide
         onDragEnd={(sizes) => {
           const [leftPanelSize, _mainPanelSize, rightPanelSize] = sizes;
-          if (primarySideBarPosition === "left") {
-            primarySideBar.setWidth(leftPanelSize);
-          }
-          if (primarySideBarPosition === "right") {
-            primarySideBar.setWidth(rightPanelSize);
-          }
+          if (primarySideBarPosition === "left") primarySideBar.setWidth(leftPanelSize);
+          if (primarySideBarPosition === "right") primarySideBar.setWidth(rightPanelSize);
         }}
-        onVisibleChange={() => {
-          primarySideBar.setVisible(!primarySideBar.visible);
+        onVisibleChange={(index, visible) => {
+          if (primarySideBarPosition === "left" && index === 0) primarySideBar.setVisible(visible);
+          if (primarySideBarPosition === "right" && index === 2) primarySideBar.setVisible(visible);
         }}
       >
         <ResizablePanel
+          preferredSize={primarySideBar.width}
           visible={primarySideBar.visible && primarySideBarPosition === "left"}
           minSize={primarySideBar.minWidth}
           snap
         >
-          <SidebarContent />
+          {SideBarPaneContent}
         </ResizablePanel>
 
         <ResizablePanel>
           <Resizable vertical>
-            <ResizablePanel>
-              <MainContent />
-            </ResizablePanel>
+            <ResizablePanel>{MainPaneContent}</ResizablePanel>
             <ResizablePanel visible={bottomPane.visible} minSize={bottomPane.minHeight} snap>
-              <BottomPaneContent />
+              {BottomPaneContent}
             </ResizablePanel>
           </Resizable>
         </ResizablePanel>
 
         <ResizablePanel
+          preferredSize={primarySideBar.width}
           visible={primarySideBar.visible && primarySideBarPosition === "right"}
           minSize={primarySideBar.minWidth}
           snap
         >
-          <SidebarContent />
+          {SideBarPaneContent}
         </ResizablePanel>
       </Resizable>
 
-      {position === "default" && primarySideBarPosition === "right" && <ActivityBar />}
+      {position === "default" && primarySideBarPosition === "right" && ActivityBar}
     </div>
   );
 };
