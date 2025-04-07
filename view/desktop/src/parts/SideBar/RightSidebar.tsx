@@ -1,14 +1,15 @@
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
-import { ViewContainer } from "@/components/ViewContainer";
-import { CollectionTreeView } from "@/components/CollectionTreeView";
-import { useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { useGetViewGroups } from "@/hooks/useGetViewGroups";
 import { useEffect, useRef } from "react";
 
+import { CollectionTreeView } from "@/components/CollectionTreeView";
+import { ViewContainer } from "@/components/ViewContainer";
+import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
+import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
+import { useGetViewGroups } from "@/hooks/useGetViewGroups";
+import { useGetProjectSessionState } from "@/hooks/useProjectSession";
+import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
+
+import { Sidebar } from "./Sidebar";
 import SidebarHeader from "./SidebarHeader";
-import { BaseSidebar } from "./Sidebar";
 
 interface RightSidebarProps {
   isResizing?: boolean;
@@ -58,43 +59,43 @@ export const RightSidebar = ({ isResizing = false }: RightSidebarProps) => {
   // Using the BaseSidebar component with position="right"
   if (isActivityBarInDefaultPosition) {
     return (
-      <BaseSidebar isResizing={isResizing} position="right">
+      <Sidebar isResizing={isResizing} position="right">
         <Content />
-      </BaseSidebar>
+      </Sidebar>
     );
   }
 
   if (effectivePosition === "hidden") {
     return (
-      <BaseSidebar isResizing={isResizing} position="right">
+      <Sidebar isResizing={isResizing} position="right">
         <Content />
-      </BaseSidebar>
+      </Sidebar>
     );
   }
 
   if (effectivePosition === "top") {
     return (
-      <BaseSidebar isResizing={isResizing} position="right">
+      <Sidebar isResizing={isResizing} position="right">
         <HorizontalActivityBar position="top" />
         <Content />
-      </BaseSidebar>
+      </Sidebar>
     );
   }
 
   if (effectivePosition === "bottom") {
     return (
-      <BaseSidebar isResizing={isResizing} position="right">
+      <Sidebar isResizing={isResizing} position="right">
         <Content />
         <HorizontalActivityBar position="bottom" />
-      </BaseSidebar>
+      </Sidebar>
     );
   }
 
   // Default case
   return (
-    <BaseSidebar isResizing={isResizing} position="right">
+    <Sidebar isResizing={isResizing} position="right">
       <Content />
-    </BaseSidebar>
+    </Sidebar>
   );
 };
 

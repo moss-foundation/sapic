@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { DropIndicator } from "@/components";
 import { Icon } from "@/components/Icon";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn, swapListById } from "@/utils";
 import {
   attachClosestEdge,
@@ -19,7 +20,8 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 export const ActivityBar = () => {
-  const { items, position, setPosition, setItems } = useActivityBarStore();
+  const { items, position, setItems } = useActivityBarStore();
+  const { primarySideBarPosition } = useAppResizableLayoutStore();
 
   useEffect(() => {
     return monitorForElements({
@@ -44,10 +46,15 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn(
-        "background-(--moss-secondary-background) flex h-full flex-col items-center gap-3 border-r border-r-(--moss-border-color) p-1.5"
-        // leftPosition ? "border-r border-r-(--moss-border-color)" : "border-l border-l-(--moss-border-color)",
-      )}
+      className={cn("background-(--moss-secondary-background) flex items-center gap-3 p-1.5", {
+        "w-full border-b border-b-(--moss-border-color)": position === "top",
+        "w-full border-t border-t-(--moss-border-color)": position === "bottom",
+        "h-full flex-col": position === "default",
+        "hidden": position === "hidden",
+
+        "border-r border-r-(--moss-border-color)": primarySideBarPosition === "left" && position === "default",
+        "border-l border-l-(--moss-border-color)": primarySideBarPosition === "right" && position === "default",
+      })}
     >
       {items.map((item) => (
         <ActivityBarButton key={item.id} {...item} />

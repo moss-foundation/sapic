@@ -2,49 +2,39 @@ import { ReactNode, useEffect, useRef } from "react";
 
 import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { ViewContainer } from "@/components/ViewContainer";
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
-import { useGetViewGroups } from "@/hooks/useGetViewGroups";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { HorizontalActivityBar } from "@/parts/ActivityBar/HorizontalActivityBar";
+import { useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
+import { ActivityBar } from "../ActivityBar";
 import SidebarHeader from "./SidebarHeader";
 
 export interface BaseSidebarProps {
-  position?: "left" | "right";
   className?: string;
   children?: ReactNode;
 }
 
-export const BaseSidebar = ({ position = "left", className, children }: BaseSidebarProps) => {
-  const { data: appLayoutState } = useGetAppLayoutState();
+export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
+  const { primarySideBarPosition } = useAppResizableLayoutStore();
 
-  const sidebarSetting = appLayoutState?.sidebarSetting || "left";
-  const activeSidebar = appLayoutState?.activeSidebar || "none";
-  const isVisible =
-    activeSidebar !== "none" &&
-    ((position === "left" && sidebarSetting === "left" && activeSidebar === "left") ||
-      (position === "right" && sidebarSetting === "right" && activeSidebar === "right"));
-
-  const sidebarClasses = cn(
-    "background-(--moss-secondary-background)  flex h-full flex-col",
-    // Only apply transitions when not actively resizing
-    !isVisible && "w-0 overflow-hidden",
-    {
-      "border-r border-(--moss-border-color)": position === "left",
-      "border-l border-(--moss-border-color)": position === "right",
-    },
-    className
+  return (
+    <div
+      className={cn(
+        "background-(--moss-secondary-background) flex h-full flex-col",
+        {
+          "border-r border-(--moss-border-color)": primarySideBarPosition === "left",
+          "border-l border-(--moss-border-color)": primarySideBarPosition === "right",
+        },
+        className
+      )}
+    >
+      {children}
+    </div>
   );
-
-  return <div className={sidebarClasses}>{children}</div>;
 };
 
 export const Sidebar = () => {
-  const { data: activityBarState } = useGetActivityBarState();
-  const { data: appLayoutState } = useGetAppLayoutState();
-  const { data: viewGroups } = useGetViewGroups();
   const { data: projectSessionState } = useGetProjectSessionState();
 
   const lastActiveGroupRef = useRef<string | null>(null);
@@ -55,70 +45,44 @@ export const Sidebar = () => {
     }
   }, [projectSessionState?.lastActiveGroup]);
 
-  const activeGroupId = projectSessionState?.lastActiveGroup || lastActiveGroupRef.current || "";
+  const { position } = useActivityBarStore();
 
-  const activeGroup = viewGroups?.viewGroups?.find((group) => group.id === activeGroupId);
-  const activeGroupTitle = activeGroup?.title || "Launchpad";
+  const activeItem = useActivityBarStore((state) => state.getActiveItem());
 
+  const activeGroupId = activeItem?.id;
   const isCollectionsActive = activeGroupId === "collections.groupId";
+  const activeGroupTitle = activeItem?.title || "Launchpad";
 
-  const getEffectivePosition = () => {
-    if (!activityBarState || !appLayoutState) return "left";
-
-    if (activityBarState.position !== "default") {
-      return activityBarState.position;
-    }
-
-    return appLayoutState.sidebarSetting || "left";
-  };
-
-  const effectivePosition = getEffectivePosition();
-  const isActivityBarInDefaultPosition = activityBarState?.position === "default";
-
-  const Content = () => (
-    <>
-      <SidebarHeader title={activeGroupTitle} />
-      {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-    </>
-  );
-
-  if (isActivityBarInDefaultPosition) {
+  if (position === "top") {
     return (
-      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
-        <Content />
+      <BaseSidebar>
+        <ActivityBar />
+        <div className="flex grow flex-col">
+          <SidebarHeader title={activeGroupTitle} />
+          {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
+        </div>
       </BaseSidebar>
     );
   }
 
-  if (effectivePosition === "hidden") {
+  if (position === "bottom") {
     return (
-      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
-        <Content />
-      </BaseSidebar>
-    );
-  }
-
-  if (effectivePosition === "top") {
-    return (
-      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
-        <HorizontalActivityBar position="top" />
-        <Content />
-      </BaseSidebar>
-    );
-  }
-
-  if (effectivePosition === "bottom") {
-    return (
-      <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
-        <Content />
-        <HorizontalActivityBar position="bottom" />
+      <BaseSidebar>
+        <div className="flex grow flex-col">
+          <SidebarHeader title={activeGroupTitle} />
+          {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
+        </div>
+        <ActivityBar />
       </BaseSidebar>
     );
   }
 
   return (
-    <BaseSidebar position={appLayoutState?.sidebarSetting as "left" | "right"}>
-      <Content />
+    <BaseSidebar>
+      <div className="flex grow flex-col">
+        <SidebarHeader title={activeGroupTitle} />
+        {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
+      </div>
     </BaseSidebar>
   );
 };

@@ -2,15 +2,14 @@ import React, { ChangeEvent, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActivityBarState } from "@/hooks/useActivityBarState";
-import { useChangeActivityBarState } from "@/hooks/useChangeActivityBarState";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
-import { useGetActivityBarState } from "@/hooks/useGetActivityBarState";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useListColorThemes } from "@/hooks/useListColorThemes";
 import { useListLocales } from "@/hooks/useListLocales";
 import { useSetColorTheme } from "@/hooks/useSetColorTheme";
 import { useSetLocale } from "@/hooks/useSetLocale";
+import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
 
@@ -30,7 +29,7 @@ const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDrop
       <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{label}</h3>
       <div className="relative">
         <div
-          className="flex w-full cursor-pointer items-center justify-between rounded border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm hover:bg-[var(--moss-select-hover-bg)]"
+          className="background-(--moss-select-bg-outlined) hover:background-(--moss-select-hover-bg) flex w-full cursor-pointer items-center justify-between rounded border border-[var(--moss-select-border-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm"
           onClick={() => setIsOpen(!isOpen)}
         >
           <span>
@@ -42,14 +41,14 @@ const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDrop
         </div>
 
         {isOpen && (
-          <div className="absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-md border border-[var(--moss-select-border-outlined)] bg-[var(--moss-select-bg-outlined)] shadow-lg">
+          <div className="background-(--moss-select-bg-outlined) absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-md border border-[var(--moss-select-border-outlined)] shadow-lg">
             <div className="py-1">
               {React.Children.map(children, (child) => {
                 if (React.isValidElement(child)) {
                   return (
                     <div
-                      className={`cursor-pointer px-4 py-2 hover:bg-[var(--moss-select-hover-bg)] ${
-                        child.props.value === value ? "bg-[var(--moss-select-hover-bg)] font-medium" : ""
+                      className={`hover:background-(--moss-select-hover-bg) cursor-pointer px-4 py-2 ${
+                        child.props.value === value ? "background-(--moss-select-hover-bg) font-medium" : ""
                       }`}
                       onClick={() => {
                         onChange({
@@ -90,8 +89,8 @@ export const Settings = () => {
   const { data: languages } = useListLocales();
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
-  const { data: activityBarStateData } = useGetActivityBarState();
-  const { mutate: changeActivityBarState } = useChangeActivityBarState();
+  const { setPosition, position } = useActivityBarStore();
+  const { setPrimarySideBarPosition, primarySideBarPosition } = useAppResizableLayoutStore();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;
@@ -119,11 +118,7 @@ export const Settings = () => {
 
   const handleSidebarTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const sidebarType = event.target.value as "left" | "right";
-
-    changeAppLayoutState({
-      sidebarSetting: sidebarType,
-      activeSidebar: appLayoutState?.activeSidebar !== "none" ? sidebarType : "none",
-    });
+    setPrimarySideBarPosition(sidebarType);
   };
 
   const handleBottomPaneVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -134,11 +129,11 @@ export const Settings = () => {
   const handleActivityBarPositionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const position = event.target.value as ActivityBarState["position"];
 
-    changeActivityBarState({ position });
+    setPosition(position);
   };
 
   return (
-    <main className="min-h-screen bg-[var(--moss-page-background)]">
+    <main className="background-(--moss-page-background) min-h-screen">
       <div className="p-5">
         <h1 className="mb-5 text-2xl font-bold text-[var(--moss-text)]">{t("settings")}</h1>
 
@@ -175,7 +170,7 @@ export const Settings = () => {
         <SettingsDropdown
           id="sidebar-type-select"
           label="Sidebar Type"
-          value={appLayoutState?.sidebarSetting || "left"}
+          value={primarySideBarPosition || "left"}
           onChange={handleSidebarTypeChange}
         >
           <option value="left" className="text-[var(--moss-select-text-outlined)]">
@@ -223,7 +218,7 @@ export const Settings = () => {
         <SettingsDropdown
           id="activitybar-position-select"
           label="ActivityBar Position"
-          value={activityBarStateData?.position || "default"}
+          value={position || "default"}
           onChange={handleActivityBarPositionChange}
         >
           <option value="default" className="text-[var(--moss-select-text-outlined)]">

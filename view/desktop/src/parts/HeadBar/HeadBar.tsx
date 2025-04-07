@@ -1,5 +1,4 @@
 import { Icon } from "@/components";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -8,8 +7,8 @@ import { Controls } from "./Controls/Controls";
 
 export const HeadBar = () => {
   const os = type();
-  const { data: appLayoutState } = useGetAppLayoutState();
 
+  const { primarySideBarPosition } = useAppResizableLayoutStore();
   const { bottomPane, primarySideBar } = useAppResizableLayoutStore();
 
   const toggleSidebar = () => {
@@ -19,10 +18,6 @@ export const HeadBar = () => {
   const toggleBottomPane = () => {
     bottomPane.setVisible(!bottomPane.visible);
   };
-
-  // Determine which sidebar is currently set as the preferred one
-  const activeSidebarSetting = appLayoutState?.sidebarSetting || "left";
-  const isLeftSidebarMode = activeSidebarSetting === "left";
 
   return (
     <header
@@ -50,18 +45,18 @@ export const HeadBar = () => {
             <button
               className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
               onClick={toggleSidebar}
-              title={isLeftSidebarMode ? "Toggle Left Sidebar" : "Toggle Bottom Panel"}
+              title={primarySideBarPosition === "left" ? "Toggle Left Sidebar" : "Toggle Bottom Panel"}
             >
               <Icon
                 className="size-[18px] text-(--moss-icon-primary-text)"
                 icon={
-                  isLeftSidebarMode
+                  primarySideBarPosition === "left"
                     ? primarySideBar.visible
                       ? "HeadBarLeftSideBarActive"
                       : "HeadBarLeftSideBar"
                     : primarySideBar.visible
-                      ? "HeadBarPanelActive"
-                      : "HeadBarPanel"
+                      ? "HeadBarRightSideBarActive"
+                      : "HeadBarRightSideBar"
                 }
               />
             </button>

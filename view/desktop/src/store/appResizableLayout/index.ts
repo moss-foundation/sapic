@@ -2,6 +2,8 @@ import { create } from "zustand";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
+  primarySideBarPosition: "left" | "right";
+  setPrimarySideBarPosition: (position: AppResizableLayoutStore["primarySideBarPosition"]) => void;
   primarySideBar: {
     minWidth: number;
     width: number;
@@ -26,6 +28,11 @@ export interface AppResizableLayoutStore {
 }
 
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set) => ({
+  primarySideBarPosition: "left",
+  setPrimarySideBarPosition: (position: AppResizableLayoutStore["primarySideBarPosition"]) =>
+    set(() => ({
+      primarySideBarPosition: position,
+    })),
   primarySideBar: {
     minWidth: 270,
     width: 255,

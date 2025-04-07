@@ -6,22 +6,25 @@ import "@repo/moss-tabs/assets/styles.css";
 
 import { testLogEntries } from "@/assets/testLogEntries";
 import { ActivityBar, Scrollbar, Sidebar } from "@/components";
-import { useGetAppLayoutState } from "@/hooks";
+import { useActivityBarStore } from "@/store/activityBar";
 
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
 
 export const AppLayout = () => {
-  const { data: appLayoutState } = useGetAppLayoutState();
-
-  const { bottomPane, primarySideBar } = useAppResizableLayoutStore();
+  const { position } = useActivityBarStore();
+  const { bottomPane, primarySideBar, primarySideBarPosition } = useAppResizableLayoutStore();
 
   return (
     <div className="flex h-full w-full">
-      <ActivityBar />
+      {position === "default" && primarySideBarPosition === "left" && <ActivityBar />}
       <Resizable smoothHide>
-        <ResizablePanel visible={primarySideBar.visible} minSize={primarySideBar.minWidth} snap>
+        <ResizablePanel
+          visible={primarySideBar.visible && primarySideBarPosition === "left"}
+          minSize={primarySideBar.minWidth}
+          snap
+        >
           <SidebarContent />
         </ResizablePanel>
 
@@ -35,7 +38,17 @@ export const AppLayout = () => {
             </ResizablePanel>
           </Resizable>
         </ResizablePanel>
+
+        <ResizablePanel
+          visible={primarySideBar.visible && primarySideBarPosition === "right"}
+          minSize={primarySideBar.minWidth}
+          snap
+        >
+          <SidebarContent />
+        </ResizablePanel>
       </Resizable>
+
+      {position === "default" && primarySideBarPosition === "right" && <ActivityBar />}
     </div>
   );
 };
