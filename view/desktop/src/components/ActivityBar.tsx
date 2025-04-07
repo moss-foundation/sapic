@@ -21,7 +21,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
-  const { primarySideBarPosition } = useAppResizableLayoutStore();
+  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
 
   useEffect(() => {
     return monitorForElements({

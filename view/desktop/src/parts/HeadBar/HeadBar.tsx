@@ -8,8 +8,9 @@ import { Controls } from "./Controls/Controls";
 export const HeadBar = () => {
   const os = type();
 
-  const { primarySideBarPosition } = useAppResizableLayoutStore();
-  const { bottomPane, primarySideBar } = useAppResizableLayoutStore();
+  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
+  const bottomPane = useAppResizableLayoutStore((state) => state.bottomPane);
+  const primarySideBar = useAppResizableLayoutStore((state) => state.primarySideBar);
 
   const toggleSidebar = () => {
     primarySideBar.setVisible(!primarySideBar.visible);
