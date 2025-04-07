@@ -67,14 +67,10 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@f9f65f52341ba3c1d5e1901c77dc7a9e58186191 # stable
 
-      - name: Refresh packages list
-        run: sudo apt update
-
       - name: Use Linux Apt Cache
         uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
         with:
           packages: |
-            libwebkit2gtk-4.0-dev
             libwebkit2gtk-4.1-dev
             libappindicator3-dev
             librsvg2-dev
