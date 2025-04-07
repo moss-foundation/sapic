@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef } from "react";
 
-import { Scrollbar } from "@/components";
+import { ActivityBar, Scrollbar } from "@/components";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { ViewContainer } from "@/components/ViewContainer";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -8,7 +8,6 @@ import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
-import { ActivityBar } from "../ActivityBar";
 import SidebarHeader from "./SidebarHeader";
 
 export interface BaseSidebarProps {
