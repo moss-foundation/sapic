@@ -1,7 +1,7 @@
 import React, { ChangeEvent, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActivityBarState } from "@/hooks/useActivityBarState";
+import { ActivityBarState } from "@/hooks";
 import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
 import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";

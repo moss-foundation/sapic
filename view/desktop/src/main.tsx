@@ -1,6 +1,8 @@
+// prettier-ignore
+import { scan } from "react-scan"; // must be imported before React and React DOM
+
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { scan } from "react-scan"; // must be imported before React and React DOM
 
 import { PageLoader } from "./components/PageLoader";
 
