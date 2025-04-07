@@ -175,8 +175,8 @@ const CollectionCreationZone = () => {
     <div
       ref={ref}
       className={cn("grid h-max min-h-32 w-full place-items-center", {
-        "background-(--moss-secondary-background) border border-dashed border-(--moss-primary)": canDrop === true,
-        "background-(--moss-primary-background) border border-dashed border-(--moss-border-color)": canDrop === null,
+        "background-(--moss-primary-background) border border-dashed border-(--moss-primary)": canDrop === true,
+        "background-(--moss-primary-background)/30 border border-dashed border-(--moss-primary)/30": canDrop === null,
       })}
     >
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
@@ -184,7 +184,7 @@ const CollectionCreationZone = () => {
           icon="PlusCircle"
           className={cn("size-5 rounded-full", {
             "text-(--moss-primary)": canDrop === true,
-            "text-(--moss-primary-text)": canDrop === null,
+            "text-(--moss-primary)/50": canDrop === null,
           })}
         />
         <span>Drag & drop selected items here to create a new collection</span>
