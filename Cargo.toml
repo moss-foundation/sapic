@@ -83,9 +83,9 @@ keyring = { version = "3", features = [
     "windows-native",
     "sync-secret-service",
 ] }
-whoami = "1.5.2"
+whoami = "1.6.0"
 chrono = { version = "0.4.40", default-features = false }
-uuid = { version = "1.15.1", default-features = false }
+uuid = { version = "1.16.0", default-features = false }
 webbrowser = "1.0.3"
 # miette = "7.5.0"
 zeroize = "1.7"
