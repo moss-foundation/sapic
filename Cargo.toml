@@ -84,7 +84,7 @@ keyring = { version = "3", features = [
     "sync-secret-service",
 ] }
 whoami = "1.5.2"
-chrono = { version =  "0.4.40", default-features = false }
+chrono = { version = "0.4.40", default-features = false }
 uuid = { version = "1.15.1", default-features = false }
 webbrowser = "1.0.3"
 # miette = "7.5.0"
@@ -98,5 +98,5 @@ scraper = { version = "0.23.1", default-features = false, features = [
 ] }
 xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
-futures = { version = "0.3.31", default-features = false }
+futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
