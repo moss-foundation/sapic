@@ -11,7 +11,5 @@ bincode.workspace = true
 serde = { workspace = true, features = ["derive"] }
 aes-gcm.workspace = true
 rand.workspace = true
-pbkdf2.workspace = true
-sha2.workspace = true
 argon2.workspace = true
 zeroize = { workspace = true, features = ["zeroize_derive"] }
