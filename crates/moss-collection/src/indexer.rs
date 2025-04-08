@@ -233,19 +233,19 @@ fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
 fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
     file_path
         .file_name()
-        .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_SPEC_FILE)
+        .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_FILE)
         .unwrap_or(false)
 }
 
 fn is_entry_spec_file(file_path: &PathBuf) -> bool {
     match file_path.file_name() {
         Some(name) => {
-            name.to_string_lossy().to_string() == GET_ENTRY_SPEC_SPEC_FILE
-                || name.to_string_lossy().to_string() == POST_ENTRY_SPEC_SPEC_FILE
-                || name.to_string_lossy().to_string() == PUT_ENTRY_SPEC_SPEC_FILE
-                || name.to_string_lossy().to_string() == DELETE_ENTRY_SPEC_SPEC_FILE
-                || name.to_string_lossy().to_string() == GRAPHQL_ENTRY_SPEC_SPEC_FILE
-                || name.to_string_lossy().to_string() == GRPC_ENTRY_SPEC_SPEC_FILE
+            name.to_string_lossy().to_string() == GET_ENTRY_SPEC_FILE
+                || name.to_string_lossy().to_string() == POST_ENTRY_SPEC_FILE
+                || name.to_string_lossy().to_string() == PUT_ENTRY_SPEC_FILE
+                || name.to_string_lossy().to_string() == DELETE_ENTRY_SPEC_FILE
+                || name.to_string_lossy().to_string() == GRAPHQL_ENTRY_SPEC_FILE
+                || name.to_string_lossy().to_string() == GRPC_ENTRY_SPEC_FILE
         }
         None => false,
     }

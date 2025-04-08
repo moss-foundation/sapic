@@ -4,10 +4,8 @@ use validator::Validate;
 
 use crate::{
     collection::{Collection, CollectionRequestData, OperationError, REQUESTS_DIR},
-    constants::ENTRY_SPEC_FILE_EXT,
     constants::{
-        DELETE_ENTRY_SPEC_SPEC_FILE, GET_ENTRY_SPEC_SPEC_FILE, POST_ENTRY_SPEC_SPEC_FILE,
-        PUT_ENTRY_SPEC_SPEC_FILE,
+        DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
     },
     kdl::http::HttpRequestFile,
     models::{
@@ -15,7 +13,7 @@ use crate::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
         storage::RequestEntity,
-        types::{HttpMethod, RequestProtocol},
+        types::HttpMethod,
     },
 };
 
@@ -63,16 +61,16 @@ impl Collection {
                 .to_string();
 
                 let file_name = match method {
-                    HttpMethod::Post => POST_ENTRY_SPEC_SPEC_FILE,
-                    HttpMethod::Get => GET_ENTRY_SPEC_SPEC_FILE,
-                    HttpMethod::Put => PUT_ENTRY_SPEC_SPEC_FILE,
-                    HttpMethod::Delete => DELETE_ENTRY_SPEC_SPEC_FILE,
+                    HttpMethod::Post => POST_ENTRY_SPEC_FILE,
+                    HttpMethod::Get => GET_ENTRY_SPEC_FILE,
+                    HttpMethod::Put => PUT_ENTRY_SPEC_FILE,
+                    HttpMethod::Delete => DELETE_ENTRY_SPEC_FILE,
                 };
 
                 (request_file.to_string(), file_name.to_string())
             }
 
-            None => ("".to_string(), GET_ENTRY_SPEC_SPEC_FILE.to_string()),
+            None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
         let request_store = self.state_db_manager()?.request_store();

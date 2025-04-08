@@ -1,15 +1,11 @@
 pub mod api;
 mod error;
 
-mod primitives;
-mod utils;
-
 pub use error::*;
 
 use anyhow::{anyhow, Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
-// use primitives::CollectionEntryFilename;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
@@ -28,23 +24,21 @@ pub struct CollectionRequestData {
     pub name: String,
     // TODO: More tests on the path
     // FIXME: This field is a bit confusing, since it doesn't match with the input.relative_path
-    // A relative path from collection/requests
+    /// A relative path, like CollectionName/requests
     pub entry_relative_path: PathBuf,
     pub order: Option<usize>,
-    // FIXME: Should we create separate backend/frontend types for RequestType?
-    // pub protocol: RequestProtocol,
     pub spec_file_name: String,
 }
 
 impl CollectionRequestData {
     pub fn protocol(&self) -> RequestProtocol {
         match self.spec_file_name.as_str() {
-            GET_ENTRY_SPEC_SPEC_FILE => RequestProtocol::Http(HttpMethod::Get),
-            POST_ENTRY_SPEC_SPEC_FILE => RequestProtocol::Http(HttpMethod::Post),
-            PUT_ENTRY_SPEC_SPEC_FILE => RequestProtocol::Http(HttpMethod::Put),
-            DELETE_ENTRY_SPEC_SPEC_FILE => RequestProtocol::Http(HttpMethod::Delete),
-            GRAPHQL_ENTRY_SPEC_SPEC_FILE => RequestProtocol::GraphQL,
-            GRPC_ENTRY_SPEC_SPEC_FILE => RequestProtocol::Grpc,
+            GET_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Get),
+            POST_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Post),
+            PUT_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Put),
+            DELETE_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Delete),
+            GRAPHQL_ENTRY_SPEC_FILE => RequestProtocol::GraphQL,
+            GRPC_ENTRY_SPEC_FILE => RequestProtocol::Grpc,
             _ => RequestProtocol::Http(HttpMethod::Get),
         }
     }
@@ -131,7 +125,7 @@ impl Collection {
                                 .spec_file_path
                                 .file_name()
                                 .and_then(|name| name.to_str())
-                                .unwrap_or(GET_ENTRY_SPEC_SPEC_FILE)
+                                .unwrap_or(GET_ENTRY_SPEC_FILE)
                                 .to_string();
 
                             requests.insert(CollectionRequestData {
