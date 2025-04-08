@@ -24,6 +24,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     allFoldersAreCollapsed,
     allFoldersAreExpanded,
     searchInput,
+    rootOffset,
     nodeOffset,
     onRootAddCallback,
     onRootRenameCallback,
@@ -107,7 +108,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       <div
         ref={draggableRootRef}
         className="flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
-        style={{ paddingLeft, paddingRight }}
+        style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">

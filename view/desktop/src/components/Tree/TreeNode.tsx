@@ -31,11 +31,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft, [depth, nodeOffset, paddingLeft]);
-  const nodePaddingLeftForAddForm = useMemo(
-    () => (depth + 1) * nodeOffset + paddingLeft,
-    [depth, nodeOffset, paddingLeft]
-  );
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset, [depth, nodeOffset]);
+  const nodePaddingLeftForAddForm = useMemo(() => (depth + 1) * nodeOffset, [depth, nodeOffset]);
 
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
@@ -111,15 +108,19 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
               className={cn(
-                "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center px-2 dark:hover:text-black"
+                "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
               )}
             >
               <span
-                className={cn("flex h-full w-full items-center gap-1 rounded py-0.5", {
+                className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
                   "group-hover/treeNode:background-(--moss-primary-background-hover)": !isNodeDragging,
                   "background-(--moss-primary-background-hover)":
                     currentActivePanelId === node.id && currentActiveTreeId === treeId,
                 })}
+              />
+
+              <span
+                className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
                 style={{
                   paddingLeft: nodePaddingLeft,
                   paddingRight,
