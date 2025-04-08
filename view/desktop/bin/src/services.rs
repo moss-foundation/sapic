@@ -91,7 +91,7 @@ fn session_service() -> impl Fn(&ServicePool, &AppHandle) -> SessionService + Se
 
 fn theme_service<'a>(
     fs: Arc<dyn FileSystem>,
-) -> impl FnOnce(&ServicePool, &AppHandle) -> ThemeService + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool, &AppHandle) -> ThemeService + Send + Sync + 'static + use<> {
     let themes_dir: PathBuf = std::env::var("THEMES_DIR")
         .expect("Environment variable THEMES_DIR is not set")
         .into();

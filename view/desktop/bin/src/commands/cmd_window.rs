@@ -170,12 +170,15 @@ pub async fn execute_command(
         .get_by_type::<StateService>(app_handle)
         .await?;
 
-    if let Some(command_handler) = state_service.get_command(&cmd) {
-        command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
-    } else {
-        Err(TauriError(format!(
-            "command with id {} is not found",
-            quote!(cmd)
-        )))
+    match state_service.get_command(&cmd) {
+        Some(command_handler) => {
+            command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
+        }
+        _ => {
+            Err(TauriError(format!(
+                "command with id {} is not found",
+                quote!(cmd)
+            )))
+        }
     }
 }
