@@ -12,14 +12,14 @@ use tokio::task;
 const REQUESTS_DIR: &'static str = "requests";
 const REQUEST_DIR_EXT: &'static str = "request";
 
-const GET_ENTRY_SPEC_FILE_NAME: &'static str = "get.sapic";
-const POST_ENTRY_SPEC_FILE_NAME: &'static str = "post.sapic";
-const PUT_ENTRY_SPEC_FILE_NAME: &'static str = "put.sapic";
-const DELETE_ENTRY_SPEC_FILE_NAME: &'static str = "delete.sapic";
-const GRAPHQL_ENTRY_SPEC_FILE_NAME: &'static str = "gql.sapic";
-const GRPC_ENTRY_SPEC_FILE_NAME: &'static str = "grpc.sapic";
+const GET_ENTRY_SPEC_SPEC_FILE: &'static str = "get.sapic";
+const POST_ENTRY_SPEC_SPEC_FILE: &'static str = "post.sapic";
+const PUT_ENTRY_SPEC_SPEC_FILE: &'static str = "put.sapic";
+const DELETE_ENTRY_SPEC_SPEC_FILE: &'static str = "delete.sapic";
+const GRAPHQL_ENTRY_SPEC_SPEC_FILE: &'static str = "gql.sapic";
+const GRPC_ENTRY_SPEC_SPEC_FILE: &'static str = "grpc.sapic";
 
-const FOLDER_ENTRY_SPEC_FILE_NAME: &'static str = "folder.sapic";
+const FOLDER_ENTRY_SPEC_SPEC_FILE: &'static str = "folder.sapic";
 
 #[derive(Debug)]
 pub struct IndexedRequestEntry {
@@ -243,19 +243,19 @@ fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
 fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
     file_path
         .file_name()
-        .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_FILE_NAME)
+        .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_SPEC_FILE)
         .unwrap_or(false)
 }
 
 fn is_entry_spec_file(file_path: &PathBuf) -> bool {
     match file_path.file_name() {
         Some(name) => {
-            name.to_string_lossy().to_string() == GET_ENTRY_SPEC_FILE_NAME
-                || name.to_string_lossy().to_string() == POST_ENTRY_SPEC_FILE_NAME
-                || name.to_string_lossy().to_string() == PUT_ENTRY_SPEC_FILE_NAME
-                || name.to_string_lossy().to_string() == DELETE_ENTRY_SPEC_FILE_NAME
-                || name.to_string_lossy().to_string() == GRAPHQL_ENTRY_SPEC_FILE_NAME
-                || name.to_string_lossy().to_string() == GRPC_ENTRY_SPEC_FILE_NAME
+            name.to_string_lossy().to_string() == GET_ENTRY_SPEC_SPEC_FILE
+                || name.to_string_lossy().to_string() == POST_ENTRY_SPEC_SPEC_FILE
+                || name.to_string_lossy().to_string() == PUT_ENTRY_SPEC_SPEC_FILE
+                || name.to_string_lossy().to_string() == DELETE_ENTRY_SPEC_SPEC_FILE
+                || name.to_string_lossy().to_string() == GRAPHQL_ENTRY_SPEC_SPEC_FILE
+                || name.to_string_lossy().to_string() == GRPC_ENTRY_SPEC_SPEC_FILE
         }
         None => false,
     }

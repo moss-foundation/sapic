@@ -11,7 +11,7 @@ use anyhow::{anyhow, Context as _, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::utils::decode_directory_name;
 use moss_fs::{FileSystem, RenameOptions};
-use primitives::FileExt;
+use primitives::CollectionEntryFilename;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
@@ -41,14 +41,14 @@ pub struct CollectionRequestData {
 
 impl CollectionRequestData {
     fn request_file_path(&self) -> PathBuf {
-        let file_ext = FileExt::from(&self.protocol);
+        let file_ext = CollectionEntryFilename::from(&self.protocol);
         let file_name = utils::request_file_name(&self.name, &file_ext);
 
         self.request_dir_relative_path.join(file_name)
     }
 
     fn request_file_name(&self) -> String {
-        let file_ext = FileExt::from(&self.protocol);
+        let file_ext = CollectionEntryFilename::from(&self.protocol);
 
         utils::request_file_name(&self.name, &file_ext)
     }
@@ -213,7 +213,7 @@ impl Collection {
                                 .spec_file_path
                                 .file_name()
                                 .and_then(|name| name.to_str())
-                                .and_then(|name| FileExt::try_from(name).ok());
+                                .and_then(|name| CollectionEntryFilename::try_from(name).ok());
 
                             let protocol = if let Some(protocol) = protocol {
                                 RequestProtocol::from(protocol)
@@ -233,19 +233,6 @@ impl Collection {
                         ) => {}
                     }
                 }
-
-                // let indexed_requests = self.index_requests(&requests_dir_path).await?;
-
-                // for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
-                //     let entity = restored_requests.get(&request_dir_relative_path);
-
-                //     requests.insert(CollectionRequestData {
-                //         name: indexed_request_entry.name,
-                //         request_dir_relative_path,
-                //         order: entity.and_then(|e| e.order),
-                //         protocol: indexed_request_entry.request_protocol.unwrap(), // FIXME: get rid of Option type for typ
-                //     });
-                // }
 
                 Ok::<_, anyhow::Error>(RwLock::new(requests))
             })
@@ -286,7 +273,7 @@ fn is_sapic_file(file_path: &PathBuf) -> bool {
 
 struct RequestFolderParseOutput {
     name: String,
-    file_ext: FileExt,
+    file_ext: CollectionEntryFilename,
 }
 
 fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOutput> {
@@ -308,7 +295,7 @@ fn parse_request_folder_name(file_name: OsString) -> Result<RequestFolderParseOu
 
     Ok(RequestFolderParseOutput {
         name,
-        file_ext: FileExt::try_from(file_type_str)?,
+        file_ext: CollectionEntryFilename::try_from(file_type_str)?,
     })
 }
 

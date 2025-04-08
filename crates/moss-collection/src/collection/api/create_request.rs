@@ -4,7 +4,8 @@ use validator::Validate;
 
 use crate::{
     collection::{
-        primitives::FileExt, Collection, CollectionRequestData, OperationError, REQUESTS_DIR,
+        primitives::CollectionEntryFilename, Collection, CollectionRequestData, OperationError,
+        REQUESTS_DIR,
     },
     kdl::http::HttpRequestFile,
     models::{
@@ -61,14 +62,22 @@ impl Collection {
 
                 let protocol = RequestProtocol::Http(method);
 
-                (request_file.to_string(), FileExt::from(&protocol), protocol)
+                (
+                    request_file.to_string(),
+                    CollectionEntryFilename::from(&protocol),
+                    protocol,
+                )
             }
 
             // FIXME:
             None => {
                 let protocol = RequestProtocol::Http(HttpMethod::Get);
 
-                ("".to_string(), FileExt::from(&protocol), protocol)
+                (
+                    "".to_string(),
+                    CollectionEntryFilename::from(&protocol),
+                    protocol,
+                )
             }
         };
 
