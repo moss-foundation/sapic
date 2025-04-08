@@ -126,7 +126,7 @@ export const CollectionTreeView = () => {
             </div>
           ))}
           {showCollectionCreationZone && (
-            <div className="flex grow flex-col justify-end px-2">
+            <div className="flex grow flex-col justify-end p-2">
               <CollectionCreationZone />
             </div>
           )}
@@ -179,19 +179,15 @@ const CollectionCreationZone = () => {
   return (
     <div
       ref={ref}
-      className={cn("grid h-max min-h-32 w-full place-items-center", {
-        "background-(--moss-primary-background) border border-dashed border-(--moss-primary)": canDrop === true,
-        "background-(--moss-primary-background)/30 border border-dashed border-(--moss-primary)/30": canDrop === null,
-      })}
+      className={cn(
+        "background-(--moss-info-background) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed border-(--moss-info-border) transition-[translate] duration-100",
+        {
+          "background-(--moss-info-background-hover) -translate-y-1": canDrop === true,
+        }
+      )}
     >
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-        <Icon
-          icon="PlusCircle"
-          className={cn("size-5 rounded-full", {
-            "text-(--moss-primary)": canDrop === true,
-            "text-(--moss-primary)/50": canDrop === null,
-          })}
-        />
+        <Icon icon="PlusCircle" className={cn("size-5 rounded-full text-(--moss-primary)")} />
         <span>Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
