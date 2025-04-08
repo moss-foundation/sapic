@@ -72,7 +72,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         autoFocus
         minLength={1}
         maxLength={100}
-        className="relative flex w-[calc(100%-1px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-(--moss-primary)"
+        className="relative flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-(--moss-primary)"
         onKeyUp={handleKeyUp}
         onBlur={isMac ? undefined : handleBlur}
         required
