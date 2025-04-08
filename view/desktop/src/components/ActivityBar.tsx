@@ -154,7 +154,16 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
     >
       <Icon icon={icon} className="size-5" />
       {closestEdge ? <DropIndicator edge={closestEdge} gap={12} /> : null}
-      {preview && createPortal(<ActivityBarButton {...props} icon={icon} isActive={false} className="" />, preview)}
+      {preview &&
+        createPortal(
+          <ActivityBarButton
+            {...props}
+            icon={icon}
+            isActive={false}
+            className="background-(--moss-icon-primary-background-hover) rounded-md p-1"
+          />,
+          preview
+        )}
     </button>
   );
 };
