@@ -2868,6 +2868,7 @@ name = "moss_collection"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "kdl",
  "moss_common",
  "moss_db",

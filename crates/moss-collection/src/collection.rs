@@ -11,6 +11,7 @@ use moss_fs::utils::decode_directory_name;
 use moss_fs::{FileSystem, RenameOptions};
 use primitives::EndpointFileExt;
 use std::{collections::HashMap, ffi::OsString, path::PathBuf, sync::Arc};
+use std::path::Path;
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::models::types::RequestProtocol;
@@ -58,7 +59,7 @@ pub struct Collection {
     abs_path: PathBuf,
     // We have to use Option so that we can temporarily drop it
     // In the DbManager, we are storing relative paths
-    state_db_manager: Option<Arc<dyn StateDbManager>>,
+    state_db_manager: Arc<dyn StateDbManager>,
     requests: OnceCell<RwLock<RequestMap>>,
 }
 
@@ -80,14 +81,12 @@ impl Collection {
             fs: Arc::clone(&fs),
             abs_path: path,
             requests: OnceCell::new(),
-            state_db_manager: Some(Arc::new(state_db_manager_impl)),
+            state_db_manager: Arc::new(state_db_manager_impl),
         })
     }
 
-    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
-        self.state_db_manager
-            .clone()
-            .ok_or(anyhow!("The state_db_manager has been dropped"))
+    pub fn state_db_manager(&self) -> Arc<dyn StateDbManager> {
+        self.state_db_manager.clone()
     }
 
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, IndexedEndpointDir>> {
@@ -178,7 +177,7 @@ impl Collection {
                 }
 
                 let indexed_requests = self.index_requests(&requests_dir_path).await?;
-                let restored_requests = self.state_db_manager()?.request_store().scan()?;
+                let restored_requests = self.state_db_manager().request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
                 for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
@@ -204,21 +203,13 @@ impl Collection {
     }
 
     // Temporarily drop the db for fs renaming, and reloading it from the new path
-    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        let _ = self.state_db_manager.take();
-
-        let old_path = std::mem::replace(&mut self.abs_path, new_path.clone());
-        self.fs
-            .rename(&old_path, &new_path, RenameOptions::default())
-            .await?;
-
-        let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
-            "Failed to open the collection {} state database",
-            self.abs_path.display()
-        ))?;
-        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
-
-        Ok(())
+    pub async fn reset(&mut self, new_path: &Path) -> Result<()> {
+        if let Some(manager) = Arc::get_mut(&mut self.state_db_manager) {
+            self.abs_path = new_path.to_path_buf();
+            manager.reset(self.fs.clone(), new_path).await
+        } else {
+            Err(anyhow!("The Collection StateDbManager is being used"))
+        }
     }
 }
 

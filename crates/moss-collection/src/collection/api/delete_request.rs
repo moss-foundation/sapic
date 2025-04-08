@@ -30,7 +30,7 @@ impl Collection {
             .await
             .context("Failed to remove the request directory")?;
 
-        let request_store = self.state_db_manager()?.request_store();
+        let request_store = self.state_db_manager().request_store();
         let (mut txn, table) = request_store.begin_write()?;
         table.remove(
             &mut txn,
