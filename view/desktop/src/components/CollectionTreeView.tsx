@@ -1,6 +1,6 @@
 import "@repo/moss-tabs/assets/styles.css";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Icon, Input, Scrollbar, Tree } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
@@ -17,7 +17,7 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollection } = useCollectionsStore();
+  const { collections, setCollections, updateCollection, lastTimeCollectionWasUpdated } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -102,7 +102,7 @@ export const CollectionTreeView = () => {
   }, [collections, setCollections]);
 
   return (
-    <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>
+    <div className="relative flex h-full flex-col select-none" ref={dropTargetToggleRef}>
       <div className="flex items-center gap-[7px] px-2 py-1">
         <Input
           variant="plain"
@@ -113,9 +113,9 @@ export const CollectionTreeView = () => {
       </div>
 
       <Scrollbar className="h-full">
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col" key={`${lastTimeCollectionWasUpdated}`}>
           {collections.map((collection) => (
-            <Fragment key={`${collection.id}-${Math.random()}`}>
+            <div key={`${collection.id}`}>
               <Tree
                 onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
                 tree={collection.tree}
@@ -123,7 +123,7 @@ export const CollectionTreeView = () => {
                 searchInput={searchInput}
               />
               <div className="background-(--moss-border-color) h-[1px] w-full" />
-            </Fragment>
+            </div>
           ))}
           {showCollectionCreationZone && (
             <div className="flex grow flex-col justify-end px-2">

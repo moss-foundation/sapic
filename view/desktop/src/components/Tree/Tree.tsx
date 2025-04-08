@@ -75,8 +75,6 @@ export const Tree = ({
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target } = event.detail;
 
-      console.log(handleMoveTreeNode);
-
       if (source.treeId === target.treeId && source.treeId === treeId) {
         if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
           return;
@@ -84,6 +82,7 @@ export const Tree = ({
         setTree((prevTree) => {
           const treeWithoutSource = removeNodeFromTree(prevTree, source.node.uniqueId);
           const updatedTree = addNodeToFolder(treeWithoutSource, target.node.uniqueId, source.node);
+          onTreeUpdate?.(removeUniqueIdFromTree(sortNode(updatedTree)));
           return sortNode(updatedTree);
         });
       } else {
@@ -95,12 +94,11 @@ export const Tree = ({
             } else {
               onNodeAdd?.(source.node);
             }
+            onTreeUpdate?.(removeUniqueIdFromTree(sortNode(updatedTree)));
             return sortNode(updatedTree);
           });
         }
         if (source.treeId === treeId) {
-          console.log(7);
-
           setTree((prevTree) => {
             const removedTree = removeNodeFromTree(prevTree, source.node.uniqueId);
             if (source.node.isRoot) {
@@ -108,6 +106,7 @@ export const Tree = ({
             } else {
               onNodeRemove?.(source.node);
             }
+            onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
             return removedTree;
           });
         }
@@ -139,7 +138,7 @@ export const Tree = ({
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, treeId]);
+  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, treeId]);
 
   return (
     <TreeContext.Provider

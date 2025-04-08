@@ -107,7 +107,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
-        className="flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
+        className="flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
         style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
         {isRenamingRootNode ? (
