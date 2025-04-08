@@ -38,25 +38,32 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
     <div className="flex h-full w-full">
       {position === "default" && primarySideBarPosition === "left" && ActivityBar}
       <Resizable
-        smoothHide
         onDragEnd={(sizes) => {
-          const [leftPanelSize, _mainPanelSize, rightPanelSize] = sizes;
-          if (primarySideBarPosition === "left") primarySideBar.setWidth(leftPanelSize);
-          if (primarySideBarPosition === "right") primarySideBar.setWidth(rightPanelSize);
+          if (primarySideBarPosition === "left") {
+            const [leftPanelSize, _mainPanelSize] = sizes;
+            primarySideBar.setWidth(leftPanelSize);
+          }
+          if (primarySideBarPosition === "right") {
+            const [_mainPanelSize, rightPanelSize] = sizes;
+            primarySideBar.setWidth(rightPanelSize);
+          }
         }}
         onVisibleChange={(index, visible) => {
           if (primarySideBarPosition === "left" && index === 0) primarySideBar.setVisible(visible);
-          if (primarySideBarPosition === "right" && index === 2) primarySideBar.setVisible(visible);
+          if (primarySideBarPosition === "right" && index === 1) primarySideBar.setVisible(visible);
         }}
       >
-        <ResizablePanel
-          preferredSize={primarySideBar.width}
-          visible={primarySideBar.visible && primarySideBarPosition === "left"}
-          minSize={primarySideBar.minWidth}
-          snap
-        >
-          {SideBarPaneContent}
-        </ResizablePanel>
+        {primarySideBar.visible && primarySideBarPosition === "left" && (
+          <ResizablePanel
+            preferredSize={primarySideBar.width}
+            visible={primarySideBar.visible && primarySideBarPosition === "left"}
+            minSize={primarySideBar.minWidth}
+            snap
+            className="background-(--moss-primary-background)"
+          >
+            {SideBarPaneContent}
+          </ResizablePanel>
+        )}
 
         <ResizablePanel>
           <Resizable vertical>
@@ -67,14 +74,17 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           </Resizable>
         </ResizablePanel>
 
-        <ResizablePanel
-          preferredSize={primarySideBar.width}
-          visible={primarySideBar.visible && primarySideBarPosition === "right"}
-          minSize={primarySideBar.minWidth}
-          snap
-        >
-          {SideBarPaneContent}
-        </ResizablePanel>
+        {primarySideBar.visible && primarySideBarPosition === "right" && (
+          <ResizablePanel
+            preferredSize={primarySideBar.width}
+            visible={primarySideBar.visible && primarySideBarPosition === "right"}
+            minSize={primarySideBar.minWidth}
+            snap
+            className="background-(--moss-primary-background)"
+          >
+            {SideBarPaneContent}
+          </ResizablePanel>
+        )}
       </Resizable>
 
       {position === "default" && primarySideBarPosition === "right" && ActivityBar}
