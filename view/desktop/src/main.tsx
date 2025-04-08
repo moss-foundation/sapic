@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 
 import { PageLoader } from "./components/PageLoader";
 
+import "allotment/dist/style.css";
 import "overlayscrollbars/overlayscrollbars.css";
 import "./assets/index.css";
 
