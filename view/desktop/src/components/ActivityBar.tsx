@@ -52,7 +52,6 @@ export const ActivityBar = () => {
         "h-full flex-col": position === "default",
         "hidden": position === "hidden",
 
-        "border-r border-r-(--moss-border-color)": primarySideBarPosition === "left" && position === "default",
         "border-l border-l-(--moss-border-color)": primarySideBarPosition === "right" && position === "default",
       })}
     >
