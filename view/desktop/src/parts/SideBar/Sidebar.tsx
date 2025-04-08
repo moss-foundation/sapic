@@ -5,7 +5,6 @@ import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { ViewContainer } from "@/components/ViewContainer";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
 import SidebarHeader from "./SidebarHeader";
@@ -16,16 +15,11 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
-
   return (
     <div
       className={cn(
         "background-(--moss-secondary-background) flex h-full flex-col",
-        {
-          "border-r border-(--moss-border-color)": primarySideBarPosition === "left",
-          "border-l border-(--moss-border-color)": primarySideBarPosition === "right",
-        },
+
         className
       )}
     >

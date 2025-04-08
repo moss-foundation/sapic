@@ -1,10 +1,7 @@
 import { Allotment, AllotmentHandle } from "allotment";
+import { ComponentProps, forwardRef, useEffect, useState } from "react";
 
 import { cn } from "@/utils";
-
-import "allotment/dist/style.css";
-
-import { ComponentProps, forwardRef, useEffect, useState } from "react";
 
 const smoothHideClasses = `
   [&>.split-view-container>.split-view-view]:transition-all 
