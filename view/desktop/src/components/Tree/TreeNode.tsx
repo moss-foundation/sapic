@@ -118,8 +118,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             >
               <span
                 className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
-                  "group-hover/treeNode:background-(--moss-primary-background-hover)": !isNodeDragging,
-                  "background-(--moss-primary-background-hover)":
+                  "group-hover/treeNode:background-(--moss-secondary-background-hover)": !isNodeDragging,
+                  "background-(--moss-primary-background-hover) group-hover/treeNode:background-(--moss-primary-background-hover)!":
                     currentActivePanelId === node.id && currentActiveTreeId === treeId,
                 })}
               />

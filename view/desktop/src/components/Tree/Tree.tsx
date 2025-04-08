@@ -168,10 +168,7 @@ export const Tree = ({
         onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
-      <div className="relative select-none">
-        <div className="absolute top-0 left-[8px] h-full w-px bg-red-500" />
-        <div className="absolute top-0 left-[16px] h-full w-px bg-amber-700" />
-        <div className="absolute top-0 left-[32px] h-full w-px bg-yellow-300" />
+      <div className="select-none">
         <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>
