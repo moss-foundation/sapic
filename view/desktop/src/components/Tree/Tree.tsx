@@ -123,6 +123,7 @@ export const Tree = ({
           } else {
             onNodeRemove?.(source.node);
           }
+          onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
           return removedTree;
         });
       }
