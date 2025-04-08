@@ -71,7 +71,6 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
         with:
           packages: |
-            libwebkit2gtk-4.0-dev
             libwebkit2gtk-4.1-dev
             libappindicator3-dev
             librsvg2-dev

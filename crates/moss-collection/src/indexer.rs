@@ -9,17 +9,7 @@ use tauri::Runtime as TauriRuntime;
 use tokio::sync::mpsc;
 use tokio::task;
 
-const REQUESTS_DIR: &'static str = "requests";
-const REQUEST_DIR_EXT: &'static str = "request";
-
-const GET_ENTRY_SPEC_SPEC_FILE: &'static str = "get.sapic";
-const POST_ENTRY_SPEC_SPEC_FILE: &'static str = "post.sapic";
-const PUT_ENTRY_SPEC_SPEC_FILE: &'static str = "put.sapic";
-const DELETE_ENTRY_SPEC_SPEC_FILE: &'static str = "delete.sapic";
-const GRAPHQL_ENTRY_SPEC_SPEC_FILE: &'static str = "gql.sapic";
-const GRPC_ENTRY_SPEC_SPEC_FILE: &'static str = "grpc.sapic";
-
-const FOLDER_ENTRY_SPEC_SPEC_FILE: &'static str = "folder.sapic";
+use crate::constants::*;
 
 #[derive(Debug)]
 pub struct IndexedRequestEntry {
@@ -236,7 +226,7 @@ fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
     entry_path.is_dir()
         && entry_path
             .extension()
-            .map(|ext| ext == REQUEST_DIR_EXT)
+            .map(|ext| ext == FOLDER_ENTRY_DIR_EXT)
             .unwrap_or(false)
 }
 

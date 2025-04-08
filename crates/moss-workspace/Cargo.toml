@@ -14,12 +14,10 @@ moss_workbench.workspace = true
 
 anyhow.workspace = true
 arc-swap.workspace = true
-dashmap.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
-slotmap.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 

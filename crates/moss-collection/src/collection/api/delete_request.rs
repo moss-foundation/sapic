@@ -12,7 +12,7 @@ impl Collection {
         let request_data = requests_lock.remove(input.key)?;
         std::mem::drop(requests_lock);
 
-        let request_dir_relative_path = request_data.request_dir_relative_path.clone();
+        let request_dir_relative_path = request_data.entry_relative_path.clone();
         let request_dir_path = self
             .abs_path
             .join(REQUESTS_DIR)

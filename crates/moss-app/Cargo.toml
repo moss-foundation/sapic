@@ -4,16 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-moss_text.workspace = true
 moss_tauri.workspace = true
 
 anyhow.workspace = true
-serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
 fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
-tracing.workspace = true
-log.workspace = true
 thiserror.workspace = true
 slotmap.workspace = true
 tokio.workspace = true
