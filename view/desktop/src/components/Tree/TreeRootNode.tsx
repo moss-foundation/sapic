@@ -147,7 +147,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
         )}
 
         <div className="flex items-center">
-          {node.isExpanded && !searchInput && (
+          {node.isExpanded && !searchInput && !isRenamingRootNode && (
             <div
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100 group-hover:starting:opacity-0`}
             >
@@ -185,10 +185,8 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (
-              <div
-                className="flex w-full min-w-0 items-center gap-1 py-0.5"
-                style={{ paddingLeft: nodeOffset * 2 + paddingLeft }}
-              >
+              <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
+                <TestCollectionIcon type={node.type} className="opacity-0" />
                 <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
                 <NodeAddForm
                   isFolder={isAddingRootFolderNode}

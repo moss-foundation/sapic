@@ -74,6 +74,9 @@ export const Tree = ({
   useEffect(() => {
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target } = event.detail;
+
+      console.log(handleMoveTreeNode);
+
       if (source.treeId === target.treeId && source.treeId === treeId) {
         if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
           return;
@@ -96,6 +99,8 @@ export const Tree = ({
           });
         }
         if (source.treeId === treeId) {
+          console.log(7);
+
           setTree((prevTree) => {
             const removedTree = removeNodeFromTree(prevTree, source.node.uniqueId);
             if (source.node.isRoot) {
@@ -163,7 +168,10 @@ export const Tree = ({
         onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
-      <div className="select-none">
+      <div className="relative select-none">
+        <div className="absolute top-0 left-[8px] h-full w-px bg-red-500" />
+        <div className="absolute top-0 left-[16px] h-full w-px bg-amber-700" />
+        <div className="absolute top-0 left-[32px] h-full w-px bg-yellow-300" />
         <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>

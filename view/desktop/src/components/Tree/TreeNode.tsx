@@ -20,8 +20,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const {
     treeId,
     nodeOffset,
-    paddingLeft,
-    paddingRight,
     searchInput,
     onNodeAddCallback,
     onNodeRenameCallback,
@@ -75,8 +73,15 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   return (
     <li ref={dropTargetListRef}>
       {isRenamingNode ? (
-        <div className="w-full min-w-0" style={{ paddingLeft: nodePaddingLeft }}>
-          <span className="flex w-full items-center gap-1 px-2 py-0.5">
+        <div className="w-full min-w-0">
+          <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
+            <Icon
+              icon="TreeChevronRight"
+              className={cn("text-(--moss-icon-primary-text)", {
+                "rotate-90": shouldRenderChildNodes,
+                "opacity-0": !node.isFolder,
+              })}
+            />
             <TestCollectionIcon type={node.type} />
             <NodeRenamingForm
               onSubmit={(newName) => {
@@ -123,7 +128,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
                 style={{
                   paddingLeft: nodePaddingLeft,
-                  paddingRight,
                 }}
               >
                 <Icon
@@ -174,6 +178,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
+          <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
           <TestCollectionIcon
             type={node.type}
             className={cn("ml-auto", {
