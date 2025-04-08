@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.5.2
+        specifier: ^1.4.0
         version: 1.5.2
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: ^1.0.3
