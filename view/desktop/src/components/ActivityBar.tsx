@@ -146,7 +146,7 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
     <button
       ref={ref}
       className={cn("relative cursor-pointer rounded-md p-1", {
-        "background-(--moss-icon-primary-background-active) text-white": isActive,
+        "background-(--moss-info-background-hover) text-(--moss-info-icon)": isActive,
         "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)": !isActive,
       })}
       onClick={() => handleClick(props.id)}
