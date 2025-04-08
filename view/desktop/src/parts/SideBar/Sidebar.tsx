@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef } from "react";
 
-import { ActivityBar, Scrollbar } from "@/components";
+import { ActivityBar } from "@/components";
 import { CollectionTreeView } from "@/components/CollectionTreeView";
 import { ViewContainer } from "@/components/ViewContainer";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
@@ -48,7 +48,7 @@ export const Sidebar = () => {
 
   const activeItem = useActivityBarStore((state) => state.getActiveItem());
 
-  const activeGroupId = activeItem?.id;
+  const activeGroupId = activeItem?.id || "empty";
   const isCollectionsActive = activeGroupId === "collections.groupId";
   const activeGroupTitle = activeItem?.title || "Launchpad";
 
@@ -56,10 +56,8 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <ActivityBar />
-        <Scrollbar className="flex grow flex-col">
-          <SidebarHeader title={activeGroupTitle} />
-          {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-        </Scrollbar>
+        <SidebarHeader title={activeGroupTitle} />
+        {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
       </BaseSidebar>
     );
   }
@@ -67,10 +65,8 @@ export const Sidebar = () => {
   if (position === "bottom") {
     return (
       <BaseSidebar>
-        <Scrollbar className="flex grow flex-col">
-          <SidebarHeader title={activeGroupTitle} />
-          {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-        </Scrollbar>
+        <SidebarHeader title={activeGroupTitle} />
+        {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
         <ActivityBar />
       </BaseSidebar>
     );

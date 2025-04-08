@@ -10,7 +10,7 @@ export const ViewContainer = ({ groupId }: { groupId: string }) => {
   if (!viewGroup) return <div>Loading...</div>;
 
   const ComponentToRender = components[viewGroup.component as keyof typeof components] as
-    | React.ComponentType<any>
+    | React.ComponentType<unknown>
     | undefined;
 
   if (!ComponentToRender) {
