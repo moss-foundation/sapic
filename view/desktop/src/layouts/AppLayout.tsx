@@ -85,7 +85,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
 const SidebarContent = () => <Sidebar />;
 
 const MainContent = () => (
-  <ContentLayout className="relative flex h-full flex-col overflow-auto bg-red-500">
+  <ContentLayout className="background-(--moss-primary-background) relative flex h-full flex-col overflow-auto">
     <Suspense fallback={<div>Loading...</div>}>
       <TabbedPane theme="dockview-theme-light" />
     </Suspense>
