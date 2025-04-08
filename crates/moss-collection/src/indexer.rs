@@ -41,6 +41,7 @@ pub enum IndexedEntry {
     RequestGroup(IndexedRequestGroupEntry),
 }
 
+#[derive(Debug)]
 pub struct IndexJob {
     pub collection_key: ResourceKey,
     pub collection_abs_path: PathBuf,
@@ -131,7 +132,7 @@ async fn traverse_requests(
 ) -> Result<()> {
     let mut stack: Vec<PathBuf> = vec![root.clone()];
 
-    while let Some(current_dir) = stack.pop() {
+    while let Some(current_dir) = &stack.pop() {
         let mut dir = fs.read_dir(&current_dir).await.context(format!(
             "Failed to read the directory: {}",
             current_dir.display()
@@ -144,11 +145,7 @@ async fn traverse_requests(
                 progress_callback(&entry_path)?;
             }
 
-            if entry_path
-                .extension()
-                .map(|ext| ext == REQUEST_DIR_EXT)
-                .unwrap_or(false)
-            {
+            if is_request_entry_dir(&entry_path) {
                 let entry_result = index_request_entry_dir(fs, &entry_path, progress_callback)
                     .await
                     .context(format!(
@@ -164,60 +161,35 @@ async fn traverse_requests(
                 continue;
             }
 
-            if entry_path.is_dir() {
-                let entry_result = index_request_folder_entry_dir(fs, &entry_path)
-                    .await
+            if entry_path.is_file() && is_folder_entry_spec_file(&entry_path) {
+                let entry = IndexedRequestGroupEntry {
+                    folder_name: current_dir
+                        .file_name()
+                        .context("Failed to read the request group folder name")?
+                        .to_string_lossy()
+                        .to_string(),
+                    folder_path: current_dir.to_path_buf(),
+                    spec_file_path: Some(entry_path.to_path_buf()),
+                };
+
+                result_tx
+                    .send(IndexedEntry::RequestGroup(entry))
                     .context(format!(
-                        "Failed to index the request folder: {}",
+                        "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()
                     ))?;
 
-                result_tx.send(entry_result).context(format!(
-                    "Failed to send the indexed request folder to the result channel: {}",
-                    entry_path.display()
-                ))?;
-
-                stack.push(entry_path);
                 continue;
             }
 
-            // TODO: collect a root folder.sapic file
+            if entry_path.is_dir() {
+                stack.push(entry_path);
+                continue;
+            }
         }
     }
 
     Ok(())
-}
-
-async fn index_request_folder_entry_dir(
-    fs: &dyn FileSystem,
-    path: &PathBuf,
-) -> Result<IndexedEntry> {
-    let mut inner_dir = fs.read_dir(&path).await?;
-
-    let mut entry = IndexedRequestGroupEntry {
-        folder_name: path
-            .file_name()
-            .context("Failed to read the request group folder name")?
-            .to_string_lossy()
-            .to_string(),
-        folder_path: path.to_path_buf(),
-        spec_file_path: None,
-    };
-
-    while let Some(inner_entry) = inner_dir.next_entry().await? {
-        let entry_path = inner_entry.path();
-        let entry_metadata = inner_entry.metadata().await?;
-
-        if entry.spec_file_path.is_none()
-            && entry_metadata.is_file()
-            && is_folder_entry_spec_file(&entry_path)
-        {
-            entry.spec_file_path = Some(entry_path);
-            continue;
-        }
-    }
-
-    Ok(IndexedEntry::RequestGroup(entry))
 }
 
 async fn index_request_entry_dir(
@@ -258,6 +230,14 @@ async fn index_request_entry_dir(
         spec_file_path: spec_file_abs_path
             .ok_or_else(|| anyhow::anyhow!("No spec file found in the request folder"))?,
     }))
+}
+
+fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
+    entry_path.is_dir()
+        && entry_path
+            .extension()
+            .map(|ext| ext == REQUEST_DIR_EXT)
+            .unwrap_or(false)
 }
 
 fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
