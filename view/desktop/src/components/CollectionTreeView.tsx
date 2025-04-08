@@ -17,7 +17,7 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollection, lastTimeCollectionWasUpdated } = useCollectionsStore();
+  const { collections, setCollections, updateCollection, lastTimeCollectionsWereUpdated } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -113,7 +113,7 @@ export const CollectionTreeView = () => {
       </div>
 
       <Scrollbar className="h-full">
-        <div className="flex h-full flex-col" key={`${lastTimeCollectionWasUpdated}`}>
+        <div className="flex h-full flex-col" key={`${lastTimeCollectionsWereUpdated}`}>
           {collections.map((collection) => (
             <div key={`${collection.id}`}>
               <Tree

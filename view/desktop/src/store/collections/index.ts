@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 import { Collection } from "@/components/Tree/types";
-// FIXME: remove when we start using the real collections
 import {
   checkIfTreeIsCollapsed,
   checkIfTreeIsExpanded,
@@ -14,7 +13,7 @@ import SapicTestCollection from "../../assets/SapicTestCollection.json";
 import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
 
 interface CollectionsStoreState {
-  lastTimeCollectionWasUpdated: number;
+  lastTimeCollectionsWereUpdated: number;
   collections: Collection[];
   setCollections: (collections: Collection[]) => void;
   expandAll: () => void;
@@ -23,7 +22,7 @@ interface CollectionsStoreState {
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
-  lastTimeCollectionWasUpdated: 0,
+  lastTimeCollectionsWereUpdated: 0,
   collections: [
     SapicTestCollection as Collection,
     AzureDevOpsTestCollection as Collection,
@@ -31,7 +30,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   ],
   setCollections: (collections: Collection[]) => {
     set({ collections });
-    set({ lastTimeCollectionWasUpdated: Date.now() });
+    set({ lastTimeCollectionsWereUpdated: Date.now() });
   },
   expandAll: () => {
     const allFoldersAreExpanded = get().collections.every((collection) => checkIfTreeIsExpanded(collection.tree));
@@ -46,7 +45,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         };
       }),
     }));
-    set({ lastTimeCollectionWasUpdated: Date.now() });
+    set({ lastTimeCollectionsWereUpdated: Date.now() });
   },
   collapseAll: () => {
     const allFoldersAreCollapsed = get().collections.every((collection) => checkIfTreeIsCollapsed(collection.tree));
@@ -66,6 +65,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set((state) => ({
       collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
     }));
-    set({ lastTimeCollectionWasUpdated: Date.now() });
+    set({ lastTimeCollectionsWereUpdated: Date.now() });
   },
 }));
