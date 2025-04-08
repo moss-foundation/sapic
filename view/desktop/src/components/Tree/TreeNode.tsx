@@ -170,7 +170,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
               {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
               <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
-              <ContextMenu.Item label="Item" />
             </ContextMenu.Content>
           </ContextMenu.Portal>
         </ContextMenu.Root>
