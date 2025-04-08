@@ -102,31 +102,34 @@ export const CollectionTreeView = () => {
   }, [collections, setCollections]);
 
   return (
-    <div className="relative flex h-full flex-col select-none" ref={dropTargetToggleRef}>
-      <div className="flex items-center gap-[7px] px-2 py-1">
-        <Input
-          variant="plain"
-          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-          placeholder="Search"
-          size="sm"
-        />
-      </div>
-
+    <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
-        <div className="flex h-full flex-col" key={`${lastTimeCollectionsWereUpdated}`}>
-          {collections.map((collection) => (
-            <div key={`${collection.id}`}>
-              <Tree
-                onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
-                tree={collection.tree}
-                id={collection.id}
-                searchInput={searchInput}
-              />
-              <div className="background-(--moss-border-color) h-[1px] w-full" />
-            </div>
-          ))}
+        <div className="flex h-full flex-col">
+          <div className="flex shrink items-center gap-[7px] px-2 py-1">
+            <Input
+              variant="plain"
+              onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
+              placeholder="Search"
+              size="sm"
+            />
+          </div>
+
+          <div className="flex grow flex-col" key={`${lastTimeCollectionsWereUpdated}`}>
+            {collections.map((collection) => (
+              <div key={`${collection.id}`}>
+                <Tree
+                  onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
+                  tree={collection.tree}
+                  id={collection.id}
+                  searchInput={searchInput}
+                />
+                <div className="background-(--moss-border-color) h-[1px] w-full" />
+              </div>
+            ))}
+          </div>
+
           {showCollectionCreationZone && (
-            <div className="flex grow flex-col justify-end p-2">
+            <div className="flex justify-end p-2">
               <CollectionCreationZone />
             </div>
           )}

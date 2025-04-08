@@ -74,10 +74,8 @@ export const Sidebar = () => {
 
   return (
     <BaseSidebar>
-      <div className="flex grow flex-col">
-        <SidebarHeader title={activeGroupTitle} />
-        {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
-      </div>
+      <SidebarHeader title={activeGroupTitle} />
+      {isCollectionsActive ? <CollectionTreeView /> : <ViewContainer groupId={activeGroupId} />}
     </BaseSidebar>
   );
 };
