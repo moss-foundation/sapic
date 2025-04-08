@@ -107,7 +107,7 @@ where
         }
     }
 
-    pub fn scan(&self, txn: &Transaction) -> Result<impl Iterator<Item = (K, V)>> {
+    pub fn scan(&self, txn: &Transaction) -> Result<impl Iterator<Item = (K, V)> + use<K, V>> {
         match txn {
             Transaction::Read(txn) => {
                 let table = txn.open_table(self.table).context("Failed to open table")?;
