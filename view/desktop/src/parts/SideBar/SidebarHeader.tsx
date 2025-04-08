@@ -6,9 +6,11 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] font-semibold text-(--moss-primary-text) uppercase">
-      <div className="flex items-center text-[12px] leading-2 font-semibold text-(--moss-secondary-text)">{title}</div>
+      <div className="w-max items-center overflow-hidden text-[12px] font-semibold text-ellipsis whitespace-nowrap text-(--moss-secondary-text)">
+        {title}
+      </div>
 
-      <div className="flex">
+      <div className="flex grow justify-end">
         <TreeActionButton icon="TreeExpandAll" onClick={expandAll} />
         <TreeActionButton icon="TreeCollapseAll" onClick={collapseAll} />
 
