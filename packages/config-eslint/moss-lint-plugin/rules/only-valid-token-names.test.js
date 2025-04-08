@@ -52,6 +52,30 @@ ruleTester.run("only-valid-token-names", rule, {
       name: "Valid tailwind arbitrary variant",
       code: `<div className="lg:[&:nth-child(3)]:hover:underline"></div>`,
     },
+    {
+      name: "Valid token in selector with Tailwind 4 syntax",
+      code: `<div className="background-(--moss-primary)"></div>`,
+    },
+    {
+      name: "Valid token in selector with Tailwind 4 syntax",
+      code: `<div className="text-(--moss-primary)"></div>`,
+    },
+    {
+      name: "Valid token selector in template string  with Tailwind 4 syntax",
+      code: `<div className={\`background-(--moss-primary)\`}></div>`,
+    },
+    {
+      name: "Valid token in selector with var() with Tailwind 4 syntax",
+      code: `<div className="background-[var(--moss-primary)]"></div>`,
+    },
+    {
+      name: "Valid token in selector with pseudoclass with Tailwind 4 syntax",
+      code: `<div className="hover:text-(--moss-primary)"></div>`,
+    },
+    {
+      name: "Valid token with group selector with Tailwind 4 syntax",
+      code: `<div className="group-text-(--moss-primary)"></div>`,
+    },
   ],
   invalid: [
     {
@@ -117,6 +141,84 @@ ruleTester.run("only-valid-token-names", rule, {
     {
       name: "Invalid tokens",
       code: `<div className="text-[--very-long-invalid-value] text-[var(--invalid-value2)] hover:text-[--custom-val] group-bg-[--invalid-group-value]"></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--very-long-invalid-value",
+          },
+        },
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-value2",
+          },
+        },
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--custom-val",
+          },
+        },
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-group-value",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid selector in template string with Tailwind 4 syntax",
+      code: `<div className={\`background-(--invalid-value)\`}></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-value",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid selector in string with Tailwind 4 syntax",
+      code: `<div className="background-(--invalid-value)"></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-value",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid token in selector with pseudoclass with Tailwind 4 syntax",
+      code: `<div className="hover:text-(--invalid-value)"></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-value",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid token with group selector with Tailwind 4 syntax",
+      code: `<div className="group-text-(--invalid-value)"></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--invalid-value",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid tokens with Tailwind 4 syntax",
+      code: `<div className="text-(--very-long-invalid-value) text-(--invalid-value2) hover:text-(--custom-val) group-bg-(--invalid-group-value)"></div>`,
       errors: [
         {
           messageId: "invalidTokenName",
