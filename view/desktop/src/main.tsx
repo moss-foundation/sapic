@@ -1,6 +1,3 @@
-// prettier-ignore
-import { scan } from "react-scan"; // must be imported before React and React DOM
-
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -14,8 +11,6 @@ import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-qu
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import GeneralProvider from "./app/Provider";
-
-scan({ enabled: import.meta.env.MODE === "development", showToolbar: true });
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
