@@ -79,6 +79,18 @@ ruleTester.run("only-valid-token-names", rule, {
   ],
   invalid: [
     {
+      name: "Invalid case sensitive selector",
+      code: `<div className={\`background-(--moss-Primary)\`}></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--moss-Primary",
+          },
+        },
+      ],
+    },
+    {
       name: "Invalid selector in template string",
       code: `<div className={\`background-[--invalid-value]\`}></div>`,
       errors: [
