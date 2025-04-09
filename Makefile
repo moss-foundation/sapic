@@ -23,7 +23,6 @@ DESKTOP_DIR := view/desktop
 ICONS_DIR := tools/icongen
 # --- Tool Directories ---
 XTASK_DIR := tools/xtask
-PYTHON_SCRIPTS_DIR := misc
 TS_IMPORT_INJECTOR := misc/ts_imports_injector.py
 TS_EXPORT_INJECTOR := misc/ts_exports_injector.py
 CSS_VARIABLES_EXPORTER := misc/css_variables_exporter.py
@@ -44,7 +43,7 @@ endif
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
-	@cd $(PYTHON_SCRIPTS_DIR) && $(PIP) install -r requirements.txt
+	@cd misc && $(PIP) install -r requirements.txt
 
 
 ## Generate Icons
