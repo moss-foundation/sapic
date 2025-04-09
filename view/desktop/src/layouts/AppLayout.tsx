@@ -53,7 +53,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           if (primarySideBarPosition === "right" && index === 1) primarySideBar.setVisible(visible);
         }}
       >
-        {primarySideBar.visible && primarySideBarPosition === "left" && (
+        {primarySideBarPosition === "left" && (
           <ResizablePanel
             preferredSize={primarySideBar.width}
             visible={primarySideBar.visible && primarySideBarPosition === "left"}
@@ -74,7 +74,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
           </Resizable>
         </ResizablePanel>
 
-        {primarySideBar.visible && primarySideBarPosition === "right" && (
+        {primarySideBarPosition === "right" && (
           <ResizablePanel
             preferredSize={primarySideBar.width}
             visible={primarySideBar.visible && primarySideBarPosition === "right"}
