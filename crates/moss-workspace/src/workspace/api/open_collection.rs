@@ -1,13 +1,12 @@
 use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{OpenCollectionInput, OpenCollectionOutput},
     workspace::{OperationError, Workspace},
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl Workspace {
     pub async fn open_collection(
         &self,
         input: OpenCollectionInput,
@@ -24,7 +23,11 @@ impl<R: TauriRuntime> Workspace<R> {
             });
         }
 
-        let collection = Collection::new(input.path.clone(), self.fs.clone(), self.tx.clone())?;
+        let collection = Collection::new(
+            input.path.clone(),
+            self.fs.clone(),
+            self.indexer_handle.clone(),
+        )?;
         let metadata = CollectionCache {
             name: input
                 .path

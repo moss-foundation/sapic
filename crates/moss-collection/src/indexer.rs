@@ -2,7 +2,6 @@ use anyhow::{Context, Result};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_fs::FileSystem;
 use moss_workbench::activity_indicator::{ActivityHandle, ActivityIndicator};
-use serde::Serialize;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
@@ -38,11 +37,21 @@ pub struct IndexJob {
     pub result_tx: mpsc::UnboundedSender<IndexedEntry>,
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct IndexingEvent {
-    pub collection_key: ResourceKey,
-    pub progress_percent: u32,
-    pub path: PathBuf,
+#[derive(Debug, Clone)]
+pub struct IndexerHandle {
+    tx: mpsc::UnboundedSender<IndexJob>,
+}
+
+impl IndexerHandle {
+    pub fn new(tx: mpsc::UnboundedSender<IndexJob>) -> Self {
+        Self { tx }
+    }
+
+    pub fn emit_job(&self, job: IndexJob) -> Result<()> {
+        self.tx.send(job).context("Failed to send the index job")?;
+
+        Ok(())
+    }
 }
 
 pub async fn run<R: tauri::Runtime>(
@@ -68,14 +77,16 @@ async fn process_job<R: TauriRuntime>(
     job: IndexJob,
 ) -> Result<()> {
     let total = count_entries(fs.as_ref(), &job.collection_abs_path.join(REQUESTS_DIR)).await?;
+    // TODO: count the total number of endpoints, components, etc.
     let progress_counter = Arc::new(AtomicUsize::new(0));
 
     let activity_id = format!("indexing/{}", job.collection_key);
     let activity_handle =
-        activity_indicator.emit_continual(&activity_id, "Indexing".to_string(), None, Some(0))?;
+        activity_indicator.emit_continual(&activity_id, "Indexing".to_string(), None)?;
 
     let progress_callback = progress_callback(progress_counter.clone(), &activity_handle, total);
 
+    // TODO: traverse the endpoints, components, etc. not just requests
     traverse_requests(
         fs.as_ref(),
         &job.collection_abs_path.join(REQUESTS_DIR),
@@ -84,9 +95,7 @@ async fn process_job<R: TauriRuntime>(
     )
     .await?;
 
-    activity_handle.emit_finish()?;
-
-    Ok(())
+    Ok(activity_handle.emit_finish()?)
 }
 
 async fn count_entries(fs: &dyn FileSystem, root: &PathBuf) -> Result<usize> {
@@ -259,17 +268,13 @@ fn progress_callback<'a, R: TauriRuntime>(
     move |path| {
         progress_counter.fetch_add(1, Ordering::SeqCst);
         let current = progress_counter.load(Ordering::SeqCst);
-        let progress_percent = (current as f64 / total as f64 * 100.0) as u32;
 
-        activity_handle.emit_progress(
-            progress_percent as u8,
-            Some(format!(
-                "{}/{} ({})",
-                current,
-                total,
-                path.to_string_lossy().to_string()
-            )),
-        )?;
+        activity_handle.emit_progress(Some(format!(
+            "{}/{} ({})",
+            current,
+            total,
+            path.to_string_lossy().to_string()
+        )))?;
 
         Ok(())
     }

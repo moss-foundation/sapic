@@ -26,8 +26,6 @@ enum ActivityEvent<'a> {
         title: String,
         #[ts(optional)]
         detail: Option<String>,
-        #[ts(optional)]
-        initial_progress: Option<u8>, // 0-100
     },
     /// This event is used to update the progress of a long-running activity,
     /// like updating the progress of an indexer, scanner, etc.
@@ -36,7 +34,6 @@ enum ActivityEvent<'a> {
         activity_id: &'a str,
         #[ts(optional)]
         detail: Option<String>,
-        progress: u8, // 0-100
     },
     /// This event is used to notify the frontend that the long-running activity
     /// is finished and the activity indicator should be hidden.
@@ -57,13 +54,12 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
         }
     }
 
-    pub fn emit_progress(&self, progress: u8, detail: Option<String>) -> Result<()> {
+    pub fn emit_progress(&self, detail: Option<String>) -> Result<()> {
         self.app_handle.emit(
             ACTIVITY_INDICATOR_CHANNEL,
             ActivityEvent::Progress {
                 activity_id: self.activity_id,
                 detail,
-                progress,
             },
         )?;
         Ok(())
@@ -121,7 +117,6 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
         activity_id: &'a str,
         title: String,
         detail: Option<String>,
-        initial_progress: Option<u8>,
     ) -> Result<ActivityHandle<R>> {
         self.app_handle.emit(
             ACTIVITY_INDICATOR_CHANNEL,
@@ -129,7 +124,6 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
                 activity_id,
                 title,
                 detail,
-                initial_progress,
             },
         )?;
 

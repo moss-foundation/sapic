@@ -2,7 +2,6 @@ use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
 use moss_fs::utils::encode_directory_name;
 use std::path::PathBuf;
-use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -13,7 +12,7 @@ use crate::{
     workspace::{OperationError, Workspace, COLLECTIONS_DIR},
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl Workspace {
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
@@ -50,7 +49,11 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to create the collection directory")?;
 
-        let collection = Collection::new(full_path.clone(), self.fs.clone(), self.tx.clone())?;
+        let collection = Collection::new(
+            full_path.clone(),
+            self.fs.clone(),
+            self.indexer_handle.clone(),
+        )?;
         let metadata = CollectionCache {
             name: input.name.clone(),
             order: None,

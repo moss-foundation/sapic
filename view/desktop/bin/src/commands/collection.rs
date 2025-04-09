@@ -1,28 +1,18 @@
-use std::path::PathBuf;
-
 use moss_app::manager::AppManager;
-// use moss_collection::collection_manager::CollectionManager;
 use moss_tauri::TauriResult;
 use moss_workspace::{
-    models::operations::{CreateWorkspaceInput, OpenCollectionInput, OpenWorkspaceInput},
+    models::operations::{OpenCollectionInput, OpenWorkspaceInput},
     workspace_manager::WorkspaceManager,
 };
+use std::path::PathBuf;
 use tauri::State;
 
-// #[tauri::command]
-// #[instrument(level = "trace", skip(app_manager))]
-// pub fn create_collection(app_manager: State<'_, AppManager>) -> TauriResult<()> {
-//     let collection_service = app_manager.service::<CollectionManager>()?;
-
-//     todo!()
-// }
-
+// HACK: This command is just for testing
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
 pub async fn example_index_collection_command(
     app_manager: State<'_, AppManager<tauri::Wry>>,
 ) -> TauriResult<()> {
-    dbg!(111111);
     let app_handle = app_manager.app_handle();
     let workspace_manager = app_manager
         .services()
@@ -36,13 +26,14 @@ pub async fn example_index_collection_command(
         .await
         .expect("Failed to create workspace");
 
+    let home_dir = std::env::var("HOME").expect("$HOME environment variable is not set");
     let current_workspace = workspace_manager.current_workspace().unwrap();
     let collection_output = current_workspace
         .1
         .open_collection(OpenCollectionInput {
-            path: PathBuf::from(
-                "/Users/g10z3r/.sapic/workspaces/TestWorkspace/collections/TestCollection",
-            ),
+            path: PathBuf::from(format!(
+                "{home_dir}/.sapic/workspaces/TestWorkspace/collections/TestCollection",
+            )),
         })
         .await
         .expect("Failed to open collection");

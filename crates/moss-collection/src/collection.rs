@@ -10,7 +10,7 @@ use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
 use crate::constants::*;
-use crate::indexer::IndexJob;
+use crate::indexer::{IndexJob, IndexerHandle};
 use crate::models::types::{HttpMethod, RequestProtocol};
 use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
@@ -53,7 +53,7 @@ pub struct Collection {
     // In the DbManager, we are storing relative paths
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     requests: OnceCell<RwLock<RequestMap>>,
-    tx: mpsc::UnboundedSender<IndexJob>,
+    indexer_handle: IndexerHandle,
 }
 
 #[derive(Debug)]
@@ -67,7 +67,7 @@ impl Collection {
     pub fn new(
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
-        tx: mpsc::UnboundedSender<IndexJob>,
+        indexer_handle: IndexerHandle,
     ) -> Result<Self> {
         let state_db_manager_impl = StateDbManagerImpl::new(&path).context(format!(
             "Failed to open the collection {} state database",
@@ -79,7 +79,7 @@ impl Collection {
             abs_path: path,
             requests: OnceCell::new(),
             state_db_manager: Some(Arc::new(state_db_manager_impl)),
-            tx,
+            indexer_handle,
         })
     }
 
@@ -99,7 +99,7 @@ impl Collection {
                 }
 
                 let (result_tx, mut result_rx) = mpsc::unbounded_channel();
-                self.tx.send(IndexJob {
+                self.indexer_handle.emit_job(IndexJob {
                     collection_key: ResourceKey::from(457895),
                     collection_abs_path: self.abs_path.clone(),
                     result_tx,

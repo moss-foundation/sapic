@@ -1,6 +1,5 @@
 use anyhow::Context as _;
 use moss_fs::utils::encode_directory_name;
-use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -11,7 +10,7 @@ use crate::{
     workspace::{OperationError, Workspace},
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl Workspace {
     pub async fn rename_collection(
         &self,
         input: RenameCollectionInput,

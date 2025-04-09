@@ -1,5 +1,4 @@
 use anyhow::Result;
-use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::{
@@ -9,7 +8,7 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: TauriRuntime> Workspace<R> {
+impl Workspace {
     pub async fn describe(&self) -> Result<DescribeWorkspaceOutput> {
         let collections_info = self.list_collections().await?;
         let environments_info = self.list_environments().await?;

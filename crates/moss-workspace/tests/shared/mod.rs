@@ -38,7 +38,7 @@ pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager<MockRu
     (workspaces_path, workspace_manager)
 }
 
-pub async fn setup_test_workspace() -> (PathBuf, Workspace<MockRuntime>) {
+pub async fn setup_test_workspace() -> (PathBuf, Workspace) {
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 

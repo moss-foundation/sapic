@@ -1,4 +1,5 @@
 use moss_collection::collection::Collection;
+use moss_collection::indexer::IndexerHandle;
 use moss_fs::utils::encode_directory_name;
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_collection_name;
@@ -19,8 +20,8 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     std::fs::create_dir_all(collection_path.clone()).unwrap();
 
     let (job_sender, _job_receiver) = mpsc::unbounded_channel();
-
-    let collection = Collection::new(collection_path.clone(), fs, job_sender).unwrap();
+    let indexer_handle = IndexerHandle::new(job_sender);
+    let collection = Collection::new(collection_path.clone(), fs, indexer_handle).unwrap();
     (collection_path, collection)
 }
 

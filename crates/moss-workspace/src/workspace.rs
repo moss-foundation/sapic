@@ -6,15 +6,13 @@ pub use error::*;
 use anyhow::{anyhow, Context, Result};
 use moss_collection::{
     collection::{Collection, CollectionCache},
-    indexer::{self, IndexJob},
+    indexer::{self, IndexerHandle},
 };
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_directory_name, FileSystem};
 use moss_workbench::activity_indicator::ActivityIndicator;
-use std::path::PathBuf;
-use std::sync::Arc;
-use std::{collections::HashMap, future::Future};
+use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
@@ -30,7 +28,7 @@ type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
-pub struct Workspace<R: TauriRuntime> {
+pub struct Workspace {
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
     // We have to use Option so that we can temporarily drop it
@@ -39,14 +37,11 @@ pub struct Workspace<R: TauriRuntime> {
     state_db_manager: Option<Arc<dyn StateDbManager>>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
-
-    activity_indicator: ActivityIndicator<R>,
-
-    tx: mpsc::UnboundedSender<IndexJob>,
+    indexer_handle: IndexerHandle,
 }
 
-impl<R: TauriRuntime> Workspace<R> {
-    pub fn new(
+impl Workspace {
+    pub fn new<R: TauriRuntime>(
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
@@ -55,6 +50,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to open the workspace state database")?;
 
         let (tx, rx) = mpsc::unbounded_channel();
+        let indexer_handle = IndexerHandle::new(tx);
         tauri::async_runtime::spawn({
             let fs_clone = Arc::clone(&fs);
             let activity_indicator_clone = activity_indicator.clone();
@@ -70,8 +66,7 @@ impl<R: TauriRuntime> Workspace<R> {
             state_db_manager: Some(Arc::new(state_db_manager)),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
-            tx,
-            activity_indicator,
+            indexer_handle,
         })
     }
 
@@ -178,7 +173,8 @@ impl<R: TauriRuntime> Workspace<R> {
                     // TODO: implement is_external flag for relative/absolute path
 
                     let full_path = self.path.join(relative_path);
-                    let collection = Collection::new(full_path, self.fs.clone(), self.tx.clone())?;
+                    let collection =
+                        Collection::new(full_path, self.fs.clone(), self.indexer_handle.clone())?;
                     let metadata = CollectionCache {
                         name,
                         order: collection_data.order,
@@ -215,26 +211,7 @@ impl<R: TauriRuntime> Workspace<R> {
     }
 }
 
-// impl Workspace {
-//     pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-//         let _ = self.state_db_manager.take();
-
-//         let old_path = std::mem::replace(&mut self.path, new_path.clone());
-//         self.fs
-//             .rename(&old_path, &new_path, RenameOptions::default())
-//             .await?;
-
-//         let state_db_manager_impl = StateDbManagerImpl::new(&new_path).context(format!(
-//             "Failed to open the workspace {} state database",
-//             self.path.display()
-//         ))?;
-//         self.state_db_manager = Some(Arc::new(state_db_manager_impl));
-
-//         Ok(())
-//     }
-// }
-
-impl<R: TauriRuntime> Workspace<R> {
+impl Workspace {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
         let collection_store = self.state_db_manager()?.collection_store();
