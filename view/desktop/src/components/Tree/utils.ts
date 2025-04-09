@@ -258,17 +258,28 @@ export const checkIfAllFoldersAreCollapsed = <T extends NodeProps>(nodes: T[]): 
 };
 
 export const checkIfTreeIsCollapsed = <T extends NodeProps>(node: T): boolean => {
-  if (node.isFolder && !node.isExpanded) return true;
+  if (node.isExpanded) return false;
 
-  if (node.childNodes.length === 0) return false;
-
-  return node.childNodes.some((child) => checkIfTreeIsCollapsed(child));
+  if (node.childNodes && node.childNodes.length > 0) {
+    for (const child of node.childNodes) {
+      if (!checkIfTreeIsCollapsed(child)) {
+        return false;
+      }
+    }
+  }
+  return true;
 };
 
 export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => {
-  if (node.isFolder && node.isExpanded) return true;
+  if (!node.isExpanded) return false;
 
-  if (node.childNodes.length === 0) return false;
+  if (node.childNodes && node.childNodes.length > 0) {
+    for (const child of node.childNodes) {
+      if (!checkIfTreeIsExpanded(child)) {
+        return false;
+      }
+    }
+  }
 
-  return node.childNodes.some((child) => checkIfTreeIsExpanded(child));
+  return true;
 };

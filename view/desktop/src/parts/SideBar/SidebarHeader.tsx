@@ -2,7 +2,7 @@ import TreeActionButton from "@/components/Tree/TreeActionButton";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  const { expandAll, collapseAll } = useCollectionsStore();
+  const { collapseAll } = useCollectionsStore();
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] font-semibold text-(--moss-primary-text) uppercase">
@@ -11,7 +11,6 @@ export const SidebarHeader = ({ title }: { title: string }) => {
       </div>
 
       <div className="flex grow justify-end">
-        <TreeActionButton icon="TreeExpandAll" onClick={expandAll} />
         <TreeActionButton icon="TreeCollapseAll" onClick={collapseAll} />
 
         <TreeActionButton icon="TreeReload" />
