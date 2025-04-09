@@ -1,4 +1,4 @@
-import cssutils
+import tinycss2
 import json
 from pathlib import Path
 
@@ -12,17 +12,21 @@ def extract_css_variables(input_file: str, output_file: str):
     """
     try:
         # Read the CSS file content
-        txt = Path(input_file).read_text()
+        css_content = Path(input_file).read_text()
 
-        # Parse the CSS content
-        css = cssutils.parseString(cssText=txt, validate=False)
+        # Parse the stylesheet rules
+        rules = tinycss2.parse_stylesheet(css_content, skip_comments=True, skip_whitespace=True)
 
-        # Extract CSS variables from the first rule's style
-        variables = [key for key in css.cssRules.item(0).style.keys() if key.startswith('--')]
+        # Parse the declarations in the root rule
+        declarations = tinycss2.parse_blocks_contents(rules[0].content)
+
+        # Extract the variables
+        variables = [decl.name for decl in declarations if decl.type == "declaration" and decl.lower_name.startswith("--")]
 
         # Write the variables to the output file as a json array
         Path(output_file).write_text(json.dumps(variables))
         print(f"CSS variables successfully extracted to {output_file}")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
