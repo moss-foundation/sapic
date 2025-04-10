@@ -200,12 +200,8 @@ impl Collection {
 
     // Temporarily drop the db for fs renaming, and reloading it from the new path
     pub async fn reset(&mut self, new_path: &Path) -> Result<()> {
-        if let Some(manager) = Arc::get_mut(&mut self.state_db_manager) {
-            self.abs_path = new_path.to_path_buf();
-            manager.reset(self.fs.clone(), new_path).await
-        } else {
-            Err(anyhow!("The Collection StateDbManager is being used"))
-        }
+        self.abs_path = new_path.to_path_buf();
+        self.state_db_manager.reset(self.fs.clone(), new_path).await
     }
 }
 

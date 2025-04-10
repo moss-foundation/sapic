@@ -20,6 +20,7 @@ serde_json.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
 validator = { workspace = true, features = ["derive"] }
+arc-swap.workspace = true
 
 [dev-dependencies]
 moss_testutils.workspace = true

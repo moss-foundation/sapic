@@ -19,5 +19,5 @@ pub trait RequestStore: Send + Sync + 'static {
 #[async_trait::async_trait]
 pub trait StateDbManager: Send + Sync + 'static {
     fn request_store(&self) -> Arc<dyn RequestStore>;
-    async fn reset(&mut self, fs: Arc<dyn FileSystem>, new_path: &Path) -> Result<()>;
+    async fn reset(&self, fs: Arc<dyn FileSystem>, new_path: &Path) -> Result<()>;
 }
