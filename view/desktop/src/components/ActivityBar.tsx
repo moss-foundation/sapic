@@ -72,16 +72,8 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   const handleClick = (id: string) => {
-    if (isActive && position === "default") {
+    if (isActive && position === "default" && visible) {
       setVisible(false);
-      // setItems(
-      //   items.map((item) => {
-      //     return {
-      //       ...item,
-      //       isActive: false,
-      //     };
-      //   })
-      // );
       return;
     }
 
