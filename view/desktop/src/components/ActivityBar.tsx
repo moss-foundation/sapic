@@ -65,14 +65,14 @@ export const ActivityBar = () => {
 const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
-  const { alignment, setItems, items } = useActivityBarStore();
+  const { alignment, setItems, items, position } = useActivityBarStore();
   const { setVisible } = useAppResizableLayoutStore((state) => state.primarySideBar);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   const handleClick = (id: string) => {
-    if (isActive) {
+    if (isActive && position === "default") {
       setVisible(false);
       setItems(
         items.map((item) => {
