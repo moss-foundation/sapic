@@ -11,16 +11,20 @@ const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
 pub struct StateDbManagerImpl {
     path: PathBuf,
-    // FIXME: It appears that we need to wrap it in Option for temporary dropping in safe Rust
     request_store: Option<Arc<dyn RequestStore>>,
+}
+
+fn generate_request_store(path: &Path) -> Result<Arc<dyn RequestStore>> {
+    let db_client =
+        ReDbClient::new(path.join(COLLECTION_STATE_DB_NAME))?
+            .with_table(&TABLE_REQUESTS)?;
+
+    Ok(Arc::new(RequestStoreImpl::new(db_client)))
 }
 
 impl StateDbManagerImpl {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
-            .with_table(&TABLE_REQUESTS)?;
-
-        let request_store = Arc::new(RequestStoreImpl::new(db_client));
+        let request_store = generate_request_store(path.as_ref())?;
 
         Ok(Self { path: path.as_ref().to_path_buf(), request_store: Some(request_store) })
     }
@@ -39,9 +43,8 @@ impl StateDbManager for StateDbManagerImpl {
         let old_path = std::mem::replace(&mut self.path, new_path.to_path_buf());
         fs.rename(&old_path, &new_path, RenameOptions::default()).await?;
 
-        let db_client = ReDbClient::new(&self.path.join(COLLECTION_STATE_DB_NAME))?
-            .with_table(&TABLE_REQUESTS)?;
-        self.request_store = Some(Arc::new(RequestStoreImpl::new(db_client)));
+        self.request_store = Some(generate_request_store(&self.path)?);
+
         Ok(())
 
     }

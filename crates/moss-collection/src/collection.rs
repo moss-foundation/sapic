@@ -85,10 +85,6 @@ impl Collection {
         })
     }
 
-    pub fn state_db_manager(&self) -> Arc<dyn StateDbManager> {
-        self.state_db_manager.clone()
-    }
-
     async fn index_requests(&self, root: &PathBuf) -> Result<HashMap<PathBuf, IndexedEndpointDir>> {
         let mut result = HashMap::new();
         let mut stack: Vec<PathBuf> = vec![root.clone()];
@@ -177,7 +173,7 @@ impl Collection {
                 }
 
                 let indexed_requests = self.index_requests(&requests_dir_path).await?;
-                let restored_requests = self.state_db_manager().request_store().scan()?;
+                let restored_requests = self.state_db_manager.request_store().scan()?;
 
                 let mut requests = LeasedSlotMap::new();
                 for (request_dir_relative_path, indexed_request_entry) in indexed_requests {
