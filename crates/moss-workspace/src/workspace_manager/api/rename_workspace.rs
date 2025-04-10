@@ -2,13 +2,14 @@ use anyhow::{Context, Result};
 use moss_fs::utils::encode_directory_name;
 use moss_fs::RenameOptions;
 use std::sync::Arc;
+use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::models::operations::RenameWorkspaceInput;
 use crate::workspace::Workspace;
 use crate::workspace_manager::{OperationError, WorkspaceManager};
 
-impl WorkspaceManager {
+impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn rename_workspace(
         &self,
         input: RenameWorkspaceInput,
@@ -64,7 +65,11 @@ impl WorkspaceManager {
                     .await?;
                 entry = Arc::new((
                     input.key,
-                    Workspace::new(new_path.clone(), self.fs.clone())?,
+                    Workspace::new(
+                        new_path.clone(),
+                        self.fs.clone(),
+                        self.activity_indicator.clone(),
+                    )?,
                 ))
             } else {
                 self.fs

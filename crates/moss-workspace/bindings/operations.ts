@@ -37,7 +37,17 @@ export type ListCollectionsOutput = Array<CollectionInfo>;
 
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
-export type OpenWorkspaceInput = { path: string };
+export type OpenCollectionInput = { path: string };
+
+export type OpenCollectionOutput = { key: ResourceKey; path: string };
+
+export type OpenWorkspaceInput = {
+  /**
+   * We use the workspace name instead of its path because
+   * all workspaces can only be stored within a single directory.
+   */
+  name: string;
+};
 
 export type RenameCollectionInput = { key: ResourceKey; newName: string };
 
