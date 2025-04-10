@@ -31,6 +31,7 @@ CSS_VARIABLES_EXPORTER := misc/css_variables_exporter.py
 PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
+PIP:= pip
 
 ifeq ($(OS),Windows_NT)
     PYTHON := python
@@ -43,6 +44,7 @@ endif
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
+	@cd misc && $(PIP) install -r requirements.txt
 
 
 ## Generate Icons
