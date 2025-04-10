@@ -74,14 +74,14 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   const handleClick = (id: string) => {
     if (isActive && position === "default") {
       setVisible(false);
-      setItems(
-        items.map((item) => {
-          return {
-            ...item,
-            isActive: false,
-          };
-        })
-      );
+      // setItems(
+      //   items.map((item) => {
+      //     return {
+      //       ...item,
+      //       isActive: false,
+      //     };
+      //   })
+      // );
       return;
     }
 
