@@ -49,7 +49,11 @@ impl Workspace {
             .await
             .context("Failed to create the collection directory")?;
 
-        let collection = Collection::new(full_path.clone(), self.fs.clone())?;
+        let collection = Collection::new(
+            full_path.clone(),
+            self.fs.clone(),
+            self.indexer_handle.clone(),
+        )?;
         let metadata = CollectionCache {
             name: input.name.clone(),
             order: None,

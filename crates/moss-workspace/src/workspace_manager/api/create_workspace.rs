@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context as _;
 use moss_fs::utils::encode_directory_name;
+use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
@@ -13,7 +14,7 @@ use crate::{
     workspace_manager::{OperationError, WorkspaceManager},
 };
 
-impl WorkspaceManager {
+impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn create_workspace(
         &self,
         input: CreateWorkspaceInput,
@@ -35,12 +36,18 @@ impl WorkspaceManager {
             .await
             .context("Failed to get known workspaces")?;
 
+        dbg!(&full_path);
+
         self.fs
             .create_dir(&full_path)
             .await
             .context("Failed to create the workspace directory")?;
 
-        let current_workspace = Workspace::new(full_path.clone(), self.fs.clone())?;
+        let current_workspace = Workspace::new(
+            full_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+        )?;
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
             workspaces_lock.insert(WorkspaceInfo {

@@ -3,9 +3,9 @@ use moss_fs::{utils::encode_directory_name, CreateOptions};
 use validator::Validate;
 
 use crate::{
-    collection::{
-        primitives::EndpointFileExt, Collection, CollectionRequestData, OperationError,
-        REQUESTS_DIR,
+    collection::{Collection, CollectionRequestData, OperationError, REQUESTS_DIR},
+    constants::{
+        DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
     },
     kdl::http::HttpRequestFile,
     models::{
@@ -13,7 +13,7 @@ use crate::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
         storage::RequestEntity,
-        types::{HttpMethod, RequestProtocol},
+        types::HttpMethod,
     },
 };
 
@@ -43,7 +43,7 @@ impl Collection {
             });
         }
 
-        let (file_content, file_ext, protocol) = match input.payload {
+        let (file_content, spec_file_name) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
                 method,
                 query_params,
@@ -60,21 +60,17 @@ impl Collection {
                 )
                 .to_string();
 
-                let protocol = RequestProtocol::Http(method);
+                let file_name = match method {
+                    HttpMethod::Post => POST_ENTRY_SPEC_FILE,
+                    HttpMethod::Get => GET_ENTRY_SPEC_FILE,
+                    HttpMethod::Put => PUT_ENTRY_SPEC_FILE,
+                    HttpMethod::Delete => DELETE_ENTRY_SPEC_FILE,
+                };
 
-                (
-                    request_file.to_string(),
-                    EndpointFileExt::from(&protocol),
-                    protocol,
-                )
+                (request_file.to_string(), file_name.to_string())
             }
 
-            // FIXME:
-            None => {
-                let protocol = RequestProtocol::Http(HttpMethod::Get);
-
-                ("".to_string(), EndpointFileExt::from(&protocol), protocol)
-            }
+            None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
         let request_store = self.state_db_manager()?.request_store();
@@ -88,18 +84,13 @@ impl Collection {
         )?;
 
         // For consistency we are encoding both the directory and the request file
-        let request_file_name = format!(
-            "{}.{}.sapic",
-            encode_directory_name(&input.name),
-            file_ext.to_string()
-        );
         self.fs
             .create_dir(&request_dir_full_path)
             .await
             .context("Failed to create the collection directory")?;
         self.fs
             .create_file_with(
-                &request_dir_full_path.join(request_file_name),
+                &request_dir_full_path.join(&spec_file_name),
                 file_content,
                 CreateOptions::default(),
             )
@@ -112,9 +103,9 @@ impl Collection {
             let mut requests_lock = requests.write().await;
             requests_lock.insert(CollectionRequestData {
                 name: input.name,
-                request_dir_relative_path: request_dir_relative_path.clone(),
+                entry_relative_path: request_dir_relative_path.clone(),
                 order: None,
-                protocol,
+                spec_file_name,
             })
         };
 

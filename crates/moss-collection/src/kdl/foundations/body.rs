@@ -325,7 +325,7 @@ impl Into<KdlNode> for RequestBodyBlock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
+
     // FIXME: When outputing raw body type, there won't be a space between the type property and `{`
     // It doesn't have any substantive difference, just that the look is a little bit inconsistent.
     // I'm not sure how to fix it without messing up the raw string parsing and writing

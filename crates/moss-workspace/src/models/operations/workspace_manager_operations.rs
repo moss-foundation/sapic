@@ -1,6 +1,5 @@
 use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
@@ -14,7 +13,9 @@ pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct OpenWorkspaceInput {
-    pub path: PathBuf,
+    /// We use the workspace name instead of its path because
+    /// all workspaces can only be stored within a single directory.
+    pub name: String,
 }
 
 #[derive(Debug, Validate, Deserialize, Serialize, TS)]

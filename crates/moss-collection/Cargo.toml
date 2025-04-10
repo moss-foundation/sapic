@@ -8,6 +8,7 @@ moss_fs.workspace = true
 moss_db.workspace = true
 anyhow.workspace = true
 moss_common.workspace = true
+moss_workbench.workspace = true
 
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -19,6 +20,8 @@ serde_json.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
 validator = { workspace = true, features = ["derive"] }
+tauri.workspace = true
+
 
 [dev-dependencies]
 moss_testutils.workspace = true

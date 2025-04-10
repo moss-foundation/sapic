@@ -29,6 +29,9 @@
       "path": "crates/moss-common"
     },
     {
+      "path": "crates/moss-workbench"
+    },
+    {
       "path": "view/desktop"
     },
     {
