@@ -58,7 +58,7 @@ impl Workspace {
             });
         }
 
-        let collection_store = self.state_db_manager()?.collection_store();
+        let collection_store = self.state_db_manager().collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         let old_table_key = old_relative_path.to_string_lossy().to_string();
@@ -76,7 +76,7 @@ impl Workspace {
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows
         // We need to temporarily drop it, and reload the database after that
         collection
-            .reset(new_full_path.clone())
+            .reset(&new_full_path)
             .await
             .context("Failed to reset the collection")?;
 

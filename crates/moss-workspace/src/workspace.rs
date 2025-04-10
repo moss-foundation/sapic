@@ -27,10 +27,9 @@ type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 pub struct Workspace {
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    // We have to use Option so that we can temporarily drop it
     // TODO: implement is_external flag for absolute/relative path
     // Right now, we are storing relative paths in the db_manager
-    state_db_manager: Option<Arc<dyn StateDbManager>>,
+    state_db_manager: Arc<dyn StateDbManager>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
 }
@@ -43,7 +42,7 @@ impl Workspace {
         Ok(Self {
             path,
             fs,
-            state_db_manager: Some(Arc::new(state_db_manager)),
+            state_db_manager: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
         })
@@ -80,8 +79,6 @@ impl Workspace {
 
                 let mut scan_result = self
                     .state_db_manager
-                    .as_ref()
-                    .unwrap() // FIXME:
                     .environment_store()
                     .scan()?;
                 for (name, env) in envs_from_fs {
@@ -115,10 +112,8 @@ impl Workspace {
         Ok(result)
     }
 
-    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
-        self.state_db_manager
-            .clone()
-            .ok_or(anyhow!("The state_db_manager has been dropped"))
+    pub fn state_db_manager(&self) -> Arc<dyn StateDbManager> {
+        self.state_db_manager.clone()
     }
 
     async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
@@ -133,7 +128,7 @@ impl Workspace {
 
                 // TODO: Support external collections with absolute path
                 for (relative_path, collection_data) in
-                    self.state_db_manager()?.collection_store().scan()?
+                    self.state_db_manager().collection_store().scan()?
                 {
                     let name = match relative_path.file_name() {
                         Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
@@ -194,7 +189,7 @@ impl Workspace {
 impl Workspace {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager()?.collection_store();
+        let collection_store = self.state_db_manager().collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
         table.truncate(&mut txn)?;
         Ok(txn.commit()?)

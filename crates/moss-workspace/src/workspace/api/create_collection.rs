@@ -35,7 +35,7 @@ impl Workspace {
             .await
             .context("Failed to get collections")?;
 
-        let collection_store = self.state_db_manager()?.collection_store();
+        let collection_store = self.state_db_manager().collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         table.insert(
