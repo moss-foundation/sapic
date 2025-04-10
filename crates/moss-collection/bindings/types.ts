@@ -68,7 +68,7 @@ export type RequestBody =
 export type RequestInfo = {
   key: ResourceKey;
   name: string;
-  requestDirRelativePath: string;
+  relativePathFromRequestsDir: string;
   order: number | null;
   typ: RequestProtocol;
 };

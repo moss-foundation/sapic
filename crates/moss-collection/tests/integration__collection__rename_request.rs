@@ -47,7 +47,7 @@ async fn rename_request_success() {
         RequestInfo {
             key: create_request_output.key,
             name: new_request_name.clone(),
-            request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
+            relative_path_from_requests_dir: PathBuf::from(request_folder_name(&new_request_name)),
 
             order: None,
             typ: RequestProtocol::Http(HttpMethod::Get),
@@ -207,7 +207,7 @@ async fn rename_request_special_chars() {
             list_requests_output.0[0],
             RequestInfo {
                 key: create_request_output.key,
-                request_dir_relative_path: PathBuf::from(request_folder_name(&new_request_name)),
+                relative_path_from_requests_dir: PathBuf::from(request_folder_name(&new_request_name)),
                 name: new_request_name,
                 order: None,
                 typ: RequestProtocol::Http(HttpMethod::Get),
