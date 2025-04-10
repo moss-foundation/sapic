@@ -130,7 +130,7 @@ const BottomPaneContent = () => {
           <div className="mb-2 font-semibold">Application Logs:</div>
           {testLogEntries.map((log, index) => (
             <div key={index} className="mb-1 flex">
-              <span className="mr-2 text-[var(--moss-text-secondary)]">{log.timestamp}</span>
+              <span className="mr-2 text-(--moss-secondary-text)">{log.timestamp}</span>
               <span
                 className={`mr-2 min-w-16 font-medium ${
                   log.level === "ERROR"
