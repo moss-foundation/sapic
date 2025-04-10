@@ -48,7 +48,6 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
         )}
 
         <Resizable
-          className=""
           onDragEnd={(sizes) => {
             if (primarySideBarPosition === "left") {
               const [leftPanelSize, _mainPanelSize] = sizes;
@@ -60,8 +59,12 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (primarySideBarPosition === "left" && index === 0) primarySideBar.setVisible(visible);
-            if (primarySideBarPosition === "right" && index === 1) primarySideBar.setVisible(visible);
+            if (primarySideBarPosition === "left" && index === 0) {
+              primarySideBar.setVisible(visible);
+            }
+            if (primarySideBarPosition === "right" && index === 1) {
+              primarySideBar.setVisible(visible);
+            }
           }}
         >
           {primarySideBarPosition === "left" && (

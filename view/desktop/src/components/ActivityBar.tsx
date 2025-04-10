@@ -66,7 +66,7 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { alignment, setItems, items, position } = useActivityBarStore();
-  const { setVisible } = useAppResizableLayoutStore((state) => state.primarySideBar);
+  const { setVisible, visible } = useAppResizableLayoutStore((state) => state.primarySideBar);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -162,8 +162,9 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
     <button
       ref={ref}
       className={cn("relative cursor-pointer rounded-md p-1", {
-        "background-(--moss-info-background-hover) text-(--moss-info-icon)": isActive,
-        "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)": !isActive,
+        "background-(--moss-info-background-hover) text-(--moss-info-icon)": isActive && visible,
+        "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
+          !isActive || !visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
