@@ -1,5 +1,6 @@
 mod shared;
 
+use std::path::PathBuf;
 use moss_collection::models::operations::{CreateRequestInput, DeleteRequestInput};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_testutils::random_name::random_request_name;
@@ -11,11 +12,10 @@ async fn delete_request_success() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let expected_path = collection_path.join(request_relative_path(&request_name, None));
+    let expected_request_path = collection_path.join(request_relative_path(&request_name, None));
     let create_request_output = collection
         .create_request(CreateRequestInput {
             name: request_name.to_string(),
-
             relative_path: None,
             url: None,
             payload: None,
@@ -31,7 +31,7 @@ async fn delete_request_success() {
     assert!(delete_collection_result.is_ok());
 
     // Check folder is removed
-    assert!(!expected_path.exists());
+    assert!(!expected_request_path.exists());
 
     // Check updating requests
     let requests = collection.list_requests().await.unwrap();
@@ -44,7 +44,47 @@ async fn delete_request_success() {
 }
 
 #[tokio::test]
-async fn delete_request_nonexisten_key() {
+async fn delete_request_in_subfolder() {
+    let (collection_path, collection) = set_up_test_collection().await;
+
+    let request_name = random_request_name();
+    let expected_request_path = collection_path.join(request_relative_path(&request_name, Some("subfolder")));
+    let create_request_output = collection
+        .create_request(CreateRequestInput {
+            name: request_name.to_string(),
+            relative_path: Some(PathBuf::from("subfolder")),
+            url: None,
+            payload: None,
+        })
+        .await
+        .unwrap();
+
+    let delete_collection_result = collection
+        .delete_request(DeleteRequestInput {
+            key: create_request_output.key,
+        })
+        .await;
+    assert!(delete_collection_result.is_ok());
+
+    // Check folder is removed
+    assert!(!expected_request_path.exists());
+
+    // Check the subfolder itself still exists
+    let subfolder = collection_path.join("requests").join("subfolder");
+    assert!(subfolder.exists());
+
+    // Check updating requests
+    let requests = collection.list_requests().await.unwrap();
+    assert!(requests.0.is_empty());
+
+    // Clean up
+    {
+        tokio::fs::remove_dir_all(collection_path).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn delete_request_nonexistent_key() {
     let (collection_path, collection) = set_up_test_collection().await;
     let request_name = random_request_name();
 
@@ -81,7 +121,6 @@ async fn delete_request_fs_already_deleted() {
     let create_request_output = collection
         .create_request(CreateRequestInput {
             name: request_name.to_string(),
-
             relative_path: None,
             url: None,
             payload: None,
