@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow.workspace = true
-
+arc-swap.workspace = true
 redb.workspace = true
 bincode.workspace = true
 serde = { workspace = true, features = ["derive"] }

@@ -49,9 +49,7 @@ type RequestMap = LeasedSlotMap<ResourceKey, CollectionRequestData>;
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
-    // We have to use Option so that we can temporarily drop it
-    // In the DbManager, we are storing relative paths
-    state_db_manager: Option<Arc<dyn StateDbManager>>,
+    state_db_manager: Arc<dyn StateDbManager>,
     requests: OnceCell<RwLock<RequestMap>>,
     indexer_handle: IndexerHandle,
 }
@@ -78,16 +76,16 @@ impl Collection {
             fs: Arc::clone(&fs),
             abs_path: path,
             requests: OnceCell::new(),
-            state_db_manager: Some(Arc::new(state_db_manager_impl)),
+            state_db_manager: Arc::new(state_db_manager_impl),
             indexer_handle,
         })
     }
 
-    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
-        self.state_db_manager
-            .clone()
-            .ok_or(anyhow!("The state_db_manager has been dropped"))
-    }
+    // pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
+    //     self.state_db_manager
+    //         .clone()
+    //         .ok_or(anyhow!("The state_db_manager has been dropped"))
+    // }
 
     async fn requests(&self) -> Result<&RwLock<RequestMap>> {
         let result = self
@@ -106,7 +104,7 @@ impl Collection {
                 })?;
 
                 let mut requests = LeasedSlotMap::new();
-                let restored_requests = self.state_db_manager()?.request_store().scan()?;
+                let restored_requests = self.state_db_manager.request_store().scan()?;
 
                 while let Some(indexed_item) = result_rx.recv().await {
                     match indexed_item {

@@ -2906,6 +2906,7 @@ version = "0.1.0"
 dependencies = [
  "aes-gcm",
  "anyhow",
+ "arc-swap",
  "argon2",
  "bincode",
  "rand 0.9.0",

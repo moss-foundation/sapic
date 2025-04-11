@@ -4,6 +4,7 @@ pub mod encrypted_bincode_store;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
+use arc_swap::ArcSwap;
 use redb::{
     Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
     WriteTransaction as InnerWriteTransaction,
@@ -32,11 +33,15 @@ pub trait DatabaseClient: Sized {
     fn begin_read(&self) -> Result<Transaction>;
 }
 
-pub struct ReDbClient(Arc<Database>);
+pub struct ReDbClient {
+    db: ArcSwap<Database>,
+}
 
 impl Clone for ReDbClient {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self {
+            db: ArcSwap::from(self.db.load_full()),
+        }
     }
 }
 
@@ -51,7 +56,9 @@ where
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        Ok(Self(Arc::new(Database::create(path)?)))
+        Ok(Self {
+            db: ArcSwap::new(Arc::new(Database::create(path)?)),
+        })
     }
 
     /// Initializes and registers a Bincode-based table within the database.
@@ -68,7 +75,7 @@ impl ReDbClient {
         V: Serialize + DeserializeOwned,
     {
         let table_def = table.table_definition();
-        let init_txn = self.0.begin_write()?;
+        let init_txn = self.db.load_full().begin_write()?;
         init_txn.open_table(table_def)?;
         init_txn.commit()?;
 
@@ -78,10 +85,10 @@ impl ReDbClient {
 
 impl DatabaseClient for ReDbClient {
     fn begin_write(&self) -> Result<Transaction> {
-        Ok(Transaction::Write(self.0.begin_write()?))
+        Ok(Transaction::Write(self.db.load_full().begin_write()?))
     }
 
     fn begin_read(&self) -> Result<Transaction> {
-        Ok(Transaction::Read(self.0.begin_read()?))
+        Ok(Transaction::Read(self.db.load_full().begin_read()?))
     }
 }
