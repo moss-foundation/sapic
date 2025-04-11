@@ -20,8 +20,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   const {
     treeId,
     nodeOffset,
-    paddingLeft,
-    paddingRight,
     searchInput,
     onNodeAddCallback,
     onNodeRenameCallback,
@@ -31,19 +29,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
   const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
 
-  const nodePaddingLeft = useMemo(() => depth * nodeOffset + paddingLeft + 4, [depth, nodeOffset, paddingLeft]);
-  const nodePaddingLeftForAddForm = useMemo(
-    () => (depth + 1) * nodeOffset + paddingLeft + 4,
-    [depth, nodeOffset, paddingLeft]
-  );
-
-  const nodeStyle = useMemo(
-    () =>
-      cn("flex w-full min-w-0 items-center gap-1 py-0.5", {
-        "background-(--moss-treeNode-bg-hover)": currentActivePanelId === node.id && currentActiveTreeId === treeId,
-      }),
-    [currentActivePanelId, currentActiveTreeId, node.id, treeId]
-  );
+  const nodePaddingLeft = useMemo(() => depth * nodeOffset, [depth, nodeOffset]);
+  const nodePaddingLeftForAddForm = useMemo(() => (depth + 1) * nodeOffset, [depth, nodeOffset]);
 
   const handleFolderClick = () => {
     if (!node.isFolder || searchInput) return;
@@ -86,27 +73,32 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   return (
     <li ref={dropTargetListRef}>
       {isRenamingNode ? (
-        <div className={nodeStyle} style={{ paddingLeft: nodePaddingLeft }}>
-          <TestCollectionIcon type={node.type} />
-          <NodeRenamingForm
-            onSubmit={(newName) => {
-              handleRenamingFormSubmit(newName);
-              onNodeRenameCallback?.({ ...node, id: newName });
-            }}
-            onCancel={handleRenamingFormCancel}
-            restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
-            currentName={node.id}
-          />
+        <div className="w-full min-w-0">
+          <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
+            <Icon
+              icon="TreeChevronRight"
+              className={cn("text-(--moss-icon-primary-text)", {
+                "rotate-90": shouldRenderChildNodes,
+                "opacity-0": !node.isFolder,
+              })}
+            />
+            <TestCollectionIcon type={node.type} />
+            <NodeRenamingForm
+              onSubmit={(newName) => {
+                handleRenamingFormSubmit(newName);
+                onNodeRenameCallback?.({ ...node, id: newName });
+              }}
+              onCancel={handleRenamingFormCancel}
+              restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
+              currentName={node.id}
+            />
+          </span>
         </div>
       ) : (
         <ContextMenu.Root modal={false}>
           <ContextMenu.Trigger asChild>
             <button
               ref={draggableNodeRef}
-              style={{
-                paddingLeft: nodePaddingLeft,
-                paddingRight: paddingRight + 3,
-              }}
               onClick={() => {
                 if (node.isFolder) handleFolderClick();
                 else
@@ -120,20 +112,35 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 onNodeClickCallback?.(node);
               }}
               onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
-              className={cn(nodeStyle, "relative w-full cursor-pointer items-center gap-1 dark:hover:text-black", {
-                "hover:background-(--moss-primary-background-hover)": !isNodeDragging,
-              })}
+              className={cn(
+                "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
+              )}
             >
-              <TestCollectionIcon type={node.type} />
-              <NodeLabel label={node.id} searchInput={searchInput} />
-              <span className="DragHandle h-full min-h-4 grow" />
-              <Icon
-                icon="TreeChevronRightIcon"
-                className={cn("ml-auto text-(--moss-icon-primary-text)", {
-                  "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": !node.isFolder,
+              <span
+                className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
+                  "group-hover/treeNode:background-(--moss-secondary-background-hover)": !isNodeDragging,
+                  "background-(--moss-primary-background-hover) group-hover/treeNode:background-(--moss-primary-background-hover)!":
+                    currentActivePanelId === node.id && currentActiveTreeId === treeId,
                 })}
               />
+
+              <span
+                className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
+                style={{
+                  paddingLeft: nodePaddingLeft,
+                }}
+              >
+                <Icon
+                  icon="TreeChevronRight"
+                  className={cn("text-(--moss-icon-primary-text)", {
+                    "rotate-90": shouldRenderChildNodes,
+                    "opacity-0": !node.isFolder,
+                  })}
+                />
+                <TestCollectionIcon type={node.type} />
+                <NodeLabel label={node.id} searchInput={searchInput} />
+                <span className="DragHandle h-full min-h-4 grow" />
+              </span>
               {preview &&
                 createPortal(
                   <ul className="background-(--moss-primary-background)">
@@ -163,7 +170,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
               {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
               <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
-              <ContextMenu.Item label="Item" />
             </ContextMenu.Content>
           </ContextMenu.Portal>
         </ContextMenu.Root>
@@ -171,6 +177,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
+          <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
           <TestCollectionIcon
             type={node.type}
             className={cn("ml-auto", {

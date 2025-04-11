@@ -15,6 +15,15 @@
   --moss-secondary-background-hover: rgba(255, 255, 255, 0.1);
   --moss-secondary-text: #a1a1aa;
 
+  --moss-info-background: #edf3ff;
+  --moss-info-background-hover: #d4e2ff;
+  --moss-info-text: var(--moss-primary-text);
+  --moss-info-icon: var(--moss-primary);
+  --moss-info-border: var(--moss-primary);
+
+  /* Resizable */
+  --separator-border: var(--moss-border-color);
+
   /* Icons */
   --moss-icon-primary-background: transparent;
   --moss-icon-primary-text: #6c707e;

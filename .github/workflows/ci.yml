@@ -131,7 +131,7 @@ jobs:
         run: pnpm install
 
       - name: Install Playwright Browsers
-        run: npx playwright install chromium --with-deps
+        run: pnpm exec playwright install chromium --with-deps
 
       - name: Cache optional Playwright paths
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2

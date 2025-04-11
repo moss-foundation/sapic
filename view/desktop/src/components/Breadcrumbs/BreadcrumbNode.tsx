@@ -54,7 +54,7 @@ export const BreadcrumbNode = ({
         <NodeLabel label={node.id} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon
-          icon="TreeChevronRightIcon"
+          icon="TreeChevronRight"
           className={cn("ml-auto text-[#717171]", {
             "rotate-90": shouldRenderChildNodes,
             "opacity-0": !node.isFolder,

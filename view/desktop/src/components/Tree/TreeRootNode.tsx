@@ -11,6 +11,7 @@ import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TestCollectionIcon } from "./TestCollectionIcon";
+import TreeActionButton from "./TreeActionButton";
 import TreeNode from "./TreeNode";
 import { TreeNodeProps, TreeRootNodeProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
@@ -23,7 +24,8 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     allFoldersAreCollapsed,
     allFoldersAreExpanded,
     searchInput,
-
+    rootOffset,
+    nodeOffset,
     onRootAddCallback,
     onRootRenameCallback,
     onRootClickCallback,
@@ -105,14 +107,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
-        className="focus-within:background-(--moss-treeNode-bg) flex w-full min-w-0 items-center justify-between gap-1 py-[7px] pr-2"
-        style={{ paddingLeft, paddingRight }}
+        className="flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
+        style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">
             <Icon
-              icon="TreeChevronRightIcon"
-              className={cn("text-[#717171]", {
+              icon="TreeChevronRight"
+              className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
@@ -127,7 +129,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </div>
         ) : (
           <button
-            className="flex grow cursor-pointer items-center gap-1 overflow-hidden"
+            className="flex grow cursor-pointer items-center gap-1 overflow-hidden font-medium"
             onClick={() => {
               handleFolderClick();
               onRootClickCallback?.(node);
@@ -135,8 +137,8 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             onDoubleClick={() => onRootDoubleClickCallback?.(node)}
           >
             <Icon
-              icon="TreeChevronRightIcon"
-              className={cn("text-[#717171]", {
+              icon="TreeChevronRight"
+              className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
@@ -144,28 +146,19 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </button>
         )}
 
-        <div className="flex items-center gap-1">
-          {node.isExpanded && !searchInput && (
-            <div className="flex items-center gap-1 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
-              <button
-                disabled={allFoldersAreExpanded}
-                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
-                onClick={handleExpandAll}
-              >
-                <Icon icon="TreeExpandAllIcon" />
-              </button>
-              <button
-                disabled={allFoldersAreCollapsed}
-                className={`disabled:hover:background-transparent disabled:hover:dark:background-transparent background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`}
-                onClick={handleCollapseAll}
-              >
-                <Icon icon="TreeCollapseAllIcon" />
-              </button>
+        <div className="flex items-center">
+          {node.isExpanded && !searchInput && !isRenamingRootNode && (
+            <div
+              className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100 group-hover:starting:opacity-0`}
+            >
+              <TreeActionButton icon="TreePlus" onClick={() => setIsAddingRootFileNode(true)} />
+              <TreeActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
+              <TreeActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex size-[22px] cursor-pointer items-center justify-center rounded-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)">
-              <Icon icon="TreeDetailIcon" />
+            <DropdownMenu.Trigger asChild>
+              <TreeActionButton icon="TreeDetail" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">
@@ -188,14 +181,12 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
                 onNodeUpdate={onNodeUpdate}
                 key={childNode.uniqueId}
                 node={childNode}
-                depth={0}
+                depth={1}
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (
-              <div
-                className="flex w-full min-w-0 items-center gap-1 py-0.5"
-                style={{ paddingLeft: `${paddingLeft + 4}px` }}
-              >
+              <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
+                <TestCollectionIcon type={node.type} className="opacity-0" />
                 <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
                 <NodeAddForm
                   isFolder={isAddingRootFolderNode}
