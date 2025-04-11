@@ -31,6 +31,7 @@ impl Transaction {
 pub trait DatabaseClient: Sized {
     fn begin_write(&self) -> Result<Transaction>;
     fn begin_read(&self) -> Result<Transaction>;
+    fn reload(&self, path: impl AsRef<Path>) -> Result<()>;
 }
 
 pub struct ReDbClient {
@@ -90,5 +91,10 @@ impl DatabaseClient for ReDbClient {
 
     fn begin_read(&self) -> Result<Transaction> {
         Ok(Transaction::Read(self.db.load_full().begin_read()?))
+    }
+
+    fn reload(&self, path: impl AsRef<Path>) -> Result<()> {
+        let db = Database::open(path)?;
+        Ok(self.db.store(Arc::new(db)))
     }
 }

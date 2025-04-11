@@ -104,7 +104,8 @@ impl Collection {
                 })?;
 
                 let mut requests = LeasedSlotMap::new();
-                let restored_requests = self.state_db_manager.request_store().scan()?;
+                let request_store = self.state_db_manager.request_store();
+                let restored_requests = request_store.scan()?;
 
                 while let Some(indexed_item) = result_rx.recv().await {
                     match indexed_item {
@@ -150,20 +151,20 @@ impl Collection {
         &self.abs_path
     }
 
-    // Temporarily drop the db for fs renaming, and reloading it from the new path
     pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        let _ = self.state_db_manager.take();
+        // let _ = self.state_db_manager.take();
 
         let old_path = std::mem::replace(&mut self.abs_path, new_path.clone());
         self.fs
             .rename(&old_path, &new_path, RenameOptions::default())
             .await?;
 
-        let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
-            "Failed to open the collection {} state database",
-            self.abs_path.display()
-        ))?;
-        self.state_db_manager = Some(Arc::new(state_db_manager_impl));
+        // let state_db_manager_impl = StateDbManagerImpl::new(new_path).context(format!(
+        //     "Failed to open the collection {} state database",
+        //     self.abs_path.display()
+        // ))?;
+
+        // self.state_db_manager = Some(Arc::new(state_db_manager_impl));
 
         Ok(())
     }

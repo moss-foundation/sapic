@@ -21,7 +21,7 @@ scraper.workspace = true
 xml-rs.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
-
+arc-swap.workspace = true
 
 [dev-dependencies]
 moss_testutils.workspace = true

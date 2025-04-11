@@ -50,8 +50,8 @@ where
     where
         F: FnOnce(Transaction, &EncryptedBincodeTable<'a, K, V>, &EncryptionOptions) -> Result<T>,
     {
-        let read_txn = self.client.0.begin_read()?;
-        let result = f(Transaction::Read(read_txn), &self.table, &self.config)?;
+        let read_txn = self.client.begin_read()?;
+        let result = f(read_txn, &self.table, &self.config)?;
         Ok(result)
     }
 }

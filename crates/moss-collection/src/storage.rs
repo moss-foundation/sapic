@@ -16,5 +16,6 @@ pub trait RequestStore: Send + Sync + 'static {
 }
 
 pub trait StateDbManager: Send + Sync + 'static {
+    fn reload(&self, path: PathBuf, after_drop: Box<dyn FnOnce() -> Result<()>>) -> Result<()>;
     fn request_store(&self) -> Arc<dyn RequestStore>;
 }
