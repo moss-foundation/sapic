@@ -6,6 +6,7 @@ import {
   DockviewApi,
   DockviewDefaultTab,
   DockviewDidDropEvent,
+  DockviewPanelApi,
   DockviewReact,
   DockviewReadyEvent,
   IDockviewPanelHeaderProps,
@@ -43,10 +44,21 @@ const Option = (props: { title: string; onClick: () => void; value: string }) =>
   );
 };
 
+const Metadata = ({ onClick, api }: { onClick: () => void; api: DockviewPanelApi }) => {
+  const metadata = usePanelApiMetadata(api);
+
+  return (
+    <div className="text-sm">
+      <Option title="Panel Rendering Mode" value={metadata.renderer.value} onClick={onClick} />
+
+      <Table data={metadata} />
+    </div>
+  );
+};
+
 const components = {
   Default: (props: IDockviewPanelProps) => {
     const isDebug = React.useContext(DebugContext);
-    const metadata = usePanelApiMetadata(props.api);
 
     return (
       <>
@@ -64,17 +76,12 @@ const components = {
           </span>
 
           {isDebug && (
-            <div className="text-sm">
-              <Option
-                title="Panel Rendering Mode"
-                value={metadata.renderer.value}
-                onClick={() => {
-                  props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-                }}
-              />
-
-              <Table data={metadata} />
-            </div>
+            <Metadata
+              onClick={() => {
+                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
+              }}
+              api={props.api}
+            />
           )}
         </Scrollbar>
       </>
@@ -112,18 +119,12 @@ const components = {
       />
     );
   },
-  Home: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Home);
-  },
-  Settings: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Settings);
-  },
-  Logs: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Logs);
-  },
+  Home: Home,
+  Settings: Settings,
+  Logs: Logs,
 };
 
-const RenderPage = (props: IDockviewPanelProps, page: React.FC) => {
+const PageWrapper = ({ props, page }: { props: IDockviewPanelProps; page: JSX.Element }) => {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
@@ -137,7 +138,7 @@ const RenderPage = (props: IDockviewPanelProps, page: React.FC) => {
         props.api.isActive ? "select-text" : "select-none"
       }`}
     >
-      <span>{React.createElement(page)}</span>
+      <span>{page}</span>
 
       {isDebug && (
         <div className="text-sm">
@@ -373,10 +374,7 @@ const TabbedPane = (props: { theme?: string }) => {
   const [debug, setDebug] = React.useState<boolean>(false);
 
   return (
-    <div
-      style={{ ...css }}
-      className="dockview-demo relative flex h-full w-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
-    >
+    <div style={{ ...css }} className="dockview-demo relative flex h-full w-full grow flex-col rounded">
       {showDebugPanels && (
         <>
           <div>
