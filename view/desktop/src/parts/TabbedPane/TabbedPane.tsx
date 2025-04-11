@@ -69,7 +69,9 @@ const components = {
           }`}
         >
           <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-            {props.api.title}
+            <span>{props.api.title}</span>
+
+            <span>{Math.random().toFixed(2)}</span>
             {props?.params.someRandomString && (
               <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
             )}
