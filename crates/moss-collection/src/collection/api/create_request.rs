@@ -83,7 +83,6 @@ impl Collection {
             &RequestEntity { order: None },
         )?;
 
-        // For consistency we are encoding both the directory and the request file
         self.fs
             .create_dir(&request_dir_full_path)
             .await

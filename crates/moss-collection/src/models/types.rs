@@ -142,7 +142,7 @@ pub enum RawBodyType {
 pub struct RequestInfo {
     pub key: ResourceKey,
     pub name: String,
-    pub request_dir_relative_path: PathBuf,
+    pub relative_path_from_requests_dir: PathBuf,
     pub order: Option<usize>,
     pub typ: RequestProtocol,
 }
