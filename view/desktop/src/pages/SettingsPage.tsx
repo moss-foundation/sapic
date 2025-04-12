@@ -2,9 +2,7 @@ import React, { ChangeEvent, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActivityBarState } from "@/hooks";
-import { useChangeAppLayoutState } from "@/hooks/useChangeAppLayoutState";
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
-import { useGetAppLayoutState } from "@/hooks/useGetAppLayoutState";
 import { useListColorThemes } from "@/hooks/useListColorThemes";
 import { useListLocales } from "@/hooks/useListLocales";
 import { useSetColorTheme } from "@/hooks/useSetColorTheme";
@@ -79,9 +77,7 @@ export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useDescribeAppState();
-  const { data: appLayoutState } = useGetAppLayoutState();
-  const { mutate: changeAppLayoutState } = useChangeAppLayoutState();
-  const { bottomPane } = useAppResizableLayoutStore();
+  const { bottomPane, primarySideBar } = useAppResizableLayoutStore();
 
   const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
@@ -133,9 +129,9 @@ export const Settings = () => {
   };
 
   return (
-    <main className="background-(--moss-page-background) min-h-screen">
+    <main className="min-h-screen">
       <div className="p-5">
-        <h1 className="mb-5 text-2xl font-bold text-[var(--moss-text)]">{t("settings")}</h1>
+        <h1 className="mb-5 text-2xl font-bold">{t("settings")}</h1>
 
         <SettingsDropdown
           id="lang-select"
@@ -184,13 +180,11 @@ export const Settings = () => {
         <SettingsDropdown
           id="sidebar-position-select"
           label="Sidebar Visibility"
-          value={appLayoutState?.activeSidebar === "none" ? "hidden" : "visible"}
+          value={primarySideBar.visible ? "visible" : "hidden"}
           onChange={(event) => {
             const isVisible = event.target.value === "visible";
-            changeAppLayoutState({
-              activeSidebar: isVisible ? appLayoutState?.sidebarSetting || "left" : "none",
-              sidebarSetting: appLayoutState?.sidebarSetting || "left",
-            });
+
+            primarySideBar.setVisible(isVisible);
           }}
         >
           <option value="visible" className="text-[var(--moss-select-text-outlined)]">
