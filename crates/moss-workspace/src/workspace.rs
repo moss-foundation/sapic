@@ -3,7 +3,7 @@ pub mod api;
 mod error;
 pub use error::*;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use moss_collection::{
     collection::{Collection, CollectionCache},
     indexer::{self, IndexerHandle},
