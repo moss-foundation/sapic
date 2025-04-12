@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -18,6 +20,13 @@ pub struct OpenWorkspaceInput {
     pub name: String,
 }
 
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+#[serde(rename_all = "camelCase")]
+pub struct OpenWorkspaceOutput {
+    pub path: PathBuf,
+}
+
 #[derive(Debug, Validate, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 #[serde(rename_all = "camelCase")]
@@ -32,6 +41,7 @@ pub struct CreateWorkspaceInput {
 pub struct CreateWorkspaceOutput {
     #[ts(type = "ResourceKey")]
     pub key: ResourceKey,
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]

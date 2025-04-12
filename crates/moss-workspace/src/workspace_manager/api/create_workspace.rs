@@ -36,8 +36,6 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             .await
             .context("Failed to get known workspaces")?;
 
-        dbg!(&full_path);
-
         self.fs
             .create_dir(&full_path)
             .await
@@ -60,6 +58,9 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         self.current_workspace
             .store(Some(Arc::new((workspace_key, current_workspace))));
 
-        Ok(CreateWorkspaceOutput { key: workspace_key })
+        Ok(CreateWorkspaceOutput {
+            key: workspace_key,
+            path: full_path,
+        })
     }
 }

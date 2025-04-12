@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
-import { ResizablePanel, Scrollbar } from "../components";
+import { Scrollbar } from "../components";
 
-export const Home: React.FC = () => {
+export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   return (
@@ -45,17 +45,16 @@ const SessionComponent = () => {
       >
         Example Command
       </button>
-      <ResizablePanel>
-        <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
-          <Scrollbar>
-            {Array.from({ length: 100 }, (_, i) => (
-              <div key={i} className="background-[var(--moss-test-background-2)] mb-1 h-10 w-full">
-                {i + 1}
-              </div>
-            ))}
-          </Scrollbar>
-        </main>
-      </ResizablePanel>
+
+      <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
+        <Scrollbar>
+          {Array.from({ length: 100 }, (_, i) => (
+            <div key={i} className="background-[var(--moss-test-background-2)] mb-1 h-10 w-full">
+              {i + 1}
+            </div>
+          ))}
+        </Scrollbar>
+      </main>
     </>
   );
 };

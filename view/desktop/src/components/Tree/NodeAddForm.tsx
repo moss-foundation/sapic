@@ -144,7 +144,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
         autoFocus
         minLength={1}
         maxLength={100}
-        className="relative flex w-full min-w-0 grow items-center gap-1 bg-transparent focus-within:outline-none"
+        className="relative flex w-[calc(100%-1px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-(--moss-primary)"
         onKeyUp={handleKeyUp}
         onBlur={handleBlur}
         required

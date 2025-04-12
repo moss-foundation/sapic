@@ -32,6 +32,7 @@ export interface TreeProps {
   tree: NodeProps;
   paddingLeft?: number;
   paddingRight?: number;
+  rootOffset?: number;
   nodeOffset?: number;
   searchInput?: string;
   onTreeUpdate?: (tree: NodeProps) => void;
@@ -55,6 +56,7 @@ export interface TreeContextProps {
   treeId: string | number;
   paddingLeft: number;
   paddingRight: number;
+  rootOffset: number;
   nodeOffset: number;
   searchInput?: string;
   allFoldersAreCollapsed: boolean;

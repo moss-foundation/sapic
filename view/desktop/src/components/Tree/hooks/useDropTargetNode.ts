@@ -24,11 +24,13 @@ export const useDropTargetNode = (
       canDrop({ source }) {
         return source.data.type === "TreeNode";
       },
+
       onDragLeave() {
         element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
       },
       onDropTargetChange({ location, source }) {
-        if (location.current.dropTargets[0].data.type !== "TreeNode" || location.current?.dropTargets.length === 0) {
+        if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
+          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
           return;
         }
 
@@ -46,6 +48,7 @@ export const useDropTargetNode = (
         }
       },
       onDrop({ location, source }) {
+        console.log("onDrop");
         if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
           return;
         }

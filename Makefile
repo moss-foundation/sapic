@@ -34,8 +34,10 @@ RUSTUP := rustup
 
 ifeq ($(OS),Windows_NT)
     PYTHON := python
+	PIP := pip
 else
     PYTHON := python3
+	PIP := pip3
 endif
 
 # --- Commands ---
@@ -43,12 +45,13 @@ endif
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
+	@cd misc && $(PIP) install --break-system-packages -r requirements.txt
 
 
 ## Generate Icons
 .PHONY: gen-icons
 gen-icons:
-	@cd $(ICONS_DIR) && $(PNPM) build
+	@cd $(ICONS_DIR) && $(PNPM) build --silent 
 
 
 ## Run Desktop Application

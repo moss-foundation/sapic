@@ -7,6 +7,7 @@ module.exports = {
   typescript: true,
   replaceAttrValues: {
     "#808080": "currentColor",
+    "#717171": "currentColor",
   },
 
   // https://svgo.dev/docs/plugins/

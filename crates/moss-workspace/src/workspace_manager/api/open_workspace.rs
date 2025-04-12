@@ -4,13 +4,19 @@ use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    models::{operations::OpenWorkspaceInput, types::WorkspaceInfo},
+    models::{
+        operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
+        types::WorkspaceInfo,
+    },
     workspace::Workspace,
     workspace_manager::{OperationError, WorkspaceManager},
 };
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn open_workspace(&self, input: &OpenWorkspaceInput) -> Result<(), OperationError> {
+    pub async fn open_workspace(
+        &self,
+        input: &OpenWorkspaceInput,
+    ) -> Result<OpenWorkspaceOutput, OperationError> {
         let encoded_dir_name = encode_directory_name(&input.name);
         let full_path = self.workspaces_dir.join(&encoded_dir_name);
 
@@ -24,7 +30,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         // Check if the workspace is already active
         if let Ok(current_workspace) = self.current_workspace() {
             if current_workspace.1.path() == full_path {
-                return Ok(());
+                return Ok(OpenWorkspaceOutput { path: full_path });
             }
         }
 
@@ -53,12 +59,13 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
                     &full_path.file_name().unwrap().to_string_lossy().to_string(),
                 )
                 .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
-                path: full_path,
+                path: full_path.clone(),
             })
         };
 
         self.current_workspace
             .store(Some(Arc::new((workspace_key, workspace))));
-        Ok(())
+
+        Ok(OpenWorkspaceOutput { path: full_path })
     }
 }

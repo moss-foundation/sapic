@@ -19,9 +19,12 @@ const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss
           text-(--moss-controls-plain-text)
           py-0 rounded-sm
           background-(--moss-input-bg-plain)
-          transition-[outline] outline-none
+          transition-[outline]
 
           has-data-invalid:text-(--moss-error)
+          has-[input:focus-within]:outline 
+          has-[input:focus-within]:-outline-offset-1 
+          has-[input:focus-within]:outline-(--moss-primary)
         `,
       outlined: `
           text-(--moss-controls-outlined-text)

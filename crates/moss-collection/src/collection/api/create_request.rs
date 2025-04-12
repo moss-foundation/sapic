@@ -73,7 +73,7 @@ impl Collection {
             None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
-        let request_store = self.state_db_manager()?.request_store();
+        let request_store = self.state_db_manager.request_store().await;
         let requests = self.requests().await?;
 
         let (mut txn, table) = request_store.begin_write()?;
