@@ -1,12 +1,17 @@
-use super::request_store::TABLE_REQUESTS;
-use super::{request_store::RequestStoreImpl, RequestStore, StateDbManager};
 use anyhow::Result;
 use arc_swap::ArcSwap;
-use moss_db::ReDbClient;
-use std::mem;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use async_trait::async_trait;
+use moss_db::{ClientState, ReDbClient};
+use std::{
+    future::Future,
+    path::{Path, PathBuf},
+    pin::Pin,
+    sync::Arc,
+};
 use tokio::sync::Notify;
+
+use super::request_store::TABLE_REQUESTS;
+use super::{request_store::RequestStoreImpl, RequestStore, StateDbManager};
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
@@ -16,7 +21,6 @@ struct DbManagerCell {
 
 impl DbManagerCell {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        dbg!(path.as_ref());
         let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
             .with_table(&TABLE_REQUESTS)?;
 
@@ -26,12 +30,7 @@ impl DbManagerCell {
 }
 
 pub struct StateDbManagerImpl {
-    state: ArcSwap<DatabaseState>,
-}
-
-pub enum DatabaseState {
-    Loaded(DbManagerCell),
-    Reloading { notify: Arc<Notify> },
+    state: ArcSwap<ClientState<DbManagerCell>>,
 }
 
 impl StateDbManagerImpl {
@@ -39,42 +38,32 @@ impl StateDbManagerImpl {
         let cell = DbManagerCell::new(path)?;
 
         Ok(Self {
-            state: ArcSwap::new(Arc::new(DatabaseState::Loaded(cell))),
+            state: ArcSwap::new(Arc::new(ClientState::Loaded(cell))),
         })
     }
+}
 
-    pub async fn request_store_2(&self) -> Arc<dyn RequestStore> {
-        loop {
-            let current_state = self.state.load();
-            match current_state.as_ref() {
-                DatabaseState::Loaded(cell) => return cell.request_store.clone(),
-                DatabaseState::Reloading { notify } => {
-                    notify.notified().await;
-                    continue;
-                }
-            }
-        }
-    }
-
-    pub async fn reload_2(
+#[async_trait]
+impl StateDbManager for StateDbManagerImpl {
+    async fn reload(
         &self,
         new_path: PathBuf,
-        after_drop: impl FnOnce() -> Result<()> + Send + 'static,
+        after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
     ) -> Result<()> {
         let local_notify = Arc::new(Notify::new());
-        let reloading_state = Arc::new(DatabaseState::Reloading {
+        let reloading_state = Arc::new(ClientState::Reloading {
             notify: local_notify.clone(),
         });
-        let _old_state = self.state.swap(reloading_state);
+        let old_state = self.state.swap(reloading_state);
 
         // Wait for current operations to complete
         tokio::task::yield_now().await;
-        drop(_old_state);
+        drop(old_state);
 
-        after_drop()?;
+        after_drop.await?;
 
         let new_cell = DbManagerCell::new(new_path)?;
-        let new_state = Arc::new(DatabaseState::Loaded(new_cell));
+        let new_state = Arc::new(ClientState::Loaded(new_cell));
         self.state.store(new_state);
 
         // Notify waiting operations
@@ -82,61 +71,12 @@ impl StateDbManagerImpl {
         Ok(())
     }
 
-    // async fn reload(
-    //     &self,
-    //     path: PathBuf,
-    //     after_drop: Box<dyn FnOnce() -> Result<()>>,
-    // ) -> Result<()> {
-    //     let local_notify = Arc::new(Notify::new());
-    //     let old_cell = self.state.swap(Arc::new(DbManagerCellPlaceholder {
-    //         notify: local_notify.clone(),
-    //     }));
-
-    //     tokio::task::yield_now().await;
-
-    //     Ok(())
-    // }
-}
-
-impl StateDbManager for StateDbManagerImpl {
-    fn reload(&self, path: PathBuf, after_drop: Box<dyn FnOnce() -> Result<()>>) -> Result<()> {
-        Ok(())
-    }
-
-    fn request_store(&self) -> Arc<dyn RequestStore> {
-        // self.state.load().request_store.clone()
-        todo!()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_reload() {
-        let base_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("myFolder");
-        let db_path = base_path.join("test.db");
-        // dbg!(&db_path);
-
-        let state_db_manager = StateDbManagerImpl::new(base_path.clone()).unwrap();
-        // let request_store = state_db_manager.request_store();
-        // let requests = request_store.scan().unwrap();
-
-        // assert_eq!(requests.len(), 0);
-
-        let new_base_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("newFolder");
-
-        state_db_manager
-            .reload_2(new_base_path.clone(), || {
-                std::fs::rename(base_path, new_base_path)?;
-                Ok(())
-            })
-            .await
-            .unwrap();
-
-        // let request_store = state_db_manager.request_store();
-        // let requests = request_store.scan().unwrap();
-        // assert_eq!(requests.len(), 0);
+    async fn request_store(&self) -> Arc<dyn RequestStore> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.request_store.clone(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
     }
 }

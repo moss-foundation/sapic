@@ -2874,6 +2874,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "arc-swap",
+ "async-trait",
  "kdl",
  "moss_common",
  "moss_db",
@@ -2907,12 +2908,12 @@ version = "0.1.0"
 dependencies = [
  "aes-gcm",
  "anyhow",
- "arc-swap",
  "argon2",
  "bincode",
  "rand 0.9.0",
  "redb",
  "serde",
+ "tokio",
  "zeroize",
 ]
 

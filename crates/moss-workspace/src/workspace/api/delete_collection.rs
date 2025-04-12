@@ -20,7 +20,7 @@ impl Workspace {
 
         let collection_path = collection.path();
         let collection_relative_path = collection_path.strip_prefix(&self.path).unwrap();
-        let collection_store = self.state_db_manager()?.collection_store();
+        let collection_store = self.state_db_manager.collection_store();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.

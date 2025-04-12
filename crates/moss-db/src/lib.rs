@@ -4,15 +4,13 @@ pub mod encrypted_bincode_store;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
-use arc_swap::ArcSwap;
 use redb::{
     Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
     WriteTransaction as InnerWriteTransaction,
 };
 use serde::{de::DeserializeOwned, Serialize};
-use std::borrow::Borrow;
-
-use std::{path::Path, sync::Arc};
+use std::{borrow::Borrow, path::Path, sync::Arc};
+use tokio::sync::Notify;
 
 pub enum Transaction {
     Read(InnerReadTransaction),
@@ -31,17 +29,20 @@ impl Transaction {
 pub trait DatabaseClient: Sized {
     fn begin_write(&self) -> Result<Transaction>;
     fn begin_read(&self) -> Result<Transaction>;
-    fn reload(&self, path: impl AsRef<Path>) -> Result<()>;
 }
 
+pub enum ClientState<C> {
+    Loaded(C),
+    Reloading { notify: Arc<Notify> },
+}
 pub struct ReDbClient {
-    db: ArcSwap<Database>,
+    db: Arc<Database>,
 }
 
 impl Clone for ReDbClient {
     fn clone(&self) -> Self {
         Self {
-            db: ArcSwap::from(self.db.load_full()),
+            db: Arc::clone(&self.db),
         }
     }
 }
@@ -58,7 +59,7 @@ where
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         Ok(Self {
-            db: ArcSwap::new(Arc::new(Database::create(path)?)),
+            db: Arc::new(Database::create(path)?),
         })
     }
 
@@ -76,7 +77,7 @@ impl ReDbClient {
         V: Serialize + DeserializeOwned,
     {
         let table_def = table.table_definition();
-        let init_txn = self.db.load_full().begin_write()?;
+        let init_txn = self.db.begin_write()?;
         init_txn.open_table(table_def)?;
         init_txn.commit()?;
 
@@ -86,15 +87,10 @@ impl ReDbClient {
 
 impl DatabaseClient for ReDbClient {
     fn begin_write(&self) -> Result<Transaction> {
-        Ok(Transaction::Write(self.db.load_full().begin_write()?))
+        Ok(Transaction::Write(self.db.begin_write()?))
     }
 
     fn begin_read(&self) -> Result<Transaction> {
-        Ok(Transaction::Read(self.db.load_full().begin_read()?))
-    }
-
-    fn reload(&self, path: impl AsRef<Path>) -> Result<()> {
-        let db = Database::open(path)?;
-        Ok(self.db.store(Arc::new(db)))
+        Ok(Transaction::Read(self.db.begin_read()?))
     }
 }
