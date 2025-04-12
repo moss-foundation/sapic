@@ -58,7 +58,7 @@ impl Workspace {
             });
         }
 
-        let collection_store = self.state_db_manager()?.collection_store();
+        let collection_store = self.state_db_manager.collection_store();
         let (mut txn, table) = collection_store.begin_write()?;
 
         let old_table_key = old_relative_path.to_string_lossy().to_string();

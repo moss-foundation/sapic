@@ -1,6 +1,4 @@
 pub mod bincode_table;
-
-pub mod encrypted_bincode_store;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
@@ -9,9 +7,8 @@ use redb::{
     WriteTransaction as InnerWriteTransaction,
 };
 use serde::{de::DeserializeOwned, Serialize};
-use std::borrow::Borrow;
-
-use std::{path::Path, sync::Arc};
+use std::{borrow::Borrow, path::Path, sync::Arc};
+use tokio::sync::Notify;
 
 pub enum Transaction {
     Read(InnerReadTransaction),
@@ -32,11 +29,19 @@ pub trait DatabaseClient: Sized {
     fn begin_read(&self) -> Result<Transaction>;
 }
 
-pub struct ReDbClient(Arc<Database>);
+pub enum ClientState<C> {
+    Loaded(C),
+    Reloading { notify: Arc<Notify> },
+}
+pub struct ReDbClient {
+    db: Arc<Database>,
+}
 
 impl Clone for ReDbClient {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self {
+            db: Arc::clone(&self.db),
+        }
     }
 }
 
@@ -51,7 +56,9 @@ where
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        Ok(Self(Arc::new(Database::create(path)?)))
+        Ok(Self {
+            db: Arc::new(Database::create(path)?),
+        })
     }
 
     /// Initializes and registers a Bincode-based table within the database.
@@ -68,7 +75,7 @@ impl ReDbClient {
         V: Serialize + DeserializeOwned,
     {
         let table_def = table.table_definition();
-        let init_txn = self.0.begin_write()?;
+        let init_txn = self.db.begin_write()?;
         init_txn.open_table(table_def)?;
         init_txn.commit()?;
 
@@ -78,10 +85,10 @@ impl ReDbClient {
 
 impl DatabaseClient for ReDbClient {
     fn begin_write(&self) -> Result<Transaction> {
-        Ok(Transaction::Write(self.0.begin_write()?))
+        Ok(Transaction::Write(self.db.begin_write()?))
     }
 
     fn begin_read(&self) -> Result<Transaction> {
-        Ok(Transaction::Read(self.0.begin_read()?))
+        Ok(Transaction::Read(self.db.begin_read()?))
     }
 }

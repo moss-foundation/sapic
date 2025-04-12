@@ -1,6 +1,5 @@
 use anyhow::Result;
 use moss_db::ReDbClient;
-use std::path::Path;
 use std::{path::PathBuf, sync::Arc};
 
 use super::{
