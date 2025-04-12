@@ -36,7 +36,7 @@
   /* Window Controls */
   --moss-button-icon-color: black;
   --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
-  --moss-windowControlsLinux-background: rgba(218, 218, 218, 1);
+  --moss-windowControlsLinux-background: #373737;
   --moss-windowControlsLinux-text: rgba(61, 61, 61, 1);
   --moss-windowControlsLinux-hoverBackground: rgba(209, 209, 209, 1);
   --moss-windowControlsLinux-activeBackground: rgba(191, 191, 191, 1);
