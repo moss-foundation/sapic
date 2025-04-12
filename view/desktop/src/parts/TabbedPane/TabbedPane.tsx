@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Scrollbar } from "@/components/Scrollbar";
 import { Home, Logs, Settings } from "@/pages";
@@ -254,7 +254,6 @@ const TabbedPane = (props: { theme?: string }) => {
       api.onDidMaximizedGroupChange((event) => {
         addLogLine(`Group Maximized Changed ${event.group.api.id} [${event.isMaximized}]`);
       }),
-
       api.onDidRemoveGroup((event) => {
         setGroups((_) => {
           const next = [..._];
@@ -375,8 +374,29 @@ const TabbedPane = (props: { theme?: string }) => {
   const [showLogs, setShowLogs] = React.useState<boolean>(false);
   const [debug, setDebug] = React.useState<boolean>(false);
 
+  const dockviewRefWrapper = React.useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!dockviewRefWrapper.current) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      api?.layout(entries[0].contentRect.width, entries[0].contentRect.height);
+    });
+
+    resizeObserver.observe(dockviewRefWrapper.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [api, dockviewRefWrapper]);
+
   return (
-    <div style={{ ...css }} className="dockview-demo relative flex h-full w-full grow flex-col rounded">
+    <div
+      style={{ ...css }}
+      className="dockview-demo relative flex h-full w-full grow flex-col rounded"
+      ref={dockviewRefWrapper}
+    >
       {showDebugPanels && (
         <>
           <div>
@@ -419,10 +439,11 @@ const TabbedPane = (props: { theme?: string }) => {
           </div>
         </>
       )}
-      <div className="flex h-0 grow">
+      <div className="flex grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>
             <DockviewReact
+              disableAutoResizing
               ref={dockviewRef}
               components={components}
               defaultTabComponent={headerComponents.default}
