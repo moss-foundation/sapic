@@ -13,24 +13,6 @@ import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { ContentLayout } from "./ContentLayout";
 
 export const AppLayout = () => {
-  return (
-    <DefaultLayout
-      SideBarPaneContent={<SidebarContent />}
-      MainPaneContent={<MainContent />}
-      BottomPaneContent={<BottomPaneContent />}
-      ActivityBar={<ActivityBar />}
-    />
-  );
-};
-
-interface DefaultLayoutProps {
-  SideBarPaneContent: JSX.Element;
-  MainPaneContent: JSX.Element;
-  BottomPaneContent: JSX.Element;
-  ActivityBar: JSX.Element;
-}
-
-const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent, ActivityBar }: DefaultLayoutProps) => {
   const { position } = useActivityBarStore();
   const { bottomPane, primarySideBar, primarySideBarPosition } = useAppResizableLayoutStore();
 
@@ -40,7 +22,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
 
   return (
     <div className="flex h-full w-full">
-      {position === "default" && primarySideBarPosition === "left" && ActivityBar}
+      {position === "default" && primarySideBarPosition === "left" && <ActivityBar />}
       <div className="relative flex h-full w-full">
         {!primarySideBar.visible && primarySideBarPosition === "left" && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
@@ -70,14 +52,16 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
               snap
               className="background-(--moss-primary-background)"
             >
-              {SideBarPaneContent}
+              <SidebarContent />
             </ResizablePanel>
           )}
           <ResizablePanel>
             <Resizable vertical>
-              <ResizablePanel>{MainPaneContent}</ResizablePanel>
+              <ResizablePanel>
+                <MainContent />
+              </ResizablePanel>
               <ResizablePanel visible={bottomPane.visible} minSize={bottomPane.minHeight} snap>
-                {BottomPaneContent}
+                <BottomPaneContent />
               </ResizablePanel>
             </Resizable>
           </ResizablePanel>
@@ -90,7 +74,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
               snap
               className="background-(--moss-primary-background)"
             >
-              {SideBarPaneContent}
+              <SidebarContent />
             </ResizablePanel>
           )}
         </Resizable>
@@ -100,7 +84,7 @@ const DefaultLayout = ({ SideBarPaneContent, MainPaneContent, BottomPaneContent,
         )}
       </div>
 
-      {position === "default" && primarySideBarPosition === "right" && ActivityBar}
+      {position === "default" && primarySideBarPosition === "right" && <ActivityBar />}
     </div>
   );
 };
