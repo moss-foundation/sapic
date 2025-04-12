@@ -5,7 +5,7 @@ import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
 import { Scrollbar } from "../components";
 
-export const Home: React.FC = () => {
+export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   return (

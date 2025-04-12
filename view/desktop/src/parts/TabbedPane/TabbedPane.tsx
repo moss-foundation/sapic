@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Scrollbar } from "@/components/Scrollbar";
 import { Home, Logs, Settings } from "@/pages";
@@ -6,6 +6,7 @@ import {
   DockviewApi,
   DockviewDefaultTab,
   DockviewDidDropEvent,
+  DockviewPanelApi,
   DockviewReact,
   DockviewReadyEvent,
   IDockviewPanelHeaderProps,
@@ -43,10 +44,21 @@ const Option = (props: { title: string; onClick: () => void; value: string }) =>
   );
 };
 
+const Metadata = ({ onClick, api }: { onClick: () => void; api: DockviewPanelApi }) => {
+  const metadata = usePanelApiMetadata(api);
+
+  return (
+    <div className="text-sm">
+      <Option title="Panel Rendering Mode" value={metadata.renderer.value} onClick={onClick} />
+
+      <Table data={metadata} />
+    </div>
+  );
+};
+
 const components = {
   Default: (props: IDockviewPanelProps) => {
     const isDebug = React.useContext(DebugContext);
-    const metadata = usePanelApiMetadata(props.api);
 
     return (
       <>
@@ -57,24 +69,21 @@ const components = {
           }`}
         >
           <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-            {props.api.title}
+            <span>{props.api.title}</span>
+
+            <span>{Math.random().toFixed(2)}</span>
             {props?.params.someRandomString && (
               <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
             )}
           </span>
 
           {isDebug && (
-            <div className="text-sm">
-              <Option
-                title="Panel Rendering Mode"
-                value={metadata.renderer.value}
-                onClick={() => {
-                  props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-                }}
-              />
-
-              <Table data={metadata} />
-            </div>
+            <Metadata
+              onClick={() => {
+                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
+              }}
+              api={props.api}
+            />
           )}
         </Scrollbar>
       </>
@@ -112,18 +121,12 @@ const components = {
       />
     );
   },
-  Home: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Home);
-  },
-  Settings: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Settings);
-  },
-  Logs: (props: IDockviewPanelProps) => {
-    return RenderPage(props, Logs);
-  },
+  Home: Home,
+  Settings: Settings,
+  Logs: Logs,
 };
 
-const RenderPage = (props: IDockviewPanelProps, page: React.FC) => {
+const PageWrapper = ({ props, page }: { props: IDockviewPanelProps; page: JSX.Element }) => {
   const isDebug = React.useContext(DebugContext);
   const metadata = usePanelApiMetadata(props.api);
 
@@ -137,7 +140,7 @@ const RenderPage = (props: IDockviewPanelProps, page: React.FC) => {
         props.api.isActive ? "select-text" : "select-none"
       }`}
     >
-      <span>{React.createElement(page)}</span>
+      <span>{page}</span>
 
       {isDebug && (
         <div className="text-sm">
@@ -251,7 +254,6 @@ const TabbedPane = (props: { theme?: string }) => {
       api.onDidMaximizedGroupChange((event) => {
         addLogLine(`Group Maximized Changed ${event.group.api.id} [${event.isMaximized}]`);
       }),
-
       api.onDidRemoveGroup((event) => {
         setGroups((_) => {
           const next = [..._];
@@ -372,10 +374,26 @@ const TabbedPane = (props: { theme?: string }) => {
   const [showLogs, setShowLogs] = React.useState<boolean>(false);
   const [debug, setDebug] = React.useState<boolean>(false);
 
+  const dockviewRefWrapper = React.useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!dockviewRefWrapper.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      api?.layout(entries[0].contentRect.width, entries[0].contentRect.height);
+    });
+
+    resizeObserver.observe(dockviewRefWrapper.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [api, dockviewRefWrapper]);
+
   return (
     <div
       style={{ ...css }}
-      className="dockview-demo relative flex h-full w-full grow flex-col rounded bg-[rgba(0,0,50,0.25)]"
+      className="dockview-demo relative flex h-full w-full grow flex-col rounded"
+      ref={dockviewRefWrapper}
     >
       {showDebugPanels && (
         <>
@@ -419,10 +437,11 @@ const TabbedPane = (props: { theme?: string }) => {
           </div>
         </>
       )}
-      <div className="flex h-0 grow">
+      <div className="flex grow">
         <Scrollbar className="flex h-full grow overflow-hidden">
           <DebugContext.Provider value={debug}>
             <DockviewReact
+              disableAutoResizing
               ref={dockviewRef}
               components={components}
               defaultTabComponent={headerComponents.default}

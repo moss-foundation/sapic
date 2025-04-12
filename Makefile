@@ -51,7 +51,7 @@ ready: gen-icons
 ## Generate Icons
 .PHONY: gen-icons
 gen-icons:
-	@cd $(ICONS_DIR) && $(PNPM) build
+	@cd $(ICONS_DIR) && $(PNPM) build --silent 
 
 
 ## Run Desktop Application
