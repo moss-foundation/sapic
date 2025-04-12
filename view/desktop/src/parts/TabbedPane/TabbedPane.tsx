@@ -376,9 +376,7 @@ const TabbedPane = (props: { theme?: string }) => {
 
   const dockviewRefWrapper = React.useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if (!dockviewRefWrapper.current) {
-      return;
-    }
+    if (!dockviewRefWrapper.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
       api?.layout(entries[0].contentRect.width, entries[0].contentRect.height);
