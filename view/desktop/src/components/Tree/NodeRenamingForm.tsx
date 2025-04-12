@@ -15,7 +15,12 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(String(currentName));
+
   const isMac = platform() === "macos";
+  const isLinux = platform() === "linux";
+
+  // HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.
+  const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
 
   const finishEditing = useCallback(() => {
     const newName = value.trim();
@@ -66,7 +71,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
           autoFocus
           minLength={1}
           maxLength={100}
-          className="flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 rounded-xs bg-white leading-[19px] outline outline-offset-1 outline-(--moss-primary)"
+          className={`flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-offset-1 outline-(--moss-primary) ${leadingClass}`}
           onKeyUp={handleKeyUp}
           onBlur={isMac ? undefined : handleBlur}
           required
