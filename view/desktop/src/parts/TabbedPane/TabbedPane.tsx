@@ -18,15 +18,15 @@ import {
   positionToDirection,
 } from "@repo/moss-tabs";
 
-import { LeftControls, PrefixHeaderControls, RightControls } from "./controls";
+import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugComponents/controls";
+import DockviewControls from "./DebugComponents/DockviewControls";
+import LogsPanel from "./DebugComponents/LogsPanel";
+import Metadata from "./DebugComponents/Metadata";
 import { defaultConfig } from "./defaultLayout";
-import DockviewControls from "./DockviewControls";
 import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
 import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
-import LogsPanel from "./LogsPanel";
-import Metadata from "./Metadata";
 import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);

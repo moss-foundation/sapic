@@ -5,9 +5,9 @@ import { Scrollbar } from "@/components/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
-import { defaultConfig, nextId } from "./defaultLayout";
+import { defaultConfig, nextId } from "../defaultLayout";
+import { setGridState } from "../utils";
 import { PanelBuilder } from "./panelBuilder";
-import { setGridState } from "./utils";
 
 let mount = document.querySelector(".popover-anchor") as HTMLElement | null;
 

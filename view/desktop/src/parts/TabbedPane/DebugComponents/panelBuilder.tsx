@@ -2,7 +2,7 @@ import React from "react";
 
 import { DockviewApi } from "@repo/moss-tabs";
 
-import { nextId } from "./defaultLayout";
+import { nextId } from "../defaultLayout";
 
 export const PanelBuilder = (props: { api: DockviewApi; done: () => void }) => {
   const [parameters, setParameters] = React.useState<{
