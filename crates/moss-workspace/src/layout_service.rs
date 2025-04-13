@@ -1,20 +1,8 @@
-pub struct EditorPartState {}
-
-pub struct SidebarPartState {
-    preferred_size: usize,
-    is_visible: bool,
-}
-
-pub struct PanelPartState {
-    preferred_size: usize,
-    is_visible: bool,
-}
-
-pub struct LayoutState {
-    editor_part_state: Option<EditorPartState>,
-    sidebar_part_state: Option<SidebarPartState>,
-    panel_part_state: Option<PanelPartState>,
-}
+// workbench.parts.editor.grid
+// workbench.parts.editor.panels
+// workbench.parts.panel
+// workbench.parts.sidebar
+// workbench.parts.editor.activeGroup
 
 // pub struct LayoutService {
 //     layout_state_store: LayoutStateStore,

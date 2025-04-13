@@ -34,10 +34,13 @@ pub struct EnvironmentEntity {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct SidebarPartStateEntity {}
+pub struct EditorGridPartStateEntity {}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EditorPartStateEntity {}
+pub struct EditorPanelsPartStateEntity {}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct SidebarPartStateEntity {}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PanelPartStateEntity {}

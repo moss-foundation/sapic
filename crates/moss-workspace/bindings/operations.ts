@@ -8,7 +8,10 @@
 // re-run `make gen-models` it to regenerate the file accordingly.
 
 import type { CollectionInfo } from "./types";
+import type { EditorPartState } from "./types";
 import type { EnvironmentInfo } from "./types";
+import type { PanelPartState } from "./types";
+import type { SidebarPartState } from "./types";
 import type { WorkspaceInfo } from "./types";
 import type { VariableInfo } from "@repo/moss-environment";
 import type { ResourceKey } from "@repo/bindings-utils";
@@ -19,7 +22,7 @@ export type CreateCollectionOutput = { key: ResourceKey; path: string };
 
 export type CreateWorkspaceInput = { name: string };
 
-export type CreateWorkspaceOutput = { key: ResourceKey };
+export type CreateWorkspaceOutput = { key: ResourceKey; path: string };
 
 export type DeleteCollectionInput = { key: ResourceKey };
 
@@ -28,6 +31,12 @@ export type DeleteWorkspaceInput = { key: ResourceKey };
 export type DescribeEnvironmentInput = { key: ResourceKey };
 
 export type DescribeEnvironmentOutput = { variables: VariableInfo };
+
+export type DescribeLayoutPartsStateOutput = {
+  editor?: EditorPartState;
+  sidebar?: SidebarPartState;
+  panel?: PanelPartState;
+};
 
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
@@ -48,6 +57,8 @@ export type OpenWorkspaceInput = {
    */
   name: string;
 };
+
+export type OpenWorkspaceOutput = { path: string };
 
 export type RenameCollectionInput = { key: ResourceKey; newName: string };
 

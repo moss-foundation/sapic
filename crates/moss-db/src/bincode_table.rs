@@ -166,7 +166,7 @@ mod tests {
         fs::create_dir_all(&tests_path).unwrap();
         let db_name = random_db_name();
         let client: ReDbClient = ReDbClient::new(tests_path.join(&db_name)).unwrap();
-        let mut bincode_table = BincodeTable::new("test");
+        let bincode_table = BincodeTable::new("test");
 
         {
             let mut write = client.begin_write().unwrap();

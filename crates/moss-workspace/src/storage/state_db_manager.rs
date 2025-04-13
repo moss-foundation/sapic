@@ -5,7 +5,7 @@ use std::{path::PathBuf, sync::Arc};
 use super::{
     collection_store::{CollectionStoreImpl, TABLE_COLLECTIONS},
     environment_store::EnvironmentStoreImpl,
-    CollectionStore, EnvironmentStore, StateDbManager,
+    CollectionStore, EnvironmentStore, PartsStateStore, StateDbManager,
 };
 
 const WORKSPACE_STATE_DB_NAME: &str = "state.db";
@@ -37,5 +37,9 @@ impl StateDbManager for StateDbManagerImpl {
 
     fn environment_store(&self) -> Arc<dyn EnvironmentStore> {
         Arc::clone(&self.environment_store)
+    }
+
+    fn parts_state_store(&self) -> Arc<dyn PartsStateStore> {
+        todo!()
     }
 }

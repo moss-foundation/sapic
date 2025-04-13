@@ -2,10 +2,13 @@ use moss_common::leased_slotmap::ResourceKey;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::types::{CollectionInfo, EnvironmentInfo};
+use crate::models::types::{
+    CollectionInfo, EditorPartState, EnvironmentInfo, PanelPartState, SidebarPartState,
+};
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -99,4 +102,16 @@ pub struct OpenCollectionOutput {
     #[ts(type = "ResourceKey")]
     pub key: ResourceKey,
     pub path: PathBuf,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeLayoutPartsStateOutput {
+    #[ts(optional)]
+    pub editor: Option<EditorPartState>,
+    #[ts(optional)]
+    pub sidebar: Option<SidebarPartState>,
+    #[ts(optional)]
+    pub panel: Option<PanelPartState>,
 }

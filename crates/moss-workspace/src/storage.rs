@@ -23,15 +23,17 @@ pub trait EnvironmentStore: Send + Sync + 'static {
     fn scan(&self) -> Result<HashMap<EnvironmentName, EnvironmentEntity>>;
 }
 
-pub(crate) type WorkspaceStateStoreTable<'a> = BincodeTable<'a, String, JsonValue>;
+pub(crate) type PartsStateStoreTable<'a> = BincodeTable<'a, String, Vec<u8>>;
 
-pub trait WorkspaceStateStore: Send + Sync + 'static {
+pub trait PartsStateStore: Send + Sync + 'static {
     fn get_sidebar_part_state(&self) -> Option<SidebarPartStateEntity>;
     fn get_panel_part_state(&self) -> Option<PanelPartStateEntity>;
-    fn get_editor_part_state(&self) -> Option<EditorPartStateEntity>;
+    fn get_editor_grid_part_state(&self) -> Option<EditorGridPartStateEntity>;
+    fn get_editor_panels_part_state(&self) -> Option<EditorPanelsPartStateEntity>;
 }
 
 pub trait StateDbManager: Send + Sync + 'static {
     fn collection_store(&self) -> Arc<dyn CollectionStore>;
     fn environment_store(&self) -> Arc<dyn EnvironmentStore>;
+    fn parts_state_store(&self) -> Arc<dyn PartsStateStore>;
 }
