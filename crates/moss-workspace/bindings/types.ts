@@ -3,11 +3,12 @@
 // The necessary import statements have been automatically added by a Python script.
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
-//
-// If you need to add or modify imports, please update the imports.json and
-// re-run `make gen-models` it to regenerate the file accordingly.
 
 import type { JsonValue, ResourceKey } from "@repo/bindings-utils";
+
+//
+// If you need to add or modify imports, please update the package.json and
+// re-run `make gen-models` it to regenerate the file accordingly.
 
 export type CollectionInfo = { key: ResourceKey; name: string; order?: number };
 

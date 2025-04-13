@@ -3,18 +3,21 @@
 // The necessary import statements have been automatically added by a Python script.
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
-//
-// If you need to add or modify imports, please update the imports.json and
-// re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { CollectionInfo } from "./types";
-import type { EditorPartState } from "./types";
-import type { EnvironmentInfo } from "./types";
-import type { PanelPartState } from "./types";
-import type { SidebarPartState } from "./types";
-import type { WorkspaceInfo } from "./types";
+import type {
+  CollectionInfo,
+  EditorPartState,
+  EnvironmentInfo,
+  PanelPartState,
+  SidebarPartState,
+  WorkspaceInfo,
+} from "./types";
 import type { VariableInfo } from "@repo/moss-environment";
 import type { ResourceKey } from "@repo/bindings-utils";
+
+//
+// If you need to add or modify imports, please update the package.json and
+// re-run `make gen-models` it to regenerate the file accordingly.
 
 export type CreateCollectionInput = { name: string };
 

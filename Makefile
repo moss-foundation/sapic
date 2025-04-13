@@ -26,6 +26,7 @@ ICONS_DIR := tools/icongen
 XTASK_DIR := tools/xtask
 TS_IMPORT_INJECTOR := misc/ts_imports_injector.py
 TS_EXPORT_INJECTOR := misc/ts_exports_injector.py
+TS_IMPORTS_CONSOLIDATOR := misc/ts_imports_consolidator.py
 CSS_VARIABLES_EXPORTER := misc/css_variables_exporter.py
 # --- Executables ---
 PNPM := pnpm
@@ -70,6 +71,7 @@ gen-$(1)-models:
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_IMPORT_INJECTOR) package.json
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_EXPORT_INJECTOR)
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_IMPORTS_CONSOLIDATOR) bindings
 	@cd $($(2)) && $(PNPM) format
 endef
 

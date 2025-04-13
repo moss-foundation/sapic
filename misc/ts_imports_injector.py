@@ -13,7 +13,7 @@ auto_generated_comment = """\
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
 //
-// If you need to add or modify imports, please update the imports.json and
+// If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 """
 
