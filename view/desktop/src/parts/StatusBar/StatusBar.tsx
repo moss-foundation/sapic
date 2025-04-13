@@ -56,7 +56,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   return (
     <footer
       className={cn(
-        "background-(--moss-statusBar-background) flex h-[26px] w-screen justify-between pr-[26px]",
+        "background-(--moss-secondary-background) flex w-screen justify-between border-t-(--moss-border-color) pr-[26px]",
         className
       )}
     >

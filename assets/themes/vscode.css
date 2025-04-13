@@ -30,9 +30,6 @@
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
-  /* Layout */
-  --moss-statusBar-background: #274323;
-
   /* Window Controls */
   --moss-button-icon-color: #d4d4d4;
   --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
