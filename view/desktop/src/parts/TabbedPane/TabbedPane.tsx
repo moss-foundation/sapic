@@ -167,7 +167,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   return (
-    <div className="dockview-demo relative flex h-full w-full grow flex-col rounded" ref={dockviewRefWrapper}>
+    <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
       {showDebugPanels && (
         <DockviewControls
           api={api}
@@ -182,22 +182,24 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
           showLogs={showLogs}
         />
       )}
-      <div className="h-full">
-        <Scrollbar className="overflow-hidden">
+      <div className="flex h-full">
+        <Scrollbar className="flex grow overflow-hidden">
           <DebugContext.Provider value={debug}>
-            <DockviewReact
-              disableAutoResizing
-              ref={dockviewRef}
-              components={components}
-              defaultTabComponent={headerComponents.default}
-              rightHeaderActionsComponent={RightControls}
-              leftHeaderActionsComponent={LeftControls}
-              prefixHeaderActionsComponent={PrefixHeaderControls}
-              watermarkComponent={watermark ? Watermark : undefined}
-              onReady={onReady}
-              className={theme || "dockview-theme-light"}
-              onDidDrop={onDidDrop}
-            />
+            <div className="h-full w-full" ref={dockviewRefWrapper}>
+              <DockviewReact
+                disableAutoResizing
+                ref={dockviewRef}
+                components={components}
+                defaultTabComponent={headerComponents.default}
+                rightHeaderActionsComponent={RightControls}
+                leftHeaderActionsComponent={LeftControls}
+                prefixHeaderActionsComponent={PrefixHeaderControls}
+                watermarkComponent={watermark ? Watermark : undefined}
+                onReady={onReady}
+                className={theme || "dockview-theme-light"}
+                onDidDrop={onDidDrop}
+              />
+            </div>
           </DebugContext.Provider>
         </Scrollbar>
         {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
