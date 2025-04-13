@@ -2,7 +2,7 @@ import React from "react";
 
 import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
 
-import { nextId } from "./defaultLayout";
+import { nextId } from "../defaultLayout";
 
 const Icon = (props: { icon: string; title?: string; onClick?: (event: React.MouseEvent) => void }) => {
   return (

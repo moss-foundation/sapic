@@ -1,6 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 @import "tailwindcss";
 
 .dockview-demo .group-control .action {
@@ -19,18 +16,6 @@
   @apply px-2 py-0;
 }
 
-/* .dockview-demo button {
-  @apply flex h-[25px] cursor-pointer items-center justify-center border-none bg-[#1c254a] text-white outline outline-[#4c65d4];
-}
-
-.dockview-demo button:focus {
-  @apply !outline !outline-[#4c65d4];
-}
-
-.dockview-demo button:hover {
-  @apply bg-[#222e62];
-} */
-
 .dockview-demo input {
   @apply m-0 h-[25px] border-none outline outline-[#4c65d4];
 }
@@ -44,15 +29,15 @@
 }
 
 .dockview-demo .action-container .text-button {
-  @apply mx-1 my-0 min-w-[60px] overflow-hidden rounded px-2 text-sm text-ellipsis whitespace-nowrap;
+  @apply mx-1 my-0 overflow-hidden border border-[#4c65d4] bg-[#1c254a] px-2 text-sm text-ellipsis whitespace-nowrap hover:bg-[#222e62];
 }
 
 .dockview-demo .action-container .button-action {
-  @apply mx-[4px] my-0;
+  @apply mx-[4px] my-0 border border-[rgb(76,101,212)];
 }
 
 .dockview-demo .action-container .button-action .selected {
-  @apply bg-[#4864dc];
+  @apply bg-[#4864dc] hover:bg-[#4864dc];
 }
 
 .dockview-demo .action-container .button-group button {
@@ -60,11 +45,11 @@
 }
 
 .dockview-demo .action-container .demo-button {
-  @apply flex min-w-[60px] grow items-center overflow-hidden rounded-none px-2 py-0 text-sm text-ellipsis whitespace-nowrap !outline !outline-[#4c65d4];
+  @apply flex min-w-[60px] grow items-center overflow-hidden rounded-none bg-[#1c254a] px-2 py-0 text-sm text-ellipsis whitespace-nowrap !outline !outline-[#4c65d4] hover:bg-[#222e62];
 }
 
 .dockview-demo .action-container .demo-icon-button {
-  @apply flex grow cursor-pointer items-center rounded-none border-none px-1 py-0 outline outline-[#4c65d4];
+  @apply flex grow cursor-pointer items-center rounded-none border-none bg-[#1c254a] px-1 py-0 outline outline-[#4c65d4] hover:bg-[#222e62];
 }
 
 .dockview-demo .action-container .demo-icon-button:disabled {
