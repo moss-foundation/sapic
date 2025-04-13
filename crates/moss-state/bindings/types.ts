@@ -3,13 +3,12 @@
 // The necessary import statements have been automatically added by a Python script.
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
-
-import type { ColorThemeInfo } from "@repo/moss-theme";
-import type { LocaleInfo } from "@repo/moss-nls";
-
 //
 // If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
+
+import type { ColorThemeInfo } from "@repo/moss-theme";
+import type { LocaleInfo } from "@repo/moss-nls";
 
 export type Defaults = { theme: ColorThemeInfo; locale: LocaleInfo };
 
