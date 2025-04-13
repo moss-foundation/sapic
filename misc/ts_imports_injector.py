@@ -1,4 +1,33 @@
 #!/usr/bin/env python3
+
+"""
+TypeScript Imports Injector
+
+This script automatically adds necessary import statements to TypeScript files
+based on rules defined in package.json.
+
+It parses the package.json file to find the custom tsImportRules section,
+which defines what imports should be added to which files.
+
+Example package.json section:
+{
+  "tsImportRules": {
+    "bindings/types.ts": {
+      "@repo/bindings-utils": {
+        "types": ["ResourceKey", "JsonValue"],
+        "is_type_import": true
+      }
+    }
+  }
+}
+
+Usage:
+    python ts_imports_injector.py <path_to_package_json>
+
+This script is called during model generation in the Makefile to ensure
+all necessary TypeScript imports are properly added to the generated files.
+"""
+
 import os
 import re
 import sys
