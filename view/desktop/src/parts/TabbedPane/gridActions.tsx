@@ -42,7 +42,7 @@ const PopoverComponent = (props: { close: () => void; component: React.FC<{ clos
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 z-[9999] h-full w-full">
+    <div className="absolute top-0 left-0 z-[9999] h-full w-full bg-amber-400">
       <div
         ref={ref}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform bg-black p-2.5 text-white"
