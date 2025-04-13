@@ -32,3 +32,12 @@ pub struct EnvironmentEntity {
     pub order: Option<usize>,
     pub local_values: HashMap<VariableName, VariableState>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct SidebarPartStateEntity {}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct EditorPartStateEntity {}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct PanelPartStateEntity {}
