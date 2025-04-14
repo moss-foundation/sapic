@@ -142,6 +142,7 @@ pub enum RawBodyType {
 pub struct RequestInfo {
     pub key: ResourceKey,
     pub name: String,
+    // This field will be encoded if the input relative path contains special characters
     pub relative_path_from_requests_dir: PathBuf,
     pub order: Option<usize>,
     pub typ: RequestProtocol,

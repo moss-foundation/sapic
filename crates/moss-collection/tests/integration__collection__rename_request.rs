@@ -3,8 +3,8 @@ mod shared;
 use moss_collection::collection::OperationError;
 use moss_collection::models::operations::{CreateRequestInput, RenameRequestInput};
 use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
-use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
-use std::path::PathBuf;
+use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
+use std::path::{Path, PathBuf};
 
 use crate::shared::{request_folder_name, request_relative_path, set_up_test_collection};
 
@@ -165,7 +165,7 @@ async fn rename_request_already_exists() {
         .await;
     assert!(matches!(
         rename_request_result,
-        Err(OperationError::AlreadyExists { .. })
+        Err(OperationError::RequestAlreadyExists { .. })
     ));
 
     // Clean up
@@ -189,7 +189,7 @@ async fn rename_request_special_chars() {
         .await
         .unwrap();
 
-    for char in SPECIAL_CHARS {
+    for char in FILENAME_SPECIAL_CHARS {
         let new_request_name = format!("{request_name}{char}");
         collection
             .rename_request(RenameRequestInput {
@@ -225,7 +225,7 @@ async fn rename_request_with_relative_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let old_path = collection_path.join("requests").join(request_relative_path(&request_name, Some("subfolder")));
+    let old_path = collection_path.join("requests").join(request_relative_path(&request_name, Some(Path::new("subfolder"))));
     let create_request_output = collection
         .create_request(CreateRequestInput {
             name: request_name.to_string(),
@@ -246,7 +246,9 @@ async fn rename_request_with_relative_path() {
     assert!(rename_request_result.is_ok());
 
     // Check filesystem rename
-    let expected_path = collection_path.join(request_relative_path(&new_request_name, Some("subfolder")));
+    let expected_path = collection_path.join(
+        request_relative_path(&new_request_name, Some(Path::new("subfolder")))
+    );
     assert!(expected_path.exists());
     assert!(!old_path.exists());
 

@@ -6,9 +6,9 @@ use moss_collection::models::operations::{
 };
 use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
 
-use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_request_name};
-use std::path::PathBuf;
-
+use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
+use std::path::{Path, PathBuf};
+use moss_fs::utils::encode_directory_name;
 use crate::shared::{request_folder_name, request_relative_path, set_up_test_collection};
 
 #[tokio::test]
@@ -107,7 +107,7 @@ async fn create_request_already_exists() {
 
     assert!(matches!(
         create_request_result,
-        Err(OperationError::AlreadyExists { .. })
+        Err(OperationError::RequestAlreadyExists { .. })
     ));
 
     // Clean up
@@ -120,7 +120,7 @@ async fn create_request_already_exists() {
 async fn create_request_special_chars() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let request_name_list = SPECIAL_CHARS
+    let request_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", random_request_name()))
         .collect::<Vec<String>>();
@@ -135,7 +135,7 @@ async fn create_request_special_chars() {
             })
             .await;
 
-        // Check creating the request folder and its sapic spec file
+        // Check creating the request folder and its sapic spec file with proper encoding
 
         let expected_request_path = collection_path.join(request_relative_path(&name, None));
         let expected_request_spec_path = expected_request_path.join("get.sapic");
@@ -157,9 +157,9 @@ async fn create_request_special_chars() {
                 typ: RequestProtocol::Http(HttpMethod::Get),
             }));
     }
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    // {
+    //     tokio::fs::remove_dir_all(&collection_path).await.unwrap()
+    // }
 }
 
 #[tokio::test]
@@ -180,7 +180,7 @@ async fn create_request_with_relative_path() {
 
     // Check creating the request folder and sapic spec file
     let expected_request_path =
-        collection_path.join(request_relative_path(&request_name, Some("relative")));
+        collection_path.join(request_relative_path(&request_name, Some(Path::new("relative"))));
     let expected_request_spec_path = expected_request_path.join("get.sapic");
     assert!(expected_request_path.exists());
     assert!(expected_request_spec_path.exists());
@@ -196,6 +196,52 @@ async fn create_request_with_relative_path() {
             key: create_request_output.key,
             name: request_name.clone(),
             relative_path_from_requests_dir: PathBuf::from("relative")
+                .join(request_folder_name(&request_name)),
+            order: None,
+            typ: RequestProtocol::Http(HttpMethod::Get),
+        }
+    );
+
+    // Clean up
+    {
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
+    }
+}
+
+#[tokio::test]
+async fn create_request_with_special_chars_in_relative_path() {
+    let (collection_path, collection) = set_up_test_collection().await;
+
+    let request_name = random_request_name();
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
+            name: request_name.clone(),
+            relative_path: Some(PathBuf::from("rela.tive")),
+            url: None,
+            payload: None,
+        })
+        .await;
+
+    assert!(create_request_result.is_ok());
+
+    // Check creating the request folder and sapic spec file
+    let expected_request_path =
+        collection_path.join(request_relative_path(&request_name, Some(Path::new("rela.tive"))));
+    let expected_request_spec_path = expected_request_path.join("get.sapic");
+    assert!(expected_request_path.exists());
+    assert!(expected_request_spec_path.exists());
+
+    let create_request_output = create_request_result.unwrap();
+
+    // Check updating requests
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestInfo {
+            key: create_request_output.key,
+            name: request_name.clone(),
+            relative_path_from_requests_dir: PathBuf::from(encode_directory_name("rela.tive"))
                 .join(request_folder_name(&request_name)),
             order: None,
             typ: RequestProtocol::Http(HttpMethod::Get),

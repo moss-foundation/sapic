@@ -25,7 +25,7 @@ impl Collection {
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path_old);
         if !request_dir_path_old.exists() {
-            return Err(OperationError::NotFound {
+            return Err(OperationError::RequestNotFound {
                 name: lease_request_data.name.clone(),
                 path: request_dir_path_old,
             });
@@ -45,7 +45,7 @@ impl Collection {
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path_new);
         if request_dir_path_new.exists() {
-            return Err(OperationError::AlreadyExists {
+            return Err(OperationError::RequestAlreadyExists {
                 name: input.new_name,
                 path: request_dir_path_new,
             });

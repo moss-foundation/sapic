@@ -1,12 +1,17 @@
 use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use ts_rs::TS;
-use validator::Validate;
+use validator::{Validate, ValidationError};
+
 
 use crate::models::types::{
     HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestInfo,
 };
+
+// All the path and file names passed in the input should be unencoded.
+// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
+// The frontend should simply use the name and path used in the user's original input
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -61,3 +66,52 @@ pub struct DeleteRequestInput {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListRequestsOutput(pub Vec<RequestInfo>);
+
+
+
+
+#[derive(Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestGroupInput {
+    #[validate(custom(function = "validate_path"))]
+    pub path: PathBuf
+    // TODO: spec payload
+}
+
+// TODO: More sophisticated path validation
+// Right now, we will encode each part of the path in the input
+// This will prevent special characters from causing confusion
+
+fn validate_path(path: &Path) -> Result<(), ValidationError> {
+    // Check the path ends with a non-empty folder name
+    if path.file_name().unwrap_or_default().is_empty() {
+        Err(ValidationError::new(""))
+    } else {
+        Ok(())
+    }
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestGroupOutput {
+    // TODO: What should the output be?
+}
+
+#[derive(Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestGroupInput {
+    #[validate(custom(function = "validate_path"))]
+    pub path: PathBuf
+}
+
+#[derive(Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct RenameRequestGroupInput {
+    #[validate(custom(function = "validate_path"))]
+    pub path: PathBuf,
+    #[validate(length(min = 1))]
+    pub new_name: String,
+}

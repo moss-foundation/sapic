@@ -1,3 +1,5 @@
+use anyhow::Result;
+use std::path::{Component, Path, PathBuf};
 use regex::Regex;
 
 // Function to encode forbidden characters and '%' in a directory name
@@ -30,6 +32,36 @@ pub fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseInt
 }
 
 
+
+// FIXME: This process may need some refinement
+/// Doing a basic normalization using Path::components() and encode the segments after the prefix
+pub fn encode_path(prefix: Option<&Path>, path: &Path) -> Result<PathBuf> {
+    let path_to_be_encoded = if let Some(prefix) = prefix {
+        path.strip_prefix(prefix)?
+    } else { path };
+
+    let encoded_part = path_to_be_encoded.components().filter_map(|c| {
+        match c {
+            Component::Normal(os_str) => {
+                let segment = os_str.to_string_lossy();
+                Some(encode_directory_name(&segment))
+            },
+            // FIXME: Is this the best strategy?
+            // Ignoring special components
+            Component::ParentDir => None,
+            Component::Prefix(_) => None,
+            Component::RootDir => None,
+            Component::CurDir => None,
+        }
+    }).collect::<PathBuf>();
+
+    if let Some(prefix) = prefix {
+        Ok(prefix.join(encoded_part))
+    } else {
+        Ok(encoded_part)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -52,4 +84,12 @@ mod tests {
             dbg!(encode_directory_name(name));
         })
     }
+
+    #[test]
+    fn test_special_chars() {
+        let path = PathBuf::from("pre.fix/colle*ction");
+        dbg!(&encode_path(Some(Path::new("pre.fix")), &path));
+    }
+
+
 }

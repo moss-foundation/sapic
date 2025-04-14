@@ -1,6 +1,6 @@
 mod shared;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use moss_collection::models::operations::{CreateRequestInput, DeleteRequestInput};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_testutils::random_name::random_request_name;
@@ -23,12 +23,12 @@ async fn delete_request_success() {
         .await
         .unwrap();
 
-    let delete_collection_result = collection
+    let delete_request_result = collection
         .delete_request(DeleteRequestInput {
             key: create_request_output.key,
         })
         .await;
-    assert!(delete_collection_result.is_ok());
+    assert!(delete_request_result.is_ok());
 
     // Check folder is removed
     assert!(!expected_request_path.exists());
@@ -48,7 +48,7 @@ async fn delete_request_in_subfolder() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let expected_request_path = collection_path.join(request_relative_path(&request_name, Some("subfolder")));
+    let expected_request_path = collection_path.join(request_relative_path(&request_name, Some(Path::new("subfolder"))));
     let create_request_output = collection
         .create_request(CreateRequestInput {
             name: request_name.to_string(),

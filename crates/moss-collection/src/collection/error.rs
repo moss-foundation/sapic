@@ -9,10 +9,16 @@ pub enum OperationError {
     Validation(#[from] ValidationErrors),
 
     #[error("request {name} not found at {path}")]
-    NotFound { name: String, path: PathBuf },
+    RequestNotFound { name: String, path: PathBuf },
+
+    #[error("request group {path} not found")]
+    RequestGroupNotFound { path: PathBuf },
 
     #[error("request {name} already exists at {path}")]
-    AlreadyExists { name: String, path: PathBuf },
+    RequestAlreadyExists { name: String, path: PathBuf },
+
+    #[error("request group {path} already exists")]
+    RequestGroupAlreadyExists { path: PathBuf },
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),

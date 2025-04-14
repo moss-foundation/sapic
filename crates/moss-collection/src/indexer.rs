@@ -231,7 +231,7 @@ async fn index_request_entry_dir(
     }))
 }
 
-fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
+pub(crate) fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
     entry_path.is_dir()
         && entry_path
             .extension()
@@ -239,14 +239,14 @@ fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
             .unwrap_or(false)
 }
 
-fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
+pub(crate) fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
     file_path
         .file_name()
         .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_FILE)
         .unwrap_or(false)
 }
 
-fn is_entry_spec_file(file_path: &PathBuf) -> bool {
+pub(crate) fn is_entry_spec_file(file_path: &PathBuf) -> bool {
     match file_path.file_name() {
         Some(name) => {
             name.to_string_lossy().to_string() == GET_ENTRY_SPEC_FILE
