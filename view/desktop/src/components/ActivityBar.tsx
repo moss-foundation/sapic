@@ -22,7 +22,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
   const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
-
+  const { visible } = useAppResizableLayoutStore((state) => state.sideBar);
   useEffect(() => {
     return monitorForElements({
       onDrop({ location, source }) {
@@ -64,7 +64,7 @@ export const ActivityBar = () => {
         >
           <ActivityBarButton key={item.id} {...item} />
 
-          {item.isActive && <ActivityBarButtonIndicator />}
+          {item.isActive && visible && <ActivityBarButtonIndicator />}
         </div>
       ))}
     </div>
@@ -192,7 +192,7 @@ const ActivityBarButtonIndicator = () => {
 
   return (
     <div
-      className={cn("background-(--moss-primary) absolute", {
+      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)]", {
         "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-[10px]": position === "top",
         "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-[10px]": position === "bottom",
         "inset-y-[9px] h-2.5 w-0.5": position === "default",
