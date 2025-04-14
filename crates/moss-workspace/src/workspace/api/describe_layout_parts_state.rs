@@ -1,13 +1,14 @@
 use moss_collection::collection::OperationError;
+use moss_db::common::DatabaseError;
+use tauri::Runtime as TauriRuntime;
 
 use crate::models::entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
 use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
 use crate::{models::operations::DescribeLayoutPartsStateOutput, workspace::Workspace};
-use moss_db::common::DatabaseError;
 
-impl Workspace {
+impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_layout_parts_state(
         &self,
     ) -> Result<DescribeLayoutPartsStateOutput, OperationError> {

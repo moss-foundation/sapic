@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_workspace::models::operations::SetLayoutPartsStateInput;
+use moss_workspace::models::operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams};
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
 
@@ -37,11 +37,14 @@ async fn describe_layout_parts_state_sidebar_only() {
     };
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(sidebar_state),
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: Some(sidebar_state),
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
@@ -75,11 +78,14 @@ async fn describe_layout_parts_state_panel_only() {
     };
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: None,
-            panel: Some(panel_state),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: None,
+                panel: Some(panel_state),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
@@ -110,11 +116,14 @@ async fn describe_layout_parts_state_editor_only() {
     let editor_state = create_simple_editor_state();
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: None,
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(editor_state),
+                sidebar: None,
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
@@ -156,11 +165,14 @@ async fn describe_layout_parts_state_all() {
     };
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: Some(sidebar_state),
-            panel: Some(panel_state),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(editor_state),
+                sidebar: Some(sidebar_state),
+                panel: Some(panel_state),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
@@ -200,30 +212,36 @@ async fn describe_layout_parts_state_after_update() {
 
     // First set all states
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(create_simple_editor_state()),
-            sidebar: Some(SidebarPartState {
-                preferred_size: 250,
-                is_visible: true,
-            }),
-            panel: Some(PanelPartState {
-                preferred_size: 200,
-                is_visible: false,
-            }),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(create_simple_editor_state()),
+                sidebar: Some(SidebarPartState {
+                    preferred_size: 250,
+                    is_visible: true,
+                }),
+                panel: Some(PanelPartState {
+                    preferred_size: 200,
+                    is_visible: false,
+                }),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
     // Now update only the sidebar
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(SidebarPartState {
-                preferred_size: 300,
-                is_visible: false,
-            }),
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: Some(SidebarPartState {
+                    preferred_size: 300,
+                    is_visible: false,
+                }),
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 

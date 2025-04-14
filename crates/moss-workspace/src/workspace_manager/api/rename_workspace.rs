@@ -66,6 +66,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
                 entry = Arc::new((
                     input.key,
                     Workspace::new(
+                        self.app_handle.clone(),
                         new_path.clone(),
                         self.fs.clone(),
                         self.activity_indicator.clone(),

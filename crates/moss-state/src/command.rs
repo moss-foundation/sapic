@@ -32,12 +32,12 @@ impl From<CommandContextError> for String {
 
 pub struct CommandContext<R: TauriRuntime> {
     app_handle: AppHandle<R>,
-    window: Window,
+    window: Window<R>,
     args: HashMap<String, Value>,
 }
 
 impl<R: TauriRuntime> CommandContext<R> {
-    pub fn new(app_handle: AppHandle<R>, window: Window, args: HashMap<String, Value>) -> Self {
+    pub fn new(app_handle: AppHandle<R>, window: Window<R>, args: HashMap<String, Value>) -> Self {
         Self {
             app_handle,
             window,
@@ -49,7 +49,7 @@ impl<R: TauriRuntime> CommandContext<R> {
         &self.app_handle
     }
 
-    pub fn window(&self) -> &Window {
+    pub fn window(&self) -> &Window<R> {
         &self.window
     }
 

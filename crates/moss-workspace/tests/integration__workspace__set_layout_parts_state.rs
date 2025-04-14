@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_workspace::models::operations::SetLayoutPartsStateInput;
+use moss_workspace::models::operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams};
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
 
@@ -12,11 +12,14 @@ async fn set_layout_parts_state_editor() {
 
     let editor_state = create_simple_editor_state();
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: None,
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(editor_state),
+                sidebar: None,
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
@@ -53,11 +56,14 @@ async fn set_layout_parts_state_sidebar() {
     };
 
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(sidebar_state),
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: Some(sidebar_state),
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
@@ -90,11 +96,14 @@ async fn set_layout_parts_state_panel() {
         is_visible: false,
     };
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: None,
-            panel: Some(panel_state),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: None,
+                panel: Some(panel_state),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
@@ -134,11 +143,14 @@ async fn set_layout_parts_state_all() {
 
     // Set all the states
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: Some(sidebar_state),
-            panel: Some(panel_state),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(editor_state),
+                sidebar: Some(sidebar_state),
+                panel: Some(panel_state),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
@@ -175,30 +187,36 @@ async fn set_layout_parts_state_update() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(create_simple_editor_state()),
-            sidebar: Some(SidebarPartState {
-                preferred_size: 200,
-                is_visible: true,
-            }),
-            panel: Some(PanelPartState {
-                preferred_size: 150,
-                is_visible: false,
-            }),
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: Some(create_simple_editor_state()),
+                sidebar: Some(SidebarPartState {
+                    preferred_size: 200,
+                    is_visible: true,
+                }),
+                panel: Some(PanelPartState {
+                    preferred_size: 150,
+                    is_visible: false,
+                }),
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await
         .unwrap();
 
     // Now update just one state (sidebar)
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(SidebarPartState {
-                preferred_size: 300,
-                is_visible: false,
-            }),
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: Some(SidebarPartState {
+                    preferred_size: 300,
+                    is_visible: false,
+                }),
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
@@ -234,11 +252,14 @@ async fn set_layout_parts_state_update() {
 async fn set_layout_parts_state_empty() {
     let (workspace_path, workspace) = setup_test_workspace().await;
     let set_layout_parts_state_result = workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: None,
-            panel: None,
-        })
+        .set_layout_parts_state(
+            SetLayoutPartsStateInput {
+                editor: None,
+                sidebar: None,
+                panel: None,
+            },
+            SetLayoutPartsStateParams { is_on_exit: false },
+        )
         .await;
 
     assert!(set_layout_parts_state_result.is_ok());
