@@ -9,7 +9,7 @@ export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   return (
-    <div className="p-5">
+    <div className="flex h-full flex-col p-5">
       <h1 className="mb-3 text-2xl">{t("home")}</h1>
 
       <SessionComponent />
@@ -38,7 +38,7 @@ const SessionComponent = () => {
       )}
       {/* An example of `mossCommand` */}
       <button
-        className="background-[var(--moss-test-background-2)] hover:bg-opacity-80 mb-10 rounded-md px-4 py-2 font-medium text-[var(--moss-test-text-1)] shadow-sm transition-colors duration-200"
+        className="hover:bg-opacity-80 mb-10 rounded-md px-4 py-2 font-medium shadow-sm"
         onClick={() => {
           invokeMossCommand("example.generateLog", {});
         }}
@@ -46,15 +46,13 @@ const SessionComponent = () => {
         Example Command
       </button>
 
-      <main className="background-[var(--moss-test-background-1)] text-[var(--moss-test-text-1)]font-sans flex h-screen grow flex-col justify-center text-center transition">
-        <Scrollbar>
-          {Array.from({ length: 100 }, (_, i) => (
-            <div key={i} className="background-[var(--moss-test-background-2)] mb-1 h-10 w-full">
-              {i + 1}
-            </div>
-          ))}
-        </Scrollbar>
-      </main>
+      <Scrollbar className="">
+        {Array.from({ length: 100 }, (_, i) => (
+          <div key={i} className="mb-1 h-10 w-full">
+            {i + 1}
+          </div>
+        ))}
+      </Scrollbar>
     </>
   );
 };

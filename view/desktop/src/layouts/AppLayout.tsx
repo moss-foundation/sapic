@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
@@ -10,7 +8,6 @@ import { cn } from "@/utils";
 
 import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
-import { ContentLayout } from "./ContentLayout";
 
 export const AppLayout = () => {
   const { position } = useActivityBarStore();
@@ -91,13 +88,7 @@ export const AppLayout = () => {
 
 const SidebarContent = () => <Sidebar />;
 
-const MainContent = () => (
-  <ContentLayout className="background-(--moss-primary-background) relative flex h-full flex-col overflow-auto">
-    <Suspense fallback={<div>Loading...</div>}>
-      <TabbedPane theme="dockview-theme-light" />
-    </Suspense>
-  </ContentLayout>
-);
+const MainContent = () => <TabbedPane theme="dockview-theme-light" />;
 
 const BottomPaneContent = () => {
   return <BottomPane />;
