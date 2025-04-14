@@ -4,7 +4,7 @@ import { Scrollbar } from "@/components";
 export const BottomPane = () => {
   return (
     <div className="background-(--moss-primary-background) h-full w-full">
-      <Scrollbar className="h-full overflow-auto">
+      <Scrollbar className="h-full">
         <div className={`p-2 font-mono text-sm select-none hover:select-text`}>
           <div className="mb-2 font-semibold">Application Logs:</div>
           {testLogEntries.map((log, index) => (
