@@ -16,7 +16,7 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
+  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
 
   return (
     <div

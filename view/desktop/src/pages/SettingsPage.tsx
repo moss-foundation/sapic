@@ -77,7 +77,7 @@ export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useDescribeAppState();
-  const { bottomPane, primarySideBar } = useAppResizableLayoutStore();
+  const { bottomPane, sideBar: primarySideBar } = useAppResizableLayoutStore();
 
   const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
@@ -86,7 +86,8 @@ export const Settings = () => {
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
   const { setPosition, position } = useActivityBarStore();
-  const { setPrimarySideBarPosition, primarySideBarPosition } = useAppResizableLayoutStore();
+  const { setSideBarPosition: setPrimarySideBarPosition, sideBarPosition: primarySideBarPosition } =
+    useAppResizableLayoutStore();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;

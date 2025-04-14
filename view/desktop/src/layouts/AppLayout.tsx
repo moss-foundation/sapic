@@ -11,7 +11,7 @@ import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {
   const { position } = useActivityBarStore();
-  const { bottomPane, primarySideBar, primarySideBarPosition } = useAppResizableLayoutStore();
+  const { bottomPane, sideBar: primarySideBar, sideBarPosition: primarySideBarPosition } = useAppResizableLayoutStore();
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!primarySideBar.visible) primarySideBar.setVisible(true);
@@ -53,7 +53,16 @@ export const AppLayout = () => {
             </ResizablePanel>
           )}
           <ResizablePanel>
-            <Resizable vertical>
+            <Resizable
+              vertical
+              onDragEnd={(sizes) => {
+                const [_mainPanelSize, bottomPaneSize] = sizes;
+                bottomPane.setHeight(bottomPaneSize);
+              }}
+              onVisibleChange={(index, visible) => {
+                if (index === 0) bottomPane.setVisible(visible);
+              }}
+            >
               <ResizablePanel>
                 <MainContent />
               </ResizablePanel>
