@@ -8,6 +8,7 @@ import { DropNodeElement } from "@/components/Tree/types";
 import { Home, Logs, Settings } from "@/pages";
 import { useDockviewStore } from "@/store/Dockview";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
 import {
   DockviewApi,
   DockviewDefaultTab,
@@ -100,9 +101,10 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         <>
           <Breadcrumbs panelId={props.api.id} />
           <Scrollbar
-            className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
-              props.api.isActive ? "select-text" : "select-none"
-            }`}
+            className={cn(
+              "relative h-full overflow-auto p-1.25",
+              isDebug && "border-2 border-dashed border-orange-500"
+            )}
           >
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
@@ -157,9 +159,21 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         />
       );
     },
-    Home: Home,
-    Settings: Settings,
-    Logs: Logs,
+    Home: () => (
+      <Scrollbar className="h-full">
+        <Home />
+      </Scrollbar>
+    ),
+    Settings: () => (
+      <Scrollbar className="h-full">
+        <Settings />
+      </Scrollbar>
+    ),
+    Logs: () => (
+      <Scrollbar className="h-full">
+        <Logs />
+      </Scrollbar>
+    ),
   };
 
   const headerComponents = {
@@ -167,44 +181,46 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   return (
-    <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
-      {showDebugPanels && (
-        <DockviewControls
-          api={api}
-          panels={panels}
-          activePanel={activePanel}
-          groups={groups}
-          activeGroup={activeGroup}
-          toggleCustomWatermark={() => setWatermark(!watermark)}
-          hasCustomWatermark={watermark}
-          toggleDebug={() => setDebug(!debug)}
-          toggleLogs={() => setShowLogs(!showLogs)}
-          showLogs={showLogs}
-        />
-      )}
-      <div className="flex h-full">
-        <Scrollbar className="flex grow overflow-hidden">
-          <DebugContext.Provider value={debug}>
-            <div className="h-full w-full" ref={dockviewRefWrapper}>
-              <DockviewReact
-                disableAutoResizing
-                ref={dockviewRef}
-                components={components}
-                defaultTabComponent={headerComponents.default}
-                rightHeaderActionsComponent={RightControls}
-                leftHeaderActionsComponent={LeftControls}
-                prefixHeaderActionsComponent={PrefixHeaderControls}
-                watermarkComponent={watermark ? Watermark : undefined}
-                onReady={onReady}
-                className={theme || "dockview-theme-light"}
-                onDidDrop={onDidDrop}
-              />
-            </div>
-          </DebugContext.Provider>
-        </Scrollbar>
-        {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
+    <Scrollbar className="h-full">
+      <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
+        {showDebugPanels && (
+          <DockviewControls
+            api={api}
+            panels={panels}
+            activePanel={activePanel}
+            groups={groups}
+            activeGroup={activeGroup}
+            toggleCustomWatermark={() => setWatermark(!watermark)}
+            hasCustomWatermark={watermark}
+            toggleDebug={() => setDebug(!debug)}
+            toggleLogs={() => setShowLogs(!showLogs)}
+            showLogs={showLogs}
+          />
+        )}
+        <div className="flex h-full">
+          <Scrollbar className="flex grow overflow-hidden">
+            <DebugContext.Provider value={debug}>
+              <div className="h-full w-full" ref={dockviewRefWrapper}>
+                <DockviewReact
+                  disableAutoResizing
+                  ref={dockviewRef}
+                  components={components}
+                  defaultTabComponent={headerComponents.default}
+                  rightHeaderActionsComponent={RightControls}
+                  leftHeaderActionsComponent={LeftControls}
+                  prefixHeaderActionsComponent={PrefixHeaderControls}
+                  watermarkComponent={watermark ? Watermark : undefined}
+                  onReady={onReady}
+                  className={theme || "dockview-theme-light"}
+                  onDidDrop={onDidDrop}
+                />
+              </div>
+            </DebugContext.Provider>
+          </Scrollbar>
+          {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
+        </div>
       </div>
-    </div>
+    </Scrollbar>
   );
 };
 
