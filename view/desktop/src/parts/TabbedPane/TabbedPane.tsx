@@ -8,6 +8,7 @@ import { DropNodeElement } from "@/components/Tree/types";
 import { Home, Logs, Settings } from "@/pages";
 import { useDockviewStore } from "@/store/Dockview";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
 import {
   DockviewApi,
   DockviewDefaultTab,
@@ -100,9 +101,10 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         <>
           <Breadcrumbs panelId={props.api.id} />
           <Scrollbar
-            className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
-              props.api.isActive ? "select-text" : "select-none"
-            }`}
+            className={cn(
+              "relative h-full overflow-auto p-1.25",
+              isDebug && "border-2 border-dashed border-orange-500"
+            )}
           >
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
