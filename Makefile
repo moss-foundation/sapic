@@ -20,7 +20,7 @@ ifeq ($(OS),Windows_NT)
     HOME_DIR := ${USERPROFILE}
     PYTHON := python
     PIP := pip
-export DEV_APP_DIR = ${HOME}\.sapic
+export DEV_APP_DIR = ${USERPROFILE}\.sapic
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
