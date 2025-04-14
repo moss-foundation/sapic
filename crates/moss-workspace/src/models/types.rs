@@ -45,14 +45,14 @@ pub struct EnvironmentInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct SidebarPartState {
-    preferred_size: usize,
-    is_visible: bool,
+    pub preferred_size: usize,
+    pub is_visible: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct PanelPartState {
-    preferred_size: usize,
-    is_visible: bool,
+    pub preferred_size: usize,
+    pub is_visible: bool,
 }

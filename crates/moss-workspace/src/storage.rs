@@ -1,10 +1,14 @@
 pub mod collection_store;
 pub mod environment_store;
+pub mod layout_parts_state_store;
 pub mod state_db_manager;
 
 use anyhow::Result;
-use moss_db::{bincode_table::BincodeTable, Transaction};
-use serde_json::Value as JsonValue;
+use moss_db::{
+    bincode_table::BincodeTable,
+    common::{AnyEntity, DatabaseError},
+    Transaction,
+};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 use crate::models::{entities::*, types::EnvironmentName};
@@ -23,17 +27,16 @@ pub trait EnvironmentStore: Send + Sync + 'static {
     fn scan(&self) -> Result<HashMap<EnvironmentName, EnvironmentEntity>>;
 }
 
-pub(crate) type PartsStateStoreTable<'a> = BincodeTable<'a, String, Vec<u8>>;
+pub(crate) type LayoutPartsStateStoreTable<'a> = BincodeTable<'a, String, AnyEntity>;
 
-pub trait PartsStateStore: Send + Sync + 'static {
-    fn get_sidebar_part_state(&self) -> Option<SidebarPartStateEntity>;
-    fn get_panel_part_state(&self) -> Option<PanelPartStateEntity>;
-    fn get_editor_grid_part_state(&self) -> Option<EditorGridPartStateEntity>;
-    fn get_editor_panels_part_state(&self) -> Option<EditorPanelsPartStateEntity>;
+pub trait LayoutPartsStateStore: Send + Sync + 'static {
+    fn get_sidebar_part_state(&self) -> Result<SidebarPartStateEntity, DatabaseError>;
+    fn get_panel_part_state(&self) -> Result<PanelPartStateEntity, DatabaseError>;
+    fn get_editor_part_state(&self) -> Result<EditorPartStateEntity, DatabaseError>;
 }
 
 pub trait StateDbManager: Send + Sync + 'static {
     fn collection_store(&self) -> Arc<dyn CollectionStore>;
     fn environment_store(&self) -> Arc<dyn EnvironmentStore>;
-    fn parts_state_store(&self) -> Arc<dyn PartsStateStore>;
+    fn layout_parts_state_store(&self) -> Arc<dyn LayoutPartsStateStore>;
 }

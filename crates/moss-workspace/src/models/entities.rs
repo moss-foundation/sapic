@@ -5,6 +5,8 @@ use moss_environment::{
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use super::types::{EditorGridState, EditorPanelState};
+
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct CollectionEntity {
     pub order: Option<usize>,
@@ -34,13 +36,20 @@ pub struct EnvironmentEntity {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EditorGridPartStateEntity {}
+pub struct EditorPartStateEntity {
+    pub grid: EditorGridState,
+    pub panels: HashMap<String, EditorPanelState>,
+    pub active_group: Option<String>,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EditorPanelsPartStateEntity {}
+pub struct SidebarPartStateEntity {
+    pub preferred_size: usize,
+    pub is_visible: bool,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct SidebarPartStateEntity {}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct PanelPartStateEntity {}
+pub struct PanelPartStateEntity {
+    pub preferred_size: usize,
+    pub is_visible: bool,
+}

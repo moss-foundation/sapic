@@ -2913,6 +2913,7 @@ dependencies = [
  "rand 0.9.0",
  "redb",
  "serde",
+ "thiserror 2.0.12",
  "tokio",
  "zeroize",
 ]
@@ -3103,6 +3104,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "arc-swap",
+ "bincode",
  "moss_app",
  "moss_collection",
  "moss_common",

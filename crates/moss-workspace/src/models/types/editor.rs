@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use ts_rs::TS;
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "types.ts")]
 pub enum EditorGridOrientation {
@@ -11,7 +11,7 @@ pub enum EditorGridOrientation {
     Vertical,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorGridLeafData {
@@ -20,7 +20,7 @@ pub struct EditorGridLeafData {
     pub id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(tag = "type", content = "data", rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum EditorGridNode {
@@ -34,7 +34,7 @@ pub enum EditorGridNode {
     },
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorGridState {
@@ -44,7 +44,7 @@ pub struct EditorGridState {
     orientation: EditorGridOrientation,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum PanelRenderer {
@@ -52,7 +52,7 @@ pub enum PanelRenderer {
     Always,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPanelState {
@@ -78,7 +78,7 @@ pub struct EditorPanelState {
     pub maximum_height: Option<f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPartState {
