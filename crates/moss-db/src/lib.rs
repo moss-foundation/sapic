@@ -1,4 +1,5 @@
 pub mod bincode_table;
+pub mod common;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
