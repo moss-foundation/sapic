@@ -28,13 +28,16 @@ pub async fn example_index_collection_command(
 
     let home_dir = std::env::var("HOME").expect("$HOME environment variable is not set");
     let current_workspace = workspace_manager.current_workspace().unwrap();
+
+    let input_path = PathBuf::from(home_dir)
+        .join(".sapic")
+        .join("workspaces")
+        .join("TestWorkspace")
+        .join("collections")
+        .join("TestCollection");
     let collection_output = current_workspace
         .1
-        .open_collection(OpenCollectionInput {
-            path: PathBuf::from(format!(
-                "{home_dir}/.sapic/workspaces/TestWorkspace/collections/TestCollection",
-            )),
-        })
+        .open_collection(OpenCollectionInput { path: input_path })
         .await
         .expect("Failed to open collection");
 
