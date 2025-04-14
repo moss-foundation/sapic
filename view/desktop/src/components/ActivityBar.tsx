@@ -21,7 +21,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
+  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
 
   useEffect(() => {
     return monitorForElements({
@@ -52,7 +52,7 @@ export const ActivityBar = () => {
         "h-full flex-col py-1.5": position === "default",
         "hidden": position === "hidden",
 
-        "border-l border-l-(--moss-border-color)": primarySideBarPosition === "right" && position === "default",
+        "border-l border-l-(--moss-border-color)": sideBarPosition === "right" && position === "default",
       })}
     >
       {items.map((item) => (

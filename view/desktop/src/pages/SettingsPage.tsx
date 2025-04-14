@@ -77,7 +77,7 @@ export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   const { data: appState } = useDescribeAppState();
-  const { bottomPane, sideBar: primarySideBar } = useAppResizableLayoutStore();
+  const { bottomPane, sideBar } = useAppResizableLayoutStore();
 
   const { data: themes } = useListColorThemes();
   const { mutate: mutateChangeColorTheme } = useSetColorTheme();
@@ -86,8 +86,7 @@ export const Settings = () => {
   const { mutate: mutateChangeLanguagePack } = useSetLocale();
 
   const { setPosition, position } = useActivityBarStore();
-  const { setSideBarPosition: setPrimarySideBarPosition, sideBarPosition: primarySideBarPosition } =
-    useAppResizableLayoutStore();
+  const { setSideBarPosition, sideBarPosition } = useAppResizableLayoutStore();
 
   const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedLocaleCode = event.target.value;
@@ -115,7 +114,7 @@ export const Settings = () => {
 
   const handleSidebarTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const sidebarType = event.target.value as "left" | "right";
-    setPrimarySideBarPosition(sidebarType);
+    setSideBarPosition(sidebarType);
   };
 
   const handleBottomPaneVisibilityChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -167,7 +166,7 @@ export const Settings = () => {
         <SettingsDropdown
           id="sidebar-type-select"
           label="Sidebar Type"
-          value={primarySideBarPosition || "left"}
+          value={sideBarPosition || "left"}
           onChange={handleSidebarTypeChange}
         >
           <option value="left" className="text-[var(--moss-select-text-outlined)]">
@@ -181,11 +180,11 @@ export const Settings = () => {
         <SettingsDropdown
           id="sidebar-position-select"
           label="Sidebar Visibility"
-          value={primarySideBar.visible ? "visible" : "hidden"}
+          value={sideBar.visible ? "visible" : "hidden"}
           onChange={(event) => {
             const isVisible = event.target.value === "visible";
 
-            primarySideBar.setVisible(isVisible);
+            sideBar.setVisible(isVisible);
           }}
         >
           <option value="visible" className="text-[var(--moss-select-text-outlined)]">

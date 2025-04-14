@@ -8,12 +8,10 @@ import { Controls } from "./Controls/Controls";
 export const HeadBar = () => {
   const os = type();
 
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
-  const bottomPane = useAppResizableLayoutStore((state) => state.bottomPane);
-  const primarySideBar = useAppResizableLayoutStore((state) => state.sideBar);
+  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   const toggleSidebar = () => {
-    primarySideBar.setVisible(!primarySideBar.visible);
+    sideBar.setVisible(!sideBar.visible);
   };
 
   const toggleBottomPane = () => {
@@ -46,16 +44,16 @@ export const HeadBar = () => {
             <button
               className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
               onClick={toggleSidebar}
-              title={primarySideBarPosition === "left" ? "Toggle Left Sidebar" : "Toggle Bottom Panel"}
+              title={sideBarPosition === "left" ? "Toggle Left Sidebar" : "Toggle Bottom Panel"}
             >
               <Icon
                 className="size-[18px] text-(--moss-icon-primary-text)"
                 icon={
-                  primarySideBarPosition === "left"
-                    ? primarySideBar.visible
+                  sideBarPosition === "left"
+                    ? sideBar.visible
                       ? "HeadBarLeftSideBarActive"
                       : "HeadBarLeftSideBar"
-                    : primarySideBar.visible
+                    : sideBar.visible
                       ? "HeadBarRightSideBarActive"
                       : "HeadBarRightSideBar"
                 }
