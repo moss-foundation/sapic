@@ -1,4 +1,3 @@
-use anyhow::{anyhow, Context as _};
 use redb::{Key, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
 use std::borrow::Borrow;

@@ -59,13 +59,21 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
                 let data = self
                     .table
                     .read(&txn, WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY.to_string())?;
-                bincode::deserialize(&data)?
+
+                // HACK: Using serde_json instead of bincode because bincode fails to deserialize
+                // enums with string tags (it does not support Deserializer::deserialize_identifier).
+                // This workaround should be revisited when a more suitable solution is available.
+                serde_json::from_slice(&data).unwrap()
             },
             panels: {
                 let data = self
                     .table
                     .read(&txn, WORKBENCH_PARTS_EDITOR_PANELS_STATE_KEY.to_string())?;
-                bincode::deserialize(&data)?
+
+                // HACK: Using serde_json instead of bincode because bincode fails to deserialize
+                // enums with string tags (it does not support Deserializer::deserialize_identifier).
+                // This workaround should be revisited when a more suitable solution is available.
+                serde_json::from_slice(&data).unwrap()
             },
             active_group: {
                 let data = self.table.read(
@@ -75,5 +83,137 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
                 bincode::deserialize(&data)?
             },
         })
+    }
+
+    fn put_sidebar_part_state(&self, state: SidebarPartStateEntity) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+
+        let data = bincode::serialize(&state)?;
+        self.table.insert(
+            &mut txn,
+            WORKBENCH_PARTS_SIDEBAR_STATE_KEY.to_string(),
+            &data,
+        )?;
+        txn.commit()?;
+        Ok(())
+    }
+
+    fn put_panel_part_state(&self, state: PanelPartStateEntity) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+        let data = bincode::serialize(&state)?;
+        self.table
+            .insert(&mut txn, WORKBENCH_PARTS_PANEL_STATE_KEY.to_string(), &data)?;
+        txn.commit()?;
+        Ok(())
+    }
+
+    fn put_editor_part_state(&self, state: EditorPartStateEntity) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+
+        // Store grid state
+        // HACK: Using serde_json instead of bincode because bincode fails to deserialize
+        // enums with string tags (it does not support Deserializer::deserialize_identifier).
+        // This workaround should be revisited when a more suitable solution is available.
+        let grid_data = serde_json::to_vec(&state.grid)?;
+        self.table.insert(
+            &mut txn,
+            WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY.to_string(),
+            &grid_data,
+        )?;
+
+        // Store panels state
+        // HACK: Using serde_json instead of bincode because bincode fails to deserialize
+        // enums with string tags (it does not support Deserializer::deserialize_identifier).
+        // This workaround should be revisited when a more suitable solution is available.
+        let panels_data = serde_json::to_vec(&state.panels)?;
+        self.table.insert(
+            &mut txn,
+            WORKBENCH_PARTS_EDITOR_PANELS_STATE_KEY.to_string(),
+            &panels_data,
+        )?;
+
+        // Store active group state
+        let active_group_data = bincode::serialize(&state.active_group)?;
+        self.table.insert(
+            &mut txn,
+            WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY.to_string(),
+            &active_group_data,
+        )?;
+
+        txn.commit()?;
+        Ok(())
+    }
+
+    fn delete_sidebar_part_state(&self) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+        match self
+            .table
+            .remove(&mut txn, WORKBENCH_PARTS_SIDEBAR_STATE_KEY.to_string())
+        {
+            Ok(_) => {
+                txn.commit()?;
+                Ok(())
+            }
+            Err(DatabaseError::NotFound { .. }) => {
+                txn.commit()?;
+                Ok(()) // Not an error if the key doesn't exist
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    fn delete_panel_part_state(&self) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+        match self
+            .table
+            .remove(&mut txn, WORKBENCH_PARTS_PANEL_STATE_KEY.to_string())
+        {
+            Ok(_) => {
+                txn.commit()?;
+                Ok(())
+            }
+            Err(DatabaseError::NotFound { .. }) => {
+                txn.commit()?;
+                Ok(()) // Not an error if the key doesn't exist
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    fn delete_editor_part_state(&self) -> Result<(), DatabaseError> {
+        let mut txn = self.client.begin_write()?;
+
+        // Remove grid state, ignoring NotFound errors
+        match self
+            .table
+            .remove(&mut txn, WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY.to_string())
+        {
+            Ok(_) => {}
+            Err(DatabaseError::NotFound { .. }) => {} // Not an error if key doesn't exist
+            Err(err) => return Err(err),
+        }
+
+        // Remove panels state, ignoring NotFound errors
+        match self.table.remove(
+            &mut txn,
+            WORKBENCH_PARTS_EDITOR_PANELS_STATE_KEY.to_string(),
+        ) {
+            Ok(_) => {}
+            Err(DatabaseError::NotFound { .. }) => {} // Not an error if key doesn't exist
+            Err(err) => return Err(err),
+        }
+
+        // Remove active group state, ignoring NotFound errors
+        match self.table.remove(
+            &mut txn,
+            WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY.to_string(),
+        ) {
+            Ok(_) => {}
+            Err(DatabaseError::NotFound { .. }) => {} // Not an error if key doesn't exist
+            Err(err) => return Err(err),
+        }
+
+        txn.commit()?;
+        Ok(())
     }
 }

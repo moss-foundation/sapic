@@ -38,10 +38,10 @@ pub enum EditorGridNode {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorGridState {
-    root: EditorGridNode,
-    width: f64,
-    height: f64,
-    orientation: EditorGridOrientation,
+    pub root: EditorGridNode,
+    pub width: f64,
+    pub height: f64,
+    pub orientation: EditorGridOrientation,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]

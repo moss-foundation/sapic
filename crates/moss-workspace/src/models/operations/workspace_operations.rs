@@ -115,3 +115,15 @@ pub struct DescribeLayoutPartsStateOutput {
     #[ts(optional)]
     pub panel: Option<PanelPartState>,
 }
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct SetLayoutPartsStateInput {
+    #[ts(optional)]
+    pub editor: Option<EditorPartState>,
+    #[ts(optional)]
+    pub sidebar: Option<SidebarPartState>,
+    #[ts(optional)]
+    pub panel: Option<PanelPartState>,
+}

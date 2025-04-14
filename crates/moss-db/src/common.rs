@@ -8,7 +8,7 @@ pub enum DatabaseError {
     NotFound { key: String },
 
     #[error("serialization error: {0}")]
-    Serialization(#[from] Box<bincode::ErrorKind>),
+    Serialization(String),
 
     #[error("internal error: {0}")]
     Internal(String),
@@ -41,5 +41,23 @@ impl From<redb::StorageError> for DatabaseError {
 impl From<redb::TransactionError> for DatabaseError {
     fn from(error: redb::TransactionError) -> Self {
         DatabaseError::Transaction(error.to_string())
+    }
+}
+
+impl From<redb::CommitError> for DatabaseError {
+    fn from(error: redb::CommitError) -> Self {
+        DatabaseError::Internal(error.to_string())
+    }
+}
+
+impl From<bincode::Error> for DatabaseError {
+    fn from(error: bincode::Error) -> Self {
+        DatabaseError::Serialization(error.to_string())
+    }
+}
+
+impl From<serde_json::Error> for DatabaseError {
+    fn from(error: serde_json::Error) -> Self {
+        DatabaseError::Serialization(error.to_string())
     }
 }
