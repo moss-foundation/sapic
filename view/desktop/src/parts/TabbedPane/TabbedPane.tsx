@@ -157,9 +157,21 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         />
       );
     },
-    Home: Home,
-    Settings: Settings,
-    Logs: Logs,
+    Home: () => (
+      <Scrollbar className="h-full">
+        <Home />
+      </Scrollbar>
+    ),
+    Settings: () => (
+      <Scrollbar className="h-full">
+        <Settings />
+      </Scrollbar>
+    ),
+    Logs: () => (
+      <Scrollbar className="h-full">
+        <Logs />
+      </Scrollbar>
+    ),
   };
 
   const headerComponents = {

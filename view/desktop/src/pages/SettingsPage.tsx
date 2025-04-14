@@ -129,7 +129,7 @@ export const Settings = () => {
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="">
       <div className="p-5">
         <h1 className="mb-5 text-2xl font-bold">{t("settings")}</h1>
 
