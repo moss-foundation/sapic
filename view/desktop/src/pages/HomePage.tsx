@@ -46,7 +46,7 @@ const SessionComponent = () => {
         Example Command
       </button>
 
-      <Scrollbar className="border border-stone-500">
+      <Scrollbar className="border border-dotted border-stone-500">
         {Array.from({ length: 100 }, (_, i) => (
           <div key={i} className="mb-1 h-10 w-full text-center">
             {i + 1}
