@@ -188,7 +188,7 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
 
 const ActivityBarButtonIndicator = () => {
   const position = useActivityBarStore((state) => state.position);
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
+  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
 
   return (
     <div
@@ -196,8 +196,8 @@ const ActivityBarButtonIndicator = () => {
         "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-full": position === "top",
         "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-full": position === "bottom",
         "inset-y-[9px] h-2.5 w-0.5": position === "default",
-        "right-0 rounded-l-full": primarySideBarPosition === "right" && position === "default",
-        "left-0 rounded-r-full": primarySideBarPosition === "left" && position === "default",
+        "right-0 rounded-l-full": sideBarPosition === "right" && position === "default",
+        "left-0 rounded-r-full": sideBarPosition === "left" && position === "default",
       })}
     />
   );
