@@ -64,7 +64,7 @@ export const ActivityBar = () => {
         >
           <ActivityBarButton key={item.id} {...item} />
 
-          {item.isActive && <ActivityBarButtonIndicator position={position} />}
+          {item.isActive && <ActivityBarButtonIndicator />}
         </div>
       ))}
     </div>
@@ -186,13 +186,18 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   );
 };
 
-const ActivityBarButtonIndicator = ({ position }: { position: "default" | "top" | "bottom" | "hidden" }) => {
+const ActivityBarButtonIndicator = () => {
+  const position = useActivityBarStore((state) => state.position);
+  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
+
   return (
     <div
       className={cn("background-(--moss-primary) absolute", {
         "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-[4px]": position === "top",
-        "inset-y-[9px] left-0 h-2.5 w-0.5 rounded-r-[4px]": position === "default",
         "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-[4px]": position === "bottom",
+        "inset-y-[9px] h-2.5 w-0.5": position === "default",
+        "right-0 rounded-l-[4px]": primarySideBarPosition === "right" && position === "default",
+        "left-0 rounded-r-[4px]": primarySideBarPosition === "left" && position === "default",
       })}
     />
   );
