@@ -19,12 +19,14 @@ pub async fn example_index_collection_command(
         .get_by_type::<WorkspaceManager<tauri::Wry>>(&app_handle)
         .await?;
 
-    workspace_manager
+    if let Err(e) = workspace_manager
         .open_workspace(&OpenWorkspaceInput {
             name: "TestWorkspace".to_string(),
         })
         .await
-        .expect("Failed to create workspace");
+    {
+        println!("Failed to open workspace: {:?}", e);
+    }
 
     let home_dir = std::env::var("HOME").expect("$HOME environment variable is not set");
     let current_workspace = workspace_manager.current_workspace().unwrap();
