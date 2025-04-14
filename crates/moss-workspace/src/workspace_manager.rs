@@ -18,10 +18,11 @@ use crate::{models::types::WorkspaceInfo, workspace::Workspace};
 type WorkspaceInfoMap = LeasedSlotMap<ResourceKey, WorkspaceInfo>;
 
 pub struct WorkspaceManager<R: tauri::Runtime> {
+    app_handle: AppHandle<R>,
     activity_indicator: ActivityIndicator<R>,
     fs: Arc<dyn FileSystem>,
     workspaces_dir: PathBuf,
-    current_workspace: ArcSwapOption<(ResourceKey, Workspace)>,
+    current_workspace: ArcSwapOption<(ResourceKey, Workspace<R>)>,
     known_workspaces: OnceCell<RwLock<WorkspaceInfoMap>>,
 }
 
@@ -32,6 +33,7 @@ impl<R: tauri::Runtime> WorkspaceManager<R> {
         workspaces_dir: PathBuf,
     ) -> Result<Self> {
         Ok(Self {
+            app_handle: app_handle.clone(),
             activity_indicator: ActivityIndicator::new(app_handle),
             fs,
             workspaces_dir,
@@ -67,7 +69,7 @@ impl<R: tauri::Runtime> WorkspaceManager<R> {
             .await?)
     }
 
-    pub fn current_workspace(&self) -> Result<Arc<(ResourceKey, Workspace)>> {
+    pub fn current_workspace(&self) -> Result<Arc<(ResourceKey, Workspace<R>)>> {
         self.current_workspace
             .load()
             .clone()

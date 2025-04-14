@@ -2,16 +2,9 @@ import { create } from "zustand";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
-  primarySideBarPosition: "left" | "right";
-  setPrimarySideBarPosition: (position: AppResizableLayoutStore["primarySideBarPosition"]) => void;
-  primarySideBar: {
-    minWidth: number;
-    width: number;
-    visible: boolean;
-    setWidth: (newWidth: number) => void;
-    setVisible: (visible: boolean) => void;
-  };
-  secondarySideBar: {
+  sideBarPosition: "left" | "right";
+  setSideBarPosition: (position: AppResizableLayoutStore["sideBarPosition"]) => void;
+  sideBar: {
     minWidth: number;
     width: number;
     visible: boolean;
@@ -28,47 +21,27 @@ export interface AppResizableLayoutStore {
 }
 
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set) => ({
-  primarySideBarPosition: "left",
-  setPrimarySideBarPosition: (position: AppResizableLayoutStore["primarySideBarPosition"]) =>
+  sideBarPosition: "left",
+  setSideBarPosition: (position: AppResizableLayoutStore["sideBarPosition"]) =>
     set(() => ({
-      primarySideBarPosition: position,
+      sideBarPosition: position,
     })),
-  primarySideBar: {
+  sideBar: {
     minWidth: 120,
     width: 255,
     visible: true,
     setWidth: (newWidth) =>
       set((state) => ({
-        primarySideBar: {
-          ...state.primarySideBar,
+        sideBar: {
+          ...state.sideBar,
           width: newWidth,
           visible: newWidth > 0,
         },
       })),
     setVisible: (visible) =>
       set((state) => ({
-        primarySideBar: {
-          ...state.primarySideBar,
-          visible,
-        },
-      })),
-  },
-  secondarySideBar: {
-    minWidth: 120,
-    width: 255,
-    visible: true,
-    setWidth: (newWidth) =>
-      set((state) => ({
-        secondarySideBar: {
-          ...state.secondarySideBar,
-          width: newWidth,
-          visible: newWidth > 0,
-        },
-      })),
-    setVisible: (visible) =>
-      set((state) => ({
-        secondarySideBar: {
-          ...state.secondarySideBar,
+        sideBar: {
+          ...state.sideBar,
           visible,
         },
       })),
@@ -76,7 +49,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
   bottomPane: {
     minHeight: 100,
     height: 333,
-    visible: true,
+    visible: false,
     setHeight: (newHeight) =>
       set((state) => ({
         bottomPane: {

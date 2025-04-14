@@ -33,7 +33,8 @@
       "bindings/types.ts": {
         "@repo/bindings-utils": {
           "types": [
-            "ResourceKey"
+            "ResourceKey",
+            "JsonValue"
           ],
           "is_type_import": true
         }

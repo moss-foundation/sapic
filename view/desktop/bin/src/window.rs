@@ -1,4 +1,4 @@
-use tauri::{AppHandle, WebviewUrl, WebviewWindow};
+use tauri::{AppHandle, Runtime as TauriRuntime, WebviewUrl, WebviewWindow};
 
 use crate::{menu, MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
 
@@ -12,7 +12,10 @@ pub struct CreateWindowInput<'a> {
 }
 
 #[instrument(level = "debug", skip(app_handle))]
-pub fn create_window(app_handle: &AppHandle, input: CreateWindowInput<'_>) -> WebviewWindow {
+pub fn create_window<R: TauriRuntime>(
+    app_handle: &AppHandle<R>,
+    input: CreateWindowInput<'_>,
+) -> WebviewWindow<R> {
     #[cfg(target_os = "macos")]
     {
         let menu = menu::app_menu(app_handle).unwrap();

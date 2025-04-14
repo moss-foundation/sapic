@@ -5,15 +5,15 @@
   --moss-error-background: #f7d7d7;
   --moss-success-background: #f2fcf3;
 
-  --moss-border-color: #e0e0e0;
+  --moss-border-color: #ebecf0;
 
   --moss-primary-background: #ffffff;
   --moss-primary-background-hover: #d4e2ff;
   --moss-primary-text: #161616;
 
-  --moss-secondary-background: #f4f4f4;
+  --moss-secondary-background: #f7f8fa;
   --moss-secondary-background-hover: #ebecf0;
-  --moss-secondary-text: #616161;
+  --moss-secondary-text: #6c707e;
 
   --moss-info-background: #edf3ff;
   --moss-info-background-hover: #d4e2ff;
@@ -26,9 +26,9 @@
 
   /* Icons */
   --moss-icon-primary-background: transparent;
-  --moss-icon-primary-text: #717171;
+  --moss-icon-primary-text: #6c707e;
   --moss-icon-primary-background-hover: #ebecf0;
-  --moss-icon-primary-background-active: #3574f0;
+  --moss-icon-primary-background-active: #ebecf0;
 
   /* Window Controls */
   --moss-button-icon-color: black;

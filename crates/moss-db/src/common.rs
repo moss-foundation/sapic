@@ -1,0 +1,63 @@
+use thiserror::Error;
+
+pub type AnyEntity = Vec<u8>;
+
+#[derive(Error, Debug)]
+pub enum DatabaseError {
+    #[error("entity with key {key} is not found")]
+    NotFound { key: String },
+
+    #[error("serialization error: {0}")]
+    Serialization(String),
+
+    #[error("internal error: {0}")]
+    Internal(String),
+
+    #[error("transaction error: {0}")]
+    Transaction(String),
+
+    #[error("unknown error: {0}")]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<redb::Error> for DatabaseError {
+    fn from(error: redb::Error) -> Self {
+        DatabaseError::Unknown(anyhow::anyhow!(error))
+    }
+}
+
+impl From<redb::TableError> for DatabaseError {
+    fn from(error: redb::TableError) -> Self {
+        DatabaseError::Internal(error.to_string())
+    }
+}
+
+impl From<redb::StorageError> for DatabaseError {
+    fn from(error: redb::StorageError) -> Self {
+        DatabaseError::Internal(error.to_string())
+    }
+}
+
+impl From<redb::TransactionError> for DatabaseError {
+    fn from(error: redb::TransactionError) -> Self {
+        DatabaseError::Transaction(error.to_string())
+    }
+}
+
+impl From<redb::CommitError> for DatabaseError {
+    fn from(error: redb::CommitError) -> Self {
+        DatabaseError::Internal(error.to_string())
+    }
+}
+
+impl From<bincode::Error> for DatabaseError {
+    fn from(error: bincode::Error) -> Self {
+        DatabaseError::Serialization(error.to_string())
+    }
+}
+
+impl From<serde_json::Error> for DatabaseError {
+    fn from(error: serde_json::Error) -> Self {
+        DatabaseError::Serialization(error.to_string())
+    }
+}

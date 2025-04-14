@@ -1,7 +1,7 @@
 use strum::{AsRefStr as StrumAsRefStr, Display as StrumDisplay, EnumString as StrumEnumString};
 use tauri::{
     menu::{Menu, MenuEvent, PredefinedMenuItem},
-    AppHandle, Manager, Window, Wry,
+    AppHandle, Manager, Runtime as TauriRuntime, Window,
 };
 
 // use crate::create_child_window;
@@ -14,7 +14,7 @@ pub enum BuiltInMenuEvent {
     CloseWindow,
 }
 
-pub fn handle_event(_window: &Window, event: &MenuEvent) {
+pub fn handle_event<R: TauriRuntime>(_window: &Window<R>, event: &MenuEvent) {
     let event_id = event.id().0.as_str();
     let app_handle = _window.app_handle().clone();
     match event_id {
@@ -37,7 +37,7 @@ pub fn handle_event(_window: &Window, event: &MenuEvent) {
 //     });
 // }
 
-pub fn app_menu(app_handle: &AppHandle) -> tauri::Result<Menu<Wry>> {
+pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     #[cfg(not(target_os = "macos"))]
     {
         Menu::new(app_handle)
