@@ -1,3 +1,7 @@
+mod editor;
+
+pub use editor::*;
+
 use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -35,4 +39,20 @@ pub struct EnvironmentInfo {
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct SidebarPartState {
+    pub preferred_size: usize,
+    pub is_visible: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct PanelPartState {
+    pub preferred_size: usize,
+    pub is_visible: bool,
 }

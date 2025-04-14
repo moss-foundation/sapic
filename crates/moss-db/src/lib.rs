@@ -1,7 +1,9 @@
 pub mod bincode_table;
+pub mod common;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
+use common::DatabaseError;
 use redb::{
     Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
     WriteTransaction as InnerWriteTransaction,
@@ -16,7 +18,7 @@ pub enum Transaction {
 }
 
 impl Transaction {
-    pub fn commit(self) -> Result<()> {
+    pub fn commit(self) -> Result<(), DatabaseError> {
         match self {
             Transaction::Read(_) => Ok(()),
             Transaction::Write(txn) => Ok(txn.commit()?),
