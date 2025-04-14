@@ -46,17 +46,26 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("background-(--moss-secondary-background) flex items-center gap-3 p-1.5", {
-        "w-full border-b border-b-(--moss-border-color)": position === "top",
-        "w-full border-t border-t-(--moss-border-color)": position === "bottom",
-        "h-full flex-col": position === "default",
+      className={cn("background-(--moss-secondary-background) flex items-center gap-3", {
+        "w-full border-b border-b-(--moss-border-color) px-1.5": position === "top",
+        "w-full border-t border-t-(--moss-border-color) px-1.5": position === "bottom",
+        "h-full flex-col py-1.5": position === "default",
         "hidden": position === "hidden",
 
         "border-l border-l-(--moss-border-color)": primarySideBarPosition === "right" && position === "default",
       })}
     >
       {items.map((item) => (
-        <ActivityBarButton key={item.id} {...item} />
+        <div
+          className={cn("relative flex flex-col", {
+            "px-1.5": position === "default",
+            "py-1.5": position === "top" || position === "bottom",
+          })}
+        >
+          <ActivityBarButton key={item.id} {...item} />
+
+          {item.isActive && <ActivityBarButtonIndicator position={position} />}
+        </div>
       ))}
     </div>
   );
@@ -174,6 +183,18 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
           preview
         )}
     </button>
+  );
+};
+
+const ActivityBarButtonIndicator = ({ position }: { position: "default" | "top" | "bottom" | "hidden" }) => {
+  return (
+    <div
+      className={cn("background-(--moss-primary) absolute", {
+        "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-[4px]": position === "top",
+        "inset-y-[9px] left-0 h-2.5 w-0.5 rounded-r-[4px]": position === "default",
+        "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-[4px]": position === "bottom",
+      })}
+    />
   );
 };
 
