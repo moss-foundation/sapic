@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { DescribeLayoutPartsStateOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
 import { listen } from "@tauri-apps/api/event";
-
-import {
-  DescribeLayoutPartsStateOutput,
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
-} from "./../../../../crates/moss-workspace/bindings/operations";
 
 export interface WindowPreparationState {
   isPreparing: boolean;
@@ -16,8 +13,9 @@ export interface WindowPreparationState {
 
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
-
+  const hasOpenedWorkspace = useRef(false);
   const { sideBar, bottomPane } = useAppResizableLayoutStore();
+  const { setGridState, gridState } = useTabbedPaneStore();
 
   useEffect(() => {
     const openWorkspace = async () => {
@@ -25,28 +23,41 @@ export const usePrepareWindow = (): WindowPreparationState => {
         input: { name: "TestWorkspace" },
       });
 
-      const res = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
+      const layout = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
 
-      if (res.status !== "ok" || !res.data) return;
+      if (layout.status !== "ok" || !layout.data) {
+        setIsPreparing(false);
+        return;
+      }
 
-      if (res.data?.sidebar) {
-        sideBar.setWidth(res.data.sidebar.preferredSize);
-        sideBar.setVisible(res.data.sidebar.isVisible);
+      if (layout.data?.editor) {
+        setGridState(layout.data.editor as unknown as SerializedDockview);
       }
-      if (res.data?.panel) {
-        bottomPane.setHeight(res.data.panel.preferredSize);
-        bottomPane.setVisible(res.data.panel.isVisible);
+      if (layout.data?.sidebar) {
+        sideBar.setWidth(layout.data.sidebar.preferredSize);
+        sideBar.setVisible(layout.data.sidebar.isVisible);
       }
+      if (layout.data?.panel) {
+        bottomPane.setHeight(layout.data.panel.preferredSize);
+        bottomPane.setVisible(layout.data.panel.isVisible);
+      }
+      setIsPreparing(false);
     };
 
-    openWorkspace();
+    // Running this on mount ensures that the workspace is called only once
+    // open_workspace will throw an error if previous request is still pending
+    // The error usually happens in strict mode
+    if (!hasOpenedWorkspace.current) {
+      hasOpenedWorkspace.current = true;
+      openWorkspace();
+    }
   }, []);
 
   useEffect(() => {
-    const unlisten = listen("kernel-windowCloseRequested", (event) => {
+    const unlisten = listen("kernel-windowCloseRequested", () => {
       invokeTauriIpc("set_layout_parts_state", {
         input: {
-          editor: null,
+          editor: gridState,
           sidebar: {
             preferredSize: sideBar.width,
             isVisible: sideBar.visible,
@@ -65,11 +76,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
     return () => {
       unlisten.then((unlisten) => unlisten());
     };
-  }, [bottomPane.height, bottomPane.visible, sideBar.visible, sideBar.width]);
-
-  useEffect(() => {
-    setIsPreparing(false);
-  }, []);
+  }, [bottomPane.height, bottomPane.visible, gridState, sideBar.visible, sideBar.width]);
 
   return { isPreparing };
 };

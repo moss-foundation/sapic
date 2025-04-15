@@ -23,7 +23,6 @@ import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugCompon
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
-import { defaultConfig } from "./defaultLayout";
 import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
 import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
@@ -35,6 +34,7 @@ const DebugContext = React.createContext<boolean>(false);
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const dockviewStore = useDockviewStore();
+  const tabbedPaneStore = useTabbedPaneStore();
 
   const [api, setApi] = React.useState<DockviewApi>();
   const [panels, setPanels] = React.useState<string[]>([]);
@@ -57,8 +57,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
-    dockviewStore.setApi(event.api);
-    useTabbedPaneStore.getState().setApi(event.api);
+    tabbedPaneStore.setApi(event.api);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
@@ -76,22 +75,21 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   React.useEffect(() => {
-    if (!api) return;
+    if (!tabbedPaneStore.api) return;
 
     const initializeLayout = async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        api?.clear();
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        defaultConfig(api);
+        if (tabbedPaneStore.api) {
+          tabbedPaneStore.api.fromJSON(tabbedPaneStore.gridState);
+        }
       } catch (e) {
-        console.warn("Failed to initialize layout:", e);
+        console.error("Failed to initialize layout:", e);
       }
     };
 
     const timeoutId = setTimeout(initializeLayout, 0);
     return () => clearTimeout(timeoutId);
-  }, [api]);
+  }, [tabbedPaneStore.api]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {

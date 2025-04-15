@@ -23,6 +23,7 @@ export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
   const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
   const { visible } = useAppResizableLayoutStore((state) => state.sideBar);
+
   useEffect(() => {
     return monitorForElements({
       onDrop({ location, source }) {
@@ -57,6 +58,7 @@ export const ActivityBar = () => {
     >
       {items.map((item) => (
         <div
+          key={item.id}
           className={cn("relative flex flex-col", {
             "px-1.5": position === "default",
             "py-1.5": position === "top" || position === "bottom",

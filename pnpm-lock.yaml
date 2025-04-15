@@ -307,6 +307,24 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.1.0
         version: 1.1.0(@types/react@18.3.20)(react@18.3.1)
+      '@repo/moss-nls':
+        specifier: workspace:*
+        version: link:../../crates/moss-nls
+      '@repo/moss-state':
+        specifier: workspace:*
+        version: link:../../crates/moss-state
+      '@repo/moss-tabs':
+        specifier: workspace:*
+        version: link:src/lib/moss-tabs
+      '@repo/moss-theme':
+        specifier: workspace:*
+        version: link:../../crates/moss-theme
+      '@repo/moss-workbench':
+        specifier: workspace:*
+        version: link:../../crates/moss-workbench
+      '@repo/moss-workspace':
+        specifier: workspace:*
+        version: link:../../crates/moss-workspace
       '@tanstack/react-query':
         specifier: ^5.67.1
         version: 5.71.1(react@18.3.1)
@@ -359,21 +377,6 @@ importers:
       '@repo/icongen':
         specifier: workspace:*
         version: link:../../tools/icongen
-      '@repo/moss-nls':
-        specifier: workspace:*
-        version: link:../../crates/moss-nls
-      '@repo/moss-state':
-        specifier: workspace:*
-        version: link:../../crates/moss-state
-      '@repo/moss-tabs':
-        specifier: workspace:*
-        version: link:src/lib/moss-tabs
-      '@repo/moss-theme':
-        specifier: workspace:*
-        version: link:../../crates/moss-theme
-      '@repo/moss-workbench':
-        specifier: workspace:*
-        version: link:../../crates/moss-workbench
       '@repo/tailwind-config':
         specifier: workspace:*
         version: link:../../packages/config-tailwind
