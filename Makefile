@@ -4,7 +4,6 @@
 
 # ---- Environment Settings ----
 export LOG_LEVEL = trace
-export DEV_APP_DIR = ${HOME}/.sapic
 
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
@@ -21,11 +20,14 @@ ifeq ($(OS),Windows_NT)
     HOME_DIR := ${USERPROFILE}
     PYTHON := python
     PIP := pip
+export DEV_APP_DIR = ${USERPROFILE}\.sapic
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
     PYTHON := python3
     PIP := pip3
+
+export DEV_APP_DIR = ${HOME}/.sapic
 endif
 
 # ---- Directory Paths ----
@@ -210,4 +212,3 @@ tidy: gen-license workspace-audit check-unused-deps
 build:
 	# Enable compression feature for reducing binary size
 	$(CARGO) build --bin desktop --features compression
-
