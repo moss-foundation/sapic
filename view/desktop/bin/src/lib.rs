@@ -62,16 +62,24 @@ pub async fn run<R: TauriRuntime>() {
             commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
-            #[cfg(target_os = "macos")]
-            WindowEvent::CloseRequested { api, .. } => {
-                if window.app_handle().webview_windows().len() == 1 {
-                    window.app_handle().hide().ok();
-                    api.prevent_close();
-                }
-            }
+            // #[cfg(target_os = "macos")]
+            // WindowEvent::CloseRequested { api, .. } => {
+            //     if window.app_handle().webview_windows().len() == 1 {
+            //         window.app_handle().hide().ok();
+            //         api.prevent_close();
+            //     }
+            // }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
             WindowEvent::CloseRequested { api, .. } => {
-                dbg!("CloseRequested");
+                api.prevent_close();
+
+                let app_handle = window.app_handle();
+                app_handle.emit("kernel-windowCloseRequested", {}).unwrap();
+
+                let window_clone = window.clone();
+                app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
+                    window_clone.close().ok();
+                });
             }
 
             _ => (),
@@ -90,24 +98,23 @@ pub async fn run<R: TauriRuntime>() {
             }
 
             // #[cfg(target_os = "macos")]
-            RunEvent::ExitRequested { api, .. } => {
-                dbg!("ExitRequested");
+            // RunEvent::ExitRequested { api, .. } => {
+            //     dbg!("ExitRequested");
 
-                // api.prevent_exit();
-                // app_handle.hide().ok();
+            //     // api.prevent_exit();
+            //     // app_handle.hide().ok();
 
-                // FIXME: Temporary solution
-                app_handle.emit("kernel-windowCloseRequested", {}).unwrap();
+            //     // FIXME: Temporary solution
+            //     app_handle.emit("kernel-windowCloseRequested", {}).unwrap();
 
-                let app_handle_clone = app_handle.clone();
-                app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
-                    #[cfg(target_os = "macos")]
-                    {
-                        app_handle_clone.hide().ok();
-                    }
-                });
-            }
-
+            //     let app_handle_clone = app_handle.clone();
+            //     app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
+            //         #[cfg(target_os = "macos")]
+            //         {
+            //             app_handle_clone.hide().ok();
+            //         }
+            //     });
+            // }
             _ => {}
         });
 }
