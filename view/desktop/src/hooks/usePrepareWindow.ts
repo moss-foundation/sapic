@@ -25,6 +25,22 @@ export const usePrepareWindow = (): WindowPreparationState => {
   useEffect(() => {
     const unlisten = listen("kernel-windowCloseRequested", (event) => {
       console.log(event);
+      invokeTauriIpc("set_layout_parts_state", {
+        input: {
+          editor: null,
+          sidebar: {
+            preferredSize: 600,
+            isVisible: false,
+          },
+          panel: {
+            preferredSize: 600,
+            isVisible: false,
+          },
+        },
+        params: {
+          isOnExit: true,
+        },
+      });
     });
 
     return () => {
