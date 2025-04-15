@@ -51,7 +51,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         if params.is_on_exit {
             self.app_handle
-                .emit("kernel.windowCloseRequestedConfirmed", {})
+                .emit("kernel-windowCloseRequestedConfirmed", {})
                 .unwrap();
         }
 

@@ -88,10 +88,10 @@ pub async fn run<R: TauriRuntime>() {
                 // app_handle.hide().ok();
 
                 // FIXME: Temporary solution
-                app_handle.emit("kernel.windowCloseRequested", {}).unwrap();
+                app_handle.emit("kernel-windowCloseRequested", {}).unwrap();
 
                 let app_handle_clone = app_handle.clone();
-                app_handle.listen("kernel.windowCloseRequestedConfirmed", move |_event| {
+                app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
                     #[cfg(target_os = "macos")]
                     {
                         app_handle_clone.hide().ok();
