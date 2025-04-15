@@ -107,6 +107,9 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       </div>
 
       <div className="flex h-full gap-0.5">
+        <div className="mx-1 flex h-full items-center">
+          <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
+        </div>
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}
