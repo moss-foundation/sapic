@@ -13,21 +13,15 @@ impl Collection {
     ) -> Result<CreateRequestGroupOutput, OperationError> {
         input.validate()?;
 
-        // If the input path begins with or ends with a slash/backslash
-        // The slash will be normalized away
-        // For example: if input.path == "folder/", the encoded_path will be "folder"
-        // In RustRover, the (back)slash will be ignore both at the beginning and at the end
-        // In VS Code, a leading (back)slash will prompt an error, and a trailing one will be ignored
-        // Thus I think the current behavior makes sense
-
-        let encoded_path = encode_path(None, &input.path)?;
+        let encoded_path = encode_path(&input.path, None)?;
         let request_group_full_path = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&encoded_path);
 
         if request_group_full_path.exists() {
-            return Err(OperationError::RequestGroupAlreadyExists {
+            return Err(OperationError::AlreadyExists {
+                name: request_group_full_path.file_name().unwrap_or_default().to_string_lossy().to_string(),
                 path: input.path
             });
         }
@@ -38,10 +32,6 @@ impl Collection {
             .await
             .context("Failed to create the request group directory")?;
 
-        // Create an empty folder.sapic spec file
-        // Otherwise the indexer will not recognize the request group
-        // FIXME: Should we create a spec file for all the folders created in the process
-        // Or only the innermost one like we are doing now?
         self.fs
             .create_file(
                 &request_group_full_path.join(FOLDER_ENTRY_SPEC_FILE),

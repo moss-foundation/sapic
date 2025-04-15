@@ -38,7 +38,7 @@ pub fn request_folder_name(request_name: &str) -> String {
 pub fn request_relative_path(name: &str, relative: Option<&Path>) -> PathBuf {
     if let Some(relative) = relative {
         PathBuf::from("requests")
-            .join(encode_path(None, relative).unwrap())
+            .join(encode_path(relative, None).unwrap())
             .join(request_folder_name(name))
     } else {
         PathBuf::from("requests").join(request_folder_name(name))
@@ -48,5 +48,5 @@ pub fn request_relative_path(name: &str, relative: Option<&Path>) -> PathBuf {
 /// Generate the encoded relative path of request group from the collection folder
 pub fn request_group_relative_path(path: &Path) -> PathBuf {
     PathBuf::from("requests")
-        .join(encode_path(None, path).unwrap())
+        .join(encode_path(path, None).unwrap())
 }

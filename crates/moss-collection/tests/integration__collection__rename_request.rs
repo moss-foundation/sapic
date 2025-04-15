@@ -165,7 +165,7 @@ async fn rename_request_already_exists() {
         .await;
     assert!(matches!(
         rename_request_result,
-        Err(OperationError::RequestAlreadyExists { .. })
+        Err(OperationError::AlreadyExists { .. })
     ));
 
     // Clean up

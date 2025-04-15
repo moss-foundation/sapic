@@ -126,7 +126,7 @@ async fn rename_request_group_already_exists() {
     assert!(
         matches!(
             rename_request_group_result,
-            Err(OperationError::RequestGroupAlreadyExists {..})
+            Err(OperationError::AlreadyExists {..})
         )
     );
 

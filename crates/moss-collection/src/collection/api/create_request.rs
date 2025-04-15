@@ -32,7 +32,7 @@ impl Collection {
         let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
 
         let request_dir_relative_path = if let Some(relative_path) = input.relative_path {
-            encode_path(None, &relative_path)?
+            encode_path(&relative_path, None)?
         } else {
             PathBuf::new()
         }.join(&request_dir_name);
@@ -43,7 +43,7 @@ impl Collection {
             .join(&request_dir_relative_path);
 
         if request_dir_full_path.exists() {
-            return Err(OperationError::RequestAlreadyExists {
+            return Err(OperationError::AlreadyExists {
                 name: input.name,
                 path: request_dir_full_path,
             });

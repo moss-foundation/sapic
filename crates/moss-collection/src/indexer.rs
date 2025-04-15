@@ -144,6 +144,7 @@ async fn traverse_requests(
                 progress_callback(&entry_path)?;
             }
 
+            // In the requests folder, we have either request entries or request groups
             if is_request_entry_dir(&entry_path) {
                 let entry_result = index_request_entry_dir(fs, &entry_path, progress_callback)
                     .await
@@ -156,19 +157,20 @@ async fn traverse_requests(
                     "Failed to send the indexed request folder to the result channel: {}",
                     entry_path.display()
                 ))?;
-
-                continue;
-            }
-
-            if entry_path.is_file() && is_folder_entry_spec_file(&entry_path) {
+            } else {
+                stack.push(entry_path.clone());
+                let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
                 let entry = IndexedRequestGroupEntry {
-                    folder_name: current_dir
+                    folder_name: entry
                         .file_name()
-                        .context("Failed to read the request group folder name")?
                         .to_string_lossy()
                         .to_string(),
-                    folder_path: current_dir.to_path_buf(),
-                    spec_file_path: Some(entry_path.to_path_buf()),
+                    folder_path: entry_path.clone(),
+                    spec_file_path: if spec_file_path.exists() {
+                        Some(spec_file_path)
+                    } else {
+                        None
+                    }
                 };
 
                 result_tx
@@ -177,13 +179,6 @@ async fn traverse_requests(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()
                     ))?;
-
-                continue;
-            }
-
-            if entry_path.is_dir() {
-                stack.push(entry_path);
-                continue;
             }
         }
     }

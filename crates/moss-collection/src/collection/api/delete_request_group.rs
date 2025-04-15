@@ -16,7 +16,7 @@ impl Collection {
     ) -> Result<()> {
         input.validate()?;
         // TODO: we won't need this once we implement `ResourceKey`
-        let encoded_path = encode_path(None, &input.path)?;
+        let encoded_path = encode_path(&input.path, None)?;
 
         let requests = self.requests().await?;
         let requests_lock = requests.read().await;

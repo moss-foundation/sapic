@@ -77,7 +77,7 @@ async fn create_request_group_already_exists() {
 
     assert!(matches!(
         create_request_group_result,
-        Err(OperationError::RequestGroupAlreadyExists {..})
+        Err(OperationError::AlreadyExists {..})
     ))
 }
 

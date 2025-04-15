@@ -107,7 +107,7 @@ async fn create_request_already_exists() {
 
     assert!(matches!(
         create_request_result,
-        Err(OperationError::RequestAlreadyExists { .. })
+        Err(OperationError::AlreadyExists { .. })
     ));
 
     // Clean up
@@ -157,9 +157,9 @@ async fn create_request_special_chars() {
                 typ: RequestProtocol::Http(HttpMethod::Get),
             }));
     }
-    // {
-    //     tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    // }
+    {
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
+    }
 }
 
 #[tokio::test]
@@ -255,53 +255,44 @@ async fn create_request_with_special_chars_in_relative_path() {
 }
 
 #[tokio::test]
-async fn create_request_with_different_methods() {
+async fn create_request_http_get() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let testcases = vec![
-        (HttpMethod::Get, "get.sapic", RequestProtocol::Http(HttpMethod::Get)),
-        (HttpMethod::Post, "post.sapic", RequestProtocol::Http(HttpMethod::Post)),
-        (HttpMethod::Put, "put.sapic", RequestProtocol::Http(HttpMethod::Put)),
-        (HttpMethod::Delete, "delete.sapic", RequestProtocol::Http(HttpMethod::Delete)),
-    ];
-    
-    for (method, expected_spec_filename, protocol) in testcases {
-        let request_name = random_request_name();
-        let create_request_result = collection
-            .create_request(CreateRequestInput {
-                name: request_name.clone(),
-                relative_path: None,
-                url: None,
-                payload: Some(
-                    CreateRequestProtocolSpecificPayload::Http {
-                        method,
-                        query_params: vec![],
-                        path_params: vec![],
-                        headers: vec![],
-                        body: None,
-                    }
-                )
-            }).await;
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
+            name: "get".to_string(),
+            relative_path: None,
+            url: None,
+            payload: Some(
+                CreateRequestProtocolSpecificPayload::Http {
+                    method: HttpMethod::Get,
+                    query_params: vec![],
+                    path_params: vec![],
+                    headers: vec![],
+                    body: None,
+                }
+            )
+        }).await;
 
-        assert!(create_request_result.is_ok());
+    assert!(create_request_result.is_ok());
+    let key = create_request_result.unwrap().key;
+    // Check creating the request folder and sapic spec file
 
-        // Check creating the request folder and sapic spec file
-        let expected_request_path = collection_path.join(request_relative_path(&request_name, None));
-        let expected_request_spec_path = expected_request_path.join(expected_spec_filename);
-        assert!(expected_request_path.exists());
-        assert!(expected_request_spec_path.exists());
+    let expected_request_path = collection_path.join(request_relative_path(&"get", None));
+    let expected_request_spec_path = expected_request_path.join("get.sapic");
+    assert!(expected_request_path.exists());
+    assert!(expected_request_spec_path.exists());
 
-        let create_request_output = create_request_result.unwrap();
-        let list_requests_output = collection.list_requests().await.unwrap();
-
-        assert!(list_requests_output.0.iter().any(|info| info == &RequestInfo {
-            key: create_request_output.key,
-            name: request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from(request_folder_name(&request_name)),
-            order: None,
-            typ: protocol.clone(),
-        }));
-    }
+    // Check updating request map
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(list_requests_output.0[0], RequestInfo {
+        key,
+        name: "get".to_string(),
+        relative_path_from_requests_dir: PathBuf::from("get.request"),
+        order: None,
+        typ: RequestProtocol::Http(HttpMethod::Get),
+    });
 
     {
         tokio::fs::remove_dir_all(&collection_path).await.unwrap()
@@ -309,47 +300,134 @@ async fn create_request_with_different_methods() {
 }
 
 #[tokio::test]
-async fn create_request_with_payload() {
+async fn create_request_http_post() {
     let (collection_path, collection) = set_up_test_collection().await;
-    let request_name = random_request_name();
 
     let create_request_result = collection
         .create_request(CreateRequestInput {
-            name: request_name.clone(),
+            name: "post".to_string(),
             relative_path: None,
             url: None,
-            payload: Some(CreateRequestProtocolSpecificPayload::Http {
-                method: HttpMethod::Post,
-                query_params: vec![],
-                path_params: vec![],
-                headers: vec![],
-                body: None,
-            }),
-        })
-        .await;
+            payload: Some(
+                CreateRequestProtocolSpecificPayload::Http {
+                    method: HttpMethod::Post,
+                    query_params: vec![],
+                    path_params: vec![],
+                    headers: vec![],
+                    body: None,
+                }
+            )
+        }).await;
 
     assert!(create_request_result.is_ok());
-
+    let key = create_request_result.unwrap().key;
     // Check creating the request folder and sapic spec file
-    let expected_request_path = collection_path.join(request_relative_path(&request_name, None));
+
+    let expected_request_path = collection_path.join(request_relative_path(&"post", None));
     let expected_request_spec_path = expected_request_path.join("post.sapic");
     assert!(expected_request_path.exists());
     assert!(expected_request_spec_path.exists());
 
-    let create_request_output = create_request_result.unwrap();
+    // Check updating request map
     let list_requests_output = collection.list_requests().await.unwrap();
-
     assert_eq!(list_requests_output.0.len(), 1);
-    assert_eq!(
-        list_requests_output.0[0],
-        RequestInfo {
-            key: create_request_output.key,
-            name: request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from(request_folder_name(&request_name)),
-            order: None,
-            typ: RequestProtocol::Http(HttpMethod::Post),
-        }
-    );
+    assert_eq!(list_requests_output.0[0], RequestInfo {
+        key,
+        name: "post".to_string(),
+        relative_path_from_requests_dir: PathBuf::from("post.request"),
+        order: None,
+        typ: RequestProtocol::Http(HttpMethod::Post),
+    });
+
+    {
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
+    }
+}
+
+#[tokio::test]
+async fn create_request_http_put() {
+    let (collection_path, collection) = set_up_test_collection().await;
+
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
+            name: "put".to_string(),
+            relative_path: None,
+            url: None,
+            payload: Some(
+                CreateRequestProtocolSpecificPayload::Http {
+                    method: HttpMethod::Put,
+                    query_params: vec![],
+                    path_params: vec![],
+                    headers: vec![],
+                    body: None,
+                }
+            )
+        }).await;
+
+    assert!(create_request_result.is_ok());
+    let key = create_request_result.unwrap().key;
+    // Check creating the request folder and sapic spec file
+
+    let expected_request_path = collection_path.join(request_relative_path(&"put", None));
+    let expected_request_spec_path = expected_request_path.join("put.sapic");
+    assert!(expected_request_path.exists());
+    assert!(expected_request_spec_path.exists());
+
+    // Check updating request map
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(list_requests_output.0[0], RequestInfo {
+        key,
+        name: "put".to_string(),
+        relative_path_from_requests_dir: PathBuf::from("put.request"),
+        order: None,
+        typ: RequestProtocol::Http(HttpMethod::Put),
+    });
+
+    {
+        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
+    }
+}
+
+#[tokio::test]
+async fn create_request_http_delete() {
+    let (collection_path, collection) = set_up_test_collection().await;
+
+    let create_request_result = collection
+        .create_request(CreateRequestInput {
+            name: "delete".to_string(),
+            relative_path: None,
+            url: None,
+            payload: Some(
+                CreateRequestProtocolSpecificPayload::Http {
+                    method: HttpMethod::Delete,
+                    query_params: vec![],
+                    path_params: vec![],
+                    headers: vec![],
+                    body: None,
+                }
+            )
+        }).await;
+
+    assert!(create_request_result.is_ok());
+    let key = create_request_result.unwrap().key;
+    // Check creating the request folder and sapic spec file
+
+    let expected_request_path = collection_path.join(request_relative_path(&"delete", None));
+    let expected_request_spec_path = expected_request_path.join("delete.sapic");
+    assert!(expected_request_path.exists());
+    assert!(expected_request_spec_path.exists());
+
+    // Check updating request map
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(list_requests_output.0[0], RequestInfo {
+        key,
+        name: "delete".to_string(),
+        relative_path_from_requests_dir: PathBuf::from("delete.request"),
+        order: None,
+        typ: RequestProtocol::Http(HttpMethod::Delete),
+    });
 
     {
         tokio::fs::remove_dir_all(&collection_path).await.unwrap()

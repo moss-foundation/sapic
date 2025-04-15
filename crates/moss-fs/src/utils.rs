@@ -1,12 +1,17 @@
+use std::cell::LazyCell;
 use anyhow::Result;
 use std::path::{Component, Path, PathBuf};
+use std::sync::LazyLock;
 use regex::Regex;
+
+static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap()
+});
 
 // Function to encode forbidden characters and '%' in a directory name
 pub fn encode_directory_name(name: &str) -> String {
     // List of forbidden characters, including '%' to avoid ambiguity
-    let re = Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap();
-    re.replace_all(name, |caps: &regex::Captures| {
+    FORBIDDEN_RE.replace_all(name, |caps: &regex::Captures| {
         // Replace each forbidden character with its hex representation (e.g., ':' -> %3A)
         format!("%{:02X}", caps[0].chars().next().unwrap() as u32)
     }).to_string()
@@ -35,31 +40,28 @@ pub fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseInt
 
 // FIXME: This process may need some refinement
 /// Doing a basic normalization using Path::components() and encode the segments after the prefix
-pub fn encode_path(prefix: Option<&Path>, path: &Path) -> Result<PathBuf> {
-    let path_to_be_encoded = if let Some(prefix) = prefix {
-        path.strip_prefix(prefix)?
-    } else { path };
+pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
+    // Determine the relative part of the path to be encoded.
+    let relative_path = match prefix {
+        Some(prefix) => path.strip_prefix(prefix)?,
+        None => path,
+    };
 
-    let encoded_part = path_to_be_encoded.components().filter_map(|c| {
-        match c {
-            Component::Normal(os_str) => {
-                let segment = os_str.to_string_lossy();
-                Some(encode_directory_name(&segment))
-            },
-            // FIXME: Is this the best strategy?
-            // Ignoring special components
-            Component::ParentDir => None,
-            Component::Prefix(_) => None,
-            Component::RootDir => None,
-            Component::CurDir => None,
-        }
-    }).collect::<PathBuf>();
+    // Encode only the normal components of the path.
+    let encoded: PathBuf = relative_path
+        .components()
+        .filter_map(|comp| {
+            if let Component::Normal(name) = comp {
+                Some(encode_directory_name(&name.to_string_lossy()))
+            } else {
+                // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
+                None
+            }
+        })
+        .collect();
 
-    if let Some(prefix) = prefix {
-        Ok(prefix.join(encoded_part))
-    } else {
-        Ok(encoded_part)
-    }
+    // If a prefix was provided, join it back with the encoded path.
+    Ok(prefix.map(|p| p.join(&encoded)).unwrap_or(encoded))
 }
 
 #[cfg(test)]
@@ -88,7 +90,7 @@ mod tests {
     #[test]
     fn test_special_chars() {
         let path = PathBuf::from("pre.fix/colle*ction");
-        dbg!(&encode_path(Some(Path::new("pre.fix")), &path));
+        dbg!(&encode_path(&path, Some(Path::new("pre.fix"))));
     }
 
 

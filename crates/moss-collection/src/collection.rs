@@ -22,8 +22,6 @@ pub struct CollectionCache {
 
 pub struct CollectionRequestData {
     pub name: String,
-    // TODO: More tests on the path
-    /// (request_group/)request_name.request
     pub entry_relative_path: PathBuf,
     pub order: Option<usize>,
     pub spec_file_name: String,

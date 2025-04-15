@@ -45,7 +45,7 @@ impl Collection {
         input.validate()?;
 
         // TODO: we won't need this once we implement `ResourceKey`
-        let group_relative_path_old = encode_path(None, &input.path)?;
+        let group_relative_path_old = encode_path(&input.path, None)?;
         let new_encoded_name = encode_directory_name(&input.new_name);
         let group_relative_path_new = group_relative_path_old
             .parent()
@@ -62,7 +62,8 @@ impl Collection {
             .join(&group_relative_path_old);
 
         if !group_full_path_old.exists() {
-            return Err(OperationError::RequestGroupNotFound {
+            return Err(OperationError::NotFound {
+                name: group_relative_path_old.file_name().unwrap_or_default().to_string_lossy().to_string(),
                 path: group_full_path_old,
             })
         }
@@ -73,7 +74,8 @@ impl Collection {
             .join(&group_relative_path_new);
 
         if group_full_path_new.exists() {
-            return Err(OperationError::RequestGroupAlreadyExists {
+            return Err(OperationError::AlreadyExists {
+                name: input.new_name,
                 path: group_full_path_new,
             })
         }
