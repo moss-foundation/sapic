@@ -78,7 +78,7 @@ pub async fn run<R: TauriRuntime>() {
 
                 let window_clone = window.clone();
                 app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
-                    window_clone.close().ok();
+                    window_clone.destroy().ok();
                 });
             }
 
