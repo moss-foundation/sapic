@@ -4,6 +4,12 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { listen } from "@tauri-apps/api/event";
 
+import {
+  DescribeLayoutPartsStateOutput,
+  OpenWorkspaceInput,
+  OpenWorkspaceOutput,
+} from "./../../../../crates/moss-workspace/bindings/operations";
+
 export interface WindowPreparationState {
   isPreparing: boolean;
 }
@@ -15,22 +21,19 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
   useEffect(() => {
     const openWorkspace = async () => {
-      await invokeTauriIpc("open_workspace", {
+      await invokeTauriIpc<OpenWorkspaceInput, OpenWorkspaceOutput>("open_workspace", {
         input: { name: "TestWorkspace" },
       });
 
-      const res = await invokeTauriIpc("describe_layout_parts_state");
-      console.log(res);
-      if (res.status !== "ok") return;
+      const res = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
 
-      // res?.editor !== null && setEditorGridState(res.editor);
+      if (res.status !== "ok" || !res.data) return;
 
-      if (res?.sidebar !== null) {
-        console.log(1);
+      if (res.data?.sidebar) {
         sideBar.setWidth(res.data.sidebar.preferredSize);
         sideBar.setVisible(res.data.sidebar.isVisible);
       }
-      if (res?.panel !== null) {
+      if (res.data?.panel) {
         bottomPane.setHeight(res.data.panel.preferredSize);
         bottomPane.setVisible(res.data.panel.isVisible);
       }
@@ -41,7 +44,6 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
   useEffect(() => {
     const unlisten = listen("kernel-windowCloseRequested", (event) => {
-      console.log(event);
       invokeTauriIpc("set_layout_parts_state", {
         input: {
           editor: null,
