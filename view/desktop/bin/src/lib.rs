@@ -82,8 +82,14 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
+            RunEvent::Exit => {
+                dbg!("Exit");
+            }
+
             // #[cfg(target_os = "macos")]
             RunEvent::ExitRequested { api, .. } => {
+                dbg!("ExitRequested");
+
                 api.prevent_exit();
                 // app_handle.hide().ok();
 
