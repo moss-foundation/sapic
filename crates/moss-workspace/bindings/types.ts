@@ -14,8 +14,8 @@ export type CollectionInfo = { key: ResourceKey; name: string; order?: number };
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
 export type EditorGridNode =
-  | { "type": "branch"; "data": { data: Array<EditorGridNode>; size: number } }
-  | { "type": "leaf"; "data": { data: EditorGridLeafData; size: number } };
+  | { "type": "branch"; data: Array<EditorGridNode>; size: number }
+  | { "type": "leaf"; data: EditorGridLeafData; size: number };
 
 export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
 

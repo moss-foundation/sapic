@@ -21,7 +21,7 @@ pub struct EditorGridLeafData {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(tag = "type", content = "data", rename_all = "camelCase")]
+#[serde(tag = "type", rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum EditorGridNode {
     Branch {
