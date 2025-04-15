@@ -70,6 +70,9 @@ pub async fn run<R: TauriRuntime>() {
                 }
             }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
+            WindowEvent::CloseRequested { api, .. } => {
+                dbg!("CloseRequested");
+            }
 
             _ => (),
         })
@@ -90,7 +93,7 @@ pub async fn run<R: TauriRuntime>() {
             RunEvent::ExitRequested { api, .. } => {
                 dbg!("ExitRequested");
 
-                api.prevent_exit();
+                // api.prevent_exit();
                 // app_handle.hide().ok();
 
                 // FIXME: Temporary solution
