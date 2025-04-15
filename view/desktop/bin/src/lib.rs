@@ -56,7 +56,10 @@ pub async fn run<R: TauriRuntime>() {
             commands::set_locale,
             commands::list_locales,
             commands::get_translations,
-            commands::collection::example_index_collection_command,
+            commands::open_workspace,
+            commands::set_layout_parts_state,
+            commands::describe_layout_parts_state,
+            commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
             #[cfg(target_os = "macos")]
