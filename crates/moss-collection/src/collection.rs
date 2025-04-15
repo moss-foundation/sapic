@@ -22,9 +22,6 @@ pub struct CollectionCache {
 
 pub struct CollectionRequestData {
     pub name: String,
-    // TODO: More tests on the path
-    // FIXME: This field is a bit confusing, since it doesn't match with the input.relative_path
-    /// A relative path, like CollectionName/requests
     pub entry_relative_path: PathBuf,
     pub order: Option<usize>,
     pub spec_file_name: String,
@@ -130,7 +127,9 @@ impl Collection {
                         }
                         crate::indexer::IndexedEntry::RequestGroup(
                             _indexed_request_group_entry,
-                        ) => {}
+                        ) => {
+                            // TODO
+                        }
                     }
                 }
 

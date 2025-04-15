@@ -10,6 +10,10 @@
 import type { HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestInfo } from "./types";
 import type { ResourceKey } from "@repo/bindings-utils";
 
+export type CreateRequestGroupInput = { path: string };
+
+export type CreateRequestGroupOutput = Record<string, never>;
+
 export type CreateRequestInput = {
   name: string;
   relativePath?: string;
@@ -29,8 +33,12 @@ export type CreateRequestProtocolSpecificPayload = {
   };
 };
 
+export type DeleteRequestGroupInput = { path: string };
+
 export type DeleteRequestInput = { key: ResourceKey };
 
 export type ListRequestsOutput = Array<RequestInfo>;
+
+export type RenameRequestGroupInput = { path: string; newName: string };
 
 export type RenameRequestInput = { key: ResourceKey; newName: string };

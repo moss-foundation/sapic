@@ -1,7 +1,7 @@
 mod shared;
 
 use moss_fs::utils::encode_directory_name;
-use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_workspace_name};
+use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceInfo;
 use moss_workspace::workspace_manager::*;
@@ -107,7 +107,7 @@ async fn create_workspace_already_exists() {
 async fn create_workspace_special_chars() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
-    let workspace_name_list = SPECIAL_CHARS
+    let workspace_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", random_workspace_name()))
         .collect::<Vec<String>>();
