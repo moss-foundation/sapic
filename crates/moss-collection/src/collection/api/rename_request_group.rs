@@ -34,7 +34,7 @@ impl Collection {
             &entity
         )?;
 
-        txn.commit()
+        Ok(txn.commit()?)
 
     }
 

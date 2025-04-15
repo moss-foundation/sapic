@@ -144,6 +144,7 @@ async fn traverse_requests(
                 progress_callback(&entry_path)?;
             }
 
+
             // In the requests folder, we have either request entries or request groups
             if is_request_entry_dir(&entry_path) {
                 let entry_result = index_request_entry_dir(fs, &entry_path, progress_callback)
@@ -157,7 +158,7 @@ async fn traverse_requests(
                     "Failed to send the indexed request folder to the result channel: {}",
                     entry_path.display()
                 ))?;
-            } else {
+            } else if entry_path.is_dir(){
                 stack.push(entry_path.clone());
                 let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
                 let entry = IndexedRequestGroupEntry {

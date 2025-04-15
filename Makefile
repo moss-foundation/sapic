@@ -2,19 +2,6 @@
 # Sapic Makefile - Build and Development Configuration
 # ======================================================
 
-# ---- Environment Settings ----
-export LOG_LEVEL = trace
-export DEV_APP_DIR = ${HOME}/.sapic
-
-# ---- Asset Directories ----
-export THEMES_DIR = ${CURDIR}/assets/themes
-export LOCALES_DIR = ${CURDIR}/assets/locales
-export APP_LOG_DIR = ${CURDIR}/logs/app
-export SESSION_LOG_DIR = ${CURDIR}/logs/session
-
-# ---- Default Goal ----
-.DEFAULT_GOAL := run-desktop
-
 # ---- OS Detection ----
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
@@ -27,6 +14,19 @@ else
     PYTHON := python3
     PIP := pip3
 endif
+
+# ---- Environment Settings ----
+export LOG_LEVEL = trace
+export DEV_APP_DIR = ${HOME_DIR}/.sapic
+
+# ---- Asset Directories ----
+export THEMES_DIR = ${CURDIR}/assets/themes
+export LOCALES_DIR = ${CURDIR}/assets/locales
+export APP_LOG_DIR = ${CURDIR}/logs/app
+export SESSION_LOG_DIR = ${CURDIR}/logs/session
+
+# ---- Default Goal ----
+.DEFAULT_GOAL := run-desktop
 
 # ---- Directory Paths ----
 # Application directories
