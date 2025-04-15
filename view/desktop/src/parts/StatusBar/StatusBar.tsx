@@ -26,6 +26,7 @@ interface Item {
 }
 
 const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
+  const [isOnline, setIsOnline] = useState(true);
   const [DNDList, setDNDList] = useState<Item[]>([
     {
       id: 1,
@@ -65,15 +66,28 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
     });
   }, [DNDList]);
 
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
     <footer
       className={cn(
-        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pl-3.5",
+        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pr-4 pl-3.5",
         className
       )}
     >
       <div className="flex h-full">
-        <div className="flex h-full gap-0.5">
+        <div className="flex h-full gap-1.5">
           {DNDList.map((item) => (
             <StatusBarButton
               key={item.id}
@@ -93,12 +107,12 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       </div>
 
       <div className="flex h-full gap-0.5">
-        <StatusBarButton label="UTF-8" />
-        <StatusBarButton label="24 Ln, 16 Col" />
-        <StatusBarButton label="4 Spaces" />
-        <StatusBarButton label="Rust" />
-
-        <StatusBarButton label="--READ--" />
+        <StatusBarButton
+          icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
+          label={isOnline ? "Online" : "Offline"}
+          className="text-black"
+          iconClassName={isOnline ? "text-[#1E6B33]" : "text-[#DF9303]"}
+        />
       </div>
     </footer>
   );
@@ -122,11 +136,11 @@ const StatusBarIndicators = () => {
         <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center rounded-md px-2 py-1 transition">
           <div className="flex items-center space-x-2">
             <div className="flex items-center gap-1">
-              <Icon className="size-[14px] text-[#D62A18]" icon="StatusBarErrors" />
+              <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
               <span className="text-sm text-black">2</span>
             </div>
             <div className="flex items-center gap-1">
-              <Icon className="size-[14px] text-[#FFC505]" icon="StatusBarWarnings" />
+              <Icon className="size-[14px] text-[#FFAF0F]" icon="StatusBarWarnings" />
               <span className="text-sm text-black">5</span>
             </div>
           </div>
@@ -216,7 +230,7 @@ const StatusBarButton = ({
       {...props}
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center gap-1.5 rounded px-1.5 py-1 transition">
+      <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center gap-1 rounded px-1.5 py-1 transition">
         {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
