@@ -72,8 +72,9 @@
   --moss-secondary-background-hover: var(--moss-gray-12);
   --moss-secondary-text: var(--moss-gray-6);
 
-  --moss-info-background: var(--moss-blue-12) --moss-info-background-hover: var(--moss-blue-13)
-    --moss-info-text: var(--moss-primary-text);
+  --moss-info-background: var(--moss-blue-12);
+  --moss-info-background-hover: var(--moss-blue-13);
+  --moss-info-text: var(--moss-primary-text);
   --moss-info-icon: var(--moss-primary);
   --moss-info-border: var(--moss-primary);
 
@@ -84,7 +85,7 @@
   --moss-icon-primary-background: transparent;
   --moss-icon-primary-text: var(--moss-gray-6);
   --moss-icon-primary-background-hover: var(--moss-gray-12);
-  --moss-icon-primary-background-active: var(--moss-gray-12);
+  --moss-icon-primary-background-active: var(--moss-blue-12);
 
   /* Layout */
   --moss-statusBar-background: var(--moss-gray-2);
