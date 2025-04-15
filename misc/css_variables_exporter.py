@@ -1,6 +1,26 @@
+#!/usr/bin/env python3
+
+"""
+CSS Variables Exporter
+
+This script extracts CSS custom properties (variables) from a CSS file and
+exports them to a JSON file. This makes CSS variables available to other tools
+such as linters and type checkers.
+
+The script parses a CSS file, identifies all CSS custom properties (variables
+that start with '--'), and saves them as a JSON array.
+
+Usage:
+    python css_variables_exporter.py
+
+This script is called during the build process to make CSS theming variables
+available throughout the project's toolchain.
+"""
+
 import tinycss2
 import json
 from pathlib import Path
+
 
 def extract_css_variables(input_file: str, output_file: str):
     """
@@ -15,13 +35,19 @@ def extract_css_variables(input_file: str, output_file: str):
         css_content = Path(input_file).read_text()
 
         # Parse the stylesheet rules
-        rules = tinycss2.parse_stylesheet(css_content, skip_comments=True, skip_whitespace=True)
+        rules = tinycss2.parse_stylesheet(
+            css_content, skip_comments=True, skip_whitespace=True
+        )
 
         # Parse the declarations in the root rule
         declarations = tinycss2.parse_blocks_contents(rules[0].content)
 
         # Extract the variables
-        variables = [decl.name for decl in declarations if decl.type == "declaration" and decl.lower_name.startswith("--")]
+        variables = [
+            decl.name
+            for decl in declarations
+            if decl.type == "declaration" and decl.lower_name.startswith("--")
+        ]
 
         # Write the variables to the output file as a json array
         Path(output_file).write_text(json.dumps(variables))
@@ -30,7 +56,8 @@ def extract_css_variables(input_file: str, output_file: str):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
 if __name__ == "__main__":
-    input_file = '../assets/themes/light.css'
-    output_file = '../packages/config-eslint/moss-lint-plugin/css_variables.json'
+    input_file = "../assets/themes/light.css"
+    output_file = "../packages/config-eslint/moss-lint-plugin/css_variables.json"
     extract_css_variables(input_file, output_file)

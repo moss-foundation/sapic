@@ -42,6 +42,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             .context("Failed to create the workspace directory")?;
 
         let current_workspace = Workspace::new(
+            self.app_handle.clone(),
             full_path.clone(),
             self.fs.clone(),
             self.activity_indicator.clone(),

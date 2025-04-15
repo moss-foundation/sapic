@@ -1,12 +1,13 @@
 use anyhow::Result;
 use moss_environment::models::types::VariableInfo;
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{DescribeEnvironmentInput, DescribeEnvironmentOutput},
     workspace::Workspace,
 };
 
-impl Workspace {
+impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_environment(
         &self,
         input: DescribeEnvironmentInput,

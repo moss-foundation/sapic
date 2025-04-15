@@ -13,7 +13,7 @@ use moss_environment::environment::{Environment, EnvironmentCache, VariableCache
 use moss_fs::{utils::decode_directory_name, FileSystem};
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
-use tauri::Runtime as TauriRuntime;
+use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
 use crate::storage::state_db_manager::StateDbManagerImpl;
@@ -28,17 +28,20 @@ type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
-pub struct Workspace {
+pub struct Workspace<R: TauriRuntime> {
+    app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state_db_manager: Arc<dyn StateDbManager>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
+    activity_indicator: ActivityIndicator<R>,
     indexer_handle: IndexerHandle,
 }
 
-impl Workspace {
-    pub fn new<R: TauriRuntime>(
+impl<R: TauriRuntime> Workspace<R> {
+    pub fn new(
+        app_handle: AppHandle<R>,
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
@@ -58,12 +61,14 @@ impl Workspace {
         });
 
         Ok(Self {
+            app_handle,
             path,
             fs,
             state_db_manager: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             indexer_handle,
+            activity_indicator,
         })
     }
 
@@ -197,7 +202,7 @@ impl Workspace {
     }
 }
 
-impl Workspace {
+impl<R: TauriRuntime> Workspace<R> {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
         let collection_store = self.state_db_manager.collection_store();

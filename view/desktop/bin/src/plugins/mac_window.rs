@@ -28,7 +28,7 @@ unsafe impl Send for UnsafeWindowHandle {}
 unsafe impl Sync for UnsafeWindowHandle {}
 
 #[cfg(target_os = "macos")]
-pub fn init() -> TauriPlugin<Wry> {
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("mac_window")
         .on_window_ready(|window| {
             {

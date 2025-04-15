@@ -21,8 +21,8 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
-  const primarySideBarPosition = useAppResizableLayoutStore((state) => state.primarySideBarPosition);
-
+  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
+  const { visible } = useAppResizableLayoutStore((state) => state.sideBar);
   useEffect(() => {
     return monitorForElements({
       onDrop({ location, source }) {
@@ -46,17 +46,26 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("background-(--moss-secondary-background) flex items-center gap-3 p-1.5", {
-        "w-full border-b border-b-(--moss-border-color)": position === "top",
-        "w-full border-t border-t-(--moss-border-color)": position === "bottom",
-        "h-full flex-col": position === "default",
+      className={cn("background-(--moss-secondary-background) flex items-center gap-3", {
+        "w-full border-b border-b-(--moss-border-color) px-1.5": position === "top",
+        "w-full border-t border-t-(--moss-border-color) px-1.5": position === "bottom",
+        "h-full flex-col py-1.5": position === "default",
         "hidden": position === "hidden",
 
-        "border-l border-l-(--moss-border-color)": primarySideBarPosition === "right" && position === "default",
+        "border-l border-l-(--moss-border-color)": sideBarPosition === "right" && position === "default",
       })}
     >
       {items.map((item) => (
-        <ActivityBarButton key={item.id} {...item} />
+        <div
+          className={cn("relative flex flex-col", {
+            "px-1.5": position === "default",
+            "py-1.5": position === "top" || position === "bottom",
+          })}
+        >
+          <ActivityBarButton key={item.id} {...item} />
+
+          {item.isActive && visible && <ActivityBarButtonIndicator />}
+        </div>
       ))}
     </div>
   );
@@ -66,7 +75,7 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { alignment, setItems, items, position } = useActivityBarStore();
-  const { setVisible, visible } = useAppResizableLayoutStore((state) => state.primarySideBar);
+  const { setVisible, visible } = useAppResizableLayoutStore((state) => state.sideBar);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
@@ -174,6 +183,23 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
           preview
         )}
     </button>
+  );
+};
+
+const ActivityBarButtonIndicator = () => {
+  const position = useActivityBarStore((state) => state.position);
+  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
+
+  return (
+    <div
+      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)]", {
+        "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-[10px]": position === "top",
+        "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-[10px]": position === "bottom",
+        "inset-y-[9px] h-2.5 w-0.5": position === "default",
+        "right-0 rounded-l-[10px]": sideBarPosition === "right" && position === "default",
+        "left-0 rounded-r-[10px]": sideBarPosition === "left" && position === "default",
+      })}
+    />
   );
 };
 

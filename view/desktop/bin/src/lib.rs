@@ -13,17 +13,19 @@ use moss_app::manager::AppManager;
 use moss_fs::RealFileSystem;
 use services::service_pool;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
+use tauri::{Emitter, Listener};
 use tauri_plugin_os;
+
 use window::{create_window, CreateWindowInput};
 
 use crate::constants::*;
 use crate::plugins::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub async fn run() {
+pub async fn run<R: TauriRuntime>() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::<R>::new()
         .plugin(plugin_log::init())
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
@@ -79,15 +81,23 @@ pub async fn run() {
 
             #[cfg(target_os = "macos")]
             RunEvent::ExitRequested { api, .. } => {
-                app_handle.hide().ok();
                 api.prevent_exit();
+                app_handle.hide().ok();
+
+                // FIXME: Temporary solution
+                app_handle.emit("kernel.windowCloseRequested", {}).unwrap();
+
+                let app_handle_clone = app_handle.clone();
+                app_handle.listen("kernel.windowCloseRequestedConfirmed", move |_event| {
+                    app_handle_clone.hide().ok();
+                });
             }
 
             _ => {}
         });
 }
 
-fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
+fn create_main_window<R: TauriRuntime>(app_handle: &AppHandle<R>, url: &str) -> WebviewWindow<R> {
     // TODO: Use ConfigurationService
 
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;

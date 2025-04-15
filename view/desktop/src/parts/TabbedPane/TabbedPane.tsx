@@ -1,325 +1,65 @@
-import React, { useEffect } from "react";
+import "./assets/styles.css";
 
+import React from "react";
+
+import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
+import { DropNodeElement } from "@/components/Tree/types";
 import { Home, Logs, Settings } from "@/pages";
+import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
 import {
   DockviewApi,
   DockviewDefaultTab,
   DockviewDidDropEvent,
-  DockviewPanelApi,
   DockviewReact,
   DockviewReadyEvent,
-  IDockviewPanelHeaderProps,
   IDockviewPanelProps,
   positionToDirection,
 } from "@repo/moss-tabs";
 
-import { LeftControls, PrefixHeaderControls, RightControls } from "./controls";
-import { Table, usePanelApiMetadata } from "./debugPanel";
+import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugComponents/controls";
+import DockviewControls from "./DebugComponents/DockviewControls";
+import LogsPanel from "./DebugComponents/LogsPanel";
+import Metadata from "./DebugComponents/Metadata";
 import { defaultConfig } from "./defaultLayout";
-import { GridActions } from "./gridActions";
-import { GroupActions } from "./groupActions";
-import { PanelActions } from "./panelActions";
-import { setGridState } from "./utils";
-
-import "./assets/styles.css";
-
-import { Breadcrumbs } from "@/components";
-import { DropNodeElement } from "@/components/Tree/types";
-import { getActualDropSourceTarget } from "@/components/Tree/utils";
-import { useDockviewStore } from "@/store/Dockview";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
+import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
+import { useDockviewLogger } from "./hooks/useDockviewLogger";
+import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
+import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);
 
-const Option = (props: { title: string; onClick: () => void; value: string }) => {
-  return (
-    <div>
-      <span>{`${props.title}: `}</span>
-      <button className="rounded !bg-cyan-300 p-2 !text-black hover:!bg-cyan-500" onClick={props.onClick}>
-        {props.value}
-      </button>
-    </div>
-  );
-};
-
-const Metadata = ({ onClick, api }: { onClick: () => void; api: DockviewPanelApi }) => {
-  const metadata = usePanelApiMetadata(api);
-
-  return (
-    <div className="text-sm">
-      <Option title="Panel Rendering Mode" value={metadata.renderer.value} onClick={onClick} />
-
-      <Table data={metadata} />
-    </div>
-  );
-};
-
-const components = {
-  Default: (props: IDockviewPanelProps) => {
-    const isDebug = React.useContext(DebugContext);
-
-    return (
-      <>
-        <Breadcrumbs panelId={props.api.id} />
-        <Scrollbar
-          className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
-            props.api.isActive ? "select-text" : "select-none"
-          }`}
-        >
-          <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-            <span>{props.api.title}</span>
-
-            <span>{Math.random().toFixed(2)}</span>
-            {props?.params.someRandomString && (
-              <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
-            )}
-          </span>
-
-          {isDebug && (
-            <Metadata
-              onClick={() => {
-                props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-              }}
-              api={props.api}
-            />
-          )}
-        </Scrollbar>
-      </>
-    );
-  },
-  nested: () => {
-    return (
-      <DockviewReact
-        components={components}
-        onReady={(event: DockviewReadyEvent) => {
-          event.api.addPanel({ id: "panel_1", component: "Default" });
-          event.api.addPanel({ id: "panel_2", component: "Default" });
-          event.api.addPanel({
-            id: "panel_3",
-            component: "Default",
-          });
-
-          event.api.onDidRemovePanel((e) => {
-            console.log("remove", e);
-          });
-        }}
-        className={"dockview-theme-light"}
-      />
-    );
-  },
-  iframe: (props: IDockviewPanelProps) => {
-    return (
-      <iframe
-        onMouseDown={() => {
-          if (!props.api.isActive) {
-            props.api.setActive();
-          }
-        }}
-        className="h-full w-full"
-      />
-    );
-  },
-  Home: Home,
-  Settings: Settings,
-  Logs: Logs,
-};
-
-const PageWrapper = ({ props, page }: { props: IDockviewPanelProps; page: JSX.Element }) => {
-  const isDebug = React.useContext(DebugContext);
-  const metadata = usePanelApiMetadata(props.api);
-
-  React.useEffect(() => {
-    setGridState(props.containerApi);
-  }, [props.containerApi]);
-
-  return (
-    <Scrollbar
-      className={`relative h-full overflow-auto p-1.25 ${isDebug ? "border-2 border-dashed border-orange-500" : ""} ${
-        props.api.isActive ? "select-text" : "select-none"
-      }`}
-    >
-      <span>{page}</span>
-
-      {isDebug && (
-        <div className="text-sm">
-          <Option
-            title="Panel Rendering Mode"
-            value={metadata.renderer.value}
-            onClick={() => {
-              props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
-            }}
-          />
-
-          <Table data={metadata} />
-        </div>
-      )}
-    </Scrollbar>
-  );
-};
-
-const headerComponents = {
-  default: (props: IDockviewPanelHeaderProps) => {
-    const onContextMenu = (event: React.MouseEvent) => {
-      event.preventDefault();
-      alert("context menu");
-    };
-    return <DockviewDefaultTab onContextMenu={onContextMenu} {...props} />;
-  },
-};
-
-const colors = [
-  "rgba(255,0,0,0.2)",
-  "rgba(0,255,0,0.2)",
-  "rgba(0,0,255,0.2)",
-  "rgba(255,255,0,0.2)",
-  "rgba(0,255,255,0.2)",
-  "rgba(255,0,255,0.2)",
-];
-let count = 0;
-
-const WatermarkComponent = () => {
-  return <div className="bg-red-200">Custom Watermark</div>;
-};
-
-const TabbedPane = (props: { theme?: string }) => {
-  const [logLines, setLogLines] = React.useState<{ text: string; timestamp?: Date; backgroundColor?: string }[]>([]);
+const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-
   const dockviewStore = useDockviewStore();
 
+  const [api, setApi] = React.useState<DockviewApi>();
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
-  const [api, setApi] = React.useState<DockviewApi>();
+  const [activePanel, setActivePanel] = React.useState<string | undefined>();
+  const [activeGroup, setActiveGroup] = React.useState<string | undefined>();
+  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNodeElement | null>(null);
+  const [watermark, setWatermark] = React.useState(false);
+  const [showLogs, setShowLogs] = React.useState(false);
+  const [debug, setDebug] = React.useState(false);
 
-  const [activePanel, setActivePanel] = React.useState<string>();
-  const [activeGroup, setActiveGroup] = React.useState<string>();
+  const { logLines, addLogLine, setLogLines } = useDockviewLogger();
 
-  const [pending, setPending] = React.useState<{ text: string; timestamp?: Date }[]>([]);
+  const dockviewRef = React.useRef<HTMLDivElement>(null);
+  const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  const addLogLine = (message: string) => {
-    setPending((line) => [{ text: message, timestamp: new Date() }, ...line]);
-  };
-
-  React.useLayoutEffect(() => {
-    if (pending.length === 0) {
-      return;
-    }
-    const color = colors[count++ % colors.length];
-    setLogLines((lines) => [...pending.map((_) => ({ ..._, backgroundColor: color })), ...lines]);
-    setPending([]);
-  }, [pending]);
-
-  React.useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    const disposables = [
-      api.onDidAddPanel((event) => {
-        setPanels((_) => [..._, event.id]);
-        addLogLine(`Panel Added ${event.id}`);
-      }),
-      api.onDidActivePanelChange((event) => {
-        dockviewStore.setCurrentActivePanelId(event?.id || undefined);
-        dockviewStore.setCurrentActiveTreeId(event?.params?.treeId || undefined);
-
-        addLogLine(`Panel Activated ${event?.id}`);
-      }),
-      api.onDidRemovePanel((event) => {
-        setPanels((_) => {
-          const next = [..._];
-          if (event && event.id) {
-            next.splice(
-              next.findIndex((x) => x === event.id),
-              1
-            );
-          }
-
-          return next;
-        });
-        addLogLine(`Panel Removed ${event?.id || "unknown"}`);
-      }),
-
-      api.onDidAddGroup((event) => {
-        setGroups((_) => [..._, event.id]);
-        addLogLine(`Group Added ${event.id}`);
-      }),
-
-      api.onDidMovePanel((event) => {
-        addLogLine(`Panel Moved ${event.panel.id}`);
-      }),
-
-      api.onDidMaximizedGroupChange((event) => {
-        addLogLine(`Group Maximized Changed ${event.group.api.id} [${event.isMaximized}]`);
-      }),
-      api.onDidRemoveGroup((event) => {
-        setGroups((_) => {
-          const next = [..._];
-          next.splice(
-            next.findIndex((x) => x === event.id),
-            1
-          );
-
-          return next;
-        });
-        addLogLine(`Group Removed ${event.id}`);
-      }),
-
-      api.onDidActiveGroupChange((event) => {
-        setActiveGroup(event?.id);
-        addLogLine(`Group Activated ${event?.id}`);
-      }),
-      api.onUnhandledDragOverEvent((event) => {
-        event.accept();
-      }),
-    ];
-
-    const initializeLayout = async () => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        api.clear();
-
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        defaultConfig(api);
-      } catch (e) {
-        console.warn("Failed to initialize layout:", e);
-      }
-    };
-
-    const timeoutId = setTimeout(initializeLayout, 0);
-
-    return () => {
-      clearTimeout(timeoutId);
-      disposables.forEach((disposable) => disposable.dispose());
-
-      // Clean up when component unmounts
-      try {
-        setTimeout(() => {
-          try {
-            api.clear();
-          } catch (e) {
-            // Ignore cleanup errors during unmount
-          }
-        }, 100);
-      } catch (e) {
-        // Ignore cleanup errors during unmount
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api]);
+  useDockviewEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
+  useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
+  useDockviewResizeObserver(api, dockviewRefWrapper);
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
     dockviewStore.setApi(event.api);
     useTabbedPaneStore.getState().setApi(event.api);
   };
-
-  const dockviewRef = React.useRef<HTMLDivElement | null>(null);
-  const [pragmaticDropElement, setPragmaticDropElement] = React.useState<DropNodeElement | null>(null);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement) return;
@@ -332,168 +72,155 @@ const TabbedPane = (props: { theme?: string }) => {
         referenceGroup: event.group || undefined,
       },
     });
-
     setPragmaticDropElement(null);
   };
 
   React.useEffect(() => {
-    if (!dockviewRef.current) {
-      return;
-    }
-    return dropTargetForElements({
-      element: dockviewRef.current,
-      onDragEnter({ source }) {
-        const sourceTarget = getActualDropSourceTarget(source);
-        if (source) setPragmaticDropElement(sourceTarget);
-      },
-      canDrop({ source }) {
-        return source?.data?.type === "TreeNode";
-      },
+    if (!api) return;
 
-      onDragLeave() {
-        setPragmaticDropElement(null);
-      },
-    });
-  }, [dockviewRef, dockviewStore]);
-
-  const [watermark, setWatermark] = React.useState<boolean>(false);
-
-  const [gapCheck, setGapCheck] = React.useState<boolean>(false);
-
-  const css = React.useMemo(() => {
-    if (!gapCheck) {
-      return {};
-    }
-
-    return {
-      "--moss-group-gap-size": "0.5rem",
-      "--demo-border": "5px dashed purple",
-    } as React.CSSProperties;
-  }, [gapCheck]);
-
-  const [showLogs, setShowLogs] = React.useState<boolean>(false);
-  const [debug, setDebug] = React.useState<boolean>(false);
-
-  const dockviewRefWrapper = React.useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!dockviewRefWrapper.current) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      api?.layout(entries[0].contentRect.width, entries[0].contentRect.height);
-    });
-
-    resizeObserver.observe(dockviewRefWrapper.current);
-
-    return () => {
-      resizeObserver.disconnect();
+    const initializeLayout = async () => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        api?.clear();
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        defaultConfig(api);
+      } catch (e) {
+        console.warn("Failed to initialize layout:", e);
+      }
     };
-  }, [api, dockviewRefWrapper]);
+
+    const timeoutId = setTimeout(initializeLayout, 0);
+    return () => clearTimeout(timeoutId);
+  }, [api]);
+
+  const components = {
+    Default: (props: IDockviewPanelProps) => {
+      const isDebug = React.useContext(DebugContext);
+
+      return (
+        <>
+          <Breadcrumbs panelId={props.api.id} />
+          <Scrollbar
+            className={cn(
+              "relative h-full overflow-auto p-1.25",
+              isDebug && "border-2 border-dashed border-orange-500"
+            )}
+          >
+            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
+              <span>{props.api.title}</span>
+
+              <span>{Math.random().toFixed(2)}</span>
+              {props?.params.someRandomString && (
+                <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+              )}
+            </span>
+
+            {isDebug && (
+              <Metadata
+                onClick={() => {
+                  props.api.setRenderer(props.api.renderer === "always" ? "onlyWhenVisible" : "always");
+                }}
+                api={props.api}
+              />
+            )}
+          </Scrollbar>
+        </>
+      );
+    },
+    nested: () => {
+      return (
+        <DockviewReact
+          components={components}
+          onReady={(event: DockviewReadyEvent) => {
+            event.api.addPanel({ id: "panel_1", component: "Default" });
+            event.api.addPanel({ id: "panel_2", component: "Default" });
+            event.api.addPanel({
+              id: "panel_3",
+              component: "Default",
+            });
+
+            event.api.onDidRemovePanel((e) => {
+              console.log("remove", e);
+            });
+          }}
+          className={"dockview-theme-light"}
+        />
+      );
+    },
+    iframe: (props: IDockviewPanelProps) => {
+      return (
+        <iframe
+          onMouseDown={() => {
+            if (!props.api.isActive) {
+              props.api.setActive();
+            }
+          }}
+          className="h-full w-full"
+        />
+      );
+    },
+    Home: () => (
+      <Scrollbar className="h-full">
+        <Home />
+      </Scrollbar>
+    ),
+    Settings: () => (
+      <Scrollbar className="h-full">
+        <Settings />
+      </Scrollbar>
+    ),
+    Logs: () => (
+      <Scrollbar className="h-full">
+        <Logs />
+      </Scrollbar>
+    ),
+  };
+
+  const headerComponents = {
+    default: DockviewDefaultTab,
+  };
 
   return (
-    <div
-      style={{ ...css }}
-      className="dockview-demo relative flex h-full w-full grow flex-col rounded"
-      ref={dockviewRefWrapper}
-    >
-      {showDebugPanels && (
-        <>
-          <div>
-            <GridActions
-              api={api}
-              toggleCustomWatermark={() => setWatermark(!watermark)}
-              hasCustomWatermark={watermark}
-            />
-            {api && <PanelActions api={api} panels={panels} activePanel={activePanel} />}
-            {api && <GroupActions api={api} groups={groups} activeGroup={activeGroup} />}
-          </div>
-          <div className="action-container mb-2 flex items-center justify-end p-1 select-none">
-            <button
-              className="mr-2 rounded"
-              onClick={() => {
-                setDebug(!debug);
-              }}
-            >
-              <span className="material-symbols-outlined">engineering</span>
-            </button>
-            {showLogs && (
-              <button
-                className="mr-1 rounded"
-                onClick={() => {
-                  setLogLines([]);
-                }}
-              >
-                <span className="material-symbols-outlined">undo</span>
-              </button>
-            )}
-            <button
-              className="rounded p-1"
-              onClick={() => {
-                setShowLogs(!showLogs);
-              }}
-            >
-              <span className="pr-1">{`${showLogs ? "Hide" : "Show"} Events Log`}</span>
-              <span className="material-symbols-outlined">terminal</span>
-            </button>
-          </div>
-        </>
-      )}
-      <div className="flex grow">
-        <Scrollbar className="flex h-full grow overflow-hidden">
-          <DebugContext.Provider value={debug}>
-            <DockviewReact
-              disableAutoResizing
-              ref={dockviewRef}
-              components={components}
-              defaultTabComponent={headerComponents.default}
-              rightHeaderActionsComponent={RightControls}
-              leftHeaderActionsComponent={LeftControls}
-              prefixHeaderActionsComponent={PrefixHeaderControls}
-              watermarkComponent={watermark ? WatermarkComponent : undefined}
-              onReady={onReady}
-              className={props.theme || "dockview-theme-light"}
-              onDidDrop={onDidDrop}
-            />
-          </DebugContext.Provider>
-        </Scrollbar>
-
-        {showLogs && (
-          <div className="ml-2 flex w-[400px] shrink-0 flex-col overflow-hidden bg-black font-mono text-white">
-            <Scrollbar className="grow overflow-auto">
-              {logLines.map((line, i) => {
-                return (
-                  <div
-                    className="flex h-[30px] items-center overflow-hidden text-[13px] text-ellipsis whitespace-nowrap"
-                    style={{
-                      backgroundColor: line.backgroundColor,
-                    }}
-                    key={i}
-                  >
-                    <span className="mr-1 flex h-full max-w-[20px] min-w-[20px] items-center border-r border-gray-500 pl-1 text-gray-500">
-                      {logLines.length - i}
-                    </span>
-                    <span>
-                      {line.timestamp && (
-                        <span className="px-[2px] text-[0.7em]">{line.timestamp.toISOString().substring(11, 23)}</span>
-                      )}
-                      <span>{line.text}</span>
-                    </span>
-                  </div>
-                );
-              })}
-            </Scrollbar>
-            <Scrollbar className="flex justify-end p-1">
-              <button
-                onClick={() => {
-                  setLogLines([]);
-                }}
-              >
-                Clear
-              </button>
-            </Scrollbar>
-          </div>
+    <Scrollbar className="h-full">
+      <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
+        {showDebugPanels && (
+          <DockviewControls
+            api={api}
+            panels={panels}
+            activePanel={activePanel}
+            groups={groups}
+            activeGroup={activeGroup}
+            toggleCustomWatermark={() => setWatermark(!watermark)}
+            hasCustomWatermark={watermark}
+            toggleDebug={() => setDebug(!debug)}
+            toggleLogs={() => setShowLogs(!showLogs)}
+            showLogs={showLogs}
+          />
         )}
+        <div className="flex h-full">
+          <Scrollbar className="flex grow overflow-hidden">
+            <DebugContext.Provider value={debug}>
+              <div className="h-full w-full" ref={dockviewRefWrapper}>
+                <DockviewReact
+                  disableAutoResizing
+                  ref={dockviewRef}
+                  components={components}
+                  defaultTabComponent={headerComponents.default}
+                  rightHeaderActionsComponent={RightControls}
+                  leftHeaderActionsComponent={LeftControls}
+                  prefixHeaderActionsComponent={PrefixHeaderControls}
+                  watermarkComponent={watermark ? Watermark : undefined}
+                  onReady={onReady}
+                  className={theme || "dockview-theme-light"}
+                  onDidDrop={onDidDrop}
+                />
+              </div>
+            </DebugContext.Provider>
+          </Scrollbar>
+          {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
+        </div>
       </div>
-    </div>
+    </Scrollbar>
   );
 };
 
