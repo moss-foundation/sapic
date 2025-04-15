@@ -25,6 +25,14 @@ interface Item {
   order: number;
 }
 
+const StatusBarDivider = () => {
+  return (
+    <div className="mx-1 flex h-full items-center">
+      <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
+    </div>
+  );
+};
+
 const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [isOnline, setIsOnline] = useState(true);
   const [DNDList, setDNDList] = useState<Item[]>([
@@ -99,17 +107,14 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
             />
           ))}
         </div>
-        <div className="mx-1 flex h-full items-center">
-          <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
-        </div>
+        <StatusBarDivider />
 
         <StatusBarIndicators />
       </div>
 
       <div className="flex h-full gap-0.5">
-        <div className="mx-1 flex h-full items-center">
-          <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
-        </div>
+        <StatusBarButton label="60 FPS" className="text-black" />
+        <StatusBarDivider />
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}
