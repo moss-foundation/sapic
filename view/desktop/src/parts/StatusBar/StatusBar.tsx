@@ -29,9 +29,21 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [DNDList, setDNDList] = useState<Item[]>([
     {
       id: 1,
-      icon: "StatusBarTerminal",
+      icon: "StatusBarConsole",
       label: "Console",
       order: 1,
+    },
+    {
+      id: 2,
+      icon: "StatusBarTrash",
+      label: "Trash",
+      order: 2,
+    },
+    {
+      id: 3,
+      icon: "StatusBarCookies",
+      label: "Cookies",
+      order: 3,
     },
   ]);
 
@@ -56,14 +68,21 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   return (
     <footer
       className={cn(
-        "background-(--moss-secondary-background) flex w-screen justify-between border-t-(--moss-border-color) pr-[26px]",
+        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pl-3.5",
         className
       )}
     >
       <div className="flex h-full">
         <div className="flex h-full gap-1">
           {DNDList.map((item) => (
-            <StatusBarButton key={item.id} {...item} isDraggable draggableType="StatusBarButton" />
+            <StatusBarButton
+              key={item.id}
+              {...item}
+              isDraggable
+              draggableType="StatusBarButton"
+              className="text-black"
+              iconClassName="text-(--moss-icon-primary-text)"
+            />
           ))}
         </div>
       </div>
@@ -183,13 +202,12 @@ const StatusBarButton = ({
     <button
       ref={ref}
       {...props}
-      className={cn(
-        "group relative flex h-full items-center gap-1 px-2 text-white transition hover:bg-[rgb(39,114,255)]",
-        className
-      )}
+      className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      {icon && <Icon className={cn("size-[18px]", iconClassName)} icon={icon} />}
-      {label && <span className="text-sm">{label}</span>}
+      <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center gap-1.5 rounded px-1.5 py-1 transition">
+        {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
+        {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
+      </div>
       {closestEdge ? <DropIndicator edge={closestEdge} gap={4} /> : null}
       {preview && createPortal(<StatusBarButton icon={icon} label={label} className="bg-sky-500" />, preview)}
     </button>
