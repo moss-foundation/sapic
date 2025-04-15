@@ -79,10 +79,10 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
-            #[cfg(target_os = "macos")]
+            // #[cfg(target_os = "macos")]
             RunEvent::ExitRequested { api, .. } => {
                 api.prevent_exit();
-                app_handle.hide().ok();
+                // app_handle.hide().ok();
 
                 // FIXME: Temporary solution
                 app_handle.emit("kernel.windowCloseRequested", {}).unwrap();
