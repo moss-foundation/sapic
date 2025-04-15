@@ -21,15 +21,13 @@ async fn create_request_group_success() {
         .await;
     assert!(create_request_group_result.is_ok());
 
-    // Check creating the request group folder and its sapic spec file
+    // Check creating the request group folder
     let expected_path = collection_path.join(
         request_group_relative_path(Path::new(&request_group_name)),
     );
-    let expected_spec_path = expected_path.join("folder.sapic");
+    assert_eq!(create_request_group_result.unwrap().path, expected_path);
     assert!(expected_path.exists());
-    assert!(expected_spec_path.exists());
 
-    // TODO: test the CreateRequestGroupOutput once implemented
 
     // Clean up
     {
@@ -97,17 +95,15 @@ async fn create_request_group_special_chars() {
                 path: PathBuf::from(&name),
             }).await;
 
-        // Check creating the request group folder and its sapic spec file with proper encoding
+        // Check creating the request group folder with proper encoding
         let expected_path = collection_path.join(request_group_relative_path(
             Path::new(&name),
         ));
-        let expected_spec_path = expected_path.join("folder.sapic");
 
         assert!(create_request_group_result.is_ok());
-        assert!(expected_path.exists());
-        assert!(expected_spec_path.exists());
 
-        // TODO: test the CreateRequestGroupOutput once implemented
+        assert_eq!(create_request_group_result.unwrap().path, expected_path);
+        assert!(expected_path.exists());
     }
 
     // Clean up
@@ -126,18 +122,12 @@ async fn create_request_group_nested_folder() {
     }).await;
     assert!(create_request_group_result.is_ok());
 
-    // Check creating the nested request group folder and its sapic spec file
-    // FIXME: Should we create a spec file for all the folders created in the process
-    // Or only the innermost one like we are doing now?
-
+    // Check creating the nested request group folder
     let expected_path = collection_path.join(
         request_group_relative_path(&Path::new(&request_group_name).join("inner")),
     );
-    let expected_spec_path = expected_path.join("folder.sapic");
     assert!(expected_path.exists());
-    assert!(expected_spec_path.exists());
-
-    // TODO: test the CreateRequestGroupOutput once implemented
+    assert_eq!(create_request_group_result.unwrap().path, expected_path);
 
     // Clean up
     {

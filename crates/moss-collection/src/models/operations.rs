@@ -9,9 +9,9 @@ use crate::models::types::{
     HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestInfo,
 };
 
-// All the path and file names passed in the input should be unencoded.
-// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
-// The frontend should simply use the name and path used in the user's original input
+/// All the path and file names passed in the input should be unencoded.
+/// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
+/// The frontend should simply use the name and path used in the user's original input
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -95,7 +95,7 @@ fn validate_path(path: &Path) -> Result<(), ValidationError> {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestGroupOutput {
-    // TODO: What should the output be?
+    pub path: PathBuf
 }
 
 #[derive(Debug, Serialize, TS, Validate)]

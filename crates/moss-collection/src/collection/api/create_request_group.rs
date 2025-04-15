@@ -33,14 +33,6 @@ impl Collection {
             .await
             .context("Failed to create the request group directory")?;
 
-        self.fs
-            .create_file(
-                &request_group_full_path.join(FOLDER_ENTRY_SPEC_FILE),
-                CreateOptions::default(),
-            )
-            .await
-            .context("Failed to create the request group spec file")?;
-
-        Ok(CreateRequestGroupOutput { })
+        Ok(CreateRequestGroupOutput { path: request_group_full_path })
     }
 }

@@ -14,15 +14,16 @@ impl Collection {
         input: DeleteRequestGroupInput,
     ) -> Result<()> {
         input.validate()?;
-        // TODO: we won't need this once we implement `ResourceKey`
+        // FIXME: we won't need this once we implement `ResourceKey`
         let encoded_path = encode_path(&input.path, None)?;
 
         let requests = self.requests().await?;
-        let requests_lock = requests.read().await;
+
 
         // TODO: logging an error when encounter an error with leased key
 
-        let keys_to_delete =
+        let keys_to_delete = {
+            let requests_lock = requests.read().await;
             requests_lock
                 .iter()
                 .filter_map(|(key, iter_slot)| {
@@ -31,8 +32,8 @@ impl Collection {
                     } else {
                         None
                     }
-                }).collect::<Vec<_>>();
-        std::mem::drop(requests_lock);
+                }).collect::<Vec<_>>()
+        };
 
         for key in keys_to_delete {
             let result = self.delete_request(DeleteRequestInput {

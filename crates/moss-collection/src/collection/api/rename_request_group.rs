@@ -45,7 +45,7 @@ impl Collection {
     ) -> Result<(), OperationError> {
         input.validate()?;
 
-        // TODO: we won't need this once we implement `ResourceKey`
+        // FIXME: we won't need this once we implement `ResourceKey`
         let group_relative_path_old = encode_path(&input.path, None)?;
         let new_encoded_name = encode_directory_name(&input.new_name);
         let group_relative_path_new = group_relative_path_old
