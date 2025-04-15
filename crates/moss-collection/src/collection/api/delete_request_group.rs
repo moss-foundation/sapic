@@ -1,11 +1,10 @@
-use std::path::PathBuf;
 use anyhow::{Context, Result};
 use validator::Validate;
 use moss_fs::RemoveOptions;
 use moss_fs::utils::encode_path;
+
 use crate::collection::Collection;
 use crate::constants::REQUESTS_DIR;
-use crate::indexer::is_request_entry_dir;
 use crate::models::operations::{DeleteRequestGroupInput, DeleteRequestInput};
 
 

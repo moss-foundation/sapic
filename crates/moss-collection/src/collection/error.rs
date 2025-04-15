@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-
 use moss_db::common::DatabaseError;
 use thiserror::Error;
 use validator::ValidationErrors;

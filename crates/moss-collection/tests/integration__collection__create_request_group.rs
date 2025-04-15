@@ -1,12 +1,12 @@
+mod shared;
+
 use std::path::{Path, PathBuf};
 use moss_collection::collection::OperationError;
 use moss_collection::models::operations::CreateRequestGroupInput;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_group_name;
+
 use crate::shared::{request_group_relative_path, set_up_test_collection};
-
-mod shared;
-
 
 #[tokio::test]
 async fn create_request_group_success() {
