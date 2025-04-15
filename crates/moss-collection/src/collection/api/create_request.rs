@@ -1,5 +1,11 @@
+use std::path::PathBuf;
 use anyhow::Context as _;
-use moss_fs::{utils::encode_directory_name, CreateOptions};
+use moss_fs::{
+    utils::{
+        encode_directory_name, encode_path
+    },
+    CreateOptions
+};
 use validator::Validate;
 
 use crate::{
@@ -26,10 +32,11 @@ impl Collection {
 
         let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
 
-        let request_dir_relative_path = input
-            .relative_path
-            .unwrap_or_default()
-            .join(&request_dir_name);
+        let request_dir_relative_path = if let Some(relative_path) = input.relative_path {
+            encode_path(&relative_path, None)?
+        } else {
+            PathBuf::new()
+        }.join(&request_dir_name);
 
         let request_dir_full_path = self
             .abs_path
@@ -83,11 +90,10 @@ impl Collection {
             &RequestEntity { order: None },
         )?;
 
-        // For consistency we are encoding both the directory and the request file
         self.fs
             .create_dir(&request_dir_full_path)
             .await
-            .context("Failed to create the collection directory")?;
+            .context("Failed to create the request directory")?;
         self.fs
             .create_file_with(
                 &request_dir_full_path.join(&spec_file_name),
