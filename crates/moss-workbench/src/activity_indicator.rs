@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::Serialize;
 use std::sync::{
-    atomic::{AtomicU64, Ordering},
+    atomic::{AtomicUsize, Ordering},
     Arc,
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
@@ -17,7 +17,7 @@ enum ActivityEvent<'a> {
     /// and we don't want to track its progress.
     #[serde(rename_all = "camelCase")]
     Oneshot {
-        id: u64,
+        id: usize,
         activity_id: &'a str,
         title: String,
         #[ts(optional)]
@@ -27,7 +27,7 @@ enum ActivityEvent<'a> {
     /// and we want to track its progress, like indexing, scanning, etc.
     #[serde(rename_all = "camelCase")]
     Start {
-        id: u64,
+        id: usize,
         activity_id: &'a str,
         title: String,
         #[ts(optional)]
@@ -37,7 +37,7 @@ enum ActivityEvent<'a> {
     /// like updating the progress of an indexer, scanner, etc.
     #[serde(rename_all = "camelCase")]
     Progress {
-        id: u64,
+        id: usize,
         activity_id: &'a str,
         #[ts(optional)]
         detail: Option<String>,
@@ -45,18 +45,18 @@ enum ActivityEvent<'a> {
     /// This event is used to notify the frontend that the long-running activity
     /// is finished and the activity indicator should be hidden.
     #[serde(rename_all = "camelCase")]
-    Finish { id: u64, activity_id: &'a str },
+    Finish { id: usize, activity_id: &'a str },
 }
 
 pub struct ActivityHandle<'a, R: TauriRuntime> {
     pub activity_id: &'a str,
     pub app_handle: AppHandle<R>,
 
-    next_id: Arc<AtomicU64>,
+    next_id: Arc<AtomicUsize>,
 }
 
 impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
-    pub fn new(activity_id: &'a str, app_handle: AppHandle<R>, next_id: Arc<AtomicU64>) -> Self {
+    pub fn new(activity_id: &'a str, app_handle: AppHandle<R>, next_id: Arc<AtomicUsize>) -> Self {
         Self {
             activity_id,
             app_handle,
@@ -91,7 +91,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
 
 pub struct ActivityIndicator<R: TauriRuntime> {
     app_handle: AppHandle<R>,
-    next_id: Arc<AtomicU64>,
+    next_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Clone for ActivityIndicator<R> {
@@ -107,7 +107,7 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
     pub fn new(app_handle: AppHandle<R>) -> Self {
         Self {
             app_handle,
-            next_id: Arc::new(AtomicU64::new(0)),
+            next_id: Arc::new(AtomicUsize::new(0)),
         }
     }
 
