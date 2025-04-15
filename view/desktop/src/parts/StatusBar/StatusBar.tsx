@@ -73,7 +73,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       )}
     >
       <div className="flex h-full">
-        <div className="flex h-full gap-1">
+        <div className="flex h-full gap-0.5">
           {DNDList.map((item) => (
             <StatusBarButton
               key={item.id}
@@ -85,23 +85,18 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
             />
           ))}
         </div>
+        <div className="mx-1 flex h-full items-center">
+          <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
+        </div>
+
+        <StatusBarIndicators />
       </div>
 
-      <div className="flex h-full gap-1">
+      <div className="flex h-full gap-0.5">
         <StatusBarButton label="UTF-8" />
         <StatusBarButton label="24 Ln, 16 Col" />
         <StatusBarButton label="4 Spaces" />
         <StatusBarButton label="Rust" />
-
-        <div className="group flex h-full items-center gap-1 px-2 text-white transition hover:bg-white hover:bg-white/10 focus:bg-white focus:bg-white/10">
-          <StatusCircle className="size-[6px] bg-[#D62A18]" />
-          <span>2 Errors</span>
-        </div>
-
-        <div className="group flex h-full items-center gap-1 px-2 text-white transition hover:bg-white hover:bg-white/10 focus:bg-white focus:bg-white/10">
-          <StatusCircle className="size-[6px] bg-[#FFC505]" />
-          <span>15 Warnings</span>
-        </div>
 
         <StatusBarButton label="--READ--" />
       </div>
@@ -120,8 +115,25 @@ interface StatusBarButtonProps extends Omit<ComponentPropsWithoutRef<"button">, 
   draggableType?: string;
 }
 
-const StatusCircle = ({ className }: { className?: string }) => {
-  return <div className={cn("flex items-center justify-center rounded-full", className)} />;
+const StatusBarIndicators = () => {
+  return (
+    <div className="flex h-full items-center">
+      <button className="group flex h-full items-center">
+        <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center rounded-md px-2 py-1 transition">
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1">
+              <Icon className="size-[14px] text-[#D62A18]" icon="StatusBarErrors" />
+              <span className="text-sm text-black">2</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Icon className="size-[14px] text-[#FFC505]" icon="StatusBarWarnings" />
+              <span className="text-sm text-black">5</span>
+            </div>
+          </div>
+        </div>
+      </button>
+    </div>
+  );
 };
 
 const StatusBarButton = ({
