@@ -12,7 +12,7 @@ import type { ResourceKey } from "@repo/bindings-utils";
 
 export type CreateRequestGroupInput = { path: string };
 
-export type CreateRequestGroupOutput = Record<string, never>;
+export type CreateRequestGroupOutput = { path: string };
 
 export type CreateRequestInput = {
   name: string;
@@ -23,6 +23,11 @@ export type CreateRequestInput = {
 
 export type CreateRequestOutput = { key: ResourceKey };
 
+/**
+ * All the path and file names passed in the input should be unencoded.
+ * For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
+ * The frontend should simply use the name and path used in the user's original input
+ */
 export type CreateRequestProtocolSpecificPayload = {
   "http": {
     method: HttpMethod;
