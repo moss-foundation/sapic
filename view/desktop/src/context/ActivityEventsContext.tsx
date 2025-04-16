@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { ActivityEvent } from "@repo/moss-workbench";
 import { listen } from "@tauri-apps/api/event";
 
@@ -8,6 +8,7 @@ interface ActivityEventsContextType {
   oneshotEvents: ActivityEvent[];
   hasActiveEvents: boolean;
   latestEvent: ActivityEvent | null;
+  displayQueue: ActivityEvent[];
   // Get start event title for a specific activityId
   getStartTitleForActivity: (activityId: string) => string | null;
   clearEvents: () => void;
@@ -19,6 +20,7 @@ const ActivityEventsContext = createContext<ActivityEventsContextType>({
   oneshotEvents: [],
   hasActiveEvents: false,
   latestEvent: null,
+  displayQueue: [],
   getStartTitleForActivity: () => null,
   clearEvents: () => {},
 });
@@ -47,69 +49,96 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
     isOneshot: boolean;
   } | null>(null);
 
+  // Queue for displaying events sequentially in the status bar
+  const [displayQueue, setDisplayQueue] = useState<ActivityEvent[]>([]);
+  const processingQueueRef = useRef(false);
+  const displayDurationRef = useRef(100); // Default 1 second display time
+
   // Get start event title for a specific activityId
   const getStartTitleForActivity = (activityId: string): string | null => {
-    return startTitles.get(activityId) || null;
+    // Check the title mapping first
+    const title = startTitles.get(activityId);
+    if (title) return title;
+
+    // If not found in the mapping, try to find it from the activityEvents
+    // This helps when events are processed quickly and the title mapping might not be updated yet
+    const startEvent = activityEvents.find((event) => "start" in event && event.start.activityId === activityId);
+
+    if (startEvent && "start" in startEvent) {
+      // Update the mapping for future use
+      setStartTitles((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(activityId, startEvent.start.title);
+        return newMap;
+      });
+      return startEvent.start.title;
+    }
+
+    return null;
   };
+
+  // Process the display queue
+  useEffect(() => {
+    if (displayQueue.length === 0 || processingQueueRef.current) {
+      return;
+    }
+
+    const processNextEvent = () => {
+      processingQueueRef.current = true;
+
+      // Take the next event from the queue
+      const nextEvent = displayQueue[0];
+      const isOneshot = "oneshot" in nextEvent;
+
+      // Set as most recent for display
+      setMostRecentEvent({
+        event: nextEvent,
+        timestamp: Date.now(),
+        isOneshot,
+      });
+
+      // Remove from queue after display duration
+      setTimeout(() => {
+        setDisplayQueue((prev) => {
+          // Make sure we still have events before removing
+          if (prev.length > 0) {
+            return prev.slice(1);
+          }
+          return prev;
+        });
+        processingQueueRef.current = false;
+      }, displayDurationRef.current);
+    };
+
+    processNextEvent();
+  }, [displayQueue]);
 
   // Get the most recent event to display - prioritize oneshot events (highest priority)
   // then show the most recently received progress event
   const latestEvent = React.useMemo(() => {
-    // If we have a recent oneshot event, it takes priority
-    if (mostRecentEvent && mostRecentEvent.isOneshot && Date.now() - mostRecentEvent.timestamp < 1000) {
+    // If we have a recent event set by the display queue, use it
+    if (mostRecentEvent && Date.now() - mostRecentEvent.timestamp < displayDurationRef.current) {
       return mostRecentEvent.event;
     }
 
-    // If there are oneshot events, they take priority over progress events
-    if (oneshotEvents.length > 0) {
-      return oneshotEvents[oneshotEvents.length - 1];
+    // If there are events in the queue but none being displayed,
+    // show the first one to prevent flickering
+    if (displayQueue.length > 0 && !processingQueueRef.current) {
+      return displayQueue[0];
     }
 
-    // If we have a recent non-oneshot event, show it
-    if (mostRecentEvent && Date.now() - mostRecentEvent.timestamp < 1000 && !("finish" in mostRecentEvent.event)) {
-      return mostRecentEvent.event;
-    }
-
-    // Otherwise, find the latest non-finish event from active progress events
-    if (activeActivities.size > 0) {
-      // Find the latest progress event by finding the max id across all active events
-      let latestProgressEvent: ActivityEvent | null = null;
-      let maxId = -1;
-
-      for (const activityId of activeActivities) {
-        const events = activeProgressEvents.get(activityId) || [];
-
-        // Filter out finish events since they shouldn't be displayed
-        const nonFinishEvents = events.filter((event) => !("finish" in event));
-
-        if (nonFinishEvents.length === 0) continue;
-
-        const latest = nonFinishEvents[nonFinishEvents.length - 1];
-
-        if (latest) {
-          const id = getEventId(latest);
-          if (id > maxId) {
-            maxId = id;
-            latestProgressEvent = latest;
-          }
-        }
-      }
-
-      if (latestProgressEvent) return latestProgressEvent;
-    }
-
-    // If no events at all, return null
+    // If no current event is being displayed, return null
     return null;
-  }, [activeActivities, activeProgressEvents, oneshotEvents, mostRecentEvent]);
+  }, [mostRecentEvent, displayQueue]);
 
   // Clean up mostRecentEvent after it expires
   useEffect(() => {
     if (mostRecentEvent) {
       const timeElapsed = Date.now() - mostRecentEvent.timestamp;
-      if (timeElapsed < 1000) {
+      if (timeElapsed < displayDurationRef.current) {
         const timer = setTimeout(() => {
           setMostRecentEvent(null);
-        }, 1000 - timeElapsed);
+        }, displayDurationRef.current - timeElapsed);
         return () => clearTimeout(timer);
       } else {
         setMostRecentEvent(null);
@@ -123,13 +152,53 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
       // Add to the overall activity events list
       setActivityEvents((prev) => [...prev, event]);
 
-      // Set this as the most recent event for immediate display
-      const isOneshot = "oneshot" in event;
-      setMostRecentEvent({
-        event,
-        timestamp: Date.now(),
-        isOneshot,
-      });
+      // Add event to display queue
+      if ("oneshot" in event) {
+        // Oneshot events get priority - add them to the front of the queue
+        setDisplayQueue((prev) => [event, ...prev]);
+      } else if ("finish" in event) {
+        // Don't add finish events to display queue as they shouldn't be displayed
+        // But we should immediately process the activeActivities cleanup instead of waiting
+        const activityId = event.finish.activityId;
+
+        // Update activeActivities immediately when a finish event is received
+        setActiveActivities((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(activityId);
+          return newSet;
+        });
+
+        // Clean up stored start title
+        setStartTitles((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(activityId);
+          return newMap;
+        });
+
+        // Schedule cleanup of progress events
+        setTimeout(() => {
+          setActiveProgressEvents((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(activityId);
+            return newMap;
+          });
+        }, 1000);
+      } else {
+        // Add other events (start, progress) to the end of the queue
+        setDisplayQueue((prev) => [...prev, event]);
+
+        // If this is a start event, make sure it's processed quickly
+        if ("start" in event) {
+          // If queue is empty except for this event, process it immediately
+          if (displayQueue.length === 0 && !processingQueueRef.current) {
+            setMostRecentEvent({
+              event,
+              timestamp: Date.now(),
+              isOneshot: false,
+            });
+          }
+        }
+      }
 
       // Handle each event type
       if ("oneshot" in event) {
@@ -215,30 +284,8 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
           return newMap;
         });
 
-        // Remove activity from active set after a delay
-        setTimeout(() => {
-          setActiveActivities((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(activityId);
-            return newSet;
-          });
-
-          // Clean up stored start title
-          setStartTitles((prev) => {
-            const newMap = new Map(prev);
-            newMap.delete(activityId);
-            return newMap;
-          });
-
-          // Keep finished events for a while, then clean them up
-          setTimeout(() => {
-            setActiveProgressEvents((prev) => {
-              const newMap = new Map(prev);
-              newMap.delete(activityId);
-              return newMap;
-            });
-          }, 2000);
-        }, 1000);
+        // Note: The active activities cleanup is now handled earlier when we process the event
+        // This ensures faster response to finish events
       }
     };
 
@@ -271,6 +318,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
     setActiveActivities(new Set());
     setStartTitles(new Map());
     setMostRecentEvent(null);
+    setDisplayQueue([]);
   };
 
   return (
@@ -281,6 +329,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
         oneshotEvents,
         hasActiveEvents: activeActivities.size > 0 || oneshotEvents.length > 0,
         latestEvent,
+        displayQueue,
         getStartTitleForActivity,
         clearEvents,
       }}

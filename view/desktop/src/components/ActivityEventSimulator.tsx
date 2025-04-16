@@ -82,6 +82,30 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
 
     // Helper to emit an event with a delay
     const emitEvent = (event: ActivityEvent, delay: number) => {
+      // For logging/debugging
+      let eventType = "unknown";
+      let eventTitle = "";
+      let activityId = "";
+
+      if ("start" in event) {
+        eventType = "start";
+        eventTitle = event.start.title;
+        activityId = event.start.activityId;
+      } else if ("progress" in event) {
+        eventType = "progress";
+        eventTitle = "progress";
+        activityId = event.progress.activityId;
+      } else if ("finish" in event) {
+        eventType = "finish";
+        activityId = event.finish.activityId;
+      } else if ("oneshot" in event) {
+        eventType = "oneshot";
+        eventTitle = event.oneshot.title;
+        activityId = event.oneshot.activityId;
+      }
+
+      console.log(`Emitting ${eventType} event (activityId: ${activityId}, title: ${eventTitle}), delay: ${delay}ms`);
+
       return new Promise<void>((resolve) => {
         // Don't schedule new events if we're paused
         if (simulationStateRef.current.isPaused) {
@@ -150,6 +174,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
 
         // Start event (only if not resuming or at beginning)
         if (startingProgress === 0) {
+          // Ensure start event is sent first with minimal delay
+          // This helps with title association for progress events
           await emitEvent(
             {
               start: {
@@ -158,8 +184,14 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 title: activityType.title,
               },
             } as ActivityEvent,
-            randomDelay(0, baseDelay / 2)
+            10 // Use minimal delay for start events to ensure they're processed before progress events
           );
+
+          // Small delay after start event to ensure it's processed
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, 50);
+            activeTimeoutsRef.current.push(timeoutId);
+          });
         }
 
         // Progress events with configurable delay between them
@@ -417,6 +449,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
 
                 // Start event (only if not resuming or at beginning)
                 if (startingProgress === 0) {
+                  // Ensure start event is sent first with minimal delay
+                  // This helps with title association for progress events
                   await emitEvent(
                     {
                       start: {
@@ -425,8 +459,14 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                         title: activityType.title,
                       },
                     } as ActivityEvent,
-                    randomDelay(0, baseDelay / 2)
+                    10 // Use minimal delay for start events to ensure they're processed before progress events
                   );
+
+                  // Small delay after start event to ensure it's processed
+                  await new Promise<void>((resolve) => {
+                    const timeoutId = setTimeout(resolve, 50);
+                    activeTimeoutsRef.current.push(timeoutId);
+                  });
                 }
 
                 // Progress events with configurable delay between them
