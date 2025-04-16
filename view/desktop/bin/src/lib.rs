@@ -77,8 +77,24 @@ pub async fn run<R: TauriRuntime>() {
                 app_handle.emit("kernel-windowCloseRequested", {}).unwrap();
 
                 let window_clone = window.clone();
-                app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
-                    window_clone.destroy().ok();
+                let window_close_listener =
+                    app_handle.listen("kernel-windowCloseRequestedConfirmed", move |_event| {
+                        window_clone.destroy().ok();
+                    });
+
+                // Create timeout to automatically close window after 5 seconds
+                let window_timeout = window.clone();
+                let app_handle_timeout = app_handle.clone();
+
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_secs(5));
+
+                    // Check if window still exists before destroying
+                    if let Some(win) = app_handle_timeout.get_webview_window(window_timeout.label())
+                    {
+                        win.destroy().ok();
+                        app_handle_timeout.unlisten(window_close_listener);
+                    }
                 });
             }
 
