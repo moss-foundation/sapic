@@ -206,7 +206,9 @@ async fn rename_request_special_chars() {
             list_requests_output.0[0],
             RequestInfo {
                 key: create_request_output.key,
-                relative_path_from_requests_dir: PathBuf::from(request_folder_name(&new_request_name)),
+                relative_path_from_requests_dir: PathBuf::from(request_folder_name(
+                    &new_request_name
+                )),
                 name: new_request_name,
                 order: None,
                 typ: RequestProtocol::Http(HttpMethod::Get),
@@ -225,7 +227,10 @@ async fn rename_request_with_relative_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = random_request_name();
-    let old_path = collection_path.join("requests").join(request_relative_path(&request_name, Some(Path::new("subfolder"))));
+    let old_path = collection_path.join("requests").join(request_relative_path(
+        &request_name,
+        Some(Path::new("subfolder")),
+    ));
     let create_request_output = collection
         .create_request(CreateRequestInput {
             name: request_name.to_string(),
@@ -242,13 +247,14 @@ async fn rename_request_with_relative_path() {
             key: create_request_output.key,
             new_name: new_request_name.clone(),
         })
-        .await;;
+        .await;
     assert!(rename_request_result.is_ok());
 
     // Check filesystem rename
-    let expected_path = collection_path.join(
-        request_relative_path(&new_request_name, Some(Path::new("subfolder")))
-    );
+    let expected_path = collection_path.join(request_relative_path(
+        &new_request_name,
+        Some(Path::new("subfolder")),
+    ));
     assert!(expected_path.exists());
     assert!(!old_path.exists());
 
@@ -260,10 +266,10 @@ async fn rename_request_with_relative_path() {
         RequestInfo {
             key: create_request_output.key,
             name: new_request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from("subfolder").join(request_folder_name(&new_request_name)),
+            relative_path_from_requests_dir: PathBuf::from("subfolder")
+                .join(request_folder_name(&new_request_name)),
             order: None,
             typ: RequestProtocol::Http(HttpMethod::Get),
         }
     )
-
 }

@@ -1,31 +1,34 @@
 mod shared;
 
-use std::path::{Path, PathBuf};
-use moss_collection::models::operations::{CreateRequestGroupInput, CreateRequestInput, DeleteRequestGroupInput};
+use moss_collection::models::operations::{
+    CreateRequestGroupInput, CreateRequestInput, DeleteRequestGroupInput,
+};
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_group_name;
+use std::path::{Path, PathBuf};
 
 use crate::shared::{request_group_relative_path, set_up_test_collection};
-
-
-
 
 #[tokio::test]
 async fn delete_request_group_success() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_group_name = random_request_group_name();
-    let expected_path = collection_path.join(
-        request_group_relative_path(Path::new(&request_group_name))
-    );
+    let expected_path =
+        collection_path.join(request_group_relative_path(Path::new(&request_group_name)));
 
-    collection.create_request_group(CreateRequestGroupInput {
-        path: PathBuf::from(&request_group_name),
-    }).await.unwrap();
+    collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await
+        .unwrap();
 
-    let delete_request_group_result = collection.delete_request_group(DeleteRequestGroupInput {
-        path: PathBuf::from(&request_group_name)
-    }).await;
+    let delete_request_group_result = collection
+        .delete_request_group(DeleteRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await;
     delete_request_group_result.unwrap();
 
     // Check folder is removed
@@ -35,18 +38,17 @@ async fn delete_request_group_success() {
     {
         tokio::fs::remove_dir_all(collection_path).await.unwrap();
     }
-
 }
 
 #[tokio::test]
 async fn delete_request_group_empty_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let delete_request_group_output = collection.delete_request_group(
-        DeleteRequestGroupInput {
-            path: PathBuf::new()
-        }
-    ).await;
+    let delete_request_group_output = collection
+        .delete_request_group(DeleteRequestGroupInput {
+            path: PathBuf::new(),
+        })
+        .await;
 
     assert!(delete_request_group_output.is_err());
 }
@@ -58,33 +60,41 @@ async fn delete_request_group_with_requests() {
 
     // requests/outer_request
     // requests/group/inner_request
-    collection.create_request_group(CreateRequestGroupInput {
-        path: PathBuf::from(&request_group_name),
-    }).await.unwrap();
+    collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await
+        .unwrap();
 
-    collection.create_request(CreateRequestInput {
-        name: "inner_request".to_string(),
-        relative_path: Some(PathBuf::from(&request_group_name)),
-        url: None,
-        payload: None,
-    }).await.unwrap();
-    collection.create_request(CreateRequestInput {
-        name: "outer_request".to_string(),
-        relative_path: None,
-        url: None,
-        payload: None,
-    }).await.unwrap();
+    collection
+        .create_request(CreateRequestInput {
+            name: "inner_request".to_string(),
+            relative_path: Some(PathBuf::from(&request_group_name)),
+            url: None,
+            payload: None,
+        })
+        .await
+        .unwrap();
+    collection
+        .create_request(CreateRequestInput {
+            name: "outer_request".to_string(),
+            relative_path: None,
+            url: None,
+            payload: None,
+        })
+        .await
+        .unwrap();
 
-    let delete_request_group_result = collection.delete_request_group(
-        DeleteRequestGroupInput {
-            path: PathBuf::from(&request_group_name)
-        }
-    ).await;
+    let delete_request_group_result = collection
+        .delete_request_group(DeleteRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await;
     assert!(delete_request_group_result.is_ok());
 
-    let expected_path = collection_path.join(
-        request_group_relative_path(Path::new(&request_group_name))
-    );
+    let expected_path =
+        collection_path.join(request_group_relative_path(Path::new(&request_group_name)));
     // Check request group folder is removed
     assert!(!expected_path.exists());
 
@@ -104,31 +114,32 @@ async fn delete_request_group_fs_already_deleted() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_group_name = random_request_group_name();
-    let expected_path = collection_path.join(
-        request_group_relative_path(Path::new(&request_group_name))
-    );
-    collection.create_request_group(
-        CreateRequestGroupInput {
+    let expected_path =
+        collection_path.join(request_group_relative_path(Path::new(&request_group_name)));
+    collection
+        .create_request_group(CreateRequestGroupInput {
             path: PathBuf::from(&request_group_name),
-        }
-    ).await.unwrap();
-    collection.create_request(
-        CreateRequestInput {
+        })
+        .await
+        .unwrap();
+    collection
+        .create_request(CreateRequestInput {
             name: "request".to_string(),
             relative_path: Some(PathBuf::from(&request_group_name)),
             url: None,
             payload: None,
-        }
-    ).await.unwrap();
+        })
+        .await
+        .unwrap();
 
     // We delete the folder from the filesystem
     tokio::fs::remove_dir_all(expected_path).await.unwrap();
 
-    let delete_request_group_result = collection.delete_request_group(
-        DeleteRequestGroupInput {
-            path: PathBuf::from(&request_group_name)
-        }
-    ).await;
+    let delete_request_group_result = collection
+        .delete_request_group(DeleteRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await;
 
     assert!(delete_request_group_result.is_ok());
 
@@ -140,7 +151,6 @@ async fn delete_request_group_fs_already_deleted() {
     {
         tokio::fs::remove_dir_all(collection_path).await.unwrap();
     }
-
 }
 
 #[tokio::test]
@@ -150,45 +160,56 @@ async fn delete_request_group_subfolder() {
     let request_group_name = random_request_group_name();
 
     // Create outer request group
-    collection.create_request_group(CreateRequestGroupInput {
-        path: PathBuf::from(&request_group_name),
-    }).await.unwrap();
+    collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await
+        .unwrap();
 
     // Create inner request group
-    collection.create_request_group(CreateRequestGroupInput {
-        path: PathBuf::from(&request_group_name).join("subfolder"),
-    }).await.unwrap();
+    collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name).join("subfolder"),
+        })
+        .await
+        .unwrap();
 
     // Create a request in the outer request group
-    collection.create_request(CreateRequestInput {
-        name: "outer_request".to_string(),
-        relative_path: Some(PathBuf::from(&request_group_name)),
-        url: None,
-        payload: None,
-    }).await.unwrap();
+    collection
+        .create_request(CreateRequestInput {
+            name: "outer_request".to_string(),
+            relative_path: Some(PathBuf::from(&request_group_name)),
+            url: None,
+            payload: None,
+        })
+        .await
+        .unwrap();
 
     // Create a request in the inner request group
-    collection.create_request(CreateRequestInput {
-        name: "inner_request".to_string(),
-        relative_path: Some(PathBuf::from(&request_group_name).join("subfolder")),
-        url: None,
-        payload: None,
-    }).await.unwrap();
+    collection
+        .create_request(CreateRequestInput {
+            name: "inner_request".to_string(),
+            relative_path: Some(PathBuf::from(&request_group_name).join("subfolder")),
+            url: None,
+            payload: None,
+        })
+        .await
+        .unwrap();
 
     // Delete the inner request group
-    let delete_request_group_output = collection.delete_request_group(
-        DeleteRequestGroupInput {
-            path: PathBuf::from(&request_group_name).join("subfolder")
-        }
-    ).await;
+    let delete_request_group_output = collection
+        .delete_request_group(DeleteRequestGroupInput {
+            path: PathBuf::from(&request_group_name).join("subfolder"),
+        })
+        .await;
     assert!(delete_request_group_output.is_ok());
 
-    let inner_request_group_path = collection_path.join(
-        request_group_relative_path(&Path::new(&request_group_name).join("subfolder"))
-    );
-    let outer_request_group_path = collection_path.join(
-        request_group_relative_path(Path::new(&request_group_name))
-    );
+    let inner_request_group_path = collection_path.join(request_group_relative_path(
+        &Path::new(&request_group_name).join("subfolder"),
+    ));
+    let outer_request_group_path =
+        collection_path.join(request_group_relative_path(Path::new(&request_group_name)));
 
     // Check deleting only the inner request group folder
     assert!(!inner_request_group_path.exists());
@@ -213,7 +234,5 @@ async fn delete_request_group_special_chars() {
         .map(|s| (format!("{s}{}", random_request_group_name()), s))
         .collect::<Vec<_>>();
 
-    for name in request_group_name_list {
-
-    }
+    for name in request_group_name_list {}
 }
