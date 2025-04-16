@@ -51,9 +51,7 @@ moss_workbench = { path = "crates/moss-workbench" }
 redb = "2.4.0"
 
 tauri = { version = "2.2.5", default-features = false }
-rand = { version = "0.9.0", default-features = false, features = [
-    "thread_rng",
-] }
+rand = { version = "0.9.0", features = ["thread_rng"] }
 serde = "1.0.217"
 kdl = "6.3.3"
 anyhow = "1.0.95"

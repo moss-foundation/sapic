@@ -232,15 +232,14 @@ async fn rename_request_group_with_requests() {
     assert!(requests
         .0
         .iter()
-        .any(|request| request.name == "outer_request"
-            && request.relative_path_from_requests_dir
-                == PathBuf::from(request_folder_name("outer_request"))));
+        .any(|request| request.name() == "outer_request"
+            && request.path() == &PathBuf::from(request_folder_name("outer_request"))));
     assert!(requests
         .0
         .iter()
-        .any(|request| request.name == "inner_request"
-            && request.relative_path_from_requests_dir
-                == PathBuf::from(&new_name).join(request_folder_name("inner_request"))));
+        .any(|request| request.name() == "inner_request"
+            && request.path()
+                == &PathBuf::from(&new_name).join(request_folder_name("inner_request"))));
 
     {
         tokio::fs::remove_dir_all(&collection_path).await.unwrap()
@@ -310,15 +309,15 @@ async fn rename_request_group_subfolder() {
     assert!(requests
         .0
         .iter()
-        .any(|request| request.name == "outer_request"
-            && request.relative_path_from_requests_dir
-                == PathBuf::from(&request_group_name).join(request_folder_name("outer_request"))));
+        .any(|request| request.name() == "outer_request"
+            && request.path()
+                == &PathBuf::from(&request_group_name).join(request_folder_name("outer_request"))));
     assert!(requests
         .0
         .iter()
-        .any(|request| request.name == "inner_request"
-            && request.relative_path_from_requests_dir
-                == PathBuf::from(&request_group_name)
+        .any(|request| request.name() == "inner_request"
+            && request.path()
+                == &PathBuf::from(&request_group_name)
                     .join("subfolder_new")
                     .join(request_folder_name("inner_request"))));
 

@@ -35,7 +35,7 @@ async fn create_request_group_success() {
 
 #[tokio::test]
 async fn create_request_group_empty_path() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (_collection_path, collection) = set_up_test_collection().await;
 
     let create_request_group_result = collection
         .create_request_group(CreateRequestGroupInput {
@@ -51,7 +51,7 @@ async fn create_request_group_empty_path() {
 
 #[tokio::test]
 async fn create_request_group_already_exists() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (_collection_path, collection) = set_up_test_collection().await;
 
     let request_group_name = random_request_group_name();
     collection

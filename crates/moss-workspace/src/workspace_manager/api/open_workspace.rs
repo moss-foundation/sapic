@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use moss_fs::utils::{decode_directory_name, encode_directory_name};
+use moss_fs::utils::{decode_directory_name, encode_name};
 use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 
@@ -17,7 +17,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         &self,
         input: &OpenWorkspaceInput,
     ) -> Result<OpenWorkspaceOutput, OperationError> {
-        let encoded_dir_name = encode_directory_name(&input.name);
+        let encoded_dir_name = encode_name(&input.name);
         let full_path = self.workspaces_dir.join(&encoded_dir_name);
 
         if !full_path.exists() {

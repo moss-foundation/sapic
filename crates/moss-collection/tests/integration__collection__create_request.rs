@@ -4,8 +4,8 @@ use moss_collection::collection::OperationError;
 use moss_collection::models::operations::{
     CreateRequestInput, CreateRequestProtocolSpecificPayload,
 };
-use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
-use moss_fs::utils::encode_directory_name;
+use moss_collection::models::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
+use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
 use std::path::{Path, PathBuf};
 
@@ -41,12 +41,12 @@ async fn create_request_success() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key: create_request_output.key,
             name: request_name.to_string(),
-            relative_path_from_requests_dir: PathBuf::from(request_folder_name(&request_name)),
+            path: PathBuf::from(request_folder_name(&request_name)),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -149,12 +149,12 @@ async fn create_request_special_chars() {
         // Check updating requests
         let list_requests_output = collection.list_requests().await.unwrap();
         assert!(list_requests_output.0.iter().any(|info| info
-            == &RequestInfo {
+            == &RequestNodeInfo::Request {
                 key: create_request_output.key,
                 name: name.clone(),
-                relative_path_from_requests_dir: PathBuf::from(request_folder_name(&name)),
+                path: PathBuf::from(request_folder_name(&name)),
                 order: None,
-                typ: RequestProtocol::Http(HttpMethod::Get),
+                protocol: RequestProtocol::Http(HttpMethod::Get),
             }));
     }
     {
@@ -194,13 +194,12 @@ async fn create_request_with_relative_path() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key: create_request_output.key,
             name: request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from("relative")
-                .join(request_folder_name(&request_name)),
+            path: PathBuf::from("relative").join(request_folder_name(&request_name)),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -242,13 +241,12 @@ async fn create_request_with_special_chars_in_relative_path() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key: create_request_output.key,
             name: request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from(encode_directory_name("rela.tive"))
-                .join(request_folder_name(&request_name)),
+            path: PathBuf::from(encode_name("rela.tive")).join(request_folder_name(&request_name)),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -291,12 +289,12 @@ async fn create_request_http_get() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key,
             name: "get".to_string(),
-            relative_path_from_requests_dir: PathBuf::from("get.request"),
+            path: PathBuf::from("get.request"),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -338,12 +336,12 @@ async fn create_request_http_post() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key,
             name: "post".to_string(),
-            relative_path_from_requests_dir: PathBuf::from("post.request"),
+            path: PathBuf::from("post.request"),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Post),
+            protocol: RequestProtocol::Http(HttpMethod::Post),
         }
     );
 
@@ -385,12 +383,12 @@ async fn create_request_http_put() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key,
             name: "put".to_string(),
-            relative_path_from_requests_dir: PathBuf::from("put.request"),
+            path: PathBuf::from("put.request"),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Put),
+            protocol: RequestProtocol::Http(HttpMethod::Put),
         }
     );
 
@@ -432,12 +430,12 @@ async fn create_request_http_delete() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key,
             name: "delete".to_string(),
-            relative_path_from_requests_dir: PathBuf::from("delete.request"),
+            path: PathBuf::from("delete.request"),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Delete),
+            protocol: RequestProtocol::Http(HttpMethod::Delete),
         }
     );
 

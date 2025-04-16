@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::{CreateCollectionInput, RenameCollectionInput};
 use moss_workspace::models::types::CollectionInfo;
@@ -161,7 +161,7 @@ async fn rename_collection_special_chars() {
         let new_collection_name = format!("{collection_name}{char}");
         let expected_path = workspace_path
             .join(COLLECTIONS_DIR)
-            .join(encode_directory_name(&new_collection_name));
+            .join(encode_name(&new_collection_name));
 
         let rename_collection_result = workspace
             .rename_collection(RenameCollectionInput {

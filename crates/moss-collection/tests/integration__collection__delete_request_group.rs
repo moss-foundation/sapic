@@ -42,7 +42,7 @@ async fn delete_request_group_success() {
 
 #[tokio::test]
 async fn delete_request_group_empty_path() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (_collection_path, collection) = set_up_test_collection().await;
 
     let delete_request_group_output = collection
         .delete_request_group(DeleteRequestGroupInput {
@@ -101,7 +101,7 @@ async fn delete_request_group_with_requests() {
     // Check deleting only the requests within the request group
     let requests = collection.list_requests().await.unwrap();
     assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0].name, "outer_request");
+    assert_eq!(requests.0[0].name(), "outer_request");
 
     // Clean up
     {
@@ -218,7 +218,7 @@ async fn delete_request_group_subfolder() {
     // Check deleting only the requests within the inner request group
     let requests = collection.list_requests().await.unwrap();
     assert_eq!(requests.0.len(), 1);
-    assert_eq!(requests.0[0].name, "outer_request");
+    assert_eq!(requests.0[0].name(), "outer_request");
 
     // Cleanup
     {
@@ -231,8 +231,33 @@ async fn delete_request_group_special_chars() {
     let (collection_path, collection) = set_up_test_collection().await;
     let request_group_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
-        .map(|s| (format!("{s}{}", random_request_group_name()), s))
+        .map(|s| (format!("{s}{}", random_request_group_name())))
         .collect::<Vec<_>>();
 
-    for name in request_group_name_list {}
+    for name in request_group_name_list {
+        let _ = collection
+            .create_request_group(CreateRequestGroupInput {
+                path: PathBuf::from(&name),
+            })
+            .await
+            .unwrap();
+
+        // FIXME: We will pass the resource key instead of unencoded path once implemented
+        let delete_request_group_output = collection
+            .delete_request_group(DeleteRequestGroupInput {
+                path: PathBuf::from(&name),
+            })
+            .await;
+
+        assert!(delete_request_group_output.is_ok());
+
+        // Check the request group folder is deleted
+        let expected_path = collection_path.join(request_group_relative_path(Path::new(&name)));
+        assert!(!expected_path.exists());
+    }
+
+    // Clean up
+    {
+        tokio::fs::remove_dir_all(collection_path).await.unwrap();
+    }
 }

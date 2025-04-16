@@ -1,6 +1,6 @@
 use moss_collection::collection::Collection;
 use moss_collection::indexer::IndexerHandle;
-use moss_fs::utils::{encode_directory_name, encode_path};
+use moss_fs::utils::{encode_name, encode_path};
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_collection_name;
 use std::path::{Path, PathBuf};
@@ -31,7 +31,7 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
 }
 
 pub fn request_folder_name(request_name: &str) -> String {
-    format!("{}.request", encode_directory_name(request_name))
+    format!("{}.request", encode_name(request_name))
 }
 
 /// Generate the encoded relative path of request from the collection folder

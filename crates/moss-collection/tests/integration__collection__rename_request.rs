@@ -2,7 +2,7 @@ mod shared;
 
 use moss_collection::collection::OperationError;
 use moss_collection::models::operations::{CreateRequestInput, RenameRequestInput};
-use moss_collection::models::types::{HttpMethod, RequestInfo, RequestProtocol};
+use moss_collection::models::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
 use std::path::{Path, PathBuf};
 
@@ -43,13 +43,13 @@ async fn rename_request_success() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key: create_request_output.key,
             name: new_request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from(request_folder_name(&new_request_name)),
+            path: PathBuf::from(request_folder_name(&new_request_name)),
 
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     );
 
@@ -204,14 +204,12 @@ async fn rename_request_special_chars() {
         assert_eq!(list_requests_output.0.len(), 1);
         assert_eq!(
             list_requests_output.0[0],
-            RequestInfo {
+            RequestNodeInfo::Request {
                 key: create_request_output.key,
-                relative_path_from_requests_dir: PathBuf::from(request_folder_name(
-                    &new_request_name
-                )),
+                path: PathBuf::from(request_folder_name(&new_request_name)),
                 name: new_request_name,
                 order: None,
-                typ: RequestProtocol::Http(HttpMethod::Get),
+                protocol: RequestProtocol::Http(HttpMethod::Get),
             }
         );
     }
@@ -263,13 +261,12 @@ async fn rename_request_with_relative_path() {
     assert_eq!(list_requests_output.0.len(), 1);
     assert_eq!(
         list_requests_output.0[0],
-        RequestInfo {
+        RequestNodeInfo::Request {
             key: create_request_output.key,
             name: new_request_name.clone(),
-            relative_path_from_requests_dir: PathBuf::from("subfolder")
-                .join(request_folder_name(&new_request_name)),
+            path: PathBuf::from("subfolder").join(request_folder_name(&new_request_name)),
             order: None,
-            typ: RequestProtocol::Http(HttpMethod::Get),
+            protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     )
 }
