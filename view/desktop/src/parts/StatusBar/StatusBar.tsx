@@ -17,6 +17,7 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { DropIndicator } from "../../components/DropIndicator";
+import { StatusBarActivity } from "./StatusBarActivity";
 
 interface Item {
   id: number;
@@ -110,6 +111,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         <StatusBarDivider />
 
         <StatusBarIndicators />
+        <StatusBarActivity />
       </div>
 
       <div className="flex h-full gap-0.5">

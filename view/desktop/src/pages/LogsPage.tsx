@@ -1,27 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActivityEvent } from "@repo/moss-workbench";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 
 export const Logs: React.FC = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<string[]>([]);
-  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
+  const { activityEvents } = useActivityEvents();
 
   useEffect(() => {
     const unlistenLogsStream = listen<string>("logs-stream", (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 
-    const unlistenProgressStream = listen<ActivityEvent>("workbench://activity-indicator", (event) => {
-      setActivityEvents((prev) => [...prev, event.payload]);
-    });
-
     return () => {
       unlistenLogsStream.then((unlisten) => unlisten());
-      unlistenProgressStream.then((unlisten) => unlisten());
     };
   }, []);
 
@@ -37,9 +33,14 @@ export const Logs: React.FC = () => {
   return (
     <main className="p-4">
       <h1 className="mb-4 text-2xl">{t("logs")}</h1>
-      <button onClick={startIndexing} className="mb-4 cursor-pointer rounded bg-blue-500 p-2 text-white">
-        {t("startIndexing")}
-      </button>
+
+      <ActivityEventSimulator className="mb-4" />
+
+      <div className="mb-4 flex gap-2">
+        <button onClick={startIndexing} className="cursor-pointer rounded bg-blue-500 p-2 text-white">
+          {t("startIndexing")}
+        </button>
+      </div>
 
       <section className="mb-4">
         <h2 className="text-xl">{t("Last Progress Update")}</h2>
