@@ -1,31 +1,6 @@
 import React, { useState } from "react";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
-
-type EventStart = {
-  start: {
-    id: number;
-    activityId: string;
-    title: string;
-    detail: string | null;
-  };
-};
-
-type EventProgress = {
-  progress: {
-    id: number;
-    activityId: string;
-    detail: string;
-  };
-};
-
-type EventFinish = {
-  finish: {
-    id: number;
-    activityId: string;
-  };
-};
-
-type ActivityEventWithDetails = EventStart | EventProgress | EventFinish;
+import { ActivityEvent } from "@repo/moss-workbench";
 
 interface ActivityEventSimulatorProps {
   className?: string;
@@ -48,7 +23,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
     clearEvents();
 
     // Helper to emit an event with a delay
-    const emitEvent = (event: ActivityEventWithDetails, delay: number) => {
+    const emitEvent = (event: ActivityEvent, delay: number) => {
       return new Promise<void>((resolve) => {
         const timeoutId = setTimeout(() => {
           if (!isPaused) {
@@ -78,9 +53,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
               id: 0,
               activityId: "test/simulation",
               title: "Test Indexing",
-              detail: null,
             },
-          },
+          } as ActivityEvent,
           0
         );
 
@@ -96,7 +70,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 activityId: "test/simulation",
                 detail: `${i}/${simulationCount} (Simulated file ${i})`,
               },
-            },
+            } as ActivityEvent,
             simulationDelay
           );
         }
@@ -109,7 +83,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 id: simulationCount + 1,
                 activityId: "test/simulation",
               },
-            },
+            } as ActivityEvent,
             simulationDelay
           );
         }

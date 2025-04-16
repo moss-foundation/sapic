@@ -2,38 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { ActivityEvent } from "@repo/moss-workbench";
 import { listen } from "@tauri-apps/api/event";
 
-// Based on the provided examples of activity events
-type EventStart = {
-  start: {
-    id: number;
-    activityId: string;
-    title: string;
-    detail: string | null;
-  };
-};
-
-type EventProgress = {
-  progress: {
-    id: number;
-    activityId: string;
-    detail: string;
-  };
-};
-
-type EventFinish = {
-  finish: {
-    id: number;
-    activityId: string;
-  };
-};
-
-// Defining the actual ActivityEvent type based on examples
-type ActivityEventWithDetails = EventStart | EventProgress | EventFinish;
-
 interface ActivityEventsContextType {
-  activityEvents: ActivityEventWithDetails[];
+  activityEvents: ActivityEvent[];
   hasActiveEvents: boolean;
-  latestEvent: ActivityEventWithDetails | null;
+  latestEvent: ActivityEvent | null;
   clearEvents: () => void;
 }
 
@@ -47,7 +19,7 @@ const ActivityEventsContext = createContext<ActivityEventsContextType>({
 export const useActivityEvents = () => useContext(ActivityEventsContext);
 
 export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activityEvents, setActivityEvents] = useState<ActivityEventWithDetails[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
   const [activeActivities, setActiveActivities] = useState<Set<string>>(new Set());
 
   // Get the most recent event to display
@@ -55,7 +27,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
 
   useEffect(() => {
     // Handle Tauri events from backend
-    const unlistenProgressStream = listen<ActivityEventWithDetails>("workbench://activity-indicator", (event) => {
+    const unlistenProgressStream = listen<ActivityEvent>("workbench://activity-indicator", (event) => {
       setActivityEvents((prev) => [...prev, event.payload]);
 
       // Track active activities by their IDs
@@ -79,7 +51,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
     const handleSimulatedEvent = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail?.payload) {
-        const payload = customEvent.detail.payload as ActivityEventWithDetails;
+        const payload = customEvent.detail.payload as ActivityEvent;
 
         setActivityEvents((prev) => [...prev, payload]);
 

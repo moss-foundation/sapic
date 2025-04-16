@@ -19,11 +19,12 @@ export const StatusBarActivity = () => {
       setAnimateIcon(true);
     } else if ("progress" in latestEvent) {
       // Extract the progress counter (e.g., "20/27") from the detail
-      const progressMatch = latestEvent.progress.detail.match(/^(\d+\/\d+)/);
+      const progressMatch = latestEvent.progress.detail?.match(/^(\d+\/\d+)/);
       if (progressMatch && progressMatch[1]) {
         setDisplayText(`Indexing: ${progressMatch[1]}`);
+        setTimeout(() => {}, 1000);
       } else {
-        setDisplayText(latestEvent.progress.detail);
+        setDisplayText(latestEvent.progress.detail || null);
       }
       setAnimateIcon(true);
     } else if ("finish" in latestEvent) {
