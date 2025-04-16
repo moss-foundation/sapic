@@ -1,7 +1,7 @@
 import { useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import { ContextMenu, Icon, TreeContext } from "..";
@@ -27,7 +27,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     onNodeDoubleClickCallback,
   } = useContext(TreeContext);
 
-  const { currentActivePanelId, currentActiveTreeId, addPanel } = useDockviewStore();
+  const { addPanel, activePanelId } = useTabbedPaneStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset, [depth, nodeOffset]);
   const nodePaddingLeftForAddForm = useMemo(() => (depth + 1) * nodeOffset, [depth, nodeOffset]);
@@ -101,13 +101,15 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               ref={draggableNodeRef}
               onClick={() => {
                 if (node.isFolder) handleFolderClick();
-                else
+                else {
                   addPanel({
                     id: `${node.id}`,
                     params: {
                       treeId,
                     },
+                    component: "Default",
                   });
+                }
 
                 onNodeClickCallback?.(node);
               }}
@@ -118,17 +120,15 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
             >
               <span
                 className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
-                  "group-hover/treeNode:background-(--moss-secondary-background-hover)": !isNodeDragging,
-                  "background-(--moss-primary-background-hover) group-hover/treeNode:background-(--moss-primary-background-hover)!":
-                    currentActivePanelId === node.id && currentActiveTreeId === treeId,
+                  "group-hover/treeNode:background-(--moss-secondary-background-hover)":
+                    !isNodeDragging && activePanelId !== node.id,
+                  "background-(--moss-info-background-hover)": activePanelId === node.id,
                 })}
               />
 
               <span
                 className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
-                style={{
-                  paddingLeft: nodePaddingLeft,
-                }}
+                style={{ paddingLeft: nodePaddingLeft }}
               >
                 <Icon
                   icon="TreeChevronRight"

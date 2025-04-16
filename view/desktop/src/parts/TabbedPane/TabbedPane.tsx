@@ -6,11 +6,9 @@ import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
 import { Home, Logs, Settings } from "@/pages";
-import { useDockviewStore } from "@/store/Dockview";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
-  DockviewApi,
   DockviewDefaultTab,
   DockviewDidDropEvent,
   DockviewReact,
@@ -33,10 +31,8 @@ const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-  const dockviewStore = useDockviewStore();
   const tabbedPaneStore = useTabbedPaneStore();
 
-  const [api, setApi] = React.useState<DockviewApi>();
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
   const [activePanel, setActivePanel] = React.useState<string | undefined>();
@@ -51,19 +47,18 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useDockviewEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
+  useDockviewEventHandlers(tabbedPaneStore.api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
   useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
-  useDockviewResizeObserver(api, dockviewRefWrapper);
+  useDockviewResizeObserver(tabbedPaneStore.api, dockviewRefWrapper);
 
   const onReady = (event: DockviewReadyEvent) => {
-    setApi(event.api);
     tabbedPaneStore.setApi(event.api);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
-    if (!pragmaticDropElement) return;
+    if (!pragmaticDropElement || !tabbedPaneStore.api) return;
 
-    dockviewStore.addPanel({
+    tabbedPaneStore.api.addPanel({
       id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {
@@ -79,9 +74,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
     const initializeLayout = async () => {
       try {
-        if (tabbedPaneStore.api) {
-          tabbedPaneStore.api.fromJSON(tabbedPaneStore.gridState);
-        }
+        tabbedPaneStore.api?.fromJSON(tabbedPaneStore.gridState);
       } catch (e) {
         console.error("Failed to initialize layout:", e);
       }
@@ -183,7 +176,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
       <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
         {showDebugPanels && (
           <DockviewControls
-            api={api}
+            api={tabbedPaneStore.api}
             panels={panels}
             activePanel={activePanel}
             groups={groups}

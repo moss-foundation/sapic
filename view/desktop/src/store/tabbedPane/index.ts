@@ -1,6 +1,10 @@
 import { create } from "zustand";
 
-import { DockviewApi, SerializedDockview } from "@repo/moss-tabs";
+import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
+
+interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions, "component"> {
+  component?: string;
+}
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
@@ -9,9 +13,12 @@ interface TabbedPaneState {
   setShowDebugPanels: (show: boolean) => void;
   api?: DockviewApi;
   setApi: (api: DockviewApi) => void;
+  activePanelId: string | undefined;
+  setActivePanelId: (id: string | undefined) => void;
+  addPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
 }
 
-export const useTabbedPaneStore = create<TabbedPaneState>((set) => ({
+export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   gridState: {
     grid: {
       root: {
@@ -32,4 +39,29 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set) => ({
   setShowDebugPanels: (show: boolean) => set({ showDebugPanels: show }),
   api: undefined,
   setApi: (api: DockviewApi) => set({ api }),
+  activePanelId: undefined,
+  setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
+  addPanel: async (options) => {
+    const someRandomString = await new Promise<string>((resolve) => {
+      setTimeout(() => {
+        resolve(Math.random().toString(36).substring(7));
+      }, 50);
+    });
+
+    const activePanel = get().api?.getPanel(options.id);
+
+    if (activePanel) {
+      activePanel.focus();
+      return;
+    }
+
+    get().api?.addPanel({
+      ...options,
+      component: "Default",
+      params: {
+        ...options.params,
+        someRandomString,
+      },
+    } as AddPanelOptions);
+  },
 }));

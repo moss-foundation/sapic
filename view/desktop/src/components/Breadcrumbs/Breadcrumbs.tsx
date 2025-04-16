@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { DropdownMenu, Icon } from "..";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
@@ -12,7 +12,7 @@ import { BreadcrumbTree } from "./BreadcrumbTree";
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
-  const { addPanel } = useDockviewStore();
+  const { addPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
-                      if (!node.isFolder) addPanel({ id: `${node.id}` });
+                      if (!node.isFolder) addPanel({ id: `${node.id}`, component: "Default" });
                     }}
                   />
                 </DropdownMenu.Content>
