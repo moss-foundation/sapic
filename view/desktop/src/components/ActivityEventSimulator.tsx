@@ -243,6 +243,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
           // Get a random oneshot event type
           const oneshotType = oneshotTypes[Math.floor(Math.random() * oneshotTypes.length)];
 
+          // Emit oneshot event - these will be displayed for exactly 1 second
           await emitEvent(
             {
               oneshot: {
@@ -373,9 +374,122 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
         } else {
           const progressPromises: Promise<void>[] = [];
 
-          // Start multiple progress event sequences
+          // Start multiple progress event sequences with different activity types
           for (let i = 0; i < concurrentProgressEvents; i++) {
-            progressPromises.push(simulateProgressSequence(i + 1, progressEventCount, simulationDelay));
+            // Ensure we use a different activity type for each sequence
+            // By using modulo, we cycle through available types if there are more sequences than types
+            const activityTypeIndex = i % activityTypes.length;
+
+            // Create a specialized sequence that uses the specific activity type
+            const simulateTypedSequence = async () => {
+              try {
+                const sequenceId = i + 1;
+                const baseId = sequenceId * 1000;
+                const totalEvents = progressEventCount;
+                const baseDelay = simulationDelay;
+
+                // Use the specific activity type instead of random
+                const activityType = activityTypes[activityTypeIndex];
+
+                // Check if we're resuming this sequence
+                let startingProgress = 0;
+                let existingSequence = simulationProgressRef.current.progressSequences.find(
+                  (seq) => seq.sequenceId === sequenceId
+                );
+
+                if (existingSequence) {
+                  // Resume from saved progress
+                  startingProgress = existingSequence.currentProgress;
+                  // Keep the activity type consistent when resuming
+                } else {
+                  // Save this sequence's progress with the specific activity type
+                  simulationProgressRef.current.progressSequences.push({
+                    sequenceId,
+                    currentProgress: 0,
+                    totalEvents,
+                    activityType,
+                  });
+                  existingSequence =
+                    simulationProgressRef.current.progressSequences[
+                      simulationProgressRef.current.progressSequences.length - 1
+                    ];
+                }
+
+                // Start event (only if not resuming or at beginning)
+                if (startingProgress === 0) {
+                  await emitEvent(
+                    {
+                      start: {
+                        id: baseId,
+                        activityId: `test/simulation-${sequenceId}`,
+                        title: activityType.title,
+                      },
+                    } as ActivityEvent,
+                    randomDelay(0, baseDelay / 2)
+                  );
+                }
+
+                // Progress events with configurable delay between them
+                for (let i = startingProgress + 1; i <= totalEvents; i++) {
+                  // Check if we're still active and not paused
+                  if (!simulationStateRef.current.isActive) {
+                    break;
+                  }
+
+                  if (simulationStateRef.current.isPaused) {
+                    // Save current progress before breaking
+                    if (existingSequence) {
+                      existingSequence.currentProgress = i - 1;
+                    }
+                    break;
+                  }
+
+                  // Create detail following the format for this activity type
+                  const detail = activityType.detailFormat
+                    .replace("{current}", i.toString())
+                    .replace("{total}", totalEvents.toString());
+
+                  await emitEvent(
+                    {
+                      progress: {
+                        id: baseId + i,
+                        activityId: `test/simulation-${sequenceId}`,
+                        detail: detail,
+                      },
+                    } as ActivityEvent,
+                    priorityTestMode
+                      ? randomDelay(baseDelay * 0.2, baseDelay * 0.8) // Faster in priority test mode
+                      : randomDelay(baseDelay * 0.5, baseDelay * 1.5)
+                  );
+
+                  // Update progress
+                  if (existingSequence) {
+                    existingSequence.currentProgress = i;
+                  }
+                }
+
+                // Finish event
+                if (simulationStateRef.current.isActive && !simulationStateRef.current.isPaused) {
+                  await emitEvent(
+                    {
+                      finish: {
+                        id: baseId + totalEvents + 1,
+                        activityId: `test/simulation-${sequenceId}`,
+                      },
+                    } as ActivityEvent,
+                    randomDelay(baseDelay * 0.5, baseDelay)
+                  );
+
+                  // Remove from progress tracking once finished
+                  simulationProgressRef.current.progressSequences =
+                    simulationProgressRef.current.progressSequences.filter((seq) => seq.sequenceId !== sequenceId);
+                }
+              } catch (error) {
+                console.error(`Error in typed progress simulation ${i + 1}:`, error);
+              }
+            };
+
+            progressPromises.push(simulateTypedSequence());
           }
 
           // Start oneshot events

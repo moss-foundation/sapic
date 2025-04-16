@@ -48,7 +48,7 @@ export const StatusBarActivity = () => {
         setDisplayText(displayFormat);
         setAnimateIcon(true);
 
-        // Auto-hide oneshot events after 1 second
+        // Auto-hide oneshot events after exactly 1 second
         const timer = setTimeout(() => {
           // Only clear if this is still the current event
           if (getEventKey(latestEvent) === currentEventKey) {
