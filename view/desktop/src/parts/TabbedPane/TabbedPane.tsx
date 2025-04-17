@@ -1,16 +1,14 @@
 import "./assets/styles.css";
 
-import React from "react";
+import React, { useRef } from "react";
 
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
 import { Home, Logs, Settings } from "@/pages";
-import { useDockviewStore } from "@/store/Dockview";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
-  DockviewApi,
   DockviewDefaultTab,
   DockviewDidDropEvent,
   DockviewReact,
@@ -23,7 +21,6 @@ import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugCompon
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
-import { defaultConfig } from "./defaultLayout";
 import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
 import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
@@ -33,10 +30,10 @@ import Watermark from "./Watermark";
 const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
+  const firstRender = useRef(true);
   const { showDebugPanels } = useTabbedPaneStore();
-  const dockviewStore = useDockviewStore();
+  const { api, addOrFocusPanel, setApi, gridState, setGridState } = useTabbedPaneStore();
 
-  const [api, setApi] = React.useState<DockviewApi>();
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
   const [activePanel, setActivePanel] = React.useState<string | undefined>();
@@ -57,14 +54,12 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
-    dockviewStore.setApi(event.api);
-    useTabbedPaneStore.getState().setApi(event.api);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
-    if (!pragmaticDropElement) return;
+    if (!pragmaticDropElement || !api) return;
 
-    dockviewStore.addPanel({
+    addOrFocusPanel({
       id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {
@@ -78,14 +73,24 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   React.useEffect(() => {
     if (!api) return;
 
+    api.onDidLayoutChange(() => {
+      if (firstRender.current) {
+        firstRender.current = false;
+        return;
+      }
+
+      setGridState(api.toJSON());
+    });
+  }, [api, gridState, setGridState]);
+
+  React.useEffect(() => {
+    if (!api) return;
+
     const initializeLayout = async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        api?.clear();
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        defaultConfig(api);
+        api?.fromJSON(gridState);
       } catch (e) {
-        console.warn("Failed to initialize layout:", e);
+        console.error("Failed to initialize layout:", e);
       }
     };
 

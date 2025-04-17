@@ -2,6 +2,9 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
+import { AllotmentHandle } from "allotment";
+import { useEffect, useRef } from "react";
+
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
@@ -17,6 +20,14 @@ export const AppLayout = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
   };
 
+  const resizableRef = useRef<AllotmentHandle>(null);
+
+  useEffect(() => {
+    if (!resizableRef.current) return;
+
+    resizableRef.current.reset();
+  }, [bottomPane, sideBar, sideBarPosition]);
+
   return (
     <div className="flex h-full w-full">
       {position === "default" && sideBarPosition === "left" && <ActivityBar />}
@@ -26,6 +37,7 @@ export const AppLayout = () => {
         )}
 
         <Resizable
+          ref={resizableRef}
           onDragEnd={(sizes) => {
             if (sideBarPosition === "left") {
               const [leftPanelSize, _mainPanelSize] = sizes;
@@ -46,6 +58,7 @@ export const AppLayout = () => {
               preferredSize={sideBar.width}
               visible={sideBar.visible && sideBarPosition === "left"}
               minSize={sideBar.minWidth}
+              maxSize={sideBar.maxWidth}
               snap
               className="background-(--moss-primary-background)"
             >
@@ -54,6 +67,7 @@ export const AppLayout = () => {
           )}
           <ResizablePanel>
             <Resizable
+              ref={resizableRef}
               vertical
               onDragEnd={(sizes) => {
                 const [_mainPanelSize, bottomPaneSize] = sizes;
@@ -66,7 +80,12 @@ export const AppLayout = () => {
               <ResizablePanel>
                 <MainContent />
               </ResizablePanel>
-              <ResizablePanel visible={bottomPane.visible} minSize={bottomPane.minHeight} snap>
+              <ResizablePanel
+                preferredSize={bottomPane.height}
+                visible={bottomPane.visible}
+                minSize={bottomPane.minHeight}
+                snap
+              >
                 <BottomPaneContent />
               </ResizablePanel>
             </Resizable>

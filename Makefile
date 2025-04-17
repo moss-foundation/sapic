@@ -2,17 +2,32 @@
 # Sapic Makefile - Build and Development Configuration
 # ======================================================
 
+# ---- Environment Settings ----
+export LOG_LEVEL = trace
+
+# ---- Asset Directories ----
+export THEMES_DIR = ${CURDIR}/assets/themes
+export LOCALES_DIR = ${CURDIR}/assets/locales
+export APP_LOG_DIR = ${CURDIR}/logs/app
+export SESSION_LOG_DIR = ${CURDIR}/logs/session
+
+# ---- Default Goal ----
+.DEFAULT_GOAL := run-desktop
+
 # ---- OS Detection ----
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
     PYTHON := python
     PIP := pip
+export DEV_APP_DIR = ${USERPROFILE}\.sapic
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
     PYTHON := python3
     PIP := pip3
+
+export DEV_APP_DIR = ${HOME}/.sapic
 endif
 
 # ---- Environment Settings ----
@@ -210,4 +225,3 @@ tidy: gen-license workspace-audit check-unused-deps
 build:
 	# Enable compression feature for reducing binary size
 	$(CARGO) build --bin desktop --features compression
-

@@ -23,6 +23,7 @@ export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
   const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
   const { visible } = useAppResizableLayoutStore((state) => state.sideBar);
+
   useEffect(() => {
     return monitorForElements({
       onDrop({ location, source }) {
@@ -57,6 +58,7 @@ export const ActivityBar = () => {
     >
       {items.map((item) => (
         <div
+          key={item.id}
           className={cn("relative flex flex-col", {
             "px-1.5": position === "default",
             "py-1.5": position === "top" || position === "bottom",
@@ -163,7 +165,7 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
     <button
       ref={ref}
       className={cn("relative cursor-pointer rounded-md p-1", {
-        "background-(--moss-info-background-hover) text-(--moss-info-icon)": isActive && visible,
+        "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && visible,
         "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
           !isActive || !visible,
       })}
