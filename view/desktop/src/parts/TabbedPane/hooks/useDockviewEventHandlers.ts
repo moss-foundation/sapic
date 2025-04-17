@@ -51,9 +51,6 @@ export const useDockviewEventHandlers = (
       api.onUnhandledDragOverEvent((event) => {
         event.accept();
       }),
-      api.onDidLayoutChange(() => {
-        setGridState(api.toJSON());
-      }),
     ];
 
     return () => {

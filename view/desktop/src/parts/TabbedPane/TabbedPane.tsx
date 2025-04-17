@@ -31,7 +31,7 @@ const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-  const { api, addOrFocusPanel, setApi, gridState } = useTabbedPaneStore();
+  const { api, addOrFocusPanel, setApi, gridState, setGridState } = useTabbedPaneStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -68,6 +68,14 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     });
     setPragmaticDropElement(null);
   };
+
+  React.useEffect(() => {
+    if (!api) return;
+
+    api.onDidLayoutChange(() => {
+      setGridState(api.toJSON());
+    });
+  }, [api, setGridState]);
 
   React.useEffect(() => {
     if (!api) return;
