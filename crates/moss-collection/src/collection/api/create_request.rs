@@ -1,11 +1,9 @@
-use std::path::PathBuf;
 use anyhow::Context as _;
 use moss_fs::{
-    utils::{
-        encode_directory_name, encode_path
-    },
-    CreateOptions
+    utils::{encode_directory_name, encode_path},
+    CreateOptions,
 };
+use std::path::PathBuf;
 use validator::Validate;
 
 use crate::{
@@ -36,7 +34,8 @@ impl Collection {
             encode_path(&relative_path, None)?
         } else {
             PathBuf::new()
-        }.join(&request_dir_name);
+        }
+        .join(&request_dir_name);
 
         let request_dir_full_path = self
             .abs_path
