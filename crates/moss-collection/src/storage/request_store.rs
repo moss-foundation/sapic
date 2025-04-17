@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use moss_db::{bincode_table::BincodeTable, ReDbClient};
-use moss_db::{DatabaseClient, Transaction};
+use moss_db::{common::Transaction, DatabaseClient};
 
 use crate::models::storage::RequestEntity;
 

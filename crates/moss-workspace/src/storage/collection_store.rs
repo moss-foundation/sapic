@@ -1,6 +1,5 @@
 use anyhow::Result;
-use moss_db::{bincode_table::BincodeTable, ReDbClient};
-use moss_db::{DatabaseClient, Transaction};
+use moss_db::{bincode_table::BincodeTable, common::Transaction, DatabaseClient, ReDbClient};
 use std::path::PathBuf;
 
 use super::{CollectionEntity, CollectionStore, CollectionStoreTable};
