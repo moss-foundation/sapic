@@ -17,6 +17,7 @@ interface TabbedPaneState {
   activePanelId: string | undefined;
   setActivePanelId: (id: string | undefined) => void;
   addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
+  initialize: (state: SerializedDockview) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
@@ -39,6 +40,9 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     setLayoutPartsState({
       input: { editor: state },
     });
+    set({ gridState: state });
+  },
+  initialize: (state: SerializedDockview) => {
     set({ gridState: state });
   },
   showDebugPanels: false,

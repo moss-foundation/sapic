@@ -18,6 +18,7 @@ interface SetLayoutPartsStateProps {
 }
 
 export const setLayoutPartsState = ({ input, params }: SetLayoutPartsStateProps) => {
+  console.log("setLayoutPartsState", input, params);
   invokeTauriIpc("set_layout_parts_state", {
     input,
     params: params ?? { isOnExit: false },

@@ -15,8 +15,8 @@ export interface WindowPreparationState {
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
   const hasOpenedWorkspace = useRef(false);
-  const { sideBar, bottomPane } = useAppResizableLayoutStore();
-  const { setGridState, gridState } = useTabbedPaneStore();
+  const { initialize, sideBar, bottomPane } = useAppResizableLayoutStore();
+  const { initialize: initializeTabbedPane, gridState } = useTabbedPaneStore();
 
   useEffect(() => {
     const openWorkspace = async () => {
@@ -32,16 +32,20 @@ export const usePrepareWindow = (): WindowPreparationState => {
       }
 
       if (layout.data?.editor) {
-        setGridState(layout.data.editor as unknown as SerializedDockview);
+        initializeTabbedPane(layout.data.editor as unknown as SerializedDockview);
       }
-      if (layout.data?.sidebar) {
-        sideBar.setWidth(layout.data.sidebar.preferredSize);
-        sideBar.setVisible(layout.data.sidebar.isVisible);
-      }
-      if (layout.data?.panel) {
-        bottomPane.setHeight(layout.data.panel.preferredSize);
-        bottomPane.setVisible(layout.data.panel.isVisible);
-      }
+
+      initialize({
+        sideBar: {
+          width: layout?.data?.sidebar?.preferredSize,
+          visible: layout?.data?.sidebar?.isVisible,
+        },
+        bottomPane: {
+          height: layout?.data?.panel?.preferredSize,
+          visible: layout?.data?.panel?.isVisible,
+        },
+      });
+
       setIsPreparing(false);
     };
 

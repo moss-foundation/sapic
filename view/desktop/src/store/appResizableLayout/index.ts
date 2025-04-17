@@ -6,6 +6,17 @@ import { setLayoutPartsState } from "@/utils/setLayoutPartsState";
 export interface AppResizableLayoutStore {
   sideBarPosition: "left" | "right";
   setSideBarPosition: (position: AppResizableLayoutStore["sideBarPosition"]) => void;
+  initialize: (newState: {
+    sideBar: {
+      width?: number;
+      visible?: boolean;
+    };
+    bottomPane: {
+      height?: number;
+      visible?: boolean;
+    };
+  }) => void;
+
   sideBar: {
     minWidth: number;
     width: number;
@@ -28,6 +39,20 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     set(() => ({
       sideBarPosition: position,
     })),
+  initialize: (newState) => {
+    set((state) => ({
+      sideBar: {
+        ...state.sideBar,
+        width: newState.sideBar.width ?? state.sideBar.width,
+        visible: newState.sideBar.visible ?? state.sideBar.visible,
+      },
+      bottomPane: {
+        ...state.bottomPane,
+        height: newState.bottomPane.height ?? state.bottomPane.height,
+        visible: newState.bottomPane.visible ?? state.bottomPane.visible,
+      },
+    }));
+  },
   sideBar: {
     minWidth: 120,
     width: 255,

@@ -1,6 +1,6 @@
 import "./assets/styles.css";
 
-import React from "react";
+import React, { useRef } from "react";
 
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
@@ -30,6 +30,7 @@ import Watermark from "./Watermark";
 const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
+  const firstRender = useRef(true);
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi, gridState, setGridState } = useTabbedPaneStore();
 
@@ -73,6 +74,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     api.onDidLayoutChange(() => {
+      console.log("onDidLayoutChange");
+      if (firstRender.current) {
+        firstRender.current = false;
+        return;
+      }
       setGridState(api.toJSON());
     });
   }, [api, setGridState]);
