@@ -2,7 +2,6 @@ use moss_db::bincode_table::BincodeTable;
 use moss_db::encrypted_bincode_table::{EncryptedBincodeTable, EncryptionOptions};
 use moss_db::ReDbClient;
 use moss_testutils::random_name::random_string;
-use std::fs;
 use std::path::PathBuf;
 
 pub(crate) const TEST_PASSWORD_1: &[u8] = "password_1".as_bytes();
@@ -14,7 +13,7 @@ fn random_db_name() -> String {
     format!("Test_{}.db", random_string(10))
 }
 
-pub(crate) fn random_db_path() -> PathBuf {
+pub(crate) fn test_db_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -23,7 +22,7 @@ pub(crate) fn random_db_path() -> PathBuf {
 
 // TODO: Test different types of values once we solve serialization issue
 pub fn setup_test_bincode_table() -> (ReDbClient, BincodeTable<'static, String, i32>, PathBuf) {
-    let test_db_path = random_db_path();
+    let test_db_path = test_db_path();
     let bincode_table = BincodeTable::new("test");
     let client = ReDbClient::new(test_db_path.clone())
         .unwrap()
@@ -38,7 +37,7 @@ pub fn setup_test_encrypted_bincode_table() -> (
     EncryptedBincodeTable<'static, String, i32>,
     PathBuf,
 ) {
-    let test_db_path = random_db_path();
+    let test_db_path = test_db_path();
     let encrypted_bincode_table = EncryptedBincodeTable::new("test", EncryptionOptions::default());
 
     let client = ReDbClient::new(test_db_path.clone())

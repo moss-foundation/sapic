@@ -1,11 +1,11 @@
-use crate::shared::{
-    setup_test_bincode_table, setup_test_encrypted_bincode_table, TEST_AAD_1, TEST_AAD_2,
-    TEST_PASSWORD_1, TEST_PASSWORD_2,
-};
+mod shared;
+
 use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
 
-mod shared;
+use crate::shared::{
+    setup_test_encrypted_bincode_table, TEST_AAD_1, TEST_AAD_2, TEST_PASSWORD_1, TEST_PASSWORD_2,
+};
 
 #[test]
 fn read_success() {

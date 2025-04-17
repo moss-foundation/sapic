@@ -1,8 +1,9 @@
-use crate::shared::setup_test_bincode_table;
+mod shared;
+
 use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
 
-mod shared;
+use crate::shared::setup_test_bincode_table;
 
 #[test]
 fn truncate_empty() {
