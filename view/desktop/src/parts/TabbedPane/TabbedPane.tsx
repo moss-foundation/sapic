@@ -58,7 +58,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !tabbedPaneStore.api) return;
 
-    tabbedPaneStore.api.addPanel({
+    tabbedPaneStore.addOrFocusPanel({
       id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {

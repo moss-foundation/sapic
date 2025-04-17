@@ -12,7 +12,7 @@ import { BreadcrumbTree } from "./BreadcrumbTree";
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
-  const { addPanel } = useTabbedPaneStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
-                      if (!node.isFolder) addPanel({ id: `${node.id}`, component: "Default" });
+                      if (!node.isFolder) addOrFocusPanel({ id: `${node.id}`, component: "Default" });
                     }}
                   />
                 </DropdownMenu.Content>

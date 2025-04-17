@@ -27,7 +27,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     onNodeDoubleClickCallback,
   } = useContext(TreeContext);
 
-  const { addPanel, activePanelId } = useTabbedPaneStore();
+  const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
   const nodePaddingLeft = useMemo(() => depth * nodeOffset, [depth, nodeOffset]);
   const nodePaddingLeftForAddForm = useMemo(() => (depth + 1) * nodeOffset, [depth, nodeOffset]);
@@ -102,7 +102,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               onClick={() => {
                 if (node.isFolder) handleFolderClick();
                 else {
-                  addPanel({
+                  addOrFocusPanel({
                     id: `${node.id}`,
                     params: {
                       treeId,

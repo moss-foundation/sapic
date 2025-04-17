@@ -25,7 +25,7 @@ export const BreadcrumbNode = ({
   paddingRight = 8,
   nodeOffset = 12,
 }: BreadcrumbNodeProps) => {
-  const { api } = useTabbedPaneStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const nodePaddingLeft = depth * nodeOffset + paddingLeft + 4;
   const shouldRenderChildNodes = node.isFolder && node.isExpanded;
@@ -44,7 +44,7 @@ export const BreadcrumbNode = ({
         style={{ paddingLeft: nodePaddingLeft, paddingRight: paddingRight + 3 }}
         onClick={() => {
           if (node.isFolder) handleFolderClick();
-          else api?.addPanel({ id: `${node.id}`, component: "Default" });
+          else addOrFocusPanel({ id: `${node.id}`, component: "Default" });
 
           onNodeClickCallback?.(node);
         }}

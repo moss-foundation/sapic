@@ -15,7 +15,7 @@ interface TabbedPaneState {
   setApi: (api: DockviewApi) => void;
   activePanelId: string | undefined;
   setActivePanelId: (id: string | undefined) => void;
-  addPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
+  addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
@@ -41,7 +41,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   setApi: (api: DockviewApi) => set({ api }),
   activePanelId: undefined,
   setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
-  addPanel: async (options) => {
+  addOrFocusPanel: async (options) => {
     const someRandomString = await new Promise<string>((resolve) => {
       setTimeout(() => {
         resolve(Math.random().toString(36).substring(7));
