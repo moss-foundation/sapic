@@ -3,28 +3,12 @@ pub mod common;
 pub mod encrypted_bincode_table;
 
 use anyhow::Result;
-use common::DatabaseError;
-use redb::{
-    Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
-    WriteTransaction as InnerWriteTransaction,
-};
+use redb::{Database, Key, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 
-pub enum Transaction {
-    Read(InnerReadTransaction),
-    Write(InnerWriteTransaction),
-}
-
-impl Transaction {
-    pub fn commit(self) -> Result<(), DatabaseError> {
-        match self {
-            Transaction::Read(_) => Ok(()),
-            Transaction::Write(txn) => Ok(txn.commit()?),
-        }
-    }
-}
+use crate::common::Transaction;
 
 pub trait DatabaseClient: Sized {
     fn begin_write(&self) -> Result<Transaction>;
@@ -58,8 +42,11 @@ where
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        // Using compact() on an empty ReDb database will shrink its file size by 1 mb
+        let mut database = Database::create(path)?;
+        database.compact()?;
         Ok(Self {
-            db: Arc::new(Database::create(path)?),
+            db: Arc::new(database),
         })
     }
 
