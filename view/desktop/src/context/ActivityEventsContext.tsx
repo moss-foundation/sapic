@@ -9,7 +9,6 @@ interface ActivityEventsContextType {
   hasActiveEvents: boolean;
   latestEvent: ActivityEvent | null;
   displayQueue: ActivityEvent[];
-  // Get start event title for a specific activityId
   getStartTitleForActivity: (activityId: string) => string | null;
   clearEvents: () => void;
 }
@@ -33,7 +32,7 @@ const getEventId = (event: ActivityEvent): number => {
   if ("start" in event) return event.start.id;
   if ("progress" in event) return event.progress.id;
   if ("finish" in event) return event.finish.id;
-  return -1; // Should never happen
+  return -1;
 };
 
 export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -42,7 +41,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
   const [oneshotEvents, setOneshotEvents] = useState<ActivityEvent[]>([]);
   const [activeActivities, setActiveActivities] = useState<Set<string>>(new Set());
   const [startTitles, setStartTitles] = useState<Map<string, string>>(new Map());
-  // Track the most recently received event for immediate display
   const [mostRecentEvent, setMostRecentEvent] = useState<{
     event: ActivityEvent;
     timestamp: number;
@@ -52,20 +50,15 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
   // Queue for displaying events sequentially in the status bar
   const [displayQueue, setDisplayQueue] = useState<ActivityEvent[]>([]);
   const processingQueueRef = useRef(false);
-  const displayDurationRef = useRef(100); // Default 1 second display time
+  const displayDurationRef = useRef(100); // Default 100 ms display time
 
-  // Get start event title for a specific activityId
   const getStartTitleForActivity = (activityId: string): string | null => {
-    // Check the title mapping first
     const title = startTitles.get(activityId);
     if (title) return title;
 
-    // If not found in the mapping, try to find it from the activityEvents
-    // This helps when events are processed quickly and the title mapping might not be updated yet
     const startEvent = activityEvents.find((event) => "start" in event && event.start.activityId === activityId);
 
     if (startEvent && "start" in startEvent) {
-      // Update the mapping for future use
       setStartTitles((prev) => {
         const newMap = new Map(prev);
         newMap.set(activityId, startEvent.start.title);
@@ -116,7 +109,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
   // Get the most recent event to display - prioritize oneshot events (highest priority)
   // then show the most recently received progress event
   const latestEvent = React.useMemo(() => {
-    // If we have a recent event set by the display queue, use it
     if (mostRecentEvent && Date.now() - mostRecentEvent.timestamp < displayDurationRef.current) {
       return mostRecentEvent.event;
     }
@@ -127,7 +119,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
       return displayQueue[0];
     }
 
-    // If no current event is being displayed, return null
     return null;
   }, [mostRecentEvent, displayQueue]);
 
@@ -149,7 +140,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
   useEffect(() => {
     // Process incoming event
     const processEvent = (event: ActivityEvent) => {
-      // Add to the overall activity events list
       setActivityEvents((prev) => [...prev, event]);
 
       // Add event to display queue
@@ -161,7 +151,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
         // But we should immediately process the activeActivities cleanup instead of waiting
         const activityId = event.finish.activityId;
 
-        // Update activeActivities immediately when a finish event is received
         setActiveActivities((prev) => {
           const newSet = new Set(prev);
           newSet.delete(activityId);
@@ -202,7 +191,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
 
       // Handle each event type
       if ("oneshot" in event) {
-        // Add to oneshot events
         setOneshotEvents((prev) => [...prev, event]);
 
         // Auto-remove oneshot event after 1 second
@@ -213,7 +201,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
         // Create/update the progress events for this activityId
         const activityId = event.start.activityId;
 
-        // Store the title from the start event for later use with progress events
         setStartTitles((prev) => {
           const newMap = new Map(prev);
           newMap.set(activityId, event.start.title);
@@ -222,11 +209,9 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
 
         setActiveProgressEvents((prev) => {
           const newMap = new Map(prev);
-          // Initialize with empty array if not exists
           if (!newMap.has(activityId)) {
             newMap.set(activityId, []);
           }
-          // Add start event and sort by id
           const events = [...(newMap.get(activityId) || []), event];
           newMap.set(
             activityId,
@@ -235,23 +220,19 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
           return newMap;
         });
 
-        // Mark activity as active
         setActiveActivities((prev) => {
           const newSet = new Set(prev);
           newSet.add(activityId);
           return newSet;
         });
       } else if ("progress" in event) {
-        // Update the progress events for this activityId
         const activityId = event.progress.activityId;
 
         setActiveProgressEvents((prev) => {
           const newMap = new Map(prev);
-          // If we receive a progress event but don't have a start event, initialize
           if (!newMap.has(activityId)) {
             newMap.set(activityId, []);
           }
-          // Add progress event and sort by id
           const events = [...(newMap.get(activityId) || []), event];
           newMap.set(
             activityId,
@@ -260,14 +241,12 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
           return newMap;
         });
 
-        // Ensure activity is marked as active
         setActiveActivities((prev) => {
           const newSet = new Set(prev);
           newSet.add(activityId);
           return newSet;
         });
       } else if ("finish" in event) {
-        // Add finish event to the progress events for this activityId
         const activityId = event.finish.activityId;
 
         setActiveProgressEvents((prev) => {
@@ -275,7 +254,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
           if (!newMap.has(activityId)) {
             newMap.set(activityId, []);
           }
-          // Add finish event and sort by id
           const events = [...(newMap.get(activityId) || []), event];
           newMap.set(
             activityId,
@@ -283,9 +261,6 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
           );
           return newMap;
         });
-
-        // Note: The active activities cleanup is now handled earlier when we process the event
-        // This ensures faster response to finish events
       }
     };
 

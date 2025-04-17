@@ -9,9 +9,7 @@ export const StatusBarActivity = () => {
   const [animateIcon, setAnimateIcon] = useState(false);
   const [displayText, setDisplayText] = useState<string | null>(null);
   const [currentEventKey, setCurrentEventKey] = useState<string | null>(null);
-  // Keep track of the last valid display text to prevent flickering
   const lastValidTextRef = useRef<string | null>(null);
-  // Track when we should force-hide the component
   const [forceHide, setForceHide] = useState(false);
 
   // Generate a unique key for an event to track when it changes
@@ -71,12 +69,10 @@ export const StatusBarActivity = () => {
       return lastValidTextRef.current;
     }
 
-    // If there are events in the queue, show a generic message
     if (displayQueue.length > 0) {
       return "Processing...";
     }
 
-    // If there are active events but nothing specific to display
     if (hasActiveEvents) {
       return "Activity in progress...";
     }
@@ -86,11 +82,9 @@ export const StatusBarActivity = () => {
 
   useEffect(() => {
     if (!latestEvent) {
-      // Instead of immediately clearing display text, use the fallback
       const fallbackText = getFallbackText();
       setDisplayText(fallbackText);
 
-      // If no latestEvent and no hasActiveEvents and no queue, we should hide
       if (!hasActiveEvents && displayQueue.length === 0) {
         setForceHide(true);
       }
@@ -100,18 +94,14 @@ export const StatusBarActivity = () => {
     // Reset force hide when we have a new event
     setForceHide(false);
 
-    // Get a key for the current event to detect changes
     const eventKey = getEventKey(latestEvent);
 
     // If this is a new event, update the display
     if (eventKey !== currentEventKey) {
       setCurrentEventKey(eventKey);
 
-      // Handle finish events specially
       if ("finish" in latestEvent) {
-        // If this is a finish event, check if we need to hide the component
         if (!hasActiveEvents && displayQueue.length === 0) {
-          // Schedule a hide after a short delay
           setTimeout(() => {
             setForceHide(true);
             lastValidTextRef.current = null;
@@ -121,39 +111,30 @@ export const StatusBarActivity = () => {
         return;
       }
 
-      // Format the display text based on event type
       const formattedText = formatEventText(latestEvent);
 
-      // Only update if we got valid text
       if (formattedText) {
         setDisplayText(formattedText);
-        // Save this as the last valid text
         lastValidTextRef.current = formattedText;
       } else {
-        // If no valid text, use fallback
         setDisplayText(getFallbackText());
       }
 
-      // Enable animation for all event types
       setAnimateIcon(true);
     }
   }, [latestEvent, formatEventText, currentEventKey, getFallbackText, hasActiveEvents, displayQueue.length]);
 
-  // Reset forceHide when new activities start
   useEffect(() => {
     if (hasActiveEvents || displayQueue.length > 0) {
       setForceHide(false);
     }
   }, [hasActiveEvents, displayQueue.length]);
 
-  // Update animation state based on active events and display queue
   useEffect(() => {
     if (!hasActiveEvents && displayQueue.length === 0 && animateIcon) {
       setAnimateIcon(false);
-      // Also clear the last valid text when everything is done
       lastValidTextRef.current = null;
 
-      // Set forceHide after a short delay when all activities are done
       setTimeout(() => {
         if (!hasActiveEvents && displayQueue.length === 0) {
           setForceHide(true);
@@ -164,7 +145,6 @@ export const StatusBarActivity = () => {
     }
   }, [hasActiveEvents, displayQueue, animateIcon]);
 
-  // Debug the current event if needed
   useEffect(() => {
     if (latestEvent) {
       if ("progress" in latestEvent) {
@@ -179,8 +159,6 @@ export const StatusBarActivity = () => {
     }
   }, [latestEvent, getStartTitleForActivity, hasActiveEvents, displayQueue.length]);
 
-  // Show status bar item if there are active events, display queue items, or text to display
-  // And not force hidden
   if (forceHide || (!hasActiveEvents && displayQueue.length === 0 && !displayText)) {
     return null;
   }
