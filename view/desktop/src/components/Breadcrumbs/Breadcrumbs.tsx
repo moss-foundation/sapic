@@ -39,7 +39,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   if (!activeTree) return null;
 
   return (
-    <div className="flex items-center justify-between px-3 py-[5px]">
+    <div className="flex items-center justify-between px-2 py-[5px]">
       <div className="flex items-center gap-1 text-[#6F6F6F] select-none">
         {path.map((pathNode, index) => {
           const node = findNodeById(activeTree, pathNode)!;

@@ -67,9 +67,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
             isVisible: bottomPane.visible,
           },
         },
-        params: {
-          isOnExit: true,
-        },
+        params: { isOnExit: true },
       });
     });
 
