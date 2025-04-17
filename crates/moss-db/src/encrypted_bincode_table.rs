@@ -116,15 +116,9 @@ where
         Ok(Zeroizing::new(key_bytes))
     }
 
-    fn encrypt(
-        &self,
-        data: &[u8],
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<Vec<u8>, DatabaseError> {
-        let mut salt = vec![0u8; config.salt_len];
-        let mut nonce_bytes = vec![0u8; config.nonce_len];
+    fn encrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
+        let mut salt = vec![0u8; self.options.salt_len];
+        let mut nonce_bytes = vec![0u8; self.options.nonce_len];
 
         OsRng.fill_bytes(&mut salt);
         OsRng.fill_bytes(&mut nonce_bytes);
@@ -147,22 +141,16 @@ where
         Ok(result)
     }
 
-    fn decrypt(
-        &self,
-        data: &[u8],
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<Vec<u8>, DatabaseError> {
-        let min_len = config.salt_len + config.nonce_len;
+    fn decrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
+        let min_len = self.options.salt_len + self.options.nonce_len;
         if data.len() < min_len {
             return Err(DatabaseError::Internal(
                 "Invalid encrypted data: too short".to_string(),
             ));
         }
 
-        let (salt, rest) = data.split_at(config.salt_len);
-        let (nonce_bytes, ciphertext) = rest.split_at(config.nonce_len);
+        let (salt, rest) = data.split_at(self.options.salt_len);
+        let (nonce_bytes, ciphertext) = rest.split_at(self.options.nonce_len);
         let derived_key = self.derive_key(password, salt)?;
         let aes_key = AesKey::<Aes256Gcm>::from_slice(derived_key.as_slice());
         let cipher = Aes256Gcm::new(aes_key);
@@ -185,13 +173,12 @@ where
         value: &V,
         password: &[u8],
         aad: &[u8],
-        config: &EncryptionOptions,
     ) -> Result<(), DatabaseError> {
         match txn {
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
                 let serialized = bincode::serialize(value)?;
-                let encrypted = self.encrypt(&serialized, password, aad, config)?;
+                let encrypted = self.encrypt(&serialized, password, aad)?;
                 table.insert(key.borrow(), encrypted)?;
                 Ok(())
             }
@@ -207,7 +194,6 @@ where
         key: K,
         password: &[u8],
         aad: &[u8],
-        config: &EncryptionOptions,
     ) -> Result<V, DatabaseError> {
         match txn {
             Transaction::Read(txn) => {
@@ -219,7 +205,7 @@ where
                     })?;
 
                 let encrypted = entry.value();
-                let decrypted = self.decrypt(&encrypted, password, aad, config)?;
+                let decrypted = self.decrypt(&encrypted, password, aad)?;
                 let result = bincode::deserialize(&decrypted)?;
 
                 Ok(result)

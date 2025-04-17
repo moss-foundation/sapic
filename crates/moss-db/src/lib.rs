@@ -58,8 +58,11 @@ where
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        // Using compact() on an empty ReDb database will shrink its file size by 1 mb
+        let mut database = Database::create(path)?;
+        database.compact()?;
         Ok(Self {
-            db: Arc::new(Database::create(path)?),
+            db: Arc::new(database),
         })
     }
 
