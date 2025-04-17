@@ -190,13 +190,16 @@ export const StatusBarActivity = () => {
 
   return (
     <div className="flex h-full items-center">
-      <button className="hover:background-(--moss-icon-primary-background-hover) group flex h-full items-center rounded-md px-2 py-1 transition">
+      <button className="hover:background-(--moss-statusBar-icon-background-hover) group flex h-full items-center rounded-md px-2 py-1 transition">
         <div className="flex items-center gap-1.5">
           <Icon
-            className={cn("size-[14px] flex-shrink-0 text-(--moss-icon-primary-text)", animateIcon && "animate-spin")}
+            className={cn(
+              "size-[14px] flex-shrink-0 text-(--moss-statusBar-icon-secondary-text)",
+              animateIcon && "animate-spin"
+            )}
             icon="StatusBarProcessing"
           />
-          {textToDisplay && <span className="text-black">{textToDisplay}</span>}
+          {textToDisplay && <span className="text-(--moss-statusBar-icon-primary-text)">{textToDisplay}</span>}
         </div>
       </button>
     </div>

@@ -103,8 +103,8 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
               {...item}
               isDraggable
               draggableType="StatusBarButton"
-              className="text-black"
-              iconClassName="text-(--moss-icon-primary-text)"
+              className="text-(--moss-statusBar-icon-primary-text)"
+              iconClassName="text-(--moss-statusBar-icon-secondary-text)"
             />
           ))}
         </div>
@@ -115,12 +115,12 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
       </div>
 
       <div className="flex h-full gap-0.5">
-        <StatusBarButton label="60 FPS" className="text-black" />
+        <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
         <StatusBarDivider />
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}
-          className="text-black"
+          className="text-(--moss-statusBar-icon-primary-text)"
           iconClassName={isOnline ? "text-[#1E6B33]" : "text-[#DF9303]"}
         />
       </div>
@@ -143,15 +143,15 @@ const StatusBarIndicators = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
-        <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center rounded-md px-2 py-1 transition">
+        <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center rounded-md px-2 py-1 transition">
           <div className="flex items-center space-x-2">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
-              <span className="text-sm text-black">2</span>
+              <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
             </div>
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#FFAF0F]" icon="StatusBarWarnings" />
-              <span className="text-sm text-black">5</span>
+              <span className="text-sm text-(--moss-statusBar-icon-primary-text)">5</span>
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@ const StatusBarButton = ({
       {...props}
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      <div className="hover:background-(--moss-icon-primary-background-hover) flex items-center gap-1 rounded px-1.5 py-1 transition">
+      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center gap-1 rounded px-1.5 py-1 transition">
         {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
