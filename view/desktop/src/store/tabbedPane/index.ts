@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
 interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions, "component"> {
@@ -34,7 +35,13 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     floatingGroups: [],
     popoutGroups: [],
   } as SerializedDockview,
-  setGridState: (state: SerializedDockview) => set({ gridState: state }),
+  setGridState: (state: SerializedDockview) => {
+    invokeTauriIpc("set_layout_parts_state", {
+      input: { editor: state },
+      params: { isOnExit: false },
+    });
+    set({ gridState: state });
+  },
   showDebugPanels: false,
   setShowDebugPanels: (show: boolean) => set({ showDebugPanels: show }),
   api: undefined,
