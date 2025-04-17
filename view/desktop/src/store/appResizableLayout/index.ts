@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import { invokeTauriIpc } from "@/lib/backend/tauri";
+
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
   sideBarPosition: "left" | "right";
@@ -20,7 +22,7 @@ export interface AppResizableLayoutStore {
   };
 }
 
-export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set) => ({
+export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
   sideBarPosition: "left",
   setSideBarPosition: (position: AppResizableLayoutStore["sideBarPosition"]) =>
     set(() => ({
@@ -30,40 +32,80 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     minWidth: 120,
     width: 255,
     visible: true,
-    setWidth: (newWidth) =>
+    setWidth: (newWidth) => {
+      invokeTauriIpc("set_layout_parts_state", {
+        input: {
+          sidebar: {
+            preferredSize: newWidth,
+            isVisible: newWidth > 0,
+          },
+        },
+        params: { isOnExit: false },
+      });
       set((state) => ({
         sideBar: {
           ...state.sideBar,
           width: newWidth,
           visible: newWidth > 0,
         },
-      })),
-    setVisible: (visible) =>
+      }));
+    },
+    setVisible: (visible) => {
+      invokeTauriIpc("set_layout_parts_state", {
+        input: {
+          sidebar: {
+            preferredSize: get().sideBar.width,
+            isVisible: visible,
+          },
+        },
+        params: { isOnExit: false },
+      });
       set((state) => ({
         sideBar: {
           ...state.sideBar,
           visible,
         },
-      })),
+      }));
+    },
   },
   bottomPane: {
     minHeight: 100,
     height: 333,
     visible: false,
-    setHeight: (newHeight) =>
+    setHeight: (newHeight) => {
+      invokeTauriIpc("set_layout_parts_state", {
+        input: {
+          panel: {
+            preferredSize: newHeight,
+            isVisible: newHeight > 0,
+          },
+        },
+        params: { isOnExit: false },
+      });
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
           height: newHeight,
           visible: newHeight > 0,
         },
-      })),
-    setVisible: (visible) =>
+      }));
+    },
+    setVisible: (visible) => {
+      invokeTauriIpc("set_layout_parts_state", {
+        input: {
+          panel: {
+            preferredSize: get().bottomPane.height,
+            isVisible: visible,
+          },
+        },
+        params: { isOnExit: false },
+      });
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
           visible,
         },
-      })),
+      }));
+    },
   },
 }));
