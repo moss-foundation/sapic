@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-
 use moss_db::common::DatabaseError;
 use thiserror::Error;
 use validator::ValidationErrors;
@@ -9,10 +8,10 @@ pub enum OperationError {
     #[error("validation error: {0}")]
     Validation(#[from] ValidationErrors),
 
-    #[error("request {name} not found at {path}")]
+    #[error("{name} not found at {path}")]
     NotFound { name: String, path: PathBuf },
 
-    #[error("request {name} already exists at {path}")]
+    #[error("{name} already exists at {path}")]
     AlreadyExists { name: String, path: PathBuf },
 
     #[error("internal error: {0}")]

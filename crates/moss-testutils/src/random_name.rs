@@ -12,6 +12,9 @@ pub fn random_request_name() -> String {
     format!("Test_{}_Request", random_string(10))
 }
 
+pub fn random_request_group_name() -> String {
+    format!("Test_{}_Group", random_string(10))
+}
 pub fn random_string(length: usize) -> String {
     rand::rng()
         .sample_iter(Alphanumeric)

@@ -13,7 +13,7 @@ impl Collection {
         std::mem::drop(requests_lock);
 
         let request_dir_relative_path = request_data.entry_relative_path.clone();
-        let request_dir_path = self
+        let request_dir_full_path = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
@@ -22,7 +22,7 @@ impl Collection {
         // TODO: Self-healing process
         self.fs
             .remove_dir(
-                &request_dir_path,
+                &request_dir_full_path,
                 RemoveOptions {
                     recursive: true,
                     ignore_if_not_exists: true,

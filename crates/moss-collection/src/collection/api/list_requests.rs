@@ -19,7 +19,7 @@ impl Collection {
                     RequestInfo {
                         key,
                         name: request_data.name.to_string(),
-                        request_dir_relative_path: request_data.entry_relative_path.clone(),
+                        relative_path_from_requests_dir: request_data.entry_relative_path.clone(),
                         order: request_data.order,
                         typ: request_data.protocol(),
                     }

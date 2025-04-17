@@ -144,6 +144,8 @@ async fn traverse_requests(
                 progress_callback(&entry_path)?;
             }
 
+
+            // In the requests folder, we have either request entries or request groups
             if is_request_entry_dir(&entry_path) {
                 let entry_result = index_request_entry_dir(fs, &entry_path, progress_callback)
                     .await
@@ -156,19 +158,20 @@ async fn traverse_requests(
                     "Failed to send the indexed request folder to the result channel: {}",
                     entry_path.display()
                 ))?;
-
-                continue;
-            }
-
-            if entry_path.is_file() && is_folder_entry_spec_file(&entry_path) {
+            } else if entry_path.is_dir(){
+                stack.push(entry_path.clone());
+                let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
                 let entry = IndexedRequestGroupEntry {
-                    folder_name: current_dir
+                    folder_name: entry
                         .file_name()
-                        .context("Failed to read the request group folder name")?
                         .to_string_lossy()
                         .to_string(),
-                    folder_path: current_dir.to_path_buf(),
-                    spec_file_path: Some(entry_path.to_path_buf()),
+                    folder_path: entry_path.clone(),
+                    spec_file_path: if spec_file_path.exists() {
+                        Some(spec_file_path)
+                    } else {
+                        None
+                    }
                 };
 
                 result_tx
@@ -177,13 +180,6 @@ async fn traverse_requests(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()
                     ))?;
-
-                continue;
-            }
-
-            if entry_path.is_dir() {
-                stack.push(entry_path);
-                continue;
             }
         }
     }
@@ -231,7 +227,7 @@ async fn index_request_entry_dir(
     }))
 }
 
-fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
+pub(crate) fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
     entry_path.is_dir()
         && entry_path
             .extension()
@@ -239,14 +235,14 @@ fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
             .unwrap_or(false)
 }
 
-fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
+pub(crate) fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
     file_path
         .file_name()
         .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_FILE)
         .unwrap_or(false)
 }
 
-fn is_entry_spec_file(file_path: &PathBuf) -> bool {
+pub(crate) fn is_entry_spec_file(file_path: &PathBuf) -> bool {
     match file_path.file_name() {
         Some(name) => {
             name.to_string_lossy().to_string() == GET_ENTRY_SPEC_FILE
