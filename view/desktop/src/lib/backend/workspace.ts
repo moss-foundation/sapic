@@ -1,11 +1,6 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
-import {
-  DescribeLayoutPartsStateOutput,
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
-  SetLayoutPartsStateParams,
-} from "@repo/moss-workspace";
+import { DescribeLayoutPartsStateOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
 
 export const describeLayoutPartsState = async () => {
   return await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
@@ -23,13 +18,11 @@ interface SetLayoutPartsStateProps {
       isVisible: boolean;
     };
   };
-  params?: SetLayoutPartsStateParams;
 }
 
-export const setLayoutPartsState = ({ input, params }: SetLayoutPartsStateProps) => {
+export const setLayoutPartsState = ({ input }: SetLayoutPartsStateProps) => {
   invokeTauriIpc("set_layout_parts_state", {
     input,
-    params: params ?? { isOnExit: false },
   });
 };
 
