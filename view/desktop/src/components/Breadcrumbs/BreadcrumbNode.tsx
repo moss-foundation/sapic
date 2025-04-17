@@ -1,4 +1,4 @@
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../Icon";
@@ -25,7 +25,7 @@ export const BreadcrumbNode = ({
   paddingRight = 8,
   nodeOffset = 12,
 }: BreadcrumbNodeProps) => {
-  const { addPanel } = useDockviewStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const nodePaddingLeft = depth * nodeOffset + paddingLeft + 4;
   const shouldRenderChildNodes = node.isFolder && node.isExpanded;
@@ -44,11 +44,11 @@ export const BreadcrumbNode = ({
         style={{ paddingLeft: nodePaddingLeft, paddingRight: paddingRight + 3 }}
         onClick={() => {
           if (node.isFolder) handleFolderClick();
-          else addPanel({ id: `${node.id}` });
+          else addOrFocusPanel({ id: `${node.id}`, component: "Default" });
 
           onNodeClickCallback?.(node);
         }}
-        className="py-0.5background-(--moss-treeNode-bg) hover:background-(--moss-treeNode-bg-hover) focus-within:background-(--moss-treeNode-bg) relative flex w-full min-w-64 cursor-pointer items-center gap-1 dark:hover:text-black"
+        className="hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-64 cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
         <TestCollectionIcon type={node.type} />
         <NodeLabel label={node.id} />

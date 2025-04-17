@@ -8,8 +8,6 @@ use crate::{
     workspace::{OperationError, Workspace},
 };
 
-const SET_LAYOUT_PARTS_STATE_ACTIVITY_ID: &str = "setLayoutPartsState";
-
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn set_layout_parts_state(
         &self,
@@ -38,21 +36,6 @@ impl<R: TauriRuntime> Workspace<R> {
                 preferred_size: panel_state.preferred_size,
                 is_visible: panel_state.is_visible,
             })?;
-        }
-
-        if let Err(err) = self.activity_indicator.emit_oneshot(
-            SET_LAYOUT_PARTS_STATE_ACTIVITY_ID,
-            "Saved layout state".to_string(),
-            None,
-        ) {
-            // TODO: log error
-            dbg!(&err);
-        };
-
-        if params.is_on_exit {
-            self.app_handle
-                .emit("kernel.windowCloseRequestedConfirmed", {})
-                .unwrap();
         }
 
         Ok(())

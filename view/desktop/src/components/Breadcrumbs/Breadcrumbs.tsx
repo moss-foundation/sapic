@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { DropdownMenu, Icon } from "..";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
@@ -12,7 +12,7 @@ import { BreadcrumbTree } from "./BreadcrumbTree";
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
-  const { addPanel } = useDockviewStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   if (!activeTree) return null;
 
   return (
-    <div className="flex items-center justify-between px-3 py-[5px]">
+    <div className="flex items-center justify-between px-2 py-[5px]">
       <div className="flex items-center gap-1 text-[#6F6F6F] select-none">
         {path.map((pathNode, index) => {
           const node = findNodeById(activeTree, pathNode)!;
@@ -62,7 +62,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
-                      if (!node.isFolder) addPanel({ id: `${node.id}` });
+                      if (!node.isFolder) addOrFocusPanel({ id: `${node.id}`, component: "Default" });
                     }}
                   />
                 </DropdownMenu.Content>
