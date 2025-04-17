@@ -203,17 +203,17 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
           );
 
           if (i % 2 === 0) {
-            const oneshotType = oneshotTypes[i % oneshotTypes.length];
+            const oneshotType = oneshotTypes[Math.floor(Math.random() * oneshotTypes.length)];
             await emitEvent(
               {
                 oneshot: {
-                  id: 8000 + i,
-                  activityId: `priority-oneshot-${i}`,
+                  id: 9000 + i,
+                  activityId: `oneshot-${i}`,
                   title: oneshotType.title,
-                  detail: `Interrupting progress #${i}`,
+                  detail: oneshotType.detail,
                 },
               } as ActivityEvent,
-              50
+              randomDelay(100, 300)
             );
           }
 
