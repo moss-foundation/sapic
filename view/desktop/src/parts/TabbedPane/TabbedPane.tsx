@@ -69,14 +69,6 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     setPragmaticDropElement(null);
   };
 
-  // React.useEffect(() => {
-  //   if (!api) return;
-
-  //   api.onDidLayoutChange((event) => {
-  //     console.log("onDidLayoutChange");
-  //   });
-  // }, [api]);
-
   React.useEffect(() => {
     if (!api) return;
 
