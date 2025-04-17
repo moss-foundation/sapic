@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { setLayoutPartsState } from "@/tauriApi/setLayoutPartsState";
+import { setLayoutPartsState } from "@/lib/backend/workspace";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {

@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+import { describeLayoutPartsState, openWorkspace, setLayoutPartsState } from "@/lib/backend/workspace";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { describeLayoutPartsState } from "@/tauriApi/describeLayoutPartsState";
-import { openWorkspace } from "@/tauriApi/openWorkspace";
-import { setLayoutPartsState } from "@/tauriApi/setLayoutPartsState";
 import { listen } from "@tauri-apps/api/event";
 
 export interface WindowPreparationState {
