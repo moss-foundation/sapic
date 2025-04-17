@@ -168,8 +168,8 @@ export const StatusBarActivity = () => {
 
   return (
     <div className="flex h-full items-center">
-      <button className="hover:background-(--moss-statusBar-icon-background-hover) group flex h-full items-center rounded-md px-2 py-1 transition">
-        <div className="flex items-center gap-1.5">
+      <button className="group flex h-full items-center rounded-md px-2 py-1 transition">
+        <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center gap-1.5 rounded-md px-1">
           <Icon
             className={cn(
               "size-[14px] flex-shrink-0 text-(--moss-statusBar-icon-secondary-text)",
