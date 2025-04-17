@@ -31,7 +31,7 @@ const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-  const tabbedPaneStore = useTabbedPaneStore();
+  const { api, addOrFocusPanel, setApi, gridState } = useTabbedPaneStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -47,18 +47,18 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useDockviewEventHandlers(tabbedPaneStore.api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
+  useDockviewEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
   useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
-  useDockviewResizeObserver(tabbedPaneStore.api, dockviewRefWrapper);
+  useDockviewResizeObserver(api, dockviewRefWrapper);
 
   const onReady = (event: DockviewReadyEvent) => {
-    tabbedPaneStore.setApi(event.api);
+    setApi(event.api);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
-    if (!pragmaticDropElement || !tabbedPaneStore.api) return;
+    if (!pragmaticDropElement || !api) return;
 
-    tabbedPaneStore.addOrFocusPanel({
+    addOrFocusPanel({
       id: String(pragmaticDropElement.node.id),
       component: "Default",
       position: {
@@ -69,12 +69,20 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     setPragmaticDropElement(null);
   };
 
+  // React.useEffect(() => {
+  //   if (!api) return;
+
+  //   api.onDidLayoutChange((event) => {
+  //     console.log("onDidLayoutChange");
+  //   });
+  // }, [api]);
+
   React.useEffect(() => {
-    if (!tabbedPaneStore.api) return;
+    if (!api) return;
 
     const initializeLayout = async () => {
       try {
-        tabbedPaneStore.api?.fromJSON(tabbedPaneStore.gridState);
+        api?.fromJSON(gridState);
       } catch (e) {
         console.error("Failed to initialize layout:", e);
       }
@@ -82,7 +90,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
     const timeoutId = setTimeout(initializeLayout, 0);
     return () => clearTimeout(timeoutId);
-  }, [tabbedPaneStore.api]);
+  }, [api]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {
@@ -176,7 +184,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
       <div className="dockview-demo relative flex h-full w-full grow flex-col rounded">
         {showDebugPanels && (
           <DockviewControls
-            api={tabbedPaneStore.api}
+            api={api}
             panels={panels}
             activePanel={activePanel}
             groups={groups}

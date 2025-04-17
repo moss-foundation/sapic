@@ -4,6 +4,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { setLayoutPartsState } from "@/utils/setLayoutPartsState";
 import { DescribeLayoutPartsStateOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
 import { listen } from "@tauri-apps/api/event";
 
@@ -55,7 +56,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
   useEffect(() => {
     const unlisten = listen("kernel-windowCloseRequested", () => {
-      invokeTauriIpc("set_layout_parts_state", {
+      setLayoutPartsState({
         input: {
           editor: gridState,
           sidebar: {

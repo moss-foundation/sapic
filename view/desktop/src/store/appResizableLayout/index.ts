@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { setLayoutPartsState } from "@/utils/setLayoutPartsState";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
@@ -33,14 +33,13 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
-      invokeTauriIpc("set_layout_parts_state", {
+      setLayoutPartsState({
         input: {
           sidebar: {
             preferredSize: newWidth,
             isVisible: newWidth > 0,
           },
         },
-        params: { isOnExit: false },
       });
       set((state) => ({
         sideBar: {
@@ -51,14 +50,13 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      invokeTauriIpc("set_layout_parts_state", {
+      setLayoutPartsState({
         input: {
           sidebar: {
             preferredSize: get().sideBar.width,
             isVisible: visible,
           },
         },
-        params: { isOnExit: false },
       });
       set((state) => ({
         sideBar: {
@@ -73,14 +71,13 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     height: 333,
     visible: false,
     setHeight: (newHeight) => {
-      invokeTauriIpc("set_layout_parts_state", {
+      setLayoutPartsState({
         input: {
           panel: {
             preferredSize: newHeight,
             isVisible: newHeight > 0,
           },
         },
-        params: { isOnExit: false },
       });
       set((state) => ({
         bottomPane: {
@@ -91,14 +88,13 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      invokeTauriIpc("set_layout_parts_state", {
+      setLayoutPartsState({
         input: {
           panel: {
             preferredSize: get().bottomPane.height,
             isVisible: visible,
           },
         },
-        params: { isOnExit: false },
       });
       set((state) => ({
         bottomPane: {
