@@ -87,10 +87,7 @@ pub enum IndexedNode {
     ComponentGroup(IndexedComponentGroupNode),
 }
 
-pub enum IndexMessage {
-    Data(IndexedNode),
-    Error(anyhow::Error),
-}
+pub type IndexMessage = Result<IndexedNode>;
 
 #[derive(Debug)]
 pub struct IndexJob {
@@ -218,7 +215,7 @@ async fn traverse_requests(
                     ))?;
 
                 result_tx
-                    .send(IndexMessage::Data(entry_result))
+                    .send(IndexMessage::Ok(entry_result))
                     .context(format!(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()
@@ -232,7 +229,7 @@ async fn traverse_requests(
                 };
 
                 result_tx
-                    .send(IndexMessage::Data(IndexedNode::RequestGroup(entry)))
+                    .send(IndexMessage::Ok(IndexedNode::RequestGroup(entry)))
                     .context(format!(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()

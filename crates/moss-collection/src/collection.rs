@@ -8,7 +8,7 @@ use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
 use std::collections::HashMap;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::{mpsc, OnceCell, RwLock};
+use tokio::sync::{mpsc, OnceCell};
 
 use crate::collection_registry::{
     CollectionRegistry, CollectionRequestData, CollectionRequestGroupData, RequestNode,
@@ -18,7 +18,6 @@ use crate::indexer::{
     IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
 };
 use crate::models::storage::RequestEntity;
-use crate::models::types::{HttpMethod, RequestProtocol};
 use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
 #[derive(Clone, Debug)]
@@ -27,14 +26,11 @@ pub struct CollectionCache {
     pub order: Option<usize>,
 }
 
-// type RequestMap = LeasedSlotMap<ResourceKey, CollectionRequestData>;
-
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
     state_db_manager: Arc<dyn StateDbManager>,
     registry: OnceCell<CollectionRegistry>,
-    // requests: OnceCell<RwLock<RequestMap>>,
     indexer_handle: IndexerHandle,
 }
 
@@ -139,44 +135,43 @@ impl Collection {
                 let request_store = self.state_db_manager.request_store().await;
                 let restored_requests = request_store.scan()?;
 
-                while let Some(indexed_item) = result_rx.recv().await {
-                    match indexed_item {
-                        IndexMessage::Data(indexed_node) => {}
-                        IndexMessage::Error(err) => {
+                while let Some(index_msg) = result_rx.recv().await {
+                    match index_msg {
+                        IndexMessage::Ok(indexed_node) => match indexed_node {
+                            IndexedNode::Request(indexed_request_entry) => {
+                                let request_node = self.handle_indexed_request_node(
+                                    indexed_request_entry,
+                                    &restored_requests,
+                                )?;
+
+                                requests_nodes.insert(request_node);
+                            }
+                            IndexedNode::RequestGroup(indexed_request_group_node) => {
+                                let request_group_node = self.handle_indexed_request_group_node(
+                                    indexed_request_group_node,
+                                    &restored_requests,
+                                )?;
+
+                                requests_nodes.insert(request_group_node);
+                            }
+                            IndexedNode::Endpoint(_indexed_endpoint_node) => unimplemented!(),
+                            IndexedNode::EndpointGroup(_indexed_endpoint_group_node) => {
+                                unimplemented!()
+                            }
+                            IndexedNode::Schema(_indexed_schema_node) => unimplemented!(),
+                            IndexedNode::SchemaGroup(_indexed_schema_group_node) => {
+                                unimplemented!()
+                            }
+                            IndexedNode::Component(_indexed_component_node) => unimplemented!(),
+                            IndexedNode::ComponentGroup(_indexed_component_group_node) => {
+                                unimplemented!()
+                            }
+                        },
+                        IndexMessage::Err(err) => {
+                            // TODO: log error
                             dbg!(err);
                         }
                     }
-
-                    //     match indexed_item {
-                    //         IndexedNode::Request(indexed_request_entry) => {
-                    //             let request_node = self.handle_indexed_request_node(
-                    //                 indexed_request_entry,
-                    //                 &restored_requests,
-                    //             )?;
-
-                    //             requests_nodes.insert(request_node);
-                    //         }
-                    //         IndexedNode::RequestGroup(indexed_request_group_node) => {
-                    //             let request_group_node = self.handle_indexed_request_group_node(
-                    //                 indexed_request_group_node,
-                    //                 &restored_requests,
-                    //             )?;
-
-                    //             requests_nodes.insert(request_group_node);
-                    //         }
-                    //         IndexedNode::Endpoint(_indexed_endpoint_node) => unimplemented!(),
-                    //         IndexedNode::EndpointGroup(_indexed_endpoint_group_node) => {
-                    //             unimplemented!()
-                    //         }
-                    //         IndexedNode::Schema(_indexed_schema_node) => unimplemented!(),
-                    //         IndexedNode::SchemaGroup(_indexed_schema_group_node) => {
-                    //             unimplemented!()
-                    //         }
-                    //         IndexedNode::Component(_indexed_component_node) => unimplemented!(),
-                    //         IndexedNode::ComponentGroup(_indexed_component_group_node) => {
-                    //             unimplemented!()
-                    //         }
-                    //     }
                 }
 
                 Ok::<_, anyhow::Error>(CollectionRegistry::new(
