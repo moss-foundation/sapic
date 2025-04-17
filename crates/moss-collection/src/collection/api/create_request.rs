@@ -80,8 +80,11 @@ impl Collection {
             None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
+        dbg!(1);
         let request_store = self.state_db_manager.request_store().await;
+
         let requests = self.registry().await?.requests_nodes();
+        dbg!(2);
 
         let (mut txn, table) = request_store.begin_write()?;
         table.insert(
@@ -94,6 +97,8 @@ impl Collection {
             .create_dir(&request_dir_full_path)
             .await
             .context("Failed to create the request directory")?;
+
+        dbg!(3);
         self.fs
             .create_file_with(
                 &request_dir_full_path.join(&spec_file_name),
@@ -102,6 +107,7 @@ impl Collection {
             )
             .await
             .context("Failed to create the request file")?;
+        dbg!(4);
 
         txn.commit()?;
 
@@ -114,6 +120,8 @@ impl Collection {
                 spec_file_name,
             }))
         };
+
+        dbg!(5);
 
         Ok(CreateRequestOutput { key: request_key })
     }

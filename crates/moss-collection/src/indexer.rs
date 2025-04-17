@@ -87,11 +87,16 @@ pub enum IndexedNode {
     ComponentGroup(IndexedComponentGroupNode),
 }
 
+pub enum IndexMessage {
+    Data(IndexedNode),
+    Error(anyhow::Error),
+}
+
 #[derive(Debug)]
 pub struct IndexJob {
     pub collection_key: ResourceKey,
     pub collection_abs_path: PathBuf,
-    pub result_tx: mpsc::UnboundedSender<IndexedNode>,
+    pub result_tx: mpsc::UnboundedSender<IndexMessage>,
 }
 
 #[derive(Debug, Clone)]
@@ -133,7 +138,9 @@ async fn process_job<R: TauriRuntime>(
     activity_indicator: ActivityIndicator<R>,
     job: IndexJob,
 ) -> Result<()> {
-    let total = count_entries(fs.as_ref(), &job.collection_abs_path.join(REQUESTS_DIR)).await?;
+    let requests_dir = job.collection_abs_path.join(REQUESTS_DIR);
+
+    let total = count_entries(fs.as_ref(), &requests_dir).await?;
     // TODO: count the total number of endpoints, components, etc.
     let progress_counter = Arc::new(AtomicUsize::new(0));
 
@@ -146,7 +153,7 @@ async fn process_job<R: TauriRuntime>(
     // TODO: traverse the endpoints, components, etc. not just requests
     traverse_requests(
         fs.as_ref(),
-        &job.collection_abs_path.join(REQUESTS_DIR),
+        &requests_dir,
         &progress_callback,
         job.result_tx,
     )
@@ -184,7 +191,7 @@ async fn traverse_requests(
     fs: &dyn FileSystem,
     root: &PathBuf,
     progress_callback: &impl Fn(&PathBuf) -> Result<()>,
-    result_tx: mpsc::UnboundedSender<IndexedNode>,
+    result_tx: mpsc::UnboundedSender<IndexMessage>,
 ) -> Result<()> {
     let mut stack: Vec<PathBuf> = vec![root.clone()];
 
@@ -210,10 +217,12 @@ async fn traverse_requests(
                         entry_path.display()
                     ))?;
 
-                result_tx.send(entry_result).context(format!(
-                    "Failed to send the indexed request folder to the result channel: {}",
-                    entry_path.display()
-                ))?;
+                result_tx
+                    .send(IndexMessage::Data(entry_result))
+                    .context(format!(
+                        "Failed to send the indexed request folder to the result channel: {}",
+                        entry_path.display()
+                    ))?;
             } else if entry_path.is_dir() {
                 let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
                 let entry = IndexedRequestGroupNode {
@@ -223,7 +232,7 @@ async fn traverse_requests(
                 };
 
                 result_tx
-                    .send(IndexedNode::RequestGroup(entry))
+                    .send(IndexMessage::Data(IndexedNode::RequestGroup(entry)))
                     .context(format!(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()

@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use moss_fs::utils::{decode_directory_name, encode_name};
+use moss_fs::utils::{decode_name, encode_name};
 use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 
@@ -56,10 +56,8 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             key
         } else {
             workspaces_lock.insert(WorkspaceInfo {
-                name: decode_directory_name(
-                    &full_path.file_name().unwrap().to_string_lossy().to_string(),
-                )
-                .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
+                name: decode_name(&full_path.file_name().unwrap().to_string_lossy().to_string())
+                    .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
                 path: full_path.clone(),
             })
         };
