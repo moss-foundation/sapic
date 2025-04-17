@@ -144,7 +144,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               </span>
               {preview &&
                 createPortal(
-                  <ul className="background-(--moss-primary-background) rounded-sm">
+                  <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                     <TreeNode
                       parentNode={{
                         uniqueId: "-",
@@ -160,6 +160,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                       onNodeUpdate={() => {}}
                       depth={0}
                     />
+                    <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
                   </ul>,
                   preview
                 )}
