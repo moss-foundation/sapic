@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::operations::{CreateWorkspaceInput, RenameWorkspaceInput};
 use moss_workspace::models::types::WorkspaceInfo;
@@ -194,7 +194,7 @@ async fn rename_workspace_special_chars() {
 
     for char in FILENAME_SPECIAL_CHARS {
         let new_workspace_name = format!("{workspace_name}{char}");
-        let expected_path = workspaces_path.join(encode_directory_name(&new_workspace_name));
+        let expected_path = workspaces_path.join(encode_name(&new_workspace_name));
         workspace_manager
             .rename_workspace(RenameWorkspaceInput {
                 key,

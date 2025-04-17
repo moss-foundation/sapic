@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -49,7 +49,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let new_relative_path = old_relative_path
             .parent()
             .context("Parent directory not found")?
-            .join(encode_directory_name(&input.new_name));
+            .join(encode_name(&input.new_name));
         let new_full_path = self.path.join(&new_relative_path);
 
         if new_full_path.exists() {

@@ -10,7 +10,7 @@ use moss_collection::{
 };
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
-use moss_fs::{utils::decode_directory_name, FileSystem};
+use moss_fs::{utils::decode_name, FileSystem};
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Runtime as TauriRuntime};
@@ -148,7 +148,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     self.state_db_manager.collection_store().scan()?
                 {
                     let name = match relative_path.file_name() {
-                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
+                        Some(name) => decode_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
                             println!("failed to get the collection {:?} name", relative_path);

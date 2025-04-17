@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use moss_fs::{
-    utils::{encode_directory_name, encode_path},
+    utils::{encode_name, encode_path},
     CreateOptions,
 };
 use std::path::PathBuf;
@@ -8,6 +8,7 @@ use validator::Validate;
 
 use crate::{
     collection::{Collection, CollectionRequestData, OperationError, REQUESTS_DIR},
+    collection_registry::RequestNode,
     constants::{
         DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
     },
@@ -28,7 +29,7 @@ impl Collection {
     ) -> Result<CreateRequestOutput, OperationError> {
         input.validate()?;
 
-        let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
+        let request_dir_name = format!("{}.request", encode_name(&input.name));
 
         let request_dir_relative_path = if let Some(relative_path) = input.relative_path {
             encode_path(&relative_path, None)?
@@ -79,8 +80,11 @@ impl Collection {
             None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
+        dbg!(1);
         let request_store = self.state_db_manager.request_store().await;
-        let requests = self.requests().await?;
+
+        let requests = self.registry().await?.requests_nodes();
+        dbg!(2);
 
         let (mut txn, table) = request_store.begin_write()?;
         table.insert(
@@ -93,6 +97,8 @@ impl Collection {
             .create_dir(&request_dir_full_path)
             .await
             .context("Failed to create the request directory")?;
+
+        dbg!(3);
         self.fs
             .create_file_with(
                 &request_dir_full_path.join(&spec_file_name),
@@ -101,18 +107,21 @@ impl Collection {
             )
             .await
             .context("Failed to create the request file")?;
+        dbg!(4);
 
         txn.commit()?;
 
         let request_key = {
             let mut requests_lock = requests.write().await;
-            requests_lock.insert(CollectionRequestData {
+            requests_lock.insert(RequestNode::Request(CollectionRequestData {
                 name: input.name,
-                entry_relative_path: request_dir_relative_path.clone(),
+                path: request_dir_relative_path.clone(),
                 order: None,
                 spec_file_name,
-            })
+            }))
         };
+
+        dbg!(5);
 
         Ok(CreateRequestOutput { key: request_key })
     }

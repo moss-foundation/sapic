@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceInfo;
@@ -113,7 +113,7 @@ async fn create_workspace_special_chars() {
         .collect::<Vec<String>>();
 
     for name in workspace_name_list {
-        let expected_path = workspaces_path.join(encode_directory_name(&name));
+        let expected_path = workspaces_path.join(encode_name(&name));
         let create_workspace_output = workspace_manager
             .create_workspace(CreateWorkspaceInput { name: name.clone() })
             .await
