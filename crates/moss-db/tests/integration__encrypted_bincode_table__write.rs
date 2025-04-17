@@ -24,7 +24,6 @@ fn write_success() {
             .read(&read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1)
             .unwrap();
         assert_eq!(result, 1);
-        read.commit().unwrap();
     }
 
     {
@@ -92,7 +91,6 @@ fn write_multiple_entries_with_different_password() {
             .read(&read, "2".to_string(), TEST_PASSWORD_2, TEST_AAD_2)
             .unwrap();
         assert_eq!(result_2, 2);
-        read.commit().unwrap();
     }
 
     {
@@ -108,6 +106,29 @@ fn write_in_read_transaction() {
         let mut read = client.begin_read().unwrap();
         let result = table.write(&mut read, "1".to_string(), &1, TEST_PASSWORD_1, TEST_AAD_1);
         assert!(matches!(result, Err(DatabaseError::Transaction(..))))
+    }
+
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
+
+#[test]
+fn write_uncommitted() {
+    let (client, table, path) = setup_test_encrypted_bincode_table();
+
+    {
+        // Uncommitted write
+        let mut write = client.begin_write().unwrap();
+        table
+            .write(&mut write, "1".to_string(), &1, TEST_PASSWORD_1, TEST_AAD_1)
+            .unwrap();
+    }
+
+    {
+        let read = client.begin_read().unwrap();
+        let result = table.read(&read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1);
+        assert!(matches!(result, Err(DatabaseError::NotFound { .. })))
     }
 
     {

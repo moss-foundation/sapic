@@ -11,7 +11,6 @@ fn scan_empty() {
     {
         let read = client.begin_read().unwrap();
         assert_eq!(table.scan(&read).unwrap().into_iter().count(), 0);
-        read.commit().unwrap();
     }
 
     {
@@ -37,7 +36,6 @@ fn scan_multiple() {
         let mut scan_result = table.scan(&read).unwrap().into_iter().collect::<Vec<_>>();
         scan_result.sort_by_key(|(_, i)| *i);
         assert_eq!(scan_result, expected);
-        read.commit().unwrap();
     }
 
     {

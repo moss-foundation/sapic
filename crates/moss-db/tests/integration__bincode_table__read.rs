@@ -1,8 +1,7 @@
-use crate::shared::setup_test_bincode_table;
-
 use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
 
+use crate::shared::setup_test_bincode_table;
 mod shared;
 
 #[test]
@@ -20,7 +19,6 @@ fn read_existent() {
         let read = client.begin_read().unwrap();
         let result = table.read(&read, "1".to_string());
         assert_eq!(result.ok(), Some(1));
-        read.commit().unwrap();
     }
 
     {

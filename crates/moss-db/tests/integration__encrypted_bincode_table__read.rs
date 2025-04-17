@@ -24,7 +24,6 @@ fn read_success() {
         let result = table.read(&read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 1);
-        read.commit().unwrap();
     }
 
     {
@@ -40,7 +39,6 @@ fn read_nonexistent() {
         let read = client.begin_read().unwrap();
         let result = table.read(&read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1);
         assert!(matches!(result, Err(DatabaseError::NotFound { .. })));
-        read.commit().unwrap();
     }
 
     {
