@@ -40,7 +40,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     setLayoutPartsState({
       input: { editor: state },
     });
-    // set({ gridState: state });
   },
   initialize: (state: SerializedDockview) => {
     set({ gridState: state });

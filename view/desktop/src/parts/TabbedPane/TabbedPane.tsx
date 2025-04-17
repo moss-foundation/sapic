@@ -74,14 +74,14 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     api.onDidLayoutChange(() => {
-      console.log("onDidLayoutChange");
       if (firstRender.current) {
         firstRender.current = false;
         return;
       }
+
       setGridState(api.toJSON());
     });
-  }, [api, setGridState]);
+  }, [api, gridState, setGridState]);
 
   React.useEffect(() => {
     if (!api) return;
