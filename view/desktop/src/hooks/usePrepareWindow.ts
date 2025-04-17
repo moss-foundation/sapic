@@ -16,7 +16,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
   const hasOpenedWorkspace = useRef(false);
   const { initialize, sideBar, bottomPane } = useAppResizableLayoutStore();
-  const { initialize: initializeTabbedPane, gridState } = useTabbedPaneStore();
+  const { initialize: initializeTabbedPane, api } = useTabbedPaneStore();
 
   useEffect(() => {
     const openWorkspace = async () => {
@@ -62,7 +62,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
     const unlisten = listen("kernel-windowCloseRequested", () => {
       setLayoutPartsState({
         input: {
-          editor: gridState,
+          editor: api?.toJSON(),
           sidebar: {
             preferredSize: sideBar.width,
             isVisible: sideBar.visible,
@@ -79,7 +79,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
     return () => {
       unlisten.then((unlisten) => unlisten());
     };
-  }, [bottomPane.height, bottomPane.visible, gridState, sideBar.visible, sideBar.width]);
+  }, [api, bottomPane.height, bottomPane.visible, sideBar.visible, sideBar.width]);
 
   return { isPreparing };
 };

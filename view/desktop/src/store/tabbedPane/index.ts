@@ -37,6 +37,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     popoutGroups: [],
   } as SerializedDockview,
   setGridState: (state: SerializedDockview) => {
+    console.log("setGridState", state);
     setLayoutPartsState({
       input: { editor: state },
     });
