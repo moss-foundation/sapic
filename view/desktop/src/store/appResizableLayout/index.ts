@@ -19,6 +19,7 @@ export interface AppResizableLayoutStore {
 
   sideBar: {
     minWidth: number;
+    maxWidth: number;
     width: number;
     visible: boolean;
     setWidth: (newWidth: number) => void;
@@ -26,6 +27,7 @@ export interface AppResizableLayoutStore {
   };
   bottomPane: {
     minHeight: number;
+    maxHeight: number;
     height: number;
     visible: boolean;
     setHeight: (newHeight: number) => void;
@@ -55,6 +57,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
   },
   sideBar: {
     minWidth: 120,
+    maxWidth: 400,
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
@@ -93,6 +96,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
   },
   bottomPane: {
     minHeight: 100,
+    maxHeight: Infinity,
     height: 333,
     visible: false,
     setHeight: (newHeight) => {
