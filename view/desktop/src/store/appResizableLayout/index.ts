@@ -36,7 +36,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       setLayoutPartsState({
         input: {
           sidebar: {
-            preferredSize: newWidth,
+            preferredSize: newWidth <= 0 ? get().sideBar.width : newWidth,
             isVisible: newWidth > 0,
           },
         },
@@ -44,7 +44,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       set((state) => ({
         sideBar: {
           ...state.sideBar,
-          width: newWidth,
+          width: newWidth <= 0 ? get().sideBar.width : newWidth,
           visible: newWidth > 0,
         },
       }));
