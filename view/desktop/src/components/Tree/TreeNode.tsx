@@ -122,7 +122,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                 className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
                   "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                     !isNodeDragging && activePanelId !== node.id,
-                  "background-(--moss-info-background-hover)": activePanelId === node.id,
+                  "background-(--moss-info-background-hover)":
+                    activePanelId === node.id && node.uniqueId !== "DraggedNode",
                 })}
               />
 
@@ -143,7 +144,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
               </span>
               {preview &&
                 createPortal(
-                  <ul className="background-(--moss-primary-background)">
+                  <ul className="background-(--moss-primary-background) rounded-sm">
                     <TreeNode
                       parentNode={{
                         uniqueId: "-",
@@ -155,7 +156,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                         id: "-",
                         isRoot: false,
                       }}
-                      node={{ ...node, childNodes: [] }}
+                      node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
                       onNodeUpdate={() => {}}
                       depth={0}
                     />
