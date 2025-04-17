@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { setLayoutPartsState } from "@/utils/setLayoutPartsState";
-import { DescribeLayoutPartsStateOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
+import { describeLayoutPartsState } from "@/tauriApi/describeLayoutPartsState";
+import { openWorkspace } from "@/tauriApi/openWorkspace";
+import { setLayoutPartsState } from "@/tauriApi/setLayoutPartsState";
 import { listen } from "@tauri-apps/api/event";
 
 export interface WindowPreparationState {
@@ -15,16 +15,14 @@ export interface WindowPreparationState {
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
   const hasOpenedWorkspace = useRef(false);
-  const { initialize, sideBar, bottomPane } = useAppResizableLayoutStore();
+  const { initialize: initializeResizableLayout, sideBar, bottomPane } = useAppResizableLayoutStore();
   const { initialize: initializeTabbedPane, api } = useTabbedPaneStore();
 
   useEffect(() => {
-    const openWorkspace = async () => {
-      await invokeTauriIpc<OpenWorkspaceInput, OpenWorkspaceOutput>("open_workspace", {
-        input: { name: "TestWorkspace" },
-      });
+    const initializeWorkspace = async () => {
+      await openWorkspace("TestWorkspace");
 
-      const layout = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
+      const layout = await describeLayoutPartsState();
 
       if (layout.status !== "ok" || !layout.data) {
         setIsPreparing(false);
@@ -35,7 +33,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
         initializeTabbedPane(layout.data.editor as unknown as SerializedDockview);
       }
 
-      initialize({
+      initializeResizableLayout({
         sideBar: {
           width: layout?.data?.sidebar?.preferredSize,
           visible: layout?.data?.sidebar?.isVisible,
@@ -54,7 +52,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
     // The error usually happens in strict mode
     if (!hasOpenedWorkspace.current) {
       hasOpenedWorkspace.current = true;
-      openWorkspace();
+      initializeWorkspace();
     }
   }, []);
 

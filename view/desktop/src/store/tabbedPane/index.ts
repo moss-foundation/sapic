@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { setLayoutPartsState } from "@/utils/setLayoutPartsState";
+import { setLayoutPartsState } from "@/tauriApi/setLayoutPartsState";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
 interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions, "component"> {
