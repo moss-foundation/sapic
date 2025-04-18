@@ -6,10 +6,8 @@ edition = "2021"
 [dependencies]
 anyhow.workspace = true
 redb.workspace = true
-bincode.workspace = true
 serde = { workspace = true, features = ["derive"] }
 aes-gcm.workspace = true
-rand.workspace = true
 argon2.workspace = true
 zeroize = { workspace = true, features = ["zeroize_derive"] }
 tokio = { workspace = true, features = ["sync"] }

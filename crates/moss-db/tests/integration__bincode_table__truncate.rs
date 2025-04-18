@@ -7,7 +7,7 @@ use crate::shared::setup_test_bincode_table;
 
 #[test]
 fn truncate_empty() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -28,7 +28,7 @@ fn truncate_empty() {
 
 #[test]
 fn truncate_non_empty() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -55,7 +55,7 @@ fn truncate_non_empty() {
 
 #[test]
 fn truncate_in_read_transaction() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut read = client.begin_read().unwrap();
@@ -70,7 +70,7 @@ fn truncate_in_read_transaction() {
 
 #[test]
 fn truncate_uncommitted() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();

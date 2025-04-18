@@ -21,7 +21,6 @@ thiserror.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 serde_json.workspace = true
-bincode.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

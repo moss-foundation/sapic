@@ -7,7 +7,7 @@ use crate::shared::setup_test_bincode_table;
 
 #[test]
 fn remove_success() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -37,7 +37,7 @@ fn remove_success() {
 
 #[test]
 fn remove_nonexistent() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -53,7 +53,7 @@ fn remove_nonexistent() {
 
 #[test]
 fn remove_in_read_transaction() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -74,7 +74,7 @@ fn remove_in_read_transaction() {
 
 #[test]
 fn remove_uncommitted() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
