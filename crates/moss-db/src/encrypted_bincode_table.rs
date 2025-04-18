@@ -177,8 +177,11 @@ where
         match txn {
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
-                let serialized = bincode::serialize(value)?;
-                let encrypted = self.encrypt(&serialized, password, aad)?;
+
+                // Serialize the value as JsonValue and encrypt its bytes representation
+                let bytes = serde_json::to_vec(value)?;
+
+                let encrypted = self.encrypt(&bytes, password, aad)?;
                 table.insert(key.borrow(), encrypted)?;
                 Ok(())
             }
@@ -198,15 +201,17 @@ where
         match txn {
             Transaction::Read(txn) => {
                 let table = txn.open_table(self.table)?;
-                let entry = table
+
+                // Decrypt the stored bytes and deserialize the JsonValue
+                let encrypted = table
                     .get(key.borrow())?
                     .ok_or_else(|| DatabaseError::NotFound {
                         key: key.to_string(),
-                    })?;
+                    })?
+                    .value();
 
-                let encrypted = entry.value();
                 let decrypted = self.decrypt(&encrypted, password, aad)?;
-                let result = bincode::deserialize(&decrypted)?;
+                let result = serde_json::from_slice(&decrypted)?;
 
                 Ok(result)
             }

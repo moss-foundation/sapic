@@ -50,12 +50,6 @@ impl From<redb::CommitError> for DatabaseError {
     }
 }
 
-impl From<bincode::Error> for DatabaseError {
-    fn from(error: bincode::Error) -> Self {
-        DatabaseError::Serialization(error.to_string())
-    }
-}
-
 impl From<serde_json::Error> for DatabaseError {
     fn from(error: serde_json::Error) -> Self {
         DatabaseError::Serialization(error.to_string())

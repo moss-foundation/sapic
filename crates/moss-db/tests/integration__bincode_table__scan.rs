@@ -7,7 +7,7 @@ use crate::shared::setup_test_bincode_table;
 
 #[test]
 fn scan_empty() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let read = client.begin_read().unwrap();
@@ -21,7 +21,7 @@ fn scan_empty() {
 
 #[test]
 fn scan_multiple() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -46,7 +46,7 @@ fn scan_multiple() {
 
 #[test]
 fn scan_in_write_transaction() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();

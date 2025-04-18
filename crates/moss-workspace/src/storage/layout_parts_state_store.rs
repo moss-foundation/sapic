@@ -38,7 +38,7 @@ impl PartsStateStoreImpl {
         let txn = self.client.begin_read()?;
         let data = self.table.read(&txn, key)?;
 
-        Ok(bincode::deserialize(&data)?)
+        Ok(serde_json::from_slice(&data)?)
     }
 }
 
@@ -60,27 +60,21 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
                     .table
                     .read(&txn, WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY.to_string())?;
 
-                // HACK: Using serde_json instead of bincode because bincode fails to deserialize
-                // enums with string tags (it does not support Deserializer::deserialize_identifier).
-                // This workaround should be revisited when a more suitable solution is available.
-                serde_json::from_slice(&data).unwrap()
+                serde_json::from_slice(&data)?
             },
             panels: {
                 let data = self
                     .table
                     .read(&txn, WORKBENCH_PARTS_EDITOR_PANELS_STATE_KEY.to_string())?;
 
-                // HACK: Using serde_json instead of bincode because bincode fails to deserialize
-                // enums with string tags (it does not support Deserializer::deserialize_identifier).
-                // This workaround should be revisited when a more suitable solution is available.
-                serde_json::from_slice(&data).unwrap()
+                serde_json::from_slice(&data)?
             },
             active_group: {
                 let data = self.table.read(
                     &txn,
                     WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY.to_string(),
                 )?;
-                bincode::deserialize(&data)?
+                serde_json::from_slice(&data)?
             },
         })
     }
@@ -88,7 +82,8 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
     fn put_sidebar_part_state(&self, state: SidebarPartStateEntity) -> Result<(), DatabaseError> {
         let mut txn = self.client.begin_write()?;
 
-        let data = bincode::serialize(&state)?;
+        let data = serde_json::to_vec(&state)?;
+
         self.table.insert(
             &mut txn,
             WORKBENCH_PARTS_SIDEBAR_STATE_KEY.to_string(),
@@ -100,7 +95,8 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
 
     fn put_panel_part_state(&self, state: PanelPartStateEntity) -> Result<(), DatabaseError> {
         let mut txn = self.client.begin_write()?;
-        let data = bincode::serialize(&state)?;
+
+        let data = serde_json::to_vec(&state)?;
         self.table
             .insert(&mut txn, WORKBENCH_PARTS_PANEL_STATE_KEY.to_string(), &data)?;
         txn.commit()?;
@@ -110,10 +106,6 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
     fn put_editor_part_state(&self, state: EditorPartStateEntity) -> Result<(), DatabaseError> {
         let mut txn = self.client.begin_write()?;
 
-        // Store grid state
-        // HACK: Using serde_json instead of bincode because bincode fails to deserialize
-        // enums with string tags (it does not support Deserializer::deserialize_identifier).
-        // This workaround should be revisited when a more suitable solution is available.
         let grid_data = serde_json::to_vec(&state.grid)?;
         self.table.insert(
             &mut txn,
@@ -121,10 +113,6 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
             &grid_data,
         )?;
 
-        // Store panels state
-        // HACK: Using serde_json instead of bincode because bincode fails to deserialize
-        // enums with string tags (it does not support Deserializer::deserialize_identifier).
-        // This workaround should be revisited when a more suitable solution is available.
         let panels_data = serde_json::to_vec(&state.panels)?;
         self.table.insert(
             &mut txn,
@@ -133,7 +121,7 @@ impl LayoutPartsStateStore for PartsStateStoreImpl {
         )?;
 
         // Store active group state
-        let active_group_data = bincode::serialize(&state.active_group)?;
+        let active_group_data = serde_json::to_vec(&state.active_group)?;
         self.table.insert(
             &mut txn,
             WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY.to_string(),

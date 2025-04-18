@@ -9,7 +9,7 @@ use crate::shared::{
 
 #[test]
 fn read_success() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -22,7 +22,7 @@ fn read_success() {
     {
         let read = client.begin_read().unwrap();
         let result = table.read(&read, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1);
-        assert!(result.is_ok());
+        // assert!(result.is_ok());
         assert_eq!(result.unwrap(), 1);
     }
 
@@ -33,7 +33,7 @@ fn read_success() {
 
 #[test]
 fn read_nonexistent() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let read = client.begin_read().unwrap();
@@ -49,7 +49,7 @@ fn read_nonexistent() {
 // AEAD effectively ensures that incorrect keys will result in decryption error
 #[test]
 fn read_with_incorrect_password() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -73,7 +73,7 @@ fn read_with_incorrect_password() {
 
 #[test]
 fn read_with_incorrect_aad() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -97,7 +97,7 @@ fn read_with_incorrect_aad() {
 
 #[test]
 fn read_in_write_transaction() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
