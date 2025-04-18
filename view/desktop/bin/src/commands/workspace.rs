@@ -3,7 +3,6 @@ use moss_tauri::{TauriError, TauriResult};
 use moss_workspace::{
     models::operations::{
         DescribeLayoutPartsStateOutput, OpenWorkspaceInput, SetLayoutPartsStateInput,
-        SetLayoutPartsStateParams,
     },
     workspace_manager::WorkspaceManager,
 };
@@ -36,7 +35,6 @@ pub async fn set_layout_parts_state<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
     input: SetLayoutPartsStateInput,
-    params: SetLayoutPartsStateParams,
 ) -> TauriResult<()> {
     let app_handle = app_manager.app_handle();
     let workspace_manager = app_manager
@@ -47,7 +45,7 @@ pub async fn set_layout_parts_state<R: TauriRuntime>(
     let current_workspace = workspace_manager.current_workspace()?;
     current_workspace
         .1
-        .set_layout_parts_state(input, params)
+        .set_layout_parts_state(input)
         .await
         .map_err(|err| TauriError(format!("Failed to set layout parts state: {}", err)))?;
 

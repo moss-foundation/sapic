@@ -1,9 +1,9 @@
-use tauri::{Emitter, Runtime as TauriRuntime};
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::{
         entities::{EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity},
-        operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams},
+        operations::SetLayoutPartsStateInput,
     },
     workspace::{OperationError, Workspace},
 };
@@ -12,7 +12,6 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn set_layout_parts_state(
         &self,
         input: SetLayoutPartsStateInput,
-        params: SetLayoutPartsStateParams,
     ) -> Result<(), OperationError> {
         let layout_parts_state_store = self.state_db_manager.layout_parts_state_store();
 
