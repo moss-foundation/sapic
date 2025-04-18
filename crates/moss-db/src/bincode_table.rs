@@ -65,7 +65,6 @@ where
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
 
-                // Serialize the value as JsonValue and save it as bytes
                 let bytes = serde_json::to_vec(value)?;
 
                 table.insert(key.borrow(), bytes)?;
@@ -82,7 +81,6 @@ where
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
 
-                // Get the bytes of JsonValue and deserialize it
                 let bytes = table
                     .remove(key.borrow())?
                     .ok_or_else(|| DatabaseError::NotFound {
@@ -103,7 +101,6 @@ where
             Transaction::Read(txn) => {
                 let table = txn.open_table(self.table)?;
 
-                // Get the bytes of JsonValue and deserialize it
                 let bytes = table
                     .get(key.borrow())?
                     .ok_or_else(|| DatabaseError::NotFound {
@@ -129,7 +126,6 @@ where
                 for entry in table.iter()? {
                     let (key_guard, value_guard) = entry?;
 
-                    // Get the bytes of JsonValue and deserialize it
                     let bytes = value_guard.value();
                     let value: V = serde_json::from_slice(&bytes)?;
                     result.push((key_guard.value().to_owned(), value));

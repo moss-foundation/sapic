@@ -178,7 +178,6 @@ where
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
 
-                // Serialize the value as JsonValue and encrypt its bytes representation
                 let bytes = serde_json::to_vec(value)?;
 
                 let encrypted = self.encrypt(&bytes, password, aad)?;
@@ -202,7 +201,6 @@ where
             Transaction::Read(txn) => {
                 let table = txn.open_table(self.table)?;
 
-                // Decrypt the stored bytes and deserialize the JsonValue
                 let encrypted = table
                     .get(key.borrow())?
                     .ok_or_else(|| DatabaseError::NotFound {
