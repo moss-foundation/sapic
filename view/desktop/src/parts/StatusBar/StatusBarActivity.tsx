@@ -91,7 +91,6 @@ export const StatusBarActivity = () => {
       return;
     }
 
-    // Reset force hide when we have a new event
     setForceHide(false);
 
     const eventKey = getEventKey(latestEvent);
