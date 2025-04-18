@@ -4,6 +4,23 @@ import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { cn } from "@/utils";
 import { ActivityEvent } from "@repo/moss-workbench";
 
+// Generate a unique key for an event to track when it changes
+const getEventKey = (event: ActivityEvent | null): string | null => {
+  if (!event) return null;
+
+  if ("oneshot" in event) {
+    return `oneshot-${event.oneshot.id}-${event.oneshot.activityId}`;
+  } else if ("start" in event) {
+    return `start-${event.start.id}-${event.start.activityId}`;
+  } else if ("progress" in event) {
+    return `progress-${event.progress.id}-${event.progress.activityId}`;
+  } else if ("finish" in event) {
+    return `finish-${event.finish.id}-${event.finish.activityId}`;
+  }
+
+  return null;
+};
+
 export const StatusBarActivity = () => {
   const { hasActiveEvents, latestEvent, getStartTitleForActivity, displayQueue } = useActivityEvents();
   const [animateIcon, setAnimateIcon] = useState(false);
@@ -11,23 +28,6 @@ export const StatusBarActivity = () => {
   const [currentEventKey, setCurrentEventKey] = useState<string | null>(null);
   const lastValidTextRef = useRef<string | null>(null);
   const [forceHide, setForceHide] = useState(false);
-
-  // Generate a unique key for an event to track when it changes
-  const getEventKey = (event: ActivityEvent | null): string | null => {
-    if (!event) return null;
-
-    if ("oneshot" in event) {
-      return `oneshot-${event.oneshot.id}-${event.oneshot.activityId}`;
-    } else if ("start" in event) {
-      return `start-${event.start.id}-${event.start.activityId}`;
-    } else if ("progress" in event) {
-      return `progress-${event.progress.id}-${event.progress.activityId}`;
-    } else if ("finish" in event) {
-      return `finish-${event.finish.id}-${event.finish.activityId}`;
-    }
-
-    return null;
-  };
 
   // Format the display text for different event types
   const formatEventText = useCallback(
