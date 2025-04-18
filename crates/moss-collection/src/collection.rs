@@ -6,12 +6,18 @@ pub use error::*;
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
+use std::collections::HashMap;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::{mpsc, OnceCell, RwLock};
+use tokio::sync::{mpsc, OnceCell};
 
+use crate::collection_registry::{
+    CollectionRegistry, CollectionRequestData, CollectionRequestGroupData, RequestNode,
+};
 use crate::constants::*;
-use crate::indexer::{IndexJob, IndexerHandle};
-use crate::models::types::{HttpMethod, RequestProtocol};
+use crate::indexer::{
+    IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
+};
+use crate::models::storage::RequestEntity;
 use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
 #[derive(Clone, Debug)]
@@ -20,42 +26,12 @@ pub struct CollectionCache {
     pub order: Option<usize>,
 }
 
-pub struct CollectionRequestData {
-    pub name: String,
-    pub entry_relative_path: PathBuf,
-    pub order: Option<usize>,
-    pub spec_file_name: String,
-}
-
-impl CollectionRequestData {
-    pub fn protocol(&self) -> RequestProtocol {
-        match self.spec_file_name.as_str() {
-            GET_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Get),
-            POST_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Post),
-            PUT_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Put),
-            DELETE_ENTRY_SPEC_FILE => RequestProtocol::Http(HttpMethod::Delete),
-            GRAPHQL_ENTRY_SPEC_FILE => RequestProtocol::GraphQL,
-            GRPC_ENTRY_SPEC_FILE => RequestProtocol::Grpc,
-            _ => RequestProtocol::Http(HttpMethod::Get),
-        }
-    }
-}
-
-type RequestMap = LeasedSlotMap<ResourceKey, CollectionRequestData>;
-
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
     state_db_manager: Arc<dyn StateDbManager>,
-    requests: OnceCell<RwLock<RequestMap>>,
+    registry: OnceCell<CollectionRegistry>,
     indexer_handle: IndexerHandle,
-}
-
-#[derive(Debug)]
-pub struct IndexedRequestDir {
-    pub name: String,
-    pub request_protocol: Option<RequestProtocol>,
-    pub path: Option<PathBuf>,
 }
 
 impl Collection {
@@ -72,20 +48,82 @@ impl Collection {
         Ok(Self {
             fs: Arc::clone(&fs),
             abs_path: path,
-            requests: OnceCell::new(),
+            registry: OnceCell::new(),
             state_db_manager: Arc::new(state_db_manager_impl),
             indexer_handle,
         })
     }
 
-    async fn requests(&self) -> Result<&RwLock<RequestMap>> {
-        let result = self
-            .requests
+    fn handle_indexed_request_node(
+        &self,
+        indexed_request_node: IndexedRequestNode,
+        restored_requests: &HashMap<PathBuf, RequestEntity>,
+    ) -> Result<RequestNode> {
+        let node_relative_path = indexed_request_node
+            .path
+            .strip_prefix(&self.abs_path)
+            .unwrap()
+            .to_path_buf();
+
+        let order = restored_requests
+            .get(&node_relative_path)
+            .and_then(|e| e.order);
+
+        let spec_file_name = indexed_request_node
+            .spec_file_path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or(GET_ENTRY_SPEC_FILE)
+            .to_string();
+
+        Ok(RequestNode::Request(CollectionRequestData {
+            name: moss_fs::utils::decode_name(&indexed_request_node.name)?,
+            path: node_relative_path,
+            order,
+            spec_file_name,
+        }))
+    }
+
+    fn handle_indexed_request_group_node(
+        &self,
+        indexed_request_group_node: IndexedRequestGroupNode,
+        restored_request_nodes: &HashMap<PathBuf, RequestEntity>,
+    ) -> Result<RequestNode> {
+        let node_relative_path = indexed_request_group_node
+            .path
+            .strip_prefix(&self.abs_path)
+            .unwrap()
+            .to_path_buf();
+
+        let order = restored_request_nodes
+            .get(&node_relative_path)
+            .and_then(|e| e.order);
+
+        let spec_file_name = if let Some(spec_file_path) = indexed_request_group_node.spec_file_path
+        {
+            spec_file_path
+                .file_name()
+                .and_then(|name| name.to_str().map(|s| s.to_string()))
+        } else {
+            None
+        };
+
+        Ok(RequestNode::Group(CollectionRequestGroupData {
+            name: moss_fs::utils::decode_name(&indexed_request_group_node.name)?,
+            path: node_relative_path,
+            order,
+            spec_file_name,
+        }))
+    }
+
+    async fn registry(&self) -> Result<&CollectionRegistry> {
+        let registry = self
+            .registry
             .get_or_try_init(|| async move {
-                let requests_dir_path = self.abs_path.join(REQUESTS_DIR);
-                if !requests_dir_path.exists() {
-                    return Ok(RwLock::new(LeasedSlotMap::new()));
-                }
+                let mut requests_nodes = LeasedSlotMap::new();
+                let mut endpoints_nodes = LeasedSlotMap::new();
+                let mut schemas_nodes = LeasedSlotMap::new();
+                let mut components_nodes = LeasedSlotMap::new();
 
                 let (result_tx, mut result_rx) = mpsc::unbounded_channel();
                 self.indexer_handle.emit_job(IndexJob {
@@ -94,50 +132,58 @@ impl Collection {
                     result_tx,
                 })?;
 
-                let mut requests = LeasedSlotMap::new();
                 let request_store = self.state_db_manager.request_store().await;
                 let restored_requests = request_store.scan()?;
 
-                while let Some(indexed_item) = result_rx.recv().await {
-                    match indexed_item {
-                        crate::indexer::IndexedEntry::Request(indexed_request_entry) => {
-                            let request_dir_relative_path = indexed_request_entry
-                                .folder_path
-                                .strip_prefix(&self.abs_path)
-                                .unwrap()
-                                .to_path_buf();
+                while let Some(index_msg) = result_rx.recv().await {
+                    match index_msg {
+                        IndexMessage::Ok(indexed_node) => match indexed_node {
+                            IndexedNode::Request(indexed_request_entry) => {
+                                let request_node = self.handle_indexed_request_node(
+                                    indexed_request_entry,
+                                    &restored_requests,
+                                )?;
 
-                            let order = restored_requests
-                                .get(&request_dir_relative_path)
-                                .and_then(|e| e.order);
+                                requests_nodes.insert(request_node);
+                            }
+                            IndexedNode::RequestGroup(indexed_request_group_node) => {
+                                let request_group_node = self.handle_indexed_request_group_node(
+                                    indexed_request_group_node,
+                                    &restored_requests,
+                                )?;
 
-                            let spec_file_name = indexed_request_entry
-                                .spec_file_path
-                                .file_name()
-                                .and_then(|name| name.to_str())
-                                .unwrap_or(GET_ENTRY_SPEC_FILE)
-                                .to_string();
-
-                            requests.insert(CollectionRequestData {
-                                name: indexed_request_entry.folder_name,
-                                entry_relative_path: request_dir_relative_path,
-                                order,
-                                spec_file_name,
-                            });
-                        }
-                        crate::indexer::IndexedEntry::RequestGroup(
-                            _indexed_request_group_entry,
-                        ) => {
-                            // TODO
+                                requests_nodes.insert(request_group_node);
+                            }
+                            IndexedNode::Endpoint(_indexed_endpoint_node) => unimplemented!(),
+                            IndexedNode::EndpointGroup(_indexed_endpoint_group_node) => {
+                                unimplemented!()
+                            }
+                            IndexedNode::Schema(_indexed_schema_node) => unimplemented!(),
+                            IndexedNode::SchemaGroup(_indexed_schema_group_node) => {
+                                unimplemented!()
+                            }
+                            IndexedNode::Component(_indexed_component_node) => unimplemented!(),
+                            IndexedNode::ComponentGroup(_indexed_component_group_node) => {
+                                unimplemented!()
+                            }
+                        },
+                        IndexMessage::Err(err) => {
+                            // TODO: log error
+                            dbg!(err);
                         }
                     }
                 }
 
-                Ok::<_, anyhow::Error>(RwLock::new(requests))
+                Ok::<_, anyhow::Error>(CollectionRegistry::new(
+                    requests_nodes,
+                    endpoints_nodes,
+                    schemas_nodes,
+                    components_nodes,
+                ))
             })
             .await?;
 
-        Ok(result)
+        Ok(registry)
     }
 
     pub fn path(&self) -> &PathBuf {

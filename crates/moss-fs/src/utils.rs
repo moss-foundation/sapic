@@ -1,24 +1,23 @@
-use std::cell::LazyCell;
 use anyhow::Result;
+use regex::Regex;
 use std::path::{Component, Path, PathBuf};
 use std::sync::LazyLock;
-use regex::Regex;
 
-static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap()
-});
+/// Regex to match forbidden characters in a directory/file name
+static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap());
 
-// Function to encode forbidden characters and '%' in a directory name
-pub fn encode_directory_name(name: &str) -> String {
-    // List of forbidden characters, including '%' to avoid ambiguity
-    FORBIDDEN_RE.replace_all(name, |caps: &regex::Captures| {
-        // Replace each forbidden character with its hex representation (e.g., ':' -> %3A)
-        format!("%{:02X}", caps[0].chars().next().unwrap() as u32)
-    }).to_string()
+/// Function to encode forbidden characters and '%' in a directory/file name
+pub fn encode_name(name: &str) -> String {
+    FORBIDDEN_RE
+        .replace_all(name, |caps: &regex::Captures| {
+            // Replace each forbidden character with its hex representation (e.g., ':' -> %3A)
+            format!("%{:02X}", caps[0].chars().next().unwrap() as u32)
+        })
+        .to_string()
 }
 
-// Function to decode an encoded directory name back to its original form
-pub fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
+/// Function to decode an encoded directory/file name back to its original form
+pub fn decode_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
     let mut result = String::new();
     let mut chars = encoded.chars().peekable();
 
@@ -36,8 +35,6 @@ pub fn decode_directory_name(encoded: &str) -> Result<String, std::num::ParseInt
     Ok(result)
 }
 
-
-
 // FIXME: This process may need some refinement
 /// Doing a basic normalization using Path::components() and encode the segments after the prefix
 pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
@@ -52,7 +49,7 @@ pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
         .components()
         .filter_map(|comp| {
             if let Component::Normal(name) = comp {
-                Some(encode_directory_name(&name.to_string_lossy()))
+                Some(encode_name(&name.to_string_lossy()))
             } else {
                 // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
                 None
@@ -69,7 +66,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_encode_directory_name() {
+    fn test_encode_name() {
         let invalid_names = vec![
             "workspace.name",  // Contains dot
             "workspace/name",  // Contains path separator
@@ -83,7 +80,7 @@ mod tests {
             "workspace|name",  // Contains pipe
         ];
         invalid_names.into_iter().for_each(|name| {
-            dbg!(encode_directory_name(name));
+            dbg!(encode_name(name));
         })
     }
 
@@ -92,6 +89,4 @@ mod tests {
         let path = PathBuf::from("pre.fix/colle*ction");
         dbg!(&encode_path(&path, Some(Path::new("pre.fix"))));
     }
-
-
 }

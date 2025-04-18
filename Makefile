@@ -2,6 +2,18 @@
 # Sapic Makefile - Build and Development Configuration
 # ======================================================
 
+# ---- Environment Settings ----
+export LOG_LEVEL = trace
+
+# ---- Asset Directories ----
+export THEMES_DIR = ${CURDIR}/assets/themes
+export LOCALES_DIR = ${CURDIR}/assets/locales
+export APP_LOG_DIR = ${CURDIR}/logs/app
+export SESSION_LOG_DIR = ${CURDIR}/logs/session
+
+# ---- Default Goal ----
+.DEFAULT_GOAL := run-desktop
+
 # ---- OS Detection ----
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
@@ -213,4 +225,3 @@ tidy: gen-license workspace-audit check-unused-deps
 build:
 	# Enable compression feature for reducing binary size
 	$(CARGO) build --bin desktop --features compression
-

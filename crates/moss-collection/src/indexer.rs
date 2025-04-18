@@ -10,31 +10,90 @@ use tokio::task;
 
 use crate::constants::*;
 
+/// The indexed request directory node.
+///
+/// This node is the root node of the request directory.
+/// Any request node is presented as `*.request` directory, like `MyRequest.request`.
 #[derive(Debug)]
-pub struct IndexedRequestEntry {
-    pub folder_name: String,
-    pub folder_path: PathBuf,
+pub struct IndexedRequestNode {
+    /// The name of the request directory node.
+    ///
+    /// This is the name of the request directory node, like `MyRequest`.
+    pub name: String,
+    /// The absolute path of the request directory node.
+    ///
+    /// This is the absolute path of the request directory node,
+    /// like `~/MyWorkspace/.../MyCollection/requests/.../MyRequest.request`.
+    pub path: PathBuf,
+    /// The absolute path of the specification file of the request directory node.
+    ///
+    /// This is the absolute path of the specification file of the request directory node,
+    /// like `~/MyWorkspace/.../MyCollection/requests/.../MyRequest/get.spec`.
     pub spec_file_path: PathBuf,
 }
 
+/// The indexed request group node.
+///
+/// Any folder in the `/requests` directory that is not a `*.request` directory
+/// should be considered a request group, like `MySubfolder`.
 #[derive(Debug)]
-pub struct IndexedRequestGroupEntry {
-    pub folder_name: String,
-    pub folder_path: PathBuf,
+pub struct IndexedRequestGroupNode {
+    /// The name of the request group node.
+    ///
+    /// This is the name of the request group node, like `MySubfolder`.
+    pub name: String,
+    /// The absolute path of the request group node.
+    ///
+    /// This is the absolute path of the request group node,
+    /// like `~/MyWorkspace/.../MyCollection/requests/.../MySubfolder`.
+    pub path: PathBuf,
+    /// The absolute path of the specification file of the request group node.
+    ///
+    /// This is the absolute path of the specification file of the request group node,
+    /// like `~/MyWorkspace/.../MyCollection/requests/.../MySubfolder/folder.spec`.
     pub spec_file_path: Option<PathBuf>,
 }
 
 #[derive(Debug)]
-pub enum IndexedEntry {
-    Request(IndexedRequestEntry),
-    RequestGroup(IndexedRequestGroupEntry),
+pub struct IndexedEndpointNode {}
+
+#[derive(Debug)]
+pub struct IndexedEndpointGroupNode {}
+
+#[derive(Debug)]
+pub struct IndexedSchemaNode {}
+
+#[derive(Debug)]
+pub struct IndexedSchemaGroupNode {}
+
+#[derive(Debug)]
+pub struct IndexedComponentNode {}
+
+#[derive(Debug)]
+pub struct IndexedComponentGroupNode {}
+
+#[derive(Debug)]
+pub enum IndexedNode {
+    Request(IndexedRequestNode),
+    RequestGroup(IndexedRequestGroupNode),
+
+    Endpoint(IndexedEndpointNode),
+    EndpointGroup(IndexedEndpointGroupNode),
+
+    Schema(IndexedSchemaNode),
+    SchemaGroup(IndexedSchemaGroupNode),
+
+    Component(IndexedComponentNode),
+    ComponentGroup(IndexedComponentGroupNode),
 }
+
+pub type IndexMessage = Result<IndexedNode>;
 
 #[derive(Debug)]
 pub struct IndexJob {
     pub collection_key: ResourceKey,
     pub collection_abs_path: PathBuf,
-    pub result_tx: mpsc::UnboundedSender<IndexedEntry>,
+    pub result_tx: mpsc::UnboundedSender<IndexMessage>,
 }
 
 #[derive(Debug, Clone)]
@@ -76,7 +135,9 @@ async fn process_job<R: TauriRuntime>(
     activity_indicator: ActivityIndicator<R>,
     job: IndexJob,
 ) -> Result<()> {
-    let total = count_entries(fs.as_ref(), &job.collection_abs_path.join(REQUESTS_DIR)).await?;
+    let requests_dir = job.collection_abs_path.join(REQUESTS_DIR);
+
+    let total = count_entries(fs.as_ref(), &requests_dir).await?;
     // TODO: count the total number of endpoints, components, etc.
     let progress_counter = Arc::new(AtomicUsize::new(0));
 
@@ -89,7 +150,7 @@ async fn process_job<R: TauriRuntime>(
     // TODO: traverse the endpoints, components, etc. not just requests
     traverse_requests(
         fs.as_ref(),
-        &job.collection_abs_path.join(REQUESTS_DIR),
+        &requests_dir,
         &progress_callback,
         job.result_tx,
     )
@@ -127,7 +188,7 @@ async fn traverse_requests(
     fs: &dyn FileSystem,
     root: &PathBuf,
     progress_callback: &impl Fn(&PathBuf) -> Result<()>,
-    result_tx: mpsc::UnboundedSender<IndexedEntry>,
+    result_tx: mpsc::UnboundedSender<IndexMessage>,
 ) -> Result<()> {
     let mut stack: Vec<PathBuf> = vec![root.clone()];
 
@@ -144,7 +205,6 @@ async fn traverse_requests(
                 progress_callback(&entry_path)?;
             }
 
-
             // In the requests folder, we have either request entries or request groups
             if is_request_entry_dir(&entry_path) {
                 let entry_result = index_request_entry_dir(fs, &entry_path, progress_callback)
@@ -154,32 +214,28 @@ async fn traverse_requests(
                         entry_path.display()
                     ))?;
 
-                result_tx.send(entry_result).context(format!(
-                    "Failed to send the indexed request folder to the result channel: {}",
-                    entry_path.display()
-                ))?;
-            } else if entry_path.is_dir(){
-                stack.push(entry_path.clone());
-                let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
-                let entry = IndexedRequestGroupEntry {
-                    folder_name: entry
-                        .file_name()
-                        .to_string_lossy()
-                        .to_string(),
-                    folder_path: entry_path.clone(),
-                    spec_file_path: if spec_file_path.exists() {
-                        Some(spec_file_path)
-                    } else {
-                        None
-                    }
-                };
-
                 result_tx
-                    .send(IndexedEntry::RequestGroup(entry))
+                    .send(IndexMessage::Ok(entry_result))
                     .context(format!(
                         "Failed to send the indexed request folder to the result channel: {}",
                         entry_path.display()
                     ))?;
+            } else if entry_path.is_dir() {
+                let spec_file_path = entry_path.join(FOLDER_ENTRY_SPEC_FILE);
+                let entry = IndexedRequestGroupNode {
+                    name: entry.file_name().to_string_lossy().to_string(),
+                    path: entry_path.clone(),
+                    spec_file_path: spec_file_path.exists().then(|| spec_file_path),
+                };
+
+                result_tx
+                    .send(IndexMessage::Ok(IndexedNode::RequestGroup(entry)))
+                    .context(format!(
+                        "Failed to send the indexed request folder to the result channel: {}",
+                        entry_path.display()
+                    ))?;
+
+                stack.push(entry_path);
             }
         }
     }
@@ -191,7 +247,7 @@ async fn index_request_entry_dir(
     fs: &dyn FileSystem,
     path: &PathBuf,
     progress_callback: &impl Fn(&PathBuf) -> Result<()>,
-) -> Result<IndexedEntry> {
+) -> Result<IndexedNode> {
     let mut inner_dir = fs.read_dir(&path).await?;
 
     let folder_name = path
@@ -219,9 +275,9 @@ async fn index_request_entry_dir(
         }
     }
 
-    Ok(IndexedEntry::Request(IndexedRequestEntry {
-        folder_name,
-        folder_path: path.to_path_buf(),
+    Ok(IndexedNode::Request(IndexedRequestNode {
+        name: folder_name,
+        path: path.to_path_buf(),
         spec_file_path: spec_file_abs_path
             .ok_or_else(|| anyhow::anyhow!("No spec file found in the request folder"))?,
     }))
@@ -233,13 +289,6 @@ pub(crate) fn is_request_entry_dir(entry_path: &PathBuf) -> bool {
             .extension()
             .map(|ext| ext == FOLDER_ENTRY_DIR_EXT)
             .unwrap_or(false)
-}
-
-pub(crate) fn is_folder_entry_spec_file(file_path: &PathBuf) -> bool {
-    file_path
-        .file_name()
-        .map(|name| name.to_string_lossy().to_string() == FOLDER_ENTRY_SPEC_FILE)
-        .unwrap_or(false)
 }
 
 pub(crate) fn is_entry_spec_file(file_path: &PathBuf) -> bool {

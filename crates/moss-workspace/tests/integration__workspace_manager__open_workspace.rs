@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::operations::{CreateWorkspaceInput, OpenWorkspaceInput};
 use moss_workspace::workspace_manager::OperationError;
@@ -71,7 +71,7 @@ async fn open_workspace_already_active() {
     let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
-    let expected_path = workspaces_path.join(encode_directory_name(&workspace_name));
+    let expected_path = workspaces_path.join(encode_name(&workspace_name));
     workspace_manager
         .create_workspace(CreateWorkspaceInput {
             name: workspace_name.clone(),

@@ -1,5 +1,5 @@
+use redb::{ReadTransaction as InnerReadTransaction, WriteTransaction as InnerWriteTransaction};
 use thiserror::Error;
-
 pub type AnyEntity = Vec<u8>;
 
 #[derive(Error, Debug)]
@@ -59,5 +59,19 @@ impl From<bincode::Error> for DatabaseError {
 impl From<serde_json::Error> for DatabaseError {
     fn from(error: serde_json::Error) -> Self {
         DatabaseError::Serialization(error.to_string())
+    }
+}
+
+pub enum Transaction {
+    Read(InnerReadTransaction),
+    Write(InnerWriteTransaction),
+}
+
+impl Transaction {
+    pub fn commit(self) -> anyhow::Result<(), DatabaseError> {
+        match self {
+            Transaction::Read(_) => Ok(()),
+            Transaction::Write(txn) => Ok(txn.commit()?),
+        }
     }
 }

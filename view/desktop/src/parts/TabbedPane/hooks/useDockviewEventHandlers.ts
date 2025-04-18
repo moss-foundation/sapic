@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
 export const useDockviewEventHandlers = (
@@ -11,7 +11,7 @@ export const useDockviewEventHandlers = (
   setActivePanel: React.Dispatch<React.SetStateAction<string | undefined>>,
   setActiveGroup: React.Dispatch<React.SetStateAction<string | undefined>>
 ) => {
-  const dockviewStore = useDockviewStore();
+  const { setGridState, setActivePanelId } = useTabbedPaneStore();
 
   React.useEffect(() => {
     if (!api) return;
@@ -23,8 +23,7 @@ export const useDockviewEventHandlers = (
       }),
       api.onDidActivePanelChange((event) => {
         setActivePanel(event?.id);
-        dockviewStore.setCurrentActivePanelId(event?.id || undefined);
-        dockviewStore.setCurrentActiveTreeId(event?.params?.treeId || undefined);
+        setActivePanelId(event?.id);
         addLogLine(`Panel Activated ${event?.id}`);
       }),
       api.onDidRemovePanel((event) => {
@@ -57,5 +56,5 @@ export const useDockviewEventHandlers = (
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, dockviewStore]);
+  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, setGridState, setActivePanelId]);
 };

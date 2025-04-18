@@ -6,8 +6,7 @@ pub mod state_db_manager;
 use anyhow::Result;
 use moss_db::{
     bincode_table::BincodeTable,
-    common::{AnyEntity, DatabaseError},
-    Transaction,
+    common::{AnyEntity, DatabaseError, Transaction},
 };
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 

@@ -6,7 +6,6 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
 import { defaultConfig, nextId } from "../defaultLayout";
-import { setGridState } from "../utils";
 import { PanelBuilder } from "./panelBuilder";
 
 let mount = document.querySelector(".popover-anchor") as HTMLElement | null;
@@ -78,6 +77,7 @@ export const GridActions = (props: {
   hasCustomWatermark: boolean;
   toggleCustomWatermark: () => void;
 }) => {
+  const { setGridState } = useTabbedPaneStore();
   const onClear = () => {
     props.api?.clear();
   };
@@ -95,7 +95,7 @@ export const GridActions = (props: {
 
   const onSave = () => {
     if (props.api) {
-      setGridState(props.api);
+      setGridState(props.api.toJSON());
     }
   };
 

@@ -4,9 +4,8 @@ use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-
 use crate::models::types::{
-    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestInfo,
+    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
 };
 
 /// All the path and file names passed in the input should be unencoded.
@@ -65,18 +64,14 @@ pub struct DeleteRequestInput {
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListRequestsOutput(pub Vec<RequestInfo>);
-
-
-
+pub struct ListRequestsOutput(pub Vec<RequestNodeInfo>);
 
 #[derive(Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestGroupInput {
     #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf
-    // TODO: spec payload
+    pub path: PathBuf, // TODO: spec payload
 }
 
 // TODO: More sophisticated path validation
@@ -95,7 +90,7 @@ fn validate_path(path: &Path) -> Result<(), ValidationError> {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestGroupOutput {
-    pub path: PathBuf
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, TS, Validate)]
@@ -103,7 +98,7 @@ pub struct CreateRequestGroupOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteRequestGroupInput {
     #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Serialize, TS, Validate)]

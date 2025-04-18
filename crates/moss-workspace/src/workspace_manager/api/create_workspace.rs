@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Context as _;
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -21,7 +21,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
     ) -> Result<CreateWorkspaceOutput, OperationError> {
         input.validate()?;
 
-        let full_path = self.workspaces_dir.join(encode_directory_name(&input.name));
+        let full_path = self.workspaces_dir.join(encode_name(&input.name));
 
         // Check if workspace already exists
         if full_path.exists() {

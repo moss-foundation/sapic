@@ -56,17 +56,21 @@ pub async fn run<R: TauriRuntime>() {
             commands::set_locale,
             commands::list_locales,
             commands::get_translations,
-            commands::collection::example_index_collection_command,
+            commands::open_workspace,
+            commands::set_layout_parts_state,
+            commands::describe_layout_parts_state,
+            commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
-            #[cfg(target_os = "macos")]
-            WindowEvent::CloseRequested { api, .. } => {
-                if window.app_handle().webview_windows().len() == 1 {
-                    window.app_handle().hide().ok();
-                    api.prevent_close();
-                }
-            }
+            // #[cfg(target_os = "macos")]
+            // WindowEvent::CloseRequested { api, .. } => {
+            //     if window.app_handle().webview_windows().len() == 1 {
+            //         window.app_handle().hide().ok();
+            //         api.prevent_close();
+            //     }
+            // }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
+            WindowEvent::CloseRequested { api, .. } => {}
 
             _ => (),
         })
@@ -79,18 +83,8 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
-            #[cfg(target_os = "macos")]
-            RunEvent::ExitRequested { api, .. } => {
-                api.prevent_exit();
-                app_handle.hide().ok();
-
-                // FIXME: Temporary solution
-                app_handle.emit("kernel.windowCloseRequested", {}).unwrap();
-
-                let app_handle_clone = app_handle.clone();
-                app_handle.listen("kernel.windowCloseRequestedConfirmed", move |_event| {
-                    app_handle_clone.hide().ok();
-                });
+            RunEvent::Exit => {
+                dbg!("Exit");
             }
 
             _ => {}

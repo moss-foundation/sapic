@@ -104,7 +104,7 @@ pub struct OpenCollectionOutput {
     pub path: PathBuf,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeLayoutPartsStateOutput {
@@ -116,7 +116,7 @@ pub struct DescribeLayoutPartsStateOutput {
     pub panel: Option<PanelPartState>,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct SetLayoutPartsStateInput {
@@ -128,7 +128,7 @@ pub struct SetLayoutPartsStateInput {
     pub panel: Option<PanelPartState>,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct SetLayoutPartsStateParams {

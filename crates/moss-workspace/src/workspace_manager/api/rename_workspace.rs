@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
@@ -41,7 +41,7 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
-            .join(encode_directory_name(&input.new_name));
+            .join(encode_name(&input.new_name));
         if new_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,

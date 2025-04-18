@@ -3,7 +3,7 @@ pub mod state_db_manager;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use moss_db::{bincode_table::BincodeTable, Transaction};
+use moss_db::{bincode_table::BincodeTable, common::Transaction};
 use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin, sync::Arc};
 
 use crate::models::storage::RequestEntity;

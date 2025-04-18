@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
-use moss_fs::utils::encode_directory_name;
+use moss_fs::utils::encode_name;
 use std::path::PathBuf;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -21,7 +21,7 @@ impl<R: TauriRuntime> Workspace<R> {
         input.validate()?;
 
         // workspace_path/encoded_collection_folder
-        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_directory_name(&input.name));
+        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_name(&input.name));
         let full_path = self.path().join(&relative_path);
 
         if full_path.exists() {
