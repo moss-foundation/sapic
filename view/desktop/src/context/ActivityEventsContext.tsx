@@ -50,7 +50,7 @@ export const ActivityEventsProvider: React.FC<{ children: React.ReactNode }> = (
   // Queue for displaying events sequentially in the status bar
   const [displayQueue, setDisplayQueue] = useState<ActivityEvent[]>([]);
   const processingQueueRef = useRef(false);
-  const displayDurationRef = useRef(100); // Default 100 ms display time
+  const displayDurationRef = useRef(1); // Default 1 ms display time
 
   const getStartTitleForActivity = (activityId: string): string | null => {
     const title = startTitles.get(activityId);
