@@ -9,7 +9,7 @@ use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn open_workspace_success() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let first_workspace_name = random_workspace_name();
     let first_workspace_path = workspaces_path.join(&first_workspace_name);
@@ -41,14 +41,12 @@ async fn open_workspace_success() {
     assert_eq!(current_workspace.1.path(), first_workspace_path);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn open_workspace_not_found() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let open_workspace_result = workspace_manager
         .open_workspace(&OpenWorkspaceInput {
@@ -61,14 +59,12 @@ async fn open_workspace_not_found() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn open_workspace_already_active() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(encode_name(&workspace_name));
@@ -90,7 +86,5 @@ async fn open_workspace_already_active() {
     assert_eq!(open_workspace_output.path, expected_path);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }

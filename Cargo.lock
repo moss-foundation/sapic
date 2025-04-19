@@ -3044,6 +3044,10 @@ dependencies = [
 [[package]]
 name = "moss_storage"
 version = "0.1.0"
+dependencies = [
+ "moss_db",
+ "serde",
+]
 
 [[package]]
 name = "moss_tauri"
@@ -3111,12 +3115,14 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "bincode",
+ "chrono",
  "moss_app",
  "moss_collection",
  "moss_common",
  "moss_db",
  "moss_environment",
  "moss_fs",
+ "moss_storage",
  "moss_testutils",
  "moss_workbench",
  "serde",

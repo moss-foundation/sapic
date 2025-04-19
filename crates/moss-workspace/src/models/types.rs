@@ -15,6 +15,8 @@ pub type EnvironmentName = String;
 pub struct WorkspaceInfo {
     pub path: PathBuf,
     pub name: String,
+    #[ts(optional)]
+    pub last_opened_at: Option<i64>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]

@@ -7,7 +7,7 @@ use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn delete_workspace_success() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
@@ -35,14 +35,12 @@ async fn delete_workspace_success() {
     let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
     assert!(list_workspaces_output.0.is_empty());
 
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_workspace_nonexistent_key() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
@@ -63,14 +61,12 @@ async fn delete_workspace_nonexistent_key() {
         .await;
     assert!(delete_workspace_result.is_err());
 
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_workspace_fs_already_deleted() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
@@ -99,7 +95,5 @@ async fn delete_workspace_fs_already_deleted() {
     let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
     assert!(workspaces_list.0.is_empty());
 
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }

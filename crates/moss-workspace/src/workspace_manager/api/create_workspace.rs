@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use anyhow::Context as _;
+use chrono::Utc;
 use moss_fs::utils::encode_name;
+use moss_storage::{global_storage::entities::WorkspaceInfoEntity, workspace_storage};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -21,7 +23,8 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
     ) -> Result<CreateWorkspaceOutput, OperationError> {
         input.validate()?;
 
-        let full_path = self.workspaces_dir.join(encode_name(&input.name));
+        let encoded_name = encode_name(&input.name);
+        let full_path = self.workspaces_dir.join(&encoded_name);
 
         // Check if workspace already exists
         if full_path.exists() {
@@ -47,15 +50,21 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             self.fs.clone(),
             self.activity_indicator.clone(),
         )?;
+        let last_opened_at = Utc::now().timestamp();
+
+        let workspace_storage = self.global_storage.workspaces_store();
+        workspace_storage.set_workspace(encoded_name, WorkspaceInfoEntity { last_opened_at })?;
+
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
             workspaces_lock.insert(WorkspaceInfo {
                 path: full_path.clone(),
                 name: input.name,
+                last_opened_at: Some(last_opened_at),
             })
         };
 
-        // // Automatically switch the workspace to the new one.
+        // Automatically switch the workspace to the new one.
         self.current_workspace
             .store(Some(Arc::new((workspace_key, current_workspace))));
 
