@@ -1,5 +1,6 @@
 use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use std::path::PathBuf;
 use tauri::Runtime as TauriRuntime;
@@ -10,14 +11,14 @@ use crate::{
         entities::CollectionEntity,
         operations::{CreateCollectionInput, CreateCollectionOutput},
     },
-    workspace::{OperationError, Workspace, COLLECTIONS_DIR},
+    workspace::{Workspace, COLLECTIONS_DIR},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
-    ) -> Result<CreateCollectionOutput, OperationError> {
+    ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
         // workspace_path/encoded_collection_folder

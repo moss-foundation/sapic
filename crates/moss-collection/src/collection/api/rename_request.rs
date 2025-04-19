@@ -1,13 +1,14 @@
-use anyhow::{anyhow, Context as _, Result};
+use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use validator::Validate;
 
-use crate::collection::{Collection, OperationError, REQUESTS_DIR};
-use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
+use crate::collection::{Collection, REQUESTS_DIR};
+use crate::models::operations::RenameRequestInput;
 
 impl Collection {
-    pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
+    pub async fn rename_request(&self, input: RenameRequestInput) -> OperationResult<()> {
         input
             .validate()
             .map_err(|error| OperationError::Validation(error.to_string()))?;

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context as _;
 use chrono::Utc;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use moss_storage::global_storage::entities::WorkspaceInfoEntity;
 use tauri::Runtime as TauriRuntime;
@@ -13,14 +14,14 @@ use crate::{
         types::WorkspaceInfo,
     },
     workspace::Workspace,
-    workspace_manager::{OperationError, WorkspaceManager},
+    workspace_manager::WorkspaceManager,
 };
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn create_workspace(
         &self,
         input: &CreateWorkspaceInput,
-    ) -> Result<CreateWorkspaceOutput, OperationError> {
+    ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
         let encoded_name = encode_name(&input.name);

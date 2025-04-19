@@ -1,7 +1,6 @@
 mod shared;
 
 use crate::shared::{request_folder_name, request_group_relative_path, set_up_test_collection};
-use moss_collection::collection::api::list_requests;
 use moss_collection::models::operations::{
     CreateRequestGroupInput, CreateRequestInput, DeleteRequestGroupInput,
 };

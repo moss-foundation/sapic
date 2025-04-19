@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use std::sync::Arc;
@@ -7,13 +8,10 @@ use validator::Validate;
 
 use crate::models::operations::RenameWorkspaceInput;
 use crate::workspace::Workspace;
-use crate::workspace_manager::{OperationError, WorkspaceManager};
+use crate::workspace_manager::WorkspaceManager;
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn rename_workspace(
-        &self,
-        input: RenameWorkspaceInput,
-    ) -> Result<(), OperationError> {
+    pub async fn rename_workspace(&self, input: RenameWorkspaceInput) -> OperationResult<()> {
         input.validate()?;
 
         let workspaces = self

@@ -1,10 +1,11 @@
 mod shared;
 
+use moss_common::api::OperationError;
 use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::{CreateCollectionInput, RenameCollectionInput};
 use moss_workspace::models::types::CollectionInfo;
-use moss_workspace::workspace::{OperationError, COLLECTIONS_DIR};
+use moss_workspace::workspace::COLLECTIONS_DIR;
 
 use crate::shared::setup_test_workspace;
 

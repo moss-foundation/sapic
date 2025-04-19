@@ -1,8 +1,9 @@
 use anyhow::Context;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_path;
 use validator::Validate;
 
-use crate::collection::{Collection, OperationError};
+use crate::collection::Collection;
 use crate::collection_registry::{CollectionRequestGroupData, RequestNode};
 use crate::constants::REQUESTS_DIR;
 use crate::models::operations::{CreateRequestGroupInput, CreateRequestGroupOutput};
@@ -12,10 +13,8 @@ impl Collection {
     pub async fn create_request_group(
         &self,
         input: CreateRequestGroupInput,
-    ) -> Result<CreateRequestGroupOutput, OperationError> {
-        input
-            .validate()
-            .map_err(|error| OperationError::Validation(error.to_string()))?;
+    ) -> OperationResult<CreateRequestGroupOutput> {
+        input.validate()?;
 
         let encoded_path = encode_path(&input.path, None)?;
         let request_group_abs_path = self.abs_path.join(REQUESTS_DIR).join(&encoded_path);
