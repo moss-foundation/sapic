@@ -11,10 +11,11 @@ extern crate tracing;
 
 use moss_app::manager::AppManager;
 use moss_fs::RealFileSystem;
+use moss_storage::global_storage::GlobalStorageImpl;
 use services::service_pool;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
-use tauri::{Emitter, Listener};
 use tauri_plugin_os;
 
 use window::{create_window, CreateWindowInput};
@@ -41,7 +42,15 @@ pub async fn run<R: TauriRuntime>() {
         .setup(|app| {
             let fs = Arc::new(RealFileSystem::new());
             let app_handle = app.app_handle();
-            let service_pool = service_pool(app_handle, fs.clone());
+
+            let app_dir =
+                PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
+
+            let global_storage = Arc::new(
+                GlobalStorageImpl::new(&app_dir).expect("Failed to create global storage"),
+            );
+
+            let service_pool = service_pool(app_handle, &app_dir, fs.clone(), global_storage);
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
             app_handle.manage(app_manager);
 
@@ -59,6 +68,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::open_workspace,
             commands::set_layout_parts_state,
             commands::describe_layout_parts_state,
+            commands::create_workspace,
+            commands::list_workspaces,
+            commands::delete_workspace,
             commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
