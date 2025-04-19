@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useActivityEvents } from "@/context/ActivityEventsContext";
+import React, { useState, useRef, useEffect } from "react";
+import { useActivityEvents, ONESHOT_CLEANUP_DELAY, DEFAULT_DISPLAY_DURATION } from "@/context/ActivityEventsContext";
 import { ActivityEvent } from "@repo/moss-workbench";
 
 interface ActivityEventSimulatorProps {
@@ -9,7 +9,7 @@ interface ActivityEventSimulatorProps {
 export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ className = "" }) => {
   const { clearEvents } = useActivityEvents();
   const [isSimulating, setIsSimulating] = useState(false);
-  const [simulationDelay, setSimulationDelay] = useState(1000);
+  const [simulationDelay, setSimulationDelay] = useState(1000); // Increased default to accommodate display duration
   const [progressEventCount, setProgressEventCount] = useState(10);
   const [oneshotEventCount, setOneshotEventCount] = useState(3);
   const [concurrentProgressEvents, setConcurrentProgressEvents] = useState(2);
@@ -50,6 +50,12 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
     { title: "Notification", detail: "New update available" },
     { title: "Linting", detail: "No issues found" },
   ];
+
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+    };
+  }, []);
 
   const clearAllTimeouts = () => {
     activeTimeoutsRef.current.forEach((timeoutId) => {
@@ -147,8 +153,15 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 detail: oneshotType.detail,
               },
             } as ActivityEvent,
+            // Give more space between oneshot events to ensure display visibility
             priorityTestMode ? randomDelay(baseDelay * 0.2, baseDelay * 2) : randomDelay(baseDelay * 1.5, baseDelay * 4)
           );
+
+          // Ensure minimum spacing between oneshot events to account for display duration
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, DEFAULT_DISPLAY_DURATION * 0.8);
+            activeTimeoutsRef.current.push(timeoutId);
+          });
 
           simulationProgressRef.current.oneshotProgress = i + 1;
         }
@@ -166,7 +179,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
 
         const currentStep = simulationProgressRef.current.priorityTestProgress;
 
+        // First emit a start event if we're at the beginning
         if (currentStep === 0) {
+          console.log("Priority Test: Emitting START event");
           await emitEvent(
             {
               start: {
@@ -177,8 +192,14 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
             } as ActivityEvent,
             100
           );
+
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, 500);
+            activeTimeoutsRef.current.push(timeoutId);
+          });
         }
 
+        // Loop through progress steps
         for (let i = currentStep + 1; i <= 10; i++) {
           if (!simulationStateRef.current.isActive) {
             break;
@@ -189,8 +210,10 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
             break;
           }
 
+          // First emit progress event
           const detail = activityType.detailFormat.replace("{current}", i.toString()).replace("{total}", "10");
 
+          console.log(`Priority Test: Emitting PROGRESS event ${i}/10`);
           await emitEvent(
             {
               progress: {
@@ -199,27 +222,48 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 detail: detail,
               },
             } as ActivityEvent,
-            300
+            100 // Fast emit
           );
 
+          // Wait for progress event to display
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, 400);
+            activeTimeoutsRef.current.push(timeoutId);
+          });
+
+          // Only emit oneshot on even steps to alternate
           if (i % 2 === 0) {
+            // Choose a random oneshot type
             const oneshotType = oneshotTypes[Math.floor(Math.random() * oneshotTypes.length)];
+            const oneshotId = 9000 + i;
+
+            console.log(`Priority Test: Emitting ONESHOT event "${oneshotType.title}" (id: ${oneshotId})`);
+
+            // Emit oneshot event with minimal delay
             await emitEvent(
               {
                 oneshot: {
-                  id: 9000 + i,
+                  id: oneshotId,
                   activityId: `oneshot-${i}`,
                   title: oneshotType.title,
                   detail: oneshotType.detail,
                 },
               } as ActivityEvent,
-              randomDelay(100, 300)
+              10 // Nearly immediate emit
             );
+
+            // Critical: Long wait after oneshot to ensure it's displayed
+            console.log(`Priority Test: Waiting for ONESHOT visibility`);
+            await new Promise<void>((resolve) => {
+              const timeoutId = setTimeout(resolve, 1000);
+              activeTimeoutsRef.current.push(timeoutId);
+            });
           }
 
+          // Wait between iterations
           if (simulationStateRef.current.isActive && !simulationStateRef.current.isPaused) {
             await new Promise<void>((resolve) => {
-              const timeoutId = setTimeout(resolve, 500);
+              const timeoutId = setTimeout(resolve, 300);
               activeTimeoutsRef.current.push(timeoutId);
             });
           }
@@ -227,7 +271,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
           simulationProgressRef.current.priorityTestProgress = i;
         }
 
+        // Send finish event at the end if simulation is still active
         if (simulationStateRef.current.isActive && !simulationStateRef.current.isPaused) {
+          console.log("Priority Test: Emitting FINISH event");
           await emitEvent(
             {
               finish: {
@@ -235,8 +281,13 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 activityId: activityId,
               },
             } as ActivityEvent,
-            300
+            100
           );
+
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, 500);
+            activeTimeoutsRef.current.push(timeoutId);
+          });
 
           simulationProgressRef.current.priorityTestProgress = 0;
         }
@@ -296,8 +347,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                     10
                   );
 
+                  // Add delay to ensure start events are properly displayed
                   await new Promise<void>((resolve) => {
-                    const timeoutId = setTimeout(resolve, 50);
+                    const timeoutId = setTimeout(resolve, 100);
                     activeTimeoutsRef.current.push(timeoutId);
                   });
                 }
@@ -331,6 +383,13 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                       : randomDelay(baseDelay * 0.5, baseDelay * 1.5)
                   );
 
+                  // Ensure progress events have enough time to display
+                  const progressDisplayTime = Math.min(DEFAULT_DISPLAY_DURATION * 0.3, 300);
+                  await new Promise<void>((resolve) => {
+                    const timeoutId = setTimeout(resolve, progressDisplayTime);
+                    activeTimeoutsRef.current.push(timeoutId);
+                  });
+
                   if (existingSequence) {
                     existingSequence.currentProgress = i;
                   }
@@ -346,6 +405,12 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                     } as ActivityEvent,
                     randomDelay(baseDelay * 0.5, baseDelay)
                   );
+
+                  // Allow time for cleanup after finish event
+                  await new Promise<void>((resolve) => {
+                    const timeoutId = setTimeout(resolve, ONESHOT_CLEANUP_DELAY);
+                    activeTimeoutsRef.current.push(timeoutId);
+                  });
 
                   simulationProgressRef.current.progressSequences =
                     simulationProgressRef.current.progressSequences.filter((seq) => seq.sequenceId !== sequenceId);
