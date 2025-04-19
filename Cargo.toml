@@ -85,7 +85,7 @@ keyring = { version = "3", features = [
     "sync-secret-service",
 ] }
 whoami = "1.5.2"
-chrono = { version = "0.4.40" }
+chrono = { version = "0.4.40", features = ["now"] }
 uuid = { version = "1.15.1", default-features = false }
 webbrowser = "1.0.3"
 # miette = "7.5.0"
