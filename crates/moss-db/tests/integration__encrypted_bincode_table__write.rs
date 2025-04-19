@@ -9,7 +9,7 @@ use crate::shared::{
 
 #[test]
 fn write_success() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -33,7 +33,7 @@ fn write_success() {
 
 #[test]
 fn write_overwrite() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -67,7 +67,7 @@ fn write_overwrite() {
 
 #[test]
 fn write_multiple_entries_with_different_password() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -100,7 +100,7 @@ fn write_multiple_entries_with_different_password() {
 
 #[test]
 fn write_in_read_transaction() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         let mut read = client.begin_read().unwrap();
@@ -115,7 +115,7 @@ fn write_in_read_transaction() {
 
 #[test]
 fn write_uncommitted() {
-    let (client, table, path) = setup_test_encrypted_bincode_table();
+    let (client, table, path) = setup_test_encrypted_bincode_table::<i32>();
 
     {
         // Uncommitted write
