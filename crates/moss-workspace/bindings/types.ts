@@ -53,4 +53,4 @@ export type PanelRenderer = "onlyWhenVisible" | "always";
 
 export type SidebarPartState = { preferredSize: number; isVisible: boolean };
 
-export type WorkspaceInfo = { path: string; name: string };
+export type WorkspaceInfo = { path: string; name: string; lastOpenedAt?: bigint };

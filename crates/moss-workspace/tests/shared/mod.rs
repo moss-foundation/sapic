@@ -1,4 +1,5 @@
 use moss_fs::RealFileSystem;
+use moss_storage::global_storage::GlobalStorageImpl;
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workbench::activity_indicator::ActivityIndicator;
 use moss_workspace::models::types::{
@@ -9,11 +10,15 @@ use moss_workspace::workspace::Workspace;
 use moss_workspace::workspace_manager::WorkspaceManager;
 use std::collections::HashMap;
 use std::fs;
+use std::future::Future;
 use std::path::PathBuf;
+use std::pin::Pin;
 use std::sync::Arc;
 use tauri::test::MockRuntime;
 
-pub fn random_workspaces_path() -> PathBuf {
+pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
+
+pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -28,19 +33,40 @@ pub fn random_workspace_path() -> PathBuf {
         .join(random_workspace_name())
 }
 
-pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager<MockRuntime>) {
+pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager<MockRuntime>, CleanupFn) {
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
     let fs = Arc::new(RealFileSystem::new());
-    let workspaces_path: PathBuf = random_workspaces_path();
-    tokio::fs::create_dir_all(workspaces_path.clone())
-        .await
-        .unwrap();
 
-    let workspace_manager = WorkspaceManager::new(app_handle, fs, workspaces_path.clone()).unwrap();
+    let random_app_dir_path: PathBuf = random_app_dir_path();
+    let workspaces_dir_path = random_app_dir_path.join("workspaces");
+    let globals_dir_path = random_app_dir_path.join("globals");
 
-    (workspaces_path, workspace_manager)
+    {
+        tokio::fs::create_dir_all(&random_app_dir_path)
+            .await
+            .unwrap();
+        tokio::fs::create_dir(&workspaces_dir_path).await.unwrap();
+        tokio::fs::create_dir(&globals_dir_path).await.unwrap();
+    }
+
+    let global_storage = Arc::new(GlobalStorageImpl::new(&globals_dir_path).unwrap());
+
+    let workspace_manager =
+        WorkspaceManager::new(app_handle, fs, workspaces_dir_path.clone(), global_storage).unwrap();
+
+    let app_dir = random_app_dir_path.clone();
+    let cleanup_fn = Box::new(move || {
+        let path = app_dir;
+        Box::pin(async move {
+            if let Err(e) = tokio::fs::remove_dir_all(&path).await {
+                eprintln!("Failed to clean up test directory: {}", e);
+            }
+        }) as Pin<Box<dyn Future<Output = ()> + Send>>
+    });
+
+    (workspaces_dir_path, workspace_manager, cleanup_fn)
 }
 
 pub async fn setup_test_workspace() -> (PathBuf, Workspace<MockRuntime>) {
