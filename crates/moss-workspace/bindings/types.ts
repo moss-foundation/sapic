@@ -17,7 +17,7 @@ export type EditorGridNode =
   | { "type": "branch"; data: Array<EditorGridNode>; size: number }
   | { "type": "leaf"; data: EditorGridLeafData; size: number };
 
-export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
+export type EditorGridOrientation = "horizontal" | "vertical";
 
 export type EditorGridState = {
   root: EditorGridNode;
