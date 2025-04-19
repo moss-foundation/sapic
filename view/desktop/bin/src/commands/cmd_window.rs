@@ -24,10 +24,6 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
-use moss_workspace::{
-    models::operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams},
-    workspace_manager::WorkspaceManager,
-};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};

@@ -122,7 +122,7 @@ async fn rename_workspace_unchanged() {
 
 #[tokio::test]
 async fn rename_workspace_already_exists() {
-    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let existing_workspace_name = random_workspace_name();
 
