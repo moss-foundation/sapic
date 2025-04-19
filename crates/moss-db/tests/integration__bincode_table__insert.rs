@@ -3,11 +3,11 @@ mod shared;
 use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
 
-use crate::shared::setup_test_bincode_table;
+use crate::shared::{setup_test_bincode_table, TestNode, TEST_NODE_1, TEST_NODE_2, TEST_NODE_3};
 
 #[test]
 fn insert_success() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -36,7 +36,7 @@ fn insert_success() {
 
 #[test]
 fn insert_existing_key() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut write = client.begin_write().unwrap();
@@ -65,7 +65,7 @@ fn insert_existing_key() {
 
 #[test]
 fn insert_in_read_transaction() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         let mut read = client.begin_read().unwrap();
@@ -81,7 +81,7 @@ fn insert_in_read_transaction() {
 
 #[test]
 fn insert_uncommitted() {
-    let (client, table, path) = setup_test_bincode_table();
+    let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
         // Uncommitted transaction
@@ -92,6 +92,41 @@ fn insert_uncommitted() {
     {
         let read = client.begin_read().unwrap();
         assert!(table.scan(&read).unwrap().collect::<Vec<_>>().is_empty());
+    }
+
+    {
+        std::fs::remove_file(path).unwrap();
+    }
+}
+
+#[test]
+fn insert_complex_type() {
+    let (client, table, path) = setup_test_bincode_table::<TestNode>();
+
+    {
+        let mut write = client.begin_write().unwrap();
+        table
+            .insert(&mut write, "1".to_string(), &TEST_NODE_1)
+            .unwrap();
+        table
+            .insert(&mut write, "2".to_string(), &TEST_NODE_2)
+            .unwrap();
+        table
+            .insert(&mut write, "3".to_string(), &TEST_NODE_3)
+            .unwrap();
+        write.commit().unwrap();
+    }
+
+    let expected = vec![
+        ("1".to_string(), TEST_NODE_1.clone()),
+        ("2".to_string(), TEST_NODE_2.clone()),
+        ("3".to_string(), TEST_NODE_3.clone()),
+    ];
+
+    {
+        let read = client.begin_read().unwrap();
+
+        assert_eq!(table.scan(&read).unwrap().collect::<Vec<_>>(), expected)
     }
 
     {

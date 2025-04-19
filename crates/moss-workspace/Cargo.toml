@@ -11,6 +11,7 @@ moss_collection.workspace = true
 moss_environment.workspace = true
 moss_common.workspace = true
 moss_workbench.workspace = true
+moss_storage.workspace = true
 
 anyhow.workspace = true
 arc-swap.workspace = true
@@ -21,7 +22,7 @@ thiserror.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 serde_json.workspace = true
-bincode.workspace = true
+chrono.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

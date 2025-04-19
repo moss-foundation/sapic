@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use moss_db::common::DatabaseError;
 use thiserror::Error;
 use validator::ValidationErrors;
 
@@ -16,4 +17,10 @@ pub enum OperationError {
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
+}
+
+impl From<DatabaseError> for OperationError {
+    fn from(error: DatabaseError) -> Self {
+        OperationError::Unknown(anyhow::anyhow!(error))
+    }
 }

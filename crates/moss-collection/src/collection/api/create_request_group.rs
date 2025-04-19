@@ -1,38 +1,71 @@
 use anyhow::Context;
-use validator::Validate;
-use moss_fs::CreateOptions;
 use moss_fs::utils::encode_path;
+use validator::Validate;
 
 use crate::collection::{Collection, OperationError};
-use crate::constants::{FOLDER_ENTRY_SPEC_FILE, REQUESTS_DIR};
+use crate::collection_registry::{CollectionRequestGroupData, RequestNode};
+use crate::constants::REQUESTS_DIR;
 use crate::models::operations::{CreateRequestGroupInput, CreateRequestGroupOutput};
+use crate::models::storage::RequestEntity;
 
 impl Collection {
     pub async fn create_request_group(
         &self,
-        input: CreateRequestGroupInput
+        input: CreateRequestGroupInput,
     ) -> Result<CreateRequestGroupOutput, OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
         let encoded_path = encode_path(&input.path, None)?;
-        let request_group_full_path = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&encoded_path);
+        let request_group_abs_path = self.abs_path.join(REQUESTS_DIR).join(&encoded_path);
 
-        if request_group_full_path.exists() {
+        if request_group_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
-                name: request_group_full_path.file_name().unwrap_or_default().to_string_lossy().to_string(),
-                path: input.path
+                name: request_group_abs_path
+                    .file_name()
+                    .expect("The path should never end with a root")
+                    .to_string_lossy()
+                    .to_string(),
+                path: input.path,
             });
         }
 
-        // TODO: Update state_db_manager and request_map?
+        let request_store = self.state_db_manager.request_store().await;
+        let request_nodes = self.registry().await?.requests_nodes();
+
+        let (mut txn, table) = request_store.begin_write()?;
+
+        table.insert(
+            &mut txn,
+            encoded_path.to_string_lossy().to_string().to_string(),
+            &RequestEntity::Group { order: None },
+        )?;
+
         self.fs
-            .create_dir(&request_group_full_path)
+            .create_dir(&request_group_abs_path)
             .await
             .context("Failed to create the request group directory")?;
 
-        Ok(CreateRequestGroupOutput { path: request_group_full_path })
+        txn.commit()?;
+
+        let request_group_key = {
+            let mut lock = request_nodes.write().await;
+            lock.insert(RequestNode::Group(CollectionRequestGroupData {
+                name: input
+                    .path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string(),
+                path: encoded_path,
+                order: None,
+                spec_file_name: None,
+            }))
+        };
+
+        Ok(CreateRequestGroupOutput {
+            key: request_group_key,
+        })
     }
 }

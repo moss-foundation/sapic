@@ -21,6 +21,9 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
 
     std::fs::create_dir_all(collection_path.clone()).unwrap();
 
+    // Create collection/requests to prevent indexation error
+    std::fs::create_dir_all(collection_path.join("requests")).unwrap();
+
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
@@ -40,11 +43,6 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     }
 
     let collection = Collection::new(collection_path.clone(), fs, indexer_handle).unwrap();
-
-    // Normally, the indexation process will require the tauri application to be running
-    // We will bypass the indexation process for test purposes by calling `list_requests()` at first
-    // Since the requests folder will not be created yet, this allows us to bypass the indexation process
-    collection.list_requests().await.unwrap();
 
     (collection_path, collection)
 }
