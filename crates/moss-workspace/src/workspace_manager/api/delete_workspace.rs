@@ -10,7 +10,7 @@ use crate::{
 impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn delete_workspace(
         &self,
-        input: DeleteWorkspaceInput,
+        input: &DeleteWorkspaceInput,
     ) -> Result<(), OperationError> {
         let known_workspaces = self.known_workspaces().await?;
 

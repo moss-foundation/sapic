@@ -3,19 +3,18 @@ mod shared;
 use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::operations::CreateWorkspaceInput;
-use moss_workspace::models::types::WorkspaceInfo;
 use moss_workspace::workspace_manager::*;
 
 use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await;
@@ -31,27 +30,21 @@ async fn create_workspace_success() {
 
     // Check updating known_workspaces
     let list_workspace_output = workspace_manager.list_workspaces().await.unwrap();
+
     assert_eq!(list_workspace_output.0.len(), 1);
-    assert_eq!(
-        list_workspace_output.0[0],
-        WorkspaceInfo {
-            path: expected_path.clone(),
-            name: workspace_name
-        }
-    );
+    assert_eq!(list_workspace_output.0[0].name, workspace_name);
+    assert_eq!(list_workspace_output.0[0].path, expected_path);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: "".to_string(),
         })
         .await;
@@ -62,21 +55,19 @@ async fn create_workspace_empty_name() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_workspace_already_exists() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
 
     // Create first workspace
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
@@ -84,7 +75,7 @@ async fn create_workspace_already_exists() {
 
     // Try to create workspace with same name
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await;
@@ -98,14 +89,12 @@ async fn create_workspace_already_exists() {
     }
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_workspace_special_chars() {
-    let (workspaces_path, workspace_manager) = setup_test_workspace_manager().await;
+    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -115,7 +104,7 @@ async fn create_workspace_special_chars() {
     for name in workspace_name_list {
         let expected_path = workspaces_path.join(encode_name(&name));
         let create_workspace_output = workspace_manager
-            .create_workspace(CreateWorkspaceInput { name: name.clone() })
+            .create_workspace(&CreateWorkspaceInput { name: name.clone() })
             .await
             .unwrap();
 
@@ -127,15 +116,16 @@ async fn create_workspace_special_chars() {
 
         // Check updating known_workspaces
         let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-        assert!(workspaces_list.0.iter().any(|info| info
-            == &WorkspaceInfo {
-                name: name.clone(),
-                path: expected_path.clone()
-            }));
+        let matching_workspace = workspaces_list
+            .0
+            .iter()
+            .find(|info| info.name == name)
+            .expect("Workspace should exist in the list");
+
+        assert_eq!(matching_workspace.path, expected_path);
+        assert_eq!(matching_workspace.name, name);
     }
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspaces_path).await.unwrap();
-    }
+    cleanup().await;
 }

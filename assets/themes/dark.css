@@ -30,8 +30,10 @@
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
-  /* Layout */
-  --moss-statusBar-background: #274323;
+  /* StatusBar */
+  --moss-statusBar-icon-primary-text: white;
+  --moss-statusBar-icon-secondary-text: #a1a1aa;
+  --moss-statusBar-icon-background-hover: rgba(255, 255, 255, 0.1);
 
   /* Window Controls */
   --moss-button-icon-color: white;
