@@ -1,17 +1,12 @@
 use anyhow::Context as _;
+use moss_common::api::OperationResult;
 use moss_fs::RemoveOptions;
 use tauri::Runtime as TauriRuntime;
 
-use crate::{
-    models::operations::DeleteCollectionInput,
-    workspace::{OperationError, Workspace},
-};
+use crate::{models::operations::DeleteCollectionInput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn delete_collection(
-        &self,
-        input: DeleteCollectionInput,
-    ) -> Result<(), OperationError> {
+    pub async fn delete_collection(&self, input: DeleteCollectionInput) -> OperationResult<()> {
         let collections = self.collections().await?;
 
         let mut collections_lock = collections.write().await;

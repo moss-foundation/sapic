@@ -1,17 +1,12 @@
 use anyhow::Context as _;
+use moss_common::api::OperationResult;
 use moss_fs::RemoveOptions;
 use tauri::Runtime as TauriRuntime;
 
-use crate::{
-    models::operations::DeleteWorkspaceInput,
-    workspace_manager::{OperationError, WorkspaceManager},
-};
+use crate::{models::operations::DeleteWorkspaceInput, workspace_manager::WorkspaceManager};
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn delete_workspace(
-        &self,
-        input: &DeleteWorkspaceInput,
-    ) -> Result<(), OperationError> {
+    pub async fn delete_workspace(&self, input: &DeleteWorkspaceInput) -> OperationResult<()> {
         let known_workspaces = self.known_workspaces().await?;
 
         let mut workspaces_lock = known_workspaces.write().await;

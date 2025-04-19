@@ -1,11 +1,12 @@
-use anyhow::{anyhow, Context as _, Result};
+use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::RemoveOptions;
 
-use crate::collection::{Collection, OperationError, REQUESTS_DIR};
+use crate::collection::{Collection, REQUESTS_DIR};
 use crate::models::operations::DeleteRequestInput;
 
 impl Collection {
-    pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
+    pub async fn delete_request(&self, input: DeleteRequestInput) -> OperationResult<()> {
         let request_data = {
             let request_nodes = self.registry().await?.requests_nodes();
             let mut requests_lock = request_nodes.write().await;

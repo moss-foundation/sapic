@@ -1,3 +1,4 @@
+use moss_common::api::OperationResult;
 use tauri::{Emitter, Runtime as TauriRuntime};
 
 use crate::{
@@ -5,7 +6,7 @@ use crate::{
         entities::{EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity},
         operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams},
     },
-    workspace::{OperationError, Workspace},
+    workspace::Workspace,
 };
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -13,7 +14,7 @@ impl<R: TauriRuntime> Workspace<R> {
         &self,
         input: SetLayoutPartsStateInput,
         params: SetLayoutPartsStateParams,
-    ) -> Result<(), OperationError> {
+    ) -> OperationResult<()> {
         let layout_parts_state_store = self.state_db_manager.layout_parts_state_store();
 
         if let Some(editor_state) = input.editor {

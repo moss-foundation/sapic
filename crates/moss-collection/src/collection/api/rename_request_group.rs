@@ -1,12 +1,12 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
+use moss_common::api::{OperationError, OperationResult};
 use moss_common::leased_slotmap::ResourceKey;
-use moss_fs::utils::{encode_name, encode_path};
+use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use std::path::Path;
-use tokio::io::AsyncWriteExt;
 use validator::Validate;
 
-use crate::collection::{Collection, OperationError};
+use crate::collection::Collection;
 use crate::constants::REQUESTS_DIR;
 use crate::models::operations::RenameRequestGroupInput;
 
@@ -49,7 +49,7 @@ impl Collection {
     pub async fn rename_request_group(
         &self,
         input: RenameRequestGroupInput,
-    ) -> Result<(), OperationError> {
+    ) -> OperationResult<()> {
         input
             .validate()
             .map_err(|error| OperationError::Validation(error.to_string()))?;

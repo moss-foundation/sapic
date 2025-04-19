@@ -1,4 +1,4 @@
-use moss_collection::collection::OperationError;
+use moss_common::api::{OperationError, OperationResult};
 use moss_db::common::DatabaseError;
 use tauri::Runtime as TauriRuntime;
 
@@ -11,7 +11,7 @@ use crate::{models::operations::DescribeLayoutPartsStateOutput, workspace::Works
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_layout_parts_state(
         &self,
-    ) -> Result<DescribeLayoutPartsStateOutput, OperationError> {
+    ) -> OperationResult<DescribeLayoutPartsStateOutput> {
         let layout_parts_state_store = self.state_db_manager.layout_parts_state_store();
 
         fn to_option<T, U>(

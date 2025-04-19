@@ -1,17 +1,18 @@
 use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
+use moss_common::api::{OperationError, OperationResult};
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{OpenCollectionInput, OpenCollectionOutput},
-    workspace::{OperationError, Workspace},
+    workspace::Workspace,
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn open_collection(
         &self,
         input: OpenCollectionInput,
-    ) -> Result<OpenCollectionOutput, OperationError> {
+    ) -> OperationResult<OpenCollectionOutput> {
         if !input.path.exists() {
             return Err(OperationError::NotFound {
                 name: input

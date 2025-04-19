@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use chrono::Utc;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::{decode_name, encode_name};
 use moss_storage::global_storage::entities::WorkspaceInfoEntity;
 use std::sync::Arc;
@@ -11,14 +12,14 @@ use crate::{
         types::WorkspaceInfo,
     },
     workspace::Workspace,
-    workspace_manager::{OperationError, WorkspaceManager},
+    workspace_manager::WorkspaceManager,
 };
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
     pub async fn open_workspace(
         &self,
         input: &OpenWorkspaceInput,
-    ) -> Result<OpenWorkspaceOutput, OperationError> {
+    ) -> OperationResult<OpenWorkspaceOutput> {
         let encoded_name = encode_name(&input.name);
         let full_path = self.workspaces_dir.join(&encoded_name);
 

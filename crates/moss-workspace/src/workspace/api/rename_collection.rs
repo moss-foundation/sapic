@@ -1,4 +1,5 @@
 use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -8,14 +9,14 @@ use crate::{
         entities::CollectionEntity,
         operations::{RenameCollectionInput, RenameCollectionOutput},
     },
-    workspace::{OperationError, Workspace},
+    workspace::Workspace,
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn rename_collection(
         &self,
         input: RenameCollectionInput,
-    ) -> Result<RenameCollectionOutput, OperationError> {
+    ) -> OperationResult<RenameCollectionOutput> {
         input.validate()?;
 
         let collections = self

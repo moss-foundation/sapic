@@ -1,14 +1,16 @@
-use anyhow::{anyhow, Context, Result};
-use moss_fs::utils::encode_path;
+use anyhow::Context;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::RemoveOptions;
-use validator::Validate;
 
-use crate::collection::{Collection, OperationError};
+use crate::collection::Collection;
 use crate::constants::REQUESTS_DIR;
 use crate::models::operations::{DeleteRequestGroupInput, DeleteRequestInput};
 
 impl Collection {
-    pub async fn delete_request_group(&self, input: DeleteRequestGroupInput) -> Result<()> {
+    pub async fn delete_request_group(
+        &self,
+        input: DeleteRequestGroupInput,
+    ) -> OperationResult<()> {
         let group_data = {
             let request_nodes = self.registry().await?.requests_nodes();
             let mut requests_lock = request_nodes.write().await;
@@ -68,6 +70,7 @@ impl Collection {
             &mut txn,
             group_dir_relative_path.to_string_lossy().to_string(),
         )?;
+
         // TODO: Self-healing for failure?
         self.fs
             .remove_dir(

@@ -2889,9 +2889,13 @@ name = "moss_common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_db",
  "serde",
  "slotmap",
+ "tauri",
+ "thiserror 2.0.12",
  "ts-rs",
+ "validator",
 ]
 
 [[package]]
@@ -2992,6 +2996,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_models"
+version = "0.1.0"
+
+[[package]]
 name = "moss_nls"
 version = "0.1.0"
 dependencies = [
@@ -3044,6 +3052,7 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_common",
  "serde",
  "serde_json",
 ]
