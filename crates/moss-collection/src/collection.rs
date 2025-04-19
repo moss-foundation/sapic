@@ -67,7 +67,7 @@ impl Collection {
 
         let order = restored_requests
             .get(&node_relative_path)
-            .and_then(|e| e.order);
+            .and_then(|e| e.order());
 
         let spec_file_name = indexed_request_node
             .spec_file_path
@@ -97,7 +97,7 @@ impl Collection {
 
         let order = restored_request_nodes
             .get(&node_relative_path)
-            .and_then(|e| e.order);
+            .and_then(|e| e.order());
 
         let spec_file_name = if let Some(spec_file_path) = indexed_request_group_node.spec_file_path
         {

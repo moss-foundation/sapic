@@ -1,4 +1,4 @@
-use anyhow::{Context as _, Result};
+use anyhow::{anyhow, Context as _, Result};
 use moss_fs::RemoveOptions;
 
 use crate::collection::{Collection, REQUESTS_DIR};
@@ -6,11 +6,14 @@ use crate::models::operations::DeleteRequestInput;
 
 impl Collection {
     pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
-        let requests = self.registry().await?.requests_nodes();
-        let mut requests_lock = requests.write().await;
-
-        let request_data = requests_lock.remove(input.key)?;
-        std::mem::drop(requests_lock);
+        let request_data = {
+            let request_nodes = self.registry().await?.requests_nodes();
+            let mut requests_lock = request_nodes.write().await;
+            if !requests_lock.get(input.key)?.is_request() {
+                return Err(anyhow!("Resource {} is not a request", input.key));
+            }
+            requests_lock.remove(input.key)?
+        };
 
         let request_dir_relative_path = request_data.path().clone();
         let request_dir_full_path = self

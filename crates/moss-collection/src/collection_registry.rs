@@ -119,6 +119,20 @@ impl RequestNode {
             RequestNode::Group(data) => data.order = new_order,
         }
     }
+
+    pub fn is_request(&self) -> bool {
+        match self {
+            RequestNode::Request(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_request_group(&self) -> bool {
+        match self {
+            RequestNode::Group(_) => true,
+            _ => false,
+        }
+    }
 }
 
 pub struct EndpointData {}

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_fs::utils::{encode_name, encode_path};
 use moss_fs::RenameOptions;
@@ -52,38 +52,51 @@ impl Collection {
     ) -> Result<(), OperationError> {
         input.validate()?;
 
-        // FIXME: we won't need this once we implement `ResourceKey`
-        let group_relative_path_old = encode_path(&input.path, None)?;
+        let request_nodes = self.registry().await?.requests_nodes();
+
+        let group_dir_relative_path_old = {
+            let requests_lock = request_nodes.read().await;
+
+            let group_data = requests_lock.get(input.key)?;
+
+            if !group_data.is_request_group() {
+                return Err(anyhow!("Resource {} is not a request group", input.key).into());
+            }
+
+            group_data.path().to_owned()
+        };
+
         let new_encoded_name = encode_name(&input.new_name);
-        let group_relative_path_new = group_relative_path_old
+        let group_dir_relative_path_new = group_dir_relative_path_old
             .parent()
             .unwrap()
             .join(&new_encoded_name);
-
-        if group_relative_path_old == group_relative_path_new {
+        dbg!(&group_dir_relative_path_old);
+        dbg!(&group_dir_relative_path_new);
+        if group_dir_relative_path_old == group_dir_relative_path_new {
             return Ok(());
         }
 
-        let group_full_path_old = self
+        let group_dir_full_path_old = self
             .abs_path
             .join(REQUESTS_DIR)
-            .join(&group_relative_path_old);
+            .join(&group_dir_relative_path_old);
 
-        if !group_full_path_old.exists() {
+        if !group_dir_full_path_old.exists() {
             return Err(OperationError::NotFound {
-                name: group_relative_path_old
+                name: group_dir_relative_path_old
                     .file_name()
                     .unwrap_or_default()
                     .to_string_lossy()
                     .to_string(),
-                path: group_full_path_old,
+                path: group_dir_full_path_old,
             });
         }
 
         let group_full_path_new = self
             .abs_path
             .join(REQUESTS_DIR)
-            .join(&group_relative_path_new);
+            .join(&group_dir_relative_path_new);
 
         if group_full_path_new.exists() {
             return Err(OperationError::AlreadyExists {
@@ -94,7 +107,7 @@ impl Collection {
 
         self.fs
             .rename(
-                &group_full_path_old,
+                &group_dir_full_path_old,
                 &group_full_path_new,
                 RenameOptions {
                     overwrite: false,
@@ -103,34 +116,54 @@ impl Collection {
             )
             .await?;
 
-        let requests = self.registry().await?.requests_nodes();
-        let requests_lock = requests.read().await;
+        // Find all entities that fall inside the request group
+        let keys_to_update = {
+            let requests_lock = request_nodes.read().await;
+            requests_lock
+                .iter()
+                .filter_map(|(key, iter_slot)| {
+                    if iter_slot
+                        .value()
+                        .path()
+                        .starts_with(&group_dir_relative_path_old)
+                        && iter_slot.value().path() != &group_dir_relative_path_old
+                    {
+                        Some(key)
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>()
+        };
 
-        let keys_to_rename = requests_lock
-            .iter()
-            .filter_map(|(key, iter_slot)| {
-                if iter_slot
-                    .value()
-                    .path()
-                    .starts_with(&group_relative_path_old)
-                {
-                    Some(key)
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
-        std::mem::drop(requests_lock);
-
-        for key in keys_to_rename {
+        for key in keys_to_update {
             self.update_request_relative_path(
                 key,
-                &group_relative_path_old,
-                &group_relative_path_new,
+                &group_dir_relative_path_old,
+                &group_dir_relative_path_new,
             )
             .await?;
         }
 
-        Ok(())
+        let request_store = self.state_db_manager.request_store().await;
+        dbg!(request_store.scan()?);
+        let (mut txn, table) = request_store.begin_write()?;
+        let store_entity = table.remove(
+            &mut txn,
+            group_dir_relative_path_old.to_string_lossy().to_string(),
+        )?;
+        table.insert(
+            &mut txn,
+            group_dir_relative_path_new.to_string_lossy().to_string(),
+            &store_entity,
+        )?;
+
+        let mut requests_lock = request_nodes.write().await;
+        let mut lease_group_data = requests_lock.lease(input.key)?;
+
+        lease_group_data.set_name(input.new_name);
+        lease_group_data.set_path(group_dir_relative_path_new);
+
+        Ok(txn.commit()?)
     }
 }

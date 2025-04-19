@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use moss_db::common::DatabaseError;
+use std::path::PathBuf;
 use thiserror::Error;
 use validator::ValidationErrors;
 
@@ -19,6 +19,7 @@ pub enum OperationError {
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
+    // FIXME: Should we have an error for incorrect entity type?
 }
 
 impl From<DatabaseError> for OperationError {

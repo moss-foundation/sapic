@@ -83,14 +83,14 @@ impl Collection {
         dbg!(1);
         let request_store = self.state_db_manager.request_store().await;
 
-        let requests = self.registry().await?.requests_nodes();
+        let request_nodes = self.registry().await?.requests_nodes();
         dbg!(2);
 
         let (mut txn, table) = request_store.begin_write()?;
         table.insert(
             &mut txn,
             request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestEntity { order: None },
+            &RequestEntity::Request { order: None },
         )?;
 
         self.fs
@@ -112,7 +112,7 @@ impl Collection {
         txn.commit()?;
 
         let request_key = {
-            let mut requests_lock = requests.write().await;
+            let mut requests_lock = request_nodes.write().await;
             requests_lock.insert(RequestNode::Request(CollectionRequestData {
                 name: input.name,
                 path: request_dir_relative_path.clone(),
