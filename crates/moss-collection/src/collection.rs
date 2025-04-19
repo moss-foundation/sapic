@@ -1,7 +1,4 @@
 pub mod api;
-mod error;
-
-pub use error::*;
 
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
