@@ -178,6 +178,8 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
+    this.tabContainer.style.overflowX = "auto";
+    this.tabContainer.style.overflowY = "hidden";
 
     this.voidContainer = new VoidContainer(this.accessor, this.group);
 
@@ -241,6 +243,18 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
         if (isLeftClick) {
           this.accessor.doSetGroupActive(this.group);
+        }
+      }),
+      addDisposableListener(this.tabContainer, "wheel", (event) => {
+        if (event.deltaY !== 0) {
+          if (this.tabContainer.scrollWidth > this.tabContainer.clientWidth) {
+            if (!event.shiftKey) {
+              event.preventDefault();
+
+              const scrollAmount = event.deltaY * 0.7;
+              this.tabContainer.scrollLeft += scrollAmount;
+            }
+          }
         }
       })
     );
