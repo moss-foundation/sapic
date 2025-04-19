@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use ts_rs::TS;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "UPPERCASE")]
+#[serde(rename_all = "lowercase")]
 #[ts(export, export_to = "types.ts")]
 pub enum EditorGridOrientation {
     Horizontal,
