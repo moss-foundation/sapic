@@ -6,7 +6,7 @@ use validator::ValidationErrors;
 #[derive(Error, Debug)]
 pub enum OperationError {
     #[error("validation error: {0}")]
-    Validation(#[from] ValidationErrors),
+    Validation(String),
 
     #[error("{name} not found at {path}")]
     NotFound { name: String, path: PathBuf },

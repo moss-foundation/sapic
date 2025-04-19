@@ -13,16 +13,18 @@ impl Collection {
         &self,
         input: CreateRequestGroupInput,
     ) -> Result<CreateRequestGroupOutput, OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
         let encoded_path = encode_path(&input.path, None)?;
-        let request_group_full_path = self.abs_path.join(REQUESTS_DIR).join(&encoded_path);
+        let request_group_abs_path = self.abs_path.join(REQUESTS_DIR).join(&encoded_path);
 
-        if request_group_full_path.exists() {
+        if request_group_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
-                name: request_group_full_path
+                name: request_group_abs_path
                     .file_name()
-                    .unwrap_or_default()
+                    .expect("The path should never end with a root")
                     .to_string_lossy()
                     .to_string(),
                 path: input.path,
@@ -41,7 +43,7 @@ impl Collection {
         )?;
 
         self.fs
-            .create_dir(&request_group_full_path)
+            .create_dir(&request_group_abs_path)
             .await
             .context("Failed to create the request group directory")?;
 
@@ -61,8 +63,6 @@ impl Collection {
                 spec_file_name: None,
             }))
         };
-
-        dbg!(request_store.scan()?);
 
         Ok(CreateRequestGroupOutput {
             key: request_group_key,

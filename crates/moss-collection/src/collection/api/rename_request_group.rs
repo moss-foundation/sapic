@@ -50,7 +50,9 @@ impl Collection {
         &self,
         input: RenameRequestGroupInput,
     ) -> Result<(), OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
         let request_nodes = self.registry().await?.requests_nodes();
 
@@ -60,7 +62,10 @@ impl Collection {
             let group_data = requests_lock.get(input.key)?;
 
             if !group_data.is_request_group() {
-                return Err(anyhow!("Resource {} is not a request group", input.key).into());
+                return Err(OperationError::Validation(format!(
+                    "Resource {} is not a request group",
+                    input.key
+                )));
             }
 
             group_data.path().to_owned()
@@ -69,46 +74,44 @@ impl Collection {
         let new_encoded_name = encode_name(&input.new_name);
         let group_dir_relative_path_new = group_dir_relative_path_old
             .parent()
-            .unwrap()
+            .expect("Relative path should not be empty or end in root/prefix")
             .join(&new_encoded_name);
-        dbg!(&group_dir_relative_path_old);
-        dbg!(&group_dir_relative_path_new);
         if group_dir_relative_path_old == group_dir_relative_path_new {
             return Ok(());
         }
 
-        let group_dir_full_path_old = self
+        let group_dir_abs_path_old = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&group_dir_relative_path_old);
 
-        if !group_dir_full_path_old.exists() {
+        if !group_dir_abs_path_old.exists() {
             return Err(OperationError::NotFound {
                 name: group_dir_relative_path_old
                     .file_name()
-                    .unwrap_or_default()
+                    .expect("Relative path should not terminate in ..")
                     .to_string_lossy()
                     .to_string(),
-                path: group_dir_full_path_old,
+                path: group_dir_abs_path_old,
             });
         }
 
-        let group_full_path_new = self
+        let group_abs_path_new = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&group_dir_relative_path_new);
 
-        if group_full_path_new.exists() {
+        if group_abs_path_new.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
-                path: group_full_path_new,
+                path: group_abs_path_new,
             });
         }
 
         self.fs
             .rename(
-                &group_dir_full_path_old,
-                &group_full_path_new,
+                &group_dir_abs_path_old,
+                &group_abs_path_new,
                 RenameOptions {
                     overwrite: false,
                     ignore_if_exists: false,
@@ -146,7 +149,6 @@ impl Collection {
         }
 
         let request_store = self.state_db_manager.request_store().await;
-        dbg!(request_store.scan()?);
         let (mut txn, table) = request_store.begin_write()?;
         let store_entity = table.remove(
             &mut txn,

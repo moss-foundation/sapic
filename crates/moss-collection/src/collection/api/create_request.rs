@@ -27,7 +27,9 @@ impl Collection {
         &self,
         input: CreateRequestInput,
     ) -> Result<CreateRequestOutput, OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
         let request_dir_name = format!("{}.request", encode_name(&input.name));
 
@@ -38,15 +40,15 @@ impl Collection {
         }
         .join(&request_dir_name);
 
-        let request_dir_full_path = self
+        let request_dir_abs_path = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 
-        if request_dir_full_path.exists() {
+        if request_dir_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.name,
-                path: request_dir_full_path,
+                path: request_dir_abs_path,
             });
         }
 
@@ -94,14 +96,14 @@ impl Collection {
         )?;
 
         self.fs
-            .create_dir(&request_dir_full_path)
+            .create_dir(&request_dir_abs_path)
             .await
             .context("Failed to create the request directory")?;
 
         dbg!(3);
         self.fs
             .create_file_with(
-                &request_dir_full_path.join(&spec_file_name),
+                &request_dir_abs_path.join(&spec_file_name),
                 file_content,
                 CreateOptions::default(),
             )

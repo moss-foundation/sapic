@@ -3,7 +3,7 @@ use moss_fs::utils::encode_path;
 use moss_fs::RemoveOptions;
 use validator::Validate;
 
-use crate::collection::Collection;
+use crate::collection::{Collection, OperationError};
 use crate::constants::REQUESTS_DIR;
 use crate::models::operations::{DeleteRequestGroupInput, DeleteRequestInput};
 
@@ -13,7 +13,11 @@ impl Collection {
             let request_nodes = self.registry().await?.requests_nodes();
             let mut requests_lock = request_nodes.write().await;
             if !requests_lock.get(input.key)?.is_request_group() {
-                return Err(anyhow!("Resource {} is not a request group", input.key));
+                return Err(OperationError::Validation(format!(
+                    "Resource {} is not a request group",
+                    input.key
+                ))
+                .into());
             }
             requests_lock.remove(input.key)?
         };
@@ -49,12 +53,12 @@ impl Collection {
             }
         }
 
-        let group_dir_full_path = self
+        let group_dir_abs_path = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&group_dir_relative_path);
 
-        if !group_dir_full_path.exists() {
+        if !group_dir_abs_path.exists() {
             return Ok(());
         }
 
@@ -67,7 +71,7 @@ impl Collection {
         // TODO: Self-healing for failure?
         self.fs
             .remove_dir(
-                &group_dir_full_path,
+                &group_dir_abs_path,
                 RemoveOptions {
                     recursive: true,
                     ignore_if_not_exists: true,

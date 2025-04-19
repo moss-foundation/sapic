@@ -8,7 +8,9 @@ use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
 
 impl Collection {
     pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
         let request_nodes = self.registry().await?.requests_nodes();
         let mut requests_lock = request_nodes.write().await;
@@ -16,7 +18,10 @@ impl Collection {
         let mut lease_request_data = requests_lock.lease(input.key)?;
 
         if !lease_request_data.is_request() {
-            return Err(anyhow!("Resource {} is not a request", input.key).into());
+            return Err(OperationError::Validation(format!(
+                "Resource {} is not a request",
+                input.key
+            )));
         }
 
         if lease_request_data.name() == input.new_name {
