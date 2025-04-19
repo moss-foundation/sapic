@@ -2996,6 +2996,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_models"
+version = "0.1.0"
+
+[[package]]
 name = "moss_nls"
 version = "0.1.0"
 dependencies = [
