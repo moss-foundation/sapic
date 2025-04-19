@@ -14,7 +14,7 @@ async fn rename_workspace_success() {
     let old_workspace_name = random_workspace_name();
     let old_path = workspaces_path.join(&old_workspace_name);
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
@@ -56,7 +56,7 @@ async fn rename_workspace_empty_name() {
 
     let old_workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
@@ -86,7 +86,7 @@ async fn rename_workspace_unchanged() {
 
     let old_workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: old_workspace_name.clone(),
         })
         .await
@@ -128,7 +128,7 @@ async fn rename_workspace_already_exists() {
 
     // Create an existing workspace
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: existing_workspace_name.clone(),
         })
         .await
@@ -137,7 +137,7 @@ async fn rename_workspace_already_exists() {
     let new_workspace_name = random_workspace_name();
     // Create a workspace to test renaming
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: new_workspace_name.clone(),
         })
         .await
@@ -166,7 +166,7 @@ async fn rename_workspace_special_chars() {
 
     let workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await

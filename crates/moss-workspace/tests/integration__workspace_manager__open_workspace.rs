@@ -15,7 +15,7 @@ async fn open_workspace_success() {
     let first_workspace_path = workspaces_path.join(&first_workspace_name);
 
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: first_workspace_name.clone(),
         })
         .await
@@ -23,7 +23,7 @@ async fn open_workspace_success() {
 
     let second_workspace_name = random_workspace_name();
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: second_workspace_name.clone(),
         })
         .await
@@ -69,7 +69,7 @@ async fn open_workspace_already_active() {
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(encode_name(&workspace_name));
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await

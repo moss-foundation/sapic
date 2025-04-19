@@ -14,7 +14,7 @@ async fn create_workspace_success() {
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await;
@@ -44,7 +44,7 @@ async fn create_workspace_empty_name() {
     let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: "".to_string(),
         })
         .await;
@@ -67,7 +67,7 @@ async fn create_workspace_already_exists() {
 
     // Create first workspace
     workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
@@ -75,7 +75,7 @@ async fn create_workspace_already_exists() {
 
     // Try to create workspace with same name
     let create_workspace_result = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await;
@@ -104,7 +104,7 @@ async fn create_workspace_special_chars() {
     for name in workspace_name_list {
         let expected_path = workspaces_path.join(encode_name(&name));
         let create_workspace_output = workspace_manager
-            .create_workspace(CreateWorkspaceInput { name: name.clone() })
+            .create_workspace(&CreateWorkspaceInput { name: name.clone() })
             .await
             .unwrap();
 

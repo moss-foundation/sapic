@@ -12,7 +12,7 @@ async fn delete_workspace_success() {
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
@@ -20,7 +20,7 @@ async fn delete_workspace_success() {
 
     let key = create_workspace_output.key;
     let delete_workspace_result = workspace_manager
-        .delete_workspace(DeleteWorkspaceInput { key })
+        .delete_workspace(&DeleteWorkspaceInput { key })
         .await;
     assert!(delete_workspace_result.is_ok());
 
@@ -44,7 +44,7 @@ async fn delete_workspace_nonexistent_key() {
 
     let workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
@@ -52,12 +52,12 @@ async fn delete_workspace_nonexistent_key() {
     let key = create_workspace_output.key;
 
     workspace_manager
-        .delete_workspace(DeleteWorkspaceInput { key })
+        .delete_workspace(&DeleteWorkspaceInput { key })
         .await
         .unwrap();
 
     let delete_workspace_result = workspace_manager
-        .delete_workspace(DeleteWorkspaceInput { key })
+        .delete_workspace(&DeleteWorkspaceInput { key })
         .await;
     assert!(delete_workspace_result.is_err());
 
@@ -71,7 +71,7 @@ async fn delete_workspace_fs_already_deleted() {
     let workspace_name = random_workspace_name();
     let expected_path = workspaces_path.join(&workspace_name);
     let create_workspace_output = workspace_manager
-        .create_workspace(CreateWorkspaceInput {
+        .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
         })
         .await
@@ -83,7 +83,7 @@ async fn delete_workspace_fs_already_deleted() {
 
     // This should simply be a no-op
     let delete_workspace_result = workspace_manager
-        .delete_workspace(DeleteWorkspaceInput { key })
+        .delete_workspace(&DeleteWorkspaceInput { key })
         .await;
     assert!(delete_workspace_result.is_ok());
 
