@@ -143,8 +143,8 @@ const StatusBarIndicators = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
-        <div className="flex items-center rounded-md px-2 py-1 transition">
-          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center space-x-2 rounded-md px-1">
+        <div className="flex items-center rounded-md px-2 transition">
+          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded-md px-1">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
@@ -240,7 +240,7 @@ const StatusBarButton = ({
       {...props}
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center gap-1 rounded px-1.5 py-1 transition">
+      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center gap-1 rounded px-1.5 transition">
         {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
