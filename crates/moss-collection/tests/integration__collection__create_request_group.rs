@@ -2,6 +2,8 @@ mod shared;
 
 use moss_collection::collection::OperationError;
 use moss_collection::models::operations::CreateRequestGroupInput;
+use moss_collection::models::types::RequestNodeInfo;
+use moss_fs::utils::{encode_name, encode_path};
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_group_name;
 use std::path::{Path, PathBuf};
@@ -24,8 +26,21 @@ async fn create_request_group_success() {
     // Check creating the request group folder
     let expected_path =
         collection_path.join(request_group_relative_path(Path::new(&request_group_name)));
-    assert_eq!(create_request_group_result.unwrap().path, expected_path);
     assert!(expected_path.exists());
+
+    // Check updating request nodes
+    let create_request_group_output = create_request_group_result.unwrap();
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestNodeInfo::Group {
+            key: create_request_group_output.key,
+            name: request_group_name.to_string(),
+            path: PathBuf::from(request_group_name),
+            order: None,
+        }
+    );
 
     // Clean up
     {
@@ -88,14 +103,23 @@ async fn create_request_group_special_chars() {
                 path: PathBuf::from(&name),
             })
             .await;
-
+        assert!(create_request_group_result.is_ok());
         // Check creating the request group folder with proper encoding
         let expected_path = collection_path.join(request_group_relative_path(Path::new(&name)));
-
-        assert!(create_request_group_result.is_ok());
-
-        assert_eq!(create_request_group_result.unwrap().path, expected_path);
         assert!(expected_path.exists());
+
+        // Check updating request nodes
+        let key = create_request_group_result.unwrap().key;
+        let list_requests_output = collection.list_requests().await.unwrap();
+        assert!(list_requests_output.0.iter().any(|request_group| {
+            request_group
+                == &RequestNodeInfo::Group {
+                    key,
+                    name: name.clone(),
+                    path: PathBuf::from(encode_name(&name)),
+                    order: None,
+                }
+        }));
     }
 
     // Clean up
@@ -121,7 +145,20 @@ async fn create_request_group_nested_folder() {
         &Path::new(&request_group_name).join("inner"),
     ));
     assert!(expected_path.exists());
-    assert_eq!(create_request_group_result.unwrap().path, expected_path);
+
+    // Check updating request nodes
+    let key = create_request_group_result.unwrap().key;
+    let list_requests_output = collection.list_requests().await.unwrap();
+    assert_eq!(list_requests_output.0.len(), 1);
+    assert_eq!(
+        list_requests_output.0[0],
+        RequestNodeInfo::Group {
+            key,
+            name: "inner".to_string(),
+            path: PathBuf::from(&request_group_name).join("inner"),
+            order: None,
+        }
+    );
 
     // Clean up
     {

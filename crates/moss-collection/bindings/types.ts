@@ -65,13 +65,9 @@ export type RequestBody =
   | { "urlEncoded": Array<UrlEncodedItem> }
   | { "binary": string };
 
-export type RequestInfo = {
-  key: ResourceKey;
-  name: string;
-  relativePathFromRequestsDir: string;
-  order: number | null;
-  typ: RequestProtocol;
-};
+export type RequestNodeInfo =
+  | { "request": { key: ResourceKey; name: string; path: string; order: number | null; protocol: RequestProtocol } }
+  | { "group": { key: ResourceKey; name: string; path: string; order: number | null } };
 
 export type RequestProtocol = { "http": HttpMethod } | "webSocket" | "graphQL" | "grpc";
 

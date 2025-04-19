@@ -1,8 +1,10 @@
 mod shared;
 
-use moss_collection::models::operations::{CreateRequestInput, DeleteRequestInput};
+use moss_collection::models::operations::{
+    CreateRequestGroupInput, CreateRequestInput, DeleteRequestInput,
+};
 use moss_common::leased_slotmap::ResourceKey;
-use moss_testutils::random_name::random_request_name;
+use moss_testutils::random_name::{random_request_group_name, random_request_name};
 use std::path::{Path, PathBuf};
 
 use crate::shared::{request_relative_path, set_up_test_collection};
@@ -148,5 +150,28 @@ async fn delete_request_fs_already_deleted() {
     // Clean up
     {
         tokio::fs::remove_dir_all(collection_path).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn delete_request_fs_incorrect_entity_type() {
+    let (collection_path, collection) = set_up_test_collection().await;
+    let request_group_name = random_request_group_name();
+
+    let group_key = collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await
+        .unwrap()
+        .key;
+
+    let result = collection
+        .delete_request(DeleteRequestInput { key: group_key })
+        .await;
+
+    assert!(result.is_err());
+    {
+        std::fs::remove_dir_all(collection_path).unwrap();
     }
 }

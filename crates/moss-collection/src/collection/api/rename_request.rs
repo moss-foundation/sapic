@@ -1,4 +1,4 @@
-use anyhow::{Context as _, Result};
+use anyhow::{anyhow, Context as _, Result};
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use validator::Validate;
@@ -8,12 +8,21 @@ use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
 
 impl Collection {
     pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
-        input.validate()?;
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
-        let requests = self.registry().await?.requests_nodes();
-        let mut requests_lock = requests.write().await;
+        let request_nodes = self.registry().await?.requests_nodes();
+        let mut requests_lock = request_nodes.write().await;
 
         let mut lease_request_data = requests_lock.lease(input.key)?;
+
+        if !lease_request_data.is_request() {
+            return Err(OperationError::Validation(format!(
+                "Resource {} is not a request",
+                input.key
+            )));
+        }
 
         if lease_request_data.name() == input.new_name {
             return Ok(());
@@ -59,7 +68,7 @@ impl Collection {
 
         let request_store = self.state_db_manager.request_store().await;
         let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
+        let store_entity = table.remove(
             &mut txn,
             request_dir_relative_path_old.to_string_lossy().to_string(),
         )?;
@@ -67,9 +76,7 @@ impl Collection {
         table.insert(
             &mut txn,
             request_dir_relative_path_new.to_string_lossy().to_string(),
-            &RequestEntity {
-                order: lease_request_data.order(),
-            },
+            &store_entity,
         )?;
 
         lease_request_data.set_name(input.new_name);
