@@ -15,7 +15,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
   const hasOpenedWorkspace = useRef(false);
 
   const { initialize: initializeResizableLayout } = useAppResizableLayoutStore();
-  const { initialize: initializeTabbedPane } = useTabbedPaneStore();
+  const { setGridState } = useTabbedPaneStore();
 
   useEffect(() => {
     const initializeWorkspace = async () => {
@@ -29,7 +29,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
       }
 
       if (layout.data?.editor) {
-        initializeTabbedPane(layout.data.editor as unknown as SerializedDockview);
+        setGridState(layout.data.editor as unknown as SerializedDockview);
       }
 
       initializeResizableLayout({
