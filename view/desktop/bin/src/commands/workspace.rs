@@ -4,7 +4,7 @@ use moss_workspace::{
     models::operations::{
         CreateWorkspaceInput, CreateWorkspaceOutput, DeleteWorkspaceInput,
         DescribeLayoutPartsStateOutput, ListWorkspacesOutput, OpenWorkspaceInput,
-        SetLayoutPartsStateInput, SetLayoutPartsStateParams,
+        SetLayoutPartsStateInput
     },
     workspace_manager::WorkspaceManager,
 };
