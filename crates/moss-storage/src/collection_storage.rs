@@ -17,7 +17,7 @@ use std::{
 };
 use tokio::sync::Notify;
 
-use crate::CollectionStorage;
+use crate::{CollectionStorage, ResettableStorage};
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
@@ -58,7 +58,19 @@ impl CollectionStorageImpl {
 
 #[async_trait]
 impl CollectionStorage for CollectionStorageImpl {
-    async fn reload(
+    async fn request_store(&self) -> Arc<dyn RequestStore> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.request_store.clone(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+}
+
+#[async_trait]
+impl ResettableStorage for CollectionStorageImpl {
+    async fn reset(
         &self,
         new_path: PathBuf,
         after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
@@ -82,14 +94,5 @@ impl CollectionStorage for CollectionStorageImpl {
         // Notify waiting operations
         local_notify.notify_waiters();
         Ok(())
-    }
-
-    async fn request_store(&self) -> Arc<dyn RequestStore> {
-        loop {
-            match self.state.load().as_ref() {
-                ClientState::Loaded(cell) => return cell.request_store.clone(),
-                ClientState::Reloading { notify } => notify.notified().await,
-            }
-        }
     }
 }

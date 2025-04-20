@@ -201,7 +201,7 @@ impl Collection {
             Ok(())
         });
 
-        self.state_db_manager.reload(new_path, after_drop).await?;
+        self.state_db_manager.reset(new_path, after_drop).await?;
 
         Ok(())
     }

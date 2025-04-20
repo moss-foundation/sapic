@@ -21,11 +21,15 @@ pub trait WorkspaceStorage: Send + Sync {
 }
 
 #[async_trait]
-pub trait CollectionStorage: Send + Sync {
-    async fn reload(
+pub trait ResettableStorage: Send + Sync {
+    async fn reset(
         &self,
         path: PathBuf,
         after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
     ) -> Result<()>;
+}
+
+#[async_trait]
+pub trait CollectionStorage: ResettableStorage {
     async fn request_store(&self) -> Arc<dyn RequestStore>;
 }
