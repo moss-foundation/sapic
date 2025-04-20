@@ -24,12 +24,14 @@ type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct Workspace<R: TauriRuntime> {
+    #[allow(dead_code)]
     app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
     workspace_storage: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
+    #[allow(dead_code)]
     activity_indicator: ActivityIndicator<R>,
     indexer_handle: IndexerHandle,
 }
@@ -144,7 +146,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 for (relative_path, collection_data) in self
                     .workspace_storage
                     .collection_store()
-                    .list_collections()?
+                    .list_collection()?
                 {
                     let name = match relative_path.file_name() {
                         Some(name) => decode_name(&name.to_string_lossy().to_string())?,

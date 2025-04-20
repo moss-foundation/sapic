@@ -2,7 +2,7 @@ use moss_common::api::OperationResult;
 use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
-use tauri::{Emitter, Runtime as TauriRuntime};
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams},

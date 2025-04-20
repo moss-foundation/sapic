@@ -40,21 +40,27 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
             .await
             .context("Failed to get known workspaces")?;
 
+        let last_opened_at = Utc::now().timestamp();
+
+        let workspace_storage = self.global_storage.workspaces_store();
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.upsert_workspace(
+            &mut txn,
+            encoded_name,
+            WorkspaceInfoEntity { last_opened_at },
+        )?;
+
         self.fs
             .create_dir(&full_path)
             .await
             .context("Failed to create the workspace directory")?;
 
-        let current_workspace = Workspace::new(
+        let new_workspace = Workspace::new(
             self.app_handle.clone(),
             full_path.clone(),
             self.fs.clone(),
             self.activity_indicator.clone(),
         )?;
-        let last_opened_at = Utc::now().timestamp();
-
-        let workspace_storage = self.global_storage.workspaces_store();
-        workspace_storage.set_workspace(encoded_name, WorkspaceInfoEntity { last_opened_at })?;
 
         let workspace_key = {
             let mut workspaces_lock = workspaces.write().await;
@@ -67,7 +73,9 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
 
         // Automatically switch the workspace to the new one.
         self.current_workspace
-            .store(Some(Arc::new((workspace_key, current_workspace))));
+            .store(Some(Arc::new((workspace_key, new_workspace))));
+
+        txn.commit()?;
 
         Ok(CreateWorkspaceOutput {
             key: workspace_key,

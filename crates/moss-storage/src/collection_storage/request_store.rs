@@ -35,7 +35,7 @@ impl RequestStore for RequestStoreImpl {
             .collect())
     }
 
-    fn set_request_node(
+    fn create_request_node(
         &self,
         txn: &mut Transaction,
         path: PathBuf,
@@ -47,13 +47,18 @@ impl RequestStore for RequestStoreImpl {
         Ok(())
     }
 
-    fn get_request_node(&self, path: PathBuf) -> Result<RequestNodeEntity, DatabaseError> {
-        let read_txn = self.client.begin_read()?;
-        let result = self
-            .table
-            .read(&read_txn, path.to_string_lossy().to_string())?;
+    fn rekey_request_node(
+        &self,
+        txn: &mut Transaction,
+        old_path: PathBuf,
+        new_path: PathBuf,
+    ) -> Result<(), DatabaseError> {
+        let old_key = old_path.to_string_lossy().to_string();
+        let new_key = new_path.to_string_lossy().to_string();
 
-        Ok(result)
+        self.table.rekey(txn, old_key, new_key)?;
+
+        Ok(())
     }
 
     fn delete_request_node(

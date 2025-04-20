@@ -14,13 +14,27 @@ use crate::{common::Transactional, GlobalStorage};
 const GLOBAL_STATE_DB_NAME: &str = "state.db";
 
 pub trait WorkspacesStore: Send + Sync {
-    fn set_workspace(
+    fn upsert_workspace(
         &self,
+        txn: &mut Transaction,
         workspace_name: String,
         entity: WorkspaceInfoEntity,
     ) -> Result<(), DatabaseError>;
+
+    fn rekey_workspace(
+        &self,
+        txn: &mut Transaction,
+        old_workspace_name: String,
+        new_workspace_name: String,
+    ) -> Result<(), DatabaseError>;
+
     fn list_workspaces(&self) -> Result<HashMap<String, WorkspaceInfoEntity>, DatabaseError>;
-    fn delete_workspace(&self, workspace_name: String) -> Result<(), DatabaseError>;
+
+    fn delete_workspace(
+        &self,
+        txn: &mut Transaction,
+        workspace_name: String,
+    ) -> Result<(), DatabaseError>;
 }
 
 pub struct GlobalStorageImpl {

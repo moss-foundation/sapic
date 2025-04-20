@@ -38,7 +38,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let collection_store = self.workspace_storage.collection_store();
         let mut txn = self.workspace_storage.begin_write().await?;
 
-        collection_store.create_collection_entity(
+        collection_store.create_collection(
             &mut txn,
             relative_path.to_owned(),
             CollectionEntity { order: None },

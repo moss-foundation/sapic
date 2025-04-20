@@ -26,28 +26,22 @@ const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
 pub(crate) type CollectionStoreTable<'a> = BincodeTable<'a, String, CollectionEntity>;
 pub trait CollectionStore: Send + Sync {
-    fn create_collection_entity(
+    fn create_collection(
         &self,
         txn: &mut Transaction,
         path: PathBuf,
         entity: CollectionEntity,
     ) -> Result<(), DatabaseError>;
-    fn rekey_collection_entity(
+    fn rekey_collection(
         &self,
         txn: &mut Transaction,
         old_path: PathBuf,
         new_path: PathBuf,
     ) -> Result<(), DatabaseError>;
 
-    fn delete_collection_entity(
-        &self,
-        txn: &mut Transaction,
-        path: PathBuf,
-    ) -> Result<(), DatabaseError>;
+    fn delete_collection(&self, txn: &mut Transaction, path: PathBuf) -> Result<(), DatabaseError>;
 
-    // fn begin_write(&self) -> Result<(Transaction, &CollectionStoreTable)>;
-    // fn begin_read(&self) -> Result<(Transaction, &CollectionStoreTable)>;
-    fn list_collections(&self) -> Result<Vec<(PathBuf, CollectionEntity)>>;
+    fn list_collection(&self) -> Result<Vec<(PathBuf, CollectionEntity)>>;
 }
 
 type EnvironmentName = String;

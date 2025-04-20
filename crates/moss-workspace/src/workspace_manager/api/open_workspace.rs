@@ -67,10 +67,17 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         };
 
         let workspace_storage = self.global_storage.workspaces_store();
-        workspace_storage.set_workspace(encoded_name, WorkspaceInfoEntity { last_opened_at })?;
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.upsert_workspace(
+            &mut txn,
+            encoded_name,
+            WorkspaceInfoEntity { last_opened_at },
+        )?;
 
         self.current_workspace
             .store(Some(Arc::new((workspace_key, workspace))));
+
+        txn.commit()?;
 
         Ok(OpenWorkspaceOutput { path: full_path })
     }

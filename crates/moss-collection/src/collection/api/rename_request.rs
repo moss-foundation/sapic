@@ -73,12 +73,10 @@ impl Collection {
         let request_store = self.collection_storage.request_store().await;
         let mut txn = self.collection_storage.begin_write().await?;
 
-        request_store.set_request_node(
+        request_store.rekey_request_node(
             &mut txn,
             request_dir_relative_path_old,
-            RequestNodeEntity::Request(RequestEntity {
-                order: lease_request_data.order(),
-            }),
+            request_dir_relative_path_new.clone(),
         )?;
 
         lease_request_data.set_name(input.new_name);

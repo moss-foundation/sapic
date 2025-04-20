@@ -1,7 +1,6 @@
 use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
-use moss_storage::workspace_storage::entities::collection_store_entities::CollectionEntity;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -61,19 +60,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let collection_store = self.workspace_storage.collection_store();
         let mut txn = self.workspace_storage.begin_write().await?;
 
-        // let old_table_key = old_relative_path.to_string_lossy().to_string();
-        // let new_table_key = new_relative_path.to_string_lossy().to_string();
-
-        // table.remove(&mut txn, old_table_key)?;
-        // table.insert(
-        //     &mut txn,
-        //     new_table_key,
-        //     &CollectionEntity {
-        //         order: metadata.order,
-        //     },
-        // )?;
-
-        collection_store.rekey_collection_entity(
+        collection_store.rekey_collection(
             &mut txn,
             old_relative_path.to_owned(),
             new_relative_path,

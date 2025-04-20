@@ -22,7 +22,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let collection_store = self.workspace_storage.collection_store();
         let mut txn = self.workspace_storage.begin_write().await?;
-        collection_store.delete_collection_entity(&mut txn, collection_relative_path.to_owned())?;
+        collection_store.delete_collection(&mut txn, collection_relative_path.to_owned())?;
 
         if !collection_path.exists() {
             // TODO: logging if the folder has already been removed from the filesystem

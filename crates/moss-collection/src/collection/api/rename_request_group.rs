@@ -34,7 +34,7 @@ impl Collection {
             new_prefix.join((&entry_relative_path_old).strip_prefix(&old_prefix)?);
         node.set_path(entry_relative_path_new.clone());
 
-        request_store.set_request_node(txn, entry_relative_path_new, node.into())?;
+        request_store.rekey_request_node(txn, entry_relative_path_old, entry_relative_path_new)?;
 
         Ok(())
     }
@@ -146,12 +146,10 @@ impl Collection {
         let mut requests_lock = request_nodes.write().await;
         let mut lease_group_data = requests_lock.lease(input.key)?;
 
-        request_store.set_request_node(
+        request_store.rekey_request_node(
             &mut txn,
             group_dir_relative_path_old,
-            RequestNodeEntity::Group(GroupEntity {
-                order: lease_group_data.order(),
-            }),
+            group_dir_relative_path_new.clone(),
         )?;
 
         lease_group_data.set_name(input.new_name);

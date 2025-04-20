@@ -36,7 +36,7 @@ impl Collection {
         let request_nodes = self.registry().await?.requests_nodes();
 
         let mut txn = self.collection_storage.begin_write().await?;
-        request_store.set_request_node(
+        request_store.create_request_node(
             &mut txn,
             encoded_path.clone(),
             RequestNodeEntity::Group(GroupEntity { order: None }),

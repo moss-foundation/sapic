@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use moss_db::{bincode_table::BincodeTable, common::DatabaseError, DatabaseClient, ReDbClient};
+use moss_db::{
+    bincode_table::BincodeTable, common::DatabaseError, DatabaseClient, ReDbClient, Transaction,
+};
 
 use super::{entities::WorkspaceInfoEntity, WorkspacesStore};
 
@@ -32,21 +34,36 @@ impl WorkspacesStore for WorkspacesStoreImpl {
             .collect())
     }
 
-    fn set_workspace(
+    fn upsert_workspace(
         &self,
+        txn: &mut Transaction,
         workspace_name: String,
         entity: WorkspaceInfoEntity,
     ) -> Result<(), DatabaseError> {
-        let mut write_txn = self.client.begin_write()?;
-        self.table.insert(&mut write_txn, workspace_name, &entity)?;
+        self.table.insert(txn, workspace_name, &entity)?;
 
-        Ok(write_txn.commit()?)
+        Ok(())
     }
 
-    fn delete_workspace(&self, workspace_name: String) -> Result<(), DatabaseError> {
-        let mut write_txn = self.client.begin_write()?;
-        self.table.remove(&mut write_txn, workspace_name)?;
+    fn rekey_workspace(
+        &self,
+        txn: &mut Transaction,
+        old_workspace_name: String,
+        new_workspace_name: String,
+    ) -> Result<(), DatabaseError> {
+        self.table
+            .rekey(txn, old_workspace_name, new_workspace_name)?;
 
-        Ok(write_txn.commit()?)
+        Ok(())
+    }
+
+    fn delete_workspace(
+        &self,
+        txn: &mut Transaction,
+        workspace_name: String,
+    ) -> Result<(), DatabaseError> {
+        self.table.remove(txn, workspace_name)?;
+
+        Ok(())
     }
 }

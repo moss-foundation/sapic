@@ -26,17 +26,19 @@ impl CollectionStoreImpl {
 }
 
 impl CollectionStore for CollectionStoreImpl {
-    fn create_collection_entity(
+    fn create_collection(
         &self,
         txn: &mut Transaction,
         path: PathBuf,
         entity: CollectionEntity,
     ) -> Result<(), DatabaseError> {
         let key = path.to_string_lossy().to_string();
-        self.table.insert(txn, key, &entity)
+        self.table.insert(txn, key, &entity)?;
+
+        Ok(())
     }
 
-    fn rekey_collection_entity(
+    fn rekey_collection(
         &self,
         txn: &mut Transaction,
         old_path: PathBuf,
@@ -45,27 +47,21 @@ impl CollectionStore for CollectionStoreImpl {
         let old_key = old_path.to_string_lossy().to_string();
         let new_key = new_path.to_string_lossy().to_string();
 
-        self.table.rekey(txn, old_key, new_key)
+        self.table.rekey(txn, old_key, new_key)?;
+
+        Ok(())
     }
 
-    fn delete_collection_entity(
-        &self,
-        txn: &mut Transaction,
-        path: PathBuf,
-    ) -> Result<(), DatabaseError> {
+    fn delete_collection(&self, txn: &mut Transaction, path: PathBuf) -> Result<(), DatabaseError> {
         let key = path.to_string_lossy().to_string();
         self.table.remove(txn, key)?;
 
         Ok(())
     }
 
-    // fn begin_read(&self) -> Result<(Transaction, &CollectionStoreTable)> {
-    //     let read_txn = self.client.begin_read()?;
-    //     Ok((read_txn, &self.table))
-    // }
-
-    fn list_collections(&self) -> Result<Vec<(PathBuf, CollectionEntity)>> {
+    fn list_collection(&self) -> Result<Vec<(PathBuf, CollectionEntity)>> {
         let read_txn = self.client.begin_read()?;
+
         Ok(self
             .table
             .scan(&read_txn)?
