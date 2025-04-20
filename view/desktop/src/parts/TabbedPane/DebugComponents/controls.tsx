@@ -102,11 +102,3 @@ export const LeftControls = (props: IDockviewHeaderActionsProps) => {
     </div>
   );
 };
-
-export const PrefixHeaderControls = (props: IDockviewHeaderActionsProps) => {
-  return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
-      <Icon icon="Menu" />
-    </div>
-  );
-};

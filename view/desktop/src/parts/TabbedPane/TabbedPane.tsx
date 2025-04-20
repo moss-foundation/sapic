@@ -17,7 +17,7 @@ import {
   positionToDirection,
 } from "@repo/moss-tabs";
 
-import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugComponents/controls";
+import { LeftControls, RightControls } from "./DebugComponents/controls";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
@@ -213,7 +213,6 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   defaultTabComponent={headerComponents.default}
                   rightHeaderActionsComponent={RightControls}
                   leftHeaderActionsComponent={LeftControls}
-                  prefixHeaderActionsComponent={PrefixHeaderControls}
                   watermarkComponent={watermark ? Watermark : undefined}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
