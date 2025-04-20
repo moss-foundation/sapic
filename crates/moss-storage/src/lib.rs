@@ -2,8 +2,11 @@ pub mod collection_storage;
 pub mod global_storage;
 pub mod workspace_storage;
 
-use std::sync::Arc;
+use anyhow::Result;
+use async_trait::async_trait;
+use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc};
 
+use collection_storage::*;
 use global_storage::*;
 use workspace_storage::*;
 
@@ -17,4 +20,12 @@ pub trait WorkspaceStorage: Send + Sync {
     fn state_store(&self) -> Arc<dyn StateStore>;
 }
 
-pub trait CollectionStorage: Send + Sync {}
+#[async_trait]
+pub trait CollectionStorage: Send + Sync {
+    async fn reload(
+        &self,
+        path: PathBuf,
+        after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
+    ) -> Result<()>;
+    async fn request_store(&self) -> Arc<dyn RequestStore>;
+}

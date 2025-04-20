@@ -1,13 +1,15 @@
 use anyhow::Context;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_path;
+use moss_storage::collection_storage::entities::request_store_entities::{
+    GroupEntity, RequestNodeEntity,
+};
 use validator::Validate;
 
 use crate::collection::Collection;
 use crate::collection_registry::{CollectionRequestGroupData, RequestNode};
 use crate::constants::REQUESTS_DIR;
 use crate::models::operations::{CreateRequestGroupInput, CreateRequestGroupOutput};
-use crate::models::storage::RequestEntity;
 
 impl Collection {
     pub async fn create_request_group(
@@ -38,7 +40,7 @@ impl Collection {
         table.insert(
             &mut txn,
             encoded_path.to_string_lossy().to_string().to_string(),
-            &RequestEntity::Group { order: None },
+            &RequestNodeEntity::Group(GroupEntity { order: None }),
         )?;
 
         self.fs

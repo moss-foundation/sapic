@@ -7,7 +7,7 @@ use super::{
 };
 
 #[rustfmt::skip]
-pub(super) const TABLE_COLLECTIONS: BincodeTable<String, CollectionEntity> = BincodeTable::new("collections");
+pub(in crate::workspace_storage) const TABLE_COLLECTIONS: BincodeTable<String, CollectionEntity> = BincodeTable::new("collections");
 
 pub struct CollectionStoreImpl {
     client: ReDbClient,

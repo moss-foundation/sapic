@@ -5,7 +5,7 @@ use moss_db::{bincode_table::BincodeTable, common::DatabaseError, DatabaseClient
 use super::{entities::WorkspaceInfoEntity, WorkspacesStore};
 
 #[rustfmt::skip]
-pub(super) const TABLE_WORKSPACES: BincodeTable<String, WorkspaceInfoEntity> = BincodeTable::new("workspaces");
+pub(in crate::global_storage) const TABLE_WORKSPACES: BincodeTable<String, WorkspaceInfoEntity> = BincodeTable::new("workspaces");
 
 pub struct WorkspacesStoreImpl {
     client: ReDbClient,

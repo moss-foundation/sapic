@@ -8,10 +8,12 @@ use super::{
 };
 
 #[rustfmt::skip]
-pub(super) const TABLE_ENVIRONMENTS: BincodeTable<String, EnvironmentEntity> = BincodeTable::new("environments");
+pub(in crate::workspace_storage) const TABLE_ENVIRONMENTS: BincodeTable<String, EnvironmentEntity> = BincodeTable::new("environments");
 
 pub struct EnvironmentStoreImpl {
+    #[allow(dead_code)] // TODO: remove this, when we have a use for it
     client: ReDbClient,
+    #[allow(dead_code)] // TODO: remove this, when we have a use for it
     table: EnvironmentStoreTable<'static>,
 }
 

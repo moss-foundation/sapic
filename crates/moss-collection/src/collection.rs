@@ -3,6 +3,9 @@ pub mod api;
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
+use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
+use moss_storage::collection_storage::CollectionStorageImpl;
+use moss_storage::CollectionStorage;
 use std::collections::HashMap;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{mpsc, OnceCell};
@@ -14,8 +17,6 @@ use crate::constants::*;
 use crate::indexer::{
     IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
 };
-use crate::models::storage::RequestEntity;
-use crate::storage::{state_db_manager::StateDbManagerImpl, StateDbManager};
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -26,7 +27,7 @@ pub struct CollectionCache {
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
-    state_db_manager: Arc<dyn StateDbManager>,
+    state_db_manager: Arc<dyn CollectionStorage>,
     registry: OnceCell<CollectionRegistry>,
     indexer_handle: IndexerHandle,
 }
@@ -37,7 +38,7 @@ impl Collection {
         fs: Arc<dyn FileSystem>,
         indexer_handle: IndexerHandle,
     ) -> Result<Self> {
-        let state_db_manager_impl = StateDbManagerImpl::new(&path).context(format!(
+        let state_db_manager_impl = CollectionStorageImpl::new(&path).context(format!(
             "Failed to open the collection {} state database",
             path.display()
         ))?;
@@ -54,7 +55,7 @@ impl Collection {
     fn handle_indexed_request_node(
         &self,
         indexed_request_node: IndexedRequestNode,
-        restored_requests: &HashMap<PathBuf, RequestEntity>,
+        restored_requests: &HashMap<PathBuf, RequestNodeEntity>,
     ) -> Result<RequestNode> {
         let node_relative_path = indexed_request_node
             .path
@@ -64,7 +65,7 @@ impl Collection {
 
         let order = restored_requests
             .get(&node_relative_path)
-            .and_then(|e| e.order());
+            .and_then(|e| e.as_request().and_then(|r| r.order));
 
         let spec_file_name = indexed_request_node
             .spec_file_path
@@ -84,7 +85,7 @@ impl Collection {
     fn handle_indexed_request_group_node(
         &self,
         indexed_request_group_node: IndexedRequestGroupNode,
-        restored_request_nodes: &HashMap<PathBuf, RequestEntity>,
+        restored_request_nodes: &HashMap<PathBuf, RequestNodeEntity>,
     ) -> Result<RequestNode> {
         let node_relative_path = indexed_request_group_node
             .path
@@ -94,7 +95,7 @@ impl Collection {
 
         let order = restored_request_nodes
             .get(&node_relative_path)
-            .and_then(|e| e.order());
+            .and_then(|e| e.as_group().and_then(|g| g.order));
 
         let spec_file_name = if let Some(spec_file_path) = indexed_request_group_node.spec_file_path
         {

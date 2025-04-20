@@ -20,7 +20,7 @@ const WORKBENCH_PARTS_SIDEBAR_STATE_KEY: &str = "workbench.parts.sidebar";
 const WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY: &str = "workbench.parts.editor.activeGroup";
 
 #[rustfmt::skip]
-pub(super) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("parts_state");
+pub(in crate::workspace_storage) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("parts_state");
 
 pub struct StateStoreImpl {
     client: ReDbClient,

@@ -4,6 +4,9 @@ use moss_fs::{
     utils::{encode_name, encode_path},
     CreateOptions,
 };
+use moss_storage::collection_storage::entities::request_store_entities::{
+    RequestEntity, RequestNodeEntity,
+};
 use std::path::PathBuf;
 use validator::Validate;
 
@@ -18,7 +21,6 @@ use crate::{
         operations::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
-        storage::RequestEntity,
         types::HttpMethod,
     },
 };
@@ -88,7 +90,7 @@ impl Collection {
         table.insert(
             &mut txn,
             request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestEntity::Request { order: None },
+            &RequestNodeEntity::Request(RequestEntity { order: None }),
         )?;
 
         self.fs

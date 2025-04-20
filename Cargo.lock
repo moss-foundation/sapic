@@ -2871,6 +2871,7 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_fs",
+ "moss_storage",
  "moss_testutils",
  "moss_workbench",
  "scraper",
@@ -3041,9 +3042,12 @@ name = "moss_storage"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arc-swap",
+ "async-trait",
  "moss_db",
  "serde",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
