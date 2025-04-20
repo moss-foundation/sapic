@@ -16,7 +16,6 @@ import {
   positionToDirection,
 } from "@repo/moss-tabs";
 
-import { LeftControls, RightControls } from "./DebugComponents/controls";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
@@ -26,6 +25,8 @@ import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
 import Watermark from "./Watermark";
 import CustomTab from "./CustomTab";
+import { ToolBar } from "./ToolBar";
+import { AddPanelButton } from "./AddPanelButton";
 
 const DebugContext = React.createContext<boolean>(false);
 
@@ -217,8 +218,8 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={headerComponents.default}
-                  rightHeaderActionsComponent={RightControls}
-                  leftHeaderActionsComponent={LeftControls}
+                  rightHeaderActionsComponent={ToolBar}
+                  leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={watermark ? Watermark : undefined}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}

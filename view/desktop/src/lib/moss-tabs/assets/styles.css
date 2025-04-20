@@ -80,19 +80,19 @@
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply border-b border-(--moss-activegroup-visiblepanel-tab-border-color) bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply border-b border-(--moss-activegroup-visiblepanel-tab-border-color) text-[var(--moss-activegroup-visiblepanel-tab-color)];
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply border-b border-(--moss-activegroup-hiddenpanel-tab-border-color) bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  @apply border-b border-(--moss-activegroup-hiddenpanel-tab-border-color) text-[var(--moss-activegroup-hiddenpanel-tab-color)];
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply bg-[var(--moss-inactivegroup-visiblepanel-tab-background-color)] text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+  @apply text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply bg-[var(--moss-inactivegroup-hiddenpanel-tab-background-color)] text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  @apply text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
 }
 
 /*--------------------dv-tab--------------------*/
@@ -116,7 +116,7 @@
  * therefore we also set some stylings for the dragging event
  **/
 .dv-tab.dv-tab-dragging {
-  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply text-[var(--moss-activegroup-visiblepanel-tab-color)];
 }
 
 .dv-tab.dv-tab-dragging .dv-default-tab-action {
@@ -480,7 +480,7 @@
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab:not(:first-child)::before {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] bg-[var(--moss-tab-divider-color)] content-[''];
+  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-0 bg-transparent content-[''];
 }
 
 /*--------------------dv-dragged--------------------*/

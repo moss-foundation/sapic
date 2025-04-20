@@ -1,8 +1,5 @@
 import React from "react";
-
 import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
-
-import { nextId } from "../defaultLayout";
 
 const Icon = (props: { icon: string; title?: string; onClick?: (event: React.MouseEvent) => void }) => {
   return (
@@ -20,7 +17,7 @@ const groupControlsComponents: Record<string, React.FC> = {
   },
 };
 
-export const RightControls = (props: IDockviewHeaderActionsProps) => {
+export const ToolBar = (props: IDockviewHeaderActionsProps) => {
   const Component = React.useMemo(() => {
     if (!props.isGroupActive || !props.activePanel) {
       return null;
@@ -80,25 +77,6 @@ export const RightControls = (props: IDockviewHeaderActionsProps) => {
           onClick={onClick}
         />
       )}
-    </div>
-  );
-};
-
-export const LeftControls = (props: IDockviewHeaderActionsProps) => {
-  const onClick = () => {
-    props.containerApi.addPanel({
-      id: `id_${Date.now().toString()}`,
-      component: "Default",
-      title: `Tab ${nextId()}`,
-      position: {
-        referenceGroup: props.group,
-      },
-    });
-  };
-
-  return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
-      <Icon onClick={onClick} icon="add" />
     </div>
   );
 };

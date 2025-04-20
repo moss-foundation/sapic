@@ -14,8 +14,8 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <TreeActionButton icon="TreeCollapseAll" onClick={collapseAll} />
 
         <TreeActionButton icon="TreeReload" />
-        <TreeActionButton icon="TreePlus" />
-        <TreeActionButton icon="TreeDetail" />
+        <TreeActionButton icon="Plus" />
+        <TreeActionButton icon="ThreeVerticalDots" />
       </div>
     </div>
   );
