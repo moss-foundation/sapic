@@ -5,7 +5,10 @@ use anyhow::Result;
 use arc_swap::ArcSwap;
 use async_trait::async_trait;
 use entities::request_store_entities::RequestNodeEntity;
-use moss_db::{bincode_table::BincodeTable, common::Transaction, ClientState, ReDbClient};
+use moss_db::{
+    bincode_table::BincodeTable, common::DatabaseError, ClientState, DatabaseClient, ReDbClient,
+    Transaction,
+};
 use request_store::RequestStoreImpl;
 
 use std::{
@@ -17,18 +20,29 @@ use std::{
 };
 use tokio::sync::Notify;
 
-use crate::{CollectionStorage, ResettableStorage};
+use crate::{common::Transactional, CollectionStorage, ResettableStorage};
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestNodeEntity>;
 pub trait RequestStore: Send + Sync + 'static {
-    fn begin_write(&self) -> Result<(Transaction, &RequestStoreTable)>;
-    fn begin_read(&self) -> Result<(Transaction, &RequestStoreTable)>;
-    fn scan(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>>;
+    fn list_request_nodes(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>, DatabaseError>;
+    fn set_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+        node: RequestNodeEntity,
+    ) -> Result<(), DatabaseError>;
+    fn get_request_node(&self, path: PathBuf) -> Result<RequestNodeEntity, DatabaseError>;
+    fn delete_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+    ) -> Result<(), DatabaseError>;
 }
 
 struct DbManagerCell {
+    db_client: ReDbClient,
     request_store: Arc<dyn RequestStore>,
 }
 
@@ -37,8 +51,11 @@ impl DbManagerCell {
         let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
             .with_table(&request_store::TABLE_REQUESTS)?;
 
-        let request_store = Arc::new(RequestStoreImpl::new(db_client));
-        Ok(Self { request_store })
+        let request_store = Arc::new(RequestStoreImpl::new(db_client.clone()));
+        Ok(Self {
+            db_client,
+            request_store,
+        })
     }
 }
 
@@ -53,6 +70,27 @@ impl CollectionStorageImpl {
         Ok(Self {
             state: ArcSwap::new(Arc::new(ClientState::Loaded(cell))),
         })
+    }
+}
+
+#[async_trait]
+impl Transactional for CollectionStorageImpl {
+    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.db_client.begin_write(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+
+    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.db_client.begin_read(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
     }
 }
 

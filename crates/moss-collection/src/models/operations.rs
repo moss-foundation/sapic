@@ -108,3 +108,11 @@ pub struct RenameRequestGroupInput {
     #[validate(length(min = 1))]
     pub new_name: String,
 }
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct RenameRequestGroupOutput {
+    pub key: ResourceKey,
+    pub affected_items: Vec<ResourceKey>,
+}

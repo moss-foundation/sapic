@@ -32,23 +32,20 @@ impl Collection {
             });
         }
 
-        let request_store = self.state_db_manager.request_store().await;
+        let request_store = self.collection_storage.request_store().await;
         let request_nodes = self.registry().await?.requests_nodes();
 
-        let (mut txn, table) = request_store.begin_write()?;
-
-        table.insert(
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.set_request_node(
             &mut txn,
-            encoded_path.to_string_lossy().to_string().to_string(),
-            &RequestNodeEntity::Group(GroupEntity { order: None }),
+            encoded_path.clone(),
+            RequestNodeEntity::Group(GroupEntity { order: None }),
         )?;
 
         self.fs
             .create_dir(&request_group_abs_path)
             .await
             .context("Failed to create the request group directory")?;
-
-        txn.commit()?;
 
         let request_group_key = {
             let mut lock = request_nodes.write().await;
@@ -64,6 +61,8 @@ impl Collection {
                 spec_file_name: None,
             }))
         };
+
+        txn.commit()?;
 
         Ok(CreateRequestGroupOutput {
             key: request_group_key,

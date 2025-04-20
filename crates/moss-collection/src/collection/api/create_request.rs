@@ -83,14 +83,14 @@ impl Collection {
             None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
-        let request_store = self.state_db_manager.request_store().await;
+        let request_store = self.collection_storage.request_store().await;
         let request_nodes = self.registry().await?.requests_nodes();
 
-        let (mut txn, table) = request_store.begin_write()?;
-        table.insert(
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.set_request_node(
             &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestNodeEntity::Request(RequestEntity { order: None }),
+            request_dir_relative_path.clone(),
+            RequestNodeEntity::Request(RequestEntity { order: None }),
         )?;
 
         self.fs
@@ -107,8 +107,6 @@ impl Collection {
             .await
             .context("Failed to create the request file")?;
 
-        txn.commit()?;
-
         let request_key = {
             let mut requests_lock = request_nodes.write().await;
             requests_lock.insert(RequestNode::Request(CollectionRequestData {
@@ -118,6 +116,8 @@ impl Collection {
                 spec_file_name,
             }))
         };
+
+        txn.commit()?;
 
         Ok(CreateRequestOutput { key: request_key })
     }

@@ -39,12 +39,9 @@ impl Collection {
             .await
             .context("Failed to remove the request directory")?;
 
-        let request_store = self.state_db_manager.request_store().await;
-        let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
-            &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-        )?;
+        let request_store = self.collection_storage.request_store().await;
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.delete_request_node(&mut txn, request_dir_relative_path.clone())?;
 
         txn.commit()?;
 

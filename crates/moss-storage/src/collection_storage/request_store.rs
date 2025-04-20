@@ -1,5 +1,9 @@
 use anyhow::Result;
-use moss_db::{bincode_table::BincodeTable, common::Transaction, DatabaseClient, ReDbClient};
+use moss_db::{
+    bincode_table::BincodeTable,
+    common::{DatabaseError, Transaction},
+    DatabaseClient, ReDbClient,
+};
 use std::{collections::HashMap, path::PathBuf};
 
 use super::{entities::request_store_entities::RequestNodeEntity, RequestStore, RequestStoreTable};
@@ -22,7 +26,7 @@ impl RequestStoreImpl {
 }
 
 impl RequestStore for RequestStoreImpl {
-    fn scan(&self) -> anyhow::Result<HashMap<PathBuf, RequestNodeEntity>> {
+    fn list_request_nodes(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>, DatabaseError> {
         let read_txn = self.client.begin_read()?;
         let result = self.table.scan(&read_txn)?;
 
@@ -31,13 +35,34 @@ impl RequestStore for RequestStoreImpl {
             .collect())
     }
 
-    fn begin_write(&self) -> Result<(Transaction, &RequestStoreTable)> {
-        let write_txn = self.client.begin_write()?;
-        Ok((write_txn, &self.table))
+    fn set_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+        node: RequestNodeEntity,
+    ) -> Result<(), DatabaseError> {
+        self.table
+            .insert(txn, path.to_string_lossy().to_string(), &node)?;
+
+        Ok(())
     }
 
-    fn begin_read(&self) -> Result<(Transaction, &RequestStoreTable)> {
+    fn get_request_node(&self, path: PathBuf) -> Result<RequestNodeEntity, DatabaseError> {
         let read_txn = self.client.begin_read()?;
-        Ok((read_txn, &self.table))
+        let result = self
+            .table
+            .read(&read_txn, path.to_string_lossy().to_string())?;
+
+        Ok(result)
+    }
+
+    fn delete_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+    ) -> Result<(), DatabaseError> {
+        self.table.remove(txn, path.to_string_lossy().to_string())?;
+
+        Ok(())
     }
 }

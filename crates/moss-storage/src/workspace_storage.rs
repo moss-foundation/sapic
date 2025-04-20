@@ -4,6 +4,7 @@ pub mod environment_store;
 pub mod state_store;
 
 use anyhow::Result;
+use async_trait::async_trait;
 use collection_store::CollectionStoreImpl;
 use entities::{
     collection_store_entities::CollectionEntity,
@@ -14,12 +15,12 @@ use environment_store::EnvironmentStoreImpl;
 use moss_db::{
     bincode_table::BincodeTable,
     common::{AnyEntity, DatabaseError, Transaction},
-    ReDbClient,
+    DatabaseClient, ReDbClient,
 };
 use state_store::StateStoreImpl;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use crate::WorkspaceStorage;
+use crate::{common::Transactional, WorkspaceStorage};
 
 const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
@@ -53,6 +54,7 @@ pub trait StateStore: Send + Sync + 'static {
 }
 
 pub struct WorkspaceStorageImpl {
+    db_client: ReDbClient,
     collection_store: Arc<dyn CollectionStore>,
     environment_store: Arc<dyn EnvironmentStore>,
     state_store: Arc<dyn StateStore>,
@@ -70,10 +72,22 @@ impl WorkspaceStorageImpl {
         let state_store = Arc::new(StateStoreImpl::new(db_client.clone()));
 
         Ok(Self {
+            db_client,
             collection_store,
             environment_store,
             state_store,
         })
+    }
+}
+
+#[async_trait]
+impl Transactional for WorkspaceStorageImpl {
+    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        self.db_client.begin_write()
+    }
+
+    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        self.db_client.begin_read()
     }
 }
 

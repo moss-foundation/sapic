@@ -1,8 +1,12 @@
 use anyhow::Result;
 use moss_common::api::{OperationError, OperationResult};
 use moss_common::leased_slotmap::ResourceKey;
+use moss_db::Transaction;
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
+use moss_storage::collection_storage::entities::request_store_entities::{
+    GroupEntity, RequestNodeEntity,
+};
 use std::path::Path;
 use validator::Validate;
 
@@ -13,46 +17,33 @@ use crate::models::operations::RenameRequestGroupInput;
 impl Collection {
     async fn update_request_relative_path(
         &self,
+        txn: &mut Transaction,
         key: ResourceKey,
         old_prefix: &Path,
         new_prefix: &Path,
     ) -> Result<()> {
-        let request_store = self.state_db_manager.request_store().await;
+        let request_store = self.collection_storage.request_store().await;
         let requests = self.registry().await?.requests_nodes();
 
         let mut requests_lock = requests.write().await;
-        let (mut txn, table) = request_store.begin_write()?;
 
         // Update the request map entry
-        let entry_relative_path_old = requests_lock.get(key)?.path().clone();
+        let node = requests_lock.get_mut(key)?;
+        let entry_relative_path_old = node.path().clone();
         let entry_relative_path_new =
             new_prefix.join((&entry_relative_path_old).strip_prefix(&old_prefix)?);
-        requests_lock
-            .get_mut(key)?
-            .set_path(entry_relative_path_new.clone());
+        node.set_path(entry_relative_path_new.clone());
 
-        // Update the state db
-        let entity = table.remove(
-            &mut txn,
-            entry_relative_path_old.to_string_lossy().to_string(),
-        )?;
+        request_store.set_request_node(txn, entry_relative_path_new, node.into())?;
 
-        table.insert(
-            &mut txn,
-            entry_relative_path_new.to_string_lossy().to_string(),
-            &entity,
-        )?;
-
-        Ok(txn.commit()?)
+        Ok(())
     }
 
     pub async fn rename_request_group(
         &self,
         input: RenameRequestGroupInput,
     ) -> OperationResult<()> {
-        input
-            .validate()
-            .map_err(|error| OperationError::Validation(error.to_string()))?;
+        input.validate()?;
 
         let request_nodes = self.registry().await?.requests_nodes();
 
@@ -125,11 +116,11 @@ impl Collection {
             requests_lock
                 .iter()
                 .filter_map(|(key, iter_slot)| {
-                    if iter_slot
-                        .value()
-                        .path()
-                        .starts_with(&group_dir_relative_path_old)
-                        && iter_slot.value().path() != &group_dir_relative_path_old
+                    let node = iter_slot.value();
+
+                    if node.is_request()
+                        && node.path().starts_with(&group_dir_relative_path_old)
+                        && node.path() != &group_dir_relative_path_old
                     {
                         Some(key)
                     } else {
@@ -139,8 +130,12 @@ impl Collection {
                 .collect::<Vec<_>>()
         };
 
+        let request_store = self.collection_storage.request_store().await;
+        let mut txn = self.collection_storage.begin_write().await?;
+
         for key in keys_to_update {
             self.update_request_relative_path(
+                &mut txn,
                 key,
                 &group_dir_relative_path_old,
                 &group_dir_relative_path_new,
@@ -148,20 +143,16 @@ impl Collection {
             .await?;
         }
 
-        let request_store = self.state_db_manager.request_store().await;
-        let (mut txn, table) = request_store.begin_write()?;
-        let store_entity = table.remove(
-            &mut txn,
-            group_dir_relative_path_old.to_string_lossy().to_string(),
-        )?;
-        table.insert(
-            &mut txn,
-            group_dir_relative_path_new.to_string_lossy().to_string(),
-            &store_entity,
-        )?;
-
         let mut requests_lock = request_nodes.write().await;
         let mut lease_group_data = requests_lock.lease(input.key)?;
+
+        request_store.set_request_node(
+            &mut txn,
+            group_dir_relative_path_old,
+            RequestNodeEntity::Group(GroupEntity {
+                order: lease_group_data.order(),
+            }),
+        )?;
 
         lease_group_data.set_name(input.new_name);
         lease_group_data.set_path(group_dir_relative_path_new);

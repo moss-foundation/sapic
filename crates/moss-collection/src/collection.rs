@@ -27,7 +27,7 @@ pub struct CollectionCache {
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     abs_path: PathBuf,
-    state_db_manager: Arc<dyn CollectionStorage>,
+    collection_storage: Arc<dyn CollectionStorage>,
     registry: OnceCell<CollectionRegistry>,
     indexer_handle: IndexerHandle,
 }
@@ -47,7 +47,7 @@ impl Collection {
             fs: Arc::clone(&fs),
             abs_path: path,
             registry: OnceCell::new(),
-            state_db_manager: Arc::new(state_db_manager_impl),
+            collection_storage: Arc::new(state_db_manager_impl),
             indexer_handle,
         })
     }
@@ -130,8 +130,8 @@ impl Collection {
                     result_tx,
                 })?;
 
-                let request_store = self.state_db_manager.request_store().await;
-                let restored_requests = request_store.scan()?;
+                let request_store = self.collection_storage.request_store().await;
+                let restored_requests = request_store.list_request_nodes()?;
 
                 while let Some(index_msg) = result_rx.recv().await {
                     match index_msg {
@@ -201,7 +201,7 @@ impl Collection {
             Ok(())
         });
 
-        self.state_db_manager.reset(new_path, after_drop).await?;
+        self.collection_storage.reset(new_path, after_drop).await?;
 
         Ok(())
     }
