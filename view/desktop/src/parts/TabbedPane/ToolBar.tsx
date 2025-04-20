@@ -1,82 +1,12 @@
-import React from "react";
-import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
+import { Divider, Icon } from "@/components";
 
-const Icon = (props: { icon: string; title?: string; onClick?: (event: React.MouseEvent) => void }) => {
+export const ToolBar = () => {
   return (
-    <div title={props.title} className="action select-none" onClick={props.onClick}>
-      <span style={{ fontSize: "inherit" }} className="material-symbols-outlined">
-        {props.icon}
-      </span>
-    </div>
-  );
-};
-
-const groupControlsComponents: Record<string, React.FC> = {
-  panel_1: () => {
-    return <Icon icon="file_download" />;
-  },
-};
-
-export const ToolBar = (props: IDockviewHeaderActionsProps) => {
-  const Component = React.useMemo(() => {
-    if (!props.isGroupActive || !props.activePanel) {
-      return null;
-    }
-
-    return groupControlsComponents[props.activePanel.id];
-  }, [props.isGroupActive, props.activePanel]);
-
-  const [isMaximized, setIsMaximized] = React.useState<boolean>(props.containerApi.hasMaximizedGroup());
-
-  const [isPopout, setIsPopout] = React.useState<boolean>(props.api.location.type === "popout");
-
-  React.useEffect(() => {
-    const disposable = props.containerApi.onDidMaximizedGroupChange(() => {
-      setIsMaximized(props.containerApi.hasMaximizedGroup());
-    });
-
-    const disposable2 = props.api.onDidLocationChange(() => {
-      setIsPopout(props.api.location.type === "popout");
-    });
-
-    return () => {
-      disposable.dispose();
-      disposable2.dispose();
-    };
-  }, [props.containerApi]);
-
-  const onClick = () => {
-    if (props.containerApi.hasMaximizedGroup()) {
-      props.containerApi.exitMaximizedGroup();
-    } else {
-      props.activePanel?.api.maximize();
-    }
-  };
-
-  const onClick2 = () => {
-    if (props.api.location.type !== "popout") {
-      props.containerApi.addPopoutGroup(props.group);
-    } else {
-      props.api.moveTo({ position: "right" });
-    }
-  };
-
-  return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
-      {props.isGroupActive && <Icon icon="star" />}
-      {Component && <Component />}
-      <Icon
-        title={isPopout ? "Close Window" : "Open In New Window"}
-        icon={isPopout ? "close_fullscreen" : "open_in_new"}
-        onClick={onClick2}
-      />
-      {!isPopout && (
-        <Icon
-          title={isMaximized ? "Minimize View" : "Maximize View"}
-          icon={isMaximized ? "collapse_content" : "expand_content"}
-          onClick={onClick}
-        />
-      )}
+    <div className="group-control flex h-full items-center px-2 select-none">
+      <div className="cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+        <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)]" />
+      </div>
+      <Divider height="20px" />
     </div>
   );
 };

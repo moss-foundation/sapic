@@ -18,6 +18,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { DropIndicator } from "../../components/DropIndicator";
 import { StatusBarActivity } from "./StatusBarActivity";
+import { Divider } from "@/components/Divider";
 
 interface Item {
   id: number;
@@ -25,14 +26,6 @@ interface Item {
   label: string;
   order: number;
 }
-
-const StatusBarDivider = () => {
-  return (
-    <div className="mx-1 flex h-full items-center">
-      <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
-    </div>
-  );
-};
 
 const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [isOnline, setIsOnline] = useState(true);
@@ -108,7 +101,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
             />
           ))}
         </div>
-        <StatusBarDivider />
+        <Divider />
 
         <StatusBarIndicators />
         <StatusBarActivity />
@@ -116,7 +109,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
 
       <div className="flex h-full gap-0.5">
         <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
-        <StatusBarDivider />
+        <Divider />
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}
@@ -143,7 +136,7 @@ const StatusBarIndicators = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
-        <div className="flex items-center rounded-md px-2 transition">
+        <div className="flex items-center rounded-md px-1 transition">
           <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded-md px-1">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />

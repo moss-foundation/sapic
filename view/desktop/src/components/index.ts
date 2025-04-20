@@ -5,6 +5,7 @@ export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
 export * from "./Button";
+export * from "./Divider";
 export * from "./DropIndicator";
 export * from "./Icon";
 export * from "./Input";

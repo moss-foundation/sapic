@@ -15,8 +15,10 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
   };
 
   return (
-    <div className="group-control flex h-full items-center px-2 text-[var(--moss-activegroup-visiblepanel-tab-color)] select-none">
-      <Icon onClick={onClick} icon="Plus" className="text-(--moss-icon-primary-text)" />
+    <div className="group-control flex h-full items-center px-2 select-none">
+      <div className="cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+        <Icon onClick={onClick} icon="Plus" className="text-[var(--moss-icon-primary-text)]" />
+      </div>
     </div>
   );
 };

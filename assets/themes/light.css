@@ -78,6 +78,8 @@
   --moss-info-icon: var(--moss-primary);
   --moss-info-border: var(--moss-primary);
 
+  --moss-divider-color: var(--moss-gray-11);
+
   /* Resizable */
   --separator-border: var(--moss-border-color);
 
@@ -116,7 +118,7 @@
   /* Group View */
   --moss-group-view-background-color: var(--moss-primary-background);
   --moss-tabs-and-actions-container-background-color: var(--moss-primary-background);
-  --moss-tabs-and-actions-container-height: 35px;
+  --moss-tabs-and-actions-container-height: 36px;
 
   /* Tab States */
   --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background-hover);
