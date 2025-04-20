@@ -41,12 +41,12 @@ pub trait RequestStore: Send + Sync + 'static {
     ) -> Result<(), DatabaseError>;
 }
 
-struct DbManagerCell {
+struct ResettableStorageCell {
     db_client: ReDbClient,
     request_store: Arc<dyn RequestStore>,
 }
 
-impl DbManagerCell {
+impl ResettableStorageCell {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
             .with_table(&request_store::TABLE_REQUESTS)?;
@@ -60,12 +60,12 @@ impl DbManagerCell {
 }
 
 pub struct CollectionStorageImpl {
-    state: ArcSwap<ClientState<DbManagerCell>>,
+    state: ArcSwap<ClientState<ResettableStorageCell>>,
 }
 
 impl CollectionStorageImpl {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        let cell = DbManagerCell::new(path)?;
+        let cell = ResettableStorageCell::new(path)?;
 
         Ok(Self {
             state: ArcSwap::new(Arc::new(ClientState::Loaded(cell))),
@@ -125,7 +125,7 @@ impl ResettableStorage for CollectionStorageImpl {
 
         after_drop.await?;
 
-        let new_cell = DbManagerCell::new(new_path)?;
+        let new_cell = ResettableStorageCell::new(new_path)?;
         let new_state = Arc::new(ClientState::Loaded(new_cell));
         self.state.store(new_state);
 
