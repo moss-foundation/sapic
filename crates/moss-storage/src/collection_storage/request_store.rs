@@ -35,7 +35,7 @@ impl RequestStore for RequestStoreImpl {
             .collect())
     }
 
-    fn create_request_node(
+    fn upsert_request_node(
         &self,
         txn: &mut Transaction,
         path: PathBuf,

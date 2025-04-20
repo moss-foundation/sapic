@@ -27,7 +27,7 @@ const COLLECTION_STATE_DB_NAME: &str = "state.db";
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestNodeEntity>;
 pub trait RequestStore: Send + Sync + 'static {
     fn list_request_nodes(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>, DatabaseError>;
-    fn create_request_node(
+    fn upsert_request_node(
         &self,
         txn: &mut Transaction,
         path: PathBuf,

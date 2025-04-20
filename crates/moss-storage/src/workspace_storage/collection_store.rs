@@ -26,7 +26,7 @@ impl CollectionStoreImpl {
 }
 
 impl CollectionStore for CollectionStoreImpl {
-    fn create_collection(
+    fn upsert_collection(
         &self,
         txn: &mut Transaction,
         path: PathBuf,

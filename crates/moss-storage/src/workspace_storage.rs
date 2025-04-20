@@ -26,7 +26,7 @@ const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
 pub(crate) type CollectionStoreTable<'a> = BincodeTable<'a, String, CollectionEntity>;
 pub trait CollectionStore: Send + Sync {
-    fn create_collection(
+    fn upsert_collection(
         &self,
         txn: &mut Transaction,
         path: PathBuf,
