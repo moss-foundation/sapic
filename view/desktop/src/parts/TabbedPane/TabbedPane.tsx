@@ -103,7 +103,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
       const isDebug = React.useContext(DebugContext);
 
       return (
-        <>
+        <div className="border-t border-t-(--moss-border-color)">
           <Breadcrumbs panelId={props.api.id} />
           <Scrollbar
             className={cn(
@@ -129,7 +129,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
               />
             )}
           </Scrollbar>
-        </>
+        </div>
       );
     },
     nested: () => {
@@ -160,24 +160,30 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
               props.api.setActive();
             }
           }}
-          className="h-full w-full"
+          className="h-full w-full border-t border-t-(--moss-border-color)"
         />
       );
     },
     Home: () => (
-      <Scrollbar className="h-full">
-        <Home />
-      </Scrollbar>
+      <div className="border-t border-t-(--moss-border-color)">
+        <Scrollbar className="h-full">
+          <Home />
+        </Scrollbar>
+      </div>
     ),
     Settings: () => (
-      <Scrollbar className="h-full">
-        <Settings />
-      </Scrollbar>
+      <div className="border-t border-t-(--moss-border-color)">
+        <Scrollbar className="h-full">
+          <Settings />
+        </Scrollbar>
+      </div>
     ),
     Logs: () => (
-      <Scrollbar className="h-full">
-        <Logs />
-      </Scrollbar>
+      <div className="border-t border-t-(--moss-border-color)">
+        <Scrollbar className="h-full">
+          <Logs />
+        </Scrollbar>
+      </div>
     ),
   };
 
