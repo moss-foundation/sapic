@@ -58,19 +58,25 @@ impl<R: TauriRuntime> Workspace<R> {
             });
         }
 
-        let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
+        let collection_store = self.workspace_storage.collection_store();
+        let mut txn = self.workspace_storage.begin_write().await?;
 
-        let old_table_key = old_relative_path.to_string_lossy().to_string();
-        let new_table_key = new_relative_path.to_string_lossy().to_string();
+        // let old_table_key = old_relative_path.to_string_lossy().to_string();
+        // let new_table_key = new_relative_path.to_string_lossy().to_string();
 
-        table.remove(&mut txn, old_table_key)?;
-        table.insert(
+        // table.remove(&mut txn, old_table_key)?;
+        // table.insert(
+        //     &mut txn,
+        //     new_table_key,
+        //     &CollectionEntity {
+        //         order: metadata.order,
+        //     },
+        // )?;
+
+        collection_store.rekey_collection_entity(
             &mut txn,
-            new_table_key,
-            &CollectionEntity {
-                order: metadata.order,
-            },
+            old_relative_path.to_owned(),
+            new_relative_path,
         )?;
 
         // The state_db_manager will hold the `state.db` file open, preventing renaming on Windows

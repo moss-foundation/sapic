@@ -27,7 +27,7 @@ pub struct Workspace<R: TauriRuntime> {
     app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    state_db_manager: Arc<dyn WorkspaceStorage>,
+    workspace_storage: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
     activity_indicator: ActivityIndicator<R>,
@@ -59,7 +59,7 @@ impl<R: TauriRuntime> Workspace<R> {
             app_handle,
             path,
             fs,
-            state_db_manager: Arc::new(state_db_manager),
+            workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             indexer_handle,
@@ -96,7 +96,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     }
                 }
 
-                let mut scan_result = self.state_db_manager.environment_store().scan()?;
+                let mut scan_result = self.workspace_storage.environment_store().scan()?;
                 for (name, env) in envs_from_fs {
                     let environment_entity = scan_result.remove(&name);
 
@@ -141,8 +141,10 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: Support external collections with absolute path
-                for (relative_path, collection_data) in
-                    self.state_db_manager.collection_store().scan()?
+                for (relative_path, collection_data) in self
+                    .workspace_storage
+                    .collection_store()
+                    .list_collections()?
                 {
                     let name = match relative_path.file_name() {
                         Some(name) => decode_name(&name.to_string_lossy().to_string())?,
@@ -202,9 +204,11 @@ impl<R: TauriRuntime> Workspace<R> {
 impl<R: TauriRuntime> Workspace<R> {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
-        table.truncate(&mut txn)?;
-        Ok(txn.commit()?)
+        // let collection_store = self.workspace_storage.collection_store();
+
+        // let (mut txn, table) = collection_store.begin_write()?;
+        // table.truncate(&mut txn)?;
+        // Ok(txn.commit()?)
+        todo!()
     }
 }

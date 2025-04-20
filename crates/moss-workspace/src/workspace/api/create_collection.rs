@@ -35,13 +35,13 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to get collections")?;
 
-        let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
+        let collection_store = self.workspace_storage.collection_store();
+        let mut txn = self.workspace_storage.begin_write().await?;
 
-        table.insert(
+        collection_store.create_collection_entity(
             &mut txn,
-            relative_path.to_string_lossy().to_string(),
-            &CollectionEntity { order: None },
+            relative_path.to_owned(),
+            CollectionEntity { order: None },
         )?;
 
         self.fs

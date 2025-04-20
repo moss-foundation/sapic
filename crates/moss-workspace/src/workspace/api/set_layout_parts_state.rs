@@ -15,7 +15,7 @@ impl<R: TauriRuntime> Workspace<R> {
         input: SetLayoutPartsStateInput,
         params: SetLayoutPartsStateParams,
     ) -> OperationResult<()> {
-        let layout_parts_state_store = self.state_db_manager.state_store();
+        let layout_parts_state_store = self.workspace_storage.state_store();
 
         if let Some(editor_state) = input.editor {
             layout_parts_state_store

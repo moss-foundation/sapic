@@ -12,7 +12,7 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_layout_parts_state(
         &self,
     ) -> OperationResult<DescribeLayoutPartsStateOutput> {
-        let layout_parts_state_store = self.state_db_manager.state_store();
+        let layout_parts_state_store = self.workspace_storage.state_store();
 
         fn to_option<T, U>(
             result: Result<T, DatabaseError>,

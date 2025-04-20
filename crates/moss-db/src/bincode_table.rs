@@ -140,6 +140,32 @@ where
         }
     }
 
+    pub fn rekey(
+        &self,
+        txn: &mut Transaction,
+        old_key: K,
+        new_key: K,
+    ) -> Result<(), DatabaseError> {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table)?;
+                let bytes = table
+                    .remove(old_key.borrow())?
+                    .ok_or_else(|| DatabaseError::NotFound {
+                        key: old_key.to_string(),
+                    })?
+                    .value();
+
+                table.insert(new_key.borrow(), bytes)?;
+
+                Ok(())
+            }
+            Transaction::Read(_txn) => Err(DatabaseError::Transaction(
+                "Cannot rekey in read transaction".to_string(),
+            )),
+        }
+    }
+
     pub fn truncate(&self, txn: &mut Transaction) -> Result<(), DatabaseError> {
         match txn {
             Transaction::Write(txn) => {
