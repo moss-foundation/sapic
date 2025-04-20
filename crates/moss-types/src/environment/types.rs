@@ -6,7 +6,7 @@ pub type VariableName = String;
 pub type EnvironmentName = String;
 
 #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "environment/types.ts")]
 pub enum VariableKind {
     #[serde(rename = "secret")]
     Secret,
@@ -15,7 +15,7 @@ pub enum VariableKind {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "environment/types.ts")]
 #[serde(untagged)]
 pub enum VariableValue {
     String(String),
@@ -26,7 +26,7 @@ pub enum VariableValue {
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "environment/types.ts")]
 pub struct VariableInfo {
     pub name: VariableName,
     pub global_value: VariableValue,
@@ -36,4 +36,3 @@ pub struct VariableInfo {
     pub order: Option<usize>,
     pub desc: Option<String>,
 }
-

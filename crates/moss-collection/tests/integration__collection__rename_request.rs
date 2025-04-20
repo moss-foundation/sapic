@@ -5,9 +5,9 @@ use moss_collection::models::operations::{
 };
 
 use moss_common::api::OperationError;
-use moss_models::collection::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_testutils::random_name::random_request_group_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
+use moss_types::collection::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use std::path::{Path, PathBuf};
 
 use crate::shared::{request_folder_name, request_relative_path, set_up_test_collection};

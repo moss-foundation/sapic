@@ -1,5 +1,5 @@
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
-use moss_models::collection::types::{HttpMethod, RequestProtocol};
+use moss_types::collection::types::{HttpMethod, RequestProtocol};
 use std::path::PathBuf;
 use tokio::sync::RwLock;
 

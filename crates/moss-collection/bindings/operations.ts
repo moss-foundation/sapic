@@ -7,8 +7,15 @@
 // If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo } from "./types";
 import type { ResourceKey } from "@repo/bindings-utils";
+import type {
+  HeaderParamItem,
+  HttpMethod,
+  PathParamItem,
+  QueryParamItem,
+  RequestBody,
+  RequestNodeInfo,
+} from "@repo/moss-types";
 
 export type CreateRequestGroupInput = { path: string };
 
@@ -31,10 +38,10 @@ export type CreateRequestOutput = { key: ResourceKey };
 export type CreateRequestProtocolSpecificPayload = {
   "http": {
     method: HttpMethod;
-    query_params: Array<QueryParamItem>;
-    path_params: Array<PathParamItem>;
-    headers: Array<HeaderParamItem>;
-    body: RequestBody | null;
+    query_params: QueryParamItem;
+    path_params: PathParamItem;
+    headers: HeaderParamItem;
+    body: RequestBody;
   };
 };
 
@@ -42,7 +49,7 @@ export type DeleteRequestGroupInput = { key: ResourceKey };
 
 export type DeleteRequestInput = { key: ResourceKey };
 
-export type ListRequestsOutput = Array<RequestNodeInfo>;
+export type ListRequestsOutput = RequestNodeInfo;
 
 export type RenameRequestGroupInput = { key: ResourceKey; newName: string };
 

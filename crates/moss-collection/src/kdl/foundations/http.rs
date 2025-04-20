@@ -1,5 +1,5 @@
 use kdl::{KdlDocument, KdlEntry, KdlNode};
-use moss_models::collection::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody};
+use moss_types::collection::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody};
 use std::collections::HashMap;
 
 use crate::kdl::foundations::body::RequestBodyBlock;

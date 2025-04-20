@@ -13,14 +13,5 @@
     "dependencies": {
       "typescript": "^5.7.2"
     },
-    "tsImportRules": {
-      "bindings/operations.ts": {
-        "@repo/moss-environment": {
-          "types": [
-            "VariableInfo"
-          ],
-          "is_type_import": true
-        }
-      }
-    }
+    "tsImportRules": {}
   }

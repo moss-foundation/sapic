@@ -3,7 +3,7 @@ mod shared;
 use moss_collection::models::operations::CreateRequestGroupInput;
 use moss_common::api::OperationError;
 use moss_fs::utils::encode_name;
-use moss_models::collection::types::RequestNodeInfo;
+use moss_types::collection::types::RequestNodeInfo;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_group_name;
 use std::path::{Path, PathBuf};

@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
+use moss_types::environment::types::{VariableKind, VariableName, VariableValue};
 use serde::{Deserialize, Serialize};
-
-use super::types::{VariableKind, VariableName, VariableValue};
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct EnvironmentFileVariableUpdate {

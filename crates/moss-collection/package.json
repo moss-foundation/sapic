@@ -9,7 +9,8 @@
     },
     "devDependencies": {
       "@repo/typescript-config": "workspace:*",
-      "@repo/bindings-utils": "workspace:*"
+      "@repo/bindings-utils": "workspace:*",
+      "@repo/moss-types": "workspace:*"
     },
     "dependencies": {
       "typescript": "^5.8.2"
@@ -21,12 +22,15 @@
             "ResourceKey"
           ],
           "is_type_import": true
-        }
-      },
-      "bindings/types.ts": {
-        "@repo/bindings-utils": {
+        },
+        "@repo/moss-types": {
           "types": [
-            "ResourceKey"
+            "HttpMethod",
+            "QueryParamItem",
+            "PathParamItem",
+            "HeaderParamItem",
+            "RequestBody",
+            "RequestNodeInfo"
           ],
           "is_type_import": true
         }

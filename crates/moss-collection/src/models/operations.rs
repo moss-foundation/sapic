@@ -1,5 +1,5 @@
 use moss_common::leased_slotmap::ResourceKey;
-use moss_models::collection::types::{
+use moss_types::collection::types::{
     HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
 };
 use serde::Serialize;
@@ -16,10 +16,19 @@ use validator::{Validate, ValidationError};
 #[ts(export, export_to = "operations.ts")]
 pub enum CreateRequestProtocolSpecificPayload {
     Http {
+        #[ts(type = "HttpMethod")]
         method: HttpMethod,
+
+        #[ts(type = "QueryParamItem")]
         query_params: Vec<QueryParamItem>,
+
+        #[ts(type = "PathParamItem")]
         path_params: Vec<PathParamItem>,
+
+        #[ts(type = "HeaderParamItem")]
         headers: Vec<HeaderParamItem>,
+
+        #[ts(type = "RequestBody")]
         body: Option<RequestBody>,
     },
 }
@@ -63,7 +72,7 @@ pub struct DeleteRequestInput {
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListRequestsOutput(pub Vec<RequestNodeInfo>);
+pub struct ListRequestsOutput(#[ts(type = "RequestNodeInfo")] pub Vec<RequestNodeInfo>);
 
 #[derive(Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]

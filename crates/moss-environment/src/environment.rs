@@ -1,13 +1,13 @@
 use anyhow::Result;
 use moss_fs::{CreateOptions, FileSystem, RenameOptions};
+use moss_types::environment::types::{VariableKind, VariableName, VariableValue};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
 use tokio::sync::RwLock;
 
-use crate::models::{
-    file::{EnvironmentFile, EnvironmentFileVariable, EnvironmentFileVariableUpdate},
-    types::{VariableKind, VariableName, VariableValue},
+use crate::models::file::{
+    EnvironmentFile, EnvironmentFileVariable, EnvironmentFileVariableUpdate,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -94,6 +94,9 @@ importers:
       '@repo/bindings-utils':
         specifier: workspace:*
         version: link:../../packages/bindings-utils
+      '@repo/moss-types':
+        specifier: workspace:*
+        version: link:../moss-types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -124,19 +127,6 @@ importers:
         specifier: ^5.7.2
         version: 5.8.2
     devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
-  crates/moss-models:
-    dependencies:
-      typescript:
-        specifier: ^5.8.2
-        version: 5.8.2
-    devDependencies:
-      '@repo/bindings-utils':
-        specifier: workspace:*
-        version: link:../../packages/bindings-utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
@@ -186,6 +176,19 @@ importers:
         specifier: ^5.7.2
         version: 5.8.2
     devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
+  crates/moss-types:
+    dependencies:
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
+    devDependencies:
+      '@repo/bindings-utils':
+        specifier: workspace:*
+        version: link:../../packages/bindings-utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript

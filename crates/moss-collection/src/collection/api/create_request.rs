@@ -4,7 +4,7 @@ use moss_fs::{
     utils::{encode_name, encode_path},
     CreateOptions,
 };
-use moss_models::collection::types::HttpMethod;
+use moss_types::collection::types::HttpMethod;
 use std::path::PathBuf;
 use validator::Validate;
 

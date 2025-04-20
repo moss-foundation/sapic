@@ -2,12 +2,10 @@ mod shared;
 
 use moss_environment::{
     environment::{Environment, EnvironmentError},
-    models::{
-        file::{EnvironmentFile, EnvironmentFileVariable},
-        types::{VariableKind, VariableValue},
-    },
+    models::file::{EnvironmentFile, EnvironmentFileVariable},
 };
 use moss_fs::RealFileSystem;
+use moss_types::environment::types::{VariableKind, VariableValue};
 use shared::test_environment_data;
 use std::{collections::HashMap, sync::Arc};
 

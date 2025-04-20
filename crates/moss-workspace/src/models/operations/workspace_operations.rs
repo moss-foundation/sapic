@@ -1,5 +1,5 @@
 use moss_common::leased_slotmap::ResourceKey;
-use moss_environment::models::types::VariableInfo;
+use moss_types::environment::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

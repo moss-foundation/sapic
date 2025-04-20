@@ -1,5 +1,5 @@
 {
-    "name": "@repo/moss-models",
+    "name": "@repo/moss-types",
     "exports": {
       ".": "./index.ts"
     },
@@ -15,15 +15,7 @@
       "typescript": "^5.8.2"
     },
     "tsImportRules": {
-      "bindings/operations.ts": {
-        "@repo/bindings-utils": {
-          "types": [
-            "ResourceKey"
-          ],
-          "is_type_import": true
-        }
-      },
-      "bindings/types.ts": {
+      "bindings/collection/types.ts": {
         "@repo/bindings-utils": {
           "types": [
             "ResourceKey"

@@ -66,6 +66,7 @@ ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
 WORKBENCH_MODELS_DIR := crates/moss-workbench
+TYPES_MODELS_DIR := crates/moss-types
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -125,6 +126,7 @@ $(eval $(call gen_models,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_models,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_models,common,COMMON_MODELS_DIR))
 $(eval $(call gen_models,workbench,WORKBENCH_MODELS_DIR))
+$(eval $(call gen_models,types,TYPES_MODELS_DIR))
 
 ## Generate all TypeScript models
 .PHONY: gen-models
@@ -137,7 +139,8 @@ gen-models: \
 	gen-environment-models \
 	gen-workspace-models \
 	gen-common-models \
-	gen-workbench-models
+	gen-workbench-models \
+	gen-types-models
 
 # ======================================================
 # Utility Commands

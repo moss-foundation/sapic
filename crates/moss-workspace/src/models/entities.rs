@@ -1,7 +1,5 @@
-use moss_environment::{
-    environment::VariableCache,
-    models::types::{VariableName, VariableValue},
-};
+use moss_environment::environment::VariableCache;
+use moss_types::environment::types::{VariableName, VariableValue};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

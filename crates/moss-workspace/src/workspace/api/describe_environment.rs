@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_environment::models::types::VariableInfo;
+use moss_types::environment::types::VariableInfo;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{

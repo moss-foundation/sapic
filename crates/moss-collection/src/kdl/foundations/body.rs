@@ -1,5 +1,5 @@
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
-use moss_models::collection::types::{
+use moss_types::collection::types::{
     FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem,
 };
 use std::collections::HashMap;
