@@ -9,7 +9,6 @@ import { Home, Logs, Settings } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
-  DockviewDefaultTab,
   DockviewDidDropEvent,
   DockviewReact,
   DockviewReadyEvent,
@@ -26,6 +25,7 @@ import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
 import Watermark from "./Watermark";
+import CustomTab from "./CustomTab";
 
 const DebugContext = React.createContext<boolean>(false);
 
@@ -182,7 +182,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   const headerComponents = {
-    default: DockviewDefaultTab,
+    default: CustomTab,
   };
 
   return (
