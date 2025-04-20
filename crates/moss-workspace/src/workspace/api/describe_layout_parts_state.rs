@@ -1,10 +1,10 @@
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::common::DatabaseError;
-use tauri::Runtime as TauriRuntime;
-
-use crate::models::entities::{
+use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
+use tauri::Runtime as TauriRuntime;
+
 use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
 use crate::{models::operations::DescribeLayoutPartsStateOutput, workspace::Workspace};
 
@@ -12,7 +12,7 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_layout_parts_state(
         &self,
     ) -> OperationResult<DescribeLayoutPartsStateOutput> {
-        let layout_parts_state_store = self.state_db_manager.layout_parts_state_store();
+        let layout_parts_state_store = self.state_db_manager.state_store();
 
         fn to_option<T, U>(
             result: Result<T, DatabaseError>,
@@ -27,27 +27,17 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let editor = to_option(
             layout_parts_state_store.get_editor_part_state(),
-            |entity: EditorPartStateEntity| EditorPartState {
-                grid: entity.grid,
-                panels: entity.panels,
-                active_group: entity.active_group,
-            },
+            |entity: EditorPartStateEntity| EditorPartState::from(entity),
         )?;
 
         let sidebar = to_option(
             layout_parts_state_store.get_sidebar_part_state(),
-            |entity: SidebarPartStateEntity| SidebarPartState {
-                preferred_size: entity.preferred_size,
-                is_visible: entity.is_visible,
-            },
+            |entity: SidebarPartStateEntity| SidebarPartState::from(entity),
         )?;
 
         let panel = to_option(
             layout_parts_state_store.get_panel_part_state(),
-            |entity: PanelPartStateEntity| PanelPartState {
-                preferred_size: entity.preferred_size,
-                is_visible: entity.is_visible,
-            },
+            |entity: PanelPartStateEntity| PanelPartState::from(entity),
         )?;
 
         Ok(DescribeLayoutPartsStateOutput {

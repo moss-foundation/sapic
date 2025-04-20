@@ -22,7 +22,6 @@ members = [
     "crates/moss-common",
     "crates/moss-workbench",
     "crates/moss-storage",
-    "crates/moss-models",
 
     "tools/xtask",
     "view/desktop/bin",
@@ -50,7 +49,6 @@ moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
 moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
-moss_models = { path = "crates/moss-models" }
 
 redb = "2.4.0"
 tauri = { version = "2.2.5", default-features = false }

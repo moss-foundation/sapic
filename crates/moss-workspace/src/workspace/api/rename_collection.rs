@@ -1,14 +1,12 @@
 use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
+use moss_storage::workspace_storage::entities::collection_store_entities::CollectionEntity;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    models::{
-        entities::CollectionEntity,
-        operations::{RenameCollectionInput, RenameCollectionOutput},
-    },
+    models::operations::{RenameCollectionInput, RenameCollectionOutput},
     workspace::Workspace,
 };
 

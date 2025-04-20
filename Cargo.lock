@@ -2920,6 +2920,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_fs",
+ "moss_storage",
  "rand 0.9.1",
  "serde",
  "serde_json",
@@ -2996,10 +2997,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_models"
-version = "0.1.0"
-
-[[package]]
 name = "moss_nls"
 version = "0.1.0"
 dependencies = [
@@ -3043,8 +3040,10 @@ dependencies = [
 name = "moss_storage"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "moss_db",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

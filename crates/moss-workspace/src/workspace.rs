@@ -8,13 +8,11 @@ use moss_collection::{
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_name, FileSystem};
+use moss_storage::{workspace_storage::WorkspaceStorageImpl, WorkspaceStorage};
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{mpsc, OnceCell, RwLock};
-
-use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::storage::StateDbManager;
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -29,7 +27,7 @@ pub struct Workspace<R: TauriRuntime> {
     app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    state_db_manager: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
     activity_indicator: ActivityIndicator<R>,
@@ -43,7 +41,7 @@ impl<R: TauriRuntime> Workspace<R> {
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        let state_db_manager = StateDbManagerImpl::new(&path)
+        let state_db_manager = WorkspaceStorageImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
         let (tx, rx) = mpsc::unbounded_channel();
@@ -109,8 +107,10 @@ impl<R: TauriRuntime> Workspace<R> {
                             variables_cache: environment_entity
                                 .local_values
                                 .into_iter()
-                                .map(|(name, state)| (name, VariableCache::from(state)))
-                                .collect(),
+                                .map(|(name, state_entity)| {
+                                    VariableCache::try_from(state_entity).map(|cache| (name, cache))
+                                })
+                                .collect::<Result<HashMap<_, _>, _>>()?,
                         }
                     } else {
                         EnvironmentCache {
