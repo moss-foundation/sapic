@@ -2871,6 +2871,7 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_fs",
+ "moss_models",
  "moss_testutils",
  "moss_workbench",
  "scraper",
@@ -2998,6 +2999,11 @@ dependencies = [
 [[package]]
 name = "moss_models"
 version = "0.1.0"
+dependencies = [
+ "moss_common",
+ "serde",
+ "ts-rs",
+]
 
 [[package]]
 name = "moss_nls"

@@ -1,9 +1,9 @@
 use moss_common::api::OperationResult;
+use moss_models::collection::types::RequestNodeInfo;
 
 use crate::{
-    collection::Collection,
-    collection_registry::RequestNode,
-    models::{operations::ListRequestsOutput, types::RequestNodeInfo},
+    collection::Collection, collection_registry::RequestNode,
+    models::operations::ListRequestsOutput,
 };
 
 impl Collection {

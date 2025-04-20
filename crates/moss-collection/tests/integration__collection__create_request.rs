@@ -3,9 +3,9 @@ mod shared;
 use moss_collection::models::operations::{
     CreateRequestInput, CreateRequestProtocolSpecificPayload,
 };
-use moss_collection::models::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_common::api::OperationError;
 use moss_fs::utils::encode_name;
+use moss_models::collection::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
 use std::path::{Path, PathBuf};
 

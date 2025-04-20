@@ -107,6 +107,7 @@ where
                         key: key.to_string(),
                     })?
                     .value();
+                dbg!(String::from_utf8(bytes.to_ascii_lowercase()).unwrap());
                 let value: V = serde_json::from_slice(&bytes)?;
 
                 Ok(value)

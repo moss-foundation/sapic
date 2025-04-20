@@ -1,5 +1,6 @@
 use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
+use moss_models::collection::types::{FormDataValue, RawBodyType};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -14,7 +15,6 @@ use crate::kdl::foundations::{
     },
 };
 use crate::kdl::tokens::*;
-use crate::models::types::{FormDataValue, RawBodyType};
 
 #[derive(Debug, Error)]
 pub enum ParseError {

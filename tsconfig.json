@@ -32,6 +32,9 @@
       "path": "crates/moss-workbench"
     },
     {
+      "path": "crates/moss-models"
+    },
+    {
       "path": "view/desktop"
     },
     {

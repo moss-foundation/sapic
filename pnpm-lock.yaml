@@ -128,6 +128,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/moss-models:
+    dependencies:
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
+    devDependencies:
+      '@repo/bindings-utils':
+        specifier: workspace:*
+        version: link:../../packages/bindings-utils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-nls:
     dependencies:
       typescript:

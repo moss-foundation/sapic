@@ -1,12 +1,11 @@
 use moss_common::leased_slotmap::ResourceKey;
+use moss_models::collection::types::{
+    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
+};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use crate::models::types::{
-    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
-};
 
 /// All the path and file names passed in the input should be unencoded.
 /// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"

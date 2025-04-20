@@ -1,12 +1,12 @@
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
+use moss_models::collection::types::{
+    FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem,
+};
 use std::collections::HashMap;
 use std::mem;
 use std::path::PathBuf;
 
-use crate::{
-    kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
-    models::types::{FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem},
-};
+use crate::kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RequestBodyBlock {

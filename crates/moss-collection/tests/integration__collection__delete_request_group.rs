@@ -4,8 +4,8 @@ use crate::shared::{request_folder_name, request_group_relative_path, set_up_tes
 use moss_collection::models::operations::{
     CreateRequestGroupInput, CreateRequestInput, DeleteRequestGroupInput,
 };
-use moss_collection::models::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_common::leased_slotmap::ResourceKey;
+use moss_models::collection::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::{random_request_group_name, random_request_name};
 use std::path::{Path, PathBuf};

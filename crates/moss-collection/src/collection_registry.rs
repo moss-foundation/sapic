@@ -1,9 +1,9 @@
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
+use moss_models::collection::types::{HttpMethod, RequestProtocol};
 use std::path::PathBuf;
 use tokio::sync::RwLock;
 
 use crate::constants::*;
-use crate::models::types::{HttpMethod, RequestProtocol};
 
 /// Data for a request node
 ///
