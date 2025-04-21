@@ -2871,6 +2871,7 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_fs",
+ "moss_storage",
  "moss_testutils",
  "moss_workbench",
  "scraper",
@@ -2889,9 +2890,13 @@ name = "moss_common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_db",
  "serde",
  "slotmap",
+ "tauri",
+ "thiserror 2.0.12",
  "ts-rs",
+ "validator",
 ]
 
 [[package]]
@@ -2916,6 +2921,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_fs",
+ "moss_storage",
  "rand 0.9.1",
  "serde",
  "serde_json",
@@ -3035,8 +3041,13 @@ dependencies = [
 name = "moss_storage"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "arc-swap",
+ "async-trait",
  "moss_db",
  "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -3044,6 +3055,7 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_common",
  "serde",
  "serde_json",
 ]

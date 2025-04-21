@@ -1,8 +1,5 @@
 pub mod api;
 
-mod error;
-pub use error::*;
-
 use anyhow::{Context, Result};
 use moss_collection::{
     collection::{Collection, CollectionCache},
@@ -11,13 +8,11 @@ use moss_collection::{
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{utils::decode_name, FileSystem};
+use moss_storage::{workspace_storage::WorkspaceStorageImpl, WorkspaceStorage};
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{mpsc, OnceCell, RwLock};
-
-use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::storage::StateDbManager;
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -29,12 +24,14 @@ type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct Workspace<R: TauriRuntime> {
+    #[allow(dead_code)]
     app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    state_db_manager: Arc<dyn StateDbManager>,
+    workspace_storage: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
+    #[allow(dead_code)]
     activity_indicator: ActivityIndicator<R>,
     indexer_handle: IndexerHandle,
 }
@@ -46,7 +43,7 @@ impl<R: TauriRuntime> Workspace<R> {
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        let state_db_manager = StateDbManagerImpl::new(&path)
+        let state_db_manager = WorkspaceStorageImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
         let (tx, rx) = mpsc::unbounded_channel();
@@ -64,7 +61,7 @@ impl<R: TauriRuntime> Workspace<R> {
             app_handle,
             path,
             fs,
-            state_db_manager: Arc::new(state_db_manager),
+            workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             indexer_handle,
@@ -101,7 +98,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     }
                 }
 
-                let mut scan_result = self.state_db_manager.environment_store().scan()?;
+                let mut scan_result = self.workspace_storage.environment_store().scan()?;
                 for (name, env) in envs_from_fs {
                     let environment_entity = scan_result.remove(&name);
 
@@ -112,8 +109,10 @@ impl<R: TauriRuntime> Workspace<R> {
                             variables_cache: environment_entity
                                 .local_values
                                 .into_iter()
-                                .map(|(name, state)| (name, VariableCache::from(state)))
-                                .collect(),
+                                .map(|(name, state_entity)| {
+                                    VariableCache::try_from(state_entity).map(|cache| (name, cache))
+                                })
+                                .collect::<Result<HashMap<_, _>, _>>()?,
                         }
                     } else {
                         EnvironmentCache {
@@ -144,8 +143,10 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: Support external collections with absolute path
-                for (relative_path, collection_data) in
-                    self.state_db_manager.collection_store().scan()?
+                for (relative_path, collection_data) in self
+                    .workspace_storage
+                    .collection_store()
+                    .list_collection()?
                 {
                     let name = match relative_path.file_name() {
                         Some(name) => decode_name(&name.to_string_lossy().to_string())?,
@@ -205,9 +206,11 @@ impl<R: TauriRuntime> Workspace<R> {
 impl<R: TauriRuntime> Workspace<R> {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
-        table.truncate(&mut txn)?;
-        Ok(txn.commit()?)
+        // let collection_store = self.workspace_storage.collection_store();
+
+        // let (mut txn, table) = collection_store.begin_write()?;
+        // table.truncate(&mut txn)?;
+        // Ok(txn.commit()?)
+        todo!()
     }
 }

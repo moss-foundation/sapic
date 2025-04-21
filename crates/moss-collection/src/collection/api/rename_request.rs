@@ -1,13 +1,17 @@
-use anyhow::{anyhow, Context as _, Result};
+use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
+use moss_storage::collection_storage::entities::request_store_entities::{
+    RequestEntity, RequestNodeEntity,
+};
 use validator::Validate;
 
-use crate::collection::{Collection, OperationError, REQUESTS_DIR};
-use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
+use crate::collection::{Collection, REQUESTS_DIR};
+use crate::models::operations::RenameRequestInput;
 
 impl Collection {
-    pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
+    pub async fn rename_request(&self, input: RenameRequestInput) -> OperationResult<()> {
         input
             .validate()
             .map_err(|error| OperationError::Validation(error.to_string()))?;
@@ -66,17 +70,13 @@ impl Collection {
             .await
             .context("Failed to rename the request directory")?;
 
-        let request_store = self.state_db_manager.request_store().await;
-        let (mut txn, table) = request_store.begin_write()?;
-        let store_entity = table.remove(
-            &mut txn,
-            request_dir_relative_path_old.to_string_lossy().to_string(),
-        )?;
+        let request_store = self.collection_storage.request_store().await;
+        let mut txn = self.collection_storage.begin_write().await?;
 
-        table.insert(
+        request_store.rekey_request_node(
             &mut txn,
-            request_dir_relative_path_new.to_string_lossy().to_string(),
-            &store_entity,
+            request_dir_relative_path_old,
+            request_dir_relative_path_new.clone(),
         )?;
 
         lease_request_data.set_name(input.new_name);
