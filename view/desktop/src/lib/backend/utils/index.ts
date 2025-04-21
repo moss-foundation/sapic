@@ -1,12 +1,12 @@
 import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "@/lib/moss-tabs/src";
 import { EditorGridNode, EditorPartState } from "@repo/moss-workspace";
 
-const mapSerializedNode = (node: SerializedGridObject<GroupPanelViewState>): EditorGridNode => {
+const mapSerializedRootToEditorRoot = (node: SerializedGridObject<GroupPanelViewState>): EditorGridNode => {
   if (node.type === "branch") {
     return {
       type: "branch",
       size: node.size ?? 0,
-      data: (node.data as SerializedGridObject<GroupPanelViewState>[]).map(mapSerializedNode),
+      data: (node.data as SerializedGridObject<GroupPanelViewState>[]).map(mapSerializedRootToEditorRoot),
     };
   }
 
@@ -63,7 +63,7 @@ export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockv
       height,
       width,
       orientation: mapSerializedOrientationToEditor(orientation),
-      root: mapSerializedNode(root),
+      root: mapSerializedRootToEditorRoot(root),
     },
   };
 };
