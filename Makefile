@@ -48,13 +48,7 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 DESKTOP_DIR := view/desktop
 ICONS_DIR := tools/icongen
 XTASK_DIR := tools/xtask
-
-# Python scripts
-PYTHON_SCRIPTS_DIR := misc
-TS_IMPORT_INJECTOR := $(PYTHON_SCRIPTS_DIR)/ts_imports_injector.py
-TS_EXPORT_INJECTOR := $(PYTHON_SCRIPTS_DIR)/ts_exports_injector.py
-TS_IMPORTS_CONSOLIDATOR := $(PYTHON_SCRIPTS_DIR)/ts_imports_consolidator.py
-CSS_VARIABLES_EXPORTER := $(PYTHON_SCRIPTS_DIR)/css_variables_exporter.py
+MISC_DIR := misc
 
 # ---- Crate Directories ----
 COLLECTION_MODELS_DIR := crates/moss-collection
@@ -80,7 +74,7 @@ RUSTUP := rustup
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
-	@cd $(PYTHON_SCRIPTS_DIR) && $(PIP) install --break-system-packages -r requirements.txt
+	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
 
 ## Generate application icons
 .PHONY: gen-icons
@@ -108,9 +102,9 @@ define gen_models
 gen-$(1)-models:
 	@echo "Generating $(1) models..."
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
-	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_IMPORT_INJECTOR) package.json
-	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_EXPORT_INJECTOR)
-	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(TS_IMPORTS_CONSOLIDATOR) bindings
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_imports_injector.py package.json
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_exports_injector.py
+	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_imports_consolidator.py bindings
 	@cd $($(2)) && $(PNPM) format
 	@echo "$(1) models generated successfully"
 endef
@@ -146,7 +140,7 @@ gen-models: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(PYTHON_SCRIPTS_DIR) && $(PYTHON) $(CSS_VARIABLES_EXPORTER)
+	@cd $(MISC_DIR) && $(PYTHON) css_variables_exporter.py
 
 ## Count Lines of Code
 .PHONY: loc
