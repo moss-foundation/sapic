@@ -23,23 +23,23 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
       const layout = await describeLayoutPartsState();
 
-      if (layout.status !== "ok" || !layout.data) {
+      if (layout === undefined) {
         setIsPreparing(false);
         return;
       }
 
-      if (layout.data?.editor) {
-        setGridState(layout.data.editor as unknown as SerializedDockview);
+      if (layout?.editor) {
+        setGridState(layout.editor as unknown as SerializedDockview);
       }
 
       initializeResizableLayout({
         sideBar: {
-          width: layout?.data?.sidebar?.preferredSize,
-          visible: layout?.data?.sidebar?.isVisible,
+          width: layout?.sidebar?.preferredSize,
+          visible: layout?.sidebar?.isVisible,
         },
         bottomPane: {
-          height: layout?.data?.panel?.preferredSize,
-          visible: layout?.data?.panel?.isVisible,
+          height: layout?.panel?.preferredSize,
+          visible: layout?.panel?.isVisible,
         },
       });
 
