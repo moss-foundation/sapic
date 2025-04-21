@@ -9,13 +9,10 @@ export const WelcomePage = () => {
           <FirstColumn />
 
           <div className="absolute inset-x-0 bottom-4 flex justify-center">
-            <a
-              className="flex animate-bounce cursor-pointer flex-col items-center gap-2 text-sm duration-1000"
-              href="#TestAnchorForWelcomePage"
-            >
+            <div className="flex animate-bounce flex-col items-center gap-2 text-sm duration-1000">
               <span className="font-medium">Learn more</span>
               <Icon icon="ChevronDownEllipse" />
-            </a>
+            </div>
           </div>
 
           <SecondColumn />
@@ -25,9 +22,9 @@ export const WelcomePage = () => {
       </div>
 
       <div className="flex h-full w-full flex-col items-center pb-6">
-        <a id="TestAnchorForWelcomePage" className="mt-auto">
+        <div id="TestAnchorForWelcomePage" className="mt-auto">
           hello
-        </a>
+        </div>
       </div>
     </>
   );
