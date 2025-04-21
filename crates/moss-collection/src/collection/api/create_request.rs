@@ -1,13 +1,17 @@
 use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::{
     utils::{encode_name, encode_path},
     CreateOptions,
+};
+use moss_storage::collection_storage::entities::request_store_entities::{
+    RequestEntity, RequestNodeEntity,
 };
 use std::path::PathBuf;
 use validator::Validate;
 
 use crate::{
-    collection::{Collection, CollectionRequestData, OperationError, REQUESTS_DIR},
+    collection::{Collection, CollectionRequestData, REQUESTS_DIR},
     collection_registry::RequestNode,
     constants::{
         DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
@@ -17,7 +21,6 @@ use crate::{
         operations::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
-        storage::RequestEntity,
         types::HttpMethod,
     },
 };
@@ -26,10 +29,8 @@ impl Collection {
     pub async fn create_request(
         &self,
         input: CreateRequestInput,
-    ) -> Result<CreateRequestOutput, OperationError> {
-        input
-            .validate()
-            .map_err(|error| OperationError::Validation(error.to_string()))?;
+    ) -> OperationResult<CreateRequestOutput> {
+        input.validate()?;
 
         let request_dir_name = format!("{}.request", encode_name(&input.name));
 
@@ -82,17 +83,14 @@ impl Collection {
             None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
-        dbg!(1);
-        let request_store = self.state_db_manager.request_store().await;
-
+        let request_store = self.collection_storage.request_store().await;
         let request_nodes = self.registry().await?.requests_nodes();
-        dbg!(2);
 
-        let (mut txn, table) = request_store.begin_write()?;
-        table.insert(
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.upsert_request_node(
             &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestEntity::Request { order: None },
+            request_dir_relative_path.clone(),
+            RequestNodeEntity::Request(RequestEntity { order: None }),
         )?;
 
         self.fs
@@ -100,7 +98,6 @@ impl Collection {
             .await
             .context("Failed to create the request directory")?;
 
-        dbg!(3);
         self.fs
             .create_file_with(
                 &request_dir_abs_path.join(&spec_file_name),
@@ -109,9 +106,6 @@ impl Collection {
             )
             .await
             .context("Failed to create the request file")?;
-        dbg!(4);
-
-        txn.commit()?;
 
         let request_key = {
             let mut requests_lock = request_nodes.write().await;
@@ -123,7 +117,7 @@ impl Collection {
             }))
         };
 
-        dbg!(5);
+        txn.commit()?;
 
         Ok(CreateRequestOutput { key: request_key })
     }

@@ -1,23 +1,22 @@
 use anyhow::Context as _;
 use moss_collection::collection::{Collection, CollectionCache};
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
+use moss_storage::workspace_storage::entities::collection_store_entities::CollectionEntity;
 use std::path::PathBuf;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    models::{
-        entities::CollectionEntity,
-        operations::{CreateCollectionInput, CreateCollectionOutput},
-    },
-    workspace::{OperationError, Workspace, COLLECTIONS_DIR},
+    models::operations::{CreateCollectionInput, CreateCollectionOutput},
+    workspace::{Workspace, COLLECTIONS_DIR},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection(
         &self,
         input: CreateCollectionInput,
-    ) -> Result<CreateCollectionOutput, OperationError> {
+    ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
         // workspace_path/encoded_collection_folder
@@ -36,13 +35,13 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to get collections")?;
 
-        let collection_store = self.state_db_manager.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
+        let collection_store = self.workspace_storage.collection_store();
+        let mut txn = self.workspace_storage.begin_write().await?;
 
-        table.insert(
+        collection_store.upsert_collection(
             &mut txn,
-            relative_path.to_string_lossy().to_string(),
-            &CollectionEntity { order: None },
+            relative_path.to_owned(),
+            CollectionEntity { order: None },
         )?;
 
         self.fs

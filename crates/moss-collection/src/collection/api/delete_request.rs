@@ -1,11 +1,12 @@
-use anyhow::{anyhow, Context as _, Result};
+use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::RemoveOptions;
 
-use crate::collection::{Collection, OperationError, REQUESTS_DIR};
+use crate::collection::{Collection, REQUESTS_DIR};
 use crate::models::operations::DeleteRequestInput;
 
 impl Collection {
-    pub async fn delete_request(&self, input: DeleteRequestInput) -> Result<()> {
+    pub async fn delete_request(&self, input: DeleteRequestInput) -> OperationResult<()> {
         let request_data = {
             let request_nodes = self.registry().await?.requests_nodes();
             let mut requests_lock = request_nodes.write().await;
@@ -25,6 +26,10 @@ impl Collection {
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 
+        let request_store = self.collection_storage.request_store().await;
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.delete_request_node(&mut txn, request_dir_relative_path.clone())?;
+
         // TODO: Add logging when the request was already deleted from the fs?
         // TODO: Self-healing process
         self.fs
@@ -37,13 +42,6 @@ impl Collection {
             )
             .await
             .context("Failed to remove the request directory")?;
-
-        let request_store = self.state_db_manager.request_store().await;
-        let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
-            &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-        )?;
 
         txn.commit()?;
 

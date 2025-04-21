@@ -1,8 +1,5 @@
 pub mod api;
 
-mod error;
-pub use error::*;
-
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_app::service::prelude::AppService;

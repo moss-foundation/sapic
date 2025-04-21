@@ -1,4 +1,5 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use std::sync::Arc;
@@ -7,13 +8,10 @@ use validator::Validate;
 
 use crate::models::operations::RenameWorkspaceInput;
 use crate::workspace::Workspace;
-use crate::workspace_manager::{OperationError, WorkspaceManager};
+use crate::workspace_manager::WorkspaceManager;
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn rename_workspace(
-        &self,
-        input: RenameWorkspaceInput,
-    ) -> Result<(), OperationError> {
+    pub async fn rename_workspace(&self, input: RenameWorkspaceInput) -> OperationResult<()> {
         input.validate()?;
 
         let workspaces = self
@@ -54,6 +52,14 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
 
         let current_entry = self.current_workspace.swap(None);
 
+        let workspace_storage = self.global_storage.workspaces_store();
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.rekey_workspace(
+            &mut txn,
+            workspace_info.name.clone(),
+            input.new_name.clone(),
+        )?;
+
         // FIXME: This is probably not the best approach
         // If the current workspace needs to be renamed
         // We will first drop the workspace, do fs renaming, and reload it
@@ -86,6 +92,8 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
 
         workspace_info.name = input.new_name;
         workspace_info.path = new_path;
+
+        txn.commit()?;
 
         Ok(())
     }

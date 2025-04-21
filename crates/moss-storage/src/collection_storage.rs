@@ -1,1 +1,141 @@
 pub mod entities;
+pub mod request_store;
+
+use anyhow::Result;
+use arc_swap::ArcSwap;
+use async_trait::async_trait;
+use entities::request_store_entities::RequestNodeEntity;
+use moss_db::{
+    bincode_table::BincodeTable, common::DatabaseError, ClientState, DatabaseClient, ReDbClient,
+    Transaction,
+};
+use request_store::RequestStoreImpl;
+
+use std::{
+    collections::HashMap,
+    future::Future,
+    path::{Path, PathBuf},
+    pin::Pin,
+    sync::Arc,
+};
+use tokio::sync::Notify;
+
+use crate::{common::Transactional, CollectionStorage, ResettableStorage};
+
+const COLLECTION_STATE_DB_NAME: &str = "state.db";
+
+pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestNodeEntity>;
+pub trait RequestStore: Send + Sync + 'static {
+    fn list_request_nodes(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>, DatabaseError>;
+    fn upsert_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+        node: RequestNodeEntity,
+    ) -> Result<(), DatabaseError>;
+    fn rekey_request_node(
+        &self,
+        txn: &mut Transaction,
+        old_path: PathBuf,
+        new_path: PathBuf,
+    ) -> Result<(), DatabaseError>;
+    fn delete_request_node(
+        &self,
+        txn: &mut Transaction,
+        path: PathBuf,
+    ) -> Result<(), DatabaseError>;
+}
+
+struct ResettableStorageCell {
+    db_client: ReDbClient,
+    request_store: Arc<dyn RequestStore>,
+}
+
+impl ResettableStorageCell {
+    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
+            .with_table(&request_store::TABLE_REQUESTS)?;
+
+        let request_store = Arc::new(RequestStoreImpl::new(db_client.clone()));
+        Ok(Self {
+            db_client,
+            request_store,
+        })
+    }
+}
+
+pub struct CollectionStorageImpl {
+    state: ArcSwap<ClientState<ResettableStorageCell>>,
+}
+
+impl CollectionStorageImpl {
+    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+        let cell = ResettableStorageCell::new(path)?;
+
+        Ok(Self {
+            state: ArcSwap::new(Arc::new(ClientState::Loaded(cell))),
+        })
+    }
+}
+
+#[async_trait]
+impl Transactional for CollectionStorageImpl {
+    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.db_client.begin_write(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+
+    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.db_client.begin_read(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+}
+
+#[async_trait]
+impl CollectionStorage for CollectionStorageImpl {
+    async fn request_store(&self) -> Arc<dyn RequestStore> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.request_store.clone(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+}
+
+#[async_trait]
+impl ResettableStorage for CollectionStorageImpl {
+    async fn reset(
+        &self,
+        new_path: PathBuf,
+        after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
+    ) -> Result<()> {
+        let local_notify = Arc::new(Notify::new());
+        let reloading_state = Arc::new(ClientState::Reloading {
+            notify: local_notify.clone(),
+        });
+        let old_state = self.state.swap(reloading_state);
+
+        // Wait for current operations to complete
+        tokio::task::yield_now().await;
+        drop(old_state);
+
+        after_drop.await?;
+
+        let new_cell = ResettableStorageCell::new(new_path)?;
+        let new_state = Arc::new(ClientState::Loaded(new_cell));
+        self.state.store(new_state);
+
+        // Notify waiting operations
+        local_notify.notify_waiters();
+        Ok(())
+    }
+}

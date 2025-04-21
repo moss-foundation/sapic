@@ -1,9 +1,9 @@
 mod shared;
 
+use moss_common::api::OperationError;
 use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::operations::{CreateWorkspaceInput, RenameWorkspaceInput};
-use moss_workspace::workspace_manager::OperationError;
 
 use crate::shared::setup_test_workspace_manager;
 

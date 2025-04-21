@@ -22,4 +22,10 @@ impl From<serde_json::Error> for TauriError {
     }
 }
 
+impl From<moss_common::api::OperationError> for TauriError {
+    fn from(e: moss_common::api::OperationError) -> Self {
+        TauriError(e.to_string())
+    }
+}
+
 pub type TauriResult<T> = Result<T, TauriError>;
