@@ -4,16 +4,12 @@ use moss_storage::workspace_storage::entities::state_store_entities::{
 };
 use tauri::Runtime as TauriRuntime;
 
-use crate::{
-    models::operations::{SetLayoutPartsStateInput, SetLayoutPartsStateParams},
-    workspace::Workspace,
-};
+use crate::{models::operations::SetLayoutPartsStateInput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn set_layout_parts_state(
         &self,
         input: SetLayoutPartsStateInput,
-        params: SetLayoutPartsStateParams,
     ) -> OperationResult<()> {
         let layout_parts_state_store = self.workspace_storage.state_store();
 
