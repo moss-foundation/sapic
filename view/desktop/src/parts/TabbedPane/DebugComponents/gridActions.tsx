@@ -77,7 +77,7 @@ export const GridActions = (props: {
   hasCustomWatermark: boolean;
   toggleCustomWatermark: () => void;
 }) => {
-  const { setGridState } = useTabbedPaneStore();
+  const { sendGridStateToBackend } = useTabbedPaneStore();
   const onClear = () => {
     props.api?.clear();
   };
@@ -95,7 +95,7 @@ export const GridActions = (props: {
 
   const onSave = () => {
     if (props.api) {
-      setGridState(props.api.toJSON());
+      sendGridStateToBackend(props.api.toJSON());
     }
   };
 
