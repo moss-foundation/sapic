@@ -83,6 +83,7 @@ pub struct EditorPanelState {
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPartState {
     pub grid: EditorGridState,
+    #[ts(type = "Record<string, EditorPanelState>")]
     pub panels: HashMap<String, EditorPanelState>,
     #[ts(optional)]
     pub active_group: Option<String>,
