@@ -1,47 +1,69 @@
 import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "@/lib/moss-tabs/src";
-import { EditorPartState } from "@repo/moss-workspace";
+import { EditorGridNode, EditorPartState } from "@repo/moss-workspace";
 
-export function mapEditorPartStateToSerializedDockview(editorState: EditorPartState): SerializedDockview {
+function mapSerializedNode(node: SerializedGridObject<GroupPanelViewState>): EditorGridNode {
+  if (node.type === "branch") {
+    return {
+      type: "branch",
+      size: node.size ?? 0,
+      data: (node.data as SerializedGridObject<GroupPanelViewState>[]).map(mapSerializedNode),
+    };
+  }
+
+  const leafData = node.data as GroupPanelViewState;
   return {
-    grid: {
-      root: editorState.grid.root,
-      height: editorState.grid.height,
-      width: editorState.grid.width,
-      orientation: editorState.grid.orientation === "HORIZONTAL" ? Orientation.HORIZONTAL : Orientation.VERTICAL,
+    type: "leaf",
+    size: node.size ?? 0,
+    data: {
+      id: leafData.id,
+      views: leafData.views,
+      activeView: leafData.activeView ?? leafData.views[0],
     },
-    panels: editorState.panels,
-    activeGroup: editorState.activeGroup,
   };
 }
 
-const serializedDockviewGridRootDataToEditor = (
-  data: GroupPanelViewState | SerializedGridObject<GroupPanelViewState>[]
-) => {
-  if (Array.isArray(data)) {
-    return data.map((item) => ({
-      ...item,
-      data: serializedDockviewGridRootDataToEditor(item.data),
-    }));
-  }
+function mapOrientationEditorToSerialized(orientation: "HORIZONTAL" | "VERTICAL"): Orientation {
+  return orientation === "HORIZONTAL" ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+}
 
-  return data;
-};
+function mapOrientationSerializedToEditor(orientation: Orientation): "HORIZONTAL" | "VERTICAL" {
+  return orientation === Orientation.HORIZONTAL ? "HORIZONTAL" : "VERTICAL";
+}
 
-export function mapSerializedDockviewGridRootDataToEditorPartStateGridRootData(
-  serializedDockview: SerializedDockview
-): EditorPartState {
+export function mapEditorPartStateToSerializedDockview(editor: EditorPartState): SerializedDockview {
+  const {
+    panels,
+    activeGroup,
+    grid: { root, height, width, orientation },
+  } = editor;
+
   return {
+    panels,
+    activeGroup,
     grid: {
-      root: {
-        data: serializedDockviewGridRootDataToEditor(serializedDockview.grid.root.data),
-        size: serializedDockview.grid.root.size ?? 0,
-        type: serializedDockview.grid.root.type,
-      },
-      height: serializedDockview.grid.height,
-      width: serializedDockview.grid.width,
-      orientation: serializedDockview.grid.orientation,
+      root,
+      height,
+      width,
+      orientation: mapOrientationEditorToSerialized(orientation),
     },
-    panels: serializedDockview.panels,
-    activeGroup: serializedDockview.activeGroup,
+  };
+}
+
+export function mapSerializedDockviewToEditorPartState(dockview: SerializedDockview): EditorPartState {
+  const {
+    panels,
+    activeGroup,
+    grid: { root, height, width, orientation },
+  } = dockview;
+
+  return {
+    panels,
+    activeGroup,
+    grid: {
+      height,
+      width,
+      orientation: mapOrientationSerializedToEditor(orientation),
+      root: mapSerializedNode(root),
+    },
   };
 }
