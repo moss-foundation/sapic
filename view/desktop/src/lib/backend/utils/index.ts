@@ -22,11 +22,11 @@ const mapSerializedNode = (node: SerializedGridObject<GroupPanelViewState>): Edi
   };
 };
 
-const mapOrientationEditorToSerialized = (orientation: "HORIZONTAL" | "VERTICAL"): Orientation => {
+const mapEditorOrientationToSerialized = (orientation: "HORIZONTAL" | "VERTICAL"): Orientation => {
   return orientation === "HORIZONTAL" ? Orientation.HORIZONTAL : Orientation.VERTICAL;
 };
 
-const mapOrientationSerializedToEditor = (orientation: Orientation): "HORIZONTAL" | "VERTICAL" => {
+const mapSerializedOrientationToEditor = (orientation: Orientation): "HORIZONTAL" | "VERTICAL" => {
   return orientation === Orientation.HORIZONTAL ? "HORIZONTAL" : "VERTICAL";
 };
 
@@ -44,7 +44,7 @@ export const mapEditorPartStateToSerializedDockview = (editor: EditorPartState):
       root,
       height,
       width,
-      orientation: mapOrientationEditorToSerialized(orientation),
+      orientation: mapEditorOrientationToSerialized(orientation),
     },
   };
 };
@@ -62,7 +62,7 @@ export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockv
     grid: {
       height,
       width,
-      orientation: mapOrientationSerializedToEditor(orientation),
+      orientation: mapSerializedOrientationToEditor(orientation),
       root: mapSerializedNode(root),
     },
   };
