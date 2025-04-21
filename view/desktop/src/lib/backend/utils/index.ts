@@ -1,7 +1,7 @@
 import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "@/lib/moss-tabs/src";
 import { EditorGridNode, EditorPartState } from "@repo/moss-workspace";
 
-function mapSerializedNode(node: SerializedGridObject<GroupPanelViewState>): EditorGridNode {
+const mapSerializedNode = (node: SerializedGridObject<GroupPanelViewState>): EditorGridNode => {
   if (node.type === "branch") {
     return {
       type: "branch",
@@ -20,17 +20,17 @@ function mapSerializedNode(node: SerializedGridObject<GroupPanelViewState>): Edi
       activeView: leafData.activeView ?? leafData.views[0],
     },
   };
-}
+};
 
-function mapOrientationEditorToSerialized(orientation: "HORIZONTAL" | "VERTICAL"): Orientation {
+const mapOrientationEditorToSerialized = (orientation: "HORIZONTAL" | "VERTICAL"): Orientation => {
   return orientation === "HORIZONTAL" ? Orientation.HORIZONTAL : Orientation.VERTICAL;
-}
+};
 
-function mapOrientationSerializedToEditor(orientation: Orientation): "HORIZONTAL" | "VERTICAL" {
+const mapOrientationSerializedToEditor = (orientation: Orientation): "HORIZONTAL" | "VERTICAL" => {
   return orientation === Orientation.HORIZONTAL ? "HORIZONTAL" : "VERTICAL";
-}
+};
 
-export function mapEditorPartStateToSerializedDockview(editor: EditorPartState): SerializedDockview {
+export const mapEditorPartStateToSerializedDockview = (editor: EditorPartState): SerializedDockview => {
   const {
     panels,
     activeGroup,
@@ -47,9 +47,9 @@ export function mapEditorPartStateToSerializedDockview(editor: EditorPartState):
       orientation: mapOrientationEditorToSerialized(orientation),
     },
   };
-}
+};
 
-export function mapSerializedDockviewToEditorPartState(dockview: SerializedDockview): EditorPartState {
+export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockview): EditorPartState => {
   const {
     panels,
     activeGroup,
@@ -66,4 +66,4 @@ export function mapSerializedDockviewToEditorPartState(dockview: SerializedDockv
       root: mapSerializedNode(root),
     },
   };
-}
+};
