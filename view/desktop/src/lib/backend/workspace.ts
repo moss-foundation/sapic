@@ -11,7 +11,7 @@ import { mapEditorPartStateToSerializedDockview } from "./utils";
 export const describeLayoutPartsState = async () => {
   const res = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
 
-  if (!res || res.status !== "ok") {
+  if (res.status !== "ok") {
     console.error("Failed to describe layout parts state", res);
     return undefined;
   }
