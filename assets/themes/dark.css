@@ -79,6 +79,7 @@
 
   /* Separators and Borders */
   --moss-separator-border: var(--moss-border-color);
+  --moss-sash-active-highlight: #047cd4;
 
   /* Overlay and Shadows */
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);

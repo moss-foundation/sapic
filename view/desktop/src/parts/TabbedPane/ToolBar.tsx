@@ -14,7 +14,7 @@ interface ToolBarTitleProps {
 
 const ToolBarTitle: React.FC<ToolBarTitleProps> = ({ title }) => {
   return (
-    <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)]">
+    <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)] opacity-100">
       {title}
     </span>
   );

@@ -84,6 +84,7 @@
 
   /* Resizable */
   --separator-border: var(--moss-border-color);
+  --moss-sash-active-highlight: #047cd4;
 
   /* Icons */
   --moss-icon-primary-background: transparent;

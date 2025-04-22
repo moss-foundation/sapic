@@ -413,14 +413,16 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  transition: background-color 0.2s ease-out;
 }
 
 .dv-split-view-container .dv-sash-container .dv-sash:not(.disabled):active {
-  @apply bg-[var(--moss-active-sash-color,transparent)] transition-colors duration-100 ease-in-out;
+  @apply bg-[var(--moss-sash-active-highlight)] opacity-100;
+  transition: none;
 }
 
 .dv-split-view-container .dv-sash-container .dv-sash:not(.disabled):hover {
-  @apply bg-[var(--moss-active-sash-color,transparent)] transition-colors delay-500 duration-100 ease-in-out;
+  @apply bg-[var(--moss-sash-active-highlight)] opacity-100;
 }
 
 .dv-split-view-container .dv-view-container {
@@ -487,4 +489,14 @@
 
 .dv-dragged {
   transform: translate3d(0px, 0px, 0px);
+}
+
+.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-enabled:active {
+  width: 3px;
+  height: 100%;
+}
+
+.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-enabled:active {
+  width: 100%;
+  height: 3px;
 }
