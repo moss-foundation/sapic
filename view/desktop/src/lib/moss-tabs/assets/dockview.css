@@ -8,7 +8,7 @@
 .dockview-theme-dark {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
@@ -33,7 +33,7 @@
 .dockview-theme-light {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
@@ -58,7 +58,7 @@
 .dockview-theme-vs {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
@@ -100,7 +100,7 @@
 .dockview-theme-abyss {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
@@ -126,7 +126,7 @@
 .dockview-theme-dracula {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
@@ -194,7 +194,7 @@
 .dockview-theme-replit {
   --dv-paneview-active-outline-color: dodgerblue;
   --dv-tabs-and-actions-container-font-size: 13px;
-  --dv-tabs-and-actions-container-height: 36px;
+  --dv-tabs-and-actions-container-height: 35px;
   --dv-drag-over-background-color: rgba(83, 89, 93, 0.5);
   --dv-drag-over-border-color: white;
   --dv-tabs-container-scrollbar-color: #888;
