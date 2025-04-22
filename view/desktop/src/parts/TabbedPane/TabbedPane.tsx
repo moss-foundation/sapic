@@ -31,15 +31,9 @@ import { AddPanelButton } from "./AddPanelButton";
 
 const DebugContext = React.createContext<boolean>(false);
 
-const MAX_TABS_BEFORE_HIDING_LABELS = 4;
-
-// Custom component to handle the toolbar rendering with access to panel data
 const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   const { api } = useTabbedPaneStore();
   const panelId = props.group.activePanel?.api.id;
-
-  const panelCount = props.group.panels.length;
-  const hideTextLabels = panelCount > MAX_TABS_BEFORE_HIDING_LABELS;
 
   let isWorkspace = false;
 
@@ -50,7 +44,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
     }
   }
 
-  return <ToolBar workspace={isWorkspace} hideTextLabels={hideTextLabels} />;
+  return <ToolBar workspace={isWorkspace} />;
 };
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
