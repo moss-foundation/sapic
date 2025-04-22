@@ -1,8 +1,11 @@
 mod shared;
 
-use moss_collection::collection::OperationError;
-use moss_collection::models::operations::{CreateRequestInput, RenameRequestInput};
+use moss_collection::models::operations::{
+    CreateRequestGroupInput, CreateRequestInput, RenameRequestInput,
+};
 use moss_collection::models::types::{HttpMethod, RequestNodeInfo, RequestProtocol};
+use moss_common::api::OperationError;
+use moss_testutils::random_name::random_request_group_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_request_name};
 use std::path::{Path, PathBuf};
 
@@ -269,4 +272,30 @@ async fn rename_request_with_relative_path() {
             protocol: RequestProtocol::Http(HttpMethod::Get),
         }
     )
+}
+
+#[tokio::test]
+async fn rename_request_incorrect_entity_type() {
+    let (collection_path, collection) = set_up_test_collection().await;
+    let request_group_name = random_request_group_name();
+
+    let group_key = collection
+        .create_request_group(CreateRequestGroupInput {
+            path: PathBuf::from(&request_group_name),
+        })
+        .await
+        .unwrap()
+        .key;
+
+    let result = collection
+        .rename_request(RenameRequestInput {
+            key: group_key,
+            new_name: "new_name".to_string(),
+        })
+        .await;
+
+    assert!(result.is_err());
+    {
+        std::fs::remove_dir_all(collection_path).unwrap();
+    }
 }

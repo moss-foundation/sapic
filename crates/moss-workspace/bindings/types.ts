@@ -39,11 +39,7 @@ export type EditorPanelState = {
   maximumHeight?: number;
 };
 
-export type EditorPartState = {
-  grid: EditorGridState;
-  panels: { [key in string]?: EditorPanelState };
-  activeGroup?: string;
-};
+export type EditorPartState = { grid: EditorGridState; panels: Record<string, EditorPanelState>; activeGroup?: string };
 
 export type EnvironmentInfo = { key: ResourceKey; collectionKey?: ResourceKey; name: string; order?: number };
 
@@ -53,4 +49,4 @@ export type PanelRenderer = "onlyWhenVisible" | "always";
 
 export type SidebarPartState = { preferredSize: number; isVisible: boolean };
 
-export type WorkspaceInfo = { path: string; name: string };
+export type WorkspaceInfo = { path: string; name: string; lastOpenedAt?: bigint };

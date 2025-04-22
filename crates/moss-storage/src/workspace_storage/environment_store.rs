@@ -2,15 +2,18 @@ use anyhow::Result;
 use moss_db::{bincode_table::BincodeTable, ReDbClient};
 use std::collections::HashMap;
 
-use crate::models::{entities::EnvironmentEntity, types::EnvironmentName};
-
-use super::{EnvironmentStore, EnvironmentStoreTable};
+use super::{
+    entities::environment_store_entities::EnvironmentEntity, EnvironmentStore,
+    EnvironmentStoreTable,
+};
 
 #[rustfmt::skip]
-pub(super) const TABLE_ENVIRONMENTS: BincodeTable<String, EnvironmentEntity> = BincodeTable::new("environments");
+pub(in crate::workspace_storage) const TABLE_ENVIRONMENTS: BincodeTable<String, EnvironmentEntity> = BincodeTable::new("environments");
 
 pub struct EnvironmentStoreImpl {
+    #[allow(dead_code)] // TODO: remove this, when we have a use for it
     client: ReDbClient,
+    #[allow(dead_code)] // TODO: remove this, when we have a use for it
     table: EnvironmentStoreTable<'static>,
 }
 
@@ -24,7 +27,7 @@ impl EnvironmentStoreImpl {
 }
 
 impl EnvironmentStore for EnvironmentStoreImpl {
-    fn scan(&self) -> Result<HashMap<EnvironmentName, EnvironmentEntity>> {
+    fn scan(&self) -> Result<HashMap<String, EnvironmentEntity>> {
         todo!()
     }
 }

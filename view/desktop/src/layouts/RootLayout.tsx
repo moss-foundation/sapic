@@ -14,7 +14,7 @@ export const RootLayout = ({ children, className, ...props }: ComponentProps<"ma
         {children}
       </main>
 
-      <StatusBar className="h-5.5 w-full" />
+      <StatusBar className="h-[29px] w-full" />
     </div>
   );
 };

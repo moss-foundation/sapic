@@ -6,11 +6,12 @@ use moss_db::{
 };
 use serde::de::DeserializeOwned;
 
-use crate::models::entities::{
-    EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
+use super::{
+    entities::state_store_entities::{
+        EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
+    },
+    StateStore, StateStoreTable,
 };
-
-use super::{LayoutPartsStateStore, LayoutPartsStateStoreTable};
 
 const WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY: &str = "workbench.parts.editor.grid";
 const WORKBENCH_PARTS_EDITOR_PANELS_STATE_KEY: &str = "workbench.parts.editor.panels";
@@ -19,18 +20,18 @@ const WORKBENCH_PARTS_SIDEBAR_STATE_KEY: &str = "workbench.parts.sidebar";
 const WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY: &str = "workbench.parts.editor.activeGroup";
 
 #[rustfmt::skip]
-pub(super) const TABLE_PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("parts_state");
+pub(in crate::workspace_storage) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("parts_state");
 
-pub struct PartsStateStoreImpl {
+pub struct StateStoreImpl {
     client: ReDbClient,
-    table: LayoutPartsStateStoreTable<'static>,
+    table: StateStoreTable<'static>,
 }
 
-impl PartsStateStoreImpl {
+impl StateStoreImpl {
     pub fn new(client: ReDbClient) -> Self {
         Self {
             client,
-            table: TABLE_PARTS_STATE,
+            table: PARTS_STATE,
         }
     }
 
@@ -42,7 +43,7 @@ impl PartsStateStoreImpl {
     }
 }
 
-impl LayoutPartsStateStore for PartsStateStoreImpl {
+impl StateStore for StateStoreImpl {
     fn get_sidebar_part_state(&self) -> Result<SidebarPartStateEntity, DatabaseError> {
         self.get_by_key(WORKBENCH_PARTS_SIDEBAR_STATE_KEY.to_string())
     }

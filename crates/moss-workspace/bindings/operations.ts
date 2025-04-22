@@ -69,5 +69,3 @@ export type RenameCollectionOutput = { path: string };
 export type RenameWorkspaceInput = { key: ResourceKey; newName: string };
 
 export type SetLayoutPartsStateInput = { editor?: EditorPartState; sidebar?: SidebarPartState; panel?: PanelPartState };
-
-export type SetLayoutPartsStateParams = { isOnExit: boolean };

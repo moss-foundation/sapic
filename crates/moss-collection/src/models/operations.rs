@@ -90,23 +90,29 @@ fn validate_path(path: &Path) -> Result<(), ValidationError> {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestGroupOutput {
-    pub path: PathBuf,
+    pub key: ResourceKey,
 }
 
-#[derive(Debug, Serialize, TS, Validate)]
+#[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteRequestGroupInput {
-    #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf,
+    pub key: ResourceKey,
 }
 
 #[derive(Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct RenameRequestGroupInput {
-    #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf,
+    pub key: ResourceKey,
     #[validate(length(min = 1))]
     pub new_name: String,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct RenameRequestGroupOutput {
+    pub key: ResourceKey,
+    pub affected_items: Vec<ResourceKey>,
 }

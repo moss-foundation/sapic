@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActivityEvent } from "@repo/moss-workbench";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<string[]>([]);
-  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
+  const { activityEvents } = useActivityEvents();
 
   useEffect(() => {
     const unlistenLogsStream = listen<string>("logs-stream", (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 
-    const unlistenProgressStream = listen<ActivityEvent>("workbench://activity-indicator", (event) => {
-      setActivityEvents((prev) => [...prev, event.payload]);
-    });
-
     return () => {
       unlistenLogsStream.then((unlisten) => unlisten());
-      unlistenProgressStream.then((unlisten) => unlisten());
     };
   }, []);
 
@@ -37,18 +33,64 @@ export const Logs = () => {
   return (
     <main className="p-4">
       <h1 className="mb-4 text-2xl">{t("logs")}</h1>
-      <button onClick={startIndexing} className="mb-4 cursor-pointer rounded bg-blue-500 p-2 text-white">
-        {t("startIndexing")}
-      </button>
+
+      <ActivityEventSimulator className="mb-4" />
+
+      <div className="mb-4 flex gap-2">
+        <button onClick={startIndexing} className="cursor-pointer rounded bg-blue-500 p-2 text-white">
+          {t("startIndexing")}
+        </button>
+      </div>
 
       <section className="mb-4">
-        <h2 className="text-xl">{t("Last Progress Update")}</h2>
+        <h2 className="text-xl">{t("Activity Events")}</h2>
 
         {activityEvents.length > 0 ? (
-          <ul>
-            {activityEvents.map((activityEvent, index) => (
-              <li key={index}>{JSON.stringify(activityEvent)}</li>
-            ))}
+          <ul className="mt-2 space-y-1 rounded bg-gray-50 p-3">
+            {activityEvents.map((activityEvent, index) => {
+              // Format the event differently based on type
+              let eventInfo;
+              if ("start" in activityEvent) {
+                eventInfo = (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-blue-100 px-2 py-0.5 text-blue-800">Start</span>
+                    <span className="font-medium">{activityEvent.start.title}</span>
+                    <span className="text-sm text-gray-500">ID: {activityEvent.start.activityId}</span>
+                  </div>
+                );
+              } else if ("progress" in activityEvent) {
+                eventInfo = (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-green-100 px-2 py-0.5 text-green-800">Progress</span>
+                    <span className="text-gray-700">{activityEvent.progress.detail}</span>
+                    <span className="text-sm text-gray-500">ID: {activityEvent.progress.activityId}</span>
+                  </div>
+                );
+              } else if ("finish" in activityEvent) {
+                eventInfo = (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-purple-100 px-2 py-0.5 text-purple-800">Finish</span>
+                    <span className="text-sm text-gray-500">ID: {activityEvent.finish.activityId}</span>
+                  </div>
+                );
+              } else if ("oneshot" in activityEvent) {
+                eventInfo = (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Oneshot</span>
+                    <span className="font-medium">{activityEvent.oneshot.title}</span>
+                    <span>{activityEvent.oneshot.detail}</span>
+                  </div>
+                );
+              } else {
+                eventInfo = JSON.stringify(activityEvent);
+              }
+
+              return (
+                <li key={index} className="border-b border-gray-100 pb-1">
+                  {eventInfo}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-secondary">{t("noLogs")}...</p>

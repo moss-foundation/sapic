@@ -3,6 +3,7 @@ import { ReactNode, useEffect } from "react";
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorTheme } from "@/utils/applyTheme";
+import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";
@@ -12,7 +13,9 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
   return (
     <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        <ActivityEventsProvider>{children}</ActivityEventsProvider>
+      </ThemeProvider>
     </LanguageProvider>
   );
 };

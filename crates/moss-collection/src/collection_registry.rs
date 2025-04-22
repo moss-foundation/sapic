@@ -1,4 +1,7 @@
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
+use moss_storage::collection_storage::entities::request_store_entities::{
+    GroupEntity, RequestEntity, RequestNodeEntity,
+};
 use std::path::PathBuf;
 use tokio::sync::RwLock;
 
@@ -28,6 +31,12 @@ pub struct CollectionRequestData {
     ///
     /// This is the name of the spec file, like `get.spec`.
     pub spec_file_name: String,
+}
+
+impl<'a> From<&'a mut CollectionRequestData> for RequestNodeEntity {
+    fn from(value: &'a mut CollectionRequestData) -> Self {
+        RequestNodeEntity::Request(RequestEntity { order: value.order })
+    }
 }
 
 impl CollectionRequestData {
@@ -72,12 +81,41 @@ pub struct CollectionRequestGroupData {
     pub spec_file_name: Option<String>,
 }
 
+impl<'a> From<&'a mut CollectionRequestGroupData> for RequestNodeEntity {
+    fn from(value: &'a mut CollectionRequestGroupData) -> Self {
+        RequestNodeEntity::Group(GroupEntity { order: value.order })
+    }
+}
+
 pub enum RequestNode {
     Request(CollectionRequestData),
     Group(CollectionRequestGroupData),
 }
 
+impl<'a> From<&'a mut RequestNode> for RequestNodeEntity {
+    fn from(value: &'a mut RequestNode) -> Self {
+        match value {
+            RequestNode::Request(data) => data.into(),
+            RequestNode::Group(data) => data.into(),
+        }
+    }
+}
+
 impl RequestNode {
+    pub fn as_request(&self) -> Option<&CollectionRequestData> {
+        match self {
+            RequestNode::Request(data) => Some(data),
+            _ => None,
+        }
+    }
+
+    pub fn as_group(&self) -> Option<&CollectionRequestGroupData> {
+        match self {
+            RequestNode::Group(data) => Some(data),
+            _ => None,
+        }
+    }
+
     pub fn name(&self) -> &str {
         match self {
             RequestNode::Request(data) => &data.name,
@@ -117,6 +155,20 @@ impl RequestNode {
         match self {
             RequestNode::Request(data) => data.order = new_order,
             RequestNode::Group(data) => data.order = new_order,
+        }
+    }
+
+    pub fn is_request(&self) -> bool {
+        match self {
+            RequestNode::Request(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_request_group(&self) -> bool {
+        match self {
+            RequestNode::Group(_) => true,
+            _ => false,
         }
     }
 }

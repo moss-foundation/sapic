@@ -11,7 +11,7 @@ export const useDockviewEventHandlers = (
   setActivePanel: React.Dispatch<React.SetStateAction<string | undefined>>,
   setActiveGroup: React.Dispatch<React.SetStateAction<string | undefined>>
 ) => {
-  const { setGridState, setActivePanelId } = useTabbedPaneStore();
+  const { setActivePanelId } = useTabbedPaneStore();
 
   React.useEffect(() => {
     if (!api) return;
@@ -56,5 +56,5 @@ export const useDockviewEventHandlers = (
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, setGridState, setActivePanelId]);
+  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, setActivePanelId]);
 };

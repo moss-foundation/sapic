@@ -1,17 +1,12 @@
 use anyhow::Context as _;
+use moss_common::api::OperationResult;
 use moss_fs::RemoveOptions;
 use tauri::Runtime as TauriRuntime;
 
-use crate::{
-    models::operations::DeleteWorkspaceInput,
-    workspace_manager::{OperationError, WorkspaceManager},
-};
+use crate::{models::operations::DeleteWorkspaceInput, workspace_manager::WorkspaceManager};
 
 impl<R: TauriRuntime> WorkspaceManager<R> {
-    pub async fn delete_workspace(
-        &self,
-        input: DeleteWorkspaceInput,
-    ) -> Result<(), OperationError> {
+    pub async fn delete_workspace(&self, input: &DeleteWorkspaceInput) -> OperationResult<()> {
         let known_workspaces = self.known_workspaces().await?;
 
         let mut workspaces_lock = known_workspaces.write().await;
@@ -24,6 +19,10 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.
 
+        let workspace_storage = self.global_storage.workspaces_store();
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.delete_workspace(&mut txn, workspace_info.name)?;
+
         // TODO: logging if the folder has already been removed from the filesystem
         self.fs
             .remove_dir(
@@ -34,6 +33,8 @@ impl<R: TauriRuntime> WorkspaceManager<R> {
                 },
             )
             .await?;
+
+        txn.commit()?;
 
         // Deleting a workspace will remove it from current workspace if it is
         let current_entry = self.current_workspace.swap(None);

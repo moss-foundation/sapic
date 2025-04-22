@@ -1,12 +1,11 @@
 use std::path::PathBuf;
-use moss_db::common::DatabaseError;
+
 use thiserror::Error;
-use validator::ValidationErrors;
 
 #[derive(Error, Debug)]
 pub enum OperationError {
     #[error("validation error: {0}")]
-    Validation(#[from] ValidationErrors),
+    Validation(String),
 
     #[error("{name} not found at {path}")]
     NotFound { name: String, path: PathBuf },
@@ -21,8 +20,16 @@ pub enum OperationError {
     Unknown(#[from] anyhow::Error),
 }
 
-impl From<DatabaseError> for OperationError {
-    fn from(error: DatabaseError) -> Self {
+impl From<moss_db::common::DatabaseError> for OperationError {
+    fn from(error: moss_db::common::DatabaseError) -> Self {
         OperationError::Internal(error.to_string())
     }
 }
+
+impl From<validator::ValidationErrors> for OperationError {
+    fn from(error: validator::ValidationErrors) -> Self {
+        OperationError::Validation(error.to_string())
+    }
+}
+
+pub type OperationResult<T> = Result<T, OperationError>;
