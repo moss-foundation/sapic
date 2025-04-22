@@ -136,8 +136,8 @@ const StatusBarIndicators = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
-        <div className="flex items-center rounded-md px-1 transition">
-          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded-md px-1">
+        <div className="flex items-center rounded px-1 transition">
+          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded px-1">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
