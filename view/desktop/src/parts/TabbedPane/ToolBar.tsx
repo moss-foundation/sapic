@@ -11,7 +11,7 @@ interface ToolBarButtonProps {
 const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, title, className }) => {
   return (
     <div
-      className={`group cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className || ""}`}
+      className={`group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className || ""}`}
     >
       <div className="flex items-center gap-1">
         <Icon
@@ -37,7 +37,7 @@ interface ToolBarProps {
 const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
     <div className="group-control mr-[10px] flex h-full items-center px-2 select-none">
-      <div className="group cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+      <div className="group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
         <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
       </div>
 
@@ -45,7 +45,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
         <>
           <Divider height="large" className="mr-[10px]" />
           <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
-          <div className="group ml-[3px] cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+          <div className="group ml-[3px] flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
             <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
           </div>
         </>
