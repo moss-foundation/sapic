@@ -8,6 +8,18 @@ interface ToolBarButtonProps {
   className?: string;
 }
 
+interface ToolBarTitleProps {
+  title: string;
+}
+
+const ToolBarTitle: React.FC<ToolBarTitleProps> = ({ title }) => {
+  return (
+    <span className="text-xs text-[var(--moss-icon-primary-text)] opacity-70 group-hover:text-black group-hover:opacity-100">
+      {title}
+    </span>
+  );
+};
+
 const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, title, className }) => {
   return (
     <div
@@ -18,9 +30,7 @@ const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, titl
           icon={leftIcon}
           className="mr-[2px] size-[18px] text-[var(--moss-icon-primary-text)] group-hover:text-black"
         />
-        <span className="text-xs text-[var(--moss-icon-primary-text)] opacity-70 group-hover:text-black group-hover:opacity-100">
-          {title}
-        </span>
+        <ToolBarTitle title={title} />
         <Icon
           icon={rightIcon}
           className="text-[var(--moss-icon-primary-text)] opacity-70 group-hover:text-black group-hover:opacity-100"
