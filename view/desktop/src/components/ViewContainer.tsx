@@ -1,28 +1,35 @@
-import React from "react";
-
 import { useGetViewGroup } from "@/hooks/useGetViewGroup";
+import { useWorkspaceStore } from "@/store/workspace";
 
-import * as components from "./index";
+import CollectionTreeView from "./CollectionTreeView";
 import { Icon } from "./index";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
+  const { workspace } = useWorkspaceStore((state) => state);
   const { data: viewGroup } = useGetViewGroup(groupId);
 
-  if (!viewGroup) return <div>Empty</div>;
-
-  const ComponentToRender = components[viewGroup.component as keyof typeof components] as
-    | React.ComponentType<unknown>
-    | undefined;
-
-  if (!ComponentToRender) {
+  console.log({ viewGroup });
+  if (!workspace)
     return (
       <div className="flex h-full flex-col">
         <NoWorkspaceComponent />
       </div>
     );
+
+  if (!viewGroup) {
+    return <div>No view group found</div>;
   }
 
-  return <ComponentToRender />;
+  switch (groupId) {
+    case "collections.groupId":
+      return <CollectionTreeView />;
+    case "environments.groupId":
+      return <div>No view group found</div>;
+    case "mock.groupId":
+      return <div>No view group found</div>;
+    default:
+      return <div>No view group found</div>;
+  }
 };
 
 const NoWorkspaceComponent = () => {
