@@ -25,7 +25,7 @@ import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
 import Watermark from "./Watermark";
 import CustomTab from "./CustomTab";
-import { ToolBar } from "./ToolBar";
+import ToolBar from "./ToolBar";
 import { AddPanelButton } from "./AddPanelButton";
 
 const DebugContext = React.createContext<boolean>(false);
@@ -200,7 +200,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={headerComponents.default}
-                  rightHeaderActionsComponent={ToolBar}
+                  rightHeaderActionsComponent={() => <ToolBar workspace={true} />}
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={watermark ? Watermark : undefined}
                   onReady={onReady}

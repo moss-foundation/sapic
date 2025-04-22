@@ -1,3 +1,4 @@
+import React from "react";
 import { Divider, Icon, type Icons } from "@/components";
 
 interface ToolBarButtonProps {
@@ -7,10 +8,10 @@ interface ToolBarButtonProps {
   className?: string;
 }
 
-const ToolBarButton = ({ leftIcon, rightIcon, title, className }: ToolBarButtonProps) => {
+const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, title, className }) => {
   return (
     <div
-      className={`group cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className}`}
+      className={`group cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className || ""}`}
     >
       <div className="flex items-center gap-1">
         <Icon
@@ -29,17 +30,28 @@ const ToolBarButton = ({ leftIcon, rightIcon, title, className }: ToolBarButtonP
   );
 };
 
-export const ToolBar = () => {
+interface ToolBarProps {
+  workspace?: boolean;
+}
+
+const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
-    <div className="group-control flex h-full items-center px-2 select-none">
+    <div className="group-control mr-[10px] flex h-full items-center px-2 select-none">
       <div className="group cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
         <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
       </div>
-      <Divider height="large" className="mr-[10px]" />
-      <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
-      <div className="group mr-[10px] ml-[3px] cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-        <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
-      </div>
+
+      {workspace && (
+        <>
+          <Divider height="large" className="mr-[10px]" />
+          <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
+          <div className="group ml-[3px] cursor-pointer rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+            <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
+          </div>
+        </>
+      )}
     </div>
   );
 };
+
+export default ToolBar;
