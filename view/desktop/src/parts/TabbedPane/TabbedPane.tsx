@@ -109,8 +109,10 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
       const isDebug = React.useContext(DebugContext);
 
       return (
-        <div className="border-t border-t-(--moss-border-color)">
-          <Breadcrumbs panelId={props.api.id} />
+        <>
+          <div className="border-t border-t-(--moss-border-color)">
+            <Breadcrumbs panelId={props.api.id} />
+          </div>
           <Scrollbar
             className={cn(
               "relative h-full overflow-auto p-1.25",
@@ -135,7 +137,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
               />
             )}
           </Scrollbar>
-        </div>
+        </>
       );
     },
     nested: () => {
@@ -171,25 +173,19 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
       );
     },
     Home: () => (
-      <div className="border-t border-t-(--moss-border-color)">
-        <Scrollbar className="h-full">
-          <Home />
-        </Scrollbar>
-      </div>
+      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+        <Home />
+      </Scrollbar>
     ),
     Settings: () => (
-      <div className="border-t border-t-(--moss-border-color)">
-        <Scrollbar className="h-full">
-          <Settings />
-        </Scrollbar>
-      </div>
+      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+        <Settings />
+      </Scrollbar>
     ),
     Logs: () => (
-      <div className="border-t border-t-(--moss-border-color)">
-        <Scrollbar className="h-full">
-          <Logs />
-        </Scrollbar>
-      </div>
+      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+        <Logs />
+      </Scrollbar>
     ),
   };
 
