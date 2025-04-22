@@ -101,7 +101,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
             />
           ))}
         </div>
-        <Divider />
+        <Divider height="medium" />
 
         <StatusBarIndicators />
         <StatusBarActivity />
@@ -109,7 +109,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
 
       <div className="flex h-full gap-0.5">
         <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
-        <Divider />
+        <Divider height="medium" />
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}

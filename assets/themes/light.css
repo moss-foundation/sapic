@@ -118,7 +118,7 @@
   /* Group View */
   --moss-group-view-background-color: var(--moss-primary-background);
   --moss-tabs-and-actions-container-background-color: var(--moss-primary-background);
-  --moss-tabs-and-actions-container-height: 36px;
+  --moss-tabs-and-actions-container-height: 35px;
 
   /* Tab States */
   --moss-activegroup-visiblepanel-tab-background-color: var(--moss-primary-background-hover);
