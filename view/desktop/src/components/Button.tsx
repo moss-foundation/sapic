@@ -138,6 +138,7 @@ export const Root = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProp
     return (
       <Component
         ref={forwardedRef}
+        type={Component === "button" ? "button" : undefined}
         href={disabled || loading ? undefined : href}
         className={cn(buttonRootStyles({ size, disabled, loading, Component, iconOnly, intent, variant }), className)}
         disabled={disabled || loading}
