@@ -14,7 +14,7 @@ kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 # miette = { workspace = true, features = ["fancy"] }
-tokio.workspace = true
+tokio = { workspace = true, features = ["sync"] }
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 serde_json.workspace = true
 scraper.workspace = true

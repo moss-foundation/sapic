@@ -4,7 +4,12 @@ pub mod utils;
 pub use real::*;
 
 use anyhow::Result;
-use std::{io, path::Path};
+use futures::stream::BoxStream;
+use std::{
+    io,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 use tokio::fs::ReadDir;
 
 // TODO: Rename to RemoveParams
@@ -63,4 +68,12 @@ pub trait FileSystem: Send + Sync {
     ) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;
     async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>>;
+    fn watch(
+        &self,
+        path: PathBuf,
+        latency: Duration,
+    ) -> Result<(
+        BoxStream<'static, Vec<notify::Event>>,
+        notify::RecommendedWatcher,
+    )>;
 }
