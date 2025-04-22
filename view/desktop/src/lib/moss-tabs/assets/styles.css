@@ -143,6 +143,16 @@
   @apply text-black;
 }
 
+.dv-tab .dv-default-tab svg,
+.dv-tab .dv-default-tab img {
+  @apply opacity-60;
+}
+
+.dv-tab .dv-default-tab:hover svg,
+.dv-tab .dv-default-tab:hover img {
+  @apply opacity-100;
+}
+
 .dv-tab .dv-default-tab .dv-default-tab-content {
   @apply grow px-2;
 }
@@ -153,6 +163,11 @@
 
 .dv-tab .dv-default-tab .dv-default-tab-action:hover {
   @apply rounded-sm bg-[var(--moss-icon-hover-background-color)];
+}
+
+.dv-tab.dv-active-tab .dv-default-tab svg,
+.dv-tab.dv-active-tab .dv-default-tab img {
+  @apply opacity-100;
 }
 
 /*--------------------dv-root-wrapper--------------------*/
