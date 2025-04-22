@@ -32,7 +32,7 @@ export const Modal = ({
       className={cn(
         "fixed top-0 left-0 z-[9999] h-full w-full items-center justify-center transition-[display,opacity] transition-discrete duration-100 starting:opacity-0",
         {
-          "bg-black/50": backdropFilter === "darken",
+          "bg-black/70": backdropFilter === "darken",
           "backdrop-blur": backdropFilter === "blur",
           "hidden opacity-0": !showModal,
           "flex opacity-100": showModal,

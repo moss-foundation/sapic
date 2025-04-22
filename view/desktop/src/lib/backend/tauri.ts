@@ -13,6 +13,7 @@ export type TauriIpcCommand =
   | "describe_app_state"
   | "list_color_themes"
   | "open_workspace"
+  | "list_workspaces"
   | "describe_layout_parts_state"
   | "set_layout_parts_state";
 

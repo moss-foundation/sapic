@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import { useGetViewGroup } from "@/hooks/useGetViewGroup";
+import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useModal } from "@/hooks/useModal";
-import { useWorkspaceStore } from "@/store/workspace";
 
 import Button from "./Button";
 import CollectionTreeView from "./CollectionTreeView";
@@ -11,10 +11,11 @@ import { Modal } from "./Modal";
 import Select from "./Select";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
-  const { workspace } = useWorkspaceStore((state) => state);
+  const { data: workspaces, isLoading } = useGetWorkspaces();
+  console.log("workspaces", workspaces);
   const { data: viewGroup } = useGetViewGroup(groupId);
 
-  if (!workspace)
+  if (!workspaces || workspaces.length === 0 || isLoading)
     return (
       <div className="flex h-full flex-col">
         <NoWorkspaceComponent />
@@ -183,6 +184,7 @@ const NewWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clos
 };
 
 const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; closeModal: () => void }) => {
+  // const { data: workspaces, isLoading } = useOpenWorkspace();
   const [radioList, setRadioList] = useState([
     {
       id: "RequestFirstMode",
