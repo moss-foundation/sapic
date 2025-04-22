@@ -1,16 +1,23 @@
 import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
 import { nextId } from "./defaultLayout";
 import { Icon } from "@/components";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
+  const { addOrFocusPanel } = useTabbedPaneStore();
+
   const onClick = () => {
-    props.containerApi.addPanel({
-      id: `id_${Date.now().toString()}`,
+    const tabId = `tab_${Date.now().toString()}`;
+    addOrFocusPanel({
+      id: tabId,
       component: "Default",
-      title: `Tab ${nextId()}`,
+      params: {
+        iconType: "file",
+      },
       position: {
         referenceGroup: props.group,
       },
+      title: `Untitled Request ${nextId()}`,
     });
   };
 
