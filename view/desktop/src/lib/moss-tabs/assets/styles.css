@@ -139,6 +139,10 @@
   @apply relative flex h-full min-w-20 items-center border-b border-transparent px-2 text-ellipsis whitespace-nowrap;
 }
 
+.dv-tab .dv-default-tab:hover {
+  @apply text-black;
+}
+
 .dv-tab .dv-default-tab .dv-default-tab-content {
   @apply grow px-2;
 }
