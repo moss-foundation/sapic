@@ -24,6 +24,8 @@ tauri.workspace = true
 arc-swap.workspace = true
 async-trait.workspace = true
 
+sweep-bptree = "0.4.1"
+
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
