@@ -480,19 +480,6 @@
 
 .dv-tabs-and-actions-container .dv-tabs-container {
   @apply flex overflow-x-auto overflow-y-hidden;
-  scrollbar-width: thin;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar {
-  @apply h-[3px];
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-thumb {
-  @apply bg-[var(--moss-tabs-container-scrollbar-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {
