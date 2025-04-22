@@ -1,6 +1,6 @@
 import "./assets/styles.css";
 
-import React, { useRef } from "react";
+import React from "react";
 
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
@@ -31,9 +31,8 @@ import { AddPanelButton } from "./AddPanelButton";
 const DebugContext = React.createContext<boolean>(false);
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
-  const firstRender = useRef(true);
   const { showDebugPanels } = useTabbedPaneStore();
-  const { api, addOrFocusPanel, setApi, gridState, setGridState } = useTabbedPaneStore();
+  const { api, addOrFocusPanel, setApi, gridState, sendGridStateToBackend } = useTabbedPaneStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -55,6 +54,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+    event.api?.fromJSON(gridState);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
@@ -74,30 +74,12 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   React.useEffect(() => {
     if (!api) return;
 
-    api.onDidLayoutChange(() => {
-      if (firstRender.current) {
-        firstRender.current = false;
-        return;
-      }
-
-      setGridState(api.toJSON());
+    const event = api.onDidLayoutChange(() => {
+      sendGridStateToBackend(api.toJSON());
     });
-  }, [api, gridState, setGridState]);
 
-  React.useEffect(() => {
-    if (!api) return;
-
-    const initializeLayout = async () => {
-      try {
-        api?.fromJSON(gridState);
-      } catch (e) {
-        console.error("Failed to initialize layout:", e);
-      }
-    };
-
-    const timeoutId = setTimeout(initializeLayout, 0);
-    return () => clearTimeout(timeoutId);
-  }, [api]);
+    return () => event.dispose();
+  }, [api, sendGridStateToBackend]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {

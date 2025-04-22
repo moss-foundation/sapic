@@ -9,7 +9,7 @@ interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions,
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
-  setGridState: (state: SerializedDockview) => void;
+  sendGridStateToBackend: (state: SerializedDockview) => void;
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
   api?: DockviewApi;
@@ -17,7 +17,7 @@ interface TabbedPaneState {
   activePanelId: string | undefined;
   setActivePanelId: (id: string | undefined) => void;
   addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
-  initialize: (state: SerializedDockview) => void;
+  setGridState: (state: SerializedDockview) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
@@ -36,12 +36,12 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     floatingGroups: [],
     popoutGroups: [],
   } as SerializedDockview,
-  setGridState: (state: SerializedDockview) => {
+  sendGridStateToBackend: (state: SerializedDockview) => {
     setLayoutPartsState({
       input: { editor: state },
     });
   },
-  initialize: (state: SerializedDockview) => {
+  setGridState: (state: SerializedDockview) => {
     set({ gridState: state });
   },
   showDebugPanels: false,

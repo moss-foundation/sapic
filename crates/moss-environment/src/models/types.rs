@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
+use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
 pub type VariableName = String;
@@ -24,6 +25,23 @@ pub enum VariableValue {
     Null,
 }
 
+impl TryFrom<JsonValue> for VariableValue {
+    type Error = anyhow::Error;
+
+    fn try_from(value: JsonValue) -> Result<Self, Self::Error> {
+        match value {
+            JsonValue::String(s) => Ok(VariableValue::String(s)),
+            JsonValue::Number(n) => Ok(VariableValue::Number(n)),
+            JsonValue::Bool(b) => Ok(VariableValue::Boolean(b)),
+            JsonValue::Null => Ok(VariableValue::Null),
+            _ => Err(anyhow::anyhow!(
+                "Unsupported variable value type: {:?}",
+                value
+            )),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -36,4 +54,3 @@ pub struct VariableInfo {
     pub order: Option<usize>,
     pub desc: Option<String>,
 }
-

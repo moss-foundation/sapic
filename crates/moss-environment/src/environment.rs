@@ -1,5 +1,6 @@
 use anyhow::Result;
 use moss_fs::{CreateOptions, FileSystem, RenameOptions};
+use moss_storage::workspace_storage::entities::environment_store_entities::VariableStateEntity;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use thiserror::Error;
@@ -24,6 +25,18 @@ impl Default for VariableCache {
             local_value: VariableValue::Null,
             order: None,
         }
+    }
+}
+
+impl TryFrom<VariableStateEntity> for VariableCache {
+    type Error = anyhow::Error;
+
+    fn try_from(value: VariableStateEntity) -> Result<Self, Self::Error> {
+        Ok(Self {
+            disabled: value.disabled,
+            local_value: VariableValue::try_from(value.local_value)?,
+            order: value.order,
+        })
     }
 }
 

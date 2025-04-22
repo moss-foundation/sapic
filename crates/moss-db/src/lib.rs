@@ -2,17 +2,17 @@ pub mod bincode_table;
 pub mod common;
 pub mod encrypted_bincode_table;
 
+pub use common::*;
+
 use anyhow::Result;
 use redb::{Database, Key, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 
-use crate::common::Transaction;
-
 pub trait DatabaseClient: Sized {
-    fn begin_write(&self) -> Result<Transaction>;
-    fn begin_read(&self) -> Result<Transaction>;
+    fn begin_write(&self) -> Result<Transaction, DatabaseError>;
+    fn begin_read(&self) -> Result<Transaction, DatabaseError>;
 }
 
 pub enum ClientState<C> {
@@ -73,11 +73,11 @@ impl ReDbClient {
 }
 
 impl DatabaseClient for ReDbClient {
-    fn begin_write(&self) -> Result<Transaction> {
+    fn begin_write(&self) -> Result<Transaction, DatabaseError> {
         Ok(Transaction::Write(self.db.begin_write()?))
     }
 
-    fn begin_read(&self) -> Result<Transaction> {
+    fn begin_read(&self) -> Result<Transaction, DatabaseError> {
         Ok(Transaction::Read(self.db.begin_read()?))
     }
 }

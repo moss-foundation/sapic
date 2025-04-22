@@ -1,4 +1,4 @@
-use anyhow::Result;
+use moss_common::api::OperationResult;
 
 use crate::{
     collection::Collection,
@@ -7,7 +7,7 @@ use crate::{
 };
 
 impl Collection {
-    pub async fn list_requests(&self) -> Result<ListRequestsOutput> {
+    pub async fn list_requests(&self) -> OperationResult<ListRequestsOutput> {
         let requests = self.registry().await?.requests_nodes();
         let requests_lock = requests.read().await;
 

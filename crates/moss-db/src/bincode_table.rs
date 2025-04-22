@@ -1,11 +1,12 @@
-use crate::common::{DatabaseError, Transaction};
-use crate::Table;
 use redb::{Key, ReadableTable, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+
+use crate::common::{DatabaseError, Transaction};
+use crate::Table;
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>
@@ -135,6 +136,32 @@ where
             }
             Transaction::Write(_txn) => Err(DatabaseError::Transaction(
                 "Cannot read from write transaction".to_string(),
+            )),
+        }
+    }
+
+    pub fn rekey(
+        &self,
+        txn: &mut Transaction,
+        old_key: K,
+        new_key: K,
+    ) -> Result<(), DatabaseError> {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table)?;
+                let bytes = table
+                    .remove(old_key.borrow())?
+                    .ok_or_else(|| DatabaseError::NotFound {
+                        key: old_key.to_string(),
+                    })?
+                    .value();
+
+                table.insert(new_key.borrow(), bytes)?;
+
+                Ok(())
+            }
+            Transaction::Read(_txn) => Err(DatabaseError::Transaction(
+                "Cannot rekey in read transaction".to_string(),
             )),
         }
     }
