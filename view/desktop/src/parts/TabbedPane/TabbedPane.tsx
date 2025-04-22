@@ -14,6 +14,7 @@ import {
   DockviewReadyEvent,
   IDockviewPanelProps,
   positionToDirection,
+  IDockviewHeaderActionsProps,
 } from "@repo/moss-tabs";
 
 import DockviewControls from "./DebugComponents/DockviewControls";
@@ -29,6 +30,23 @@ import ToolBar from "./ToolBar";
 import { AddPanelButton } from "./AddPanelButton";
 
 const DebugContext = React.createContext<boolean>(false);
+
+// Custom component to handle the toolbar rendering with access to panel data
+const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
+  const { api } = useTabbedPaneStore();
+  const panelId = props.group.activePanel?.api.id;
+
+  let isWorkspace = false;
+
+  if (panelId && api) {
+    const panel = api.getPanel(panelId);
+    if (panel) {
+      isWorkspace = panel.params?.workspace === true;
+    }
+  }
+
+  return <ToolBar workspace={isWorkspace} />;
+};
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
@@ -200,7 +218,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={headerComponents.default}
-                  rightHeaderActionsComponent={() => <ToolBar workspace={true} />}
+                  rightHeaderActionsComponent={PanelToolbar}
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={watermark ? Watermark : undefined}
                   onReady={onReady}

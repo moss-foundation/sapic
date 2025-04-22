@@ -108,6 +108,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                       params: {
                         treeId,
                         iconType: node.type,
+                        workspace: true,
                       },
                       component: "Default",
                     });
