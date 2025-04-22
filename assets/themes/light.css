@@ -80,6 +80,8 @@
 
   --moss-divider-color: var(--moss-gray-11);
 
+  --moss-not-selected-item-color: var(--moss-gray-7);
+
   /* Resizable */
   --separator-border: var(--moss-border-color);
 

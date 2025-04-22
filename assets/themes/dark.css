@@ -23,6 +23,8 @@
 
   --moss-divider-color: var(--moss-border-color);
 
+  --moss-not-selected-item-color: var(--moss-border-color);
+
   /* Resizable */
   --separator-border: var(--moss-border-color);
 

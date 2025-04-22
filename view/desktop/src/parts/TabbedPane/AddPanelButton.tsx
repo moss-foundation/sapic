@@ -28,7 +28,7 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
         onClick={onClick}
         className="group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]"
       >
-        <Icon icon="Plus" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
+        <Icon icon="Plus" className="text-[var(--moss-icon-primary-text)]" />
       </div>
     </div>
   );

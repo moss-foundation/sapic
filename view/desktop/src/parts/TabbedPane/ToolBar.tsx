@@ -14,7 +14,7 @@ interface ToolBarTitleProps {
 
 const ToolBarTitle: React.FC<ToolBarTitleProps> = ({ title }) => {
   return (
-    <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-[var(--moss-icon-primary-text)] opacity-70 group-hover:text-black group-hover:opacity-100">
+    <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)]">
       {title}
     </span>
   );
@@ -26,15 +26,9 @@ const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, titl
       className={`group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className || ""}`}
     >
       <div className="flex items-center gap-1">
-        <Icon
-          icon={leftIcon}
-          className="mr-[2px] size-[18px] text-[var(--moss-icon-primary-text)] group-hover:text-black"
-        />
+        <Icon icon={leftIcon} className="mr-[2px] text-[var(--moss-icon-primary-text)]" />
         <ToolBarTitle title={title} />
-        <Icon
-          icon={rightIcon}
-          className="text-[var(--moss-icon-primary-text)] opacity-70 group-hover:text-black group-hover:opacity-100"
-        />
+        <Icon icon={rightIcon} className="text-[var(--moss-icon-primary-text)]" />
       </div>
     </div>
   );
@@ -48,7 +42,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
     <div className="group-control mr-[10px] flex h-full items-center px-2 select-none">
       <div className="group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-        <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
+        <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)]" />
       </div>
 
       {workspace && (
@@ -56,7 +50,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
           <Divider height="large" className="mr-[10px]" />
           <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
           <div className="group ml-[3px] flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-            <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)] group-hover:text-black" />
+            <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)]" />
           </div>
         </>
       )}
