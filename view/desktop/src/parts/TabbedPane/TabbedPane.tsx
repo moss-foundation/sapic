@@ -54,6 +54,9 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
     event.api?.fromJSON(gridState);
+    if (event.api.panels.length === 0) {
+      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+    }
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {

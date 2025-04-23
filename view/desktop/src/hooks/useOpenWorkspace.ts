@@ -10,7 +10,7 @@ const openWorkspaceFn = async (name: string): Promise<OpenWorkspaceOutput> => {
   const result = await invokeTauriIpc<OpenWorkspaceOutput, OpenWorkspaceInput>("open_workspace", {
     input: { name },
   });
-  console.log("openWorkspaceFn", result);
+
   if (result.status === "error") {
     throw new Error(String(result.error));
   }
@@ -24,7 +24,6 @@ export const useOpenWorkspace = () => {
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
     onSuccess: () => {
-      console.log("About to invalidate queries USE_GET_WORKSPACE_QUERY_KEY", USE_GET_WORKSPACE_QUERY_KEY);
       queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });
     },
   });

@@ -4,24 +4,35 @@ import Button from "@/components/Button";
 export const WelcomePage = () => {
   return (
     <>
-      <div className="relative flex h-full w-full flex-col gap-7.5 pt-32 pr-60 pl-36">
-        <div className="flex justify-between">
-          <FirstColumn />
+      <div className="relative flex h-full w-full flex-col gap-7.5 pt-32 pr-12 pl-12 xl:pr-60 xl:pl-36">
+        {/* pr-60 pl-36*/}
+        <div className="flex flex-col gap-4">
+          <h1 className="text-[34px] font-medium">Simple API Client</h1>
+          <p className="text-lg font-medium text-(--moss-secondary-text)">
+            Design APIs, Send Requests, Unmatched Git Integration
+          </p>
+        </div>
 
-          <div className="absolute inset-x-0 bottom-4 flex justify-center">
-            <div className="flex animate-bounce flex-col items-center gap-2 text-sm duration-1000">
-              <span className="font-medium">Learn more</span>
-              <Icon icon="ChevronDownEllipse" />
-            </div>
-          </div>
+        <div className="flex justify-between gap-7.5 lg:flex-row">
+          <FirstColumn />
 
           <SecondColumn />
         </div>
-
         <StepsRow />
+        <div className="mt-auto flex justify-center">
+          <div
+            className="flex animate-bounce flex-col items-center gap-2 text-sm duration-1000"
+            onClick={() => {
+              document.getElementById("TestAnchorForWelcomePage")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            <span className="font-medium">Learn more</span>
+            <Icon icon="ChevronDownEllipse" />
+          </div>
+        </div>
       </div>
 
-      <div className="flex h-full w-full flex-col items-center pb-6">
+      <div className="flex h-screen w-full flex-col items-center pb-6">
         <div id="TestAnchorForWelcomePage" className="mt-auto">
           hello
         </div>
@@ -34,7 +45,7 @@ const StepsRow = () => {
   return (
     <div>
       <h3 className="text-xl font-medium">Next steps</h3>
-      <div className="flex">
+      <div className="flex flex-col lg:flex-row lg:gap-4 lg:pl-4">
         <StepCard isNew />
         <StepCard />
         <StepCard />
@@ -46,7 +57,7 @@ const StepsRow = () => {
 
 const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
   return (
-    <div className="mx-4 my-3">
+    <div className="my-3">
       <div className="flex items-center gap-1.5">
         <Icon icon="StepCardInfo" />
         <span className="font-medium">Learn the Fundamentals</span>
@@ -66,21 +77,14 @@ const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
 const FirstColumn = () => {
   return (
     <div className="flex flex-col gap-7.5">
-      <div className="flex flex-col gap-4">
-        <h1 className="text-[34px] font-medium">Simple API Client</h1>
-        <p className="text-lg font-medium text-(--moss-secondary-text)">
-          Design APIs, Send Requests, Unmatched Git Integration
-        </p>
-      </div>
-
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Start</h2>
         <button className="flex cursor-pointer gap-1.5">
-          <Icon icon="FolderAdd" className="text-(--moss-primary)" />
+          <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
           <span>New workspace</span>
         </button>
         <button className="flex cursor-pointer gap-1.5">
-          <Icon icon="Folder" className="text-(--moss-primary)" />
+          <Icon icon="Folder" className="size-4 text-(--moss-primary)" />
           <span>Open workspace</span>
         </button>
       </div>
@@ -88,15 +92,9 @@ const FirstColumn = () => {
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Recent</h2>
         <div className="flex flex-col gap-1.5">
-          <a href="#" className="text-(--moss-primary)">
-            My Workspace
-          </a>
-          <a href="#" className="text-(--moss-primary)">
-            Spaixel Monster
-          </a>
-          <a href="#" className="text-(--moss-primary)">
-            Twinkle
-          </a>
+          <WelcomePageLink label="My Workspace" />
+          <WelcomePageLink label="Spaixel Monster" />
+          <WelcomePageLink label="Twinkle" />
         </div>
       </div>
       <div>
@@ -123,16 +121,16 @@ const SecondColumn = () => {
 
         <WelcomePageDivider />
 
-        <WelcomePageLink label="View Sapic’s Roadmap" />
+        <WelcomePageLink label="View Sapic’s Roadmap" withIcon />
 
         <WelcomePageDivider />
 
         <div className="flex flex-col gap-2">
           <h3 className="font-medium">Release pages:</h3>
           <div className="flex flex-col gap-2">
-            <WelcomePageLink label="Quisque Faucibus" />
-            <WelcomePageLink label="Tempus Leo" />
-            <WelcomePageLink label="Lacinia Integer" />
+            <WelcomePageLink label="Quisque Faucibus" withIcon />
+            <WelcomePageLink label="Tempus Leo" withIcon />
+            <WelcomePageLink label="Lacinia Integer" withIcon />
           </div>
         </div>
       </div>
@@ -140,12 +138,11 @@ const SecondColumn = () => {
   );
 };
 
-const WelcomePageLink = ({ label }: { label: string }) => {
+const WelcomePageLink = ({ label, withIcon }: { label: string; withIcon?: boolean }) => {
   return (
-    <div className="flex items-center text-(--moss-primary)">
-      <a href="#">{label}</a>
-      <Icon icon="ExternalLink" />
-    </div>
+    <a href="#" className="flex items-center text-(--moss-primary)">
+      <span className="hover:underline">{label}</span> {withIcon && <Icon icon="ExternalLink" />}
+    </a>
   );
 };
 

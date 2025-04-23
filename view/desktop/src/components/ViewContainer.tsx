@@ -56,8 +56,9 @@ const NoWorkspaceComponent = () => {
     <div className="flex flex-col gap-4.25 px-2">
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+
       <div>
-        <Icon icon="ErrorNaughtyDog" className="mx-auto size-[200px] w-full" />
+        <Icon icon="ErrorNaughtyDog" className="mx-auto h-max w-full max-w-[200px]" />
         <p className="text-(--moss-secondary-text)">
           You need to open a workspace before accessing collections, environments, or sending requests. Please open or
           create a workspace to proceed.

@@ -96,6 +96,7 @@ export const AppLayout = () => {
               preferredSize={sideBar.width}
               visible={sideBar.visible && sideBarPosition === "right"}
               minSize={sideBar.minWidth}
+              maxSize={sideBar.maxWidth}
               snap
               className="background-(--moss-primary-background)"
             >
