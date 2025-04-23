@@ -104,11 +104,11 @@ const FirstColumn = () => {
             <WelcomePageLink label="Spaixel Monster" />
             <WelcomePageLink label="Twinkle" />
           </div>
-        </div>
-        <div>
-          <Button variant="outlined" intent="neutral">
-            More
-          </Button>
+          <div>
+            <Button variant="outlined" intent="neutral">
+              More
+            </Button>
+          </div>
         </div>
       </div>
     </>

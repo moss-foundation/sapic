@@ -49,7 +49,7 @@ const NoWorkspaceComponent = () => {
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
 
       <div>
-        <Icon icon="ErrorNaughtyDog" className="mx-auto h-max w-full max-w-[200px]" />
+        <Icon icon="ErrorNaughtyDog" className="mx-auto h-auto w-full max-w-[200px]" />
         <p className="text-(--moss-secondary-text)">
           You need to open a workspace before accessing collections, environments, or sending requests. Please open or
           create a workspace to proceed.
