@@ -1,4 +1,4 @@
-import TreeActionButton from "@/components/Tree/TreeActionButton";
+import { ActionButton } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -11,11 +11,11 @@ export const SidebarHeader = ({ title }: { title: string }) => {
       </div>
 
       <div className="flex grow justify-end">
-        <TreeActionButton icon="TreeCollapseAll" onClick={collapseAll} />
+        <ActionButton icon="TreeCollapseAll" onClick={collapseAll} />
 
-        <TreeActionButton icon="TreeReload" />
-        <TreeActionButton icon="Plus" />
-        <TreeActionButton icon="ThreeVerticalDots" />
+        <ActionButton icon="TreeReload" />
+        <ActionButton icon="PlusButton" />
+        <ActionButton icon="ThreeVerticalDots" />
       </div>
     </div>
   );

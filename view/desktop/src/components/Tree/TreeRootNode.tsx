@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef } from "react";
 
 import { cn } from "@/utils";
 
-import { DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
+import { DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext, ActionButton } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -11,7 +11,6 @@ import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TestCollectionIcon } from "./TestCollectionIcon";
-import TreeActionButton from "./TreeActionButton";
 import TreeNode from "./TreeNode";
 import { TreeNodeProps, TreeRootNodeProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
@@ -19,8 +18,6 @@ import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "
 export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   const {
     treeId,
-    paddingLeft,
-    paddingRight,
     allFoldersAreCollapsed,
     allFoldersAreExpanded,
     searchInput,
@@ -151,14 +148,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             <div
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
             >
-              <TreeActionButton icon="Plus" onClick={() => setIsAddingRootFileNode(true)} />
-              <TreeActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
-              <TreeActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
+              <ActionButton icon="PlusButton" onClick={() => setIsAddingRootFileNode(true)} />
+              <ActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
+              <ActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <TreeActionButton icon="ThreeVerticalDots" />
+            <DropdownMenu.Trigger>
+              <ActionButton icon="ThreeVerticalDots" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">

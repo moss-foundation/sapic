@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 import { TestCollectionIcon } from "@/components/Tree/TestCollectionIcon";
 import { Icon } from "@/components/Icon";
@@ -20,6 +20,7 @@ export const CustomTab: React.FC<CustomTabProps> = ({
   // Get title from the API
   const title = api.title || "";
   const iconType = params?.iconType as string;
+  const [isCloseHovered, setIsCloseHovered] = useState(false);
 
   const onClose = useCallback(
     (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -61,8 +62,11 @@ export const CustomTab: React.FC<CustomTabProps> = ({
       </span>
       {!hideClose && (
         <div className="dv-default-tab-action" onPointerDown={onPointerDown} onClick={onClose}>
-          <div className="group flex h-[16px] cursor-pointer items-center rounded-full p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-            <Icon icon="Close" className="h-[10px] w-[10px] text-[var(--moss-icon-primary-text)]" />
+          <div onMouseEnter={() => setIsCloseHovered(true)} onMouseLeave={() => setIsCloseHovered(false)}>
+            <Icon
+              icon={isCloseHovered ? "CloseButtonHovered" : "CloseButton"}
+              className="text-[var(--moss-icon-primary-text)]"
+            />
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ export * from "../layouts/index";
 export * from "../parts/BottomPane";
 export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
+export * from "./ActionButton";
 export * from "./ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
 export * from "./Button";
