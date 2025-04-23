@@ -86,7 +86,7 @@
 
   /* Icons */
   --moss-icon-primary-background: transparent;
-  --moss-icon-primary-text: #6c707e;
+  --moss-icon-primary-text: var(--moss-gray-7);
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
