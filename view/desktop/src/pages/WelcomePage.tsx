@@ -6,8 +6,8 @@ import { useModal } from "@/hooks/useModal";
 
 export const WelcomePage = () => {
   return (
-    <>
-      <div className="relative flex h-full w-full flex-col gap-7.5 pt-32 pr-12 pl-12 xl:pr-60 xl:pl-36">
+    <div className="@container h-full">
+      <div className="relative flex h-full min-w-min flex-col gap-7.5 pt-32 pr-12 pl-12 @xl:pr-[140px] @xl:pl-[140px]">
         <div className="flex flex-col gap-4">
           <h1 className="text-[34px] font-medium">Simple API Client</h1>
           <p className="text-lg font-medium text-(--moss-secondary-text)">
@@ -15,18 +15,14 @@ export const WelcomePage = () => {
           </p>
         </div>
 
-        <div className="flex justify-between gap-7.5 lg:flex-row">
+        <div className="grid grid-cols-2">
           <FirstColumn />
-
           <SecondColumn />
         </div>
+
         <StepsRow />
-        <div className="mt-auto mb-8 flex justify-center">
-          <div className="flex flex-col items-center gap-2 text-sm">
-            <span className="font-medium">Learn more</span>
-            <Icon icon="ChevronDownEllipse" />
-          </div>
-        </div>
+
+        <ScrollToAnchor />
       </div>
 
       <div className="flex h-screen w-full flex-col items-center pb-6">
@@ -34,13 +30,13 @@ export const WelcomePage = () => {
           hello
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 const StepsRow = () => {
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <h3 className="text-xl font-medium">Next steps</h3>
       <div className="flex flex-col lg:flex-row lg:gap-4 lg:pl-4">
         <StepCard isNew />
@@ -54,7 +50,7 @@ const StepsRow = () => {
 
 const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
   return (
-    <div className="my-3">
+    <div className="background-(--moss-secondary-background) max-w-[275px] min-w-[225px] rounded-lg">
       <div className="flex items-center gap-1.5">
         <Icon icon="StepCardInfo" />
         <span className="font-medium">Learn the Fundamentals</span>
@@ -121,7 +117,7 @@ const FirstColumn = () => {
 
 const SecondColumn = () => {
   return (
-    <div className="flex max-w-[268px] flex-col gap-2">
+    <div className="flex max-w-[268px] flex-col gap-2 justify-self-end">
       <h2 className="text-xl font-medium">Pin board</h2>
       <div>
         <p className="text-(--moss-secondary-text)">Lorem ipsum dolor sitel, consectetur adipiscing.</p>
@@ -161,6 +157,17 @@ const WelcomePageLink = ({ label, withIcon }: { label: string; withIcon?: boolea
 
 const WelcomePageDivider = () => {
   return <div className="background-(--moss-border-color) my-3 h-px w-full" />;
+};
+
+const ScrollToAnchor = () => {
+  return (
+    <div className="mt-auto mb-8 flex justify-center">
+      <div className="flex flex-col items-center gap-2 text-sm">
+        <span className="font-medium">Learn more</span>
+        <Icon icon="ChevronDownEllipse" />
+      </div>
+    </div>
+  );
 };
 
 export default WelcomePage;
