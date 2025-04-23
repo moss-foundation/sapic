@@ -194,10 +194,10 @@ const ActivityBarButtonIndicator = () => {
 
   return (
     <div
-      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)]", {
-        "inset-x-[9px] bottom-0 h-0.5 w-2.5 rounded-t-[10px]": position === "top",
-        "inset-x-[9px] top-0 h-0.5 w-2.5 rounded-b-[10px]": position === "bottom",
-        "inset-y-[9px] h-2.5 w-0.5": position === "default",
+      className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)] transition-[height,width] duration-300", {
+        "bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-t-[10px] [button:hover_+_&]:w-full": position === "top",
+        "top-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-b-[10px] [button:hover_+_&]:w-full": position === "bottom",
+        "top-1/2 h-2.5 w-0.5 -translate-y-1/2 [button:hover_+_&]:h-full": position === "default",
         "right-0 rounded-l-[10px]": sideBarPosition === "right" && position === "default",
         "left-0 rounded-r-[10px]": sideBarPosition === "left" && position === "default",
       })}
