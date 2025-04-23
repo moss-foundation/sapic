@@ -9,15 +9,14 @@ import { Home, Logs, Settings } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
-  DockviewDefaultTab,
   DockviewDidDropEvent,
   DockviewReact,
   DockviewReadyEvent,
   IDockviewPanelProps,
   positionToDirection,
+  IDockviewHeaderActionsProps,
 } from "@repo/moss-tabs";
 
-import { LeftControls, PrefixHeaderControls, RightControls } from "./DebugComponents/controls";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
@@ -26,8 +25,27 @@ import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
 import Watermark from "./Watermark";
+import CustomTab from "./CustomTab";
+import ToolBar from "./ToolBar";
+import { AddPanelButton } from "./AddPanelButton";
 
 const DebugContext = React.createContext<boolean>(false);
+
+const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
+  const { api } = useTabbedPaneStore();
+  const panelId = props.group.activePanel?.api.id;
+
+  let isWorkspace = false;
+
+  if (panelId && api) {
+    const panel = api.getPanel(panelId);
+    if (panel) {
+      isWorkspace = panel.params?.workspace === true;
+    }
+  }
+
+  return <ToolBar workspace={isWorkspace} />;
+};
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
@@ -164,7 +182,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   const headerComponents = {
-    default: DockviewDefaultTab,
+    default: CustomTab,
   };
 
   return (
@@ -193,9 +211,8 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   ref={dockviewRef}
                   components={components}
                   defaultTabComponent={headerComponents.default}
-                  rightHeaderActionsComponent={RightControls}
-                  leftHeaderActionsComponent={LeftControls}
-                  prefixHeaderActionsComponent={PrefixHeaderControls}
+                  rightHeaderActionsComponent={PanelToolbar}
+                  leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={watermark ? Watermark : undefined}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}

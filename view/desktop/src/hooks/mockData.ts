@@ -22,19 +22,19 @@ export const MockViews: Views = {
       "id": "collections.groupId",
       "title": "Collections",
       "order": 1,
-      "icon": "ActivityBarCollectionsIcon",
+      "icon": "ActivityBarCollections",
     },
     {
       "id": "environments.groupId",
       "title": "Environments",
       "order": 2,
-      "icon": "ActivityBarEnvironmentsIcon",
+      "icon": "ActivityBarEnvironments",
     },
     {
       "id": "mock.groupId",
       "title": "Mock Servers",
       "order": 3,
-      "icon": "ActivityBarMockIcon",
+      "icon": "ActivityBarMock",
     },
   ],
 };
