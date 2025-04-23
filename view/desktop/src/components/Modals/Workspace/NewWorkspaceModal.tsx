@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Button, Checkbox, Icon, Input, Modal, Radio } from "@/components";
 import { useCreateWorkspace } from "@/hooks/useCreateWorkspace";
 
-export const NewWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; closeModal: () => void }) => {
+import { ModalWrapperProps } from "../types";
+
+export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { mutate: createWorkspace } = useCreateWorkspace();
 
   const [name, setName] = useState("");

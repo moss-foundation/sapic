@@ -92,6 +92,7 @@ const FirstColumn = () => {
     <>
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+
       <div className="flex flex-col gap-7.5">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-medium">Start</h2>

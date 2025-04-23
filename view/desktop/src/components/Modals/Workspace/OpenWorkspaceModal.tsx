@@ -5,7 +5,9 @@ import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
 
-export const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; closeModal: () => void }) => {
+import { ModalWrapperProps } from "../types";
+
+export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { data: workspaces } = useGetWorkspaces();
 
   const [radioList, setRadioList] = useState([
