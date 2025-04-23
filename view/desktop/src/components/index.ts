@@ -12,6 +12,7 @@ export * from "./Input";
 export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";
 export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
 export * from "./MenuItem";
+export * from "./Modal";
 export * from "./PageLoader";
 export * as Radio from "./RadioGroup";
 export * from "./Resizable";

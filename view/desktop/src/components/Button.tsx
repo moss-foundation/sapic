@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 
 import Icon from "./Icon";
 
-export type Root = typeof Root;
+export type Button = typeof Button;
 
 export interface ButtonProps extends HTMLAttributes<HTMLButtonElement | HTMLAnchorElement> {
   loading?: boolean;
@@ -123,7 +123,7 @@ const loadingIconStyles = cva("animate-spin", {
   },
 });
 
-export const Root = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProps>(
   (
     { className, variant = "solid", size = "md", disabled, loading, href, children, intent = "primary", ...props },
     forwardedRef
@@ -156,4 +156,4 @@ export const Root = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProp
   }
 );
 
-export default Root;
+export default Button;

@@ -189,7 +189,7 @@ const SelectSeparator = forwardRef<
   return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn(className)} />;
 });
 
-export default {
+const Select = {
   Root: SelectPrimitive.Root,
   Trigger: SelectTrigger,
   Content: SelectContent,
@@ -205,3 +205,5 @@ export default {
   Viewport: SelectPrimitive.Viewport,
   ItemText: SelectPrimitive.ItemText,
 };
+
+export default Select;

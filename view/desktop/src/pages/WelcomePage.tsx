@@ -1,5 +1,8 @@
 import { Icon } from "@/components";
 import Button from "@/components/Button";
+import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
+import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
+import { useModal } from "@/hooks/useModal";
 
 export const WelcomePage = () => {
   return (
@@ -74,34 +77,49 @@ const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
 };
 
 const FirstColumn = () => {
-  return (
-    <div className="flex flex-col gap-7.5">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Start</h2>
-        <button className="flex cursor-pointer gap-1.5">
-          <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
-          <span>New workspace</span>
-        </button>
-        <button className="flex cursor-pointer gap-1.5">
-          <Icon icon="Folder" className="size-4 text-(--moss-primary)" />
-          <span>Open workspace</span>
-        </button>
-      </div>
+  const {
+    showModal: showNewWorkspaceModal,
+    closeModal: closeNewWorkspaceModal,
+    openModal: openNewWorkspaceModal,
+  } = useModal();
+  const {
+    showModal: showOpenWorkspaceModal,
+    closeModal: closeOpenWorkspaceModal,
+    openModal: openOpenWorkspaceModal,
+  } = useModal();
 
-      <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-medium">Recent</h2>
-        <div className="flex flex-col gap-1.5">
-          <WelcomePageLink label="My Workspace" />
-          <WelcomePageLink label="Spaixel Monster" />
-          <WelcomePageLink label="Twinkle" />
+  return (
+    <>
+      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      <div className="flex flex-col gap-7.5">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-medium">Start</h2>
+          <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
+            <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
+            <span>New workspace</span>
+          </button>
+          <button className="flex cursor-pointer gap-1.5" onClick={openOpenWorkspaceModal}>
+            <Icon icon="Folder" className="size-4 text-(--moss-primary)" />
+            <span>Open workspace</span>
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-medium">Recent</h2>
+          <div className="flex flex-col gap-1.5">
+            <WelcomePageLink label="My Workspace" />
+            <WelcomePageLink label="Spaixel Monster" />
+            <WelcomePageLink label="Twinkle" />
+          </div>
+        </div>
+        <div>
+          <Button variant="outlined" intent="neutral">
+            More
+          </Button>
         </div>
       </div>
-      <div>
-        <Button variant="outlined" intent="neutral">
-          More
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };
 
