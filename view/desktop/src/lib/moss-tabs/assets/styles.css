@@ -80,19 +80,23 @@
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply border-b border-(--moss-activegroup-visiblepanel-tab-border-color) text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply border-b text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  border-color: var(--moss-activegroup-visiblepanel-tab-border-color);
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply border-b border-(--moss-activegroup-hiddenpanel-tab-border-color) text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  @apply border-b text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  border-color: var(--moss-activegroup-hiddenpanel-tab-border-color);
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+  @apply border-b text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+  border-color: var(--moss-inactivegroup-visiblepanel-tab-border-color);
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  @apply border-b text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  border-color: var(--moss-inactivegroup-hiddenpanel-tab-border-color, transparent);
 }
 
 /*--------------------dv-tab--------------------*/

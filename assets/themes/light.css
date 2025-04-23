@@ -130,6 +130,7 @@
   --moss-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
   --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
+  --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
 
   --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
