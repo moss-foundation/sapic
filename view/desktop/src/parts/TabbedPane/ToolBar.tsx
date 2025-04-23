@@ -50,7 +50,7 @@ interface ToolBarProps {
 
 const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
-    <div className="group-control mr-[9px] flex h-full items-center px-2 select-none">
+    <div className="group-control mr-[4px] flex h-full items-center px-2 select-none">
       <ActionButton icon="ThreeVerticalDots" />
 
       {workspace && (

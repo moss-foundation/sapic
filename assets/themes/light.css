@@ -115,7 +115,7 @@
   --moss-paneview-header-border-color: 13px;
 
   /* Drag and Drop */
-  --moss-drag-over-background-color: rgba(83, 89, 93, 0.5);
+  --moss-drag-over-background-color: var(--moss-blue-11);
   --moss-drag-over-border-color: var(--moss-primary-background);
 
   /* Group View */
