@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 import { TestCollectionIcon } from "@/components/Tree/TestCollectionIcon";
+import { Icon } from "@/components/Icon";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &
   React.HTMLAttributes<HTMLDivElement> & {
@@ -60,10 +61,9 @@ export const CustomTab: React.FC<CustomTabProps> = ({
       </span>
       {!hideClose && (
         <div className="dv-default-tab-action" onPointerDown={onPointerDown} onClick={onClose}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 4L4 12" stroke="#6C707E" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 4L12 12" stroke="#6C707E" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <div className="group flex h-[16px] cursor-pointer items-center rounded-full p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+            <Icon icon="Close" className="h-[10px] w-[10px] text-[var(--moss-icon-primary-text)]" />
+          </div>
         </div>
       )}
     </div>
