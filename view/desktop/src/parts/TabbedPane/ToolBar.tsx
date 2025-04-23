@@ -1,7 +1,8 @@
-import React from "react";
-import { Divider, Icon, type Icons } from "@/components";
+import React, { ButtonHTMLAttributes, forwardRef } from "react";
+import { ActionButton, Divider, Icon, type Icons } from "@/components";
+import { cn } from "@/utils";
 
-interface ToolBarButtonProps {
+interface ToolBarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leftIcon: Icons;
   rightIcon: Icons;
   title: string;
@@ -20,19 +21,28 @@ const ToolBarTitle: React.FC<ToolBarTitleProps> = ({ title }) => {
   );
 };
 
-const ToolBarButton: React.FC<ToolBarButtonProps> = ({ leftIcon, rightIcon, title, className }) => {
-  return (
-    <div
-      className={`group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)] ${className || ""}`}
-    >
-      <div className="flex items-center gap-1">
-        <Icon icon={leftIcon} className="mr-[2px] text-[var(--moss-icon-primary-text)]" />
-        <ToolBarTitle title={title} />
-        <Icon icon={rightIcon} className="text-[var(--moss-icon-primary-text)]" />
-      </div>
-    </div>
-  );
-};
+const ToolBarButton = forwardRef<HTMLButtonElement, ToolBarButtonProps>(
+  ({ leftIcon, rightIcon, title, className, ...props }, ref) => {
+    return (
+      <button
+        ref={ref}
+        className={cn(
+          "group flex h-[22px] cursor-pointer items-center rounded p-1 text-[var(--moss-icon-primary-text)]",
+          "hover:bg-[var(--moss-icon-primary-background-hover)]",
+          "disabled:cursor-default disabled:opacity-50",
+          className
+        )}
+        {...props}
+      >
+        <div className="flex items-center gap-1">
+          <Icon icon={leftIcon} className="mr-[2px]" />
+          <ToolBarTitle title={title} />
+          <Icon icon={rightIcon} />
+        </div>
+      </button>
+    );
+  }
+);
 
 interface ToolBarProps {
   workspace?: boolean;
@@ -40,18 +50,14 @@ interface ToolBarProps {
 
 const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
-    <div className="group-control mr-[10px] flex h-full items-center px-2 select-none">
-      <div className="group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-        <Icon icon="ThreeVerticalDots" className="text-[var(--moss-icon-primary-text)]" />
-      </div>
+    <div className="group-control mr-[9px] flex h-full items-center px-2 select-none">
+      <ActionButton icon="ThreeVerticalDots" />
 
       {workspace && (
         <>
           <Divider height="large" className="mr-[10px]" />
           <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
-          <div className="group ml-[3px] flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
-            <Icon icon="ToolBarVariables" className="text-[var(--moss-icon-primary-text)]" />
-          </div>
+          <ActionButton icon="ToolBarVariables" className="ml-[2px]" />
         </>
       )}
     </div>

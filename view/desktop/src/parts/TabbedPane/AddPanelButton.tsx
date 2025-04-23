@@ -1,6 +1,6 @@
 import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
 import { nextId } from "./defaultLayout";
-import { Icon } from "@/components";
+import { ActionButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
@@ -24,12 +24,7 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
 
   return (
     <div className="group-control flex h-full items-center px-2 select-none">
-      <div
-        onClick={onClick}
-        className="group flex h-[24px] cursor-pointer items-center rounded p-1 hover:bg-[var(--moss-icon-primary-background-hover)]"
-      >
-        <Icon icon="PlusButton" className="text-[var(--moss-icon-primary-text)]" />
-      </div>
+      <ActionButton icon="PlusButton" onClick={onClick} />
     </div>
   );
 };
