@@ -13,16 +13,13 @@ import { Modal } from "./Modal";
 import Select from "./Select";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
-  const { data: workspaces, isLoading } = useGetWorkspaces();
   const { data: viewGroup } = useGetViewGroup(groupId);
 
-  // if (!workspaces || workspaces.length === 0 || isLoading) {
   return (
     <div className="flex h-full flex-col">
       <NoWorkspaceComponent />
     </div>
   );
-  // }
 
   if (!viewGroup) {
     return <div>No view group found</div>;
@@ -233,11 +230,14 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
       closeModal();
     }
   };
+  const handleCancel = () => {
+    closeModal();
+  };
 
   return (
     <Modal
       title="Open Workspace"
-      onBackdropClick={closeModal}
+      onBackdropClick={handleCancel}
       showModal={showModal}
       onSubmit={handleSubmit}
       content={
@@ -332,7 +332,7 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
             </label>
           </div>
           <div className="flex gap-2">
-            <Button variant="outlined" intent="neutral" onClick={closeModal}>
+            <Button variant="outlined" intent="neutral" onClick={handleCancel}>
               Close
             </Button>
             {/* //TODO This should be a button component */}
