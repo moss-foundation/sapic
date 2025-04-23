@@ -112,7 +112,7 @@
 
 .dv-tab:focus-within::after,
 .dv-tab:focus::after {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-full !outline !outline-1 outline-offset-[-1px] !outline-[var(--moss-tab-divider-color)] content-[''];
+  @apply content-[''];
 }
 
 /**
