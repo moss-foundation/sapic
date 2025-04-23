@@ -1,16 +1,16 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
+import { CreateWorkspaceInput, CreateWorkspaceOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
 
-export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
+export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
 
-const openWorkspaceFn = async (name: string): Promise<OpenWorkspaceOutput> => {
-  const result = await invokeTauriIpc<OpenWorkspaceOutput, OpenWorkspaceInput>("open_workspace", {
-    input: { name },
+const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> => {
+  const result = await invokeTauriIpc<CreateWorkspaceOutput, CreateWorkspaceInput>("create_workspace", {
+    input,
   });
-  console.log("openWorkspaceFn", result);
+
   if (result.status === "error") {
     throw new Error(String(result.error));
   }
@@ -18,11 +18,11 @@ const openWorkspaceFn = async (name: string): Promise<OpenWorkspaceOutput> => {
   return result.data;
 };
 
-export const useOpenWorkspace = () => {
+export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
-  return useMutation<OpenWorkspaceOutput, Error, string>({
-    mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
-    mutationFn: openWorkspaceFn,
+  return useMutation<CreateWorkspaceOutput, Error, CreateWorkspaceInput>({
+    mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
+    mutationFn: createWorkspaceFn,
     onSuccess: () => {
       console.log("About to invalidate queries USE_GET_WORKSPACE_QUERY_KEY", USE_GET_WORKSPACE_QUERY_KEY);
       queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });

@@ -57,7 +57,11 @@ export const Modal = ({
           "background-(--moss-primary-background) mx-auto mt-[8%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 backdrop:opacity-0 starting:opacity-0"
         )}
       >
-        <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()}>
+        <form
+          onSubmit={handleSubmit}
+          onClick={(e) => e.stopPropagation()}
+          key={showModal ? "modal-open" : "modal-closed"}
+        >
           {title && (
             <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-2 font-semibold">
               {title}

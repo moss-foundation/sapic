@@ -1,8 +1,10 @@
 import { useState } from "react";
 
+import { useCreateWorkspace } from "@/hooks/useCreateWorkspace";
 import { useGetViewGroup } from "@/hooks/useGetViewGroup";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useModal } from "@/hooks/useModal";
+import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
 
 import Button from "./Button";
 import CollectionTreeView from "./CollectionTreeView";
@@ -12,15 +14,15 @@ import Select from "./Select";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: workspaces, isLoading } = useGetWorkspaces();
-  console.log("workspaces", workspaces);
   const { data: viewGroup } = useGetViewGroup(groupId);
 
-  if (!workspaces || workspaces.length === 0 || isLoading)
-    return (
-      <div className="flex h-full flex-col">
-        <NoWorkspaceComponent />
-      </div>
-    );
+  // if (!workspaces || workspaces.length === 0 || isLoading) {
+  return (
+    <div className="flex h-full flex-col">
+      <NoWorkspaceComponent />
+    </div>
+  );
+  // }
 
   if (!viewGroup) {
     return <div>No view group found</div>;
@@ -83,6 +85,9 @@ const NoWorkspaceComponent = () => {
 };
 
 const NewWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; closeModal: () => void }) => {
+  const { mutate: createWorkspace } = useCreateWorkspace();
+
+  const [name, setName] = useState("");
   const [radioList, setRadioList] = useState([
     {
       id: "RequestFirstMode",
@@ -100,16 +105,30 @@ const NewWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clos
     },
   ]);
 
+  const handleSubmit = async () => {
+    if (name) {
+      createWorkspace({ name });
+      closeModal();
+    }
+  };
+
   return (
     <Modal
       title="New Workspace"
       onBackdropClick={closeModal}
       showModal={showModal}
+      onSubmit={handleSubmit}
       content={
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-3">
             <div>Name:</div>
-            <Input variant="outlined" className="max-w-72" required />
+            <Input
+              value={name}
+              variant="outlined"
+              className="max-w-72"
+              required
+              onChange={(e) => setName(e.target.value)}
+            />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
           </div>
 
@@ -184,7 +203,8 @@ const NewWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clos
 };
 
 const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; closeModal: () => void }) => {
-  // const { data: workspaces, isLoading } = useOpenWorkspace();
+  const { data: workspaces } = useGetWorkspaces();
+
   const [radioList, setRadioList] = useState([
     {
       id: "RequestFirstMode",
@@ -202,29 +222,29 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
     },
   ]);
 
-  const countries = [
-    { name: "DR Congo" },
-    { name: "USA" },
-    { name: "Canada" },
-    { name: "Mexico" },
-    { name: "Brazil" },
-    { name: "Argentina" },
-    { name: "Chile" },
-    { name: "Colombia" },
-    { name: "Peru" },
-  ];
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
+
+  const { mutate: openWorkspace } = useOpenWorkspace();
+
+  const handleSubmit = () => {
+    if (selectedWorkspace) {
+      openWorkspace(selectedWorkspace);
+      closeModal();
+    }
+  };
 
   return (
     <Modal
       title="Open Workspace"
       onBackdropClick={closeModal}
       showModal={showModal}
+      onSubmit={handleSubmit}
       content={
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(1,1fr)] items-center gap-3">
             <div>Name:</div>
 
-            <Select.Root defaultValue="DR Congo">
+            <Select.Root onValueChange={setSelectedWorkspace} value={selectedWorkspace}>
               <Select.Trigger className="flex w-56 justify-between">
                 <Select.Value placeholder="Select workspace" />
                 <Icon icon="ChevronDown" />
@@ -232,9 +252,9 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
 
               <Select.Content className="z-50" position="popper">
                 <Select.Viewport>
-                  {countries.map((country) => (
-                    <Select.Item value={country.name} key={country.name}>
-                      {country.name}
+                  {workspaces?.map((workspace) => (
+                    <Select.Item value={workspace.name} key={workspace.name}>
+                      <Select.ItemText>{workspace.name}</Select.ItemText>
                     </Select.Item>
                   ))}
                 </Select.Viewport>
@@ -260,9 +280,12 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
                       checked={radio.checked}
                       onClick={() =>
                         setRadioList((list) =>
-                          list.map((item) =>
-                            item.id === radio.id ? { ...item, checked: true } : { ...item, checked: false }
-                          )
+                          list.map((item) => {
+                            return {
+                              ...item,
+                              checked: item.id === radio.id,
+                            };
+                          })
                         )
                       }
                     >
@@ -271,7 +294,20 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
                       </Radio.Indicator>
                     </Radio.Item>
 
-                    <label htmlFor={radio.id} className="cursor-pointer py-2">
+                    <label
+                      htmlFor={radio.id}
+                      className="cursor-pointer py-2"
+                      onClick={() =>
+                        setRadioList((list) =>
+                          list.map((item) => {
+                            return {
+                              ...item,
+                              checked: item.id === radio.id,
+                            };
+                          })
+                        )
+                      }
+                    >
                       {radio.label}
                     </label>
                     <span className="col-start-2 text-left text-(--moss-secondary-text)">{radio.description}</span>
@@ -285,12 +321,12 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
       footer={
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Checkbox.Root id="c1" className="cursor-pointer">
+            <Checkbox.Root id="OpenAutomaticallyAfterCreationId" className="cursor-pointer">
               <Checkbox.Indicator>
                 <Icon icon="CheckboxIndicator" className="size-3.5 text-white" />
               </Checkbox.Indicator>
             </Checkbox.Root>
-            <label htmlFor="c1" className="cursor-pointer">
+            <label htmlFor="OpenAutomaticallyAfterCreationId" className="cursor-pointer">
               Open automatically after creation
             </label>
           </div>
@@ -303,7 +339,7 @@ const OpenWorkspaceModal = ({ closeModal, showModal }: { showModal: boolean; clo
               type="submit"
               className="background-(--moss-primary) hover:background-(--moss-blue-3) flex cursor-pointer items-center justify-center rounded px-3.75 py-1.5 text-white"
             >
-              Create
+              Open
             </button>
           </div>
         </div>

@@ -1,4 +1,7 @@
+import { useEffect } from "react";
+
 import { Icon } from "@/components";
+import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -6,6 +9,8 @@ import { type } from "@tauri-apps/plugin-os";
 import { Controls } from "./Controls/Controls";
 
 export const HeadBar = () => {
+  const { data: workspaces } = useGetWorkspaces();
+
   const os = type();
 
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
@@ -17,6 +22,17 @@ export const HeadBar = () => {
   const toggleBottomPane = () => {
     bottomPane.setVisible(!bottomPane.visible);
   };
+
+  const theMostRecentWorkspace = workspaces?.reduce((prev, current) => {
+    if (!prev.lastOpenedAt || !current.lastOpenedAt) {
+      return prev; // or handle undefined case as needed
+    }
+    return prev.lastOpenedAt > current.lastOpenedAt ? prev : current;
+  });
+
+  useEffect(() => {
+    console.log("workspaces", workspaces);
+  }, [workspaces]);
 
   return (
     <header
@@ -71,6 +87,8 @@ export const HeadBar = () => {
               />
             </button>
           </div>
+
+          <div>{theMostRecentWorkspace?.name}</div>
 
           {/* Add a draggable area that takes up remaining space */}
           <div className="flex-grow" data-tauri-drag-region></div>
