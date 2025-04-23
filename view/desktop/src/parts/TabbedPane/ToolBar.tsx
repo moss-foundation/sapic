@@ -35,7 +35,7 @@ const ToolBarButton = forwardRef<HTMLButtonElement, ToolBarButtonProps>(
         {...props}
       >
         <div className="flex items-center gap-1">
-          <Icon icon={leftIcon} className="mr-[2px]" />
+          <Icon icon={leftIcon} className="mr-0.5" />
           <ToolBarTitle title={title} />
           <Icon icon={rightIcon} />
         </div>
@@ -55,9 +55,9 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
 
       {workspace && (
         <>
-          <Divider height="large" className="mr-[10px]" />
+          <Divider height="large" className="mr-2.5" />
           <ToolBarButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
-          <ActionButton icon="ToolBarVariables" className="ml-[2px]" />
+          <ActionButton icon="ToolBarVariables" className="ml-0.5" />
         </>
       )}
     </div>
