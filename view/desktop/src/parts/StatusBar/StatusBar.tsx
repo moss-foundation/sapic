@@ -18,6 +18,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { DropIndicator } from "../../components/DropIndicator";
 import { StatusBarActivity } from "./StatusBarActivity";
+import { Divider } from "@/components/Divider";
 
 interface Item {
   id: number;
@@ -25,14 +26,6 @@ interface Item {
   label: string;
   order: number;
 }
-
-const StatusBarDivider = () => {
-  return (
-    <div className="mx-1 flex h-full items-center">
-      <div className="h-[18px] w-[1px] bg-gray-400/20"></div>
-    </div>
-  );
-};
 
 const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [isOnline, setIsOnline] = useState(true);
@@ -108,7 +101,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
             />
           ))}
         </div>
-        <StatusBarDivider />
+        <Divider height="medium" />
 
         <StatusBarIndicators />
         <StatusBarActivity />
@@ -116,7 +109,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
 
       <div className="flex h-full gap-0.5">
         <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
-        <StatusBarDivider />
+        <Divider height="medium" />
         <StatusBarButton
           icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
           label={isOnline ? "Online" : "Offline"}
@@ -143,8 +136,8 @@ const StatusBarIndicators = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
-        <div className="flex items-center rounded-md px-2 py-1 transition">
-          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center space-x-2 rounded-md px-1">
+        <div className="flex items-center rounded px-1 transition">
+          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded px-1">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
@@ -240,7 +233,7 @@ const StatusBarButton = ({
       {...props}
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex items-center gap-1 rounded px-1.5 py-1 transition">
+      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center gap-1 rounded px-1.5 transition">
         {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
