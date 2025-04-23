@@ -21,13 +21,8 @@ export const WelcomePage = () => {
           <SecondColumn />
         </div>
         <StepsRow />
-        <div className="mt-auto flex justify-center">
-          <div
-            className="flex animate-bounce flex-col items-center gap-2 text-sm duration-1000"
-            onClick={() => {
-              document.getElementById("TestAnchorForWelcomePage")?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
+        <div className="mt-auto mb-8 flex justify-center">
+          <div className="flex flex-col items-center gap-2 text-sm">
             <span className="font-medium">Learn more</span>
             <Icon icon="ChevronDownEllipse" />
           </div>

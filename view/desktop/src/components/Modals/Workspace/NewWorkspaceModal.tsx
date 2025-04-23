@@ -60,8 +60,8 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
       onSubmit={handleSubmit}
       content={
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-3">
-            <div>Name:</div>
+          <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
+            <div className="self-start">Name:</div>
             <Input
               value={name}
               variant="outlined"
@@ -77,6 +77,9 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               <span>Mode</span>
               <div className="background-(--moss-border-color) my-auto h-px w-full" />
             </div>
+            <p className="text-xs leading-5 text-(--moss-secondary-text)">
+              You can switch modes in the workspace at any time and as often as needed.
+            </p>
             <div className="pl-5">
               <Radio.Root>
                 {radioList.map((radio) => (
@@ -97,14 +100,16 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
                       }
                     >
                       <Radio.Indicator>
-                        <Icon icon="DropdownMenuRadioIndicator" className="size-2 text-white" />
+                        <Icon icon="DropdownMenuRadioIndicator" className="size-2! text-white" />
                       </Radio.Indicator>
                     </Radio.Item>
 
                     <label htmlFor={radio.id} className="cursor-pointer py-2">
                       {radio.label}
                     </label>
-                    <p className="col-start-2 text-left text-(--moss-secondary-text)">{radio.description}</p>
+                    <p className="col-start-2 text-left text-xs leading-3.75 text-(--moss-secondary-text)">
+                      {radio.description}
+                    </p>
                   </div>
                 ))}
               </Radio.Root>
@@ -113,25 +118,25 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
         </div>
       }
       footer={
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between py-0.75">
           <div className="flex gap-2">
             <Checkbox.Root id="c1" className="cursor-pointer">
-              <Checkbox.Indicator>
-                <Icon icon="CheckboxIndicator" className="size-3.5 text-white" />
+              <Checkbox.Indicator className="size-4">
+                <Icon icon="CheckboxIndicator" className="mx-auto mt-0.25 size-3.5 text-white" />
               </Checkbox.Indicator>
             </Checkbox.Root>
             <label htmlFor="c1" className="cursor-pointer">
               Open automatically after creation
             </label>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outlined" intent="neutral" onClick={handleCancel}>
+          <div className="flex gap-3 px-0.25 py-1.25">
+            <Button variant="outlined" intent="neutral" size="md" onClick={handleCancel}>
               Close
             </Button>
             {/* //TODO This should be a button component */}
             <button
               type="submit"
-              className="background-(--moss-primary) hover:background-(--moss-blue-3) flex cursor-pointer items-center justify-center rounded px-3.75 py-1.5 text-white"
+              className="background-(--moss-primary) hover:background-(--moss-blue-3) flex cursor-pointer items-center justify-center rounded px-3.75 text-white"
             >
               Create
             </button>

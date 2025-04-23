@@ -34,7 +34,7 @@ const buttonRootStyles = cva(
       size: {
         "xs": "h-[22px]",
         "sm": "h-[26px]",
-        "md": "h-[30px]",
+        "md": "h-[28px]",
         "lg": "h-[34px]",
         "xl": "h-[38px]",
       },

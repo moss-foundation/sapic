@@ -54,7 +54,7 @@ export const Modal = ({
       <dialog
         ref={dialogRef}
         className={cn(
-          "background-(--moss-primary-background) mx-auto mt-[8%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 backdrop:opacity-0 starting:opacity-0"
+          "background-(--moss-primary-background) mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 backdrop:opacity-0 starting:opacity-0"
         )}
       >
         <form
@@ -63,12 +63,12 @@ export const Modal = ({
           key={showModal ? "modal-open" : "modal-closed"}
         >
           {title && (
-            <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-2 font-semibold">
+            <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-1.5 font-semibold">
               {title}
             </h2>
           )}
-          <div className="p-6">{content}</div>
-          <div className="border-t border-(--moss-border-color) px-6 py-4">{footer}</div>
+          <div className="px-6 pt-3 pb-5">{content}</div>
+          <div className="border-t border-(--moss-border-color) px-6 py-2">{footer}</div>
         </form>
       </dialog>
     </div>,
