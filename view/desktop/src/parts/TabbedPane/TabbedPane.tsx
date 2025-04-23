@@ -104,9 +104,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
       return (
         <>
-          <div className="border-t border-t-(--moss-border-color)">
-            <Breadcrumbs panelId={props.api.id} />
-          </div>
+          <Breadcrumbs panelId={props.api.id} />
           <Scrollbar
             className={cn(
               "relative h-full overflow-auto p-1.25",
@@ -162,22 +160,22 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
               props.api.setActive();
             }
           }}
-          className="h-full w-full border-t border-t-(--moss-border-color)"
+          className="h-full w-full"
         />
       );
     },
     Home: () => (
-      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+      <Scrollbar className="h-full">
         <Home />
       </Scrollbar>
     ),
     Settings: () => (
-      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+      <Scrollbar className="h-full">
         <Settings />
       </Scrollbar>
     ),
     Logs: () => (
-      <Scrollbar className="h-full border-t border-t-(--moss-border-color)">
+      <Scrollbar className="h-full">
         <Logs />
       </Scrollbar>
     ),

@@ -86,7 +86,7 @@
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
   @apply border-b text-[var(--moss-activegroup-hiddenpanel-tab-color)];
-  border-color: var(--moss-activegroup-hiddenpanel-tab-border-color);
+  border-color: var(--moss-border-color);
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
@@ -96,7 +96,7 @@
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
   @apply border-b text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
-  border-color: var(--moss-inactivegroup-hiddenpanel-tab-border-color, transparent);
+  border-color: var(--moss-border-color);
 }
 
 /*--------------------dv-tab--------------------*/
@@ -479,7 +479,7 @@
 }
 
 .dv-tabs-and-actions-container .dv-void-container {
-  @apply flex grow cursor-grab;
+  @apply flex grow cursor-grab border-b border-[var(--moss-border-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
@@ -489,6 +489,22 @@
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {
   @apply relative box-border min-w-[75px] cursor-pointer outline-hidden;
   -webkit-user-drag: element;
+}
+
+.dv-tabs-and-actions-container .dv-tabs-container .dv-tab.dv-active-tab {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-tabs-container .dv-tab.dv-inactive-tab {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-left-actions-container {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-right-actions-container {
+  @apply border-b border-[var(--moss-border-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab:not(:first-child)::before {
