@@ -5,7 +5,6 @@ export const WelcomePage = () => {
   return (
     <>
       <div className="relative flex h-full w-full flex-col gap-7.5 pt-32 pr-12 pl-12 xl:pr-60 xl:pl-36">
-        {/* pr-60 pl-36*/}
         <div className="flex flex-col gap-4">
           <h1 className="text-[34px] font-medium">Simple API Client</h1>
           <p className="text-lg font-medium text-(--moss-secondary-text)">
