@@ -155,7 +155,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           )}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
-              <ActionButton icon="ThreeVerticalDots" />
+              <ActionButton icon="ThreeVerticalDots" asChild />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">
