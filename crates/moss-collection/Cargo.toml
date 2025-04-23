@@ -23,7 +23,8 @@ validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 arc-swap.workspace = true
 async-trait.workspace = true
-
+futures.workspace = true
+notify.workspace = true
 sweep-bptree = "0.4.1"
 
 [dev-dependencies]

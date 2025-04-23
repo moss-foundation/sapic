@@ -1,3 +1,4 @@
+use futures::stream::BoxStream;
 use std::sync::atomic::Ordering::SeqCst;
 use std::{
     path::PathBuf,
@@ -5,7 +6,7 @@ use std::{
     time::SystemTime,
 };
 use sweep_bptree::BPlusTreeMap;
-use tokio::sync::Barrier;
+use tokio::sync::{mpsc, Barrier};
 use tokio::sync::{mpsc::UnboundedReceiver, watch, Mutex};
 use tokio::task::JoinHandle;
 
@@ -27,9 +28,14 @@ pub struct BackgroundScanner {
     scan_req_rx: UnboundedReceiver<ScanRequest>,
 }
 
+impl BackgroundScanner {
+    pub async fn run(&self, fs_events_stream: BoxStream<'static, Vec<notify::Event>>) {}
+}
+
 pub enum UnitType {
-    Request,
     Endpoint,
+    Request,
+    Case,
     Schema,
     Component,
 }
@@ -73,7 +79,8 @@ pub struct Worktree {
 }
 
 impl Worktree {
-    pub fn new() -> Self {
+    pub fn new(next_entry_id: Arc<AtomicUsize>) -> Self {
+        let (scan_req_tx, mut scan_req_rx) = mpsc::unbounded_channel();
         let snapshot = Snapshot {
             scan_id: 0,
             entries_by_id: BPlusTreeMap::new(),
@@ -81,6 +88,13 @@ impl Worktree {
         };
 
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
+            let background_scanner = BackgroundScanner {
+                state: Mutex::new(BackgroundScannerState {}),
+                next_entry_id,
+                phase: BackgroundScannerPhase::InitialScan,
+                scan_req_rx,
+            };
+
             // loop {
             //     tokio::select! {
 
