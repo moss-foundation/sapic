@@ -17,3 +17,9 @@
     overflow: hidden;
   }
 }
+
+svg,
+svg * {
+  transform: translateZ(0);
+  image-rendering: optimizeSpeed;
+}
