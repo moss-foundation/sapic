@@ -96,75 +96,79 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         </div>
       ) : (
         <ContextMenu.Root modal={false}>
-          <ContextMenu.Trigger asChild>
-            <button
-              ref={draggableNodeRef}
-              onClick={() => {
-                if (node.isFolder) handleFolderClick();
-                else {
-                  addOrFocusPanel({
-                    id: `${node.id}`,
-                    params: {
-                      treeId,
-                    },
-                    component: "Default",
-                  });
-                }
+          <ContextMenu.Trigger>
+            <div>
+              <button
+                ref={draggableNodeRef}
+                onClick={() => {
+                  if (node.isFolder) handleFolderClick();
+                  else {
+                    addOrFocusPanel({
+                      id: `${node.id}`,
+                      params: {
+                        treeId,
+                        iconType: node.type,
+                        workspace: true,
+                      },
+                      component: "Default",
+                    });
+                  }
 
-                onNodeClickCallback?.(node);
-              }}
-              onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
-              className={cn(
-                "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
-              )}
-            >
-              <span
-                className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
-                  "group-hover/treeNode:background-(--moss-secondary-background-hover)":
-                    !isNodeDragging && activePanelId !== node.id,
-                  "background-(--moss-info-background-hover)":
-                    activePanelId === node.id && node.uniqueId !== "DraggedNode",
-                })}
-              />
-
-              <span
-                className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
-                style={{ paddingLeft: nodePaddingLeft }}
+                  onNodeClickCallback?.(node);
+                }}
+                onDoubleClick={() => onNodeDoubleClickCallback?.(node)}
+                className={cn(
+                  "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
+                )}
               >
-                <Icon
-                  icon="TreeChevronRight"
-                  className={cn("text-(--moss-icon-primary-text)", {
-                    "rotate-90": shouldRenderChildNodes,
-                    "opacity-0": !node.isFolder,
+                <span
+                  className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
+                    "group-hover/treeNode:background-(--moss-secondary-background-hover)":
+                      !isNodeDragging && activePanelId !== node.id,
+                    "background-(--moss-info-background-hover)":
+                      activePanelId === node.id && node.uniqueId !== "DraggedNode",
                   })}
                 />
-                <TestCollectionIcon type={node.type} />
-                <NodeLabel label={node.id} searchInput={searchInput} />
-                <span className="DragHandle h-full min-h-4 grow" />
-              </span>
-              {preview &&
-                createPortal(
-                  <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
-                    <TreeNode
-                      parentNode={{
-                        uniqueId: "-",
-                        childNodes: [],
-                        type: "",
-                        order: 0,
-                        isFolder: false,
-                        isExpanded: false,
-                        id: "-",
-                        isRoot: false,
-                      }}
-                      node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
-                      onNodeUpdate={() => {}}
-                      depth={0}
-                    />
-                    <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
-                  </ul>,
-                  preview
-                )}
-            </button>
+
+                <span
+                  className={cn("z-10 flex h-full w-full items-center gap-1 py-0.5")}
+                  style={{ paddingLeft: nodePaddingLeft }}
+                >
+                  <Icon
+                    icon="TreeChevronRight"
+                    className={cn("text-(--moss-icon-primary-text)", {
+                      "rotate-90": shouldRenderChildNodes,
+                      "opacity-0": !node.isFolder,
+                    })}
+                  />
+                  <TestCollectionIcon type={node.type} />
+                  <NodeLabel label={node.id} searchInput={searchInput} />
+                  <span className="DragHandle h-full min-h-4 grow" />
+                </span>
+                {preview &&
+                  createPortal(
+                    <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
+                      <TreeNode
+                        parentNode={{
+                          uniqueId: "-",
+                          childNodes: [],
+                          type: "",
+                          order: 0,
+                          isFolder: false,
+                          isExpanded: false,
+                          id: "-",
+                          isRoot: false,
+                        }}
+                        node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
+                        onNodeUpdate={() => {}}
+                        depth={0}
+                      />
+                      <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
+                    </ul>,
+                    preview
+                  )}
+              </button>
+            </div>
           </ContextMenu.Trigger>
 
           <ContextMenu.Portal>

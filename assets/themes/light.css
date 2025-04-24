@@ -78,8 +78,13 @@
   --moss-info-icon: var(--moss-primary);
   --moss-info-border: var(--moss-primary);
 
+  --moss-divider-color: var(--moss-gray-11);
+
+  --moss-not-selected-item-color: var(--moss-gray-7);
+
   /* Resizable */
   --separator-border: var(--moss-border-color);
+  --moss-sash-active-highlight: #047cd4;
 
   /* Icons */
   --moss-icon-primary-background: transparent;
@@ -110,7 +115,7 @@
   --moss-paneview-header-border-color: 13px;
 
   /* Drag and Drop */
-  --moss-drag-over-background-color: rgba(83, 89, 93, 0.5);
+  --moss-drag-over-background-color: var(--moss-blue-11);
   --moss-drag-over-border-color: var(--moss-primary-background);
 
   /* Group View */
@@ -125,6 +130,7 @@
   --moss-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
   --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
+  --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
 
   --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
