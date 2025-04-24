@@ -66,7 +66,7 @@ export const Modal = ({
           key={showModal ? "modal-open" : "modal-closed"}
         >
           {title && (
-            <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-1.5 font-semibold">
+            <h2 className="flex items-center justify-center border-b border-(--moss-border-color) py-1.5 font-medium">
               {title}
             </h2>
           )}

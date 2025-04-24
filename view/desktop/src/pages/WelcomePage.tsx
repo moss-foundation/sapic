@@ -6,7 +6,7 @@ import { useModal } from "@/hooks/useModal";
 
 export const WelcomePage = () => {
   return (
-    <div className="@container h-full select-none">
+    <div className="@container min-h-screen select-none">
       <div className="relative flex h-full min-w-min flex-col gap-6 pt-32 pr-12 pl-12 @xl:pr-[140px] @xl:pl-[140px]">
         <div className="flex flex-col gap-0.5">
           <h1 className="text-[34px]">Simple API Client</h1>
