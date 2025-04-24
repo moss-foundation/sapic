@@ -49,6 +49,9 @@ export const Modal = ({
           "block opacity-100": showModal,
         }
       )}
+      style={{
+        "WebkitBackdropFilter": "blur(8px)", // BackdropFilter doesn't work on Linux without this
+      }}
       onClick={onBackdropClick}
     >
       <dialog
