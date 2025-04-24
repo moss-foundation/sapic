@@ -13,7 +13,7 @@ export const WelcomePage = () => {
           <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
         </div>
 
-        <div>
+        <div className="flex flex-col gap-7.5">
           <div className="grid grid-cols-2">
             <FirstColumn />
             <SecondColumn />
