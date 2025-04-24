@@ -38,7 +38,7 @@ const StepsRow = () => {
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-xl">Next steps</h3>
-      <div className="flex flex-col lg:flex-row lg:gap-4 lg:pl-4">
+      <div className="flex justify-between gap-3">
         <StepCard isNew />
         <StepCard />
         <StepCard />
@@ -50,7 +50,7 @@ const StepsRow = () => {
 
 const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
   return (
-    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg">
+    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg px-4 py-3">
       <div className="flex items-center gap-1.5">
         <Icon icon="StepCardInfo" />
         <span className="font-medium">Learn the Fundamentals</span>
