@@ -1,10 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  type Views,
-  USE_VIEW_GROUPS_QUERY_KEY,
-  USE_CHANGE_VIEW_GROUPS_MUTATION_KEY,
-  changeViewGroupsFn,
-} from "./useViewGroups";
+
+import { MockViews, Views } from "./mockData";
+import { USE_VIEW_GROUPS_QUERY_KEY } from "./useGetViewGroups";
+
+export const USE_CHANGE_VIEW_GROUPS_MUTATION_KEY = "changeViewGroups";
+export let viewsData: Views = MockViews;
+
+export const changeViewGroupsFn = async (newViewGroups: Views): Promise<Views> => {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  viewsData = newViewGroups;
+
+  return newViewGroups;
+};
 
 export const useChangeViewGroups = () => {
   const queryClient = useQueryClient();

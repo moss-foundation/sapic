@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { mapSerializedDockviewToEditorPartState } from "@/lib/backend/utils";
 import { setLayoutPartsState } from "@/lib/backend/workspace";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
@@ -38,7 +39,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
   } as SerializedDockview,
   sendGridStateToBackend: (state: SerializedDockview) => {
     setLayoutPartsState({
-      input: { editor: state },
+      input: { editor: mapSerializedDockviewToEditorPartState(state) },
     });
   },
   setGridState: (state: SerializedDockview) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { invoke } from "@tauri-apps/api/core";
@@ -6,7 +6,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 
-export const Logs: React.FC = () => {
+export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
   const [logs, setLogs] = useState<string[]>([]);
   const { activityEvents } = useActivityEvents();

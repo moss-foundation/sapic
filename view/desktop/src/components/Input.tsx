@@ -12,7 +12,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconRight?: Icons;
 }
 
-const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss-controls-placeholder)", {
+const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss-controls-placeholder) font-medium", {
   variants: {
     variant: {
       plain: `
@@ -42,7 +42,7 @@ const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss
     },
     size: {
       xs: "h-6 px-1.5",
-      sm: "h-7 px-1.5",
+      sm: "h-7 px-2",
       md: "h-9 px-2",
     },
     disabled: {
@@ -63,7 +63,7 @@ const iconsStyles = cva("", {
 });
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ variant = "plain", className, size = "md", disabled = false, iconLeft, iconRight, ...props }, forwardedRef) => {
+  ({ variant = "plain", className, size = "sm", disabled = false, iconLeft, iconRight, ...props }, forwardedRef) => {
     return (
       <div className={cn(inputStyles({ variant, disabled, size }), className)}>
         {iconLeft && (

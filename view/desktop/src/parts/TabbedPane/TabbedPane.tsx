@@ -5,7 +5,7 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
-import { Home, Logs, Settings } from "@/pages";
+import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -72,6 +72,9 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
     event.api?.fromJSON(gridState);
+    if (event.api.panels.length === 0) {
+      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+    }
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
@@ -177,6 +180,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     Logs: () => (
       <Scrollbar className="h-full">
         <Logs />
+      </Scrollbar>
+    ),
+    Welcome: () => (
+      <Scrollbar className="h-full">
+        <WelcomePage />
       </Scrollbar>
     ),
   };
