@@ -50,7 +50,7 @@ const StepsRow = () => {
 
 const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
   return (
-    <div className="background-(--moss-secondary-background) max-w-[275px] min-w-[225px] rounded-lg">
+    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg">
       <div className="flex items-center gap-1.5">
         <Icon icon="StepCardInfo" />
         <span className="font-medium">Learn the Fundamentals</span>
