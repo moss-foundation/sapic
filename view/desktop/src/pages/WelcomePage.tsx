@@ -161,10 +161,10 @@ const WelcomePageDivider = () => {
 const ScrollToAnchor = () => {
   return (
     <div className="mt-auto mb-8 flex justify-center">
-      <div className="flex flex-col items-center gap-2 text-sm">
+      <a href="#TestAnchorForWelcomePage" className="flex flex-col items-center gap-2 text-sm">
         <span>Learn more</span>
         <Icon icon="ChevronDownEllipse" />
-      </div>
+      </a>
     </div>
   );
 };
