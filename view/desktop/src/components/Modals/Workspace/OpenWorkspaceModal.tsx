@@ -75,7 +75,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
-              <Radio.Root>
+              <Radio.Root disabled>
                 <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2">
                   <Radio.Item
                     value="RequestFirstMode"

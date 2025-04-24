@@ -150,7 +150,7 @@
   --moss-button-primary-outlined-background: radial-gradient(
     76% 151% at 52% -52%,
     rgba(255, 255, 255, 0.6) 0%,
-    rgb(239, 246, 255) 100%
+    --moss-checkbox-border-disabled rgb(239, 246, 255) 100%
   );
   --moss-button-primary-outlined-border: null;
   --moss-button-primary-outlined-text: #1e40af;
@@ -229,4 +229,17 @@
 
   --moss-stepCard-text: var(--moss-blue-2);
   --moss-stepCard-bg: var(--moss-blue-11);
+
+  /* Checkbox */
+  --moss-checkbox-border: var(--moss-gray-8);
+
+  --moss-checkbox-border-disabled: var(--moss-gray-10);
+  --moss-checkbox-bg-disabled: var(--moss-gray-8);
+
+  /* RadioGroup */
+  --moss-radio-bg: var(--moss-gray-14);
+  --moss-radio-border: var(--moss-gray-8);
+
+  --moss-radio-bg-disabled: var(--moss-gray-10);
+  --moss-radio-border-disabled: var(--moss-gray-10);
 }

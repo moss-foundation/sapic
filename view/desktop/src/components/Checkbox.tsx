@@ -7,35 +7,26 @@ export interface CheckboxProps {
   className?: string;
 }
 
-const defaultCheckboxRootStyles = `border-1 border-solid border-[rgb(228,228,231)] dark:border-[rgb(39,39,42)] group rounded peer flex justify-center items-center size-4 text-white
+const defaultCheckboxRootStyles = `border-1 border-solid border-(--moss-checkbox-border) rounded flex justify-center items-center size-4 text-white
   focus-visible:outline-2
-  focus-visible:outline-bg-[rgb(37,99,235)]
+  focus-visible:outline-background-(--moss-primary)
   focus-visible:outline-offset-2
   focus-visible:outline
 
   hover:brightness-95
 
-  disabled:bg-gray-100
-  disabled:opacity-50
-  disabled:border-gray-300
+  data-[state=checked]:border-none
+  data-[state=checked]:background-(--moss-primary)
+  data-[state=indeterminate]:background-(--moss-primary)
+  data-[state=indeterminate]:border-none
+
+  disabled:border-(--moss-checkbox-border-disabled)!
+  disabled:background-(--moss-checkbox-bg-disabled)!
+
+  disabled:pointer-events-none
+  disabled:hover:brightness-100
   disabled:shadow-none
   disabled:cursor-not-allowed
-
-  disabled:data-[state=checked]:bg-gray-300
-  disabled:data-[state=checked]:shadow-none
-  disabled:data-[state=indeterminate]:bg-gray-300
-  disabled:data-[state=indeterminate]:shadow-none
-
-  dark:bg-gray-500/10
-  dark:disabled:bg-gray-800
-  dark:disabled:border-gray-700
-  dark:disabled:data-[state=checked]:bg-gray-700
-
-  data-[state=checked]:border-none
-  data-[state=checked]:bg-[rgb(37,99,235)]
-  dark:data-[state=checked]:bg-[rgb(37,99,235)]
-  data-[state=indeterminate]:bg-[rgb(37,99,235)]
-  data-[state=indeterminate]:border-none
 `;
 
 const CheckboxRoot = forwardRef<

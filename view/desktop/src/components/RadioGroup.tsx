@@ -26,20 +26,23 @@ export interface RadioItemProps {
 
 const defaultRadioGroupItemStyles = `
   flex justify-center items-center cursor-pointer rounded-full size-[18px] group
-  bg-white border-1 border-solid border-[rgb(228,228,231)] dark:border-[rgb(39,39,42)]
-
-  focus-visible:outline-2 focus-visible:outline-[rgb(37,99,235)] focus-visible:outline-offset-2
+  background-(--moss-radio-bg) border-1 border-solid border-(--moss-radio-border) 
+  
   hover:brightness-95
-
-  disabled:bg-gray-100 disabled:opacity-50 disabled:border-gray-300
-  disabled:data-[state=checked]:bg-gray-300
-
-  dark:bg-gray-500/10
-  dark:disabled:bg-gray-800 dark:disabled:border-gray-700
-  dark:disabled:data-[state=checked]:bg-gray-700
-
-  data-[state=checked]:bg-[rgb(37,99,235)] dark:data-[state=checked]:bg-[rgb(37,99,235)]
+  
+  disabled:hover:brightness-100
+  disabled:background-(--moss-radio-bg-disabled)
+  disabled:opacity-50
+  disabled:border-(--moss-radio-border-disabled)
+  disabled:data-[state=checked]:background-(--moss-radio-bg-disabled)
+  disabled:cursor-default
+  
+  data-[state=checked]:background-(--moss-primary) 
   data-[state=checked]:border-none
+
+  focus-visible:outline-2 
+  focus-visible:outline-(--moss-primary) 
+  focus-visible:outline-offset-2
 `;
 
 const Item = forwardRef<
