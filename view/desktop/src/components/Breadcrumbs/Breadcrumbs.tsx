@@ -62,7 +62,15 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
-                      if (!node.isFolder) addOrFocusPanel({ id: `${node.id}`, component: "Default" });
+                      if (!node.isFolder)
+                        addOrFocusPanel({
+                          id: `${node.id}`,
+                          params: {
+                            iconType: node.type,
+                            workspace: true,
+                          },
+                          component: "Default",
+                        });
                     }}
                   />
                 </DropdownMenu.Content>

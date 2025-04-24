@@ -44,7 +44,15 @@ export const BreadcrumbNode = ({
         style={{ paddingLeft: nodePaddingLeft, paddingRight: paddingRight + 3 }}
         onClick={() => {
           if (node.isFolder) handleFolderClick();
-          else addOrFocusPanel({ id: `${node.id}`, component: "Default" });
+          else
+            addOrFocusPanel({
+              id: `${node.id}`,
+              params: {
+                iconType: node.type,
+                workspace: true,
+              },
+              component: "Default",
+            });
 
           onNodeClickCallback?.(node);
         }}

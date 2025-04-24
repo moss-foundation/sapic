@@ -14,7 +14,8 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
     const buttonContent = (
       <div
         className={cn(
-          `background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) disabled:hover:background-transparent disabled:hover:dark:background-transparent flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`
+          `background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) disabled:hover:background-transparent disabled:hover:dark:background-transparent flex cursor-pointer items-center justify-center rounded-[3px] p-[3px] text-(--moss-icon-primary-text) disabled:cursor-default disabled:opacity-50 disabled:hover:text-(--moss-icon-primary-text)`,
+          asChild && "size-[26px]"
         )}
       >
         <Icon icon={icon} />
