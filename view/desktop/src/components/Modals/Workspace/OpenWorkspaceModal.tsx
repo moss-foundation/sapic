@@ -148,7 +148,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
             <button
               disabled={!selectedWorkspace}
               type="submit"
-              className="background-(--moss-primary) hover:background-(--moss-blue-3) disabled:hover:background-(--moss-primary) flex cursor-pointer items-center justify-center rounded px-3.75 text-white disabled:cursor-pointer disabled:grayscale"
+              className="background-(--moss-primary) hover:background-(--moss-blue-3) disabled:background-(--moss-gray-12) disabled:hover:background-(--moss-gray-12) flex cursor-pointer items-center justify-center rounded px-3.75 text-white disabled:cursor-default disabled:text-(--moss-gray-8)"
             >
               Open
             </button>
