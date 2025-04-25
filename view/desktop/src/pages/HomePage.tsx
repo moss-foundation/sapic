@@ -39,7 +39,7 @@ const SessionComponent = () => {
           {t("receivedData")}: {data}
         </p>
       )}
-      {/* An example of `mossCommand` */}
+
       <button
         className="hover:bg-opacity-80 mb-10 rounded-md px-4 py-2 font-medium shadow-sm"
         onClick={() => {
@@ -77,7 +77,26 @@ const SessionComponent = () => {
             return intent.map((i, index) => (
               <>
                 {index == 0 && <div key={i}>{v}</div>}
-                <Button disabled variant={v as any} intent={i as any} size="md" loading={false}>
+                <Button disabled variant={v as any} intent={i as any} size="md">
+                  {t("button")}
+                </Button>
+              </>
+            ));
+          })}
+        </div>
+        <hr />
+
+        <h2 className="text-xl">Loading:</h2>
+
+        <div className="grid grid-cols-[repeat(3,min-content)] gap-4">
+          <div></div>
+          <div>primary</div>
+          <div>neutral</div>
+          {variant.map((v) => {
+            return intent.map((i, index) => (
+              <>
+                {index == 0 && <div key={i}>{v}</div>}
+                <Button variant={v as any} intent={i as any} size="md" loading>
                   {t("button")}
                 </Button>
               </>

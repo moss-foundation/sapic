@@ -25,7 +25,7 @@ const buttonRootStyles = cva(
         neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--bg-solid-disabled:var(--moss-button-neutral-solid-background-disabled)] [--border-solid-disabled:var(--moss-button-neutral-solid-border-disabled)] [--text-solid-disabled:var(--moss-button-neutral-solid-text-disabled)] [--bg-outlined-disabled:var(--moss-button-neutral-outlined-background-disabled)] [--border-outlined-disabled:var(--moss-button-neutral-outlined-border-disabled)] [--text-outlined-disabled:var(--moss-button-neutral-outlined-text-disabled)] [--boxShadow-solid-disabled:var(--moss-button-neutral-solid-boxShadow-disabled)] [--boxShadow-outlined-disabled:var(--moss-button-neutral-outlined-boxShadow-disabled)]`,
       },
       variant: {
-        solid: `   hover:brightness-110 active:brightness-95  background-(--bg-solid)       text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]     disabled:background-(--bg-solid-disabled) disabled:text-(--text-solid-disabled) disabled:[box-shadow:var(--boxShadow-solid-disabled)]`,
+        solid: `   hover:brightness-110 active:brightness-95     background-(--bg-solid)    text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]     disabled:background-(--bg-solid-disabled)    disabled:text-(--text-solid-disabled)    disabled:[box-shadow:var(--boxShadow-solid-disabled)]`,
         outlined: `hover:brightness-[0.98] active:brightness-100 background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)]  disabled:background-(--bg-outlined-disabled) disabled:text-(--text-outlined-disabled) disabled:[box-shadow:var(--boxShadow-outlined-disabled)]`,
       },
       size: {
@@ -138,7 +138,7 @@ export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonPr
         type={Component === "button" ? "button" : undefined}
         href={disabled || loading ? undefined : href}
         className={cn(buttonRootStyles({ size, disabled, loading, Component, iconOnly, intent, variant }), className)}
-        disabled={disabled || loading}
+        disabled={disabled}
         {...props}
       >
         {content}

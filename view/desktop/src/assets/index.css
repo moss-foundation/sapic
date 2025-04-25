@@ -18,7 +18,7 @@
   }
 }
 
-svg,
+svg:not(.animate-spin),
 svg * {
   transform: translateZ(0);
   image-rendering: optimizeSpeed;
