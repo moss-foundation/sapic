@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
-
 import { Icon } from "@/components";
-import Button from "@/components/Button";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useModal } from "@/hooks/useModal";
-import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
-import { useWorkspaceStore } from "@/store/workspace";
+
+import WelcomePageDivider from "./WelcomePageDivider";
+import WelcomePageLink from "./WelcomePageLink";
+import WelcomePageRecentWorkspaces from "./WelcomePageRecentWorkspaces";
+import WelcomePageSteps from "./WelcomePageSteps";
 
 export const WelcomePage = () => {
   return (
@@ -24,49 +23,21 @@ export const WelcomePage = () => {
             <SecondColumn />
           </div>
 
-          <StepsRow />
+          <WelcomePageSteps />
         </div>
 
-        <ScrollToAnchor />
+        <div className="mt-auto mb-8 flex justify-center">
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <span>Learn more</span>
+            <Icon icon="ChevronDownEllipse" />
+          </div>
+        </div>
       </div>
 
       <div className="flex h-screen w-full flex-col items-center pb-6">
         <div id="TestAnchorForWelcomePage" className="mt-auto">
           hello
         </div>
-      </div>
-    </div>
-  );
-};
-
-const StepsRow = () => {
-  return (
-    <div className="flex w-full flex-col gap-2">
-      <h3 className="text-xl">Next steps</h3>
-      <div className="flex min-w-[1140px] flex-wrap gap-3">
-        <StepCard isNew />
-        <StepCard />
-        <StepCard />
-        <StepCard isNew />
-      </div>
-    </div>
-  );
-};
-
-const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
-  return (
-    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg px-4 py-3">
-      <div className="flex items-center gap-1.5">
-        <Icon icon="StepCardInfo" />
-        <span className="font-medium">Learn the Fundamentals</span>
-        {isNew && (
-          <div className="background-(--moss-stepCard-bg) rounded-[3px] px-1 text-[11px] font-medium text-(--moss-stepCard-text)">
-            New
-          </div>
-        )}
-      </div>
-      <div className="text-(--moss-secondary-text)">
-        Explain behavior that is not clear from the setting or action name.
       </div>
     </div>
   );
@@ -102,42 +73,9 @@ const FirstColumn = () => {
           </button>
         </div>
 
-        <RecentWorkspaces />
+        <WelcomePageRecentWorkspaces />
       </div>
     </>
-  );
-};
-
-const RecentWorkspaces = () => {
-  const { data: workspaces } = useGetWorkspaces();
-  const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
-  const { setWorkspace } = useWorkspaceStore();
-
-  const [showAll, setShowAll] = useState(false);
-
-  const workspacesToShow = !showAll ? workspaces?.slice(0, 3) : workspaces;
-
-  useEffect(() => {
-    if (currentWorkspace?.path) setWorkspace(currentWorkspace.path);
-  }, [currentWorkspace, setWorkspace]);
-
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-lg">Recent</h2>
-      <div className="flex flex-col gap-1.5">
-        {workspacesToShow?.map((workspace) => (
-          <WelcomePageLink key={workspace.name} label={workspace.name} onClick={() => openWorkspace(workspace.name)} />
-        ))}
-      </div>
-
-      {!showAll && (
-        <div>
-          <Button variant="outlined" intent="neutral" onClick={() => setShowAll(true)}>
-            More
-          </Button>
-        </div>
-      )}
-    </div>
   );
 };
 
@@ -168,34 +106,6 @@ const SecondColumn = () => {
             <WelcomePageLink label="Lacinia Integer" withIcon />
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  label: string;
-  withIcon?: boolean;
-}
-
-const WelcomePageLink = ({ label, withIcon, ...props }: WelcomePageLinkProps) => {
-  return (
-    <a className="flex cursor-pointer items-center text-(--moss-primary)" {...props}>
-      <span className="hover:underline">{label}</span> {withIcon && <Icon icon="ExternalLink" />}
-    </a>
-  );
-};
-
-const WelcomePageDivider = () => {
-  return <div className="background-(--moss-border-color) my-3 h-px w-full" />;
-};
-
-const ScrollToAnchor = () => {
-  return (
-    <div className="mt-auto mb-8 flex justify-center">
-      <div className="flex flex-col items-center gap-2 text-sm">
-        <span>Learn more</span>
-        <Icon icon="ChevronDownEllipse" />
       </div>
     </div>
   );
