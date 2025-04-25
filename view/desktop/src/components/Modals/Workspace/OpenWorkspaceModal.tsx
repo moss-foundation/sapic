@@ -4,6 +4,7 @@ import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
 import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { useWorkspaceStore } from "@/store/workspace";
 
 import { ModalWrapperProps } from "../types";
@@ -18,9 +19,16 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
 
   const { setWorkspace } = useWorkspaceStore();
+  const { api } = useTabbedPaneStore();
 
   useEffect(() => {
-    if (currentWorkspace?.path) setWorkspace(currentWorkspace.path);
+    if (currentWorkspace?.path) {
+      setWorkspace(currentWorkspace.path);
+      const WelcomePanel = api?.getPanel("WelcomePage");
+      if (WelcomePanel) {
+        WelcomePanel.api.close();
+      }
+    }
   }, [currentWorkspace, setWorkspace]);
 
   const handleSubmit = () => {

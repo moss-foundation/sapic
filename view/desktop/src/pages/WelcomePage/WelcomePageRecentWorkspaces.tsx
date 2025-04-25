@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { useWorkspaceStore } from "@/store/workspace";
 
 import WelcomePageLink from "./WelcomePageLink";
@@ -10,6 +11,8 @@ import WelcomePageLink from "./WelcomePageLink";
 export const WelcomePageRecentWorkspaces = () => {
   const { data: workspaces } = useGetWorkspaces();
   const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
+  const { api } = useTabbedPaneStore();
+
   const { setWorkspace } = useWorkspaceStore();
 
   const [showAll, setShowAll] = useState(false);
@@ -17,7 +20,13 @@ export const WelcomePageRecentWorkspaces = () => {
   const workspacesToShow = !showAll ? workspaces?.slice(0, 3) : workspaces;
 
   useEffect(() => {
-    if (currentWorkspace?.path) setWorkspace(currentWorkspace.path);
+    if (currentWorkspace?.path) {
+      setWorkspace(currentWorkspace.path);
+      const WelcomePanel = api?.getPanel("WelcomePage");
+      if (WelcomePanel) {
+        WelcomePanel.api.close();
+      }
+    }
   }, [currentWorkspace, setWorkspace]);
 
   return (
@@ -29,7 +38,7 @@ export const WelcomePageRecentWorkspaces = () => {
         ))}
       </div>
 
-      {!showAll && (
+      {!showAll && workspaces?.length && workspaces.length > 3 && (
         <div>
           <Button variant="outlined" intent="neutral" onClick={() => setShowAll(true)}>
             More
