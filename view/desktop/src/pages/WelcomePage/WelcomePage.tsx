@@ -61,7 +61,7 @@ const FirstColumn = () => {
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
 
       <div className="flex flex-col gap-7.5">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
             <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
@@ -98,7 +98,7 @@ const SecondColumn = () => {
 
         <WelcomePageDivider />
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-start gap-2">
           <h3>Release pages:</h3>
           <div className="flex flex-col gap-2">
             <WelcomePageLink label="Quisque Faucibus" withIcon />

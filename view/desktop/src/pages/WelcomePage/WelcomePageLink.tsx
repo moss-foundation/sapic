@@ -7,7 +7,7 @@ export interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnc
 
 export const WelcomePageLink = ({ label, withIcon, ...props }: WelcomePageLinkProps) => {
   return (
-    <a className="flex cursor-pointer items-center text-(--moss-primary)" {...props}>
+    <a className="inline-flex cursor-pointer items-center text-(--moss-primary)" {...props}>
       <span className="hover:underline">{label}</span> {withIcon && <Icon icon="ExternalLink" />}
     </a>
   );
