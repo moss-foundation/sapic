@@ -128,9 +128,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const content = typeof children === "string" ? <span>{children}</span> : children;
 
     return (
-      <Button
+      <button
         ref={forwardedRef}
-        href={disabled || loading ? undefined : href}
         className={cn(buttonRootStyles({ size, disabled, loading, iconOnly, intent, variant }), className)}
         disabled={disabled}
         {...props}
@@ -142,7 +141,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <Icon icon="LoaderTailus" className={cn(loadingIconStyles({ size }))} />
           </div>
         )}
-      </Button>
+      </button>
     );
   }
 );
