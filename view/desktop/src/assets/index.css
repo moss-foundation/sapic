@@ -19,7 +19,7 @@
 }
 
 svg:not(.animate-spin),
-svg * {
+svg:not(.animate-spin) * {
   transform: translateZ(0);
   image-rendering: optimizeSpeed;
 }
