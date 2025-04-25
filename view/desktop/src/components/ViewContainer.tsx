@@ -9,11 +9,11 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
 
-  return (
-    <div className="flex h-full flex-col">
-      <NoWorkspaceComponent />
-    </div>
-  );
+  // return (
+  //   <div className="flex h-full flex-col">
+  //     <NoWorkspaceComponent />
+  //   </div>
+  // );
 
   if (!viewGroup) {
     return <div>No view group found</div>;
