@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
-import { Scrollbar } from "../components";
+import { Button } from "../components";
 
 export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -29,6 +29,9 @@ const SessionComponent = () => {
     fetchData();
   }, []);
 
+  const intent = ["primary", "neutral"];
+  const variant = ["solid", "outlined"];
+
   return (
     <>
       {data !== null && (
@@ -45,14 +48,50 @@ const SessionComponent = () => {
       >
         Example Command
       </button>
+      <div>
+        <div className="grid grid-cols-[repeat(3,min-content)] gap-4">
+          <div></div>
+          <div>primary</div>
+          <div>neutral</div>
+          {variant.map((v) => {
+            return intent.map((i, index) => (
+              <>
+                {index == 0 && <div key={i}>{v}</div>}
+                <Button variant={v as any} intent={i as any} size="md" loading={false}>
+                  OK
+                </Button>
+              </>
+            ));
+          })}
+        </div>
 
-      <Scrollbar className="border border-dotted border-stone-500">
+        <hr />
+
+        <h2 className="text-xl">Disabled:</h2>
+
+        <div className="grid grid-cols-[repeat(3,min-content)] gap-4">
+          <div></div>
+          <div>primary</div>
+          <div>neutral</div>
+          {variant.map((v) => {
+            return intent.map((i, index) => (
+              <>
+                {index == 0 && <div key={i}>{v}</div>}
+                <Button disabled variant={v as any} intent={i as any} size="md" loading={false}>
+                  {t("button")}
+                </Button>
+              </>
+            ));
+          })}
+        </div>
+      </div>
+      {/* <Scrollbar className="border border-dotted border-stone-500">
         {Array.from({ length: 100 }, (_, i) => (
           <div key={i} className="mb-1 h-10 w-full text-center">
             {i + 1}
           </div>
         ))}
-      </Scrollbar>
+      </Scrollbar> */}
     </>
   );
 };

@@ -11,25 +11,22 @@ export interface ButtonProps extends HTMLAttributes<HTMLButtonElement | HTMLAnch
   loading?: boolean;
   disabled?: boolean;
   href?: string;
-  intent?: "primary" | "danger" | "neutral";
-  variant?: "solid" | "outlined" | "soft" | "ghost";
+  intent?: "primary" | "neutral";
+  variant?: "solid" | "outlined";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 const buttonRootStyles = cva(
-  "relative flex items-center cursor-pointer justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 outline-blue-600",
+  "relative flex items-center min-w-18 cursor-pointer justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--moss-primary)",
   {
     variants: {
       intent: {
-        primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--border-solid:var(--moss-button-primary-solid-border)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--text-outlined:var(--moss-button-primary-outlined-text)] [--bg-soft:var(--moss-button-primary-soft-background)] [--border-soft:var(--moss-button-primary-soft-border)] [--text-soft:var(--moss-button-primary-soft-text)] [--bg-ghost:var(--moss-button-primary-ghost-background)] [--border-ghost:var(--moss-button-primary-ghost-border)] [--text-ghost:var(--moss-button-primary-ghost-text)] [--boxShadow-solid:var(--moss-button-primary-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-primary-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-primary-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-primary-ghost-boxShadow)]`,
-        danger: ` [--bg-solid:var(--moss-button-danger-solid-background)]  [--border-solid:var(--moss-button-danger-solid-border)]  [--text-solid:var(--moss-button-danger-solid-text)]  [--bg-outlined:var(--moss-button-danger-outlined-background)]  [--border-outlined:var(--moss-button-danger-outlined-border)]  [--text-outlined:var(--moss-button-danger-outlined-text)]  [--bg-soft:var(--moss-button-danger-soft-background)]  [--border-soft:var(--moss-button-danger-soft-border)]  [--text-soft:var(--moss-button-danger-soft-text)]  [--bg-ghost:var(--moss-button-danger-ghost-background)]  [--border-ghost:var(--moss-button-danger-ghost-border)]  [--text-ghost:var(--moss-button-danger-ghost-text)]  [--boxShadow-solid:var(--moss-button-danger-solid-boxShadow)]  [--boxShadow-outlined:var(--moss-button-danger-outlined-boxShadow)]  [--boxShadow-soft:var(--moss-button-danger-soft-boxShadow)]  [--boxShadow-ghost:var(--moss-button-danger-ghost-boxShadow)]`,
-        neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--bg-soft:var(--moss-button-neutral-soft-background)] [--border-soft:var(--moss-button-neutral-soft-border)] [--text-soft:var(--moss-button-neutral-soft-text)] [--bg-ghost:var(--moss-button-neutral-ghost-background)] [--border-ghost:var(--moss-button-neutral-ghost-border)] [--text-ghost:var(--moss-button-neutral-ghost-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-neutral-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-neutral-ghost-boxShadow)]`,
+        primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--border-solid:var(--moss-button-primary-solid-border)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--text-outlined:var(--moss-button-primary-outlined-text)] [--boxShadow-solid:var(--moss-button-primary-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-primary-outlined-boxShadow)] [--bg-solid-disabled:var(--moss-button-primary-solid-background-disabled)] [--border-solid-disabled:var(--moss-button-primary-solid-border-disabled)] [--text-solid-disabled:var(--moss-button-primary-solid-text-disabled)] [--bg-outlined-disabled:var(--moss-button-primary-outlined-background-disabled)] [--border-outlined-disabled:var(--moss-button-primary-outlined-border-disabled)] [--text-outlined-disabled:var(--moss-button-primary-outlined-text-disabled)] [--boxShadow-solid-disabled:var(--moss-button-primary-solid-boxShadow-disabled)] [--boxShadow-outlined-disabled:var(--moss-button-primary-outlined-boxShadow-disabled)]`,
+        neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--bg-solid-disabled:var(--moss-button-neutral-solid-background-disabled)] [--border-solid-disabled:var(--moss-button-neutral-solid-border-disabled)] [--text-solid-disabled:var(--moss-button-neutral-solid-text-disabled)] [--bg-outlined-disabled:var(--moss-button-neutral-outlined-background-disabled)] [--border-outlined-disabled:var(--moss-button-neutral-outlined-border-disabled)] [--text-outlined-disabled:var(--moss-button-neutral-outlined-text-disabled)] [--boxShadow-solid-disabled:var(--moss-button-neutral-solid-boxShadow-disabled)] [--boxShadow-outlined-disabled:var(--moss-button-neutral-outlined-boxShadow-disabled)]`,
       },
       variant: {
-        solid: `   background-(--bg-solid)    text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]    dark:border-t dark:border-(--border-solid) hover:brightness-110 active:brightness-95 `,
-        outlined: `background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)] hover:brightness-[0.98] active:brightness-100 dark:hover:brightness-150 dark:active:background-(--bg-outlined)/70`,
-        soft: `    background-(--bg-soft)     text-(--text-soft)     [box-shadow:var(--boxShadow-soft)]     hover:brightness-95     active:brightness-105 dark:hover:brightness-120 dark:active:background-(--bg-soft)/70`,
-        ghost: `   background-transparent     text-(--text-ghost)    [box-shadow:var(--boxShadow-ghost)]    dark:border-(--border-ghost) hover:background-(--bg-ghost) hover:[box-shadow:var(--border-ghost)_0px_0px_0px_1px] active:brightness-150 `,
+        solid: `   hover:brightness-110 active:brightness-95  background-(--bg-solid)       text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]     disabled:background-(--bg-solid-disabled) disabled:text-(--text-solid-disabled) disabled:[box-shadow:var(--boxShadow-solid-disabled)]`,
+        outlined: `hover:brightness-[0.98] active:brightness-100 background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)]  disabled:background-(--bg-outlined-disabled) disabled:text-(--text-outlined-disabled) disabled:[box-shadow:var(--boxShadow-outlined-disabled)]`,
       },
       size: {
         "xs": "h-[22px]",
@@ -40,7 +37,7 @@ const buttonRootStyles = cva(
       },
       disabled: {
         false: null,
-        true: "grayscale-70 cursor-not-allowed hover:brightness-100 active:brightness-100 pointer-events-none",
+        true: "cursor-not-allowed hover:brightness-100 active:brightness-100",
       },
       loading: {
         false: null,
