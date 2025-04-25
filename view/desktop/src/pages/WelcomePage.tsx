@@ -1,8 +1,13 @@
+import { useEffect, useState } from "react";
+
 import { Icon } from "@/components";
 import Button from "@/components/Button";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
+import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useModal } from "@/hooks/useModal";
+import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useWorkspaceStore } from "@/store/workspace";
 
 export const WelcomePage = () => {
   return (
@@ -97,21 +102,42 @@ const FirstColumn = () => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg">Recent</h2>
-          <div className="flex flex-col gap-1.5">
-            <WelcomePageLink label="My Workspace" />
-            <WelcomePageLink label="Spaixel Monster" />
-            <WelcomePageLink label="Twinkle" />
-          </div>
-          <div>
-            <Button variant="outlined" intent="neutral">
-              More
-            </Button>
-          </div>
-        </div>
+        <RecentWorkspaces />
       </div>
     </>
+  );
+};
+
+const RecentWorkspaces = () => {
+  const { data: workspaces } = useGetWorkspaces();
+  const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
+  const { setWorkspace } = useWorkspaceStore();
+
+  const [showAll, setShowAll] = useState(false);
+
+  const workspacesToShow = !showAll ? workspaces?.slice(0, 3) : workspaces;
+
+  useEffect(() => {
+    if (currentWorkspace?.path) setWorkspace(currentWorkspace.path);
+  }, [currentWorkspace, setWorkspace]);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-lg">Recent</h2>
+      <div className="flex flex-col gap-1.5">
+        {workspacesToShow?.map((workspace) => (
+          <WelcomePageLink key={workspace.name} label={workspace.name} onClick={() => openWorkspace(workspace.name)} />
+        ))}
+      </div>
+
+      {!showAll && (
+        <div>
+          <Button variant="outlined" intent="neutral" onClick={() => setShowAll(true)}>
+            More
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -147,9 +173,14 @@ const SecondColumn = () => {
   );
 };
 
-const WelcomePageLink = ({ label, withIcon }: { label: string; withIcon?: boolean }) => {
+interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  label: string;
+  withIcon?: boolean;
+}
+
+const WelcomePageLink = ({ label, withIcon, ...props }: WelcomePageLinkProps) => {
   return (
-    <a href="#" className="flex items-center text-(--moss-primary)">
+    <a className="flex cursor-pointer items-center text-(--moss-primary)" {...props}>
       <span className="hover:underline">{label}</span> {withIcon && <Icon icon="ExternalLink" />}
     </a>
   );

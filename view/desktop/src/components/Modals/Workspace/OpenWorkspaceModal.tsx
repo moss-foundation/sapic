@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
 import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useWorkspaceStore } from "@/store/workspace";
 
 import { ModalWrapperProps } from "../types";
 
@@ -14,7 +15,13 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
   const [openAutomatically, setOpenAutomatically] = useState<boolean>(true);
 
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
+
+  const { setWorkspace } = useWorkspaceStore();
+
+  useEffect(() => {
+    if (currentWorkspace?.path) setWorkspace(currentWorkspace.path);
+  }, [currentWorkspace, setWorkspace]);
 
   const handleSubmit = () => {
     if (selectedWorkspace) {

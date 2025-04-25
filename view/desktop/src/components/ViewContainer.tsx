@@ -1,5 +1,6 @@
 import { useGetViewGroup } from "@/hooks/useGetViewGroup";
 import { useModal } from "@/hooks/useModal";
+import { useWorkspaceStore } from "@/store/workspace";
 
 import CollectionTreeView from "./CollectionTreeView";
 import { Icon } from "./index";
@@ -8,13 +9,15 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
+  const { workspace } = useWorkspaceStore();
 
-  return (
-    <div className="flex h-full flex-col">
-      <NoWorkspaceComponent />
-    </div>
-  );
-
+  if (!workspace) {
+    return (
+      <div className="flex h-full flex-col">
+        <NoWorkspaceComponent />
+      </div>
+    );
+  }
   if (!viewGroup) {
     return <div>No view group found</div>;
   }
