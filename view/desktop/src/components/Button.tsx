@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { Children, forwardRef, HTMLAttributes, isValidElement } from "react";
+import { ButtonHTMLAttributes, Children, forwardRef, isValidElement } from "react";
 
 import { cn } from "@/utils";
 
@@ -7,7 +7,7 @@ import Icon from "./Icon";
 
 export type Button = typeof Button;
 
-export interface ButtonProps extends HTMLAttributes<HTMLButtonElement | HTMLAnchorElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   disabled?: boolean;
   href?: string;
@@ -42,10 +42,6 @@ const buttonRootStyles = cva(
       loading: {
         false: null,
         true: "[&>:not(.LoadingIcon)]:opacity-0 pointer-events-none",
-      },
-      Component: {
-        a: "max-w-max",
-        button: null,
       },
       iconOnly: {
         false: "notOnlyIcon",
@@ -120,12 +116,11 @@ const loadingIconStyles = cva("animate-spin", {
   },
 });
 
-export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { className, variant = "solid", size = "md", disabled, loading, href, children, intent = "primary", ...props },
     forwardedRef
   ) => {
-    const Component = href ? "a" : "button";
     const iconOnly =
       Children.toArray(children).length === 1 &&
       Children.toArray(children).some((child) => isValidElement(child) && child.type === Icon);
@@ -133,11 +128,10 @@ export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonPr
     const content = typeof children === "string" ? <span>{children}</span> : children;
 
     return (
-      <Component
+      <Button
         ref={forwardedRef}
-        type={Component === "button" ? "button" : undefined}
         href={disabled || loading ? undefined : href}
-        className={cn(buttonRootStyles({ size, disabled, loading, Component, iconOnly, intent, variant }), className)}
+        className={cn(buttonRootStyles({ size, disabled, loading, iconOnly, intent, variant }), className)}
         disabled={disabled}
         {...props}
       >
@@ -148,7 +142,7 @@ export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonPr
             <Icon icon="LoaderTailus" className={cn(loadingIconStyles({ size }))} />
           </div>
         )}
-      </Component>
+      </Button>
     );
   }
 );
