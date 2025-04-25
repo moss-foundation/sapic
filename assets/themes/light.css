@@ -147,58 +147,54 @@
   --moss-overlay-z-index: 999;
 
   /* Button System */
-  /* Primary Buttons */
-  --moss-button-primary-solid-background: var(--moss-primary);
-  --moss-button-primary-solid-border: null;
+
+  /* --- Primary Buttons ------------------------------------------------------------------------------------------------------------------------ */
+  --moss-button-primary-solid-background: var(--moss-blue-4);
+  --moss-button-primary-solid-background-hover: var(--moss-blue-3);
+  --moss-button-primary-solid-background-active: var(--moss-blue-2);
+  --moss-button-primary-solid-border: transparent;
+  --moss-button-primary-solid-border-hover: transparent;
+  --moss-button-primary-solid-border-active: transparent;
   --moss-button-primary-solid-text: var(--moss-gray-14);
-  --moss-button-primary-solid-boxShadow: none;
-  --moss-button-primary-solid-background-disabled: var(--moss-gray-12);
-  --moss-button-primary-solid-border-disabled: null;
-  --moss-button-primary-solid-text-disabled: var(--moss-gray-8);
-  --moss-button-primary-solid-boxShadow-disabled: none;
 
-  --moss-button-primary-outlined-background: radial-gradient(
-    76% 151% at 52% -52%,
-    var(--moss-gray-14) 0%,
-    var(--moss-blue-12) 100%
-  );
-  --moss-button-primary-outlined-border: null;
-  --moss-button-primary-outlined-text: var(--moss-blue-1);
-  --moss-button-primary-outlined-boxShadow:
-    var(--moss-gray-14) 0px 1px 0px 0px inset, var(--moss-blue-10) 0px 0px 0px 1px;
+  --moss-button-primary-outlined-background: var(--moss-gray-14);
+  --moss-button-primary-outlined-background-hover: var(--moss-blue-12);
+  --moss-button-primary-outlined-background-active: var(--moss-blue-11);
+  --moss-button-primary-outlined-border: var(--moss-blue-4);
+  --moss-button-primary-outlined-border-hover: var(--moss-blue-5);
+  --moss-button-primary-outlined-border-active: var(--moss-blue-6);
+  --moss-button-primary-outlined-text: var(--moss-blue-4);
 
-  --moss-button-primary-outlined-background-disabled: none;
-  --moss-button-primary-outlined-border-disabled: var(--moss-gray-12);
-  --moss-button-primary-outlined-text-disabled: var(--moss-gray-8);
-  --moss-button-primary-outlined-boxShadow-disabled:
-    var(--moss-gray-14) 0px 1px 0px 0px inset, var(--moss-gray-8) 0px 0px 0px 1px;
-
-  /* Neutral Buttons */
-  --moss-button-neutral-solid-background: linear-gradient(var(--moss-gray-5), var(--moss-gray-4));
-  --moss-button-neutral-solid-border: null;
+  /* --- Neutral Buttons ------------------------------------------------------------------------------------------------------------------------ */
+  --moss-button-neutral-solid-background: var(--moss-gray-4);
+  --moss-button-neutral-solid-background-hover: var(--moss-gray-3);
+  --moss-button-neutral-solid-background-active: var(--moss-gray-2);
+  --moss-button-neutral-solid-border: transparent;
+  --moss-button-neutral-solid-border-hover: transparent;
+  --moss-button-neutral-solid-border-active: transparent;
   --moss-button-neutral-solid-text: var(--moss-gray-14);
-  --moss-button-neutral-solid-boxShadow: none;
-
-  --moss-button-neutral-solid-background-disabled: var(--moss-gray-12);
-  --moss-button-neutral-solid-border-disabled: null;
-  --moss-button-neutral-solid-text-disabled: var(--moss-gray-8);
-  --moss-button-neutral-solid-boxShadow-disabled: none;
 
   --moss-button-neutral-outlined-background: var(--moss-gray-14);
-  --moss-button-neutral-outlined-border: null;
+  --moss-button-neutral-outlined-background-hover: var(--moss-gray-14);
+  --moss-button-neutral-outlined-background-active: var(--moss-gray-13);
+  --moss-button-neutral-outlined-border: var(--moss-gray-9);
+  --moss-button-neutral-outlined-border-hover: var(--moss-gray-8);
+  --moss-button-neutral-outlined-border-active: var(--moss-gray-7);
   --moss-button-neutral-outlined-text: var(--moss-gray-1);
-  --moss-button-neutral-outlined-boxShadow:
-    var(--moss-gray-14) 0px 1px 0px 0px inset, var(--moss-gray-11) 0px 0px 0px 1px;
 
-  --moss-button-neutral-outlined-background-disabled: none;
-  --moss-button-neutral-outlined-border-disabled: var(--moss-gray-12);
-  --moss-button-neutral-outlined-text-disabled: var(--moss-gray-8);
-  --moss-button-neutral-outlined-boxShadow-disabled:
-    var(--moss-gray-14) 0px 1px 0px 0px inset, var(--moss-gray-8) 0px 0px 0px 1px;
+  /* --- Disabled buttons */
+
+  --moss-button-background-disabled: var(--moss-gray-12);
+  --moss-button-background-disabled-hover: var(--moss-gray-12);
+  --moss-button-background-disabled-active: var(--moss-gray-12);
+  --moss-button-border-disabled: transparent;
+  --moss-button-border-disabled-hover: transparent;
+  --moss-button-border-disabled-active: transparent;
+  --moss-button-text-disabled: var(--moss-gray-8);
 
   /* Form Controls */
   --moss-controls-plain-bg: transparent;
-  --moss-controls-plain-border: null;
+  --moss-controls-plain-border: none;
   --moss-controls-plain-text: var(--moss-gray-1);
   --moss-controls-outlined-bg: var(--moss-gray-14);
   --moss-controls-outlined-border: var(--moss-gray-12);
