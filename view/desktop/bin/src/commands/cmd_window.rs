@@ -112,6 +112,7 @@ pub async fn describe_app_state<R: TauriRuntime>(
             theme: state_service.defaults().theme.clone(),
             locale: state_service.defaults().locale.clone(),
         },
+        last_workspace: None,
     })
 }
 

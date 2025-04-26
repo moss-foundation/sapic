@@ -11,6 +11,8 @@ use super::types::{Defaults, Preferences};
 pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
+    #[ts(optional)]
+    pub last_workspace: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
