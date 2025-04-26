@@ -5,8 +5,8 @@ export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
 
   return (
-    <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] font-semibold text-(--moss-primary-text) uppercase">
-      <div className="w-max items-center overflow-hidden text-[12px] font-semibold text-ellipsis whitespace-nowrap text-(--moss-secondary-text)">
+    <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
+      <div className="w-max items-center overflow-hidden text-xs text-ellipsis whitespace-nowrap text-(--moss-secondary-text)">
         {title}
       </div>
 
