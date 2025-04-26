@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { describeLayoutPartsState, openWorkspace } from "@/lib/backend/workspace";
+import { describeLayoutPartsState } from "@/lib/backend/workspace";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -19,8 +19,6 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
   useEffect(() => {
     const initializeWorkspace = async () => {
-      await openWorkspace("TestWorkspace");
-
       const layout = await describeLayoutPartsState();
 
       if (layout === undefined) {
