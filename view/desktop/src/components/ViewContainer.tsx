@@ -1,6 +1,9 @@
+import { useEffect } from "react";
+
+import { useDescribeAppState } from "@/hooks";
 import { useGetViewGroup } from "@/hooks/useGetViewGroup";
 import { useModal } from "@/hooks/useModal";
-import { useWorkspaceStore } from "@/store/workspace";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import CollectionTreeView from "./CollectionTreeView";
 import { Icon } from "./index";
@@ -9,15 +12,26 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
-  const { workspace } = useWorkspaceStore();
+  const { data: appState } = useDescribeAppState();
+  const { api } = useTabbedPaneStore();
 
-  if (!workspace) {
+  useEffect(() => {
+    if (appState?.lastWorkspace) {
+      const WelcomePanel = api?.getPanel("WelcomePage");
+      if (WelcomePanel) {
+        WelcomePanel.api.close();
+      }
+    }
+  }, [appState?.lastWorkspace, api]);
+
+  if (!appState?.lastWorkspace) {
     return (
       <div className="flex h-full flex-col">
         <NoWorkspaceComponent />
       </div>
     );
   }
+
   if (!viewGroup) {
     return <div>No view group found</div>;
   }

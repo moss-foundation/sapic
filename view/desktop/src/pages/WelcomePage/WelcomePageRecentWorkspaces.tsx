@@ -1,33 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { useWorkspaceStore } from "@/store/workspace";
 
 import WelcomePageLink from "./WelcomePageLink";
 
 export const WelcomePageRecentWorkspaces = () => {
   const { data: workspaces } = useGetWorkspaces();
-  const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
-  const { api } = useTabbedPaneStore();
-
-  const { setWorkspace } = useWorkspaceStore();
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [showAll, setShowAll] = useState(false);
 
   const workspacesToShow = !showAll ? workspaces?.slice(0, 3) : workspaces;
-
-  useEffect(() => {
-    if (currentWorkspace?.path) {
-      setWorkspace(currentWorkspace.path);
-      const WelcomePanel = api?.getPanel("WelcomePage");
-      if (WelcomePanel) {
-        WelcomePanel.api.close();
-      }
-    }
-  }, [currentWorkspace, setWorkspace]);
 
   return (
     <div className="flex flex-col gap-2">

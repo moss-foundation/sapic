@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
 import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { useWorkspaceStore } from "@/store/workspace";
 
 import { ModalWrapperProps } from "../types";
 
@@ -16,20 +14,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
   const [openAutomatically, setOpenAutomatically] = useState<boolean>(true);
 
-  const { mutate: openWorkspace, data: currentWorkspace } = useOpenWorkspace();
-
-  const { setWorkspace } = useWorkspaceStore();
-  const { api } = useTabbedPaneStore();
-
-  useEffect(() => {
-    if (currentWorkspace?.path) {
-      setWorkspace(currentWorkspace.path);
-      const WelcomePanel = api?.getPanel("WelcomePage");
-      if (WelcomePanel) {
-        WelcomePanel.api.close();
-      }
-    }
-  }, [currentWorkspace, setWorkspace]);
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   const handleSubmit = () => {
     if (selectedWorkspace) {
