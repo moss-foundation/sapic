@@ -2,7 +2,9 @@ use anyhow::Result;
 use futures::stream::BoxStream;
 use futures::StreamExt;
 use moss_fs::FileSystem;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::mem;
+use std::path::Path;
 use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
 use std::{
@@ -46,8 +48,18 @@ pub enum ScanState {
     },
 }
 
+#[derive(Copy, Clone, PartialEq)]
 pub enum BackgroundScannerPhase {
     InitialScan,
+    Events,
+}
+
+#[derive(Debug)]
+struct ScanJob {
+    abs_path: PathBuf,
+    path: PathBuf,
+    scan_queue: UnboundedSender<ScanJob>,
+    ancestor_inodes: HashSet<u64>,
 }
 
 #[derive(Clone)]
@@ -59,19 +71,24 @@ pub struct BackgroundScannerState {
     pub removed_entries: HashMap<u64, Entry>,
 }
 
-impl Default for BackgroundScannerState {
-    fn default() -> Self {
-        let empty = Snapshot {
-            scan_id: 0,
-            entries_by_id: Arc::new(BPlusTreeMap::new()),
-            entries_by_path: Arc::new(BPlusTreeMap::new()),
-        };
-        Self {
-            scan_id: 0,
-            snapshot: empty.clone(),
-            prev_snapshot: empty,
-            changed_paths: Vec::new(),
-            removed_entries: HashMap::new(),
+impl BackgroundScannerState {
+    fn enqueue_scan_dir(
+        &self,
+        abs_path: PathBuf,
+        entry: &Entry,
+        scan_job_tx: &UnboundedSender<ScanJob>,
+    ) {
+        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path);
+        if !ancestor_inodes.contains(&entry.inode) {
+            ancestor_inodes.insert(entry.inode);
+            scan_job_tx
+                .send(ScanJob {
+                    abs_path,
+                    path: entry.path.clone(),
+                    scan_queue: scan_job_tx.clone(),
+                    ancestor_inodes,
+                })
+                .unwrap();
         }
     }
 }
@@ -86,7 +103,25 @@ pub struct BackgroundScanner {
 
 impl BackgroundScanner {
     pub async fn run(&mut self, mut fs_events: BoxStream<'static, Vec<notify::Event>>) {
-        self.do_initial_scan().await;
+        let (scan_job_tx, scan_job_rx) = mpsc::unbounded_channel();
+        {
+            let mut state = self.state.lock().await;
+            let root_abs_path = state.snapshot.abs_path.clone();
+
+            state.scan_id += 1;
+
+            if let Some(root_entry) = state.snapshot.root_entry() {
+                state.enqueue_scan_dir(root_abs_path, root_entry, &scan_job_tx);
+            }
+        }
+
+        drop(scan_job_tx);
+        self.scan_dirs(scan_job_rx).await;
+
+        self.send_status_update(false, Vec::new()).await;
+
+        // Start listening for events
+        self.phase = BackgroundScannerPhase::Events;
 
         loop {
             tokio::select! {
@@ -103,79 +138,53 @@ impl BackgroundScanner {
         }
     }
 
-    async fn send_is_scanning(&self, is_scanning: bool) {
-        if is_scanning {
-            let _ = self.status_updates_tx.send(ScanState::Started);
-        } else {
-            let state = self.state.lock().await;
-            let _ = self.status_updates_tx.send(ScanState::Updated {
-                snapshot: state.snapshot.clone(),
-                changes: Arc::new([]),
-                scanning: false,
-                barrier: Vec::new(),
-            });
+    async fn send_status_update(&self, scanning: bool, barrier: Vec<Barrier>) -> bool {
+        let mut state = self.state.lock().await;
+        if state.changed_paths.is_empty() && scanning {
+            return true;
         }
+
+        let new_snapshot = state.snapshot.clone();
+        let old_snapshot = mem::replace(&mut state.prev_snapshot, new_snapshot.clone());
+
+        let changes = build_diff(
+            self.phase,
+            &old_snapshot,
+            &new_snapshot,
+            &state.changed_paths,
+        );
+        state.changed_paths.clear();
+
+        self.status_updates_tx
+            .send(ScanState::Updated {
+                snapshot: new_snapshot,
+                changes,
+                scanning,
+                barrier,
+            })
+            .is_ok()
     }
 
     async fn do_initial_scan(&self) {
-        self.send_is_scanning(true).await;
-        self.scan_dirs().await;
-        self.send_is_scanning(false).await;
+        todo!()
     }
 
     async fn handle_scan_request(&self, scan_req: ScanRequest) {
-        {
-            let mut state_lock = self.state.lock().await;
-            state_lock.scan_id += 1;
-            state_lock
-                .changed_paths
-                .extend(scan_req.relative_paths.clone());
-        }
-
-        self.scan_dirs().await;
-        scan_req.done.wait().await;
+        todo!()
     }
 
     async fn handle_fs_events(&self, events: Vec<notify::Event>) {
         todo!()
     }
 
-    async fn scan_dirs(&self) {
-        let mut to_scan = {
-            let mut st = self.state.lock().await;
-            std::mem::take(&mut st.changed_paths)
-        };
-
-        for path in to_scan {
-            self.scan_dir(path).await;
-        }
-
-        self.send_snapshot_update(false, Vec::new()).await;
+    async fn scan_dirs(&self, scan_job_rx: UnboundedReceiver<ScanJob>) {
+        todo!()
     }
 
     async fn scan_dir(&self, dir: PathBuf) {}
 
     async fn send_snapshot_update(&self, scanning: bool, barrier: Vec<Barrier>) {
-        let (snapshot, prev_snapshot, changes, scan_id) = {
-            let mut st = self.state.lock().await;
-            // TODO: invoke build_diff(&st.prev_snapshot, &st.snapshot)
-            let changes: Vec<(PathBuf, EntryId, PathChange)> = Vec::new();
-            st.prev_snapshot = st.snapshot.clone();
-
-            (
-                st.snapshot.clone(),
-                st.prev_snapshot.clone(),
-                Arc::<[(PathBuf, EntryId, PathChange)]>::from(changes),
-                st.scan_id,
-            )
-        };
-
-        let _ = self.status_updates_tx.send(ScanState::Updated {
-            snapshot,
-            changes,
-            scanning,
-            barrier,
-        });
+        todo!()
     }
 }
 
@@ -210,17 +219,47 @@ pub enum EntryKind {
 #[derive(Debug, Clone)]
 pub struct Entry {
     id: EntryId,
+    path: PathBuf,
     kind: EntryKind,
     unit_type: Option<UnitType>,
     mtime: Option<SystemTime>,
-    size: u64,
+    inode: u64,
+    // size: u64,
 }
 
 #[derive(Clone)]
 pub struct Snapshot {
     scan_id: usize,
+    abs_path: PathBuf,
     entries_by_id: Arc<BPlusTreeMap<EntryId, Entry>>,
     entries_by_path: Arc<BPlusTreeMap<PathBuf, EntryId>>,
+}
+
+impl Snapshot {
+    pub fn root_entry(&self) -> Option<&Entry> {
+        self.entry_by_path("")
+    }
+
+    fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
+        let mut inodes = HashSet::new();
+
+        for ancestor in path.ancestors().skip(1) {
+            if let Some(entry) = self.entry_by_path(ancestor) {
+                inodes.insert(entry.inode);
+            }
+        }
+
+        inodes
+    }
+
+    fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<&Entry> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        self.entries_by_path
+            .get(path)
+            .and_then(|id| self.entries_by_id.get(id))
+    }
 }
 
 pub struct Worktree {
@@ -232,7 +271,7 @@ pub struct Worktree {
 impl Worktree {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        root_abs: PathBuf,
+        root_abs_path: PathBuf,
         next_entry_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
         // Rename: status_updates_tx
@@ -240,14 +279,22 @@ impl Worktree {
         let (scan_req_tx, mut scan_req_rx) = mpsc::unbounded_channel();
         let snapshot = Snapshot {
             scan_id: 0,
+            abs_path: root_abs_path.clone(),
             entries_by_id: Arc::new(BPlusTreeMap::new()),
             entries_by_path: Arc::new(BPlusTreeMap::new()),
         };
 
-        let (fs_events, _watcher) = fs.watch(root_abs, Duration::from_millis(100))?;
+        let (fs_events, _watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
+        let empty_snapshot = snapshot.clone();
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
             let mut background_scanner = BackgroundScanner {
-                state: Mutex::new(BackgroundScannerState::default()),
+                state: Mutex::new(BackgroundScannerState {
+                    scan_id: 0,
+                    snapshot: empty_snapshot.clone(),
+                    prev_snapshot: empty_snapshot,
+                    changed_paths: Vec::new(),
+                    removed_entries: HashMap::new(),
+                }),
                 next_entry_id,
                 phase: BackgroundScannerPhase::InitialScan,
                 scan_req_rx,
@@ -278,4 +325,14 @@ impl Worktree {
             background_tasks: vec![scanner_handle, updater_handle],
         })
     }
+}
+
+fn build_diff(
+    phase: BackgroundScannerPhase,
+    old_snapshot: &Snapshot,
+    new_snapshot: &Snapshot,
+    changed_paths: &[PathBuf],
+) -> UpdatedEntriesSet {
+    let changes: Vec<(PathBuf, EntryId, PathChange)> = Vec::new();
+    Arc::from(changes)
 }
