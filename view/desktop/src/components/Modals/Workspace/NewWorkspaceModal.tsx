@@ -47,6 +47,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               variant="outlined"
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
+              pattern=""
               required
             />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>

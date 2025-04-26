@@ -1,9 +1,9 @@
 import { ReactNode, useEffect } from "react";
 
+import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 import { useDescribeAppState } from "@/hooks/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorTheme } from "@/utils/applyTheme";
-import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 
 import LanguageProvider from "./LanguageProvider";
 import ThemeProvider from "./ThemeProvider";

@@ -11,7 +11,7 @@ import type { Defaults, Preferences } from "./types";
 import type { ColorThemeInfo } from "@repo/moss-theme";
 import type { LocaleInfo } from "@repo/moss-nls";
 
-export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults };
+export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; lastWorkspace?: string };
 
 export type SetColorThemeInput = { themeInfo: ColorThemeInfo };
 
