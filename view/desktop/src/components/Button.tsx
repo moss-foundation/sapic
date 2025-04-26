@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { Children, forwardRef, HTMLAttributes, isValidElement } from "react";
+import { ButtonHTMLAttributes, Children, forwardRef, isValidElement } from "react";
 
 import { cn } from "@/utils";
 
@@ -7,29 +7,26 @@ import Icon from "./Icon";
 
 export type Button = typeof Button;
 
-export interface ButtonProps extends HTMLAttributes<HTMLButtonElement | HTMLAnchorElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   disabled?: boolean;
   href?: string;
-  intent?: "primary" | "danger" | "neutral";
-  variant?: "solid" | "outlined" | "soft" | "ghost";
+  intent?: "primary" | "neutral";
+  variant?: "solid" | "outlined";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 const buttonRootStyles = cva(
-  "relative flex items-center cursor-pointer justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 outline-blue-600",
+  "relative flex items-center min-w-18 cursor-pointer justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 outline-(--moss-primary)",
   {
     variants: {
       intent: {
-        primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--border-solid:var(--moss-button-primary-solid-border)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--text-outlined:var(--moss-button-primary-outlined-text)] [--bg-soft:var(--moss-button-primary-soft-background)] [--border-soft:var(--moss-button-primary-soft-border)] [--text-soft:var(--moss-button-primary-soft-text)] [--bg-ghost:var(--moss-button-primary-ghost-background)] [--border-ghost:var(--moss-button-primary-ghost-border)] [--text-ghost:var(--moss-button-primary-ghost-text)] [--boxShadow-solid:var(--moss-button-primary-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-primary-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-primary-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-primary-ghost-boxShadow)]`,
-        danger: ` [--bg-solid:var(--moss-button-danger-solid-background)]  [--border-solid:var(--moss-button-danger-solid-border)]  [--text-solid:var(--moss-button-danger-solid-text)]  [--bg-outlined:var(--moss-button-danger-outlined-background)]  [--border-outlined:var(--moss-button-danger-outlined-border)]  [--text-outlined:var(--moss-button-danger-outlined-text)]  [--bg-soft:var(--moss-button-danger-soft-background)]  [--border-soft:var(--moss-button-danger-soft-border)]  [--text-soft:var(--moss-button-danger-soft-text)]  [--bg-ghost:var(--moss-button-danger-ghost-background)]  [--border-ghost:var(--moss-button-danger-ghost-border)]  [--text-ghost:var(--moss-button-danger-ghost-text)]  [--boxShadow-solid:var(--moss-button-danger-solid-boxShadow)]  [--boxShadow-outlined:var(--moss-button-danger-outlined-boxShadow)]  [--boxShadow-soft:var(--moss-button-danger-soft-boxShadow)]  [--boxShadow-ghost:var(--moss-button-danger-ghost-boxShadow)]`,
-        neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--border-solid:var(--moss-button-neutral-solid-border)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--text-outlined:var(--moss-button-neutral-outlined-text)] [--bg-soft:var(--moss-button-neutral-soft-background)] [--border-soft:var(--moss-button-neutral-soft-border)] [--text-soft:var(--moss-button-neutral-soft-text)] [--bg-ghost:var(--moss-button-neutral-ghost-background)] [--border-ghost:var(--moss-button-neutral-ghost-border)] [--text-ghost:var(--moss-button-neutral-ghost-text)] [--boxShadow-solid:var(--moss-button-neutral-solid-boxShadow)] [--boxShadow-outlined:var(--moss-button-neutral-outlined-boxShadow)] [--boxShadow-soft:var(--moss-button-neutral-soft-boxShadow)] [--boxShadow-ghost:var(--moss-button-neutral-ghost-boxShadow)]`,
+        primary: `[--bg-solid:var(--moss-button-primary-solid-background)] [--bg-solid-hover:var(--moss-button-primary-solid-background-hover)] [--bg-solid-active:var(--moss-button-primary-solid-background-active)] [--border-solid:var(--moss-button-primary-solid-border)] [--border-solid-hover:var(--moss-button-primary-solid-border-hover)] [--border-solid-active:var(--moss-button-primary-solid-border-active)] [--text-solid:var(--moss-button-primary-solid-text)] [--bg-outlined:var(--moss-button-primary-outlined-background)] [--bg-outlined-hover:var(--moss-button-primary-outlined-background-hover)] [--bg-outlined-active:var(--moss-button-primary-outlined-background-active)] [--border-outlined:var(--moss-button-primary-outlined-border)] [--border-outlined-hover:var(--moss-button-primary-outlined-border-hover)] [--border-outlined-active:var(--moss-button-primary-outlined-border-active)] [--text-outlined:var(--moss-button-primary-outlined-text)]`,
+        neutral: `[--bg-solid:var(--moss-button-neutral-solid-background)] [--bg-solid-hover:var(--moss-button-neutral-solid-background-hover)] [--bg-solid-active:var(--moss-button-neutral-solid-background-active)] [--border-solid:var(--moss-button-neutral-solid-border)] [--border-solid-hover:var(--moss-button-neutral-solid-border-hover)] [--border-solid-active:var(--moss-button-neutral-solid-border-active)] [--text-solid:var(--moss-button-neutral-solid-text)] [--bg-outlined:var(--moss-button-neutral-outlined-background)] [--bg-outlined-hover:var(--moss-button-neutral-outlined-background-hover)] [--bg-outlined-active:var(--moss-button-neutral-outlined-background-active)] [--border-outlined:var(--moss-button-neutral-outlined-border)] [--border-outlined-hover:var(--moss-button-neutral-outlined-border-hover)] [--border-outlined-active:var(--moss-button-neutral-outlined-border-active)] [--text-outlined:var(--moss-button-neutral-outlined-text)]`,
       },
       variant: {
-        solid: `   background-(--bg-solid)    text-(--text-solid)    [box-shadow:var(--boxShadow-solid)]    dark:border-t dark:border-(--border-solid) hover:brightness-110 active:brightness-95 `,
-        outlined: `background-(--bg-outlined) text-(--text-outlined) [box-shadow:var(--boxShadow-outlined)] hover:brightness-[0.98] active:brightness-100 dark:hover:brightness-150 dark:active:background-(--bg-outlined)/70`,
-        soft: `    background-(--bg-soft)     text-(--text-soft)     [box-shadow:var(--boxShadow-soft)]     hover:brightness-95     active:brightness-105 dark:hover:brightness-120 dark:active:background-(--bg-soft)/70`,
-        ghost: `   background-transparent     text-(--text-ghost)    [box-shadow:var(--boxShadow-ghost)]    dark:border-(--border-ghost) hover:background-(--bg-ghost) hover:[box-shadow:var(--border-ghost)_0px_0px_0px_1px] active:brightness-150 `,
+        solid: `    background-(--bg-solid)    hover:background-(--bg-solid-hover)    active:background-(--bg-solid-active)    text-(--text-solid)`,
+        outlined: ` background-(--bg-outlined) hover:background-(--bg-outlined-hover) active:background-(--bg-outlined-active) text-(--text-outlined) border border-(--border-outlined) hover:border-(--border-outlined-hover) active:border-(--border-outlined-active)`,
       },
       size: {
         "xs": "h-[22px]",
@@ -38,17 +35,13 @@ const buttonRootStyles = cva(
         "lg": "h-[34px]",
         "xl": "h-[38px]",
       },
-      disabled: {
+      isDisabled: {
         false: null,
-        true: "grayscale-70 cursor-not-allowed hover:brightness-100 active:brightness-100 pointer-events-none",
+        true: "cursor-not-allowed hover:brightness-100 active:brightness-100 background-(--moss-button-background-disabled) border border-(--moss-button-border-disabled) text-(--moss-button-text-disabled) hover:background-(--moss-button-background-disabled-hover) active:background-(--moss-button-background-disabled-active) hover:border-(--moss-button-border-disabled-hover) active:border-(--moss-button-border-disabled-active)",
       },
       loading: {
         false: null,
-        true: "[&>:not(.LoadingIcon)]:opacity-0 pointer-events-none",
-      },
-      Component: {
-        a: "max-w-max",
-        button: null,
+        true: "[&>:not(.LoadingIcon)]:opacity-0 cursor-progress ",
       },
       iconOnly: {
         false: "notOnlyIcon",
@@ -76,7 +69,6 @@ const buttonRootStyles = cva(
         size: "sm",
         className: "px-3.5",
       },
-
       {
         iconOnly: true,
         size: "md",
@@ -114,34 +106,33 @@ const buttonRootStyles = cva(
 const loadingIconStyles = cva("animate-spin", {
   variants: {
     size: {
-      "xs": "size-5",
-      "sm": "size-6",
-      "md": "size-7",
-      "lg": "size-8",
-      "xl": "size-9",
+      "xs": "size-2",
+      "sm": "size-3",
+      "md": "size-5",
+      "lg": "size-7",
+      "xl": "size-8",
     },
   },
 });
 
-export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { className, variant = "solid", size = "md", disabled, loading, href, children, intent = "primary", ...props },
     forwardedRef
   ) => {
-    const Component = href ? "a" : "button";
     const iconOnly =
       Children.toArray(children).length === 1 &&
       Children.toArray(children).some((child) => isValidElement(child) && child.type === Icon);
 
     const content = typeof children === "string" ? <span>{children}</span> : children;
 
+    const isDisabled = disabled || loading;
+
     return (
-      <Component
+      <button
         ref={forwardedRef}
-        type={Component === "button" ? "button" : undefined}
-        href={disabled || loading ? undefined : href}
-        className={cn(buttonRootStyles({ size, disabled, loading, Component, iconOnly, intent, variant }), className)}
-        disabled={disabled || loading}
+        className={cn(buttonRootStyles({ size, isDisabled, loading, iconOnly, intent, variant }), className)}
+        disabled={isDisabled}
         {...props}
       >
         {content}
@@ -151,7 +142,7 @@ export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonPr
             <Icon icon="LoaderTailus" className={cn(loadingIconStyles({ size }))} />
           </div>
         )}
-      </Component>
+      </button>
     );
   }
 );

@@ -24,6 +24,7 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
+use moss_workspace::workspace_manager::WorkspaceManager;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
@@ -103,6 +104,25 @@ pub async fn describe_app_state<R: TauriRuntime>(
         .get_by_type::<StateService<R>>(&app_handle)
         .await?;
 
+    let workspace_manager = app_manager
+        .services()
+        .get_by_type::<WorkspaceManager<R>>(&app_handle)
+        .await?;
+
+    // HACK: This is a hack to get the last workspace name
+    let last_workspace_name = if let Ok(data) = workspace_manager.current_workspace() {
+        Some(
+            data.1
+                .path()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string(),
+        )
+    } else {
+        None
+    };
+
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
             theme: state_service.preferences().theme.read().clone(),
@@ -112,6 +132,7 @@ pub async fn describe_app_state<R: TauriRuntime>(
             theme: state_service.defaults().theme.clone(),
             locale: state_service.defaults().locale.clone(),
         },
+        last_workspace: last_workspace_name, // Some("TestWorkspace".to_string())
     })
 }
 
