@@ -73,7 +73,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <Icon icon={iconLeft} className={cn(iconsStyles({ size }), "text-(--moss-controls-placeholder)")} />
         )}
 
-        <input ref={forwardedRef} disabled={disabled} {...props} className="h-full w-full outline-none" />
+        <input ref={forwardedRef} disabled={disabled} {...props} className="h-full w-full outline-none select-auto" />
 
         {iconRight && (
           <Icon icon={iconRight} className={cn(iconsStyles({ size }), "text-(--moss-controls-placeholder)")} />
