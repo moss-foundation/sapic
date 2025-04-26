@@ -35,13 +35,13 @@ const buttonRootStyles = cva(
         "lg": "h-[34px]",
         "xl": "h-[38px]",
       },
-      disabled: {
+      isDisabled: {
         false: null,
         true: "cursor-not-allowed hover:brightness-100 active:brightness-100 background-(--moss-button-background-disabled) border border-(--moss-button-border-disabled) text-(--moss-button-text-disabled) hover:background-(--moss-button-background-disabled-hover) active:background-(--moss-button-background-disabled-active) hover:border-(--moss-button-border-disabled-hover) active:border-(--moss-button-border-disabled-active)",
       },
       loading: {
         false: null,
-        true: "[&>:not(.LoadingIcon)]:opacity-0 pointer-events-none",
+        true: "[&>:not(.LoadingIcon)]:opacity-0 cursor-progress ",
       },
       iconOnly: {
         false: "notOnlyIcon",
@@ -69,7 +69,6 @@ const buttonRootStyles = cva(
         size: "sm",
         className: "px-3.5",
       },
-
       {
         iconOnly: true,
         size: "md",
@@ -107,11 +106,11 @@ const buttonRootStyles = cva(
 const loadingIconStyles = cva("animate-spin", {
   variants: {
     size: {
-      "xs": "size-5",
-      "sm": "size-6",
-      "md": "size-7",
-      "lg": "size-8",
-      "xl": "size-9",
+      "xs": "size-2",
+      "sm": "size-3",
+      "md": "size-5",
+      "lg": "size-7",
+      "xl": "size-8",
     },
   },
 });
@@ -127,11 +126,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const content = typeof children === "string" ? <span>{children}</span> : children;
 
+    const isDisabled = disabled || loading;
+
     return (
       <button
         ref={forwardedRef}
-        className={cn(buttonRootStyles({ size, disabled, loading, iconOnly, intent, variant }), className)}
-        disabled={disabled}
+        className={cn(buttonRootStyles({ size, isDisabled, loading, iconOnly, intent, variant }), className)}
+        disabled={isDisabled}
         {...props}
       >
         {content}
