@@ -1,5 +1,3 @@
-import "@/app/i18n";
-
 import { AppLayout, RootLayout } from "@/components";
 import { PageLoader } from "@/components/PageLoader";
 import { usePrepareWindow } from "@/hooks/usePrepareWindow";

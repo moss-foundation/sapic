@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { describeLayoutPartsState } from "@/lib/backend/workspace";
-import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -27,7 +26,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
       }
 
       if (layout?.editor) {
-        setGridState(layout.editor as unknown as SerializedDockview);
+        setGridState(layout.editor);
       }
 
       initializeResizableLayout({

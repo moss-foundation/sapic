@@ -1,6 +1,8 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
+import "@/app/i18n";
+
 import { PageLoader } from "./components/PageLoader";
 
 import "allotment/dist/style.css";
