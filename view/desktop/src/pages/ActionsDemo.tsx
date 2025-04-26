@@ -42,6 +42,7 @@ const ActionsDemo: React.FC = () => {
           onOpenChange={setContextMenuOpen}
           width={293}
           maxHeight={553}
+          menuItemHeight={24}
           onSelect={handleItemSelect}
           align="start"
           trigger={

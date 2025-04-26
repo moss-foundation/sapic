@@ -15,17 +15,13 @@ export interface MenuItemProps {
   shortcut?: string;
   items?: MenuItemProps[];
   disabled?: boolean;
-  // Additional properties for checkable items
   checked?: boolean;
   count?: number; // For showing counts like "All Configurations 25"
-  // Special styling
   variant?: "danger" | "success" | "warning" | "info" | "default";
-  // For section headers
   sectionTitle?: string;
-  // For footers
   footerText?: string;
-  // For radio items
   value?: string;
+  alignWithIcons?: boolean;
 }
 
 export interface ActionMenuProps {
@@ -36,13 +32,12 @@ export interface ActionMenuProps {
   width?: number;
   height?: number;
   maxHeight?: number;
+  menuItemHeight?: number;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
-  hideArrow?: boolean;
   onSelect?: (item: MenuItemProps) => void;
   className?: string;
-  // For radio groups
   type?: "default" | "dropdown";
   selectedValue?: string;
   placeholder?: string;
@@ -73,20 +68,27 @@ MenuContent.displayName = "MenuContent";
 
 const MenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Item>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.Item> & { variant?: string }
->(({ className, variant = "default", ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.Item> & {
+    variant?: string;
+    height?: number;
+    hasIcon?: boolean;
+    alignWithIcons?: boolean;
+  }
+>(({ className, variant = "default", height, hasIcon, alignWithIcons, ...props }, ref) => (
   <DropdownMenu.Item
     ref={ref}
     className={cn(
-      "relative flex h-9 cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
       {
         "text-green-500": variant === "success",
         "text-red-500": variant === "danger",
         "text-yellow-500": variant === "warning",
         "text-blue-500": variant === "info",
+        "h-9": height === undefined,
       },
       className
     )}
+    style={height ? { height: `${height}px` } : undefined}
     {...props}
   />
 ));
@@ -96,20 +98,28 @@ const MenuSeparator = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Separator>,
   React.ComponentPropsWithoutRef<typeof DropdownMenu.Separator>
 >(({ className, ...props }, ref) => (
-  <DropdownMenu.Separator ref={ref} className={cn("my-1 h-px bg-(--moss-border-primary)", className)} {...props} />
+  <DropdownMenu.Separator
+    ref={ref}
+    className={cn("background-(--moss-border-color) my-1 h-px", className)}
+    {...props}
+  />
 ));
 MenuSeparator.displayName = "MenuSeparator";
 
 const MenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & { hideChevron?: boolean }
->(({ className, children, hideChevron, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & { hideChevron?: boolean; height?: number }
+>(({ className, children, hideChevron, height, ...props }, ref) => (
   <DropdownMenu.SubTrigger
     ref={ref}
     className={cn(
-      "flex h-9 cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      "flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      {
+        "h-9": height === undefined,
+      },
       className
     )}
+    style={height ? { height: `${height}px` } : undefined}
     {...props}
   >
     {children}
@@ -183,14 +193,18 @@ MenuFooter.displayName = "MenuFooter";
 
 const MenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem>
->(({ className, children, checked, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem> & { height?: number; alignWithIcons?: boolean }
+>(({ className, children, checked, height, alignWithIcons, ...props }, ref) => (
   <DropdownMenu.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex h-9 cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      {
+        "h-9": height === undefined,
+      },
       className
     )}
+    style={height ? { height: `${height}px` } : undefined}
     checked={checked}
     {...props}
   >
@@ -206,14 +220,18 @@ MenuCheckboxItem.displayName = "MenuCheckboxItem";
 
 const MenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem> & { height?: number }
+>(({ className, children, height, ...props }, ref) => (
   <DropdownMenu.RadioItem
     ref={ref}
     className={cn(
-      "relative flex h-9 cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=checked]:bg-(--moss-secondary-background)",
+      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=checked]:bg-(--moss-secondary-background)",
+      {
+        "h-9": height === undefined,
+      },
       className
     )}
+    style={height ? { height: `${height}px` } : undefined}
     {...props}
   >
     {children}
@@ -252,10 +270,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   width = 280,
   height,
   maxHeight,
+  menuItemHeight,
   align = "start",
   side = "bottom",
   sideOffset = 5,
-  hideArrow = true,
   onSelect,
   className,
   type = "default",
@@ -287,36 +305,29 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
 
   // Recursive function to render menu items
   const renderMenuItems = (menuItems: MenuItemProps[]) => {
-    let currentSection: string | null = null;
-
-    // If it's a radio group, wrap the items in a RadioGroup
     if (menuItems.some((item) => item.type === "radio")) {
       return (
         <DropdownMenu.RadioGroup value={selectedValue}>
           {menuItems.map((item) => {
-            // Render a separator
             if (item.type === "separator") {
               return <MenuSeparator key={item.id} />;
             }
 
-            // Render a header
             if (item.type === "header") {
               return <MenuLabel key={item.id}>{item.label}</MenuLabel>;
             }
 
-            // Render a section header
             if (item.type === "section") {
-              currentSection = item.sectionTitle || null;
               return <MenuSectionLabel key={item.id}>{item.sectionTitle}</MenuSectionLabel>;
             }
 
-            // Render a radio item
             if (item.type === "radio") {
               return (
                 <MenuRadioItem
                   key={item.id}
                   value={item.value || item.id}
                   disabled={item.disabled}
+                  height={menuItemHeight}
                   onSelect={() => handleSelect(item)}
                 >
                   {item.icon && (
@@ -327,49 +338,45 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                       />
                     </div>
                   )}
+                  {!item.icon && item.alignWithIcons && (
+                    <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>
+                  )}
                   <span className="flex-grow">{item.label}</span>
                   {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
                 </MenuRadioItem>
               );
             }
 
-            // Handle other item types with standard rendering
             return renderMenuItem(item);
           })}
         </DropdownMenu.RadioGroup>
       );
     }
 
-    // Standard menu rendering for non-radio items
     return menuItems.map(renderMenuItem);
   };
 
   // Render an individual menu item
   const renderMenuItem = (item: MenuItemProps) => {
-    // Render a separator
-    if (item.type === "separator") {
-      return <MenuSeparator key={item.id} />;
-    }
+    if (item.type === "separator") return <MenuSeparator key={item.id} />;
+    if (item.type === "header") return <MenuLabel key={item.id}>{item.label}</MenuLabel>;
+    if (item.type === "section") return <MenuSectionLabel key={item.id}>{item.sectionTitle}</MenuSectionLabel>;
 
-    // Render a header
-    if (item.type === "header") {
-      return <MenuLabel key={item.id}>{item.label}</MenuLabel>;
-    }
-
-    // Render a section header
-    if (item.type === "section") {
-      return <MenuSectionLabel key={item.id}>{item.sectionTitle}</MenuSectionLabel>;
-    }
-
-    // Render a checkable item
     if (item.type === "checkable") {
       return (
         <MenuCheckboxItem
           key={item.id}
           checked={item.checked}
           disabled={item.disabled}
+          height={menuItemHeight}
+          alignWithIcons={item.alignWithIcons}
           onSelect={() => handleSelect(item)}
         >
+          <div className="mr-2 flex h-5 w-5 items-center justify-center">
+            <DropdownMenu.ItemIndicator>
+              <Icon icon="CheckboxIndicator" className="h-4 w-4" />
+            </DropdownMenu.ItemIndicator>
+          </div>
           {item.icon && (
             <div className="mr-2 flex h-5 w-5 items-center justify-center">
               <Icon
@@ -378,6 +385,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
               />
             </div>
           )}
+          {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
           <span className="flex-grow">{item.label}</span>
           {item.count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>}
           {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
@@ -385,11 +393,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       );
     }
 
-    // Render a submenu
     if (item.type === "submenu" && item.items?.length) {
       return (
         <DropdownMenu.Sub key={item.id}>
-          <MenuSubTrigger>
+          <MenuSubTrigger height={menuItemHeight}>
             {item.icon && (
               <div className="mr-2 flex h-5 w-5 items-center justify-center">
                 <Icon
@@ -398,6 +405,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                 />
               </div>
             )}
+            {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
             <span className="flex-grow">{item.label}</span>
             {item.count !== undefined && (
               <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>
@@ -413,10 +421,17 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       );
     }
 
-    // Render a regular item
     if (item.type === "action") {
       return (
-        <MenuItem key={item.id} disabled={item.disabled} variant={item.variant} onSelect={() => handleSelect(item)}>
+        <MenuItem
+          key={item.id}
+          disabled={item.disabled}
+          variant={item.variant}
+          height={menuItemHeight}
+          hasIcon={!!item.icon}
+          alignWithIcons={item.alignWithIcons}
+          onSelect={() => handleSelect(item)}
+        >
           {item.icon && (
             <div className="mr-2 flex h-5 w-5 items-center justify-center">
               <Icon
@@ -428,6 +443,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
               />
             </div>
           )}
+          {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
           <span className="flex-grow">{item.label}</span>
           {item.count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>}
           {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
@@ -435,7 +451,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       );
     }
 
-    // Handle any other item type
     return null;
   };
 
