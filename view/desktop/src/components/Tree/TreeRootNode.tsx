@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef } from "react";
 
 import { cn } from "@/utils";
 
-import { DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext, ActionButton } from "..";
+import { ActionButton, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -149,13 +149,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
             >
               <ActionButton icon="PlusButton" onClick={() => setIsAddingRootFileNode(true)} />
+              <ActionButton icon="TreeReload" />
               <ActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
               <ActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <ActionButton icon="ThreeVerticalDots" asChild />
+            <DropdownMenu.Trigger asChild>
+              <ActionButton icon="ThreeVerticalDots" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">

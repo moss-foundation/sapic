@@ -11,10 +11,9 @@ export const SidebarHeader = ({ title }: { title: string }) => {
       </div>
 
       <div className="flex grow justify-end">
-        <ActionButton icon="TreeCollapseAll" onClick={collapseAll} />
-
-        <ActionButton icon="TreeReload" />
         <ActionButton icon="PlusButton" />
+        <ActionButton icon="TreeCollapseAll" onClick={collapseAll} />
+        <ActionButton icon="Import" />
         <ActionButton icon="ThreeVerticalDots" />
       </div>
     </div>
