@@ -5,7 +5,7 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
-import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { ActionsDemo, Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -185,6 +185,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     Welcome: () => (
       <Scrollbar className="h-full">
         <WelcomePage />
+      </Scrollbar>
+    ),
+    ActionsDemo: () => (
+      <Scrollbar className="h-full">
+        <ActionsDemo />
       </Scrollbar>
     ),
   };
