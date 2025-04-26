@@ -1,7 +1,8 @@
 use anyhow::Result;
 use futures::stream::BoxStream;
-use futures::StreamExt;
+use futures::{FutureExt, StreamExt};
 use moss_fs::FileSystem;
+use notify::{FsEventWatcher, RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::mem;
 use std::path::Path;
@@ -22,7 +23,7 @@ use tokio::task::JoinHandle;
 
 struct ScanRequest {
     relative_paths: Vec<PathBuf>,
-    done: Barrier,
+    done: Vec<PathBuf>,
 }
 
 pub enum PathChange {
@@ -91,9 +92,32 @@ impl BackgroundScannerState {
                 .unwrap();
         }
     }
+
+    fn reuse_entry_id(&mut self, entry: &mut Entry) {
+        if let Some(mtime) = entry.mtime {
+            if let Some(removed_entry) = self.removed_entries.remove(&entry.inode) {
+                if removed_entry.mtime == Some(mtime) || removed_entry.path == entry.path {
+                    entry.id = removed_entry.id;
+                }
+            } else if let Some(existing_entry) = self.snapshot.entry_by_path(&entry.path) {
+                entry.id = existing_entry.id;
+            }
+        }
+    }
+
+    fn should_scan_directory(&self, entry: &Entry) -> bool {
+        // TODO: Implement this
+        true
+    }
+
+    async fn populate_dir(&mut self, path: &PathBuf, entries: Vec<Entry>) {
+        todo!()
+    }
 }
 
 pub struct BackgroundScanner {
+    fs: Arc<dyn FileSystem>,
+    watcher: FsEventWatcher,
     state: Mutex<BackgroundScannerState>,
     next_entry_id: Arc<AtomicUsize>,
     phase: BackgroundScannerPhase,
@@ -177,11 +201,121 @@ impl BackgroundScanner {
         todo!()
     }
 
-    async fn scan_dirs(&self, scan_job_rx: UnboundedReceiver<ScanJob>) {
-        todo!()
+    async fn next_scan_request(&mut self) -> Option<ScanRequest> {
+        let mut request = self.scan_req_rx.recv().await?;
+
+        while let Ok(next_request) = self.scan_req_rx.try_recv() {
+            request.relative_paths.extend(next_request.relative_paths);
+            request.done.extend(next_request.done);
+        }
+
+        Some(request)
     }
 
-    async fn scan_dir(&self, dir: PathBuf) {}
+    async fn scan_dirs(&mut self, mut scan_job_rx: UnboundedReceiver<ScanJob>) {
+        self.status_updates_tx.send(ScanState::Started).unwrap(); // FIXME: Handle errors
+
+        loop {
+            tokio::select! {
+                maybe_scan_req = self.next_scan_request().fuse() => {}
+
+                maybe_scan_job = scan_job_rx.recv().fuse() => {
+                    let Some(scan_job) = maybe_scan_job else { break; };
+                    if let Err(e) = self.scan_dir(scan_job).await {
+                        println!("Error scanning directory: {}", e);
+                    }
+                }
+            }
+        }
+    }
+
+    async fn scan_dir(&mut self, job: ScanJob) -> Result<()> {
+        let root_abs_path = self.state.lock().await.snapshot.abs_path.clone();
+        let mut new_entries = Vec::new();
+        let mut new_jobs: Vec<Option<ScanJob>> = Vec::new();
+
+        let mut read_dir = self.fs.read_dir(&job.abs_path).await?;
+        let mut child_paths = read_dir
+            .next_entry()
+            .await
+            .into_iter()
+            .filter_map(|dir_entry| {
+                if let Some(dir_entry) = dir_entry {
+                    Some(dir_entry)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+
+        for child_entry in child_paths {
+            let child_abs_path = child_entry.path();
+            let child_name = child_abs_path.file_name().unwrap();
+            let child_path = job.path.join(child_name);
+
+            let child_metadata = match tokio::fs::metadata(&child_abs_path).await {
+                Ok(metadata) => metadata,
+                Err(err) => {
+                    println!("error processing {child_abs_path:?}: {err:?}"); // FIXME: log error
+                    continue;
+                }
+            };
+
+            let mut child_entry = Entry {
+                id: EntryId::new(&self.next_entry_id),
+                path: child_path.clone(),
+                kind: if child_metadata.is_dir() {
+                    EntryKind::PendingDir
+                } else {
+                    EntryKind::File
+                },
+                unit_type: None,
+                mtime: Some(child_metadata.modified().unwrap()),
+                inode: child_entry.ino(),
+            };
+
+            if child_entry.is_dir() {
+                if job.ancestor_inodes.contains(&child_entry.inode) {
+                    new_jobs.push(None);
+                } else {
+                    let mut ancestor_inodes = job.ancestor_inodes.clone();
+                    ancestor_inodes.insert(child_entry.inode);
+
+                    new_jobs.push(Some(ScanJob {
+                        abs_path: child_abs_path.clone(),
+                        path: child_path,
+                        scan_queue: job.scan_queue.clone(),
+                        ancestor_inodes,
+                    }));
+                }
+            }
+
+            new_entries.push(child_entry);
+        }
+
+        let mut state = self.state.lock().await;
+
+        let mut job_ix = 0;
+        for entry in &mut new_entries {
+            state.reuse_entry_id(entry);
+            if entry.is_dir() {
+                if state.should_scan_directory(entry) {
+                    job_ix += 1;
+                } else {
+                    println!("defer scanning directory {:?}", entry.path);
+                    entry.kind = EntryKind::UnloadedDir;
+                    new_jobs.remove(job_ix);
+                }
+            }
+        }
+
+        state.populate_dir(&job.abs_path, new_entries).await;
+        self.watcher
+            .watch(&job.abs_path, RecursiveMode::Recursive)
+            .unwrap();
+
+        todo!()
+    }
 
     async fn send_snapshot_update(&self, scanning: bool, barrier: Vec<Barrier>) {
         todo!()
@@ -213,7 +347,10 @@ impl EntryId {
 #[derive(Debug, Clone)]
 pub enum EntryKind {
     Unit,
-    Folder,
+    PendingDir,
+    UnloadedDir,
+    Dir,
+    File,
 }
 
 #[derive(Debug, Clone)]
@@ -225,6 +362,12 @@ pub struct Entry {
     mtime: Option<SystemTime>,
     inode: u64,
     // size: u64,
+}
+
+impl Entry {
+    pub fn is_dir(&self) -> bool {
+        matches!(self.kind, EntryKind::Dir | EntryKind::PendingDir)
+    }
 }
 
 #[derive(Clone)]
@@ -284,10 +427,13 @@ impl Worktree {
             entries_by_path: Arc::new(BPlusTreeMap::new()),
         };
 
-        let (fs_events, _watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
+        let (fs_events, watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
         let empty_snapshot = snapshot.clone();
+        let fs_clone = fs.clone();
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
             let mut background_scanner = BackgroundScanner {
+                fs: fs_clone,
+                watcher,
                 state: Mutex::new(BackgroundScannerState {
                     scan_id: 0,
                     snapshot: empty_snapshot.clone(),

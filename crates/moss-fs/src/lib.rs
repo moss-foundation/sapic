@@ -1,3 +1,4 @@
+pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
