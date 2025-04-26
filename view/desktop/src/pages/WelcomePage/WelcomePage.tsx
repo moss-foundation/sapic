@@ -1,8 +1,12 @@
 import { Icon } from "@/components";
-import Button from "@/components/Button";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
+
+import WelcomePageDivider from "./WelcomePageDivider";
+import WelcomePageLink from "./WelcomePageLink";
+import WelcomePageRecentWorkspaces from "./WelcomePageRecentWorkspaces";
+import WelcomePageSteps from "./WelcomePageSteps";
 
 export const WelcomePage = () => {
   return (
@@ -19,49 +23,21 @@ export const WelcomePage = () => {
             <SecondColumn />
           </div>
 
-          <StepsRow />
+          <WelcomePageSteps />
         </div>
 
-        <ScrollToAnchor />
+        <div className="mt-auto mb-8 flex justify-center">
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <span>Learn more</span>
+            <Icon icon="ChevronDownEllipse" />
+          </div>
+        </div>
       </div>
 
       <div className="flex h-screen w-full flex-col items-center pb-6">
         <div id="TestAnchorForWelcomePage" className="mt-auto">
           hello
         </div>
-      </div>
-    </div>
-  );
-};
-
-const StepsRow = () => {
-  return (
-    <div className="flex w-full flex-col gap-2">
-      <h3 className="text-xl">Next steps</h3>
-      <div className="flex min-w-[1140px] flex-wrap gap-3">
-        <StepCard isNew />
-        <StepCard />
-        <StepCard />
-        <StepCard isNew />
-      </div>
-    </div>
-  );
-};
-
-const StepCard = ({ isNew = false }: { isNew?: boolean }) => {
-  return (
-    <div className="background-(--moss-secondary-background) w-[275px] rounded-lg px-4 py-3">
-      <div className="flex items-center gap-1.5">
-        <Icon icon="StepCardInfo" />
-        <span className="font-medium">Learn the Fundamentals</span>
-        {isNew && (
-          <div className="background-(--moss-stepCard-bg) rounded-[3px] px-1 text-[11px] font-medium text-(--moss-stepCard-text)">
-            New
-          </div>
-        )}
-      </div>
-      <div className="text-(--moss-secondary-text)">
-        Explain behavior that is not clear from the setting or action name.
       </div>
     </div>
   );
@@ -85,7 +61,7 @@ const FirstColumn = () => {
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
 
       <div className="flex flex-col gap-7.5">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
             <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
@@ -97,19 +73,7 @@ const FirstColumn = () => {
           </button>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg">Recent</h2>
-          <div className="flex flex-col gap-1.5">
-            <WelcomePageLink label="My Workspace" />
-            <WelcomePageLink label="Spaixel Monster" />
-            <WelcomePageLink label="Twinkle" />
-          </div>
-          <div>
-            <Button variant="outlined" intent="neutral">
-              More
-            </Button>
-          </div>
-        </div>
+        <WelcomePageRecentWorkspaces />
       </div>
     </>
   );
@@ -134,7 +98,7 @@ const SecondColumn = () => {
 
         <WelcomePageDivider />
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col items-start gap-2">
           <h3>Release pages:</h3>
           <div className="flex flex-col gap-2">
             <WelcomePageLink label="Quisque Faucibus" withIcon />
@@ -142,29 +106,6 @@ const SecondColumn = () => {
             <WelcomePageLink label="Lacinia Integer" withIcon />
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const WelcomePageLink = ({ label, withIcon }: { label: string; withIcon?: boolean }) => {
-  return (
-    <a href="#" className="flex items-center text-(--moss-primary)">
-      <span className="hover:underline">{label}</span> {withIcon && <Icon icon="ExternalLink" />}
-    </a>
-  );
-};
-
-const WelcomePageDivider = () => {
-  return <div className="background-(--moss-border-color) my-3 h-px w-full" />;
-};
-
-const ScrollToAnchor = () => {
-  return (
-    <div className="mt-auto mb-8 flex justify-center">
-      <div className="flex flex-col items-center gap-2 text-sm">
-        <span>Learn more</span>
-        <Icon icon="ChevronDownEllipse" />
       </div>
     </div>
   );

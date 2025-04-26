@@ -1,4 +1,4 @@
 export * from "./HomePage";
 export * from "./LogsPage";
 export * from "./SettingsPage";
-export * from "./WelcomePage";
+export * from "./WelcomePage/WelcomePage";

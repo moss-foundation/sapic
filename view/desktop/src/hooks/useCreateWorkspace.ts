@@ -24,7 +24,6 @@ export const useCreateWorkspace = () => {
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
     onSuccess: () => {
-      console.log("About to invalidate queries USE_GET_WORKSPACE_QUERY_KEY", USE_GET_WORKSPACE_QUERY_KEY);
       queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });
     },
   });

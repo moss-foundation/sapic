@@ -4,7 +4,7 @@ use moss_workspace::{
     models::operations::{
         CreateWorkspaceInput, CreateWorkspaceOutput, DeleteWorkspaceInput,
         DescribeLayoutPartsStateOutput, ListWorkspacesOutput, OpenWorkspaceInput,
-        SetLayoutPartsStateInput
+        OpenWorkspaceOutput, SetLayoutPartsStateInput,
     },
     workspace_manager::WorkspaceManager,
 };
@@ -43,12 +43,10 @@ pub async fn list_workspaces<R: TauriRuntime>(
         .get_by_type::<WorkspaceManager<R>>(&app_handle)
         .await?;
 
-    let workspaces = workspace_manager
+    workspace_manager
         .list_workspaces()
         .await
-        .map_err(|err| TauriError(format!("Failed to list workspaces: {}", err)))?;
-
-    Ok(workspaces)
+        .map_err(|err| TauriError(format!("Failed to list workspaces: {}", err)))
 }
 
 #[tauri::command(async)]
@@ -67,17 +65,16 @@ pub async fn delete_workspace<R: TauriRuntime>(
     workspace_manager
         .delete_workspace(&input)
         .await
-        .map_err(|err| TauriError(format!("Failed to delete workspace: {}", err)))?;
-
-    Ok(())
+        .map_err(|err| TauriError(format!("Failed to delete workspace: {}", err)))
 }
 
 #[tauri::command(async)]
+#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
 pub async fn open_workspace<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
     input: OpenWorkspaceInput,
-) -> TauriResult<()> {
+) -> TauriResult<OpenWorkspaceOutput> {
     let app_handle = app_manager.app_handle();
     let workspace_manager = app_manager
         .services()
@@ -87,9 +84,7 @@ pub async fn open_workspace<R: TauriRuntime>(
     workspace_manager
         .open_workspace(&input)
         .await
-        .map_err(|err| TauriError(format!("Failed to open workspace: {}", err)))?;
-
-    Ok(())
+        .map_err(|err| TauriError(format!("Failed to open workspace: {}", err)))
 }
 
 #[tauri::command(async)]
