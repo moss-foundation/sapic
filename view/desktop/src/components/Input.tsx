@@ -12,12 +12,10 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconRight?: Icons;
 }
 
-const inputStyles = cva(
-  "w-full flex gap-2 items-center peer placeholder-(--moss-controls-placeholder) font-medium select-auto",
-  {
-    variants: {
-      variant: {
-        plain: `
+const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss-controls-placeholder) font-medium", {
+  variants: {
+    variant: {
+      plain: `
           text-(--moss-controls-plain-text)
           py-0 rounded-sm
           background-(--moss-input-bg-plain)
@@ -28,7 +26,7 @@ const inputStyles = cva(
           has-[input:focus-within]:-outline-offset-1 
           has-[input:focus-within]:outline-(--moss-primary)
         `,
-        outlined: `
+      outlined: `
           text-(--moss-controls-outlined-text)
           rounded-sm
           background-(--moss-controls-outlined-bg)
@@ -41,19 +39,18 @@ const inputStyles = cva(
           has-data-invalid:border-(--moss-error)
           has-[input:focus-within]:has-data-invalid:outline-(--moss-error)
         `,
-      },
-      size: {
-        xs: "h-6 px-1.5",
-        sm: "h-7 px-2",
-        md: "h-9 px-2",
-      },
-      disabled: {
-        false: null,
-        true: "cursor-not-allowed opacity-50 active:pointer-events-none",
-      },
     },
-  }
-);
+    size: {
+      xs: "h-6 px-1.5",
+      sm: "h-7 px-2",
+      md: "h-9 px-2",
+    },
+    disabled: {
+      false: null,
+      true: "cursor-not-allowed opacity-50 active:pointer-events-none",
+    },
+  },
+});
 
 const iconsStyles = cva("", {
   variants: {
@@ -73,7 +70,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <Icon icon={iconLeft} className={cn(iconsStyles({ size }), "text-(--moss-controls-placeholder)")} />
         )}
 
-        <input ref={forwardedRef} disabled={disabled} {...props} className="h-full w-full outline-none select-auto" />
+        <input ref={forwardedRef} disabled={disabled} {...props} className="h-full w-full outline-none" />
 
         {iconRight && (
           <Icon icon={iconRight} className={cn(iconsStyles({ size }), "text-(--moss-controls-placeholder)")} />
