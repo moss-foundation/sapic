@@ -184,7 +184,7 @@ export const runConfigItems: MenuItemProps[] = [
   { id: "server-tests", type: "action", label: "Server tests", icon: "TestTests" },
   { id: "separator-run-1", type: "separator" },
   { id: "all-configs", type: "action", label: "All Configurations", count: 25 },
-  { id: "edit-configs", type: "action", label: "Edit Configurations...", shortcut: "⌃E" },
+  { id: "edit-configs", type: "action", label: "Edit Configurations...", shortcut: "^⌥E" },
 ];
 
 // 4. Run options menu
