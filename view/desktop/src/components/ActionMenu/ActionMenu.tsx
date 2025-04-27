@@ -42,7 +42,7 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-56 rounded-md bg-(--moss-primary-background) p-1 shadow-md"
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-56 rounded-md bg-(--moss-primary-background) p-1 pb-2 shadow-md"
 );
 
 // Shared menu item styles
