@@ -1,7 +1,8 @@
 import React from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Icon, Icons } from "../Icon";
+import { Icon, Icons } from "@/components/Icon";
 import { cn } from "@/utils";
+import { cva } from "class-variance-authority";
 
 // Types
 export type MenuItemType = "action" | "submenu" | "separator" | "header" | "section" | "checkable" | "footer" | "radio";
@@ -40,6 +41,40 @@ export interface ActionMenuProps {
   placeholder?: string;
 }
 
+// Shared menu content styles
+const menuContentStyles = cva(
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-56 rounded-md bg-(--moss-primary-background) p-1 shadow-md"
+);
+
+// Shared menu item styles
+const menuItemStyles = cva(
+  "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "",
+        success: "text-green-500",
+        danger: "text-red-500",
+        warning: "text-yellow-500",
+        info: "text-blue-500",
+      },
+      highlighted: {
+        true: "data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      },
+      state: {
+        normal: "",
+        checked: "data-[state=checked]:bg-(--moss-secondary-background)",
+        open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      highlighted: true,
+      state: "normal",
+    },
+  }
+);
+
 // Styled components using Radix UI primitives
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -49,13 +84,8 @@ const MenuContent = React.forwardRef<
     ref={ref}
     align="start"
     sideOffset={5}
-    className={cn(
-      "border-(solid 1 --moss-border-primary) z-50 max-h-[553px] max-w-[293px] min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
-      className
-    )}
-    style={{
-      height,
-    }}
+    className={cn(menuContentStyles(), className)}
+    style={{ height }}
     {...props}
   />
 ));
@@ -65,25 +95,14 @@ const MenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Item>,
   React.ComponentPropsWithoutRef<typeof DropdownMenu.Item> & {
     variant?: string;
-    height?: number;
     hasIcon?: boolean;
     alignWithIcons?: boolean;
   }
->(({ className, variant = "default", height, hasIcon, alignWithIcons, ...props }, ref) => (
+>(({ className, variant = "default", hasIcon, alignWithIcons, ...props }, ref) => (
   <DropdownMenu.Item
     ref={ref}
-    className={cn(
-      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
-      {
-        "text-green-500": variant === "success",
-        "text-red-500": variant === "danger",
-        "text-yellow-500": variant === "warning",
-        "text-blue-500": variant === "info",
-        "h-6": true,
-      },
-      className
-    )}
-    style={{ height: "24px" }}
+    className={cn(menuItemStyles({ variant: variant as any, highlighted: true }), "h-6", className)}
+    style={{ height: "1.5rem" }}
     {...props}
   />
 ));
@@ -103,18 +122,12 @@ MenuSeparator.displayName = "MenuSeparator";
 
 const MenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & { hideChevron?: boolean; height?: number }
->(({ className, children, hideChevron, height, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & { hideChevron?: boolean }
+>(({ className, children, hideChevron, ...props }, ref) => (
   <DropdownMenu.SubTrigger
     ref={ref}
-    className={cn(
-      "flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
-      {
-        "h-6": true,
-      },
-      className
-    )}
-    style={{ height: "24px" }}
+    className={cn(menuItemStyles({ highlighted: true, state: "open" }), "h-6", className)}
+    style={{ height: "1.5rem" }}
     {...props}
   >
     {children}
@@ -129,17 +142,7 @@ const MenuSubContent = React.forwardRef<
     height?: number;
   }
 >(({ className, height, ...props }, ref) => (
-  <DropdownMenu.SubContent
-    ref={ref}
-    className={cn(
-      "border-(solid 1 --moss-border-primary) z-50 max-h-[553px] max-w-[293px] min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
-      className
-    )}
-    style={{
-      height,
-    }}
-    {...props}
-  />
+  <DropdownMenu.SubContent ref={ref} className={cn(menuContentStyles(), className)} style={{ height }} {...props} />
 ));
 MenuSubContent.displayName = "MenuSubContent";
 
@@ -184,18 +187,12 @@ MenuFooter.displayName = "MenuFooter";
 
 const MenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.CheckboxItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem> & { height?: number; alignWithIcons?: boolean }
->(({ className, children, checked, height, alignWithIcons, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.CheckboxItem> & { alignWithIcons?: boolean }
+>(({ className, children, checked, alignWithIcons, ...props }, ref) => (
   <DropdownMenu.CheckboxItem
     ref={ref}
-    className={cn(
-      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
-      {
-        "h-6": true,
-      },
-      className
-    )}
-    style={{ height: "24px" }}
+    className={cn(menuItemStyles({ highlighted: true }), "h-6", className)}
+    style={{ height: "1.5rem" }}
     checked={checked}
     {...props}
   >
@@ -211,18 +208,12 @@ MenuCheckboxItem.displayName = "MenuCheckboxItem";
 
 const MenuRadioItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.RadioItem>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem> & { height?: number }
->(({ className, children, height, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.RadioItem>
+>(({ className, children, ...props }, ref) => (
   <DropdownMenu.RadioItem
     ref={ref}
-    className={cn(
-      "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=checked]:bg-(--moss-secondary-background)",
-      {
-        "h-6": true,
-      },
-      className
-    )}
-    style={{ height: "24px" }}
+    className={cn(menuItemStyles({ highlighted: true, state: "checked" }), "h-6", className)}
+    style={{ height: "1.5rem" }}
     {...props}
   >
     {children}
@@ -252,6 +243,31 @@ const DropdownTrigger = React.forwardRef<
   </button>
 ));
 DropdownTrigger.displayName = "DropdownTrigger";
+
+// Helper component for menu item icons
+const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: string }) => {
+  if (!icon) return null;
+
+  return (
+    <div className="mr-2 flex h-5 w-5 items-center justify-center">
+      <Icon
+        icon={icon}
+        className={cn(
+          "text-(--moss-icon-primary-text)",
+          iconColor === "green" ? "text-green-500" : iconColor && `text-[${iconColor}]`
+        )}
+      />
+    </div>
+  );
+};
+
+// Helper component for menu item trailing elements
+const MenuItemTrailing = ({ count, shortcut }: { count?: number; shortcut?: string }) => (
+  <>
+    {count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{count}</span>}
+    {shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{shortcut}</span>}
+  </>
+);
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({
   items,
@@ -317,19 +333,12 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                   disabled={item.disabled}
                   onSelect={() => handleSelect(item)}
                 >
-                  {item.icon && (
-                    <div className="mr-2 flex h-5 w-5 items-center justify-center">
-                      <Icon
-                        icon={item.icon}
-                        className={cn("text-(--moss-icon-primary-text)", item.iconColor && `text-[${item.iconColor}]`)}
-                      />
-                    </div>
-                  )}
+                  <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
                   {!item.icon && item.alignWithIcons && (
                     <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>
                   )}
                   <span className="flex-grow">{item.label}</span>
-                  {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
+                  <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
                 </MenuRadioItem>
               );
             }
@@ -355,25 +364,13 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           key={item.id}
           checked={item.checked}
           disabled={item.disabled}
+          alignWithIcons={item.alignWithIcons}
           onSelect={() => handleSelect(item)}
         >
-          <div className="mr-2 flex h-5 w-5 items-center justify-center">
-            <DropdownMenu.ItemIndicator>
-              <Icon icon="CheckboxIndicator" className="h-4 w-4" />
-            </DropdownMenu.ItemIndicator>
-          </div>
-          {item.icon && (
-            <div className="mr-2 flex h-5 w-5 items-center justify-center">
-              <Icon
-                icon={item.icon}
-                className={cn("text-(--moss-icon-primary-text)", item.iconColor && `text-[${item.iconColor}]`)}
-              />
-            </div>
-          )}
+          <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
           <span className="flex-grow">{item.label}</span>
-          {item.count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>}
-          {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
+          <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
         </MenuCheckboxItem>
       );
     }
@@ -382,20 +379,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       return (
         <DropdownMenu.Sub key={item.id}>
           <MenuSubTrigger>
-            {item.icon && (
-              <div className="mr-2 flex h-5 w-5 items-center justify-center">
-                <Icon
-                  icon={item.icon}
-                  className={cn("text-(--moss-icon-primary-text)", item.iconColor && `text-[${item.iconColor}]`)}
-                />
-              </div>
-            )}
+            <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
             {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
             <span className="flex-grow">{item.label}</span>
-            {item.count !== undefined && (
-              <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>
-            )}
-            {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
+            <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
           </MenuSubTrigger>
           <DropdownMenu.Portal>
             <MenuSubContent>{renderMenuItems(item.items)}</MenuSubContent>
@@ -414,21 +401,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           alignWithIcons={item.alignWithIcons}
           onSelect={() => handleSelect(item)}
         >
-          {item.icon && (
-            <div className="mr-2 flex h-5 w-5 items-center justify-center">
-              <Icon
-                icon={item.icon}
-                className={cn(
-                  "text-(--moss-icon-primary-text)",
-                  item.iconColor === "green" ? "text-green-500" : item.iconColor && `text-[${item.iconColor}]`
-                )}
-              />
-            </div>
-          )}
+          <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
           <span className="flex-grow">{item.label}</span>
-          {item.count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{item.count}</span>}
-          {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
+          <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
         </MenuItem>
       );
     }
