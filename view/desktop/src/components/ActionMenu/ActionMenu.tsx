@@ -29,10 +29,7 @@ export interface ActionMenuProps {
   trigger?: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  width?: number;
   height?: number;
-  maxHeight?: number;
-  menuItemHeight?: number;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
@@ -46,20 +43,18 @@ export interface ActionMenuProps {
 // Styled components using Radix UI primitives
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content> & { width?: number; height?: number; maxHeight?: number }
->(({ className, width = 280, height, maxHeight, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content> & { height?: number }
+>(({ className, height, ...props }, ref) => (
   <DropdownMenu.Content
     ref={ref}
     align="start"
     sideOffset={5}
     className={cn(
-      "border-(solid 1 --moss-border-primary) z-50 min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
+      "border-(solid 1 --moss-border-primary) z-50 max-h-[553px] max-w-[293px] min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
       className
     )}
     style={{
-      width,
       height,
-      maxHeight,
     }}
     {...props}
   />
@@ -84,11 +79,11 @@ const MenuItem = React.forwardRef<
         "text-red-500": variant === "danger",
         "text-yellow-500": variant === "warning",
         "text-blue-500": variant === "info",
-        "h-9": height === undefined,
+        "h-6": true,
       },
       className
     )}
-    style={height ? { height: `${height}px` } : undefined}
+    style={{ height: "24px" }}
     {...props}
   />
 ));
@@ -115,11 +110,11 @@ const MenuSubTrigger = React.forwardRef<
     className={cn(
       "flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
       {
-        "h-9": height === undefined,
+        "h-6": true,
       },
       className
     )}
-    style={height ? { height: `${height}px` } : undefined}
+    style={{ height: "24px" }}
     {...props}
   >
     {children}
@@ -131,21 +126,17 @@ MenuSubTrigger.displayName = "MenuSubTrigger";
 const MenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.SubContent>,
   React.ComponentPropsWithoutRef<typeof DropdownMenu.SubContent> & {
-    width?: number;
     height?: number;
-    maxHeight?: number;
   }
->(({ className, width = 280, height, maxHeight, ...props }, ref) => (
+>(({ className, height, ...props }, ref) => (
   <DropdownMenu.SubContent
     ref={ref}
     className={cn(
-      "border-(solid 1 --moss-border-primary) z-50 min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
+      "border-(solid 1 --moss-border-primary) z-50 max-h-[553px] max-w-[293px] min-w-[220px] rounded-md bg-(--moss-primary-background) p-1 shadow-md",
       className
     )}
     style={{
-      width,
       height,
-      maxHeight,
     }}
     {...props}
   />
@@ -200,11 +191,11 @@ const MenuCheckboxItem = React.forwardRef<
     className={cn(
       "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-(--moss-secondary-background-hover)",
       {
-        "h-9": height === undefined,
+        "h-6": true,
       },
       className
     )}
-    style={height ? { height: `${height}px` } : undefined}
+    style={{ height: "24px" }}
     checked={checked}
     {...props}
   >
@@ -227,11 +218,11 @@ const MenuRadioItem = React.forwardRef<
     className={cn(
       "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-(--moss-secondary-background-hover) data-[state=checked]:bg-(--moss-secondary-background)",
       {
-        "h-9": height === undefined,
+        "h-6": true,
       },
       className
     )}
-    style={height ? { height: `${height}px` } : undefined}
+    style={{ height: "24px" }}
     {...props}
   >
     {children}
@@ -267,10 +258,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   trigger,
   open,
   onOpenChange,
-  width = 280,
   height,
-  maxHeight,
-  menuItemHeight,
   align = "start",
   side = "bottom",
   sideOffset = 5,
@@ -327,7 +315,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                   key={item.id}
                   value={item.value || item.id}
                   disabled={item.disabled}
-                  height={menuItemHeight}
                   onSelect={() => handleSelect(item)}
                 >
                   {item.icon && (
@@ -368,8 +355,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           key={item.id}
           checked={item.checked}
           disabled={item.disabled}
-          height={menuItemHeight}
-          alignWithIcons={item.alignWithIcons}
           onSelect={() => handleSelect(item)}
         >
           <div className="mr-2 flex h-5 w-5 items-center justify-center">
@@ -396,7 +381,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     if (item.type === "submenu" && item.items?.length) {
       return (
         <DropdownMenu.Sub key={item.id}>
-          <MenuSubTrigger height={menuItemHeight}>
+          <MenuSubTrigger>
             {item.icon && (
               <div className="mr-2 flex h-5 w-5 items-center justify-center">
                 <Icon
@@ -413,9 +398,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             {item.shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{item.shortcut}</span>}
           </MenuSubTrigger>
           <DropdownMenu.Portal>
-            <MenuSubContent width={width} maxHeight={maxHeight}>
-              {renderMenuItems(item.items)}
-            </MenuSubContent>
+            <MenuSubContent>{renderMenuItems(item.items)}</MenuSubContent>
           </DropdownMenu.Portal>
         </DropdownMenu.Sub>
       );
@@ -427,7 +410,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           key={item.id}
           disabled={item.disabled}
           variant={item.variant}
-          height={menuItemHeight}
           hasIcon={!!item.icon}
           alignWithIcons={item.alignWithIcons}
           onSelect={() => handleSelect(item)}
@@ -463,15 +445,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     <DropdownMenu.Root open={open} onOpenChange={onOpenChange}>
       {dropdownTrigger && <DropdownMenu.Trigger asChild>{dropdownTrigger}</DropdownMenu.Trigger>}
       <DropdownMenu.Portal>
-        <MenuContent
-          width={width}
-          height={height}
-          maxHeight={maxHeight}
-          className={className}
-          align={align}
-          side={side}
-          sideOffset={sideOffset}
-        >
+        <MenuContent height={height} className={className} align={align} side={side} sideOffset={sideOffset}>
           {renderMenuItems(normalItems)}
           {footerItems.length > 0 && renderFooters()}
         </MenuContent>

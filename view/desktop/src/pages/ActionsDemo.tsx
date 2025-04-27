@@ -40,9 +40,6 @@ const ActionsDemo: React.FC = () => {
           items={editorContextItems}
           open={contextMenuOpen}
           onOpenChange={setContextMenuOpen}
-          width={293}
-          maxHeight={553}
-          menuItemHeight={24}
           onSelect={handleItemSelect}
           align="start"
           trigger={
@@ -60,7 +57,6 @@ const ActionsDemo: React.FC = () => {
           items={generateItems}
           open={generateMenuOpen}
           onOpenChange={setGenerateMenuOpen}
-          width={240}
           onSelect={handleItemSelect}
           align="start"
           trigger={
@@ -78,7 +74,6 @@ const ActionsDemo: React.FC = () => {
           items={runConfigItems}
           open={runConfigMenuOpen}
           onOpenChange={setRunConfigMenuOpen}
-          width={260}
           onSelect={handleItemSelect}
           align="start"
           trigger={
@@ -96,7 +91,6 @@ const ActionsDemo: React.FC = () => {
           items={runOptionsItems}
           open={runOptionsMenuOpen}
           onOpenChange={setRunOptionsMenuOpen}
-          width={250}
           onSelect={handleItemSelect}
           align="start"
           trigger={
@@ -114,7 +108,6 @@ const ActionsDemo: React.FC = () => {
           items={runSelectorItems}
           open={runSelectorMenuOpen}
           onOpenChange={setRunSelectorMenuOpen}
-          width={260}
           onSelect={handleItemSelect}
           align="start"
           trigger={
@@ -138,7 +131,6 @@ const ActionsDemo: React.FC = () => {
               items={themeItems}
               open={themeMenuOpen}
               onOpenChange={setThemeMenuOpen}
-              width={220}
               onSelect={handleItemSelect}
               selectedValue={selectedTheme}
               placeholder="Select theme"
