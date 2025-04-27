@@ -30,7 +30,6 @@ export interface ActionMenuProps {
   trigger?: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  height?: number;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
@@ -77,17 +76,15 @@ const menuItemStyles = cva(
 
 const labelStyles = "truncate max-w-[200px]";
 
-// Styled components using Radix UI primitives
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content> & { height?: number }
->(({ className, height, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content>
+>(({ className, ...props }, ref) => (
   <DropdownMenu.Content
     ref={ref}
     align="start"
     sideOffset={5}
     className={cn(menuContentStyles(), className)}
-    style={{ height }}
     {...props}
   />
 ));
@@ -104,7 +101,6 @@ const MenuItem = React.forwardRef<
   <DropdownMenu.Item
     ref={ref}
     className={cn(menuItemStyles({ variant: variant as any, highlighted: true }), "h-6", className)}
-    style={{ height: "1.5rem" }}
     {...props}
   />
 ));
@@ -129,7 +125,6 @@ const MenuSubTrigger = React.forwardRef<
   <DropdownMenu.SubTrigger
     ref={ref}
     className={cn(menuItemStyles({ highlighted: true, state: "open" }), "h-6", className)}
-    style={{ height: "1.5rem" }}
     {...props}
   >
     {children}
@@ -140,11 +135,9 @@ MenuSubTrigger.displayName = "MenuSubTrigger";
 
 const MenuSubContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.SubContent>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubContent> & {
-    height?: number;
-  }
->(({ className, height, ...props }, ref) => (
-  <DropdownMenu.SubContent ref={ref} className={cn(menuContentStyles(), className)} style={{ height }} {...props} />
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubContent>
+>(({ className, ...props }, ref) => (
+  <DropdownMenu.SubContent ref={ref} className={cn(menuContentStyles(), className)} {...props} />
 ));
 MenuSubContent.displayName = "MenuSubContent";
 
@@ -194,7 +187,6 @@ const MenuCheckboxItem = React.forwardRef<
   <DropdownMenu.CheckboxItem
     ref={ref}
     className={cn(menuItemStyles({ highlighted: true }), "h-6", className)}
-    style={{ height: "1.5rem" }}
     checked={checked}
     {...props}
   >
@@ -215,7 +207,6 @@ const MenuRadioItem = React.forwardRef<
   <DropdownMenu.RadioItem
     ref={ref}
     className={cn(menuItemStyles({ highlighted: true, state: "checked" }), "h-6", className)}
-    style={{ height: "1.5rem" }}
     {...props}
   >
     {children}
@@ -276,7 +267,6 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   trigger,
   open,
   onOpenChange,
-  height,
   align = "start",
   side = "bottom",
   sideOffset = 5,
@@ -423,7 +413,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     <DropdownMenu.Root open={open} onOpenChange={onOpenChange}>
       {dropdownTrigger && <DropdownMenu.Trigger asChild>{dropdownTrigger}</DropdownMenu.Trigger>}
       <DropdownMenu.Portal>
-        <MenuContent height={height} className={className} align={align} side={side} sideOffset={sideOffset}>
+        <MenuContent className={className} align={align} side={side} sideOffset={sideOffset}>
           {renderMenuItems(normalItems)}
           {footerItems.length > 0 && renderFooters()}
         </MenuContent>
