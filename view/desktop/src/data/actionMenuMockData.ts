@@ -209,7 +209,7 @@ export const runSelectorItems: MenuItemProps[] = [
   { id: "pycharm", type: "action", label: "PyCharm", icon: "Folder" },
   { id: "dart-tests", type: "action", label: "Dart tests", icon: "TestTests" },
   { id: "generate-icon-classes", type: "action", label: "Generate icon classes", icon: "TestTests" },
-  { id: "footer-1", type: "footer", footerText: "Hold ⌥ to debug" },
+  { id: "footer-1", type: "footer", footerText: "Hold ⇧ to debug" },
 ];
 
 // 6. Theme selector dropdown
