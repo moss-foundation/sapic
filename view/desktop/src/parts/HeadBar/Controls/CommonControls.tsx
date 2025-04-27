@@ -47,13 +47,6 @@ export function CommonControls() {
         <span className="material-symbols-outlined">terminal</span>
       </ControlButton>
       <ControlButton
-        onClick={() => onAddPanel("ActionsDemo")}
-        className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
-        title="Actions Menu"
-      >
-        <span className="material-symbols-outlined">menu</span>
-      </ControlButton>
-      <ControlButton
         onClick={() => setShowDebugPanels(!showDebugPanels)}
         className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
       >

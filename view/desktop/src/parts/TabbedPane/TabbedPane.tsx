@@ -5,7 +5,7 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
-import { ActionsDemo, Home, Logs, Settings, WelcomePage } from "@/pages";
+import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -71,8 +71,24 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
-    event.api?.fromJSON(gridState);
-    if (event.api.panels.length === 0) {
+    try {
+      event.api?.fromJSON(gridState);
+      // If we restored the layout but no panels were added, add the welcome page
+      if (event.api.panels.length === 0) {
+        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      }
+    } catch (error) {
+      // Handle the case where the layout can't be restored (e.g., missing component)
+      console.error("Failed to restore layout:", error);
+
+      // Clear any panels that might have been created
+      // We need to make a copy of the panels array since we're modifying it while iterating
+      const panels = [...event.api.panels];
+      for (const panel of panels) {
+        panel.api.close(); // Use the documented panel.api.close() method
+      }
+
+      // Start with a clean welcome page
       event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
   };
@@ -185,11 +201,6 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     Welcome: () => (
       <Scrollbar className="h-full">
         <WelcomePage />
-      </Scrollbar>
-    ),
-    ActionsDemo: () => (
-      <Scrollbar className="h-full">
-        <ActionsDemo />
       </Scrollbar>
     ),
   };
