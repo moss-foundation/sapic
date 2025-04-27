@@ -58,12 +58,12 @@ const menuItemStyles = cva(
         info: "text-blue-500",
       },
       highlighted: {
-        true: "data-[highlighted]:bg-(--moss-secondary-background-hover)",
+        true: "data-[highlighted]:bg-(--moss-info-background-hover)",
       },
       state: {
         normal: "",
         checked: "data-[state=checked]:bg-(--moss-secondary-background)",
-        open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
+        open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-info-background-hover)",
       },
     },
     defaultVariants: {
@@ -74,7 +74,7 @@ const menuItemStyles = cva(
   }
 );
 
-const labelStyles = "truncate max-w-[200px]";
+const labelStyles = "truncate max-w-[200px] text-(--moss-primary-text)";
 
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -128,7 +128,7 @@ const MenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    {!hideChevron && <Icon icon="TreeChevronRight" className="ml-2 h-4 w-4" />}
+    {!hideChevron && <Icon icon="TreeChevronRight" className="ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />}
   </DropdownMenu.SubTrigger>
 ));
 MenuSubTrigger.displayName = "MenuSubTrigger";
@@ -192,7 +192,7 @@ const MenuCheckboxItem = React.forwardRef<
   >
     <div className="mr-2 flex h-5 w-5 items-center justify-center">
       <DropdownMenu.ItemIndicator>
-        <Icon icon="CheckboxIndicator" className="h-4 w-4" />
+        <Icon icon="CheckboxIndicator" className="h-4 w-4 text-(--moss-icon-primary-text)" />
       </DropdownMenu.ItemIndicator>
     </div>
     {children}
@@ -226,13 +226,13 @@ const DropdownTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-(--moss-border-primary) bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-secondary-background-hover)",
+      "flex h-10 w-full items-center justify-between rounded-md border border-(--moss-border-primary) bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
       className
     )}
     {...props}
   >
     <span className={labelStyles}>{value || placeholder || "Select..."}</span>
-    <Icon icon={open ? "ChevronUp" : "ChevronDown"} className="h-4 w-4" />
+    <Icon icon={open ? "ChevronUp" : "ChevronDown"} className="h-4 w-4 text-(--moss-icon-primary-text)" />
   </button>
 ));
 DropdownTrigger.displayName = "DropdownTrigger";
@@ -258,7 +258,7 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
 const MenuItemTrailing = ({ count, shortcut }: { count?: number; shortcut?: string }) => (
   <>
     {count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{count}</span>}
-    {shortcut && <span className="ml-4 text-xs text-(--moss-text-secondary)">{shortcut}</span>}
+    {shortcut && <span className="ml-4 text-xs text-(--moss-not-selected-item-color)">{shortcut}</span>}
   </>
 );
 
