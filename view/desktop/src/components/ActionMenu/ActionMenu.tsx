@@ -42,12 +42,12 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-60 rounded-md bg-(--moss-primary-background) p-1 pb-2 shadow-md"
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-60 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 shadow-md"
 );
 
 // Shared menu item styles
 const menuItemStyles = cva(
-  "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+  "relative flex cursor-default items-center rounded-md px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   {
     variants: {
       variant: {
@@ -172,7 +172,7 @@ const MenuFooter = React.forwardRef<
   <DropdownMenu.Label
     ref={ref}
     className={cn(
-      "bg-(--moss-secondary-background) px-3 py-2 text-xs text-(--moss-not-selected-item-color)",
+      "-mx-1 -my-1.5 mt-2 bg-(--moss-info-background) px-5 py-1.5 text-xs text-(--moss-not-selected-item-color) hover:bg-(--moss-info-background-hover)",
       className
     )}
     {...props}
@@ -226,7 +226,7 @@ const DropdownTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-(--moss-border-primary) bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
+      "flex h-10 w-full items-center justify-between rounded-lg border border-(--moss-border-primary) bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
       className
     )}
     {...props}
