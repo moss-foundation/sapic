@@ -74,7 +74,7 @@ const menuItemStyles = cva(
   }
 );
 
-const labelStyles = "truncate max-w-[200px] text-(--moss-primary-text)";
+const labelStyles = "truncate max-w-[200px] text-xs text-(--moss-primary-text)";
 
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -159,7 +159,7 @@ const MenuSectionLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenu.Label
     ref={ref}
-    className={cn("px-3 py-1 text-xs font-medium text-(--moss-text-secondary)", className)}
+    className={cn("px-3 py-1 text-xs font-medium text-(--moss-not-selected-item-color)", className)}
     {...props}
   />
 ));
@@ -256,10 +256,7 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
 
 // Helper component for menu item trailing elements
 const MenuItemTrailing = ({ count, shortcut }: { count?: number; shortcut?: string }) => (
-  <>
-    {count !== undefined && <span className="ml-2 text-xs text-(--moss-text-secondary)">{count}</span>}
-    {shortcut && <span className="ml-4 text-xs text-(--moss-not-selected-item-color)">{shortcut}</span>}
-  </>
+  <>{shortcut && <span className="ml-4 text-xs text-(--moss-not-selected-item-color)">{shortcut}</span>}</>
 );
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({
@@ -395,8 +392,13 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         >
           <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
-          <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
-          <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
+          <span className={cn("flex-grow", labelStyles)}>
+            {item.label}
+            {item.count !== undefined && (
+              <span className="ml-1 text-xs text-(--moss-not-selected-item-color)"> {item.count}</span>
+            )}
+          </span>
+          <MenuItemTrailing shortcut={item.shortcut} />
         </MenuItem>
       );
     }

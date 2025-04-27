@@ -178,13 +178,14 @@ export const generateItems: MenuItemProps[] = [
 // 3. Run configuration selector menu
 export const runConfigItems: MenuItemProps[] = [
   { id: "header-3", type: "section", sectionTitle: "Recent" },
-  { id: "accuratemath-app", type: "action", label: "AccurateMath app", icon: "Folder" },
-  { id: "server", type: "action", label: "Server", icon: "Folder" },
+  { id: "accuratemath-app", type: "action", label: "AccurateMath app", icon: "TestProject" },
+  { id: "server", type: "action", label: "Server", icon: "TestProject" },
   { id: "app-tests", type: "action", label: "App tests", icon: "TestTests" },
   { id: "server-tests", type: "action", label: "Server tests", icon: "TestTests" },
   { id: "separator-run-1", type: "separator" },
-  { id: "all-configs", type: "action", label: "All Configurations", count: 25 },
-  { id: "edit-configs", type: "action", label: "Edit Configurations...", shortcut: "^⌥E" },
+  { id: "all-configs", type: "action", label: "All Configurations", icon: "TreeChevronRight", count: 25 },
+  { id: "separator-run-2", type: "separator" },
+  { id: "edit-configs", type: "action", label: "Edit Configurations...", shortcut: "^⌥E", alignWithIcons: true },
 ];
 
 // 4. Run options menu
@@ -193,9 +194,9 @@ export const runOptionsItems: MenuItemProps[] = [
   { id: "run-with-coverage", type: "action", label: "Run with Coverage", icon: "TestRunWith" },
   { id: "separator-options-1", type: "separator" },
   { id: "section-config", type: "section", sectionTitle: "Configuration" },
-  { id: "edit-config", type: "action", label: "Edit..." },
-  { id: "delete-config", type: "action", label: "Delete..." },
-  { id: "remove-recent", type: "action", label: "Remove from Recent" },
+  { id: "edit-config", type: "action", label: "Edit...", alignWithIcons: true },
+  { id: "delete-config", type: "action", label: "Delete...", alignWithIcons: true },
+  { id: "remove-recent", type: "action", label: "Remove from Recent", alignWithIcons: true },
 ];
 
 // 5. Run selector menu
@@ -203,12 +204,53 @@ export const runSelectorItems: MenuItemProps[] = [
   { id: "header-run", type: "header", label: "Run" },
   { id: "edit-configurations", type: "action", label: "Edit Configurations..." },
   { id: "separator-run-sel-1", type: "separator" },
-  { id: "idea", type: "action", label: "IDEA", icon: "Folder" },
-  { id: "idea-android", type: "action", label: "IDEA with Android", icon: "Folder" },
-  { id: "idea-python", type: "action", label: "IDEA with Python plugin", icon: "Folder" },
-  { id: "pycharm", type: "action", label: "PyCharm", icon: "Folder" },
-  { id: "dart-tests", type: "action", label: "Dart tests", icon: "TestTests" },
-  { id: "generate-icon-classes", type: "action", label: "Generate icon classes", icon: "TestTests" },
+  {
+    id: "idea",
+    type: "submenu",
+    label: "IDEA",
+    icon: "TestProject",
+    items: [
+      { id: "idea-run", type: "action", label: "Run" },
+      { id: "idea-debug", type: "action", label: "Debug" },
+      { id: "idea-profile", type: "action", label: "Profile" },
+    ],
+  },
+  {
+    id: "idea-android",
+    type: "submenu",
+    label: "IDEA with Android",
+    icon: "TestProject",
+    items: [
+      { id: "android-run", type: "action", label: "Run on Device" },
+      { id: "android-emulator", type: "action", label: "Run on Emulator" },
+      { id: "android-debug", type: "action", label: "Debug" },
+    ],
+  },
+  {
+    id: "idea-python",
+    type: "submenu",
+    label: "IDEA with Python plugin",
+    icon: "TestProject",
+    items: [
+      { id: "python-run", type: "action", label: "Run" },
+      { id: "python-debug", type: "action", label: "Debug" },
+      { id: "python-terminal", type: "action", label: "Python Console" },
+    ],
+  },
+  {
+    id: "pycharm",
+    type: "submenu",
+    label: "PyCharm",
+    icon: "TestProject",
+    items: [
+      { id: "pycharm-run", type: "action", label: "Run" },
+      { id: "pycharm-debug", type: "action", label: "Debug" },
+      { id: "pycharm-coverage", type: "action", label: "Run with Coverage" },
+    ],
+  },
+  { id: "separator-run-sel-2", type: "separator" },
+  { id: "dart-tests", type: "action", label: "Dart tests", icon: "TestScript" },
+  { id: "generate-icon-classes", type: "action", label: "Generate icon classes", icon: "TestScript" },
   { id: "footer-1", type: "footer", footerText: "Hold ⇧ to debug" },
 ];
 
