@@ -44,7 +44,7 @@ const ActionsDemo: React.FC = () => {
           align="start"
           trigger={
             <button
-              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-secondary-background-hover)"
+              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-primary-background-hover)"
               onClick={() => setContextMenuOpen(true)}
             >
               Show Context Actions
@@ -61,7 +61,7 @@ const ActionsDemo: React.FC = () => {
           align="start"
           trigger={
             <button
-              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-secondary-background-hover)"
+              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-primary-background-hover)"
               onClick={() => setGenerateMenuOpen(true)}
             >
               Generate Menu
@@ -78,7 +78,7 @@ const ActionsDemo: React.FC = () => {
           align="start"
           trigger={
             <button
-              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-secondary-background-hover)"
+              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-primary-background-hover)"
               onClick={() => setRunConfigMenuOpen(true)}
             >
               Run Configurations
@@ -95,7 +95,7 @@ const ActionsDemo: React.FC = () => {
           align="start"
           trigger={
             <button
-              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-secondary-background-hover)"
+              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-primary-background-hover)"
               onClick={() => setRunOptionsMenuOpen(true)}
             >
               Run Options
@@ -112,7 +112,7 @@ const ActionsDemo: React.FC = () => {
           align="start"
           trigger={
             <button
-              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-secondary-background-hover)"
+              className="w-fit rounded-md bg-(--moss-secondary-background) px-4 py-2 shadow transition-colors hover:bg-(--moss-primary-background-hover)"
               onClick={() => setRunSelectorMenuOpen(true)}
             >
               Run Selector
@@ -125,7 +125,7 @@ const ActionsDemo: React.FC = () => {
       <div className="mb-10">
         <div className="flex items-center gap-2">
           <span className="font-medium">Theme:</span>
-          <div className="w-40">
+          <div className="h-7 w-36">
             <ActionMenu
               type="dropdown"
               items={themeItems}

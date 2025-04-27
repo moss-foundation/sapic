@@ -42,12 +42,23 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 min-w-60 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 shadow-md"
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 shadow-md",
+  {
+    variants: {
+      type: {
+        default: "min-w-60",
+        dropdown: "min-w-40",
+      },
+    },
+    defaultVariants: {
+      type: "default",
+    },
+  }
 );
 
 // Shared menu item styles
 const menuItemStyles = cva(
-  "relative flex cursor-default items-center rounded-md px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+  "relative flex cursor-default items-center rounded-sm px-3 py-1.5 outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
   {
     variants: {
       variant: {
@@ -62,7 +73,7 @@ const menuItemStyles = cva(
       },
       state: {
         normal: "",
-        checked: "data-[state=checked]:bg-(--moss-secondary-background)",
+        checked: "data-[state=checked]:bg-(--moss-info-background)",
         open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-info-background-hover)",
       },
     },
@@ -78,13 +89,15 @@ const labelStyles = "truncate max-w-[200px] text-xs text-(--moss-primary-text)";
 
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content>
->(({ className, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content> & {
+    menuType?: "default" | "dropdown";
+  }
+>(({ className, menuType = "default", ...props }, ref) => (
   <DropdownMenu.Content
     ref={ref}
     align="start"
     sideOffset={5}
-    className={cn(menuContentStyles(), className)}
+    className={cn(menuContentStyles({ type: menuType }), className)}
     {...props}
   />
 ));
@@ -226,13 +239,14 @@ const DropdownTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-lg border border-(--moss-border-primary) bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
+      "flex w-full items-center justify-between rounded-md bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
+      open ? "border-2 border-(--moss-primary)" : "border border-(--moss-button-neutral-outlined-border)",
       className
     )}
     {...props}
   >
     <span className={labelStyles}>{value || placeholder || "Select..."}</span>
-    <Icon icon={open ? "ChevronUp" : "ChevronDown"} className="h-4 w-4 text-(--moss-icon-primary-text)" />
+    <Icon icon={open ? "ChevronUp" : "ChevronDown"} className="h-4 w-4 text-(--moss-not-selected-item-color)" />
   </button>
 ));
 DropdownTrigger.displayName = "DropdownTrigger";
@@ -415,7 +429,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     <DropdownMenu.Root open={open} onOpenChange={onOpenChange}>
       {dropdownTrigger && <DropdownMenu.Trigger asChild>{dropdownTrigger}</DropdownMenu.Trigger>}
       <DropdownMenu.Portal>
-        <MenuContent className={className} align={align} side={side} sideOffset={sideOffset}>
+        <MenuContent className={className} align={align} side={side} sideOffset={sideOffset} menuType={type}>
           {renderMenuItems(normalItems)}
           {footerItems.length > 0 && renderFooters()}
         </MenuContent>
