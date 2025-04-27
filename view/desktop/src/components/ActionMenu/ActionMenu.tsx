@@ -75,6 +75,8 @@ const menuItemStyles = cva(
   }
 );
 
+const labelStyles = "truncate max-w-[200px]";
+
 // Styled components using Radix UI primitives
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -238,7 +240,7 @@ const DropdownTrigger = React.forwardRef<
     )}
     {...props}
   >
-    <span>{value || placeholder || "Select..."}</span>
+    <span className={labelStyles}>{value || placeholder || "Select..."}</span>
     <Icon icon={open ? "ChevronUp" : "ChevronDown"} className="h-4 w-4" />
   </button>
 ));
@@ -337,7 +339,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                   {!item.icon && item.alignWithIcons && (
                     <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>
                   )}
-                  <span className="flex-grow">{item.label}</span>
+                  <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
                   <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
                 </MenuRadioItem>
               );
@@ -369,7 +371,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         >
           <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
-          <span className="flex-grow">{item.label}</span>
+          <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
           <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
         </MenuCheckboxItem>
       );
@@ -381,7 +383,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           <MenuSubTrigger>
             <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
             {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
-            <span className="flex-grow">{item.label}</span>
+            <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
             <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
           </MenuSubTrigger>
           <DropdownMenu.Portal>
@@ -403,7 +405,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         >
           <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
-          <span className="flex-grow">{item.label}</span>
+          <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
           <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
         </MenuItem>
       );
