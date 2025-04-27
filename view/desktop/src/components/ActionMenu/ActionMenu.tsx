@@ -172,7 +172,7 @@ const MenuFooter = React.forwardRef<
   <DropdownMenu.Label
     ref={ref}
     className={cn(
-      "mt-1 border-t border-(--moss-border-primary) px-3 py-2 text-center text-xs text-(--moss-text-secondary)",
+      "bg-(--moss-secondary-background) px-3 py-2 text-xs text-(--moss-not-selected-item-color)",
       className
     )}
     {...props}
