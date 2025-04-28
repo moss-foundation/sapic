@@ -72,6 +72,10 @@ export const Tree = ({
   };
 
   useEffect(() => {
+    setTree(prepareCollectionForTree(initialTree));
+  }, [initialTree]);
+
+  useEffect(() => {
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target } = event.detail;
 
@@ -168,7 +172,7 @@ export const Tree = ({
         onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
-      <div className="select-none">
+      <div>
         <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>
