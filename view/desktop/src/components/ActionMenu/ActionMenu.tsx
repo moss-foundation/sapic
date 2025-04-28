@@ -272,7 +272,7 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
 };
 
 // Helper component for menu item trailing elements
-const MenuItemTrailing = ({ count, shortcut }: { count?: number; shortcut?: string }) => (
+const MenuItemTrailing = ({ shortcut }: { count?: number; shortcut?: string }) => (
   <>{shortcut && <span className="ml-4 text-xs text-(--moss-not-selected-item-color)">{shortcut}</span>}</>
 );
 
