@@ -5,6 +5,7 @@ use moss_fs::FileSystem;
 use notify::{FsEventWatcher, RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::mem;
+use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
@@ -69,17 +70,18 @@ pub struct BackgroundScannerState {
     pub snapshot: Snapshot,
     pub prev_snapshot: Snapshot,
     pub changed_paths: Vec<PathBuf>,
+    pub scanned_dirs: HashSet<EntryId>,
     pub removed_entries: HashMap<u64, Entry>,
 }
 
 impl BackgroundScannerState {
-    fn enqueue_scan_dir(
+    async fn enqueue_scan_dir(
         &self,
         abs_path: PathBuf,
         entry: &Entry,
         scan_job_tx: &UnboundedSender<ScanJob>,
     ) {
-        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path);
+        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path).await;
         if !ancestor_inodes.contains(&entry.inode) {
             ancestor_inodes.insert(entry.inode);
             scan_job_tx
@@ -93,13 +95,13 @@ impl BackgroundScannerState {
         }
     }
 
-    fn reuse_entry_id(&mut self, entry: &mut Entry) {
+    async fn reuse_entry_id(&mut self, entry: &mut Entry) {
         if let Some(mtime) = entry.mtime {
             if let Some(removed_entry) = self.removed_entries.remove(&entry.inode) {
                 if removed_entry.mtime == Some(mtime) || removed_entry.path == entry.path {
                     entry.id = removed_entry.id;
                 }
-            } else if let Some(existing_entry) = self.snapshot.entry_by_path(&entry.path) {
+            } else if let Some(existing_entry) = self.snapshot.entry_by_path(&entry.path).await {
                 entry.id = existing_entry.id;
             }
         }
@@ -110,8 +112,47 @@ impl BackgroundScannerState {
         true
     }
 
-    async fn populate_dir(&mut self, path: &PathBuf, entries: Vec<Entry>) {
-        todo!()
+    async fn populate_dir(
+        &mut self,
+        parent_path: &PathBuf,
+        entries: impl IntoIterator<Item = Entry>,
+    ) {
+        dbg!("populate_dir");
+        dbg!(parent_path);
+        let mut parent_entry =
+            if let Some(parent_entry) = self.snapshot.entry_by_path(parent_path).await {
+                parent_entry.clone()
+            } else {
+                println!(
+                    "populating a directory {:?} that has been removed",
+                    parent_path
+                );
+                return;
+            };
+
+        match parent_entry.kind {
+            EntryKind::PendingDir | EntryKind::UnloadedDir => parent_entry.kind = EntryKind::Dir,
+            EntryKind::Dir => {}
+            _ => return,
+        }
+
+        let parent_entry_id = parent_entry.id;
+        self.scanned_dirs.insert(parent_entry_id);
+
+        let mut entries_by_id = self.snapshot.entries_by_id.lock().await;
+        let mut entries_by_path = self.snapshot.entries_by_path.lock().await;
+
+        entries_by_path.insert(parent_entry.path.clone(), parent_entry.id);
+        entries_by_id.insert(parent_entry.id, parent_entry);
+
+        for entry in entries {
+            entries_by_path.insert(entry.path.clone(), entry.id);
+            entries_by_id.insert(entry.id, entry);
+        }
+
+        if let Err(ix) = self.changed_paths.binary_search(parent_path) {
+            self.changed_paths.insert(ix, parent_path.clone());
+        }
     }
 }
 
@@ -134,8 +175,10 @@ impl BackgroundScanner {
 
             state.scan_id += 1;
 
-            if let Some(root_entry) = state.snapshot.root_entry() {
-                state.enqueue_scan_dir(root_abs_path, root_entry, &scan_job_tx);
+            if let Some(root_entry) = state.snapshot.root_entry().await {
+                state
+                    .enqueue_scan_dir(root_abs_path, &root_entry, &scan_job_tx)
+                    .await;
             }
         }
 
@@ -146,7 +189,6 @@ impl BackgroundScanner {
 
         // Start listening for events
         self.phase = BackgroundScannerPhase::Events;
-
         loop {
             tokio::select! {
                 maybe_scan_req = self.scan_req_rx.recv() => {
@@ -213,11 +255,13 @@ impl BackgroundScanner {
     }
 
     async fn scan_dirs(&mut self, mut scan_job_rx: UnboundedReceiver<ScanJob>) {
+        dbg!("scan_dirs");
+
         self.status_updates_tx.send(ScanState::Started).unwrap(); // FIXME: Handle errors
 
         loop {
             tokio::select! {
-                maybe_scan_req = self.next_scan_request().fuse() => {}
+                // maybe_scan_req = self.next_scan_request().fuse() => {}
 
                 maybe_scan_job = scan_job_rx.recv().fuse() => {
                     let Some(scan_job) = maybe_scan_job else { break; };
@@ -230,23 +274,32 @@ impl BackgroundScanner {
     }
 
     async fn scan_dir(&mut self, job: ScanJob) -> Result<()> {
+        dbg!("scan_dir");
+        dbg!(&job.abs_path);
+
         let root_abs_path = self.state.lock().await.snapshot.abs_path.clone();
         let mut new_entries = Vec::new();
         let mut new_jobs: Vec<Option<ScanJob>> = Vec::new();
 
         let mut read_dir = self.fs.read_dir(&job.abs_path).await?;
-        let mut child_paths = read_dir
-            .next_entry()
-            .await
-            .into_iter()
-            .filter_map(|dir_entry| {
-                if let Some(dir_entry) = dir_entry {
-                    Some(dir_entry)
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>();
+        let mut child_paths = Vec::new();
+        while let Some(dir_entry) = read_dir.next_entry().await? {
+            child_paths.push(dir_entry);
+        }
+        // let mut child_paths = read_dir
+        //     .next_entry()
+        //     .await
+        //     .into_iter()
+        //     .filter_map(|dir_entry| {
+        //         if let Some(dir_entry) = dir_entry {
+        //             Some(dir_entry)
+        //         } else {
+        //             None
+        //         }
+        //     })
+        //     .collect::<Vec<_>>();
+
+        dbg!(&child_paths);
 
         for child_entry in child_paths {
             let child_abs_path = child_entry.path();
@@ -309,12 +362,16 @@ impl BackgroundScanner {
             }
         }
 
-        state.populate_dir(&job.abs_path, new_entries).await;
+        state.populate_dir(&job.path, new_entries).await;
         self.watcher
             .watch(&job.abs_path, RecursiveMode::Recursive)
             .unwrap();
 
-        todo!()
+        for new_job in new_jobs.into_iter().flatten() {
+            job.scan_queue.send(new_job).unwrap();
+        }
+
+        Ok(())
     }
 
     async fn send_snapshot_update(&self, scanning: bool, barrier: Vec<Barrier>) {
@@ -331,7 +388,7 @@ pub enum UnitType {
     Component,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct EntryId(usize);
 
 impl EntryId {
@@ -374,20 +431,20 @@ impl Entry {
 pub struct Snapshot {
     scan_id: usize,
     abs_path: PathBuf,
-    entries_by_id: Arc<BPlusTreeMap<EntryId, Entry>>,
-    entries_by_path: Arc<BPlusTreeMap<PathBuf, EntryId>>,
+    entries_by_id: Arc<Mutex<BPlusTreeMap<EntryId, Entry>>>,
+    entries_by_path: Arc<Mutex<BPlusTreeMap<PathBuf, EntryId>>>,
 }
 
 impl Snapshot {
-    pub fn root_entry(&self) -> Option<&Entry> {
-        self.entry_by_path("")
+    pub async fn root_entry(&self) -> Option<Entry> {
+        self.entry_by_path("").await
     }
 
-    fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
+    async fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
         let mut inodes = HashSet::new();
 
         for ancestor in path.ancestors().skip(1) {
-            if let Some(entry) = self.entry_by_path(ancestor) {
+            if let Some(entry) = self.entry_by_path(ancestor).await {
                 inodes.insert(entry.inode);
             }
         }
@@ -395,13 +452,14 @@ impl Snapshot {
         inodes
     }
 
-    fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<&Entry> {
+    async fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Entry> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        self.entries_by_path
-            .get(path)
-            .and_then(|id| self.entries_by_id.get(id))
+        let entries_by_path = self.entries_by_path.lock().await;
+        let entry_id = entries_by_path.get(path)?;
+        let entries_by_id = self.entries_by_id.lock().await;
+        entries_by_id.get(entry_id).cloned()
     }
 }
 
@@ -412,7 +470,7 @@ pub struct Worktree {
 }
 
 impl Worktree {
-    pub fn new(
+    pub async fn new(
         fs: Arc<dyn FileSystem>,
         root_abs_path: PathBuf,
         next_entry_id: Arc<AtomicUsize>,
@@ -420,27 +478,54 @@ impl Worktree {
         // Rename: status_updates_tx
         let (scan_states_tx, mut scan_states_rx) = mpsc::unbounded_channel();
         let (scan_req_tx, mut scan_req_rx) = mpsc::unbounded_channel();
-        let snapshot = Snapshot {
+        let mut snapshot = Snapshot {
             scan_id: 0,
             abs_path: root_abs_path.clone(),
-            entries_by_id: Arc::new(BPlusTreeMap::new()),
-            entries_by_path: Arc::new(BPlusTreeMap::new()),
+            entries_by_id: Arc::new(Mutex::new(BPlusTreeMap::new())),
+            entries_by_path: Arc::new(Mutex::new(BPlusTreeMap::new())),
         };
+
+        let root_metadata = tokio::fs::metadata(&root_abs_path).await?;
+
+        let root_path = PathBuf::from("");
+        let root_entry = Entry {
+            id: EntryId::new(&next_entry_id),
+            path: root_path.clone(),
+            kind: EntryKind::PendingDir,
+            unit_type: None,
+            mtime: Some(root_metadata.modified().unwrap()),
+            inode: root_metadata.ino(),
+        };
+
+        snapshot
+            .entries_by_path
+            .lock()
+            .await
+            .insert(root_path, root_entry.id);
+
+        snapshot
+            .entries_by_id
+            .lock()
+            .await
+            .insert(root_entry.id, root_entry);
 
         let (fs_events, watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
         let empty_snapshot = snapshot.clone();
         let fs_clone = fs.clone();
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
+            let initial_state = BackgroundScannerState {
+                scan_id: 0,
+                snapshot: empty_snapshot.clone(),
+                prev_snapshot: empty_snapshot,
+                changed_paths: Vec::new(),
+                scanned_dirs: HashSet::new(),
+                removed_entries: HashMap::new(),
+            };
+
             let mut background_scanner = BackgroundScanner {
                 fs: fs_clone,
                 watcher,
-                state: Mutex::new(BackgroundScannerState {
-                    scan_id: 0,
-                    snapshot: empty_snapshot.clone(),
-                    prev_snapshot: empty_snapshot,
-                    changed_paths: Vec::new(),
-                    removed_entries: HashMap::new(),
-                }),
+                state: Mutex::new(initial_state),
                 next_entry_id,
                 phase: BackgroundScannerPhase::InitialScan,
                 scan_req_rx,
@@ -459,7 +544,9 @@ impl Worktree {
                         changes,
                         scanning,
                         barrier,
-                    } => {}
+                    } => {
+                        dbg!(snapshot.entries_by_id.lock().await.len());
+                    }
                     ScanState::RootUpdated { new_path } => {}
                 }
             }
@@ -481,4 +568,26 @@ fn build_diff(
 ) -> UpdatedEntriesSet {
     let changes: Vec<(PathBuf, EntryId, PathChange)> = Vec::new();
     Arc::from(changes)
+}
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::RealFileSystem;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test() {
+        let fs = Arc::new(RealFileSystem::new());
+
+        let worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests"),
+            Arc::new(AtomicUsize::new(0)),
+        )
+        .await
+        .unwrap();
+
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
 }
