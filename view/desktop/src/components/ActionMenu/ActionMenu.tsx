@@ -69,12 +69,12 @@ const menuItemStyles = cva(
         info: "text-blue-500",
       },
       highlighted: {
-        true: "data-[highlighted]:bg-(--moss-info-background-hover)",
+        true: "data-[highlighted]:bg-(--moss-secondary-background-hover)",
       },
       state: {
         normal: "",
-        checked: "data-[state=checked]:bg-(--moss-info-background)",
-        open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-info-background-hover)",
+        checked: "data-[state=checked]:bg-(--moss-info-background-hover)",
+        open: "data-[state=open]:bg-(--moss-secondary-background) data-[state=open]:data-[highlighted]:bg-(--moss-secondary-background-hover)",
       },
     },
     defaultVariants: {
@@ -185,7 +185,7 @@ const MenuFooter = React.forwardRef<
   <DropdownMenu.Label
     ref={ref}
     className={cn(
-      "-mx-1 -my-1.5 mt-2 bg-(--moss-info-background) px-5 py-1.5 text-xs text-(--moss-not-selected-item-color) hover:bg-(--moss-info-background-hover)",
+      "-mx-1 -my-1.5 mt-2 rounded-lg bg-(--moss-secondary-background) px-5 py-1.5 text-xs text-(--moss-not-selected-item-color)",
       className
     )}
     {...props}
@@ -239,8 +239,11 @@ const DropdownTrigger = React.forwardRef<
   <button
     ref={ref}
     className={cn(
-      "flex w-full items-center justify-between rounded-md bg-(--moss-primary-background) px-3 py-2 text-(--moss-text-primary) hover:bg-(--moss-info-background-hover)",
-      open ? "border-2 border-(--moss-primary)" : "border border-(--moss-button-neutral-outlined-border)",
+      "flex w-full items-center justify-between rounded-md bg-(--moss-primary-background) py-[5px] pr-[5px] pl-2 text-(--moss-primary-text)",
+      "focus-visible:outline focus-visible:outline-1 focus-visible:outline-[var(--moss-primary)]",
+      open
+        ? "border border-[var(--moss-primary)] outline outline-1 outline-[var(--moss-primary)]"
+        : "border border-[var(--moss-button-neutral-outlined-border)]",
       className
     )}
     {...props}

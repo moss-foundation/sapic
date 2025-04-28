@@ -178,7 +178,7 @@ const ComponentGallery = () => {
             <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Dropdown Menu</h3>
             <div className="flex items-center gap-3 rounded-md bg-gray-100 p-4 dark:bg-gray-800/50">
               <span className="font-medium text-gray-700 dark:text-gray-300">Theme:</span>
-              <div className="h-9 w-48">
+              <div className="w-56">
                 <ActionMenu
                   type="dropdown"
                   items={themeItems}
