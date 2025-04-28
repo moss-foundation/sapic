@@ -49,7 +49,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
             return (
               <div key={pathNode} className="contents">
                 <TestCollectionIcon type={node.type} className="size-4" />
-                <span>{pathNode}</span>
+                <span className="min-w-max">{pathNode}</span>
               </div>
             );
           }

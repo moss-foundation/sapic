@@ -9,13 +9,17 @@
 @layer base {
   html,
   body {
-    @apply font-sans transition;
+    @apply font-sans font-normal;
     overflow: hidden;
     position: fixed;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
   }
+}
+
+.linux {
+  -webkit-font-smoothing: antialiased;
 }
 
 svg:not(.animate-spin),

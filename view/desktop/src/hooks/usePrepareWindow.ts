@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { describeLayoutPartsState, openWorkspace } from "@/lib/backend/workspace";
-import { SerializedDockview } from "@/lib/moss-tabs/src";
+import { describeLayoutPartsState } from "@/lib/backend/workspace";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -19,8 +18,6 @@ export const usePrepareWindow = (): WindowPreparationState => {
 
   useEffect(() => {
     const initializeWorkspace = async () => {
-      await openWorkspace("TestWorkspace");
-
       const layout = await describeLayoutPartsState();
 
       if (layout === undefined) {
@@ -29,7 +26,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
       }
 
       if (layout?.editor) {
-        setGridState(layout.editor as unknown as SerializedDockview);
+        setGridState(layout.editor);
       }
 
       initializeResizableLayout({

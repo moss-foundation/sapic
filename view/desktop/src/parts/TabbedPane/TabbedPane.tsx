@@ -12,11 +12,13 @@ import {
   DockviewDidDropEvent,
   DockviewReact,
   DockviewReadyEvent,
+  IDockviewHeaderActionsProps,
   IDockviewPanelProps,
   positionToDirection,
-  IDockviewHeaderActionsProps,
 } from "@repo/moss-tabs";
 
+import { AddPanelButton } from "./AddPanelButton";
+import CustomTab from "./CustomTab";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
@@ -24,10 +26,8 @@ import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
 import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
-import Watermark from "./Watermark";
-import CustomTab from "./CustomTab";
 import ToolBar from "./ToolBar";
-import { AddPanelButton } from "./AddPanelButton";
+import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);
 
