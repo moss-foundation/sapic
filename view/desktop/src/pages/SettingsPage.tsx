@@ -27,7 +27,7 @@ const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDrop
       <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{label}</h3>
       <div className="relative">
         <div
-          className="background-(--moss-select-bg-outlined) hover:background-(--moss-select-hover-bg) flex w-full cursor-pointer items-center justify-between rounded border border-[var(--moss-select-border-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm"
+          className="background-(--moss-select-bg-outlined) hover:background-(--moss-select-hover-bg) flex w-[200px] cursor-pointer items-center justify-between rounded border border-[var(--moss-select-border-outlined)] p-2 text-[var(--moss-select-text-outlined)] shadow-sm"
           onClick={() => setIsOpen(!isOpen)}
         >
           <span>
@@ -39,7 +39,7 @@ const SettingsDropdown = ({ id, label, value, onChange, children }: SettingsDrop
         </div>
 
         {isOpen && (
-          <div className="background-(--moss-select-bg-outlined) absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-md border border-[var(--moss-select-border-outlined)] shadow-lg">
+          <div className="background-(--moss-select-bg-outlined) absolute right-0 left-0 z-10 mt-1 max-h-60 w-[200px] overflow-auto rounded-md border border-[var(--moss-select-border-outlined)] shadow-lg">
             <div className="py-1">
               {React.Children.map(children, (child) => {
                 if (React.isValidElement(child)) {
