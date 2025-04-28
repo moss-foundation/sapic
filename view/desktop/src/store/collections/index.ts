@@ -13,7 +13,6 @@ import SapicTestCollection from "../../assets/SapicTestCollection.json";
 import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
 
 interface CollectionsStoreState {
-  lastTimeCollectionsWereUpdated: number;
   collections: Collection[];
   setCollections: (collections: Collection[]) => void;
   expandAll: () => void;
@@ -22,14 +21,13 @@ interface CollectionsStoreState {
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
-  lastTimeCollectionsWereUpdated: 0,
   collections: [
     SapicTestCollection as Collection,
     AzureDevOpsTestCollection as Collection,
     WhatsAppBusinessTestCollection as Collection,
   ],
   setCollections: (collections: Collection[]) => {
-    set({ collections, lastTimeCollectionsWereUpdated: Date.now() });
+    set({ collections });
   },
   expandAll: () => {
     const allFoldersAreExpanded = get().collections.every((collection) => checkIfTreeIsExpanded(collection.tree));
@@ -43,7 +41,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           tree: expandAllNodes(collection.tree),
         };
       }),
-      lastTimeCollectionsWereUpdated: Date.now(),
     }));
   },
   collapseAll: () => {
@@ -58,13 +55,11 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           tree: collapseAllNodes(collection.tree),
         };
       }),
-      lastTimeCollectionsWereUpdated: Date.now(),
     }));
   },
   updateCollection: (updatedCollection: Collection) => {
     set((state) => ({
       collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
-      lastTimeCollectionsWereUpdated: Date.now(),
     }));
   },
 }));
