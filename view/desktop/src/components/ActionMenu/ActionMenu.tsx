@@ -42,7 +42,7 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-lg",
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
   {
     variants: {
       type: {
@@ -185,7 +185,7 @@ const MenuFooter = React.forwardRef<
   <DropdownMenu.Label
     ref={ref}
     className={cn(
-      "-mx-1 -my-1.5 mt-2 rounded-lg bg-(--moss-secondary-background) px-5 py-1.5 text-xs text-(--moss-not-selected-item-color)",
+      "-mx-1 -my-1.5 mt-2 rounded-b-lg bg-(--moss-secondary-background) px-5 py-1.5 text-xs text-(--moss-not-selected-item-color)",
       className
     )}
     {...props}
