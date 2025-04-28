@@ -109,7 +109,7 @@
   /* Window Controls */
   --moss-button-icon-color: black;
   --moss-windowsCloseButton-background: rgba(196, 43, 28, 1);
-  --moss-windowControlsLinux-background: #373737;
+  --moss-windowControlsLinux-background: #e7e7e7;
   --moss-windowControlsLinux-text: rgba(61, 61, 61, 1);
   --moss-windowControlsLinux-hoverBackground: rgba(209, 209, 209, 1);
   --moss-windowControlsLinux-activeBackground: rgba(191, 191, 191, 1);
@@ -154,7 +154,7 @@
 
   /* Button System */
 
-  /* --- Primary Buttons ------------------------------------------------------------------------------------------------------------------------ */
+  /* --- Primary Buttons  */
   --moss-button-primary-solid-background: var(--moss-blue-4);
   --moss-button-primary-solid-background-hover: var(--moss-blue-3);
   --moss-button-primary-solid-background-active: var(--moss-blue-2);
@@ -171,7 +171,7 @@
   --moss-button-primary-outlined-border-active: var(--moss-blue-6);
   --moss-button-primary-outlined-text: var(--moss-blue-4);
 
-  /* --- Neutral Buttons ------------------------------------------------------------------------------------------------------------------------ */
+  /* --- Neutral Buttons  */
   --moss-button-neutral-solid-background: var(--moss-gray-4);
   --moss-button-neutral-solid-background-hover: var(--moss-gray-3);
   --moss-button-neutral-solid-background-active: var(--moss-gray-2);
