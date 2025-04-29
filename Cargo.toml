@@ -103,3 +103,4 @@ xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
+sweep-bptree = "0.4.1"
