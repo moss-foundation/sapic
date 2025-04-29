@@ -15,7 +15,8 @@ import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {
-  const numberOfRerendersBeforeCanUpdateState = useRef(3);
+  const canUpdatePartState = useRef(false);
+  const numberOfRerenders = useRef(0);
 
   const { position } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
@@ -34,10 +35,7 @@ export const AppLayout = () => {
 
   const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
   useEffect(() => {
-    if (numberOfRerendersBeforeCanUpdateState.current >= 0) {
-      numberOfRerendersBeforeCanUpdateState.current--;
-      return;
-    }
+    if (!canUpdatePartState.current) return;
 
     updateSidebarPartState({
       preferredSize: sideBar.width,
@@ -47,16 +45,21 @@ export const AppLayout = () => {
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
-    if (numberOfRerendersBeforeCanUpdateState.current >= 0) {
-      numberOfRerendersBeforeCanUpdateState.current--;
-      return;
-    }
+    if (!canUpdatePartState.current) return;
 
     updatePanelPartState({
       preferredSize: bottomPane.height,
       isVisible: bottomPane.visible,
     });
   }, [bottomPane, updatePanelPartState]);
+
+  useEffect(() => {
+    numberOfRerenders.current++;
+
+    if (numberOfRerenders.current >= 2) {
+      canUpdatePartState.current = true;
+    }
+  }, []);
 
   return (
     <div className="flex h-full w-full">
