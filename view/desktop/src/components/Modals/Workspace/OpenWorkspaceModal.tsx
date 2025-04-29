@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
 import Select from "@/components/Select";
-import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
+import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
 import { ModalWrapperProps } from "../types";
 

@@ -343,6 +343,9 @@ importers:
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace
+      '@tanstack/react-pacer':
+        specifier: ^0.2.0
+        version: 0.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: ^5.67.1
         version: 5.71.1(react@18.3.1)
@@ -2182,11 +2185,22 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6
 
+  '@tanstack/pacer@0.2.0':
+    resolution: {integrity: sha512-fUJs3NpSwtAL/tfq8kuYdgvm9HbbJvHsOG6aHY2dFDfff0NBFNwjvyGreWZZRPs2zgoIbr4nOk+rRV7aQgmf+A==}
+    engines: {node: '>=18'}
+
   '@tanstack/query-core@5.71.1':
     resolution: {integrity: sha512-4+ZswCHOfJX+ikhXNoocamTUmJcHtB+Ljjz/oJkC7/eKB5IrzEwR4vEwZUENiPi+wISucJHR5TUbuuJ26w3kdQ==}
 
   '@tanstack/query-devtools@5.67.2':
     resolution: {integrity: sha512-O4QXFFd7xqp6EX7sdvc9tsVO8nm4lpWBqwpgjpVLW5g7IeOY6VnS/xvs/YzbRhBVkKTMaJMOUGU7NhSX+YGoNg==}
+
+  '@tanstack/react-pacer@0.2.0':
+    resolution: {integrity: sha512-KU5GtjkKSeNdYCilen5Dc+Pu/6BPQbsQshKrUUjrg7URyJIiGBCz6ZZFre1QjDz/aeUeqUJWMWSm+2Dsh64v+w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
 
   '@tanstack/react-query-devtools@5.71.1':
     resolution: {integrity: sha512-nETCStlMy1h3Hcy1rnHJVbW8ERsAErAzpCsBHIVd9AOjQgQjzjFl2FetlEZjRc+vMJjpJde9NDsftYhy7UA83A==}
@@ -6161,9 +6175,17 @@ snapshots:
       tailwindcss: 4.1.3
       vite: 6.2.4(@types/node@22.13.16)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)(yaml@2.7.1)
 
+  '@tanstack/pacer@0.2.0': {}
+
   '@tanstack/query-core@5.71.1': {}
 
   '@tanstack/query-devtools@5.67.2': {}
+
+  '@tanstack/react-pacer@0.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@tanstack/pacer': 0.2.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@tanstack/react-query-devtools@5.71.1(@tanstack/react-query@5.71.1(react@18.3.1))(react@18.3.1)':
     dependencies:

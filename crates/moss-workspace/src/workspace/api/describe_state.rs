@@ -6,13 +6,11 @@ use moss_storage::workspace_storage::entities::state_store_entities::{
 use tauri::Runtime as TauriRuntime;
 
 use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
-use crate::{models::operations::DescribeLayoutPartsStateOutput, workspace::Workspace};
+use crate::{models::operations::DescribeStateOutput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn describe_layout_parts_state(
-        &self,
-    ) -> OperationResult<DescribeLayoutPartsStateOutput> {
-        let layout_parts_state_store = self.workspace_storage.state_store();
+    pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {
+        let state_store = self.workspace_storage.state_store();
 
         fn to_option<T, U>(
             result: Result<T, DatabaseError>,
@@ -26,21 +24,21 @@ impl<R: TauriRuntime> Workspace<R> {
         }
 
         let editor = to_option(
-            layout_parts_state_store.get_editor_part_state(),
+            state_store.get_editor_part_state(),
             |entity: EditorPartStateEntity| EditorPartState::from(entity),
         )?;
 
         let sidebar = to_option(
-            layout_parts_state_store.get_sidebar_part_state(),
+            state_store.get_sidebar_part_state(),
             |entity: SidebarPartStateEntity| SidebarPartState::from(entity),
         )?;
 
         let panel = to_option(
-            layout_parts_state_store.get_panel_part_state(),
+            state_store.get_panel_part_state(),
             |entity: PanelPartStateEntity| PanelPartState::from(entity),
         )?;
 
-        Ok(DescribeLayoutPartsStateOutput {
+        Ok(DescribeStateOutput {
             editor,
             sidebar,
             panel,

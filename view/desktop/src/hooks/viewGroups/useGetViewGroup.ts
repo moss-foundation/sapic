@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { GroupView, MockGroupViews } from "./mockData";
+import { GroupView, MockGroupViews } from "../mockData";
 
 export const USE_VIEW_GROUP_QUERY_KEY = "viewGroup";
 
