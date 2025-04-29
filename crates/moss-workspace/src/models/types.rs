@@ -46,7 +46,7 @@ pub struct EnvironmentInfo {
     pub order: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct SidebarPartState {
@@ -72,7 +72,7 @@ impl From<SidebarPartState> for SidebarPartStateEntity {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct PanelPartState {

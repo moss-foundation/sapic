@@ -2,9 +2,8 @@ use moss_app::manager::AppManager;
 use moss_tauri::{TauriError, TauriResult};
 use moss_workspace::{
     models::operations::{
-        CreateWorkspaceInput, CreateWorkspaceOutput, DeleteWorkspaceInput,
-        DescribeLayoutPartsStateOutput, ListWorkspacesOutput, OpenWorkspaceInput,
-        OpenWorkspaceOutput, SetLayoutPartsStateInput,
+        CreateWorkspaceInput, CreateWorkspaceOutput, DeleteWorkspaceInput, DescribeStateOutput,
+        ListWorkspacesOutput, OpenWorkspaceInput, OpenWorkspaceOutput, UpdateStateInput,
     },
     workspace_manager::WorkspaceManager,
 };
@@ -89,10 +88,10 @@ pub async fn open_workspace<R: TauriRuntime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
-pub async fn set_layout_parts_state<R: TauriRuntime>(
+pub async fn update_workspace_state<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
-    input: SetLayoutPartsStateInput,
+    input: UpdateStateInput,
 ) -> TauriResult<()> {
     let app_handle = app_manager.app_handle();
     let workspace_manager = app_manager
@@ -101,21 +100,17 @@ pub async fn set_layout_parts_state<R: TauriRuntime>(
         .await?;
 
     let current_workspace = workspace_manager.current_workspace()?;
-    current_workspace
-        .1
-        .set_layout_parts_state(input)
-        .await
-        .map_err(|err| TauriError(format!("Failed to set layout parts state: {}", err)))?;
+    current_workspace.1.update_state(input).await?;
 
     Ok(())
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
-pub async fn describe_layout_parts_state<R: TauriRuntime>(
+pub async fn describe_state<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
-) -> TauriResult<DescribeLayoutPartsStateOutput> {
+) -> TauriResult<DescribeStateOutput> {
     let app_handle = app_manager.app_handle();
     let workspace_manager = app_manager
         .services()
@@ -125,7 +120,7 @@ pub async fn describe_layout_parts_state<R: TauriRuntime>(
     let current_workspace = workspace_manager.current_workspace()?;
     let output = current_workspace
         .1
-        .describe_layout_parts_state()
+        .describe_state()
         .await
         .map_err(|err| TauriError(format!("Failed to describe layout parts state: {}", err)))?;
 
