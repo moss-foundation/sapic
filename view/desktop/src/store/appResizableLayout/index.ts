@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-import { setDebouncedLayoutPartsState } from "@/hooks/appState/useSetLayoutPartsState";
+import { setDebouncedPanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
+import { setDebouncedSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
@@ -61,13 +62,9 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
-      setDebouncedLayoutPartsState({
-        input: {
-          sidebar: {
-            preferredSize: newWidth <= 0 ? get().sideBar.width : newWidth,
-            isVisible: newWidth > 0,
-          },
-        },
+      setDebouncedSidebarPartState({
+        preferredSize: newWidth <= 0 ? get().sideBar.width : newWidth,
+        isVisible: newWidth > 0,
       });
       set((state) => ({
         sideBar: {
@@ -82,13 +79,9 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
         visible,
         width: get().sideBar.width,
       });
-      setDebouncedLayoutPartsState({
-        input: {
-          sidebar: {
-            preferredSize: get().sideBar.width,
-            isVisible: visible,
-          },
-        },
+      setDebouncedSidebarPartState({
+        preferredSize: get().sideBar.width,
+        isVisible: visible,
       });
       set((state) => ({
         sideBar: {
@@ -104,13 +97,9 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     height: 333,
     visible: false,
     setHeight: (newHeight) => {
-      setDebouncedLayoutPartsState({
-        input: {
-          panel: {
-            preferredSize: newHeight,
-            isVisible: newHeight > 0,
-          },
-        },
+      setDebouncedPanelPartState({
+        preferredSize: newHeight,
+        isVisible: newHeight > 0,
       });
       set((state) => ({
         bottomPane: {
@@ -121,13 +110,9 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      setDebouncedLayoutPartsState({
-        input: {
-          panel: {
-            preferredSize: get().bottomPane.height,
-            isVisible: visible,
-          },
-        },
+      setDebouncedPanelPartState({
+        preferredSize: get().bottomPane.height,
+        isVisible: visible,
       });
       set((state) => ({
         bottomPane: {

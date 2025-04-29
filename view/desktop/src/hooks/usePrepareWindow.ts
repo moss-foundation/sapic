@@ -15,9 +15,9 @@ export const usePrepareWindow = (): WindowPreparationState => {
   const { isFetched, data: layout } = useDescribeLayoutPartsState();
 
   useEffect(() => {
-    if (isFetched) {
-      setIsPreparing(false);
+    if (isFetched) setIsPreparing(false);
 
+    if (layout) {
       initialize({
         sideBar: {
           width: layout?.sidebar?.preferredSize,
@@ -29,7 +29,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
         },
       });
     }
-  }, [isFetched, layout]);
+  }, [initialize, isFetched, layout]);
 
   return { isPreparing };
 };

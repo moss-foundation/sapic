@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DescribeLayoutPartsStateOutput } from "@repo/moss-workspace";
+import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
 import { mapEditorPartStateToSerializedDockview } from "./utils";
@@ -7,7 +7,7 @@ import { mapEditorPartStateToSerializedDockview } from "./utils";
 export const USE_DESCRIBE_LAYOUT_PARTS_STATE_QUERY_KEY = "describeLayoutPartsState";
 
 export const describeLayoutPartsState = async () => {
-  const res = await invokeTauriIpc<DescribeLayoutPartsStateOutput>("describe_layout_parts_state");
+  const res = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
 
   if (res.status !== "ok") {
     console.error("Failed to describe layout parts state", res);

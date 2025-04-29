@@ -6,7 +6,7 @@ import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useDescribeLayoutPartsState } from "@/hooks/appState/useDescribeLayoutPartsState";
-import { useSetLayoutPartsState } from "@/hooks/appState/useSetLayoutPartsState";
+import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
@@ -71,17 +71,21 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
   useDockviewResizeObserver(api, dockviewRefWrapper);
 
-  const { mutate: setLayoutPartsState } = useSetLayoutPartsState();
+  const { mutate: updateEditorPartState } = useUpdateEditorPartState();
   const { isFetched, data: layout } = useDescribeLayoutPartsState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      if (isFetched && layout?.editor) {
-        event.api?.fromJSON(layout.editor);
-        // If we restored the layout but no panels were added, add the welcome page
-        if (event.api.panels.length === 0) {
+      if (isFetched) {
+        if (layout?.editor) {
+          event.api?.fromJSON(layout.editor);
+          // If we restored the layout but no panels were added, add the welcome page
+          if (event.api.panels.length === 0) {
+            event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+          }
+        } else {
           event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
         }
       }
@@ -119,11 +123,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     const event = api.onDidLayoutChange(() => {
-      setLayoutPartsState({ input: { editor: api.toJSON() } });
+      updateEditorPartState(api.toJSON());
     });
 
     return () => event.dispose();
-  }, [api]);
+  }, [api, updateEditorPartState]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {
