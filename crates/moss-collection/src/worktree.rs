@@ -2,7 +2,7 @@ use anyhow::Result;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
 use moss_fs::FileSystem;
-use notify::{FsEventWatcher, RecursiveMode, Watcher};
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::mem;
 use std::os::unix::fs::MetadataExt;
@@ -247,7 +247,7 @@ impl BackgroundScannerState {
 
 pub struct BackgroundScanner {
     fs: Arc<dyn FileSystem>,
-    watcher: FsEventWatcher,
+    watcher: RecommendedWatcher,
     state: Mutex<BackgroundScannerState>,
     next_entry_id: Arc<AtomicUsize>,
     phase: BackgroundScannerPhase,
