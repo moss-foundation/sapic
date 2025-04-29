@@ -53,6 +53,7 @@ export const AppLayout = () => {
     });
   }, [bottomPane, updatePanelPartState]);
 
+  //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
   useEffect(() => {
     numberOfRerenders.current++;
 
