@@ -1,4 +1,4 @@
-import { Icon } from "@/components";
+import { Icon, IconLabelButton } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -75,6 +75,13 @@ export const HeadBar = () => {
           {/* Add a draggable area that takes up remaining space */}
           <div className="flex-grow" data-tauri-drag-region></div>
         </div>
+        <IconLabelButton
+          leftIcon="HeadBarUserAvatar"
+          leftIconSize="md"
+          leftIconClassName="text-(--moss-primary)"
+          rightIcon="ChevronDown"
+          title="g10z3r"
+        />
       </div>
 
       {os !== undefined && os !== "macos" && (os === "windows" || os === "linux") && <Controls os={os} />}

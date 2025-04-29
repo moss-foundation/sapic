@@ -1,18 +1,5 @@
-import React, { ButtonHTMLAttributes } from "react";
-import { ActionButton, Divider, Icon, IconLabelButton, type Icons } from "@/components";
-import { cn } from "@/utils";
-
-interface ToolBarTitleProps {
-  title: string;
-}
-
-const ToolBarTitle: React.FC<ToolBarTitleProps> = ({ title }) => {
-  return (
-    <span className="overflow-hidden text-xs text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)] opacity-100">
-      {title}
-    </span>
-  );
-};
+import React from "react";
+import { ActionButton, Divider, IconLabelButton } from "@/components";
 
 interface ToolBarProps {
   workspace?: boolean;
@@ -26,7 +13,12 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
       {workspace && (
         <>
           <Divider height="large" className="mr-2.5" />
-          <IconLabelButton leftIcon="ToolBarEnvironment" rightIcon="ChevronDown" title="No environment" />
+          <IconLabelButton
+            leftIcon="ToolBarEnvironment"
+            rightIcon="ChevronDown"
+            title="No environment"
+            labelCustomColor="notSelected"
+          />
           <ActionButton icon="ToolBarVariables" className="ml-0.5" />
         </>
       )}
