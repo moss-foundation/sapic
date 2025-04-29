@@ -1,18 +1,18 @@
 // View Groups
-export * from "./useChangeViewGroups";
-export * from "./useGetViewGroup";
+export * from "./viewGroups/useChangeViewGroups";
+export * from "./viewGroups/useGetViewGroup";
 
 // Other hooks
-export * from "./useDescribeAppState";
-export * from "./useListColorThemes";
-export * from "./useListLocales";
+export * from "./appState/useDescribeAppState";
+export * from "./colorTheme/useListColorThemes";
+export * from "./colorTheme/useSetColorTheme";
+export * from "./locales/useListLocales";
+export * from "./locales/useSetLocale";
 export * from "./usePrepareWindow";
-export * from "./useSetColorTheme";
-export * from "./useSetLocale";
 
 // Workspace
-export * from "./useGetWorkspaces";
-export * from "./useOpenWorkspace";
+export * from "./workspaces/useGetWorkspaces";
+export * from "./workspaces/useOpenWorkspace";
 
 // Mock data (centralized)
 export * from "./mockData";

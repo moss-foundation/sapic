@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { setLayoutPartsState } from "@/lib/backend/workspace";
+import { setDebouncedLayoutPartsState } from "@/hooks/appState/useSetLayoutPartsState";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
@@ -61,7 +61,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
-      setLayoutPartsState({
+      setDebouncedLayoutPartsState({
         input: {
           sidebar: {
             preferredSize: newWidth <= 0 ? get().sideBar.width : newWidth,
@@ -78,7 +78,11 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      setLayoutPartsState({
+      console.log("setVisible", {
+        visible,
+        width: get().sideBar.width,
+      });
+      setDebouncedLayoutPartsState({
         input: {
           sidebar: {
             preferredSize: get().sideBar.width,
@@ -100,7 +104,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     height: 333,
     visible: false,
     setHeight: (newHeight) => {
-      setLayoutPartsState({
+      setDebouncedLayoutPartsState({
         input: {
           panel: {
             preferredSize: newHeight,
@@ -117,7 +121,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      setLayoutPartsState({
+      setDebouncedLayoutPartsState({
         input: {
           panel: {
             preferredSize: get().bottomPane.height,

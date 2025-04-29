@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
 import { useDescribeAppState } from "@/hooks";
-import { useGetViewGroup } from "@/hooks/useGetViewGroup";
 import { useModal } from "@/hooks/useModal";
+import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import CollectionTreeView from "./CollectionTreeView";

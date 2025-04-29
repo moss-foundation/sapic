@@ -5,6 +5,8 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
+import { useDescribeLayoutPartsState } from "@/hooks/appState/useDescribeLayoutPartsState";
+import { useSetLayoutPartsState } from "@/hooks/appState/useSetLayoutPartsState";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
@@ -49,7 +51,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-  const { api, addOrFocusPanel, setApi, gridState, sendGridStateToBackend } = useTabbedPaneStore();
+  const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -69,13 +71,19 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
   useDockviewResizeObserver(api, dockviewRefWrapper);
 
+  const { mutate: setLayoutPartsState } = useSetLayoutPartsState();
+  const { isFetched, data: layout } = useDescribeLayoutPartsState();
+
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+
     try {
-      event.api?.fromJSON(gridState);
-      // If we restored the layout but no panels were added, add the welcome page
-      if (event.api.panels.length === 0) {
-        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      if (isFetched && layout?.editor) {
+        event.api?.fromJSON(layout.editor);
+        // If we restored the layout but no panels were added, add the welcome page
+        if (event.api.panels.length === 0) {
+          event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        }
       }
     } catch (error) {
       // Handle the case where the layout can't be restored (e.g., missing component)
@@ -111,11 +119,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     const event = api.onDidLayoutChange(() => {
-      sendGridStateToBackend(api.toJSON());
+      setLayoutPartsState({ input: { editor: api.toJSON() } });
     });
 
     return () => event.dispose();
-  }, [api, sendGridStateToBackend]);
+  }, [api]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {
