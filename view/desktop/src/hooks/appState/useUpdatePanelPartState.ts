@@ -1,3 +1,4 @@
+import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { PanelPartState } from "@repo/moss-workspace";
 import { debounce } from "@tanstack/react-pacer/debouncer";
@@ -11,7 +12,7 @@ const debouncedSetPanelPartState = debounce(
       input: { "updatePanelPartState": panel },
     });
   },
-  { wait: 2000 }
+  { wait: DEBOUNCE_TIME }
 );
 
 export const setDebouncedPanelPartState = async (panel: PanelPartState) => {

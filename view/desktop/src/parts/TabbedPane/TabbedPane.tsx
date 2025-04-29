@@ -72,35 +72,25 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { isFetched, data: layout } = useDescribeWorkspaceState();
+  const { data: layout } = useDescribeWorkspaceState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      if (isFetched) {
-        if (layout?.editor) {
-          event.api?.fromJSON(layout.editor);
-          // If we restored the layout but no panels were added, add the welcome page
-          if (event.api.panels.length === 0) {
-            event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
-          }
-        } else {
-          event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
-        }
+      if (layout?.editor) {
+        event.api?.fromJSON(layout.editor);
+      } else {
+        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }
     } catch (error) {
-      // Handle the case where the layout can't be restored (e.g., missing component)
       console.error("Failed to restore layout:", error);
 
-      // Clear any panels that might have been created
-      // We need to make a copy of the panels array since we're modifying it while iterating
       const panels = [...event.api.panels];
       for (const panel of panels) {
-        panel.api.close(); // Use the documented panel.api.close() method
+        panel.api.close();
       }
 
-      // Start with a clean welcome page
       event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
   };

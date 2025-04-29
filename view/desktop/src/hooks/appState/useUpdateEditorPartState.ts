@@ -1,3 +1,4 @@
+import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SerializedDockview } from "@/lib/moss-tabs/src";
 import { EditorPartState } from "@repo/moss-workspace";
@@ -14,7 +15,7 @@ const debouncedSetEditorPartState = debounce(
       input: { "updateEditorPartState": editor },
     });
   },
-  { wait: 2000 }
+  { wait: DEBOUNCE_TIME }
 );
 
 export const setDebouncedEditorPartState = async (editor: SerializedDockview) => {
