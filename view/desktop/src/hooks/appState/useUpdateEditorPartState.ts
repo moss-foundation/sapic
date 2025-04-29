@@ -18,13 +18,13 @@ const debouncedSetEditorPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setDebouncedEditorPartState = async (editor: SerializedDockview) => {
+export const setEditorPartStateWithDebounce = async (editor: SerializedDockview) => {
   debouncedSetEditorPartState(mapSerializedDockviewToEditorPartState(editor));
 };
 
 export const useUpdateEditorPartState = () => {
   return useMutation<void, Error, SerializedDockview>({
     mutationKey: [USE_UPDATE_EDITOR_PART_STATE_MUTATION_KEY],
-    mutationFn: setDebouncedEditorPartState,
+    mutationFn: setEditorPartStateWithDebounce,
   });
 };

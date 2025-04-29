@@ -15,13 +15,13 @@ const debouncedSetPanelPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setDebouncedPanelPartState = async (panel: PanelPartState) => {
+export const setPanelPartStateWithDebounce = async (panel: PanelPartState) => {
   debouncedSetPanelPartState(panel);
 };
 
 export const useUpdatePanelPartState = () => {
   return useMutation<void, Error, PanelPartState>({
     mutationKey: [USE_UPDATE_PANEL_PART_STATE_MUTATION_KEY],
-    mutationFn: setDebouncedPanelPartState,
+    mutationFn: setPanelPartStateWithDebounce,
   });
 };

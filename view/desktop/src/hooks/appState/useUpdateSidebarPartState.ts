@@ -15,13 +15,13 @@ const debouncedSetSidebarPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setDebouncedSidebarPartState = async (sidebar: SidebarPartState) => {
+export const setSidebarPartStateWithDebounce = async (sidebar: SidebarPartState) => {
   debouncedSetSidebarPartState(sidebar);
 };
 
 export const useUpdateSidebarPartState = () => {
   return useMutation<void, Error, SidebarPartState>({
     mutationKey: [USE_UPDATE_SIDEBAR_PART_STATE_MUTATION_KEY],
-    mutationFn: setDebouncedSidebarPartState,
+    mutationFn: setSidebarPartStateWithDebounce,
   });
 };
