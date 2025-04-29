@@ -6,6 +6,8 @@ import { AllotmentHandle } from "allotment";
 import { useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
+import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
+import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 
@@ -27,6 +29,22 @@ export const AppLayout = () => {
 
     resizableRef.current.reset();
   }, [bottomPane, sideBar, sideBarPosition]);
+
+  const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
+  useEffect(() => {
+    updateSidebarPartState({
+      preferredSize: sideBar.width,
+      isVisible: sideBar.visible,
+    });
+  }, [sideBar, updateSidebarPartState]);
+
+  const { mutate: updatePanelPartState } = useUpdatePanelPartState();
+  useEffect(() => {
+    updatePanelPartState({
+      preferredSize: bottomPane.height,
+      isVisible: bottomPane.visible,
+    });
+  }, [bottomPane, updatePanelPartState]);
 
   return (
     <div className="flex h-full w-full">

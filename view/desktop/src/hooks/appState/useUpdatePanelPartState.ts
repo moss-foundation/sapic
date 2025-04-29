@@ -15,7 +15,7 @@ const debouncedSetPanelPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setPanelPartStateWithDebounce = async (panel: PanelPartState) => {
+const setPanelPartStateWithDebounce = async (panel: PanelPartState) => {
   debouncedSetPanelPartState(panel);
 };
 

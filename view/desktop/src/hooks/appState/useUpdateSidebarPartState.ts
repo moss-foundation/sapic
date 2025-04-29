@@ -15,7 +15,7 @@ const debouncedSetSidebarPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setSidebarPartStateWithDebounce = async (sidebar: SidebarPartState) => {
+const setSidebarPartStateWithDebounce = async (sidebar: SidebarPartState) => {
   debouncedSetSidebarPartState(sidebar);
 };
 

@@ -18,7 +18,7 @@ const debouncedSetEditorPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-export const setEditorPartStateWithDebounce = async (editor: SerializedDockview) => {
+const setEditorPartStateWithDebounce = async (editor: SerializedDockview) => {
   debouncedSetEditorPartState(mapSerializedDockviewToEditorPartState(editor));
 };
 
