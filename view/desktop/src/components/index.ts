@@ -10,6 +10,7 @@ export * as Checkbox from "./Checkbox";
 export * from "./Divider";
 export * from "./DropIndicator";
 export * from "./Icon";
+export * from "./IconLabelButton";
 export * from "./Input";
 export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";
 export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
