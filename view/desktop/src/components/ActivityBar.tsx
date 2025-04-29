@@ -73,7 +73,13 @@ export const ActivityBar = () => {
   );
 };
 
-const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
+const ActivityBarButton = ({
+  icon,
+  isActive,
+  isFill,
+  isStroke,
+  ...props
+}: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { alignment, setItems, items, position } = useActivityBarStore();
@@ -164,11 +170,17 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
   return (
     <button
       ref={ref}
-      className={cn("relative cursor-pointer rounded-md p-1", {
-        "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && visible,
-        "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
-          !isActive || !visible,
-      })}
+      className={cn(
+        "relative cursor-pointer rounded-md p-1 [&_*[fill]]:transition-colors [&_*[fill]]:duration-300 [&_*[stroke]]:transition-colors [&_*[stroke]]:duration-300",
+        {
+          "background-(--moss-icon-primary-background-active)": isActive && visible,
+          "hover:background-(--moss-icon-primary-background-hover) [&_*[fill]]:text-transparent [&_*[stroke]]:text-(--moss-icon-primary-text)":
+            !isActive || !visible,
+          "[&_*[fill]]:text-(--moss-info-icon) [&_*[stroke]]:text-transparent":
+            isActive && visible && isFill && isStroke,
+          "[&_*[stroke]]:text-(--moss-info-icon)": isActive && visible && !isFill && isStroke,
+        }
+      )}
       onClick={() => handleClick(props.id)}
       {...props}
     >
