@@ -75,10 +75,6 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      console.log("setVisible", {
-        visible,
-        width: get().sideBar.width,
-      });
       setDebouncedSidebarPartState({
         preferredSize: get().sideBar.width,
         isVisible: visible,
