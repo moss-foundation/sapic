@@ -5,8 +5,8 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
-import { useDescribeLayoutPartsState } from "@/hooks/appState/useDescribeLayoutPartsState";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
+import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
@@ -72,7 +72,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { isFetched, data: layout } = useDescribeLayoutPartsState();
+  const { isFetched, data: layout } = useDescribeWorkspaceState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);

@@ -2,11 +2,11 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
-import { mapEditorPartStateToSerializedDockview } from "./utils";
+import { mapEditorPartStateToSerializedDockview } from "../appState/utils";
 
-export const USE_DESCRIBE_LAYOUT_PARTS_STATE_QUERY_KEY = "describeLayoutPartsState";
+export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeLayoutPartsState";
 
-export const describeLayoutPartsState = async () => {
+export const describeWorkspaceState = async () => {
   const res = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
 
   if (res.status !== "ok") {
@@ -21,9 +21,9 @@ export const describeLayoutPartsState = async () => {
   };
 };
 
-export const useDescribeLayoutPartsState = () => {
+export const useDescribeWorkspaceState = () => {
   return useQuery({
-    queryKey: [USE_DESCRIBE_LAYOUT_PARTS_STATE_QUERY_KEY],
-    queryFn: describeLayoutPartsState,
+    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
+    queryFn: describeWorkspaceState,
   });
 };
