@@ -76,7 +76,6 @@ pub struct Entry {
     unit_type: Option<UnitType>,
     mtime: Option<SystemTime>,
     inode: u64,
-    // size: u64,
 }
 
 impl Entry {
@@ -563,6 +562,7 @@ async fn build_diff(
     new_snapshot: &Snapshot,
     changed_paths: &[PathBuf],
 ) -> UpdatedEntriesSet {
+    // TODO: Implement this
     dbg!("build_diff");
     let diffs = Vec::with_capacity(changed_paths.len());
 
