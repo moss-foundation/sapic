@@ -34,11 +34,7 @@ export type DescribeEnvironmentInput = { key: ResourceKey };
 
 export type DescribeEnvironmentOutput = { variables: VariableInfo };
 
-export type DescribeLayoutPartsStateOutput = {
-  editor?: EditorPartState;
-  sidebar?: SidebarPartState;
-  panel?: PanelPartState;
-};
+export type DescribeStateOutput = { editor?: EditorPartState; sidebar?: SidebarPartState; panel?: PanelPartState };
 
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
@@ -68,4 +64,7 @@ export type RenameCollectionOutput = { path: string };
 
 export type RenameWorkspaceInput = { key: ResourceKey; newName: string };
 
-export type SetLayoutPartsStateInput = { editor?: EditorPartState; sidebar?: SidebarPartState; panel?: PanelPartState };
+export type UpdateStateInput =
+  | { "updateEditorPartState": EditorPartState }
+  | { "updateSidebarPartState": SidebarPartState }
+  | { "updatePanelPartState": PanelPartState };

@@ -2,7 +2,7 @@ import React from "react";
 
 import { DockviewApi } from "@repo/moss-tabs";
 
-export const useDockviewResizeObserver = (
+export const useTabbedPaneResizeObserver = (
   api: DockviewApi | undefined,
   containerRef: React.RefObject<HTMLDivElement>
 ) => {

@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import { Button } from "@/components";
-import { useGetWorkspaces } from "@/hooks/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/useOpenWorkspace";
+import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
+import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
 import WelcomePageLink from "./WelcomePageLink";
 

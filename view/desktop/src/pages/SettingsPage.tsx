@@ -1,16 +1,16 @@
-import React, { ChangeEvent, ReactNode, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { ActivityBarState } from "@/hooks";
-import { useDescribeAppState } from "@/hooks/useDescribeAppState";
-import { useListColorThemes } from "@/hooks/useListColorThemes";
-import { useListLocales } from "@/hooks/useListLocales";
-import { useSetColorTheme } from "@/hooks/useSetColorTheme";
-import { useSetLocale } from "@/hooks/useSetLocale";
+import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
+import { useListColorThemes } from "@/hooks/colorTheme/useListColorThemes";
+import { useSetColorTheme } from "@/hooks/colorTheme/useSetColorTheme";
+import { useListLocales } from "@/hooks/locales/useListLocales";
+import { useSetLocale } from "@/hooks/locales/useSetLocale";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
-import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);

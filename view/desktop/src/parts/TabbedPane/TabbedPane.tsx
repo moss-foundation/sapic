@@ -5,6 +5,8 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
+import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
+import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
@@ -22,10 +24,10 @@ import CustomTab from "./CustomTab";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
-import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
-import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
+import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
+import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
-import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
+import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
 
@@ -49,7 +51,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
 
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
-  const { api, addOrFocusPanel, setApi, gridState, sendGridStateToBackend } = useTabbedPaneStore();
+  const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -65,30 +67,30 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useDockviewEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
-  useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
-  useDockviewResizeObserver(api, dockviewRefWrapper);
+  useTabbedPaneEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
+  useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  useTabbedPaneResizeObserver(api, dockviewRefWrapper);
+
+  const { mutate: updateEditorPartState } = useUpdateEditorPartState();
+  const { data: layout } = useDescribeWorkspaceState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+
     try {
-      event.api?.fromJSON(gridState);
-      // If we restored the layout but no panels were added, add the welcome page
-      if (event.api.panels.length === 0) {
+      if (layout?.editor) {
+        event.api?.fromJSON(layout.editor);
+      } else {
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }
     } catch (error) {
-      // Handle the case where the layout can't be restored (e.g., missing component)
       console.error("Failed to restore layout:", error);
 
-      // Clear any panels that might have been created
-      // We need to make a copy of the panels array since we're modifying it while iterating
       const panels = [...event.api.panels];
       for (const panel of panels) {
-        panel.api.close(); // Use the documented panel.api.close() method
+        panel.api.close();
       }
 
-      // Start with a clean welcome page
       event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
   };
@@ -111,11 +113,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     const event = api.onDidLayoutChange(() => {
-      sendGridStateToBackend(api.toJSON());
+      updateEditorPartState(api.toJSON());
     });
 
     return () => event.dispose();
-  }, [api, sendGridStateToBackend]);
+  }, [api, updateEditorPartState]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {

@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "./useDescribeAppState";
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
 import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";

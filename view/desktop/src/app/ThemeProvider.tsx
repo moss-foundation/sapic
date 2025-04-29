@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 
-import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/useDescribeAppState";
+import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
 import { applyColorTheme } from "@/utils/applyTheme";
 import { ColorThemeChangeEventPayload } from "@repo/moss-theme";
 import { useQueryClient } from "@tanstack/react-query";

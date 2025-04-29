@@ -1,7 +1,5 @@
 import { create } from "zustand";
 
-import { mapSerializedDockviewToEditorPartState } from "@/lib/backend/utils";
-import { setLayoutPartsState } from "@/lib/backend/workspace";
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "@repo/moss-tabs";
 
 interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions, "component"> {
@@ -10,7 +8,6 @@ interface AddPanelOptionsWithoutMandatoryComponent extends Omit<AddPanelOptions,
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
-  sendGridStateToBackend: (state: SerializedDockview) => void;
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
   api?: DockviewApi;
@@ -37,11 +34,6 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     floatingGroups: [],
     popoutGroups: [],
   } as SerializedDockview,
-  sendGridStateToBackend: (state: SerializedDockview) => {
-    setLayoutPartsState({
-      input: { editor: mapSerializedDockviewToEditorPartState(state) },
-    });
-  },
   setGridState: (state: SerializedDockview) => {
     set({ gridState: state });
   },

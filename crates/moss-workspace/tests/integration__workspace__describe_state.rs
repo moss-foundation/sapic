@@ -1,6 +1,6 @@
 mod shared;
 
-use moss_workspace::models::operations::SetLayoutPartsStateInput;
+use moss_workspace::models::operations::UpdateStateInput;
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
 
@@ -10,7 +10,7 @@ use crate::shared::setup_test_workspace;
 async fn describe_layout_parts_state_empty() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
-    let result = workspace.describe_layout_parts_state().await;
+    let result = workspace.describe_state().await;
     assert!(result.is_ok());
 
     let describe_layout_parts_state_output = result.unwrap();
@@ -37,16 +37,12 @@ async fn describe_layout_parts_state_sidebar_only() {
     };
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(sidebar_state),
-            panel: None,
-        })
+        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
         .await
         .unwrap();
 
     // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_layout_parts_state().await.unwrap();
+    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
 
     // Editor and Panel should be None
     assert!(describe_layout_parts_state_output.editor.is_none());
@@ -75,16 +71,12 @@ async fn describe_layout_parts_state_panel_only() {
     };
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: None,
-            panel: Some(panel_state),
-        })
+        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
         .await
         .unwrap();
 
     // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_layout_parts_state().await.unwrap();
+    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
 
     // Editor and Sidebar should be None
     assert!(describe_layout_parts_state_output.editor.is_none());
@@ -110,16 +102,12 @@ async fn describe_layout_parts_state_editor_only() {
     let editor_state = create_simple_editor_state();
 
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: None,
-            panel: None,
-        })
+        .update_state(UpdateStateInput::UpdateEditorPartState(editor_state))
         .await
         .unwrap();
 
     // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_layout_parts_state().await.unwrap();
+    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
 
     // Sidebar and Panel should be None
     assert!(describe_layout_parts_state_output.sidebar.is_none());
@@ -155,17 +143,22 @@ async fn describe_layout_parts_state_all() {
         is_visible: false,
     };
 
+    // Update each state individually
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(editor_state),
-            sidebar: Some(sidebar_state),
-            panel: Some(panel_state),
-        })
+        .update_state(UpdateStateInput::UpdateEditorPartState(editor_state))
+        .await
+        .unwrap();
+    workspace
+        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
+        .await
+        .unwrap();
+    workspace
+        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
         .await
         .unwrap();
 
     // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_layout_parts_state().await.unwrap();
+    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
 
     // All states should be set
 
@@ -199,36 +192,47 @@ async fn describe_layout_parts_state_after_update() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
     // First set all states
+    let initial_editor_state = create_simple_editor_state();
+    let initial_sidebar_state = SidebarPartState {
+        preferred_size: 250,
+        is_visible: true,
+    };
+    let initial_panel_state = PanelPartState {
+        preferred_size: 200,
+        is_visible: false,
+    };
+
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: Some(create_simple_editor_state()),
-            sidebar: Some(SidebarPartState {
-                preferred_size: 250,
-                is_visible: true,
-            }),
-            panel: Some(PanelPartState {
-                preferred_size: 200,
-                is_visible: false,
-            }),
-        })
+        .update_state(UpdateStateInput::UpdateEditorPartState(
+            initial_editor_state,
+        ))
+        .await
+        .unwrap();
+    workspace
+        .update_state(UpdateStateInput::UpdateSidebarPartState(
+            initial_sidebar_state,
+        ))
+        .await
+        .unwrap();
+    workspace
+        .update_state(UpdateStateInput::UpdatePanelPartState(initial_panel_state))
         .await
         .unwrap();
 
     // Now update only the sidebar
+    let updated_sidebar_state = SidebarPartState {
+        preferred_size: 300,
+        is_visible: false,
+    };
     workspace
-        .set_layout_parts_state(SetLayoutPartsStateInput {
-            editor: None,
-            sidebar: Some(SidebarPartState {
-                preferred_size: 300,
-                is_visible: false,
-            }),
-            panel: None,
-        })
+        .update_state(UpdateStateInput::UpdateSidebarPartState(
+            updated_sidebar_state,
+        ))
         .await
         .unwrap();
 
     // Check the describe_layout_parts_state operation after update
-    let describe_layout_parts_state_output = workspace.describe_layout_parts_state().await.unwrap();
+    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
 
     // Editor should not change
     assert!(describe_layout_parts_state_output.editor.is_some());
