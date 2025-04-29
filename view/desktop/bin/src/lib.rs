@@ -67,7 +67,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::get_translations,
             commands::open_workspace,
             commands::update_workspace_state,
-            commands::describe_state,
+            commands::describe_workspace_state,
             commands::create_workspace,
             commands::list_workspaces,
             commands::delete_workspace,

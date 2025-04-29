@@ -107,7 +107,7 @@ pub async fn update_workspace_state<R: TauriRuntime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
-pub async fn describe_state<R: TauriRuntime>(
+pub async fn describe_workspace_state<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
 ) -> TauriResult<DescribeStateOutput> {
