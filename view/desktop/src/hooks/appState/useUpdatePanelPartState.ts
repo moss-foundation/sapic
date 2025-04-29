@@ -7,8 +7,8 @@ export const USE_UPDATE_PANEL_PART_STATE_MUTATION_KEY = "updatePanelPartState";
 
 const debouncedSetPanelPartState = debounce(
   async (panel: PanelPartState) => {
-    await invokeTauriIpc("update_state", {
-      "updatePanelPartState": panel,
+    await invokeTauriIpc("update_workspace_state", {
+      input: { "updatePanelPartState": panel },
     });
   },
   { wait: 2000 }

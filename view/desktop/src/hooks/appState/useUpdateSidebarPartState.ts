@@ -7,8 +7,8 @@ export const USE_UPDATE_SIDEBAR_PART_STATE_MUTATION_KEY = "updateSidebarPartStat
 
 const debouncedSetSidebarPartState = debounce(
   async (sidebar: SidebarPartState) => {
-    await invokeTauriIpc("update_state", {
-      "updateSidebarPartState": sidebar,
+    await invokeTauriIpc("update_workspace_state", {
+      input: { "updateSidebarPartState": sidebar },
     });
   },
   { wait: 2000 }

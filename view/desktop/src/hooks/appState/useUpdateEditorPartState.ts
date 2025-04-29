@@ -10,8 +10,8 @@ export const USE_UPDATE_EDITOR_PART_STATE_MUTATION_KEY = "updateEditorPartState"
 
 const debouncedSetEditorPartState = debounce(
   async (editor: EditorPartState) => {
-    await invokeTauriIpc("update_state", {
-      "updateEditorPartState": editor,
+    await invokeTauriIpc("update_workspace_state", {
+      input: { "updateEditorPartState": editor },
     });
   },
   { wait: 2000 }
