@@ -15,6 +15,8 @@ import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {
+  const numberOfRerendersBeforeCanUpdateState = useRef(3);
+
   const { position } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
 
@@ -32,6 +34,11 @@ export const AppLayout = () => {
 
   const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
   useEffect(() => {
+    if (numberOfRerendersBeforeCanUpdateState.current >= 0) {
+      numberOfRerendersBeforeCanUpdateState.current--;
+      return;
+    }
+
     updateSidebarPartState({
       preferredSize: sideBar.width,
       isVisible: sideBar.visible,
@@ -40,6 +47,11 @@ export const AppLayout = () => {
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
+    if (numberOfRerendersBeforeCanUpdateState.current >= 0) {
+      numberOfRerendersBeforeCanUpdateState.current--;
+      return;
+    }
+
     updatePanelPartState({
       preferredSize: bottomPane.height,
       isVisible: bottomPane.visible,

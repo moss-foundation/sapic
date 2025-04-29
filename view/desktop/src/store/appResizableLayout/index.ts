@@ -1,8 +1,5 @@
 import { create } from "zustand";
 
-// import { setPanelPartStateWithDebounce } from "@/hooks/appState/useUpdatePanelPartState";
-// import { setSidebarPartStateWithDebounce } from "@/hooks/appState/useUpdateSidebarPartState";
-
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
   sideBarPosition: "left" | "right";
@@ -62,10 +59,6 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     width: 255,
     visible: true,
     setWidth: (newWidth) => {
-      // setSidebarPartStateWithDebounce({
-      //   preferredSize: newWidth <= 0 ? get().sideBar.width : newWidth,
-      //   isVisible: newWidth > 0,
-      // });
       set((state) => ({
         sideBar: {
           ...state.sideBar,
@@ -75,10 +68,6 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      // setSidebarPartStateWithDebounce({
-      //   preferredSize: get().sideBar.width,
-      //   isVisible: visible,
-      // });
       set((state) => ({
         sideBar: {
           ...state.sideBar,
@@ -93,10 +82,6 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     height: 333,
     visible: false,
     setHeight: (newHeight) => {
-      // setPanelPartStateWithDebounce({
-      //   preferredSize: newHeight,
-      //   isVisible: newHeight > 0,
-      // });
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,
@@ -106,10 +91,6 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
       }));
     },
     setVisible: (visible) => {
-      // setPanelPartStateWithDebounce({
-      //   preferredSize: get().bottomPane.height,
-      //   isVisible: visible,
-      // });
       set((state) => ({
         bottomPane: {
           ...state.bottomPane,

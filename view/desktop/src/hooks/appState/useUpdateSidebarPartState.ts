@@ -1,12 +1,12 @@
 import { DEBOUNCE_TIME } from "@/constants/tanstackConfig";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { SidebarPartState } from "@repo/moss-workspace";
-import { debounce } from "@tanstack/react-pacer/debouncer";
+import { asyncDebounce } from "@tanstack/react-pacer/async-debouncer";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_UPDATE_SIDEBAR_PART_STATE_MUTATION_KEY = "updateSidebarPartState";
 
-const debouncedSetSidebarPartState = debounce(
+const debouncedSetSidebarPartState = asyncDebounce(
   async (sidebar: SidebarPartState) => {
     await invokeTauriIpc("update_workspace_state", {
       input: { "updateSidebarPartState": sidebar },
@@ -15,13 +15,9 @@ const debouncedSetSidebarPartState = debounce(
   { wait: DEBOUNCE_TIME }
 );
 
-const setSidebarPartStateWithDebounce = async (sidebar: SidebarPartState) => {
-  debouncedSetSidebarPartState(sidebar);
-};
-
 export const useUpdateSidebarPartState = () => {
   return useMutation<void, Error, SidebarPartState>({
     mutationKey: [USE_UPDATE_SIDEBAR_PART_STATE_MUTATION_KEY],
-    mutationFn: setSidebarPartStateWithDebounce,
+    mutationFn: debouncedSetSidebarPartState,
   });
 };
