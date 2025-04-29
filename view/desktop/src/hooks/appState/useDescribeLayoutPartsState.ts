@@ -10,8 +10,8 @@ export const describeLayoutPartsState = async () => {
   const res = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
 
   if (res.status !== "ok") {
-    console.error("Failed to describe layout parts state", res);
-    return undefined;
+    console.warn("Failed to describe layout parts state", res);
+    return null;
   }
 
   return {

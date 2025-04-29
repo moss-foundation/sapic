@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import { Scrollbar } from "@/components/Scrollbar";
-import { useSetLayoutPartsState } from "@/hooks/appState/useSetLayoutPartsState";
+import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
@@ -78,7 +78,7 @@ export const GridActions = (props: {
   hasCustomWatermark: boolean;
   toggleCustomWatermark: () => void;
 }) => {
-  const { mutate: setLayoutPartsState } = useSetLayoutPartsState();
+  const { mutate: updateEditorPartState } = useUpdateEditorPartState();
 
   const onClear = () => {
     props.api?.clear();
@@ -97,7 +97,7 @@ export const GridActions = (props: {
 
   const onSave = () => {
     if (props.api) {
-      setLayoutPartsState({ input: { editor: props.api.toJSON() } });
+      updateEditorPartState(props.api.toJSON());
     }
   };
 
