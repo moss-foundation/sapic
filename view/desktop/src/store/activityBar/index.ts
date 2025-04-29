@@ -8,6 +8,8 @@ export interface ActivityBarItem {
   title: string;
   order: number;
   isActive: boolean;
+  isFill?: boolean;
+  isStroke?: boolean;
 }
 
 interface ActivityBarStore {
@@ -26,22 +28,28 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       "id": "collections.groupId",
       "title": "Collections",
       "order": 1,
-      "icon": "ActivityBarCollections",
+      "icon": "ActivityBarCollectionsTest",
       "isActive": true,
+      "isFill": true,
+      "isStroke": true,
     },
     {
       "id": "environments.groupId",
       "title": "Environments",
       "order": 2,
-      "icon": "ActivityBarEnvironments",
+      "icon": "ActivityBarEnvironmentsTest",
       "isActive": false,
+      "isFill": false,
+      "isStroke": true,
     },
     {
       "id": "mock.groupId",
       "title": "Mock",
       "order": 3,
-      "icon": "ActivityBarMock",
+      "icon": "ActivityBarMockTest",
       "isActive": false,
+      "isFill": true,
+      "isStroke": true,
     },
   ],
   alignment: "vertical",
