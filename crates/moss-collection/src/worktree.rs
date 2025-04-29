@@ -18,7 +18,8 @@ use sweep_bptree::BPlusTreeMap;
 use tokio::sync::{mpsc, Barrier};
 use tokio::sync::{
     mpsc::{UnboundedReceiver, UnboundedSender},
-    watch, Mutex,
+    watch::{self, Ref as WatchRef},
+    Mutex,
 };
 use tokio::task::JoinHandle;
 
@@ -27,12 +28,101 @@ struct ScanRequest {
     done: Vec<PathBuf>,
 }
 
+#[derive(Debug)]
 pub enum PathChange {
     Added,
     Removed,
     Updated,
     AddedOrUpdated,
     Loaded,
+}
+
+#[derive(Debug, Clone)]
+pub enum UnitType {
+    Endpoint,
+    Request,
+    Case,
+    Schema,
+    Component,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct EntryId(usize);
+
+impl EntryId {
+    pub fn new(counter: &AtomicUsize) -> Self {
+        Self(counter.fetch_add(1, SeqCst))
+    }
+
+    pub fn to_usize(&self) -> usize {
+        self.0
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum EntryKind {
+    Unit,
+    PendingDir,
+    UnloadedDir,
+    Dir,
+    File,
+}
+
+#[derive(Debug, Clone)]
+pub struct Entry {
+    id: EntryId,
+    path: PathBuf,
+    kind: EntryKind,
+    unit_type: Option<UnitType>,
+    mtime: Option<SystemTime>,
+    inode: u64,
+    // size: u64,
+}
+
+impl Entry {
+    pub fn is_dir(&self) -> bool {
+        matches!(self.kind, EntryKind::Dir | EntryKind::PendingDir)
+    }
+
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
+}
+
+#[derive(Clone)]
+pub struct Snapshot {
+    scan_id: usize,
+    abs_path: PathBuf,
+    entries_by_id: Arc<Mutex<BPlusTreeMap<EntryId, Entry>>>,
+    entries_by_path: Arc<Mutex<BPlusTreeMap<PathBuf, EntryId>>>,
+}
+
+impl Snapshot {
+    pub async fn root_entry(&self) -> Option<Entry> {
+        self.entry_by_path("").await
+    }
+
+    async fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
+        let mut inodes = HashSet::new();
+
+        for ancestor in path.ancestors().skip(1) {
+            if let Some(entry) = self.entry_by_path(ancestor).await {
+                inodes.insert(entry.inode);
+            }
+        }
+
+        inodes
+    }
+
+    async fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Entry> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let entries_by_path = self.entries_by_path.lock().await;
+        let entry_id = entries_by_path.get(path)?;
+        let entries_by_id = self.entries_by_id.lock().await;
+        entries_by_id.get(entry_id).cloned()
+    }
 }
 
 pub type UpdatedEntriesSet = Arc<[(PathBuf, EntryId, PathChange)]>;
@@ -107,7 +197,7 @@ impl BackgroundScannerState {
         }
     }
 
-    fn should_scan_directory(&self, entry: &Entry) -> bool {
+    fn should_scan_directory(&self, _entry: &Entry) -> bool {
         // TODO: Implement this
         true
     }
@@ -187,7 +277,6 @@ impl BackgroundScanner {
 
         self.send_status_update(false, Vec::new()).await;
 
-        // Start listening for events
         self.phase = BackgroundScannerPhase::Events;
         loop {
             tokio::select! {
@@ -206,9 +295,9 @@ impl BackgroundScanner {
 
     async fn send_status_update(&self, scanning: bool, barrier: Vec<Barrier>) -> bool {
         let mut state = self.state.lock().await;
-        if state.changed_paths.is_empty() && scanning {
-            return true;
-        }
+        // if state.changed_paths.is_empty() && scanning {
+        //     return true;
+        // }
 
         let new_snapshot = state.snapshot.clone();
         let old_snapshot = mem::replace(&mut state.prev_snapshot, new_snapshot.clone());
@@ -218,7 +307,8 @@ impl BackgroundScanner {
             &old_snapshot,
             &new_snapshot,
             &state.changed_paths,
-        );
+        )
+        .await;
         state.changed_paths.clear();
 
         self.status_updates_tx
@@ -229,10 +319,6 @@ impl BackgroundScanner {
                 barrier,
             })
             .is_ok()
-    }
-
-    async fn do_initial_scan(&self) {
-        todo!()
     }
 
     async fn handle_scan_request(&self, scan_req: ScanRequest) {
@@ -255,13 +341,16 @@ impl BackgroundScanner {
     }
 
     async fn scan_dirs(&mut self, mut scan_job_rx: UnboundedReceiver<ScanJob>) {
-        dbg!("scan_dirs");
-
         self.status_updates_tx.send(ScanState::Started).unwrap(); // FIXME: Handle errors
 
+        let mut progress = tokio::time::interval(Duration::from_millis(100));
         loop {
             tokio::select! {
                 // maybe_scan_req = self.next_scan_request().fuse() => {}
+
+                _ = progress.tick() => {
+                    let _ = self.send_status_update(true, Vec::new()).await;
+                }
 
                 maybe_scan_job = scan_job_rx.recv().fuse() => {
                     let Some(scan_job) = maybe_scan_job else { break; };
@@ -274,10 +363,6 @@ impl BackgroundScanner {
     }
 
     async fn scan_dir(&mut self, job: ScanJob) -> Result<()> {
-        dbg!("scan_dir");
-        dbg!(&job.abs_path);
-
-        let root_abs_path = self.state.lock().await.snapshot.abs_path.clone();
         let mut new_entries = Vec::new();
         let mut new_jobs: Vec<Option<ScanJob>> = Vec::new();
 
@@ -286,20 +371,6 @@ impl BackgroundScanner {
         while let Some(dir_entry) = read_dir.next_entry().await? {
             child_paths.push(dir_entry);
         }
-        // let mut child_paths = read_dir
-        //     .next_entry()
-        //     .await
-        //     .into_iter()
-        //     .filter_map(|dir_entry| {
-        //         if let Some(dir_entry) = dir_entry {
-        //             Some(dir_entry)
-        //         } else {
-        //             None
-        //         }
-        //     })
-        //     .collect::<Vec<_>>();
-
-        dbg!(&child_paths);
 
         for child_entry in child_paths {
             let child_abs_path = child_entry.path();
@@ -309,12 +380,12 @@ impl BackgroundScanner {
             let child_metadata = match tokio::fs::metadata(&child_abs_path).await {
                 Ok(metadata) => metadata,
                 Err(err) => {
-                    println!("error processing {child_abs_path:?}: {err:?}"); // FIXME: log error
+                    println!("error processing {child_abs_path:?}: {err:?}"); // TODO: log error
                     continue;
                 }
             };
 
-            let mut child_entry = Entry {
+            let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
                 path: child_path.clone(),
                 kind: if child_metadata.is_dir() {
@@ -350,7 +421,8 @@ impl BackgroundScanner {
 
         let mut job_ix = 0;
         for entry in &mut new_entries {
-            state.reuse_entry_id(entry);
+            state.reuse_entry_id(entry).await;
+
             if entry.is_dir() {
                 if state.should_scan_directory(entry) {
                     job_ix += 1;
@@ -373,100 +445,13 @@ impl BackgroundScanner {
 
         Ok(())
     }
-
-    async fn send_snapshot_update(&self, scanning: bool, barrier: Vec<Barrier>) {
-        todo!()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum UnitType {
-    Endpoint,
-    Request,
-    Case,
-    Schema,
-    Component,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct EntryId(usize);
-
-impl EntryId {
-    pub fn new(counter: &AtomicUsize) -> Self {
-        Self(counter.fetch_add(1, SeqCst))
-    }
-
-    pub fn to_usize(&self) -> usize {
-        self.0
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum EntryKind {
-    Unit,
-    PendingDir,
-    UnloadedDir,
-    Dir,
-    File,
-}
-
-#[derive(Debug, Clone)]
-pub struct Entry {
-    id: EntryId,
-    path: PathBuf,
-    kind: EntryKind,
-    unit_type: Option<UnitType>,
-    mtime: Option<SystemTime>,
-    inode: u64,
-    // size: u64,
-}
-
-impl Entry {
-    pub fn is_dir(&self) -> bool {
-        matches!(self.kind, EntryKind::Dir | EntryKind::PendingDir)
-    }
-}
-
-#[derive(Clone)]
-pub struct Snapshot {
-    scan_id: usize,
-    abs_path: PathBuf,
-    entries_by_id: Arc<Mutex<BPlusTreeMap<EntryId, Entry>>>,
-    entries_by_path: Arc<Mutex<BPlusTreeMap<PathBuf, EntryId>>>,
-}
-
-impl Snapshot {
-    pub async fn root_entry(&self) -> Option<Entry> {
-        self.entry_by_path("").await
-    }
-
-    async fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
-        let mut inodes = HashSet::new();
-
-        for ancestor in path.ancestors().skip(1) {
-            if let Some(entry) = self.entry_by_path(ancestor).await {
-                inodes.insert(entry.inode);
-            }
-        }
-
-        inodes
-    }
-
-    async fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Entry> {
-        let path = path.as_ref();
-        debug_assert!(path.is_relative());
-
-        let entries_by_path = self.entries_by_path.lock().await;
-        let entry_id = entries_by_path.get(path)?;
-        let entries_by_id = self.entries_by_id.lock().await;
-        entries_by_id.get(entry_id).cloned()
-    }
 }
 
 pub struct Worktree {
-    snapshot: Snapshot,
-    is_scanning: (watch::Sender<bool>, watch::Receiver<bool>),
-    background_tasks: Vec<JoinHandle<()>>,
+    snapshot: watch::Receiver<Snapshot>,
+    scan_requests_tx: UnboundedSender<ScanRequest>,
+    is_scanning_rx: watch::Receiver<bool>,
+    _background_tasks: Vec<JoinHandle<()>>,
 }
 
 impl Worktree {
@@ -475,48 +460,45 @@ impl Worktree {
         root_abs_path: PathBuf,
         next_entry_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
-        // Rename: status_updates_tx
         let (scan_states_tx, mut scan_states_rx) = mpsc::unbounded_channel();
-        let (scan_req_tx, mut scan_req_rx) = mpsc::unbounded_channel();
-        let mut snapshot = Snapshot {
+        let (scan_requests_tx, scan_requests_rx) = mpsc::unbounded_channel();
+
+        let root_entry = {
+            let metadata = tokio::fs::metadata(&root_abs_path).await?;
+            Entry {
+                id: EntryId::new(&next_entry_id),
+                path: PathBuf::new(),
+                kind: EntryKind::PendingDir,
+                unit_type: None,
+                mtime: Some(metadata.modified().unwrap()),
+                inode: metadata.ino(),
+            }
+        };
+
+        let initial_snapshot = Snapshot {
             scan_id: 0,
             abs_path: root_abs_path.clone(),
-            entries_by_id: Arc::new(Mutex::new(BPlusTreeMap::new())),
-            entries_by_path: Arc::new(Mutex::new(BPlusTreeMap::new())),
+            entries_by_path: Arc::new(Mutex::new(BPlusTreeMap::from_iter([(
+                root_entry.path().clone(),
+                root_entry.id,
+            )]))),
+            entries_by_id: Arc::new(Mutex::new(BPlusTreeMap::from_iter([(
+                root_entry.id,
+                root_entry,
+            )]))),
         };
 
-        let root_metadata = tokio::fs::metadata(&root_abs_path).await?;
-
-        let root_path = PathBuf::from("");
-        let root_entry = Entry {
-            id: EntryId::new(&next_entry_id),
-            path: root_path.clone(),
-            kind: EntryKind::PendingDir,
-            unit_type: None,
-            mtime: Some(root_metadata.modified().unwrap()),
-            inode: root_metadata.ino(),
-        };
-
-        snapshot
-            .entries_by_path
-            .lock()
-            .await
-            .insert(root_path, root_entry.id);
-
-        snapshot
-            .entries_by_id
-            .lock()
-            .await
-            .insert(root_entry.id, root_entry);
+        let (snapshot_tx, snapshot_rx) = watch::channel(initial_snapshot.clone());
+        let (is_scanning_tx, is_scanning_rx) = watch::channel(true);
 
         let (fs_events, watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
-        let empty_snapshot = snapshot.clone();
         let fs_clone = fs.clone();
+
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
             let initial_state = BackgroundScannerState {
                 scan_id: 0,
-                snapshot: empty_snapshot.clone(),
-                prev_snapshot: empty_snapshot,
+                snapshot: initial_snapshot.clone(),
+                prev_snapshot: initial_snapshot,
                 changed_paths: Vec::new(),
                 scanned_dirs: HashSet::new(),
                 removed_entries: HashMap::new(),
@@ -528,7 +510,7 @@ impl Worktree {
                 state: Mutex::new(initial_state),
                 next_entry_id,
                 phase: BackgroundScannerPhase::InitialScan,
-                scan_req_rx,
+                scan_req_rx: scan_requests_rx,
                 status_updates_tx: scan_states_tx,
             };
 
@@ -538,14 +520,19 @@ impl Worktree {
         let updater_handle: JoinHandle<()> = tokio::spawn(async move {
             while let Some(scan_state) = scan_states_rx.recv().await {
                 match scan_state {
-                    ScanState::Started => {}
+                    ScanState::Started => {
+                        let _ = is_scanning_tx.send(true);
+                    }
                     ScanState::Updated {
                         snapshot,
                         changes,
                         scanning,
                         barrier,
                     } => {
-                        dbg!(snapshot.entries_by_id.lock().await.len());
+                        let _ = snapshot_tx.send(snapshot);
+                        let _ = is_scanning_tx.send(scanning);
+
+                        dbg!(".....");
                     }
                     ScanState::RootUpdated { new_path } => {}
                 }
@@ -553,21 +540,33 @@ impl Worktree {
         });
 
         Ok(Self {
-            snapshot,
-            is_scanning: watch::channel(true),
-            background_tasks: vec![scanner_handle, updater_handle],
+            snapshot: snapshot_rx,
+            scan_requests_tx,
+            is_scanning_rx,
+            _background_tasks: vec![scanner_handle, updater_handle],
         })
+    }
+
+    pub async fn has_changed(&self) -> Result<bool> {
+        let changed = self.snapshot.has_changed()?;
+        Ok(changed)
+    }
+
+    pub async fn snapshot(&self) -> WatchRef<Snapshot> {
+        self.snapshot.borrow()
     }
 }
 
-fn build_diff(
+async fn build_diff(
     phase: BackgroundScannerPhase,
     old_snapshot: &Snapshot,
     new_snapshot: &Snapshot,
     changed_paths: &[PathBuf],
 ) -> UpdatedEntriesSet {
-    let changes: Vec<(PathBuf, EntryId, PathChange)> = Vec::new();
-    Arc::from(changes)
+    dbg!("build_diff");
+    let diffs = Vec::with_capacity(changed_paths.len());
+
+    Arc::from(diffs)
 }
 
 #[cfg(test)]
@@ -588,6 +587,20 @@ mod tests {
         .await
         .unwrap();
 
-        tokio::time::sleep(Duration::from_secs(5)).await;
+        {
+            let mut is_scanning = worktree.is_scanning_rx.clone();
+            while *is_scanning.borrow() {
+                is_scanning.changed().await.unwrap();
+            }
+        }
+
+        let snapshot = worktree.snapshot().await;
+
+        let entries_by_path = snapshot.entries_by_id.lock().await;
+        dbg!("----");
+
+        for (_, entry) in entries_by_path.iter() {
+            dbg!(entry);
+        }
     }
 }
