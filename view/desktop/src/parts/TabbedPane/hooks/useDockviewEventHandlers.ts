@@ -3,7 +3,7 @@ import React from "react";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
-export const useDockviewEventHandlers = (
+export const useTabbedPaneEventHandlers = (
   api: DockviewApi | undefined,
   addLogLine: (message: string) => void,
   setPanels: React.Dispatch<React.SetStateAction<string[]>>,

@@ -24,10 +24,10 @@ import CustomTab from "./CustomTab";
 import DockviewControls from "./DebugComponents/DockviewControls";
 import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
-import { useDockviewDropTarget } from "./hooks/useDockviewDropTarget";
-import { useDockviewEventHandlers } from "./hooks/useDockviewEventHandlers";
+import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
+import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
 import { useDockviewLogger } from "./hooks/useDockviewLogger";
-import { useDockviewResizeObserver } from "./hooks/useDockviewResizeObserver";
+import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
 
@@ -67,9 +67,9 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useDockviewEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
-  useDockviewDropTarget(dockviewRef, setPragmaticDropElement);
-  useDockviewResizeObserver(api, dockviewRefWrapper);
+  useTabbedPaneEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
+  useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
   const { isFetched, data: layout } = useDescribeLayoutPartsState();
