@@ -99,8 +99,10 @@
   --moss-icon-secondary-background-active: var(--moss-gray-11);
 
   /* HeadBar */
-  --moss-headBar-icon-primary-text: var(--moss-gray-4) /* ToggleGroup */
-    --moss-toggleGroup-border-color: var(--moss-gray-11);
+  --moss-headBar-icon-primary-text: var(--moss-gray-4);
+
+  /* ToggleGroup */
+  --moss-toggleGroup-border-color: var(--moss-gray-11);
   --moss-toggleGroup-color: var(--moss-gray-12);
 
   /* StatusBar */
