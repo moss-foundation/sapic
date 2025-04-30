@@ -255,7 +255,7 @@ export const HeadBar = () => {
 
         {/*HeadBar Center items*/}
         <div
-          className="absolute left-1/2 flex h-[26px] -translate-x-1/2 transform items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
+          className="absolute left-1/2 z-60 flex h-[26px] -translate-x-1/2 transform items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
           data-tauri-drag-region
         >
           <IconLabelButton
