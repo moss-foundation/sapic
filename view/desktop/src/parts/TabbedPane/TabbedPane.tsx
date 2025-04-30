@@ -70,27 +70,39 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useDockviewResizeObserver(api, dockviewRefWrapper);
 
   const onReady = (event: DockviewReadyEvent) => {
-    setApi(event.api);
-    try {
-      event.api?.fromJSON(gridState);
-      // If we restored the layout but no panels were added, add the welcome page
-      if (event.api.panels.length === 0) {
-        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
-      }
-    } catch (error) {
-      // Handle the case where the layout can't be restored (e.g., missing component)
-      console.error("Failed to restore layout:", error);
+    // Set API with a small delay to ensure everything is ready
+    setTimeout(() => {
+      try {
+        setApi(event.api);
 
-      // Clear any panels that might have been created
-      // We need to make a copy of the panels array since we're modifying it while iterating
-      const panels = [...event.api.panels];
-      for (const panel of panels) {
-        panel.api.close(); // Use the documented panel.api.close() method
-      }
+        try {
+          event.api?.fromJSON(gridState);
+          // If we restored the layout but no panels were added, add the welcome page
+          if (event.api.panels.length === 0) {
+            event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+          }
+        } catch (error) {
+          // Handle the case where the layout can't be restored (e.g., missing component)
+          console.error("Failed to restore layout:", error);
 
-      // Start with a clean welcome page
-      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
-    }
+          // Clear any panels that might have been created
+          // We need to make a copy of the panels array since we're modifying it while iterating
+          try {
+            const panels = [...event.api.panels];
+            for (const panel of panels) {
+              panel.api.close(); // Use the documented panel.api.close() method
+            }
+          } catch (e) {
+            console.error("Error cleaning up panels:", e);
+          }
+
+          // Start with a clean welcome page
+          event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        }
+      } catch (error) {
+        console.error("Error in TabbedPane onReady:", error);
+      }
+    }, 100);
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {

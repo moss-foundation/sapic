@@ -63,49 +63,32 @@ export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
 
-  const onOpenSettings = () => {
-    const api = useTabbedPaneStore.getState().api;
-    if (api?.getPanel("Settings") !== undefined) {
-      api.getPanel("Settings")?.focus();
-      return;
+  const openPanel = (panelType: string) => {
+    try {
+      // Use setTimeout to prevent race condition during initialization
+      setTimeout(() => {
+        const api = useTabbedPaneStore.getState().api;
+        if (!api) return;
+
+        try {
+          if (api.getPanel(panelType) !== undefined) {
+            api.getPanel(panelType)?.focus();
+            return;
+          }
+
+          api.addPanel({
+            id: panelType,
+            component: panelType,
+            title: panelType,
+            renderer: "onlyWhenVisible",
+          });
+        } catch (error) {
+          console.error(`Error opening ${panelType} panel:`, error);
+        }
+      }, 0);
+    } catch (error) {
+      console.error(`Error in open${panelType}:`, error);
     }
-
-    api?.addPanel({
-      id: "Settings",
-      component: "Settings",
-      title: "Settings",
-      renderer: "onlyWhenVisible",
-    });
-  };
-
-  const onOpenHome = () => {
-    const api = useTabbedPaneStore.getState().api;
-    if (api?.getPanel("Home") !== undefined) {
-      api.getPanel("Home")?.focus();
-      return;
-    }
-
-    api?.addPanel({
-      id: "Home",
-      component: "Home",
-      title: "Home",
-      renderer: "onlyWhenVisible",
-    });
-  };
-
-  const onOpenLogs = () => {
-    const api = useTabbedPaneStore.getState().api;
-    if (api?.getPanel("Logs") !== undefined) {
-      api.getPanel("Logs")?.focus();
-      return;
-    }
-
-    api?.addPanel({
-      id: "Logs",
-      component: "Logs",
-      title: "Logs",
-      renderer: "onlyWhenVisible",
-    });
   };
 
   return (
@@ -147,19 +130,19 @@ export const HeadBar = () => {
           <ActionButton
             icon="HeadBarSettings"
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            onClick={onOpenSettings}
+            onClick={() => openPanel("Settings")}
             title="Settings"
           />
           <ActionButton
             icon="TestHeadBarHome"
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            onClick={onOpenHome}
+            onClick={() => openPanel("Home")}
             title="Home"
           />
           <ActionButton
             icon="TestHeadBarLogs"
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            onClick={onOpenLogs}
+            onClick={() => openPanel("Logs")}
             title="Logs"
           />
           <ActionButton
