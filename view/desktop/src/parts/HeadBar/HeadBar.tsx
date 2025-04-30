@@ -61,6 +61,7 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
 export const HeadBar = () => {
   const os = type();
+  const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
 
   const onOpenSettings = () => {
     const api = useTabbedPaneStore.getState().api;
@@ -73,6 +74,36 @@ export const HeadBar = () => {
       id: "Settings",
       component: "Settings",
       title: "Settings",
+      renderer: "onlyWhenVisible",
+    });
+  };
+
+  const onOpenHome = () => {
+    const api = useTabbedPaneStore.getState().api;
+    if (api?.getPanel("Home") !== undefined) {
+      api.getPanel("Home")?.focus();
+      return;
+    }
+
+    api?.addPanel({
+      id: "Home",
+      component: "Home",
+      title: "Home",
+      renderer: "onlyWhenVisible",
+    });
+  };
+
+  const onOpenLogs = () => {
+    const api = useTabbedPaneStore.getState().api;
+    if (api?.getPanel("Logs") !== undefined) {
+      api.getPanel("Logs")?.focus();
+      return;
+    }
+
+    api?.addPanel({
+      id: "Logs",
+      component: "Logs",
+      title: "Logs",
       renderer: "onlyWhenVisible",
     });
   };
@@ -118,6 +149,24 @@ export const HeadBar = () => {
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
             onClick={onOpenSettings}
             title="Settings"
+          />
+          <ActionButton
+            icon="TestHeadBarHome"
+            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+            onClick={onOpenHome}
+            title="Home"
+          />
+          <ActionButton
+            icon="TestHeadBarLogs"
+            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+            onClick={onOpenLogs}
+            title="Logs"
+          />
+          <ActionButton
+            icon="TestHeadBarDebug"
+            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+            onClick={() => setShowDebugPanels(!showDebugPanels)}
+            title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
           />
         </div>
       </div>

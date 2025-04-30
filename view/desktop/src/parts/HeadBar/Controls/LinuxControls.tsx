@@ -3,7 +3,6 @@ import { useContext, type HTMLProps } from "react";
 
 import { cn } from "@/utils";
 
-import { CommonControls } from "./CommonControls";
 import { ControlButton } from "./ControlButton";
 import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
@@ -21,7 +20,6 @@ export function LinuxControls({ className, ...props }: HTMLProps<HTMLDivElement>
 
   return (
     <div className={cn("mr-2.5 flex h-auto items-center gap-3.25", className)} {...props}>
-      <CommonControls />
       <ControlButton onClick={minimizeWindow} className={linuxControlButtonStyles()}>
         <ControlsIcons.minimizeWin className="size-[9px]" />
       </ControlButton>
