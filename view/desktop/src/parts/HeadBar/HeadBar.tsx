@@ -1,10 +1,11 @@
-import { ActionButton, IconLabelButton, ModeToggle } from "@/components";
+import { ActionButton, IconLabelButton } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
+import { ModeToggle } from "./ModeToggle";
 
 interface PanelToggleButtonsProps {
   className?: string;
