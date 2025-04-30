@@ -40,38 +40,6 @@ export const HeadBar = () => {
         data-tauri-drag-region
       >
         <div className="flex w-full items-center gap-3" data-tauri-drag-region>
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
-              onClick={toggleSidebar}
-              title={sideBarPosition === "left" ? "Toggle Left Sidebar" : "Toggle Bottom Panel"}
-            >
-              <Icon
-                className="size-[18px] text-(--moss-icon-primary-text)"
-                icon={
-                  sideBarPosition === "left"
-                    ? sideBar.visible
-                      ? "HeadBarLeftSideBarActive"
-                      : "HeadBarLeftSideBar"
-                    : sideBar.visible
-                      ? "HeadBarRightSideBarActive"
-                      : "HeadBarRightSideBar"
-                }
-              />
-            </button>
-
-            <button
-              className="hover:background-(--moss-icon-primary-background-hover) flex size-[30px] items-center justify-center rounded text-(--moss-icon-primary-text)"
-              onClick={toggleBottomPane}
-              title="Toggle Bottom Panel"
-            >
-              <Icon
-                className="size-[18px] text-(--moss-icon-primary-text)"
-                icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-              />
-            </button>
-          </div>
-
           {/* Add a draggable area that takes up remaining space */}
           <div className="flex-grow" data-tauri-drag-region></div>
         </div>
@@ -81,7 +49,43 @@ export const HeadBar = () => {
           rightIcon="ChevronDown"
           title="g10z3r"
         />
-        <ActionButton icon="HeadBarSettings" className="" />
+        <div className="flex items-center gap-0">
+          <div className="mr-1 flex shrink-0 -space-x-0.5">
+            {sideBarPosition === "left" ? (
+              <>
+                <ActionButton
+                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+                  icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
+                  onClick={toggleSidebar}
+                  title="Toggle Left Sidebar"
+                />
+                <ActionButton
+                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+                  icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  onClick={toggleBottomPane}
+                  title="Toggle Bottom Panel"
+                />
+              </>
+            ) : (
+              <>
+                <ActionButton
+                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+                  icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
+                  onClick={toggleBottomPane}
+                  title="Toggle Bottom Panel"
+                />
+                <ActionButton
+                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+                  icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
+                  onClick={toggleSidebar}
+                  title="Toggle Right Sidebar"
+                />
+              </>
+            )}
+          </div>
+          <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+          <ActionButton icon="HeadBarSettings" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+        </div>
       </div>
 
       {os !== undefined && os !== "macos" && (os === "windows" || os === "linux") && <Controls os={os} />}
