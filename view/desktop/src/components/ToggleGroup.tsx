@@ -6,7 +6,7 @@ interface ToggleGroupRootProps {
   className?: string;
 }
 
-const toggleGroupStyles = "flex items-center rounded bg-[var(--moss-secondary-background)] overflow-hidden";
+const toggleGroupStyles = "flex items-center rounded bg-[var(--moss-secondary-background)]";
 
 const Root = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -22,7 +22,7 @@ interface ToggleGroupItemProps {
 }
 
 const toggleItemStyles =
-  "group flex h-[28px] px-3 cursor-pointer items-center justify-center text-sm text-[var(--moss-primary-text)] " +
+  "group flex h-[24px] px-3 cursor-pointer items-center justify-center text-md text-[var(--moss-primary-text)]" +
   "data-[state=on]:bg-white data-[state=on]:font-medium " +
   "focus-visible:outline-none " +
   "disabled:cursor-default disabled:opacity-50";
