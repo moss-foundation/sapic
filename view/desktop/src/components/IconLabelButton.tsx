@@ -3,7 +3,7 @@ import { Icon, type Icons } from "@/components";
 import { cn } from "@/utils";
 
 interface IconLabelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  leftIcon: Icons;
+  leftIcon?: Icons;
   rightIcon?: Icons;
   title: string;
   className?: string;
@@ -38,7 +38,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
     return (
       <button ref={ref} className={cn(buttonStyles, className)} {...props}>
         <div className="flex items-center gap-1">
-          <Icon icon={leftIcon} className={cn("size-4", "mr-0.5", leftIconClassName)} />
+          {leftIcon && <Icon icon={leftIcon} className={cn("size-4", "mr-0.5", leftIconClassName)} />}
           <ButtonLabel title={title} className={labelClassName} />
           {rightIcon && <Icon icon={rightIcon} className={cn("size-4", rightIconClassName)} />}
         </div>

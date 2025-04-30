@@ -93,10 +93,9 @@
 
   /* HeadBar */
   --moss-headBar-icon-primary-text: var(--moss-gray-4);
-
-  /* ToggleGroup */
-  --moss-toggleGroup-border-color: var(--moss-gray-11);
-  --moss-toggleGroup-color: var(--moss-gray-12);
+  --moss-headBar-primary-background: var(--moss-gray-12);
+  --moss-headBar-primary-background-hover: var(--moss-gray-11);
+  --moss-headBar-border-color: var(--moss-gray-11);
 
   /* StatusBar */
   --moss-statusBar-icon-primary-text: var(--moss-gray-1);

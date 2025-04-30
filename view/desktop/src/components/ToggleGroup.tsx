@@ -7,7 +7,7 @@ interface ToggleGroupRootProps {
 }
 
 const toggleGroupStyles =
-  "flex items-center rounded bg-[var(--moss-toggleGroup-color)] border border-[var(--moss-toggleGroup-border-color)]";
+  "flex items-center rounded bg-[var(--moss-headBar-primary-background)] border border-[var(--moss-headBar-border-color)]";
 
 const Root = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -25,7 +25,7 @@ interface ToggleGroupItemProps {
 const toggleItemStyles = cn(
   "group flex h-[24px] px-3 cursor-pointer items-center justify-center text-md",
   "text-[var(--moss-not-selected-item-color)]",
-  "data-[state=on]:bg-white data-[state=on]:text-[var(--moss-primary-text)] border-[1.5px] border-[var(--moss-toggleGroup-color)]",
+  "data-[state=on]:bg-white data-[state=on]:text-[var(--moss-primary-text)] border-[1.5px] border-[var(--moss-headBar-primary-background)]",
   "focus-visible:outline-none",
   "disabled:cursor-default disabled:opacity-50"
 );
