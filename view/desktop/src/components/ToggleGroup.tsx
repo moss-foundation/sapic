@@ -6,8 +6,7 @@ interface ToggleGroupRootProps {
   className?: string;
 }
 
-const toggleGroupStyles =
-  "flex items-center rounded bg-[var(--moss-headBar-primary-background)] border border-[var(--moss-headBar-border-color)]";
+const toggleGroupStyles = "flex items-center rounded bg-[var(--moss-headBar-primary-background)]";
 
 const Root = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Root>,

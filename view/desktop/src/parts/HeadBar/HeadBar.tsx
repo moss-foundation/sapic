@@ -63,6 +63,105 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   );
 };
 
+// Collapsible Menu component that shows action buttons or collapses them into a dropdown
+const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels, openPanel }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Toggle the dropdown menu
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // When not in compact mode, show all buttons
+  if (!isCompact) {
+    return (
+      <div className="flex items-center gap-0">
+        <PanelToggleButtons className="mr-1" />
+        <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+        <ActionButton
+          icon="HeadBarSettings"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Settings")}
+          title="Settings"
+        />
+        <ActionButton
+          icon="TestHeadBarHome"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Home")}
+          title="Home"
+        />
+        <ActionButton
+          icon="TestHeadBarLogs"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Logs")}
+          title="Logs"
+        />
+        <ActionButton
+          icon="TestHeadBarDebug"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => setShowDebugPanels(!showDebugPanels)}
+          title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
+        />
+      </div>
+    );
+  }
+
+  // In compact mode, show a dropdown menu
+  return (
+    <div className="relative">
+      <ActionButton
+        icon="ThreeHorizontalDots"
+        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        onClick={toggleMenu}
+        title="More actions"
+      />
+
+      {isMenuOpen && (
+        <div className="absolute top-full right-0 z-50 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
+          <div className="py-1">
+            <button
+              onClick={() => {
+                toggleMenu();
+                openPanel("Settings");
+              }}
+              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
+            >
+              <span className="mr-2">⚙️</span> Settings
+            </button>
+            <button
+              onClick={() => {
+                toggleMenu();
+                openPanel("Home");
+              }}
+              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
+            >
+              <span className="mr-2">🏠</span> Home
+            </button>
+            <button
+              onClick={() => {
+                toggleMenu();
+                openPanel("Logs");
+              }}
+              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
+            >
+              <span className="mr-2">📋</span> Logs
+            </button>
+            <button
+              onClick={() => {
+                toggleMenu();
+                setShowDebugPanels(!showDebugPanels);
+              }}
+              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
+            >
+              <span className="mr-2">🐞</span> {showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
@@ -200,38 +299,15 @@ export const HeadBar = () => {
             className="mr-2"
             compact={isCompact}
           />
-          <ModeToggle className="mr-2" compact={isCompact} />
-          <div className="flex items-center gap-0">
-            <PanelToggleButtons className="mr-1" />
-            <ActionButton
-              icon="HeadBarNotifications"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            />
-            <ActionButton
-              icon="HeadBarSettings"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-              onClick={() => openPanel("Settings")}
-              title="Settings"
-            />
-            <ActionButton
-              icon="TestHeadBarHome"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-              onClick={() => openPanel("Home")}
-              title="Home"
-            />
-            <ActionButton
-              icon="TestHeadBarLogs"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-              onClick={() => openPanel("Logs")}
-              title="Logs"
-            />
-            <ActionButton
-              icon="TestHeadBarDebug"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-              onClick={() => setShowDebugPanels(!showDebugPanels)}
-              title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
-            />
-          </div>
+          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+
+          {/* Replace action buttons with collapsible menu */}
+          <CollapsibleActionMenu
+            isCompact={isCompact}
+            showDebugPanels={showDebugPanels}
+            setShowDebugPanels={setShowDebugPanels}
+            openPanel={openPanel}
+          />
         </div>
       </div>
 
