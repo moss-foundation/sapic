@@ -33,13 +33,6 @@ export function CommonControls() {
         <span className="material-symbols-outlined">home</span>
       </ControlButton>
       <ControlButton
-        onClick={() => onAddPanel("Settings")}
-        className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
-        title={t("settings")}
-      >
-        <span className="material-symbols-outlined">settings</span>
-      </ControlButton>
-      <ControlButton
         onClick={() => onAddPanel("Logs")}
         className="active:background-(--moss-button-icon-color)/[.03] h-full w-[46px] cursor-default rounded-none bg-transparent text-(--moss-button-icon-color)/90 hover:bg-[#0000000d]"
         title={t("logs")}

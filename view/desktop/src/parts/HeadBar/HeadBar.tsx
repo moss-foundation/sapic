@@ -1,5 +1,6 @@
 import { ActionButton, IconLabelButton } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
 
@@ -60,6 +61,21 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 export const HeadBar = () => {
   const os = type();
 
+  const onOpenSettings = () => {
+    const api = useTabbedPaneStore.getState().api;
+    if (api?.getPanel("Settings") !== undefined) {
+      api.getPanel("Settings")?.focus();
+      return;
+    }
+
+    api?.addPanel({
+      id: "Settings",
+      component: "Settings",
+      title: "Settings",
+      renderer: "onlyWhenVisible",
+    });
+  };
+
   return (
     <header
       data-tauri-drag-region
@@ -94,7 +110,12 @@ export const HeadBar = () => {
         <div className="flex items-center gap-0">
           <PanelToggleButtons className="mr-1" />
           <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
-          <ActionButton icon="HeadBarSettings" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+          <ActionButton
+            icon="HeadBarSettings"
+            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+            onClick={onOpenSettings}
+            title="Settings"
+          />
         </div>
       </div>
 
