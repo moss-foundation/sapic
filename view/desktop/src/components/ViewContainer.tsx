@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useDescribeAppState } from "@/hooks";
+import { useDescribeWorkspaceState } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -12,19 +12,18 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
-  const { data: appState } = useDescribeAppState();
   const { api } = useTabbedPaneStore();
 
-  useEffect(() => {
-    if (appState?.lastWorkspace) {
-      const WelcomePanel = api?.getPanel("WelcomePage");
-      if (WelcomePanel) {
-        WelcomePanel.api.close();
-      }
-    }
-  }, [appState?.lastWorkspace, api]);
+  const { isFetched: isWorkspaceStateFetched } = useDescribeWorkspaceState();
 
-  if (!appState?.lastWorkspace) {
+  useEffect(() => {
+    if (isWorkspaceStateFetched) {
+      const WelcomePanel = api?.getPanel("WelcomePage");
+      if (WelcomePanel) WelcomePanel.api.close();
+    }
+  }, [isWorkspaceStateFetched, api]);
+
+  if (!isWorkspaceStateFetched) {
     return (
       <div className="flex h-full flex-col">
         <NoWorkspaceComponent />

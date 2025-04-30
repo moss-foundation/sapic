@@ -76,24 +76,28 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+  };
+
+  React.useEffect(() => {
+    if (!api) return;
 
     try {
       if (layout?.editor) {
-        event.api?.fromJSON(layout.editor);
+        api?.fromJSON(layout.editor);
       } else {
-        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }
     } catch (error) {
       console.error("Failed to restore layout:", error);
 
-      const panels = [...event.api.panels];
+      const panels = [...api.panels];
       for (const panel of panels) {
         panel.api.close();
       }
 
-      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
-  };
+  }, [layout, api]);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;

@@ -1,8 +1,8 @@
+// usePrepareWindow (in the root of the project):
 import { useEffect, useState } from "react";
 
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-
-import { useDescribeWorkspaceState } from "./workspaces/useDescribeWorkspaceState";
+import { useDescribeAppState } from "./appState/useDescribeAppState";
+import { useOpenWorkspace } from "./workspaces/useOpenWorkspace";
 
 export interface WindowPreparationState {
   isPreparing: boolean;
@@ -11,25 +11,18 @@ export interface WindowPreparationState {
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
 
-  const { initialize } = useAppResizableLayoutStore();
-  const { isFetched, data: layout } = useDescribeWorkspaceState();
+  const { isFetched: isAppStateFetched, data: appState } = useDescribeAppState();
+  const { mutate: openWorkspace, isSuccess: isOpenWorkspaceSuccess } = useOpenWorkspace();
 
   useEffect(() => {
-    if (isFetched) setIsPreparing(false);
+    if (!isAppStateFetched) return;
 
-    if (layout) {
-      initialize({
-        sideBar: {
-          width: layout?.sidebar?.preferredSize,
-          visible: layout?.sidebar?.isVisible,
-        },
-        bottomPane: {
-          height: layout?.panel?.preferredSize,
-          visible: layout?.panel?.isVisible,
-        },
-      });
+    if (appState?.lastWorkspace && !isOpenWorkspaceSuccess) {
+      openWorkspace(appState.lastWorkspace);
     }
-  }, [initialize, isFetched, layout]);
+
+    setIsPreparing(false);
+  }, [isAppStateFetched, appState?.lastWorkspace, isOpenWorkspaceSuccess]);
 
   return { isPreparing };
 };

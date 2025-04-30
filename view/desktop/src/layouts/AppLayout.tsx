@@ -3,9 +3,10 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import "@repo/moss-tabs/assets/styles.css";
 
 import { AllotmentHandle } from "allotment";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
+import { useDescribeWorkspaceState } from "@/hooks";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
 import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
@@ -15,11 +16,11 @@ import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {
-  const canUpdatePartState = useRef(false);
-  const numberOfRerenders = useRef(0);
+  const [canUpdatePartState, setCanUpdatePartState] = useState(false);
 
   const { position } = useActivityBarStore();
-  const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
+  const { bottomPane, sideBar, sideBarPosition, initialize } = useAppResizableLayoutStore();
+  const { isFetched: isWorkspaceStateFetched, data: workspaceState } = useDescribeWorkspaceState();
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -29,13 +30,12 @@ export const AppLayout = () => {
 
   useEffect(() => {
     if (!resizableRef.current) return;
-
     resizableRef.current.reset();
   }, [bottomPane, sideBar, sideBarPosition]);
 
   const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
   useEffect(() => {
-    if (!canUpdatePartState.current) return;
+    if (!canUpdatePartState) return;
 
     updateSidebarPartState({
       preferredSize: sideBar.width,
@@ -45,7 +45,7 @@ export const AppLayout = () => {
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
-    if (!canUpdatePartState.current) return;
+    if (!canUpdatePartState) return;
 
     updatePanelPartState({
       preferredSize: bottomPane.height,
@@ -53,14 +53,22 @@ export const AppLayout = () => {
     });
   }, [bottomPane, updatePanelPartState]);
 
-  //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
   useEffect(() => {
-    numberOfRerenders.current++;
+    if (!isWorkspaceStateFetched || !workspaceState) return;
 
-    if (numberOfRerenders.current >= 2) {
-      canUpdatePartState.current = true;
-    }
-  }, []);
+    initialize({
+      sideBar: {
+        width: workspaceState.sidebar?.preferredSize,
+        visible: workspaceState.sidebar?.isVisible,
+      },
+      bottomPane: {
+        height: workspaceState.panel?.preferredSize,
+        visible: workspaceState.panel?.isVisible,
+      },
+    });
+
+    setCanUpdatePartState(true);
+  }, [isWorkspaceStateFetched, workspaceState, initialize]);
 
   return (
     <div className="flex h-full w-full">

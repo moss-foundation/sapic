@@ -1,4 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { useAllowDescribeWorkspaceStore } from "@/store/allowDescribeWorkspace";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
@@ -22,8 +23,11 @@ export const describeWorkspaceState = async () => {
 };
 
 export const useDescribeWorkspaceState = () => {
+  const { allow } = useAllowDescribeWorkspaceStore();
+
   return useQuery({
     queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
     queryFn: describeWorkspaceState,
+    enabled: allow,
   });
 };
