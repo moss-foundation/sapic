@@ -3,6 +3,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
+import { useEffect, useState } from "react";
 
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
@@ -59,9 +60,32 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   );
 };
 
+// Window width threshold for compact mode
+const COMPACT_MODE_THRESHOLD = 860;
+
 export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
+
+  useEffect(() => {
+    // Function to update window dimensions
+    const updateWindowDimensions = () => {
+      const newWidth = window.innerWidth;
+      setWindowWidth(newWidth);
+      setIsCompact(newWidth < COMPACT_MODE_THRESHOLD);
+    };
+
+    // Add event listener
+    window.addEventListener("resize", updateWindowDimensions);
+
+    // Call handler right away so state gets updated with initial window size
+    updateWindowDimensions();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener("resize", updateWindowDimensions);
+  }, []);
 
   const openPanel = (panelType: string) => {
     try {
@@ -172,7 +196,7 @@ export const HeadBar = () => {
             title="g10z3r"
             className="mr-2"
           />
-          <ModeToggle className="mr-2" />
+          <ModeToggle className="mr-2" compact={isCompact} />
           <div className="flex items-center gap-0">
             <PanelToggleButtons className="mr-1" />
             <ActionButton

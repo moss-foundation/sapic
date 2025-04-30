@@ -6,9 +6,15 @@ interface ModeToggleProps {
   defaultValue?: "request" | "design";
   onValueChange?: (value: "request" | "design") => void;
   className?: string;
+  compact?: boolean;
 }
 
-export const ModeToggle: React.FC<ModeToggleProps> = ({ defaultValue = "request", onValueChange, className }) => {
+export const ModeToggle: React.FC<ModeToggleProps> = ({
+  defaultValue = "request",
+  onValueChange,
+  className,
+  compact = false,
+}) => {
   const [value, setValue] = useState<"request" | "design">(defaultValue);
 
   const handleValueChange = (newValue: string) => {
@@ -25,10 +31,10 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ defaultValue = "request"
       onValueChange={handleValueChange}
       className={cn("rounded-sm border border-[var(--moss-border-color)]", className)}
     >
-      <ToggleGroupItem value="request" className="rounded-sm whitespace-nowrap">
+      <ToggleGroupItem value="request" className="rounded-sm whitespace-nowrap" compact={compact}>
         Request-first mode
       </ToggleGroupItem>
-      <ToggleGroupItem value="design" className="rounded-sm whitespace-nowrap">
+      <ToggleGroupItem value="design" className="rounded-sm whitespace-nowrap" compact={compact}>
         Design-first mode
       </ToggleGroupItem>
     </ToggleGroupRoot>

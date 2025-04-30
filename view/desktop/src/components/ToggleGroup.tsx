@@ -20,6 +20,8 @@ Root.displayName = "ToggleGroup.Root";
 
 interface ToggleGroupItemProps {
   className?: string;
+  compact?: boolean;
+  children?: React.ReactNode;
 }
 
 const toggleItemStyles = cn(
@@ -33,8 +35,14 @@ const toggleItemStyles = cn(
 const Item = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Item>,
   ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> & ToggleGroupItemProps
->(({ className, ...props }, ref) => {
-  return <ToggleGroupPrimitive.Item className={cn(toggleItemStyles, className)} {...props} ref={ref} />;
+>(({ className, compact, children, ...props }, ref) => {
+  const displayText = compact && typeof children === "string" ? children.charAt(0) : children;
+
+  return (
+    <ToggleGroupPrimitive.Item className={cn(toggleItemStyles, className)} {...props} ref={ref}>
+      {displayText}
+    </ToggleGroupPrimitive.Item>
+  );
 });
 
 Item.displayName = "ToggleGroup.Item";
