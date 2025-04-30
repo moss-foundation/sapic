@@ -17,7 +17,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
             leftIcon="ToolBarEnvironment"
             rightIcon="ChevronDown"
             title="No environment"
-            labelCustomColor="notSelected"
+            labelClassName="text-[var(--moss-not-selected-item-color)]"
           />
           <ActionButton icon="ToolBarVariables" className="ml-0.5" />
         </>

@@ -90,8 +90,8 @@
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
-  /* StatusBar */
-  --moss-statusBar-icon-primary-text: white;
+  /* HeadBar */
+  --moss-headBar-icon-primary-text: var(--moss-gray-3) /* StatusBar */ --moss-statusBar-icon-primary-text: white;
   --moss-statusBar-icon-secondary-text: #a1a1aa;
   --moss-statusBar-icon-background-hover: rgba(255, 255, 255, 0.1);
 
