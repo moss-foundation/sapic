@@ -242,7 +242,7 @@ export const HeadBar = () => {
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
             title="Menu"
           />
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" compact={isCompact} />
+          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
           <IconLabelButton
             leftIcon="HeadBarVault"
             leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
@@ -263,7 +263,6 @@ export const HeadBar = () => {
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             className="mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="Sapic Test Collection"
-            compact={isCompact}
           />
           <ActionButton
             icon="Reload"
