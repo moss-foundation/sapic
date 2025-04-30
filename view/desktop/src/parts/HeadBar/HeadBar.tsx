@@ -9,7 +9,7 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 
 // Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 860;
+const COMPACT_MODE_THRESHOLD = 1200;
 
 interface PanelToggleButtonsProps {
   className?: string;
@@ -117,7 +117,7 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
       />
 
       {isMenuOpen && (
-        <div className="absolute top-full right-0 z-50 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
+        <div className="absolute top-full right-0 z-30 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
           <div className="py-1">
             <button
               onClick={() => {
@@ -215,7 +215,7 @@ export const HeadBar = () => {
     <header
       data-tauri-drag-region
       className={cn(
-        "header background-(--moss-secondary-background) z-50 grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
+        "header background-(--moss-secondary-background) grid h-full w-screen items-center shadow-[inset_0_-1px_0_0_var(--moss-border-color)]",
         {
           "grid-cols-[max-content_minmax(0px,_1fr)]": os === "macos",
           "grid-cols-[minmax(0px,_1fr)_max-content]": os !== "macos",
@@ -242,7 +242,8 @@ export const HeadBar = () => {
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
             title="Menu"
           />
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
+          <ModeToggle className="z-40 mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" className="z-50" />
           <IconLabelButton
             leftIcon="HeadBarVault"
             leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
@@ -292,7 +293,7 @@ export const HeadBar = () => {
         </div>
 
         {/*HeadBar Right-side items*/}
-        <div className="z-10 ml-auto flex items-center">
+        <div className="ml-auto flex items-center">
           <IconLabelButton
             leftIcon="HeadBarUserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"
@@ -301,7 +302,6 @@ export const HeadBar = () => {
             className="mr-2"
             compact={isCompact}
           />
-          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
 
           {/* Replace action buttons with collapsible menu */}
           <CollapsibleActionMenu
