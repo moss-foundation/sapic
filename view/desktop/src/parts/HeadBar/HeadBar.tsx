@@ -8,6 +8,9 @@ import { useEffect, useState } from "react";
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 
+// Window width threshold for compact mode
+const COMPACT_MODE_THRESHOLD = 860;
+
 interface PanelToggleButtonsProps {
   className?: string;
 }
@@ -59,9 +62,6 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
     </div>
   );
 };
-
-// Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 860;
 
 export const HeadBar = () => {
   const os = type();
@@ -143,11 +143,12 @@ export const HeadBar = () => {
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
             title="Menu"
           />
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
+          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" compact={isCompact} />
           <IconLabelButton
             leftIcon="HeadBarVault"
             leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
             title="Vault"
+            compact={isCompact}
           />
           {/* Add a draggable area that takes up remaining space */}
           <div className="flex-grow" data-tauri-drag-region></div>
@@ -163,6 +164,7 @@ export const HeadBar = () => {
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             className="mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="Sapic Test Collection"
+            compact={isCompact}
           />
           <ActionButton
             icon="Reload"
@@ -184,6 +186,7 @@ export const HeadBar = () => {
             rightIcon="ChevronDown"
             className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
+            compact={isCompact}
           />
         </div>
 
@@ -195,6 +198,7 @@ export const HeadBar = () => {
             rightIcon="ChevronDown"
             title="g10z3r"
             className="mr-2"
+            compact={isCompact}
           />
           <ModeToggle className="mr-2" compact={isCompact} />
           <div className="flex items-center gap-0">

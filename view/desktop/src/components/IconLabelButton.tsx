@@ -10,6 +10,7 @@ interface IconLabelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leftIconClassName?: string;
   rightIconClassName?: string;
   labelClassName?: string;
+  compact?: boolean;
 }
 
 interface LabelProps {
@@ -34,12 +35,25 @@ const ButtonLabel: React.FC<LabelProps> = ({ title, className }) => {
 };
 
 export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProps>(
-  ({ leftIcon, rightIcon, title, className, leftIconClassName, rightIconClassName, labelClassName, ...props }, ref) => {
+  (
+    {
+      leftIcon,
+      rightIcon,
+      title,
+      className,
+      leftIconClassName,
+      rightIconClassName,
+      labelClassName,
+      compact = false,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <button ref={ref} className={cn(buttonStyles, className)} {...props}>
         <div className="flex items-center gap-1">
           {leftIcon && <Icon icon={leftIcon} className={cn("size-4", "mr-0.5", leftIconClassName)} />}
-          <ButtonLabel title={title} className={labelClassName} />
+          {!compact && <ButtonLabel title={title} className={labelClassName} />}
           {rightIcon && <Icon icon={rightIcon} className={cn("size-4", rightIconClassName)} />}
         </div>
       </button>

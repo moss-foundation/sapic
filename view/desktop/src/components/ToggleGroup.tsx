@@ -49,6 +49,5 @@ Item.displayName = "ToggleGroup.Item";
 
 export { Root, Item };
 
-// Export as a namespace
 const ToggleGroup = { Root, Item };
 export default ToggleGroup;
