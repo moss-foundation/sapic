@@ -229,8 +229,8 @@ export const HeadBar = () => {
 
       <div
         className={cn("relative mb-0.5 flex w-full items-center overflow-clip", {
-          "pr-[12px]": os === "macos",
-          "px-[16px]": os === "windows" || os === "linux",
+          "pr-[2px]": os === "macos",
+          "ml-2": os === "windows" || os === "linux",
         })}
         style={{ overflowClipMargin: 4 }}
         data-tauri-drag-region
