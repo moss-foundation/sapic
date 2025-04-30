@@ -72,20 +72,23 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { data: layout } = useDescribeWorkspaceState();
+  const { data: layout, isFetched: isWorkspaceStateFetched, isPending } = useDescribeWorkspaceState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
   };
 
   React.useEffect(() => {
-    if (!api) return;
+    if (!api || isPending) return;
+
+    if (!isWorkspaceStateFetched) {
+      api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      return;
+    }
 
     try {
       if (layout?.editor) {
         api?.fromJSON(layout.editor);
-      } else {
-        api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }
     } catch (error) {
       console.error("Failed to restore layout:", error);
@@ -97,7 +100,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
       api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
-  }, [layout, api]);
+  }, [layout, api, isWorkspaceStateFetched]);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;
@@ -114,14 +117,14 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   };
 
   React.useEffect(() => {
-    if (!api) return;
+    if (!api || !isWorkspaceStateFetched) return;
 
     const event = api.onDidLayoutChange(() => {
       updateEditorPartState(api.toJSON());
     });
 
     return () => event.dispose();
-  }, [api, updateEditorPartState]);
+  }, [api, updateEditorPartState, isWorkspaceStateFetched]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {
