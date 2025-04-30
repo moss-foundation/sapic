@@ -107,6 +107,7 @@ export const HeadBar = () => {
           leftIconClassName="text-(--moss-primary) size-4.5"
           rightIcon="ChevronDown"
           title="g10z3r"
+          className="mr-2"
         />
         <ModeToggle />
         <div className="flex items-center gap-0">

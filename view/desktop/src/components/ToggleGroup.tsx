@@ -22,10 +22,9 @@ interface ToggleGroupItemProps {
 }
 
 const toggleItemStyles =
-  "group flex h-[34px] px-4 cursor-pointer items-center justify-center text-[var(--moss-primary-text)] " +
-  "data-[state=on]:bg-[var(--moss-primary-background)] data-[state=on]:font-medium " +
-  "hover:bg-[var(--moss-icon-primary-background-hover)] " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--moss-primary)] focus-visible:ring-offset-2 " +
+  "group flex h-[28px] px-3 cursor-pointer items-center justify-center text-sm text-[var(--moss-primary-text)] " +
+  "data-[state=on]:bg-white data-[state=on]:font-medium " +
+  "focus-visible:outline-none " +
   "disabled:cursor-default disabled:opacity-50";
 
 const Item = forwardRef<

@@ -25,10 +25,10 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({ defaultValue = "request"
       onValueChange={handleValueChange}
       className={cn("rounded-lg border border-[var(--moss-border-color)]", className)}
     >
-      <ToggleGroupItem value="request" className="rounded-l-lg whitespace-nowrap">
+      <ToggleGroupItem value="request" className="rounded-l-xs whitespace-nowrap">
         Request-first mode
       </ToggleGroupItem>
-      <ToggleGroupItem value="design" className="rounded-r-lg whitespace-nowrap">
+      <ToggleGroupItem value="design" className="rounded-r-xs whitespace-nowrap">
         Design-first mode
       </ToggleGroupItem>
     </ToggleGroupRoot>
