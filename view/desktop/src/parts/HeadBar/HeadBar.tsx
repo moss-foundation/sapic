@@ -131,37 +131,36 @@ export const HeadBar = () => {
 
         {/*HeadBar Center items*/}
         <div
-          className="absolute left-1/2 flex h-[26px] -translate-x-1/2 transform items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)]"
+          className="absolute left-1/2 flex h-[26px] -translate-x-1/2 transform items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
           data-tauri-drag-region
         >
           <IconLabelButton
             leftIcon="HeadBarCollection"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-            className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="Sapic Test Collection"
           />
-          <div className="flex items-center gap-0.5">
-            <ActionButton
-              icon="Reload"
-              iconClassName="text-(--moss-headBar-icon-primary-text)"
-              className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              title="Reload"
-            />
-            <ActionButton
-              icon="ThreeVerticalDots"
-              iconClassName="text-(--moss-headBar-icon-primary-text)"
-              className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              title="Reload"
-            />
-            <Divider />
-            <IconLabelButton
-              leftIcon="HeadBarGit"
-              leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-              rightIcon="ChevronDown"
-              className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              title="main"
-            />
-          </div>
+          <ActionButton
+            icon="Reload"
+            iconClassName="text-(--moss-headBar-icon-primary-text)"
+            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            title="Reload"
+          />
+          <ActionButton
+            icon="ThreeVerticalDots"
+            iconClassName="text-(--moss-headBar-icon-primary-text)"
+            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="mr-[-4px]"
+            title="Reload"
+          />
+          <Divider />
+          <IconLabelButton
+            leftIcon="HeadBarGit"
+            leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            rightIcon="ChevronDown"
+            className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            title="main"
+          />
         </div>
 
         {/*HeadBar Right-side items*/}
