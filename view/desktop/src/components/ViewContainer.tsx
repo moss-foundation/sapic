@@ -1,9 +1,6 @@
-import { useEffect } from "react";
-
 import { useDescribeWorkspaceState } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import CollectionTreeView from "./CollectionTreeView";
 import { Icon } from "./index";
@@ -12,16 +9,8 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
-  const { api } = useTabbedPaneStore();
 
   const { isFetched: isWorkspaceStateFetched } = useDescribeWorkspaceState();
-
-  useEffect(() => {
-    if (isWorkspaceStateFetched) {
-      const WelcomePanel = api?.getPanel("WelcomePage");
-      if (WelcomePanel) WelcomePanel.api.close();
-    }
-  }, [isWorkspaceStateFetched, api]);
 
   if (!isWorkspaceStateFetched) {
     return (

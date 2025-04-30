@@ -72,14 +72,14 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { data: layout, isFetched: isWorkspaceStateFetched, isPending } = useDescribeWorkspaceState();
+  const { data: layout, isFetched: isWorkspaceStateFetched } = useDescribeWorkspaceState();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
   };
 
   React.useEffect(() => {
-    if (!api || isPending) return;
+    if (!api) return;
 
     if (!isWorkspaceStateFetched) {
       api.addPanel({ id: "WelcomePage", component: "Welcome" });
@@ -89,6 +89,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     try {
       if (layout?.editor) {
         api?.fromJSON(layout.editor);
+      } else {
       }
     } catch (error) {
       console.error("Failed to restore layout:", error);
