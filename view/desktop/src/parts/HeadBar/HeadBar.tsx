@@ -109,7 +109,7 @@ export const HeadBar = () => {
           title="g10z3r"
           className="mr-2"
         />
-        <ModeToggle />
+        <ModeToggle className="mr-2" />
         <div className="flex items-center gap-0">
           <PanelToggleButtons className="mr-1" />
           <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
