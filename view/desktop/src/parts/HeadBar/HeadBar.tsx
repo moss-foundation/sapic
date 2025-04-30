@@ -1,13 +1,15 @@
-import { ActionButton, Icon, IconLabelButton } from "@/components";
+import { ActionButton, IconLabelButton } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
 
-export const HeadBar = () => {
-  const os = type();
+interface PanelToggleButtonsProps {
+  className?: string;
+}
 
+const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   const toggleSidebar = () => {
@@ -17,6 +19,46 @@ export const HeadBar = () => {
   const toggleBottomPane = () => {
     bottomPane.setVisible(!bottomPane.visible);
   };
+
+  return (
+    <div className={cn("flex shrink-0 -space-x-0.5", className)}>
+      {sideBarPosition === "left" ? (
+        <>
+          <ActionButton
+            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
+            onClick={toggleSidebar}
+            title="Toggle Left Sidebar"
+          />
+          <ActionButton
+            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
+            onClick={toggleBottomPane}
+            title="Toggle Bottom Panel"
+          />
+        </>
+      ) : (
+        <>
+          <ActionButton
+            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
+            onClick={toggleBottomPane}
+            title="Toggle Bottom Panel"
+          />
+          <ActionButton
+            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
+            onClick={toggleSidebar}
+            title="Toggle Right Sidebar"
+          />
+        </>
+      )}
+    </div>
+  );
+};
+
+export const HeadBar = () => {
+  const os = type();
 
   return (
     <header
@@ -50,39 +92,7 @@ export const HeadBar = () => {
           title="g10z3r"
         />
         <div className="flex items-center gap-0">
-          <div className="mr-1 flex shrink-0 -space-x-0.5">
-            {sideBarPosition === "left" ? (
-              <>
-                <ActionButton
-                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-                  icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-                  onClick={toggleSidebar}
-                  title="Toggle Left Sidebar"
-                />
-                <ActionButton
-                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-                  icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  onClick={toggleBottomPane}
-                  title="Toggle Bottom Panel"
-                />
-              </>
-            ) : (
-              <>
-                <ActionButton
-                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-                  icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-                  onClick={toggleBottomPane}
-                  title="Toggle Bottom Panel"
-                />
-                <ActionButton
-                  iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-                  icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-                  onClick={toggleSidebar}
-                  title="Toggle Right Sidebar"
-                />
-              </>
-            )}
-          </div>
+          <PanelToggleButtons className="mr-1" />
           <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
           <ActionButton icon="HeadBarSettings" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
         </div>

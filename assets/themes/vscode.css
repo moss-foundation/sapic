@@ -92,7 +92,7 @@
   --moss-icon-primary-background-active: #3574f0;
 
   /* HeadBar */
-  --moss-headBar-icon-primary-text: var(--moss-gray-3) /* StatusBar */ --moss-statusBar-icon-primary-text: #d4d4d4;
+  --moss-headBar-icon-primary-text: var(--moss-gray-4) /* StatusBar */ --moss-statusBar-icon-primary-text: #d4d4d4;
   --moss-statusBar-icon-secondary-text: #cccccc;
   --moss-statusBar-icon-background-hover: #3c3c3c;
 

@@ -99,7 +99,7 @@
   --moss-icon-secondary-background-active: var(--moss-gray-11);
 
   /* HeadBar */
-  --moss-headBar-icon-primary-text: var(--moss-gray-3) /* StatusBar */
+  --moss-headBar-icon-primary-text: var(--moss-gray-4) /* StatusBar */
     --moss-statusBar-icon-primary-text: var(--moss-gray-1);
   --moss-statusBar-icon-secondary-text: var(--moss-gray-4);
   --moss-statusBar-icon-background-hover: var(--moss-gray-12);
