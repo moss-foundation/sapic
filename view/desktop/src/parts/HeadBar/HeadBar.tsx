@@ -233,7 +233,10 @@ export const HeadBar = () => {
         data-tauri-drag-region
       >
         {/*HeadBar Left-side items*/}
-        <div className="z-10 flex items-center gap-3" data-tauri-drag-region>
+        <div
+          className={isCompact ? "z-10 flex items-center gap-0" : "z-10 flex items-center gap-3"}
+          data-tauri-drag-region
+        >
           <ActionButton
             icon="HeadBarWindowsMenu"
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
