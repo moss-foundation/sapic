@@ -176,13 +176,10 @@ export const HeadBar = () => {
       setIsCompact(newWidth < COMPACT_MODE_THRESHOLD);
     };
 
-    // Add event listener
     window.addEventListener("resize", updateWindowDimensions);
 
-    // Call handler right away so state gets updated with initial window size
     updateWindowDimensions();
 
-    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", updateWindowDimensions);
   }, []);
 
@@ -229,8 +226,8 @@ export const HeadBar = () => {
 
       <div
         className={cn("relative mb-0.5 flex w-full items-center overflow-clip", {
-          "pr-[2px]": os === "macos",
-          "ml-2": os === "windows" || os === "linux",
+          "mr-2 pr-[8px]": os === "macos",
+          "ml-2 pr-[8px]": os === "windows" || os === "linux",
         })}
         style={{ overflowClipMargin: 4 }}
         data-tauri-drag-region
@@ -261,7 +258,11 @@ export const HeadBar = () => {
           <IconLabelButton
             leftIcon="HeadBarCollection"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-            className="mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className={
+              isCompact
+                ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+                : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            }
             title="Sapic Test Collection"
           />
           <ActionButton
@@ -284,7 +285,6 @@ export const HeadBar = () => {
             rightIcon="ChevronDown"
             className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
-            compact={isCompact}
           />
         </div>
 
