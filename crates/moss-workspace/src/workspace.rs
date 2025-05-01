@@ -10,7 +10,12 @@ use moss_environment::environment::{Environment, EnvironmentCache, VariableCache
 use moss_fs::{utils::decode_name, FileSystem};
 use moss_storage::{workspace_storage::WorkspaceStorageImpl, WorkspaceStorage};
 use moss_workbench::activity_indicator::ActivityIndicator;
-use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    future::Future,
+    path::PathBuf,
+    sync::{atomic::AtomicUsize, Arc},
+};
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{mpsc, OnceCell, RwLock};
 
@@ -34,6 +39,7 @@ pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     activity_indicator: ActivityIndicator<R>,
     indexer_handle: IndexerHandle,
+    next_entry_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -66,6 +72,7 @@ impl<R: TauriRuntime> Workspace<R> {
             environments: OnceCell::new(),
             indexer_handle,
             activity_indicator,
+            next_entry_id: Arc::new(AtomicUsize::new(0)),
         })
     }
 
@@ -165,8 +172,12 @@ impl<R: TauriRuntime> Workspace<R> {
                     // TODO: implement is_external flag for relative/absolute path
 
                     let full_path = self.path.join(relative_path);
-                    let collection =
-                        Collection::new(full_path, self.fs.clone(), self.indexer_handle.clone())?;
+                    let collection = Collection::new(
+                        full_path,
+                        self.fs.clone(),
+                        self.indexer_handle.clone(),
+                        self.next_entry_id.clone(),
+                    )?;
                     let metadata = CollectionCache {
                         name,
                         order: collection_data.order,

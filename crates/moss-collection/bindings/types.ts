@@ -71,6 +71,8 @@ export type RequestNodeInfo =
 
 export type RequestProtocol = { "http": HttpMethod } | "webSocket" | "graphQL" | "grpc";
 
+export type UnitType = "endpoint | endpoints" | "Request" | "Case" | "Schema" | "Component";
+
 export type UrlEncodedItem = {
   key: string;
   value: string;

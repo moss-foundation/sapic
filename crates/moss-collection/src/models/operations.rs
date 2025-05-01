@@ -1,11 +1,18 @@
 use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::types::{
-    HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
+use crate::models::{
+    primitives::EntryId,
+    types::{
+        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
+        UnitType,
+    },
 };
 
 /// All the path and file names passed in the input should be unencoded.
@@ -116,3 +123,19 @@ pub struct RenameRequestGroupOutput {
     pub key: ResourceKey,
     pub affected_items: Vec<ResourceKey>,
 }
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct EntryInfo {
+    pub id: EntryId,
+    pub path: PathBuf,
+}
+
+pub struct ListUnitsInput(pub Vec<&'static str>);
+
+pub struct ListUnitsOutput(pub HashMap<UnitType, HashMap<ResourceKey, EntryInfo>>);
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListEntriesEvent(pub Vec<EntryInfo>);

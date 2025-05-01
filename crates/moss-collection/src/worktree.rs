@@ -7,7 +7,6 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 use std::os::unix::fs::MetadataExt;
 use std::path::Path;
-use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
 use std::{
     path::PathBuf,
@@ -22,6 +21,12 @@ use tokio::sync::{
     Mutex,
 };
 use tokio::task::JoinHandle;
+
+use crate::models::primitives::EntryId;
+use crate::models::types::UnitType;
+
+const ROOT_PATH: &str = "";
+const POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 struct ScanRequest {
     relative_paths: Vec<PathBuf>,
@@ -38,28 +43,6 @@ pub enum PathChange {
 }
 
 #[derive(Debug, Clone)]
-pub enum UnitType {
-    Endpoint,
-    Request,
-    Case,
-    Schema,
-    Component,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct EntryId(usize);
-
-impl EntryId {
-    pub fn new(counter: &AtomicUsize) -> Self {
-        Self(counter.fetch_add(1, SeqCst))
-    }
-
-    pub fn to_usize(&self) -> usize {
-        self.0
-    }
-}
-
-#[derive(Debug, Clone)]
 pub enum EntryKind {
     Unit,
     PendingDir,
@@ -69,13 +52,13 @@ pub enum EntryKind {
 }
 
 #[derive(Debug, Clone)]
-pub struct Entry {
-    id: EntryId,
-    path: PathBuf,
-    kind: EntryKind,
-    unit_type: Option<UnitType>,
-    mtime: Option<SystemTime>,
-    inode: u64,
+pub(crate) struct Entry {
+    pub id: EntryId,
+    pub path: Arc<Path>,
+    pub kind: EntryKind,
+    pub unit_type: Option<UnitType>,
+    pub mtime: Option<SystemTime>,
+    pub inode: u64,
 }
 
 impl Entry {
@@ -83,29 +66,70 @@ impl Entry {
         matches!(self.kind, EntryKind::Dir | EntryKind::PendingDir)
     }
 
-    pub fn path(&self) -> &PathBuf {
+    pub fn path(&self) -> &Arc<Path> {
         &self.path
     }
 }
 
-#[derive(Clone)]
-pub struct Snapshot {
+pub(crate) struct Snapshot {
     scan_id: usize,
-    abs_path: PathBuf,
-    entries_by_id: Arc<Mutex<BPlusTreeMap<EntryId, Entry>>>,
-    entries_by_path: Arc<Mutex<BPlusTreeMap<PathBuf, EntryId>>>,
+    abs_path: Arc<Path>,
+    entries_by_id: BPlusTreeMap<EntryId, Arc<Entry>>,
+    entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
+}
+
+impl Clone for Snapshot {
+    fn clone(&self) -> Self {
+        let entries_by_id =
+            BPlusTreeMap::from_iter(self.entries_by_id.iter().map(|(&k, v)| (k, v.clone())));
+
+        let entries_by_path = BPlusTreeMap::from_iter(
+            self.entries_by_path
+                .iter()
+                .map(|(&ref k, v)| (k.clone(), v.clone())),
+        );
+
+        Self {
+            scan_id: self.scan_id.clone(),
+            abs_path: self.abs_path.clone(),
+            entries_by_id,
+            entries_by_path,
+        }
+    }
 }
 
 impl Snapshot {
-    pub async fn root_entry(&self) -> Option<Entry> {
-        self.entry_by_path("").await
+    pub async fn entries(&self) -> impl Iterator<Item = (&EntryId, &Arc<Entry>)> {
+        self.entries_by_id.iter()
     }
 
-    async fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
+    pub fn count_files(&self) -> usize {
+        self.entries_by_path.len()
+    }
+
+    pub fn entries_by_prefix<'a>(
+        &'a self,
+        prefix: &'a Path,
+    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<Entry>)> + 'a {
+        dbg!(self.entries_by_path.len());
+        dbg!(&self.abs_path);
+
+        self.entries_by_path
+            .iter()
+            .skip_while(move |(p, _)| !p.starts_with(prefix))
+            .take_while(move |(p, _)| p.starts_with(prefix))
+            .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
+    }
+
+    pub fn root_entry(&self) -> Option<Arc<Entry>> {
+        self.entry_by_path(ROOT_PATH)
+    }
+
+    fn ancestor_inodes_for_path(&self, path: &Path) -> HashSet<u64> {
         let mut inodes = HashSet::new();
 
         for ancestor in path.ancestors().skip(1) {
-            if let Some(entry) = self.entry_by_path(ancestor).await {
+            if let Some(entry) = self.entry_by_path(ancestor) {
                 inodes.insert(entry.inode);
             }
         }
@@ -113,14 +137,12 @@ impl Snapshot {
         inodes
     }
 
-    async fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Entry> {
+    fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Arc<Entry>> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        let entries_by_path = self.entries_by_path.lock().await;
-        let entry_id = entries_by_path.get(path)?;
-        let entries_by_id = self.entries_by_id.lock().await;
-        entries_by_id.get(entry_id).cloned()
+        let entry_id = self.entries_by_path.get(path)?;
+        self.entries_by_id.get(entry_id).cloned()
     }
 }
 
@@ -147,8 +169,8 @@ pub enum BackgroundScannerPhase {
 
 #[derive(Debug)]
 struct ScanJob {
-    abs_path: PathBuf,
-    path: PathBuf,
+    abs_path: Arc<Path>,
+    path: Arc<Path>,
     scan_queue: UnboundedSender<ScanJob>,
     ancestor_inodes: HashSet<u64>,
 }
@@ -158,7 +180,7 @@ pub struct BackgroundScannerState {
     pub scan_id: usize,
     pub snapshot: Snapshot,
     pub prev_snapshot: Snapshot,
-    pub changed_paths: Vec<PathBuf>,
+    pub changed_paths: Vec<Arc<Path>>,
     pub scanned_dirs: HashSet<EntryId>,
     pub removed_entries: HashMap<u64, Entry>,
 }
@@ -166,17 +188,17 @@ pub struct BackgroundScannerState {
 impl BackgroundScannerState {
     async fn enqueue_scan_dir(
         &self,
-        abs_path: PathBuf,
+        abs_path: Arc<Path>,
         entry: &Entry,
         scan_job_tx: &UnboundedSender<ScanJob>,
     ) {
-        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path).await;
+        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path);
         if !ancestor_inodes.contains(&entry.inode) {
             ancestor_inodes.insert(entry.inode);
             scan_job_tx
                 .send(ScanJob {
                     abs_path,
-                    path: entry.path.clone(),
+                    path: Arc::clone(&entry.path),
                     scan_queue: scan_job_tx.clone(),
                     ancestor_inodes,
                 })
@@ -190,7 +212,7 @@ impl BackgroundScannerState {
                 if removed_entry.mtime == Some(mtime) || removed_entry.path == entry.path {
                     entry.id = removed_entry.id;
                 }
-            } else if let Some(existing_entry) = self.snapshot.entry_by_path(&entry.path).await {
+            } else if let Some(existing_entry) = self.snapshot.entry_by_path(&entry.path) {
                 entry.id = existing_entry.id;
             }
         }
@@ -203,21 +225,22 @@ impl BackgroundScannerState {
 
     async fn populate_dir(
         &mut self,
-        parent_path: &PathBuf,
+        parent_path: &Arc<Path>,
         entries: impl IntoIterator<Item = Entry>,
     ) {
         dbg!("populate_dir");
         dbg!(parent_path);
-        let mut parent_entry =
-            if let Some(parent_entry) = self.snapshot.entry_by_path(parent_path).await {
-                parent_entry.clone()
-            } else {
-                println!(
-                    "populating a directory {:?} that has been removed",
-                    parent_path
-                );
-                return;
-            };
+
+        let mut parent_entry = if let Some(parent_entry) = self.snapshot.entry_by_path(parent_path)
+        {
+            (*parent_entry).clone()
+        } else {
+            println!(
+                "populating a directory {:?} that has been removed",
+                parent_path
+            );
+            return;
+        };
 
         match parent_entry.kind {
             EntryKind::PendingDir | EntryKind::UnloadedDir => parent_entry.kind = EntryKind::Dir,
@@ -228,15 +251,20 @@ impl BackgroundScannerState {
         let parent_entry_id = parent_entry.id;
         self.scanned_dirs.insert(parent_entry_id);
 
-        let mut entries_by_id = self.snapshot.entries_by_id.lock().await;
-        let mut entries_by_path = self.snapshot.entries_by_path.lock().await;
-
-        entries_by_path.insert(parent_entry.path.clone(), parent_entry.id);
-        entries_by_id.insert(parent_entry.id, parent_entry);
+        self.snapshot
+            .entries_by_path
+            .insert(parent_entry.path.clone(), parent_entry.id);
+        self.snapshot
+            .entries_by_id
+            .insert(parent_entry.id, Arc::new(parent_entry));
 
         for entry in entries {
-            entries_by_path.insert(entry.path.clone(), entry.id);
-            entries_by_id.insert(entry.id, entry);
+            self.snapshot
+                .entries_by_path
+                .insert(entry.path.clone(), entry.id);
+            self.snapshot
+                .entries_by_id
+                .insert(entry.id, Arc::new(entry));
         }
 
         if let Err(ix) = self.changed_paths.binary_search(parent_path) {
@@ -264,7 +292,7 @@ impl BackgroundScanner {
 
             state.scan_id += 1;
 
-            if let Some(root_entry) = state.snapshot.root_entry().await {
+            if let Some(root_entry) = state.snapshot.root_entry() {
                 state
                     .enqueue_scan_dir(root_abs_path, &root_entry, &scan_job_tx)
                     .await;
@@ -294,6 +322,7 @@ impl BackgroundScanner {
 
     async fn send_status_update(&self, scanning: bool, barrier: Vec<Barrier>) -> bool {
         let mut state = self.state.lock().await;
+
         // if state.changed_paths.is_empty() && scanning {
         //     return true;
         // }
@@ -342,7 +371,7 @@ impl BackgroundScanner {
     async fn scan_dirs(&mut self, mut scan_job_rx: UnboundedReceiver<ScanJob>) {
         self.status_updates_tx.send(ScanState::Started).unwrap(); // FIXME: Handle errors
 
-        let mut progress = tokio::time::interval(Duration::from_millis(100));
+        let mut progress = tokio::time::interval(POLL_INTERVAL);
         loop {
             tokio::select! {
                 // maybe_scan_req = self.next_scan_request().fuse() => {}
@@ -372,9 +401,9 @@ impl BackgroundScanner {
         }
 
         for child_entry in child_paths {
-            let child_abs_path = child_entry.path();
+            let child_abs_path: Arc<Path> = child_entry.path().into();
             let child_name = child_abs_path.file_name().unwrap();
-            let child_path = job.path.join(child_name);
+            let child_path: Arc<Path> = job.path.join(child_name).into();
 
             let child_metadata = match tokio::fs::metadata(&child_abs_path).await {
                 Ok(metadata) => metadata,
@@ -386,7 +415,7 @@ impl BackgroundScanner {
 
             let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
-                path: child_path.clone(),
+                path: child_path,
                 kind: if child_metadata.is_dir() {
                     EntryKind::PendingDir
                 } else {
@@ -406,7 +435,7 @@ impl BackgroundScanner {
 
                     new_jobs.push(Some(ScanJob {
                         abs_path: child_abs_path.clone(),
-                        path: child_path,
+                        path: Arc::clone(&child_entry.path),
                         scan_queue: job.scan_queue.clone(),
                         ancestor_inodes,
                     }));
@@ -446,7 +475,7 @@ impl BackgroundScanner {
     }
 }
 
-pub struct Worktree {
+pub(crate) struct Worktree {
     snapshot: watch::Receiver<Snapshot>,
     scan_requests_tx: UnboundedSender<ScanRequest>,
     is_scanning_rx: watch::Receiver<bool>,
@@ -456,7 +485,7 @@ pub struct Worktree {
 impl Worktree {
     pub async fn new(
         fs: Arc<dyn FileSystem>,
-        root_abs_path: PathBuf,
+        root_abs_path: Arc<Path>,
         next_entry_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
         let (scan_states_tx, mut scan_states_rx) = mpsc::unbounded_channel();
@@ -466,7 +495,7 @@ impl Worktree {
             let metadata = tokio::fs::metadata(&root_abs_path).await?;
             Entry {
                 id: EntryId::new(&next_entry_id),
-                path: PathBuf::new(),
+                path: Arc::from(PathBuf::from(ROOT_PATH)),
                 kind: EntryKind::PendingDir,
                 unit_type: None,
                 mtime: Some(metadata.modified().unwrap()),
@@ -476,21 +505,15 @@ impl Worktree {
 
         let initial_snapshot = Snapshot {
             scan_id: 0,
-            abs_path: root_abs_path.clone(),
-            entries_by_path: Arc::new(Mutex::new(BPlusTreeMap::from_iter([(
-                root_entry.path().clone(),
-                root_entry.id,
-            )]))),
-            entries_by_id: Arc::new(Mutex::new(BPlusTreeMap::from_iter([(
-                root_entry.id,
-                root_entry,
-            )]))),
+            abs_path: Arc::from(root_abs_path.clone()),
+            entries_by_path: BPlusTreeMap::from_iter([(root_entry.path().clone(), root_entry.id)]),
+            entries_by_id: BPlusTreeMap::from_iter([(root_entry.id, Arc::new(root_entry))]),
         };
 
         let (snapshot_tx, snapshot_rx) = watch::channel(initial_snapshot.clone());
         let (is_scanning_tx, is_scanning_rx) = watch::channel(true);
 
-        let (fs_events, watcher) = fs.watch(root_abs_path, Duration::from_millis(100))?;
+        let (fs_events, watcher) = fs.watch(&root_abs_path, Duration::from_millis(100))?;
         let fs_clone = fs.clone();
 
         let scanner_handle: JoinHandle<()> = tokio::spawn(async move {
@@ -552,6 +575,13 @@ impl Worktree {
     }
 
     pub async fn snapshot(&self) -> WatchRef<Snapshot> {
+        {
+            let mut is_scanning = self.is_scanning_rx.clone();
+            while *is_scanning.borrow() {
+                is_scanning.changed().await.unwrap();
+            }
+        }
+
         self.snapshot.borrow()
     }
 }
@@ -560,7 +590,7 @@ async fn build_diff(
     phase: BackgroundScannerPhase,
     old_snapshot: &Snapshot,
     new_snapshot: &Snapshot,
-    changed_paths: &[PathBuf],
+    changed_paths: &[Arc<Path>],
 ) -> UpdatedEntriesSet {
     // TODO: Implement this
     dbg!("build_diff");
@@ -581,11 +611,17 @@ mod tests {
 
         let worktree = Worktree::new(
             fs,
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests"),
+            Arc::from(
+                PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                    .join("tests")
+                    .join("TestCollection"),
+            ),
             Arc::new(AtomicUsize::new(0)),
         )
         .await
         .unwrap();
+
+        // worktree.snapshot()
 
         {
             let mut is_scanning = worktree.is_scanning_rx.clone();
@@ -596,11 +632,16 @@ mod tests {
 
         let snapshot = worktree.snapshot().await;
 
-        let entries_by_path = snapshot.entries_by_id.lock().await;
         dbg!("----");
 
-        for (_, entry) in entries_by_path.iter() {
+        for (_, entry) in snapshot.entries_by_id.iter() {
             dbg!(entry);
+        }
+
+        dbg!("----");
+
+        for (path, _) in snapshot.entries_by_path.iter() {
+            dbg!(path);
         }
     }
 }

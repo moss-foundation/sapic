@@ -53,6 +53,7 @@ impl<R: TauriRuntime> Workspace<R> {
             full_path.clone(),
             self.fs.clone(),
             self.indexer_handle.clone(),
+            self.next_entry_id.clone(),
         )?;
         let metadata = CollectionCache {
             name: input.name.clone(),

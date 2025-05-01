@@ -46,4 +46,6 @@ export type ListRequestsOutput = Array<RequestNodeInfo>;
 
 export type RenameRequestGroupInput = { key: ResourceKey; newName: string };
 
+export type RenameRequestGroupOutput = { key: ResourceKey; affectedItems: Array<ResourceKey> };
+
 export type RenameRequestInput = { key: ResourceKey; newName: string };

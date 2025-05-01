@@ -5,6 +5,7 @@ use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_collection_name;
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
@@ -42,7 +43,13 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
         });
     }
 
-    let collection = Collection::new(collection_path.clone(), fs, indexer_handle).unwrap();
+    let collection_path_test = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("TestCollection");
+
+    let next_entry_id = Arc::new(AtomicUsize::new(0));
+    let collection =
+        Collection::new(collection_path_test, fs, indexer_handle, next_entry_id).unwrap();
 
     (collection_path, collection)
 }
