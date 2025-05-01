@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { describeLayoutPartsState } from "@/lib/backend/workspace";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+
+import { useDescribeWorkspaceState } from "./workspaces/useDescribeWorkspaceState";
 
 export interface WindowPreparationState {
   isPreparing: boolean;
@@ -11,25 +11,14 @@ export interface WindowPreparationState {
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
 
-  const hasOpenedWorkspace = useRef(false);
-
-  const { initialize: initializeResizableLayout } = useAppResizableLayoutStore();
-  const { setGridState } = useTabbedPaneStore();
+  const { initialize } = useAppResizableLayoutStore();
+  const { isFetched, data: layout } = useDescribeWorkspaceState();
 
   useEffect(() => {
-    const initializeWorkspace = async () => {
-      const layout = await describeLayoutPartsState();
+    if (isFetched) setIsPreparing(false);
 
-      if (layout === undefined) {
-        setIsPreparing(false);
-        return;
-      }
-
-      if (layout?.editor) {
-        setGridState(layout.editor);
-      }
-
-      initializeResizableLayout({
+    if (layout) {
+      initialize({
         sideBar: {
           width: layout?.sidebar?.preferredSize,
           visible: layout?.sidebar?.isVisible,
@@ -39,18 +28,8 @@ export const usePrepareWindow = (): WindowPreparationState => {
           visible: layout?.panel?.isVisible,
         },
       });
-
-      setIsPreparing(false);
-    };
-
-    // Running this on mount ensures that the workspace is called only once
-    // open_workspace will throw an error if previous request is still pending
-    // The error usually happens in strict mode
-    if (!hasOpenedWorkspace.current) {
-      hasOpenedWorkspace.current = true;
-      initializeWorkspace();
     }
-  }, []);
+  }, [initialize, isFetched, layout]);
 
   return { isPreparing };
 };

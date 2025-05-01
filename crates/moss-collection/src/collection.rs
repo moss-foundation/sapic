@@ -17,6 +17,7 @@ use crate::constants::*;
 use crate::indexer::{
     IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
 };
+use crate::worktree::Worktree;
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -26,6 +27,7 @@ pub struct CollectionCache {
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
+    worktree: OnceCell<Worktree>,
     abs_path: PathBuf,
     collection_storage: Arc<dyn CollectionStorage>,
     registry: OnceCell<CollectionRegistry>,
@@ -47,6 +49,7 @@ impl Collection {
             fs: Arc::clone(&fs),
             abs_path: path,
             registry: OnceCell::new(),
+            worktree: OnceCell::new(),
             collection_storage: Arc::new(state_db_manager_impl),
             indexer_handle,
         })

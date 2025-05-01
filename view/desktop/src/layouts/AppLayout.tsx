@@ -6,6 +6,8 @@ import { AllotmentHandle } from "allotment";
 import { useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
+import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
+import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 
@@ -13,6 +15,9 @@ import { Resizable, ResizablePanel } from "../components/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {
+  const canUpdatePartState = useRef(false);
+  const numberOfRerenders = useRef(0);
+
   const { position } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
 
@@ -27,6 +32,35 @@ export const AppLayout = () => {
 
     resizableRef.current.reset();
   }, [bottomPane, sideBar, sideBarPosition]);
+
+  const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
+  useEffect(() => {
+    if (!canUpdatePartState.current) return;
+
+    updateSidebarPartState({
+      preferredSize: sideBar.width,
+      isVisible: sideBar.visible,
+    });
+  }, [sideBar, updateSidebarPartState]);
+
+  const { mutate: updatePanelPartState } = useUpdatePanelPartState();
+  useEffect(() => {
+    if (!canUpdatePartState.current) return;
+
+    updatePanelPartState({
+      preferredSize: bottomPane.height,
+      isVisible: bottomPane.visible,
+    });
+  }, [bottomPane, updatePanelPartState]);
+
+  //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
+  useEffect(() => {
+    numberOfRerenders.current++;
+
+    if (numberOfRerenders.current >= 2) {
+      canUpdatePartState.current = true;
+    }
+  }, []);
 
   return (
     <div className="flex h-full w-full">

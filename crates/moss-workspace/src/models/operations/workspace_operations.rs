@@ -107,7 +107,7 @@ pub struct OpenCollectionOutput {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DescribeLayoutPartsStateOutput {
+pub struct DescribeStateOutput {
     #[ts(optional)]
     pub editor: Option<EditorPartState>,
     #[ts(optional)]
@@ -119,11 +119,8 @@ pub struct DescribeLayoutPartsStateOutput {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct SetLayoutPartsStateInput {
-    #[ts(optional)]
-    pub editor: Option<EditorPartState>,
-    #[ts(optional)]
-    pub sidebar: Option<SidebarPartState>,
-    #[ts(optional)]
-    pub panel: Option<PanelPartState>,
+pub enum UpdateStateInput {
+    UpdateEditorPartState(EditorPartState),
+    UpdateSidebarPartState(SidebarPartState),
+    UpdatePanelPartState(PanelPartState),
 }

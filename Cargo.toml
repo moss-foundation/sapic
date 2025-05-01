@@ -50,6 +50,8 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 
+async-stream = "0.3.6"
+notify = "8.0"
 redb = "2.4.0"
 tauri = { version = "2.2.5", default-features = false }
 rand = { version = "0.9.0", features = ["thread_rng"] }
@@ -101,3 +103,4 @@ xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
+sweep-bptree = "0.4.1"

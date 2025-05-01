@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { MockViews, Views } from "./mockData";
+import { MockViews, Views } from "../mockData";
 import { USE_VIEW_GROUPS_QUERY_KEY } from "./useGetViewGroups";
 
 export const USE_CHANGE_VIEW_GROUPS_MUTATION_KEY = "changeViewGroups";

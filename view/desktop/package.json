@@ -32,6 +32,7 @@
     "@repo/moss-theme": "workspace:*",
     "@repo/moss-workbench": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
+    "@tanstack/react-pacer": "^0.2.0",
     "@tanstack/react-query": "^5.67.1",
     "@tanstack/react-query-devtools": "^5.67.1",
     "@tauri-apps/api": "^2",

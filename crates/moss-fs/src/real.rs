@@ -1,6 +1,19 @@
 use anyhow::{anyhow, Result};
-use std::{io, path::Path};
-use tokio::{fs::ReadDir, io::AsyncWriteExt};
+use async_stream::stream;
+use futures::{stream::BoxStream, StreamExt};
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use std::{
+    io,
+    path::{Path, PathBuf},
+    time::Duration,
+};
+use tokio::{
+    fs::ReadDir,
+    io::AsyncWriteExt,
+    sync::mpsc,
+    time::{self, Instant},
+};
+use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
@@ -94,5 +107,56 @@ impl FileSystem for RealFileSystem {
 
     async fn read_dir(&self, path: &Path) -> Result<ReadDir> {
         Ok(tokio::fs::read_dir(path).await?)
+    }
+
+    fn watch(
+        &self,
+        path: PathBuf,
+        latency: Duration,
+    ) -> Result<(
+        BoxStream<'static, Vec<notify::Event>>,
+        notify::RecommendedWatcher,
+    )> {
+        let (tx, rx) = mpsc::unbounded_channel();
+        let mut watcher: RecommendedWatcher = RecommendedWatcher::new(
+            move |result| {
+                if let Ok(event) = result {
+                    let _ = tx.send(event);
+                }
+            },
+            Config::default(),
+        )?;
+
+        watcher.watch(&path, RecursiveMode::Recursive)?;
+
+        let mut stream_rx = UnboundedReceiverStream::new(rx);
+        let stream = stream! {
+            let mut buffer = Vec::new();
+
+            while let Some(first) = stream_rx.next().await {
+                buffer.push(first);
+
+                // timer that resets on every new event
+                let timer = time::sleep(latency);
+                tokio::pin!(timer);
+
+                loop {
+                    tokio::select! {
+                        maybe_evt = stream_rx.next() => match maybe_evt {
+                            Some(evt) => {
+                                buffer.push(evt);
+                                timer.as_mut().reset(Instant::now() + latency);
+                            }
+                            None => break, // upstream closed
+                        },
+                        () = &mut timer => break, // silence reached
+                    }
+                }
+
+                yield std::mem::take(&mut buffer);
+            }
+        };
+
+        Ok((stream.boxed(), watcher))
     }
 }

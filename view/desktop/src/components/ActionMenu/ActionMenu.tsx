@@ -1,8 +1,9 @@
+import { cva } from "class-variance-authority";
 import React from "react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+
 import { Icon, Icons } from "@/components/Icon";
 import { cn } from "@/utils";
-import { cva } from "class-variance-authority";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 // Types
 export type MenuItemType =
@@ -93,7 +94,7 @@ const menuItemStyles = cva(
   }
 );
 
-const labelStyles = "truncate max-w-[200px] text-md text-(--moss-primary-text)";
+const labelStyles = "truncate max-w-[200px] text-(--moss-primary-text)";
 
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -168,7 +169,7 @@ const MenuLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenu.Label
     ref={ref}
-    className={cn("text-md px-3 py-2 text-center font-medium text-(--moss-text-primary)", className)}
+    className={cn("px-3 py-2 text-center font-medium text-(--moss-text-primary)", className)}
     {...props}
   />
 ));
@@ -180,7 +181,7 @@ const MenuSectionLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenu.Label
     ref={ref}
-    className={cn("text-md px-3 py-1 font-medium text-(--moss-not-selected-item-color)", className)}
+    className={cn("px-3 py-1 font-medium text-(--moss-not-selected-item-color)", className)}
     {...props}
   />
 ));
@@ -193,7 +194,7 @@ const MenuFooter = React.forwardRef<
   <DropdownMenu.Label
     ref={ref}
     className={cn(
-      "text-md -mx-1 -my-1.5 mt-2 rounded-b-lg bg-(--moss-secondary-background) px-5 py-1.5 text-(--moss-not-selected-item-color)",
+      "-mx-1 -my-1.5 mt-2 rounded-b-lg bg-(--moss-secondary-background) px-5 py-1.5 text-(--moss-not-selected-item-color)",
       className
     )}
     {...props}
@@ -280,8 +281,8 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
 };
 
 // Helper component for menu item trailing elements
-const MenuItemTrailing = ({ shortcut }: { shortcut?: string }) => (
-  <>{shortcut && <span className="text-md ml-4 text-(--moss-not-selected-item-color)">{shortcut}</span>}</>
+const MenuItemTrailing = ({ shortcut }: { count?: number; shortcut?: string }) => (
+  <>{shortcut && <span className="ml-4 text-(--moss-not-selected-item-color)">{shortcut}</span>}</>
 );
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({
