@@ -12,7 +12,7 @@ import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadB
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
 // Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 860;
+const COMPACT_MODE_THRESHOLD = 1000;
 
 interface HeadBarLeftItemsProps {
   isCompact: boolean;
@@ -22,6 +22,7 @@ interface HeadBarLeftItemsProps {
   workspaceMenuOpen: boolean;
   setWorkspaceMenuOpen: (open: boolean) => void;
   handleWorkspaceMenuAction: (action: string) => void;
+  os: string | null;
 }
 
 const HeadBarLeftItems = ({
@@ -32,6 +33,7 @@ const HeadBarLeftItems = ({
   workspaceMenuOpen,
   setWorkspaceMenuOpen,
   handleWorkspaceMenuAction,
+  os,
 }: HeadBarLeftItemsProps) => {
   return (
     <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
@@ -50,7 +52,9 @@ const HeadBarLeftItems = ({
           handleWindowsMenuAction(item.id);
         }}
       />
-      <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+      {(os === "windows" || os === "linux") && (
+        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+      )}
       <ActionMenu
         items={workspaceMenuItems}
         trigger={<IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />}
@@ -157,6 +161,7 @@ interface HeadBarRightItemsProps {
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
+  os: string | null;
 }
 
 const HeadBarRightItems = ({
@@ -167,6 +172,7 @@ const HeadBarRightItems = ({
   showDebugPanels,
   setShowDebugPanels,
   openPanel,
+  os,
 }: HeadBarRightItemsProps) => {
   return (
     <div className="flex items-center">
@@ -188,6 +194,10 @@ const HeadBarRightItems = ({
           handleUserMenuAction(item.id);
         }}
       />
+
+      {os === "macos" && (
+        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+      )}
 
       <CollapsibleActionMenu
         isCompact={isCompact}
@@ -313,6 +323,7 @@ export const HeadBar = () => {
             workspaceMenuOpen={workspaceMenuOpen}
             setWorkspaceMenuOpen={setWorkspaceMenuOpen}
             handleWorkspaceMenuAction={handleWorkspaceMenuAction}
+            os={os}
           />
 
           {/*HeadBar Center items*/}
@@ -335,6 +346,7 @@ export const HeadBar = () => {
             showDebugPanels={showDebugPanels}
             setShowDebugPanels={setShowDebugPanels}
             openPanel={openPanel}
+            os={os}
           />
         </div>
       </div>
