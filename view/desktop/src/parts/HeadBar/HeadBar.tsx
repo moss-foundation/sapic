@@ -8,7 +8,7 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
-import { userMenuItems } from "./mockHeadBarData";
+import { userMenuItems, gitBranchMenuItems } from "./mockHeadBarData";
 
 // Window width threshold for compact mode
 const COMPACT_MODE_THRESHOLD = 860;
@@ -39,9 +39,17 @@ const HeadBarLeftItems = ({ isCompact }: HeadBarLeftItemsProps) => {
 
 interface HeadBarCenterItemsProps {
   isCompact: boolean;
+  gitMenuOpen: boolean;
+  setGitMenuOpen: (open: boolean) => void;
+  handleGitMenuAction: (action: string) => void;
 }
 
-const HeadBarCenterItems = ({ isCompact }: HeadBarCenterItemsProps) => {
+const HeadBarCenterItems = ({
+  isCompact,
+  gitMenuOpen,
+  setGitMenuOpen,
+  handleGitMenuAction,
+}: HeadBarCenterItemsProps) => {
   return (
     <div
       className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
@@ -68,15 +76,25 @@ const HeadBarCenterItems = ({ isCompact }: HeadBarCenterItemsProps) => {
         iconClassName="text-(--moss-headBar-icon-primary-text)"
         customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
         className="mr-[-4px]"
-        title="Reload"
+        title="Options"
       />
       <Divider />
-      <IconLabelButton
-        leftIcon="HeadBarGit"
-        leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
-        rightIcon="ChevronDown"
-        className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-        title="main"
+      <ActionMenu
+        items={gitBranchMenuItems}
+        trigger={
+          <IconLabelButton
+            leftIcon="HeadBarGit"
+            leftIconClassName="text-(--moss-headBar-icon-primary-text)"
+            rightIcon="ChevronDown"
+            className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            title="main"
+          />
+        }
+        open={gitMenuOpen}
+        onOpenChange={setGitMenuOpen}
+        onSelect={(item) => {
+          handleGitMenuAction(item.id);
+        }}
       />
     </div>
   );
@@ -137,6 +155,7 @@ export const HeadBar = () => {
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [gitMenuOpen, setGitMenuOpen] = useState(false);
 
   useEffect(() => {
     // Function to update window dimensions
@@ -186,6 +205,12 @@ export const HeadBar = () => {
     // Here you would handle different user actions like profile, settings, logout, etc.
   };
 
+  // Handle git menu actions
+  const handleGitMenuAction = (action: string) => {
+    console.log(`Git action: ${action}`);
+    // Here you would handle different git actions like branch switching, pull, push, etc.
+  };
+
   return (
     <header
       data-tauri-drag-region
@@ -213,7 +238,12 @@ export const HeadBar = () => {
           <HeadBarLeftItems isCompact={isCompact} />
 
           {/*HeadBar Center items*/}
-          <HeadBarCenterItems isCompact={isCompact} />
+          <HeadBarCenterItems
+            isCompact={isCompact}
+            gitMenuOpen={gitMenuOpen}
+            setGitMenuOpen={setGitMenuOpen}
+            handleGitMenuAction={handleGitMenuAction}
+          />
 
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
