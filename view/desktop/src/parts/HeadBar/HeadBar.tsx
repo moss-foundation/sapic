@@ -9,7 +9,7 @@ import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadBarData";
-import { collectionActionMenuItems } from "./HeadBarData";
+import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
 // Window width threshold for compact mode
 const COMPACT_MODE_THRESHOLD = 860;
@@ -19,6 +19,9 @@ interface HeadBarLeftItemsProps {
   windowsMenuOpen: boolean;
   setWindowsMenuOpen: (open: boolean) => void;
   handleWindowsMenuAction: (action: string) => void;
+  workspaceMenuOpen: boolean;
+  setWorkspaceMenuOpen: (open: boolean) => void;
+  handleWorkspaceMenuAction: (action: string) => void;
 }
 
 const HeadBarLeftItems = ({
@@ -26,6 +29,9 @@ const HeadBarLeftItems = ({
   windowsMenuOpen,
   setWindowsMenuOpen,
   handleWindowsMenuAction,
+  workspaceMenuOpen,
+  setWorkspaceMenuOpen,
+  handleWorkspaceMenuAction,
 }: HeadBarLeftItemsProps) => {
   return (
     <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
@@ -45,7 +51,15 @@ const HeadBarLeftItems = ({
         }}
       />
       <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
-      <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
+      <ActionMenu
+        items={workspaceMenuItems}
+        trigger={<IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />}
+        open={workspaceMenuOpen}
+        onOpenChange={setWorkspaceMenuOpen}
+        onSelect={(item) => {
+          handleWorkspaceMenuAction(item.id);
+        }}
+      />
       <IconLabelButton
         leftIcon="HeadBarVault"
         leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
@@ -193,6 +207,7 @@ export const HeadBar = () => {
   const [gitMenuOpen, setGitMenuOpen] = useState(false);
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
 
   useEffect(() => {
     // Function to update window dimensions
@@ -260,6 +275,12 @@ export const HeadBar = () => {
     // Here you would handle different collection actions
   };
 
+  // Handle workspace menu actions
+  const handleWorkspaceMenuAction = (action: string) => {
+    console.log(`Workspace action: ${action}`);
+    // Here you would handle different workspace actions
+  };
+
   return (
     <header
       data-tauri-drag-region
@@ -289,6 +310,9 @@ export const HeadBar = () => {
             windowsMenuOpen={windowsMenuOpen}
             setWindowsMenuOpen={setWindowsMenuOpen}
             handleWindowsMenuAction={handleWindowsMenuAction}
+            workspaceMenuOpen={workspaceMenuOpen}
+            setWorkspaceMenuOpen={setWorkspaceMenuOpen}
+            handleWorkspaceMenuAction={handleWorkspaceMenuAction}
           />
 
           {/*HeadBar Center items*/}
