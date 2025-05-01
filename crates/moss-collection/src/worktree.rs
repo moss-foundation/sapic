@@ -5,7 +5,6 @@ use moss_fs::FileSystem;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::mem;
-use std::os::unix::fs::MetadataExt;
 use std::path::Path;
 use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
@@ -22,6 +21,11 @@ use tokio::sync::{
     Mutex,
 };
 use tokio::task::JoinHandle;
+
+#[cfg(unix)]
+use std::os::unix::fs::MetadataExt;
+#[cfg(windows)]
+use std::os::windows::fs::MetadataExt;
 
 struct ScanRequest {
     relative_paths: Vec<PathBuf>,
@@ -384,6 +388,11 @@ impl BackgroundScanner {
                 }
             };
 
+            #[cfg(unix)]
+            let inode = child_metadata.ino();
+            #[cfg(windows)]
+            let inode = 0; // FIXME: child_metadata.file_index();
+
             let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
                 path: child_path.clone(),
@@ -394,7 +403,7 @@ impl BackgroundScanner {
                 },
                 unit_type: None,
                 mtime: Some(child_metadata.modified().unwrap()),
-                inode: child_entry.ino(),
+                inode,
             };
 
             if child_entry.is_dir() {
@@ -464,13 +473,19 @@ impl Worktree {
 
         let root_entry = {
             let metadata = tokio::fs::metadata(&root_abs_path).await?;
+
+            #[cfg(unix)]
+            let root_inode = metadata.ino();
+            #[cfg(windows)]
+            let root_inode = 0; // FIXME: metadata.file_index();
+
             Entry {
                 id: EntryId::new(&next_entry_id),
                 path: PathBuf::new(),
                 kind: EntryKind::PendingDir,
                 unit_type: None,
                 mtime: Some(metadata.modified().unwrap()),
-                inode: metadata.ino(),
+                inode: root_inode,
             }
         };
 
