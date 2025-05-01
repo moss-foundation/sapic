@@ -2,7 +2,8 @@ import { ActionButton, Divider, IconLabelButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useResponsive } from "@/hooks/useResponsive";
 
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
@@ -11,11 +12,9 @@ import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadBarData";
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
-// Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 1000;
-
 interface HeadBarLeftItemsProps {
   isCompact: boolean;
+  breakpoint: string;
   windowsMenuOpen: boolean;
   setWindowsMenuOpen: (open: boolean) => void;
   handleWindowsMenuAction: (action: string) => void;
@@ -27,6 +26,7 @@ interface HeadBarLeftItemsProps {
 
 const HeadBarLeftItems = ({
   isCompact,
+  breakpoint,
   windowsMenuOpen,
   setWindowsMenuOpen,
   handleWindowsMenuAction,
@@ -38,7 +38,14 @@ const HeadBarLeftItems = ({
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
   return (
-    <div className={isCompact ? "flex items-center gap-1" : "flex items-center gap-3"} data-tauri-drag-region>
+    <div
+      className={cn("flex items-center", {
+        "gap-1": ["xs", "sm"].includes(breakpoint),
+        "gap-2": breakpoint === "md",
+        "gap-3": ["lg", "xl", "2xl"].includes(breakpoint),
+      })}
+      data-tauri-drag-region
+    >
       {isWindowsOrLinux && (
         <>
           <ActionMenu
@@ -83,6 +90,7 @@ const HeadBarLeftItems = ({
 
 interface HeadBarCenterItemsProps {
   isCompact: boolean;
+  breakpoint: string;
   gitMenuOpen: boolean;
   setGitMenuOpen: (open: boolean) => void;
   handleGitMenuAction: (action: string) => void;
@@ -162,6 +170,7 @@ const HeadBarCenterItems = ({
 
 interface HeadBarRightItemsProps {
   isCompact: boolean;
+  breakpoint: string;
   userMenuOpen: boolean;
   setUserMenuOpen: (open: boolean) => void;
   handleUserMenuAction: (action: string) => void;
@@ -219,26 +228,12 @@ const HeadBarRightItems = ({
 export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
-  const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
+  const { isMedium, isLarge, breakpoint } = useResponsive();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [gitMenuOpen, setGitMenuOpen] = useState(false);
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
-
-  useEffect(() => {
-    // Function to update window dimensions
-    const updateWindowDimensions = () => {
-      const newWidth = window.innerWidth;
-      setIsCompact(newWidth < COMPACT_MODE_THRESHOLD);
-    };
-
-    window.addEventListener("resize", updateWindowDimensions);
-
-    updateWindowDimensions();
-
-    return () => window.removeEventListener("resize", updateWindowDimensions);
-  }, []);
 
   const openPanel = (panelType: string) => {
     try {
@@ -326,7 +321,8 @@ export const HeadBar = () => {
         <div className="flex w-full items-center justify-between" data-tauri-drag-region>
           {/*HeadBar Left-side items*/}
           <HeadBarLeftItems
-            isCompact={isCompact}
+            isCompact={isLarge}
+            breakpoint={breakpoint}
             windowsMenuOpen={windowsMenuOpen}
             setWindowsMenuOpen={setWindowsMenuOpen}
             handleWindowsMenuAction={handleWindowsMenuAction}
@@ -338,7 +334,8 @@ export const HeadBar = () => {
 
           {/*HeadBar Center items*/}
           <HeadBarCenterItems
-            isCompact={isCompact}
+            isCompact={isMedium}
+            breakpoint={breakpoint}
             gitMenuOpen={gitMenuOpen}
             setGitMenuOpen={setGitMenuOpen}
             handleGitMenuAction={handleGitMenuAction}
@@ -349,7 +346,8 @@ export const HeadBar = () => {
 
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
-            isCompact={isCompact}
+            isCompact={isMedium}
+            breakpoint={breakpoint}
             userMenuOpen={userMenuOpen}
             setUserMenuOpen={setUserMenuOpen}
             handleUserMenuAction={handleUserMenuAction}
