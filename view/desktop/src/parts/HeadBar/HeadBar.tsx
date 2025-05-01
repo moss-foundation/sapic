@@ -13,7 +13,7 @@ import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadB
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
 interface HeadBarLeftItemsProps {
-  isCompact: boolean;
+  isLarge: boolean;
   breakpoint: string;
   windowsMenuOpen: boolean;
   setWindowsMenuOpen: (open: boolean) => void;
@@ -25,7 +25,7 @@ interface HeadBarLeftItemsProps {
 }
 
 const HeadBarLeftItems = ({
-  isCompact,
+  isLarge,
   breakpoint,
   windowsMenuOpen,
   setWindowsMenuOpen,
@@ -63,7 +63,7 @@ const HeadBarLeftItems = ({
               handleWindowsMenuAction(item.id);
             }}
           />
-          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
         </>
       )}
       <ActionMenu
@@ -82,14 +82,15 @@ const HeadBarLeftItems = ({
         leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
         title="Vault"
         className="h-[24px]"
-        compact={isCompact}
+        compact={isLarge}
       />
     </div>
   );
 };
 
 interface HeadBarCenterItemsProps {
-  isCompact: boolean;
+  isMedium: boolean;
+  isXLarge: boolean;
   breakpoint: string;
   gitMenuOpen: boolean;
   setGitMenuOpen: (open: boolean) => void;
@@ -100,7 +101,8 @@ interface HeadBarCenterItemsProps {
 }
 
 const HeadBarCenterItems = ({
-  isCompact,
+  isMedium,
+  isXLarge,
   gitMenuOpen,
   setGitMenuOpen,
   handleGitMenuAction,
@@ -110,14 +112,17 @@ const HeadBarCenterItems = ({
 }: HeadBarCenterItemsProps) => {
   return (
     <div
-      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)]"
+      className={cn(
+        "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)]",
+        isXLarge ? "" : "absolute left-1/2 -translate-x-1/2 transform"
+      )}
       data-tauri-drag-region
     >
       <IconLabelButton
         leftIcon="HeadBarCollection"
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
-          isCompact
+          isMedium
             ? "mr-[3px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             : "mr-[30px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
@@ -169,7 +174,7 @@ const HeadBarCenterItems = ({
 };
 
 interface HeadBarRightItemsProps {
-  isCompact: boolean;
+  isMedium: boolean;
   breakpoint: string;
   userMenuOpen: boolean;
   setUserMenuOpen: (open: boolean) => void;
@@ -181,7 +186,7 @@ interface HeadBarRightItemsProps {
 }
 
 const HeadBarRightItems = ({
-  isCompact,
+  isMedium,
   userMenuOpen,
   setUserMenuOpen,
   handleUserMenuAction,
@@ -201,7 +206,7 @@ const HeadBarRightItems = ({
             rightIcon="ChevronDown"
             title="g10z3r"
             className="mr-2 h-[24px]"
-            compact={isCompact}
+            compact={isMedium}
           />
         }
         open={userMenuOpen}
@@ -212,11 +217,11 @@ const HeadBarRightItems = ({
       />
 
       {os === "macos" && (
-        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isMedium} />
       )}
 
       <CollapsibleActionMenu
-        isCompact={isCompact}
+        isCompact={isMedium}
         showDebugPanels={showDebugPanels}
         setShowDebugPanels={setShowDebugPanels}
         openPanel={openPanel}
@@ -228,7 +233,7 @@ const HeadBarRightItems = ({
 export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
-  const { isMedium, isLarge, breakpoint } = useResponsive();
+  const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [gitMenuOpen, setGitMenuOpen] = useState(false);
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
@@ -321,7 +326,7 @@ export const HeadBar = () => {
         <div className="flex w-full items-center justify-between" data-tauri-drag-region>
           {/*HeadBar Left-side items*/}
           <HeadBarLeftItems
-            isCompact={isLarge}
+            isLarge={isLarge}
             breakpoint={breakpoint}
             windowsMenuOpen={windowsMenuOpen}
             setWindowsMenuOpen={setWindowsMenuOpen}
@@ -334,7 +339,8 @@ export const HeadBar = () => {
 
           {/*HeadBar Center items*/}
           <HeadBarCenterItems
-            isCompact={isMedium}
+            isMedium={isMedium}
+            isXLarge={isXLarge}
             breakpoint={breakpoint}
             gitMenuOpen={gitMenuOpen}
             setGitMenuOpen={setGitMenuOpen}
@@ -346,7 +352,7 @@ export const HeadBar = () => {
 
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
-            isCompact={isMedium}
+            isMedium={isMedium}
             breakpoint={breakpoint}
             userMenuOpen={userMenuOpen}
             setUserMenuOpen={setUserMenuOpen}
