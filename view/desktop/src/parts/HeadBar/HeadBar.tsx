@@ -8,22 +8,41 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
-import { userMenuItems, gitBranchMenuItems } from "./mockHeadBarData";
+import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadBarData";
+import { collectionActionMenuItems } from "./HeadBarData";
 
 // Window width threshold for compact mode
 const COMPACT_MODE_THRESHOLD = 860;
 
 interface HeadBarLeftItemsProps {
   isCompact: boolean;
+  windowsMenuOpen: boolean;
+  setWindowsMenuOpen: (open: boolean) => void;
+  handleWindowsMenuAction: (action: string) => void;
 }
 
-const HeadBarLeftItems = ({ isCompact }: HeadBarLeftItemsProps) => {
+const HeadBarLeftItems = ({
+  isCompact,
+  windowsMenuOpen,
+  setWindowsMenuOpen,
+  handleWindowsMenuAction,
+}: HeadBarLeftItemsProps) => {
   return (
     <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
-      <ActionButton
-        icon="HeadBarWindowsMenu"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-        title="Menu"
+      <ActionMenu
+        items={windowsMenuItems}
+        trigger={
+          <ActionButton
+            icon="HeadBarWindowsMenu"
+            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+            title="Menu"
+          />
+        }
+        open={windowsMenuOpen}
+        onOpenChange={setWindowsMenuOpen}
+        onSelect={(item) => {
+          handleWindowsMenuAction(item.id);
+        }}
       />
       <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
       <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
@@ -42,6 +61,9 @@ interface HeadBarCenterItemsProps {
   gitMenuOpen: boolean;
   setGitMenuOpen: (open: boolean) => void;
   handleGitMenuAction: (action: string) => void;
+  collectionActionMenuOpen: boolean;
+  setCollectionActionMenuOpen: (open: boolean) => void;
+  handleCollectionActionMenuAction: (action: string) => void;
 }
 
 const HeadBarCenterItems = ({
@@ -49,6 +71,9 @@ const HeadBarCenterItems = ({
   gitMenuOpen,
   setGitMenuOpen,
   handleGitMenuAction,
+  collectionActionMenuOpen,
+  setCollectionActionMenuOpen,
+  handleCollectionActionMenuAction,
 }: HeadBarCenterItemsProps) => {
   return (
     <div
@@ -71,12 +96,22 @@ const HeadBarCenterItems = ({
         customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
         title="Reload"
       />
-      <ActionButton
-        icon="ThreeVerticalDots"
-        iconClassName="text-(--moss-headBar-icon-primary-text)"
-        customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-        className="mr-[-4px]"
-        title="Options"
+      <ActionMenu
+        items={collectionActionMenuItems}
+        trigger={
+          <ActionButton
+            icon="ThreeVerticalDots"
+            iconClassName="text-(--moss-headBar-icon-primary-text)"
+            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="mr-[-4px]"
+            title="Collection Actions"
+          />
+        }
+        open={collectionActionMenuOpen}
+        onOpenChange={setCollectionActionMenuOpen}
+        onSelect={(item) => {
+          handleCollectionActionMenuAction(item.id);
+        }}
       />
       <Divider />
       <ActionMenu
@@ -156,6 +191,8 @@ export const HeadBar = () => {
   const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [gitMenuOpen, setGitMenuOpen] = useState(false);
+  const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
+  const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
 
   useEffect(() => {
     // Function to update window dimensions
@@ -211,6 +248,18 @@ export const HeadBar = () => {
     // Here you would handle different git actions like branch switching, pull, push, etc.
   };
 
+  // Handle Windows menu actions
+  const handleWindowsMenuAction = (action: string) => {
+    console.log(`Windows menu action: ${action}`);
+    // Here you would handle different Windows menu actions
+  };
+
+  // Handle collection action menu actions
+  const handleCollectionActionMenuAction = (action: string) => {
+    console.log(`Collection action: ${action}`);
+    // Here you would handle different collection actions
+  };
+
   return (
     <header
       data-tauri-drag-region
@@ -235,7 +284,12 @@ export const HeadBar = () => {
         {/* Main content container with proper layout */}
         <div className="flex w-full items-center justify-between" data-tauri-drag-region>
           {/*HeadBar Left-side items*/}
-          <HeadBarLeftItems isCompact={isCompact} />
+          <HeadBarLeftItems
+            isCompact={isCompact}
+            windowsMenuOpen={windowsMenuOpen}
+            setWindowsMenuOpen={setWindowsMenuOpen}
+            handleWindowsMenuAction={handleWindowsMenuAction}
+          />
 
           {/*HeadBar Center items*/}
           <HeadBarCenterItems
@@ -243,6 +297,9 @@ export const HeadBar = () => {
             gitMenuOpen={gitMenuOpen}
             setGitMenuOpen={setGitMenuOpen}
             handleGitMenuAction={handleGitMenuAction}
+            collectionActionMenuOpen={collectionActionMenuOpen}
+            setCollectionActionMenuOpen={setCollectionActionMenuOpen}
+            handleCollectionActionMenuAction={handleCollectionActionMenuAction}
           />
 
           {/*HeadBar Right-side items*/}
