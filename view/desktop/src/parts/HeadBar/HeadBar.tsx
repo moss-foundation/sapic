@@ -200,6 +200,7 @@ export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     // Function to update window dimensions
@@ -241,6 +242,12 @@ export const HeadBar = () => {
     } catch (error) {
       console.error(`Error in open${panelType}:`, error);
     }
+  };
+
+  // Handle user menu actions
+  const handleUserMenuAction = (action: string) => {
+    console.log(`User action: ${action}`);
+    // Here you would handle different user actions like profile, settings, logout, etc.
   };
 
   return (
@@ -323,13 +330,74 @@ export const HeadBar = () => {
 
           {/*HeadBar Right-side items*/}
           <div className="flex items-center">
-            <IconLabelButton
-              leftIcon="HeadBarUserAvatar"
-              leftIconClassName="text-(--moss-primary) size-4.5"
-              rightIcon="ChevronDown"
-              title="g10z3r"
-              className="mr-2"
-              compact={isCompact}
+            <ActionMenu
+              items={[
+                {
+                  id: "user-profile",
+                  type: "action" as const,
+                  label: "Profile",
+                  icon: "HeadBarUserAvatar" as Icons,
+                },
+                {
+                  id: "user-settings",
+                  type: "action" as const,
+                  label: "User Settings",
+                  icon: "HeadBarSettings" as Icons,
+                },
+                {
+                  id: "separator",
+                  type: "separator" as const,
+                },
+                {
+                  id: "status",
+                  type: "submenu" as const,
+                  label: "Status",
+                  icon: "TestHeadBarLogs" as Icons,
+                  items: [
+                    {
+                      id: "status-online",
+                      type: "action" as const,
+                      label: "Online",
+                      icon: "CheckboxIndicator" as Icons,
+                    },
+                    {
+                      id: "status-away",
+                      type: "action" as const,
+                      label: "Away",
+                    },
+                    {
+                      id: "status-do-not-disturb",
+                      type: "action" as const,
+                      label: "Do Not Disturb",
+                    },
+                  ],
+                },
+                {
+                  id: "separator-2",
+                  type: "separator" as const,
+                },
+                {
+                  id: "logout",
+                  type: "action" as const,
+                  label: "Log Out",
+                  variant: "danger",
+                },
+              ]}
+              trigger={
+                <IconLabelButton
+                  leftIcon="HeadBarUserAvatar"
+                  leftIconClassName="text-(--moss-primary) size-4.5"
+                  rightIcon="ChevronDown"
+                  title="g10z3r"
+                  className="mr-2"
+                  compact={isCompact}
+                />
+              }
+              open={userMenuOpen}
+              onOpenChange={setUserMenuOpen}
+              onSelect={(item) => {
+                handleUserMenuAction(item.id);
+              }}
             />
 
             <CollapsibleActionMenu
