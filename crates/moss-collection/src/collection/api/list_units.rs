@@ -11,7 +11,7 @@ use crate::{
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 impl Collection {
-    pub async fn list_entries(
+    pub async fn list_entries_by_prefixes(
         &self,
         on_event: Channel<ListEntriesEvent>,
         input: ListUnitsInput,

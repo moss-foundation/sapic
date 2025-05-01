@@ -132,9 +132,9 @@ pub struct EntryInfo {
     pub path: PathBuf,
 }
 
+#[derive(Debug, Serialize, TS)]
+#[ts(export, export_to = "operations.ts")]
 pub struct ListUnitsInput(pub Vec<&'static str>);
-
-pub struct ListUnitsOutput(pub HashMap<UnitType, HashMap<ResourceKey, EntryInfo>>);
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]

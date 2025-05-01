@@ -39,7 +39,7 @@ async fn test() {
     });
 
     let _ = collection
-        .list_entries(on_event, ListUnitsInput(variants))
+        .list_entries_by_prefixes(on_event, ListUnitsInput(variants))
         .await;
 
     tokio::time::sleep(Duration::from_secs(3)).await;
