@@ -117,7 +117,7 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
       />
 
       {isMenuOpen && (
-        <div className="absolute top-full right-0 z-30 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
+        <div className="absolute top-full right-0 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
           <div className="py-1">
             <button
               onClick={() => {
@@ -233,17 +233,14 @@ export const HeadBar = () => {
         data-tauri-drag-region
       >
         {/*HeadBar Left-side items*/}
-        <div
-          className={isCompact ? "z-10 flex items-center gap-0" : "z-10 flex items-center gap-3"}
-          data-tauri-drag-region
-        >
+        <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
           <ActionButton
             icon="HeadBarWindowsMenu"
             iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
             title="Menu"
           />
-          <ModeToggle className="z-40 mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" className="z-50" />
+          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
           <IconLabelButton
             leftIcon="HeadBarVault"
             leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
@@ -256,7 +253,9 @@ export const HeadBar = () => {
 
         {/*HeadBar Center items*/}
         <div
-          className="absolute left-1/2 z-60 flex h-[26px] -translate-x-1/2 transform items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
+          className={`flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1 ${
+            isCompact ? "relative mx-auto" : "absolute left-1/2 -translate-x-1/2 transform"
+          }`}
           data-tauri-drag-region
         >
           <IconLabelButton
