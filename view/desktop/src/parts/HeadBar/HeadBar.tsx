@@ -37,21 +37,23 @@ const HeadBarLeftItems = ({
 }: HeadBarLeftItemsProps) => {
   return (
     <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
-      <ActionMenu
-        items={windowsMenuItems}
-        trigger={
-          <ActionButton
-            icon="HeadBarWindowsMenu"
-            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            title="Menu"
-          />
-        }
-        open={windowsMenuOpen}
-        onOpenChange={setWindowsMenuOpen}
-        onSelect={(item) => {
-          handleWindowsMenuAction(item.id);
-        }}
-      />
+      {os === "windows" && (
+        <ActionMenu
+          items={windowsMenuItems}
+          trigger={
+            <ActionButton
+              icon="HeadBarWindowsMenu"
+              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+              title="Menu"
+            />
+          }
+          open={windowsMenuOpen}
+          onOpenChange={setWindowsMenuOpen}
+          onSelect={(item) => {
+            handleWindowsMenuAction(item.id);
+          }}
+        />
+      )}
       {(os === "windows" || os === "linux") && (
         <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
       )}
