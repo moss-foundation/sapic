@@ -439,13 +439,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             />
             <span className={cn("flex flex-grow items-center", labelStyles)}>
               {item.label}
-              <span className="ml-1 rounded-full bg-(--moss-secondary-background) px-1.5 py-0.5 text-xs text-(--moss-not-selected-item-color)">
-                {itemsCount}
-              </span>
+              <span className="ml-1 text-(--moss-not-selected-item-color)">{itemsCount}</span>
             </span>
           </MenuItem>
 
-          {isExpanded && <div>{item.items.map(renderMenuItem)}</div>}
+          {isExpanded && <div className="pl-3">{item.items.map(renderMenuItem)}</div>}
         </div>
       );
     }
