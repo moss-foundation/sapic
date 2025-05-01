@@ -145,7 +145,7 @@ export const workspaceMenuItems: MenuItemProps[] = [
   },
   {
     id: "all-workspaces",
-    type: "section",
+    type: "action",
     label: "All Workspaces",
     icon: "TreeChevronRight",
     count: 5,
