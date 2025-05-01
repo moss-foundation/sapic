@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
 
 // Window width threshold for compact mode
 const COMPACT_MODE_THRESHOLD = 1000;
@@ -67,6 +68,7 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
 const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels, openPanel }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   // When not in compact mode, show all buttons
   if (!isCompact) {
@@ -108,33 +110,62 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
       items={[
         {
           id: "notifications",
-          type: "action",
+          type: "action" as const,
           label: "Notifications",
-          icon: "HeadBarNotifications",
+          icon: "HeadBarNotifications" as Icons,
         },
+        ...(sideBarPosition === "left"
+          ? [
+              {
+                id: "toggleLeftSidebar",
+                type: "action" as const,
+                label: sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar",
+                icon: (sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar") as Icons,
+              },
+              {
+                id: "toggleBottomPanel",
+                type: "action" as const,
+                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
+                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+              },
+            ]
+          : [
+              {
+                id: "toggleBottomPanel",
+                type: "action" as const,
+                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
+                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+              },
+              {
+                id: "toggleRightSidebar",
+                type: "action" as const,
+                label: sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar",
+                icon: (sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar") as Icons,
+              },
+            ]),
         {
           id: "settings",
-          type: "action",
+          type: "action" as const,
           label: "Settings",
-          icon: "HeadBarSettings",
+          icon: "HeadBarSettings" as Icons,
         },
         {
           id: "home",
-          type: "action",
+          type: "action" as const,
           label: "Home",
-          icon: "TestHeadBarHome",
+          icon: "TestHeadBarHome" as Icons,
         },
         {
           id: "logs",
-          type: "action",
+          type: "action" as const,
           label: "Logs",
-          icon: "TestHeadBarLogs",
+          icon: "TestHeadBarLogs" as Icons,
         },
         {
           id: "debug",
-          type: "action",
+          type: "action" as const,
           label: showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels",
-          icon: "TestHeadBarDebug",
+          icon: "TestHeadBarDebug" as Icons,
         },
       ]}
       trigger={
@@ -147,6 +178,15 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
       open={isMenuOpen}
       onOpenChange={setIsMenuOpen}
       onSelect={(item) => {
+        if (item.id === "notifications") {
+          // Handle notifications
+        }
+        if (item.id === "toggleLeftSidebar" || item.id === "toggleRightSidebar") {
+          sideBar.setVisible(!sideBar.visible);
+        }
+        if (item.id === "toggleBottomPanel") {
+          bottomPane.setVisible(!bottomPane.visible);
+        }
         if (item.id === "settings") openPanel("Settings");
         if (item.id === "home") openPanel("Home");
         if (item.id === "logs") openPanel("Logs");
