@@ -38,7 +38,7 @@ const HeadBarLeftItems = ({
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
   return (
-    <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
+    <div className={isCompact ? "flex items-center gap-1" : "flex items-center gap-3"} data-tauri-drag-region>
       {isWindowsOrLinux && (
         <>
           <ActionMenu
@@ -74,7 +74,7 @@ const HeadBarLeftItems = ({
         leftIcon="HeadBarVault"
         leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
         title="Vault"
-        className="ml-[-6px] h-[24px]"
+        className="h-[24px]"
         compact={isCompact}
       />
     </div>
