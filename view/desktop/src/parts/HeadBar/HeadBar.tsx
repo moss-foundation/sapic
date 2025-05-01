@@ -56,12 +56,14 @@ const HeadBarLeftItems = ({
               handleWindowsMenuAction(item.id);
             }}
           />
-          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
         </>
       )}
       <ActionMenu
         items={workspaceMenuItems}
-        trigger={<IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />}
+        trigger={
+          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" className="h-[24px]" />
+        }
         open={workspaceMenuOpen}
         onOpenChange={setWorkspaceMenuOpen}
         onSelect={(item) => {
@@ -72,6 +74,7 @@ const HeadBarLeftItems = ({
         leftIcon="HeadBarVault"
         leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
         title="Vault"
+        className="ml-[-6px] h-[24px]"
         compact={isCompact}
       />
     </div>
@@ -107,8 +110,8 @@ const HeadBarCenterItems = ({
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
           isCompact
-            ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            ? "mr-[3px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            : "mr-[30px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
         title="Sapic Test Collection"
       />
@@ -143,7 +146,7 @@ const HeadBarCenterItems = ({
             leftIcon="HeadBarGit"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
-            className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
           />
         }
@@ -188,7 +191,7 @@ const HeadBarRightItems = ({
             leftIconClassName="text-(--moss-primary) size-4.5"
             rightIcon="ChevronDown"
             title="g10z3r"
-            className="mr-2"
+            className="mr-2 h-[24px]"
             compact={isCompact}
           />
         }
