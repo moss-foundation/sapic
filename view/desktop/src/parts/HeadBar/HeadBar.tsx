@@ -102,7 +102,7 @@ const HeadBarCenterItems = ({
 }: HeadBarCenterItemsProps) => {
   return (
     <div
-      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5"
+      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)]"
       data-tauri-drag-region
     >
       <IconLabelButton

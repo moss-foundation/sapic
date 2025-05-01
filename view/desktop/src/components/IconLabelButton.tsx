@@ -51,7 +51,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
   ) => {
     return (
       <button ref={ref} className={cn(buttonStyles, className)} {...props}>
-        <div className="flex items-center gap-1">
+        <div className={compact ? "flex items-center gap-0.5" : "flex items-center gap-1"}>
           {leftIcon && <Icon icon={leftIcon} className={cn("size-4", leftIconClassName)} />}
           {!compact && <ButtonLabel title={title} className={cn("ml-0.5", labelClassName)} />}
           {rightIcon && <Icon icon={rightIcon} className={cn("size-4", rightIconClassName)} />}
