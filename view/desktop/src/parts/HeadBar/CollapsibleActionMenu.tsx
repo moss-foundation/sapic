@@ -13,12 +13,7 @@ export interface CollapsibleActionMenuProps {
 }
 
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
-export const CollapsibleActionMenu = ({
-  isCompact,
-  showDebugPanels,
-  setShowDebugPanels,
-  openPanel,
-}: CollapsibleActionMenuProps) => {
+export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActionMenuProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
@@ -33,24 +28,6 @@ export const CollapsibleActionMenu = ({
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
           onClick={() => openPanel("Settings")}
           title="Settings"
-        />
-        <ActionButton
-          icon="TestHeadBarHome"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Home")}
-          title="Home"
-        />
-        <ActionButton
-          icon="TestHeadBarLogs"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Logs")}
-          title="Logs"
-        />
-        <ActionButton
-          icon="TestHeadBarDebug"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => setShowDebugPanels(!showDebugPanels)}
-          title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
         />
       </div>
     );
@@ -101,24 +78,6 @@ export const CollapsibleActionMenu = ({
           label: "Settings",
           icon: "HeadBarSettings" as Icons,
         },
-        {
-          id: "home",
-          type: "action" as const,
-          label: "Home",
-          icon: "TestHeadBarHome" as Icons,
-        },
-        {
-          id: "logs",
-          type: "action" as const,
-          label: "Logs",
-          icon: "TestHeadBarLogs" as Icons,
-        },
-        {
-          id: "debug",
-          type: "action" as const,
-          label: showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels",
-          icon: "TestHeadBarDebug" as Icons,
-        },
       ]}
       trigger={
         <ActionButton
@@ -140,9 +99,6 @@ export const CollapsibleActionMenu = ({
           bottomPane.setVisible(!bottomPane.visible);
         }
         if (item.id === "settings") openPanel("Settings");
-        if (item.id === "home") openPanel("Home");
-        if (item.id === "logs") openPanel("Logs");
-        if (item.id === "debug") setShowDebugPanels(!showDebugPanels);
       }}
     />
   );

@@ -177,6 +177,28 @@ export const workspaceMenuItems: MenuItemProps[] = [
     type: "separator",
   },
   {
+    id: "home",
+    type: "action",
+    label: "Kitchensink",
+    icon: "TestHeadBarHome" as Icons,
+  },
+  {
+    id: "logs",
+    type: "action",
+    label: "Logs",
+    icon: "TestHeadBarLogs" as Icons,
+  },
+  {
+    id: "debug",
+    type: "action",
+    label: "Debug Panels",
+    icon: "TestHeadBarDebug" as Icons,
+  },
+  {
+    id: "separator-5",
+    type: "separator",
+  },
+  {
     id: "edit-configurations",
     type: "action",
     label: "Edit Configurations...",

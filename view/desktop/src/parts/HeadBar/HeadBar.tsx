@@ -295,7 +295,10 @@ export const HeadBar = () => {
   // Handle workspace menu actions
   const handleWorkspaceMenuAction = (action: string) => {
     console.log(`Workspace action: ${action}`);
-    // Here you would handle different workspace actions
+    // Handle different workspace actions
+    if (action === "home") openPanel("Home");
+    if (action === "logs") openPanel("Logs");
+    if (action === "debug") setShowDebugPanels(!showDebugPanels);
   };
 
   return (
