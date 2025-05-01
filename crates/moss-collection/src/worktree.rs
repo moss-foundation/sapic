@@ -391,7 +391,7 @@ impl BackgroundScanner {
             #[cfg(unix)]
             let inode = child_metadata.ino();
             #[cfg(windows)]
-            let inode = child_metadata.file_index();
+            let inode = 0; // FIXME: child_metadata.file_index();
 
             let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
@@ -477,7 +477,7 @@ impl Worktree {
             #[cfg(unix)]
             let root_inode = metadata.ino();
             #[cfg(windows)]
-            let root_inode = metadata.file_index();
+            let root_inode = 0; // FIXME: metadata.file_index();
 
             Entry {
                 id: EntryId::new(&next_entry_id),
