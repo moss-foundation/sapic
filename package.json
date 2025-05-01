@@ -20,7 +20,7 @@
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.0.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
@@ -28,7 +28,7 @@
     "@tailwindcss/vite": "^4.1.0",
     "@types/node": "^22.10.1",
     "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react-dom": "^19",
     "@typespec/prettier-plugin-typespec": "0.67.1",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^2.1.8",
