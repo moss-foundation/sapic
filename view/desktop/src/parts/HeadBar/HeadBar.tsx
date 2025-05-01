@@ -107,6 +107,12 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
     <ActionMenu
       items={[
         {
+          id: "notifications",
+          type: "action",
+          label: "Notifications",
+          icon: "HeadBarNotifications",
+        },
+        {
           id: "settings",
           type: "action",
           label: "Settings",
