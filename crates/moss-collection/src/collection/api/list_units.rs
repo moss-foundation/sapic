@@ -1,5 +1,5 @@
 use moss_common::api::OperationResult;
-use std::{path::Path, sync::Arc, time::Duration, vec};
+use std::{sync::Arc, time::Duration, vec};
 use tauri::ipc::Channel;
 use tokio::sync::mpsc;
 
@@ -17,29 +17,36 @@ impl Collection {
         input: ListUnitsInput,
     ) -> OperationResult<()> {
         let worktree = self.worktree().await?;
-        let limit = worktree.snapshot().await.count_files();
-        let (tx, mut rx) = mpsc::channel(limit);
+        let files_count = worktree.snapshot().await.count_files();
+        let (tx, mut rx) = mpsc::channel(files_count);
+
+        // We don't want to spawn any tasks if there are no files in the worktree.
+        if files_count == 0 {
+            let _ = on_event.send(ListEntriesEvent(vec![]));
+            return Ok(());
+        }
 
         for entry_prefix in input.0 {
-            let tx_clone = tx.clone();
-            let worktree_clone = Arc::clone(&worktree);
-            let entry_prefix = entry_prefix.to_owned();
+            tokio::task::spawn({
+                let tx_clone = tx.clone();
+                let worktree_clone = Arc::clone(&worktree);
 
-            tokio::task::spawn(async move {
-                let entries = tokio::task::spawn_blocking(move || {
-                    let snapshot = futures::executor::block_on(worktree_clone.snapshot());
-                    snapshot.entries_by_prefix(&entry_prefix)
-                })
-                .await
-                .expect("spawn_blocking не должен падать");
+                async move {
+                    let entries = tokio::task::spawn_blocking(move || {
+                        let snapshot = futures::executor::block_on(worktree_clone.snapshot());
+                        snapshot.entries_by_prefix(entry_prefix)
+                    })
+                    .await
+                    .expect("Failed to spawn blocking task for listing entries");
 
-                for (id, entry) in entries {
-                    let _ = tx_clone
-                        .send(EntryInfo {
-                            id,
-                            path: entry.path.to_path_buf(),
-                        })
-                        .await;
+                    for (id, entry) in entries {
+                        let _ = tx_clone
+                            .send(EntryInfo {
+                                id,
+                                path: entry.path.to_path_buf(),
+                            })
+                            .await;
+                    }
                 }
             });
         }
@@ -50,18 +57,12 @@ impl Collection {
             loop {
                 interval.tick().await;
 
-                dbg!("tick");
-                dbg!(limit);
-
-                let mut batch = Vec::with_capacity(limit);
-                let received = rx.recv_many(&mut batch, limit).await;
+                let mut batch = Vec::with_capacity(files_count);
+                let received = rx.recv_many(&mut batch, files_count).await;
                 if received > 0 {
-                    dbg!("send");
-                    dbg!(&batch.len());
-
                     let _ = on_event.send(ListEntriesEvent(batch));
                 } else {
-                    dbg!("send empty");
+                    // We send empty event if there are no new entries, so the UI can stop polling.
                     let _ = on_event.send(ListEntriesEvent(vec![]));
                     break;
                 }
