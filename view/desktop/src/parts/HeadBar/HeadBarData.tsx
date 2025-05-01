@@ -145,10 +145,41 @@ export const workspaceMenuItems: MenuItemProps[] = [
   },
   {
     id: "all-workspaces",
-    type: "action",
+    type: "accordion",
     label: "All Workspaces",
     icon: "TreeChevronRight",
-    count: 5,
+    items: [
+      {
+        id: "microservices-api-test-suite",
+        type: "action",
+        label: "Microservices API Test Suite",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "user-management-api",
+        type: "action",
+        label: "User Management API",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "auth-security-tests",
+        type: "action",
+        label: "Auth & Security Tests",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "development-api-sandbox",
+        type: "action",
+        label: "Development API Sandbox",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "microservices-endpoints",
+        type: "action",
+        label: "Microservices Endpoints",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+    ],
   },
   {
     id: "separator-4",
