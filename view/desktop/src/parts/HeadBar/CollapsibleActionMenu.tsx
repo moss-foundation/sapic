@@ -1,0 +1,151 @@
+import { ActionButton } from "@/components";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { useState } from "react";
+import ActionMenu from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
+import PanelToggleButtons from "./PanelToggleButtons";
+
+export interface CollapsibleActionMenuProps {
+  isCompact: boolean;
+  showDebugPanels: boolean;
+  setShowDebugPanels: (show: boolean) => void;
+  openPanel: (panel: string) => void;
+}
+
+// Collapsible Menu component that shows action buttons or collapses them into a dropdown
+export const CollapsibleActionMenu = ({
+  isCompact,
+  showDebugPanels,
+  setShowDebugPanels,
+  openPanel,
+}: CollapsibleActionMenuProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
+
+  // When not in compact mode, show all buttons
+  if (!isCompact) {
+    return (
+      <div className="flex items-center gap-0">
+        <PanelToggleButtons className="mr-1" />
+        <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+        <ActionButton
+          icon="HeadBarSettings"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Settings")}
+          title="Settings"
+        />
+        <ActionButton
+          icon="TestHeadBarHome"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Home")}
+          title="Home"
+        />
+        <ActionButton
+          icon="TestHeadBarLogs"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => openPanel("Logs")}
+          title="Logs"
+        />
+        <ActionButton
+          icon="TestHeadBarDebug"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          onClick={() => setShowDebugPanels(!showDebugPanels)}
+          title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
+        />
+      </div>
+    );
+  }
+
+  // In compact mode, use ActionMenu
+  return (
+    <ActionMenu
+      items={[
+        {
+          id: "notifications",
+          type: "action" as const,
+          label: "Notifications",
+          icon: "HeadBarNotifications" as Icons,
+        },
+        ...(sideBarPosition === "left"
+          ? [
+              {
+                id: "toggleLeftSidebar",
+                type: "action" as const,
+                label: sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar",
+                icon: (sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar") as Icons,
+              },
+              {
+                id: "toggleBottomPanel",
+                type: "action" as const,
+                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
+                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+              },
+            ]
+          : [
+              {
+                id: "toggleBottomPanel",
+                type: "action" as const,
+                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
+                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+              },
+              {
+                id: "toggleRightSidebar",
+                type: "action" as const,
+                label: sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar",
+                icon: (sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar") as Icons,
+              },
+            ]),
+        {
+          id: "settings",
+          type: "action" as const,
+          label: "Settings",
+          icon: "HeadBarSettings" as Icons,
+        },
+        {
+          id: "home",
+          type: "action" as const,
+          label: "Home",
+          icon: "TestHeadBarHome" as Icons,
+        },
+        {
+          id: "logs",
+          type: "action" as const,
+          label: "Logs",
+          icon: "TestHeadBarLogs" as Icons,
+        },
+        {
+          id: "debug",
+          type: "action" as const,
+          label: showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels",
+          icon: "TestHeadBarDebug" as Icons,
+        },
+      ]}
+      trigger={
+        <ActionButton
+          icon="ThreeHorizontalDots"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          title="More actions"
+        />
+      }
+      open={isMenuOpen}
+      onOpenChange={setIsMenuOpen}
+      onSelect={(item) => {
+        if (item.id === "notifications") {
+          // Handle notifications
+        }
+        if (item.id === "toggleLeftSidebar" || item.id === "toggleRightSidebar") {
+          sideBar.setVisible(!sideBar.visible);
+        }
+        if (item.id === "toggleBottomPanel") {
+          bottomPane.setVisible(!bottomPane.visible);
+        }
+        if (item.id === "settings") openPanel("Settings");
+        if (item.id === "home") openPanel("Home");
+        if (item.id === "logs") openPanel("Logs");
+        if (item.id === "debug") setShowDebugPanels(!showDebugPanels);
+      }}
+    />
+  );
+};
+
+export default CollapsibleActionMenu;

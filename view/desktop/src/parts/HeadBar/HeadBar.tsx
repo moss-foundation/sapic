@@ -1,5 +1,4 @@
 import { ActionButton, Divider, IconLabelButton } from "@/components";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -8,191 +7,128 @@ import { useEffect, useState } from "react";
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { type Icons } from "@/components/Icon";
+import CollapsibleActionMenu from "./CollapsibleActionMenu";
+import { userMenuItems } from "./mockHeadBarData";
 
 // Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 1000;
+const COMPACT_MODE_THRESHOLD = 860;
 
-interface PanelToggleButtonsProps {
-  className?: string;
+interface HeadBarLeftItemsProps {
+  isCompact: boolean;
 }
 
-const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
-
-  const toggleSidebar = () => {
-    sideBar.setVisible(!sideBar.visible);
-  };
-
-  const toggleBottomPane = () => {
-    bottomPane.setVisible(!bottomPane.visible);
-  };
-
+const HeadBarLeftItems = ({ isCompact }: HeadBarLeftItemsProps) => {
   return (
-    <div className={cn("flex shrink-0 -space-x-0.5", className)}>
-      {sideBarPosition === "left" ? (
-        <>
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-            icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-            onClick={toggleSidebar}
-            title="Toggle Left Sidebar"
-          />
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-            onClick={toggleBottomPane}
-            title="Toggle Bottom Panel"
-          />
-        </>
-      ) : (
-        <>
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-            onClick={toggleBottomPane}
-            title="Toggle Bottom Panel"
-          />
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
-            icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-            onClick={toggleSidebar}
-            title="Toggle Right Sidebar"
-          />
-        </>
-      )}
+    <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
+      <ActionButton
+        icon="HeadBarWindowsMenu"
+        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+        title="Menu"
+      />
+      <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+      <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
+      <IconLabelButton
+        leftIcon="HeadBarVault"
+        leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
+        title="Vault"
+        compact={isCompact}
+      />
     </div>
   );
 };
 
-// Collapsible Menu component that shows action buttons or collapses them into a dropdown
-const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels, openPanel }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
+interface HeadBarCenterItemsProps {
+  isCompact: boolean;
+}
 
-  // When not in compact mode, show all buttons
-  if (!isCompact) {
-    return (
-      <div className="flex items-center gap-0">
-        <PanelToggleButtons className="mr-1" />
-        <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
-        <ActionButton
-          icon="HeadBarSettings"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Settings")}
-          title="Settings"
-        />
-        <ActionButton
-          icon="TestHeadBarHome"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Home")}
-          title="Home"
-        />
-        <ActionButton
-          icon="TestHeadBarLogs"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => openPanel("Logs")}
-          title="Logs"
-        />
-        <ActionButton
-          icon="TestHeadBarDebug"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          onClick={() => setShowDebugPanels(!showDebugPanels)}
-          title={showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
-        />
-      </div>
-    );
-  }
-
-  // In compact mode, use ActionMenu
+const HeadBarCenterItems = ({ isCompact }: HeadBarCenterItemsProps) => {
   return (
-    <ActionMenu
-      items={[
-        {
-          id: "notifications",
-          type: "action" as const,
-          label: "Notifications",
-          icon: "HeadBarNotifications" as Icons,
-        },
-        ...(sideBarPosition === "left"
-          ? [
-              {
-                id: "toggleLeftSidebar",
-                type: "action" as const,
-                label: sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar",
-                icon: (sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar") as Icons,
-              },
-              {
-                id: "toggleBottomPanel",
-                type: "action" as const,
-                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
-              },
-            ]
-          : [
-              {
-                id: "toggleBottomPanel",
-                type: "action" as const,
-                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
-              },
-              {
-                id: "toggleRightSidebar",
-                type: "action" as const,
-                label: sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar",
-                icon: (sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar") as Icons,
-              },
-            ]),
-        {
-          id: "settings",
-          type: "action" as const,
-          label: "Settings",
-          icon: "HeadBarSettings" as Icons,
-        },
-        {
-          id: "home",
-          type: "action" as const,
-          label: "Home",
-          icon: "TestHeadBarHome" as Icons,
-        },
-        {
-          id: "logs",
-          type: "action" as const,
-          label: "Logs",
-          icon: "TestHeadBarLogs" as Icons,
-        },
-        {
-          id: "debug",
-          type: "action" as const,
-          label: showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels",
-          icon: "TestHeadBarDebug" as Icons,
-        },
-      ]}
-      trigger={
-        <ActionButton
-          icon="ThreeHorizontalDots"
-          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-          title="More actions"
-        />
-      }
-      open={isMenuOpen}
-      onOpenChange={setIsMenuOpen}
-      onSelect={(item) => {
-        if (item.id === "notifications") {
-          // Handle notifications
+    <div
+      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
+      data-tauri-drag-region
+    >
+      <IconLabelButton
+        leftIcon="HeadBarCollection"
+        leftIconClassName="text-(--moss-headBar-icon-primary-text)"
+        className={
+          isCompact
+            ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
-        if (item.id === "toggleLeftSidebar" || item.id === "toggleRightSidebar") {
-          sideBar.setVisible(!sideBar.visible);
+        title="Sapic Test Collection"
+      />
+      <ActionButton
+        icon="Reload"
+        iconClassName="text-(--moss-headBar-icon-primary-text)"
+        customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+        title="Reload"
+      />
+      <ActionButton
+        icon="ThreeVerticalDots"
+        iconClassName="text-(--moss-headBar-icon-primary-text)"
+        customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+        className="mr-[-4px]"
+        title="Reload"
+      />
+      <Divider />
+      <IconLabelButton
+        leftIcon="HeadBarGit"
+        leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
+        rightIcon="ChevronDown"
+        className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+        title="main"
+      />
+    </div>
+  );
+};
+
+interface HeadBarRightItemsProps {
+  isCompact: boolean;
+  userMenuOpen: boolean;
+  setUserMenuOpen: (open: boolean) => void;
+  handleUserMenuAction: (action: string) => void;
+  showDebugPanels: boolean;
+  setShowDebugPanels: (show: boolean) => void;
+  openPanel: (panel: string) => void;
+}
+
+const HeadBarRightItems = ({
+  isCompact,
+  userMenuOpen,
+  setUserMenuOpen,
+  handleUserMenuAction,
+  showDebugPanels,
+  setShowDebugPanels,
+  openPanel,
+}: HeadBarRightItemsProps) => {
+  return (
+    <div className="flex items-center">
+      <ActionMenu
+        items={userMenuItems}
+        trigger={
+          <IconLabelButton
+            leftIcon="HeadBarUserAvatar"
+            leftIconClassName="text-(--moss-primary) size-4.5"
+            rightIcon="ChevronDown"
+            title="g10z3r"
+            className="mr-2"
+            compact={isCompact}
+          />
         }
-        if (item.id === "toggleBottomPanel") {
-          bottomPane.setVisible(!bottomPane.visible);
-        }
-        if (item.id === "settings") openPanel("Settings");
-        if (item.id === "home") openPanel("Home");
-        if (item.id === "logs") openPanel("Logs");
-        if (item.id === "debug") setShowDebugPanels(!showDebugPanels);
-      }}
-    />
+        open={userMenuOpen}
+        onOpenChange={setUserMenuOpen}
+        onSelect={(item) => {
+          handleUserMenuAction(item.id);
+        }}
+      />
+
+      <CollapsibleActionMenu
+        isCompact={isCompact}
+        showDebugPanels={showDebugPanels}
+        setShowDebugPanels={setShowDebugPanels}
+        openPanel={openPanel}
+      />
+    </div>
   );
 };
 
@@ -274,139 +210,21 @@ export const HeadBar = () => {
         {/* Main content container with proper layout */}
         <div className="flex w-full items-center justify-between" data-tauri-drag-region>
           {/*HeadBar Left-side items*/}
-          <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
-            <ActionButton
-              icon="HeadBarWindowsMenu"
-              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-              title="Menu"
-            />
-            <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
-            <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
-            <IconLabelButton
-              leftIcon="HeadBarVault"
-              leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
-              title="Vault"
-              compact={isCompact}
-            />
-          </div>
+          <HeadBarLeftItems isCompact={isCompact} />
 
           {/*HeadBar Center items*/}
-          <div
-            className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
-            data-tauri-drag-region
-          >
-            <IconLabelButton
-              leftIcon="HeadBarCollection"
-              leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-              className={
-                isCompact
-                  ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-                  : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              }
-              title="Sapic Test Collection"
-            />
-            <ActionButton
-              icon="Reload"
-              iconClassName="text-(--moss-headBar-icon-primary-text)"
-              customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              title="Reload"
-            />
-            <ActionButton
-              icon="ThreeVerticalDots"
-              iconClassName="text-(--moss-headBar-icon-primary-text)"
-              customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              className="mr-[-4px]"
-              title="Reload"
-            />
-            <Divider />
-            <IconLabelButton
-              leftIcon="HeadBarGit"
-              leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              rightIcon="ChevronDown"
-              className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-              title="main"
-            />
-          </div>
+          <HeadBarCenterItems isCompact={isCompact} />
 
           {/*HeadBar Right-side items*/}
-          <div className="flex items-center">
-            <ActionMenu
-              items={[
-                {
-                  id: "user-profile",
-                  type: "action" as const,
-                  label: "Profile",
-                  icon: "HeadBarUserAvatar" as Icons,
-                },
-                {
-                  id: "user-settings",
-                  type: "action" as const,
-                  label: "User Settings",
-                  icon: "HeadBarSettings" as Icons,
-                },
-                {
-                  id: "separator",
-                  type: "separator" as const,
-                },
-                {
-                  id: "status",
-                  type: "submenu" as const,
-                  label: "Status",
-                  icon: "TestHeadBarLogs" as Icons,
-                  items: [
-                    {
-                      id: "status-online",
-                      type: "action" as const,
-                      label: "Online",
-                      icon: "CheckboxIndicator" as Icons,
-                    },
-                    {
-                      id: "status-away",
-                      type: "action" as const,
-                      label: "Away",
-                    },
-                    {
-                      id: "status-do-not-disturb",
-                      type: "action" as const,
-                      label: "Do Not Disturb",
-                    },
-                  ],
-                },
-                {
-                  id: "separator-2",
-                  type: "separator" as const,
-                },
-                {
-                  id: "logout",
-                  type: "action" as const,
-                  label: "Log Out",
-                  variant: "danger",
-                },
-              ]}
-              trigger={
-                <IconLabelButton
-                  leftIcon="HeadBarUserAvatar"
-                  leftIconClassName="text-(--moss-primary) size-4.5"
-                  rightIcon="ChevronDown"
-                  title="g10z3r"
-                  className="mr-2"
-                  compact={isCompact}
-                />
-              }
-              open={userMenuOpen}
-              onOpenChange={setUserMenuOpen}
-              onSelect={(item) => {
-                handleUserMenuAction(item.id);
-              }}
-            />
-
-            <CollapsibleActionMenu
-              isCompact={isCompact}
-              showDebugPanels={showDebugPanels}
-              setShowDebugPanels={setShowDebugPanels}
-              openPanel={openPanel}
-            />
-          </div>
+          <HeadBarRightItems
+            isCompact={isCompact}
+            userMenuOpen={userMenuOpen}
+            setUserMenuOpen={setUserMenuOpen}
+            handleUserMenuAction={handleUserMenuAction}
+            showDebugPanels={showDebugPanels}
+            setShowDebugPanels={setShowDebugPanels}
+            openPanel={openPanel}
+          />
         </div>
       </div>
 
