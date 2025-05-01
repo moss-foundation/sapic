@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
+import ActionMenu from "@/components/ActionMenu/ActionMenu";
 
 // Window width threshold for compact mode
 const COMPACT_MODE_THRESHOLD = 1000;
@@ -67,11 +68,6 @@ const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels, openPanel }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Toggle the dropdown menu
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   // When not in compact mode, show all buttons
   if (!isCompact) {
     return (
@@ -106,73 +102,63 @@ const CollapsibleActionMenu = ({ isCompact, showDebugPanels, setShowDebugPanels,
     );
   }
 
-  // In compact mode, show a dropdown menu
+  // In compact mode, use ActionMenu
   return (
-    <div className="relative">
-      <ActionButton
-        icon="ThreeHorizontalDots"
-        iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-        onClick={toggleMenu}
-        title="More actions"
-      />
-
-      {isMenuOpen && (
-        <div className="absolute top-full right-0 mt-1 w-48 rounded-md border border-[var(--moss-border-color)] bg-[var(--moss-secondary-background)] shadow-lg">
-          <div className="py-1">
-            <button
-              onClick={() => {
-                toggleMenu();
-                openPanel("Settings");
-              }}
-              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
-            >
-              <span className="mr-2">⚙️</span> Settings
-            </button>
-            <button
-              onClick={() => {
-                toggleMenu();
-                openPanel("Home");
-              }}
-              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
-            >
-              <span className="mr-2">🏠</span> Home
-            </button>
-            <button
-              onClick={() => {
-                toggleMenu();
-                openPanel("Logs");
-              }}
-              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
-            >
-              <span className="mr-2">📋</span> Logs
-            </button>
-            <button
-              onClick={() => {
-                toggleMenu();
-                setShowDebugPanels(!showDebugPanels);
-              }}
-              className="text-md flex w-full items-center px-4 py-2 text-left hover:bg-[var(--moss-primary-background-hover)]"
-            >
-              <span className="mr-2">🐞</span> {showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels"}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    <ActionMenu
+      items={[
+        {
+          id: "settings",
+          type: "action",
+          label: "Settings",
+          icon: "HeadBarSettings",
+        },
+        {
+          id: "home",
+          type: "action",
+          label: "Home",
+          icon: "TestHeadBarHome",
+        },
+        {
+          id: "logs",
+          type: "action",
+          label: "Logs",
+          icon: "TestHeadBarLogs",
+        },
+        {
+          id: "debug",
+          type: "action",
+          label: showDebugPanels ? "Hide Debug Panels" : "Show Debug Panels",
+          icon: "TestHeadBarDebug",
+        },
+      ]}
+      trigger={
+        <ActionButton
+          icon="ThreeHorizontalDots"
+          iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+          title="More actions"
+        />
+      }
+      open={isMenuOpen}
+      onOpenChange={setIsMenuOpen}
+      onSelect={(item) => {
+        if (item.id === "settings") openPanel("Settings");
+        if (item.id === "home") openPanel("Home");
+        if (item.id === "logs") openPanel("Logs");
+        if (item.id === "debug") setShowDebugPanels(!showDebugPanels);
+      }}
+    />
   );
 };
 
 export const HeadBar = () => {
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isCompact, setIsCompact] = useState(window.innerWidth < COMPACT_MODE_THRESHOLD);
 
   useEffect(() => {
     // Function to update window dimensions
     const updateWindowDimensions = () => {
       const newWidth = window.innerWidth;
-      setWindowWidth(newWidth);
       setIsCompact(newWidth < COMPACT_MODE_THRESHOLD);
     };
 
@@ -233,7 +219,7 @@ export const HeadBar = () => {
         data-tauri-drag-region
       >
         {/* Main content container with proper layout */}
-        <div className="flex w-full items-center justify-between">
+        <div className="flex w-full items-center justify-between" data-tauri-drag-region>
           {/*HeadBar Left-side items*/}
           <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
             <ActionButton
@@ -300,7 +286,6 @@ export const HeadBar = () => {
               compact={isCompact}
             />
 
-            {/* Replace action buttons with collapsible menu */}
             <CollapsibleActionMenu
               isCompact={isCompact}
               showDebugPanels={showDebugPanels}
