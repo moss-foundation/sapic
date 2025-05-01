@@ -1,10 +1,64 @@
 use anyhow::Result;
 use regex::Regex;
 use std::path::{Component, Path, PathBuf};
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 
 /// Regex to match forbidden characters in a directory/file name
 static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap());
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct NormalizedPathBuf(Arc<PathBuf>);
+
+impl NormalizedPathBuf {
+    pub fn join(&self, other: &Self) -> Self {
+        Self(Arc::new(self.0.join(other.0.as_ref())))
+    }
+
+    pub fn to_string(&self) -> String {
+        self.0.to_string_lossy().to_string()
+    }
+
+    pub fn to_path_buf(&self) -> PathBuf {
+        self.0.as_ref().into()
+    }
+}
+
+impl std::fmt::Display for NormalizedPathBuf {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
+impl TryFrom<String> for NormalizedPathBuf {
+    type Error = anyhow::Error;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let path = PathBuf::from(value);
+
+        Self::try_from(path)
+    }
+}
+
+impl TryFrom<PathBuf> for NormalizedPathBuf {
+    type Error = anyhow::Error;
+
+    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
+        // Encode only the normal components of the path.
+        let encoded: PathBuf = path
+            .components()
+            .filter_map(|comp| {
+                if let Component::Normal(name) = comp {
+                    Some(encode_name(&name.to_string_lossy()))
+                } else {
+                    // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
+                    None
+                }
+            })
+            .collect();
+
+        Ok(Self(Arc::new(encoded)))
+    }
+}
 
 /// Function to encode forbidden characters and '%' in a directory/file name
 pub fn encode_name(name: &str) -> String {
