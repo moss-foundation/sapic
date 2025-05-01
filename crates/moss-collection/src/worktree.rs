@@ -78,6 +78,9 @@ pub(crate) struct Snapshot {
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
+unsafe impl Send for Snapshot {}
+unsafe impl Sync for Snapshot {}
+
 impl Clone for Snapshot {
     fn clone(&self) -> Self {
         let entries_by_id =
@@ -107,10 +110,18 @@ impl Snapshot {
         self.entries_by_path.len()
     }
 
-    pub fn entries_by_prefix<'a>(
+    pub fn iter_entries_by_prefix<'a>(
         &'a self,
         prefix: &'a Path,
     ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<Entry>)> + 'a {
+        self.entries_by_path
+            .iter()
+            .skip_while(move |(p, _)| !p.starts_with(prefix))
+            .take_while(move |(p, _)| p.starts_with(prefix))
+            .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
+    }
+
+    pub fn entries_by_prefix(&self, prefix: &str) -> Vec<(EntryId, Arc<Entry>)> {
         dbg!(self.entries_by_path.len());
         dbg!(&self.abs_path);
 
@@ -118,7 +129,12 @@ impl Snapshot {
             .iter()
             .skip_while(move |(p, _)| !p.starts_with(prefix))
             .take_while(move |(p, _)| p.starts_with(prefix))
-            .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
+            .filter_map(move |(_, &id)| {
+                self.entries_by_id
+                    .get(&id)
+                    .map(|entry| (id, Arc::clone(entry)))
+            })
+            .collect::<Vec<_>>()
     }
 
     pub fn root_entry(&self) -> Option<Arc<Entry>> {

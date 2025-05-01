@@ -23,18 +23,23 @@ impl Collection {
         for entry_prefix in input.0 {
             let tx_clone = tx.clone();
             let worktree_clone = Arc::clone(&worktree);
+            let entry_prefix = entry_prefix.to_owned();
 
             tokio::task::spawn(async move {
-                let snapshot = worktree_clone.snapshot().await;
-                let prefix = Path::new(entry_prefix);
+                let entries = tokio::task::spawn_blocking(move || {
+                    let snapshot = futures::executor::block_on(worktree_clone.snapshot());
+                    snapshot.entries_by_prefix(&entry_prefix)
+                })
+                .await
+                .expect("spawn_blocking не должен падать");
 
-                dbg!(snapshot.entries_by_prefix(prefix).collect::<Vec<_>>());
-
-                for (&id, entry) in snapshot.entries_by_prefix(prefix) {
-                    let _ = tx_clone.send(EntryInfo {
-                        id,
-                        path: entry.path.to_path_buf(),
-                    }); // FIXME: await
+                for (id, entry) in entries {
+                    let _ = tx_clone
+                        .send(EntryInfo {
+                            id,
+                            path: entry.path.to_path_buf(),
+                        })
+                        .await;
                 }
             });
         }
