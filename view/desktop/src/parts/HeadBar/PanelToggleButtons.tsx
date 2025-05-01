@@ -22,13 +22,13 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
       {sideBarPosition === "left" ? (
         <>
           <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
             icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
             onClick={toggleSidebar}
             title="Toggle Left Sidebar"
           />
           <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
             icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
             onClick={toggleBottomPane}
             title="Toggle Bottom Panel"
@@ -37,13 +37,13 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
       ) : (
         <>
           <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
             icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
             onClick={toggleBottomPane}
             title="Toggle Bottom Panel"
           />
           <ActionButton
-            iconClassName="size-4.5 text-(--moss-icon-primary-text)"
+            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
             icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
             onClick={toggleSidebar}
             title="Toggle Right Sidebar"

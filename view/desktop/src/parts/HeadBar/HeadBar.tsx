@@ -146,7 +146,7 @@ const HeadBarCenterItems = ({
             leftIcon="HeadBarGit"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
-            className="h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="ml-[-2x] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
           />
         }
