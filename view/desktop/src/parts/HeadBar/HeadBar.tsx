@@ -9,7 +9,7 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 
 // Window width threshold for compact mode
-const COMPACT_MODE_THRESHOLD = 1200;
+const COMPACT_MODE_THRESHOLD = 1000;
 
 interface PanelToggleButtonsProps {
   className?: string;
@@ -232,83 +232,82 @@ export const HeadBar = () => {
         style={{ overflowClipMargin: 4 }}
         data-tauri-drag-region
       >
-        {/*HeadBar Left-side items*/}
-        <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
-          <ActionButton
-            icon="HeadBarWindowsMenu"
-            iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-            title="Menu"
-          />
-          <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
-          <IconLabelButton
-            leftIcon="HeadBarVault"
-            leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
-            title="Vault"
-            compact={isCompact}
-          />
-          {/* Add a draggable area that takes up remaining space */}
-          <div className="flex-grow" data-tauri-drag-region></div>
-        </div>
+        {/* Main content container with proper layout */}
+        <div className="flex w-full items-center justify-between">
+          {/*HeadBar Left-side items*/}
+          <div className={isCompact ? "flex items-center gap-0" : "flex items-center gap-3"} data-tauri-drag-region>
+            <ActionButton
+              icon="HeadBarWindowsMenu"
+              iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
+              title="Menu"
+            />
+            <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isCompact} />
+            <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" />
+            <IconLabelButton
+              leftIcon="HeadBarVault"
+              leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
+              title="Vault"
+              compact={isCompact}
+            />
+          </div>
 
-        {/*HeadBar Center items*/}
-        <div
-          className={`flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1 ${
-            isCompact ? "relative mx-auto" : "absolute left-1/2 -translate-x-1/2 transform"
-          }`}
-          data-tauri-drag-region
-        >
-          <IconLabelButton
-            leftIcon="HeadBarCollection"
-            leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-            className={
-              isCompact
-                ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-                : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            }
-            title="Sapic Test Collection"
-          />
-          <ActionButton
-            icon="Reload"
-            iconClassName="text-(--moss-headBar-icon-primary-text)"
-            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            title="Reload"
-          />
-          <ActionButton
-            icon="ThreeVerticalDots"
-            iconClassName="text-(--moss-headBar-icon-primary-text)"
-            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            className="mr-[-4px]"
-            title="Reload"
-          />
-          <Divider />
-          <IconLabelButton
-            leftIcon="HeadBarGit"
-            leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            rightIcon="ChevronDown"
-            className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            title="main"
-          />
-        </div>
+          {/*HeadBar Center items*/}
+          <div
+            className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
+            data-tauri-drag-region
+          >
+            <IconLabelButton
+              leftIcon="HeadBarCollection"
+              leftIconClassName="text-(--moss-headBar-icon-primary-text)"
+              className={
+                isCompact
+                  ? "mr-[3px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+                  : "mr-[30px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+              }
+              title="Sapic Test Collection"
+            />
+            <ActionButton
+              icon="Reload"
+              iconClassName="text-(--moss-headBar-icon-primary-text)"
+              customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+              title="Reload"
+            />
+            <ActionButton
+              icon="ThreeVerticalDots"
+              iconClassName="text-(--moss-headBar-icon-primary-text)"
+              customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+              className="mr-[-4px]"
+              title="Reload"
+            />
+            <Divider />
+            <IconLabelButton
+              leftIcon="HeadBarGit"
+              leftIconClassName="text-(--moss-headBar-icon-primary-text) hover:bg-[var(--moss-headBar-primary-background-hover)]"
+              rightIcon="ChevronDown"
+              className="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+              title="main"
+            />
+          </div>
 
-        {/*HeadBar Right-side items*/}
-        <div className="ml-auto flex items-center">
-          <IconLabelButton
-            leftIcon="HeadBarUserAvatar"
-            leftIconClassName="text-(--moss-primary) size-4.5"
-            rightIcon="ChevronDown"
-            title="g10z3r"
-            className="mr-2"
-            compact={isCompact}
-          />
+          {/*HeadBar Right-side items*/}
+          <div className="flex items-center">
+            <IconLabelButton
+              leftIcon="HeadBarUserAvatar"
+              leftIconClassName="text-(--moss-primary) size-4.5"
+              rightIcon="ChevronDown"
+              title="g10z3r"
+              className="mr-2"
+              compact={isCompact}
+            />
 
-          {/* Replace action buttons with collapsible menu */}
-          <CollapsibleActionMenu
-            isCompact={isCompact}
-            showDebugPanels={showDebugPanels}
-            setShowDebugPanels={setShowDebugPanels}
-            openPanel={openPanel}
-          />
+            {/* Replace action buttons with collapsible menu */}
+            <CollapsibleActionMenu
+              isCompact={isCompact}
+              showDebugPanels={showDebugPanels}
+              setShowDebugPanels={setShowDebugPanels}
+              openPanel={openPanel}
+            />
+          </div>
         </div>
       </div>
 
