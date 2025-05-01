@@ -102,7 +102,7 @@ const HeadBarCenterItems = ({
 }: HeadBarCenterItemsProps) => {
   return (
     <div
-      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-1"
+      className="flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5"
       data-tauri-drag-region
     >
       <IconLabelButton
@@ -146,7 +146,7 @@ const HeadBarCenterItems = ({
             leftIcon="HeadBarGit"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
-            className="ml-[-2x] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="ml-[-2px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
           />
         }
