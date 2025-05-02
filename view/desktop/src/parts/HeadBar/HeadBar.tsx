@@ -113,7 +113,7 @@ const HeadBarCenterItems = ({
   return (
     <div
       className={cn(
-        "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)]",
+        "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
         isXLarge ? "" : "absolute left-1/2 -translate-x-1/2 transform"
       )}
       data-tauri-drag-region
@@ -123,8 +123,8 @@ const HeadBarCenterItems = ({
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
           isMedium
-            ? "mr-[3px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            : "mr-[30px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            ? "mr-[3px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            : "mr-[30px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
         title="Sapic Test Collection"
       />
@@ -159,7 +159,7 @@ const HeadBarCenterItems = ({
             leftIcon="HeadBarGit"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
-            className="ml-[-2px] h-[24px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="ml-[-2px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             title="main"
           />
         }
