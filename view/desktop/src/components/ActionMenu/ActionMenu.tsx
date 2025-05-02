@@ -150,7 +150,9 @@ const MenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    {!hideChevron && <Icon icon="TreeChevronRight" className="ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />}
+    {!hideChevron && (
+      <Icon icon="TreeChevronRight" className="mr-[-4px] ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />
+    )}
   </DropdownMenu.SubTrigger>
 ));
 MenuSubTrigger.displayName = "MenuSubTrigger";

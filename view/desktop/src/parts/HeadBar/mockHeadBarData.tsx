@@ -144,6 +144,7 @@ export const windowsMenuItems: MenuItemProps[] = [
     id: "file",
     type: "submenu",
     label: "File",
+    alignWithIcons: true,
     items: [
       {
         id: "new-file",
@@ -195,6 +196,7 @@ export const windowsMenuItems: MenuItemProps[] = [
     id: "edit",
     type: "submenu",
     label: "Edit",
+    alignWithIcons: true,
     items: [
       {
         id: "undo",
@@ -252,6 +254,7 @@ export const windowsMenuItems: MenuItemProps[] = [
     id: "view",
     type: "submenu",
     label: "View",
+    alignWithIcons: true,
     items: [
       {
         id: "explorer",
@@ -299,6 +302,7 @@ export const windowsMenuItems: MenuItemProps[] = [
     id: "help",
     type: "submenu",
     label: "Help",
+    alignWithIcons: true,
     items: [
       {
         id: "documentation",
