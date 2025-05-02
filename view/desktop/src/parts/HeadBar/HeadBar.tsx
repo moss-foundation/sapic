@@ -40,9 +40,8 @@ const HeadBarLeftItems = ({
   return (
     <div
       className={cn("flex items-center", {
-        "gap-1": ["xs", "sm"].includes(breakpoint),
-        "gap-2": breakpoint === "md",
-        "gap-3": ["lg", "xl", "2xl"].includes(breakpoint),
+        "gap-0.5": breakpoint === "md",
+        "gap-1.5": ["lg", "xl", "2xl"].includes(breakpoint),
       })}
       data-tauri-drag-region
     >
@@ -201,6 +200,7 @@ const HeadBarRightItems = ({
     <div className="flex items-center">
       <ActionMenu
         items={userMenuItems}
+        align="end"
         trigger={
           <IconLabelButton
             leftIcon="HeadBarUserAvatar"
