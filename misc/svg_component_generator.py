@@ -63,6 +63,10 @@ def compare_svg_structure(a: ET.ElementTree, b: ET.ElementTree) -> bool:
     """
     Determine if two SVG trees are structurally identical, ignoring fill/stroke values.
     """
+
+    # Shortcut if the two svg have different number of elements
+    if sum(1 for _ in a.iter()) != sum(1 for _ in b.iter()):
+        return False
     for elem_a, elem_b in zip(a.iter(), b.iter()):
         if elem_a.tag != elem_b.tag:
             return False
@@ -214,6 +218,16 @@ def create_plan(icons_dir: Path, force: bool = False) -> None:
     for name in names:
         if not force and name in existing:
             continue
+        light_svg = Path(icons_dir, name, "light.svg")
+        if not light_svg.exists():
+            logging.error(f"`light.svg` not found for icon `{name}`")
+            continue
+
+        dark_svg = Path(icons_dir, name, "dark.svg")
+        if not dark_svg.exists():
+            logging.error(f"`dark.svg` not found for icon `{name}`")
+            continue
+
         light = ET.parse(icons_dir / name / 'light.svg')
         dark = ET.parse(icons_dir / name / 'dark.svg')
         identical = compare_svg_structure(light, dark)
