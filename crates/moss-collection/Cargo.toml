@@ -26,10 +26,8 @@ async-trait.workspace = true
 futures.workspace = true
 notify.workspace = true
 sweep-bptree.workspace = true
+file-id.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
-
-[target.'cfg(target_os = "windows")'.dependencies]
-file-id.workspace = true # Alternatie to the nightly api MetadataExt::file_index()
