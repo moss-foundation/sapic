@@ -76,7 +76,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         <div className="w-full min-w-0">
           <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
                 "opacity-0": !node.isFolder,
@@ -135,7 +135,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   style={{ paddingLeft: nodePaddingLeft }}
                 >
                   <Icon
-                    icon="TreeChevronRight"
+                    icon="ChevronRight"
                     className={cn("text-(--moss-icon-primary-text)", {
                       "rotate-90": shouldRenderChildNodes,
                       "opacity-0": !node.isFolder,
@@ -163,7 +163,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                         onNodeUpdate={() => {}}
                         depth={0}
                       />
-                      <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
+                      <Icon icon="ChevronRight" className={cn("opacity-0")} />
                     </ul>,
                     preview
                   )}
@@ -183,7 +183,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
-          <Icon icon="TreeChevronRight" className={cn("opacity-0")} />
+          <Icon icon="ChevronRight" className={cn("opacity-0")} />
           <TestCollectionIcon
             type={node.type}
             className={cn("ml-auto", {

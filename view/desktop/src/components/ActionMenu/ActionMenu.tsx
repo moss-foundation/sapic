@@ -6,7 +6,16 @@ import { cn } from "@/utils";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 // Types
-export type MenuItemType = "action" | "submenu" | "separator" | "header" | "section" | "checkable" | "footer" | "radio";
+export type MenuItemType =
+  | "action"
+  | "submenu"
+  | "separator"
+  | "header"
+  | "section"
+  | "checkable"
+  | "footer"
+  | "radio"
+  | "accordion";
 
 export interface MenuItemProps {
   id: string;
@@ -18,7 +27,6 @@ export interface MenuItemProps {
   items?: MenuItemProps[];
   disabled?: boolean;
   checked?: boolean;
-  count?: number; // For showing counts like "All Configurations 25"
   variant?: "danger" | "success" | "warning" | "info" | "default";
   sectionTitle?: string;
   footerText?: string;
@@ -43,7 +51,7 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] w-36 max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
   {
     variants: {
       type: {
@@ -142,7 +150,9 @@ const MenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    {!hideChevron && <Icon icon="TreeChevronRight" className="ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />}
+    {!hideChevron && (
+      <Icon icon="ChevronRight" className="mr-[-5px] ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />
+    )}
   </DropdownMenu.SubTrigger>
 ));
 MenuSubTrigger.displayName = "MenuSubTrigger";
@@ -273,7 +283,7 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
 };
 
 // Helper component for menu item trailing elements
-const MenuItemTrailing = ({ count, shortcut }: { count?: number; shortcut?: string }) => (
+const MenuItemTrailing = ({ shortcut }: { count?: number; shortcut?: string }) => (
   <>{shortcut && <span className="ml-4 text-(--moss-not-selected-item-color)">{shortcut}</span>}</>
 );
 
@@ -294,6 +304,17 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   // Find footer items if any
   const footerItems = items.filter((item) => item.type === "footer");
   const normalItems = items.filter((item) => item.type !== "footer");
+
+  // Track expanded accordion items
+  const [expandedAccordions, setExpandedAccordions] = React.useState<Record<string, boolean>>({});
+
+  // Toggle accordion expansion
+  const toggleAccordion = (id: string) => {
+    setExpandedAccordions((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   // Handler for item selection
   const handleSelect = (item: MenuItemProps) => {
@@ -345,7 +366,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                     <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>
                   )}
                   <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
-                  <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
+                  <MenuItemTrailing shortcut={item.shortcut} />
                 </MenuRadioItem>
               );
             }
@@ -377,7 +398,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
           <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
-          <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
+          <MenuItemTrailing shortcut={item.shortcut} />
         </MenuCheckboxItem>
       );
     }
@@ -389,12 +410,51 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
             {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
             <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
-            <MenuItemTrailing count={item.count} shortcut={item.shortcut} />
+            <MenuItemTrailing shortcut={item.shortcut} />
           </MenuSubTrigger>
           <DropdownMenu.Portal>
             <MenuSubContent>{renderMenuItems(item.items)}</MenuSubContent>
           </DropdownMenu.Portal>
         </DropdownMenu.Sub>
+      );
+    }
+
+    if (item.type === "accordion" && item.items?.length) {
+      const isExpanded = expandedAccordions[item.id] || false;
+      const itemsCount = item.items.length;
+
+      return (
+        <div key={item.id} className="w-full">
+          <MenuItem
+            disabled={item.disabled}
+            variant={item.variant}
+            hasIcon={true}
+            alignWithIcons={item.alignWithIcons}
+            onSelect={(e) => {
+              e.preventDefault();
+              toggleAccordion(item.id);
+            }}
+          >
+            <Icon
+              icon="ChevronRight"
+              className={cn("mr-2 h-5 w-5 text-(--moss-icon-primary-text)", isExpanded && "rotate-90 transform")}
+            />
+            <span className={cn("flex flex-grow items-center", labelStyles)}>
+              {item.label}
+              <span className="ml-1 text-(--moss-not-selected-item-color)">{itemsCount}</span>
+            </span>
+          </MenuItem>
+
+          {isExpanded && (
+            <div className="w-full overflow-hidden pl-3">
+              {item.items.map((subItem) => (
+                <div key={subItem.id} className="w-full overflow-hidden">
+                  {renderMenuItem(subItem)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       );
     }
 
@@ -410,12 +470,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         >
           <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
           {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
-          <span className={cn("flex-grow", labelStyles)}>
-            {item.label}
-            {item.count !== undefined && (
-              <span className="ml-1 text-(--moss-not-selected-item-color)"> {item.count}</span>
-            )}
-          </span>
+          <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
           <MenuItemTrailing shortcut={item.shortcut} />
         </MenuItem>
       );

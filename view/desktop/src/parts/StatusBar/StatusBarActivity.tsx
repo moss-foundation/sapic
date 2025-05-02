@@ -174,7 +174,7 @@ export const StatusBarActivity = () => {
               "size-[14px] flex-shrink-0 text-(--moss-statusBar-icon-secondary-text)",
               animateIcon && "animate-spin"
             )}
-            icon="StatusBarProcessing"
+            icon="Reload"
           />
           {textToDisplay && <span className="text-(--moss-statusBar-icon-primary-text)">{textToDisplay}</span>}
         </div>

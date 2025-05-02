@@ -20,3 +20,5 @@ export * from "./workspaces/useCreateWorkspace";
 export * from "./workspaces/useDescribeWorkspaceState";
 export * from "./workspaces/useGetWorkspaces";
 export * from "./workspaces/useOpenWorkspace";
+
+export * from "./useResponsive";

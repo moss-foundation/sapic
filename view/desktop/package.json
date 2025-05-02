@@ -23,6 +23,7 @@
     "@radix-ui/react-primitive": "^2.0.2",
     "@radix-ui/react-radio-group": "^1.3.3",
     "@radix-ui/react-select": "^2.2.2",
+    "@radix-ui/react-toggle-group": "^1.1.7",
     "@radix-ui/react-use-callback-ref": "^1.1.0",
     "@radix-ui/react-use-controllable-state": "^1.1.0",
     "@repo/moss-nls": "workspace:*",
