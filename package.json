@@ -29,7 +29,7 @@
     "@types/node": "^22.10.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typespec/prettier-plugin-typespec": "0.67.1",
+    "@typespec/prettier-plugin-typespec": "0.68.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^2.1.8",
     "clsx": "^2.1.1",
