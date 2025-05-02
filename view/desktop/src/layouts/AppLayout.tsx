@@ -2,7 +2,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import "@repo/moss-tabs/assets/styles.css";
 
-import { AllotmentHandle } from "allotment";
+import { AllotmentHandle, LayoutPriority } from "allotment";
 import { useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
@@ -71,6 +71,7 @@ export const AppLayout = () => {
         )}
 
         <Resizable
+          proportionalLayout={false}
           ref={resizableRef}
           onDragEnd={(sizes) => {
             if (sideBarPosition === "left") {
@@ -99,7 +100,7 @@ export const AppLayout = () => {
               <SidebarContent />
             </ResizablePanel>
           )}
-          <ResizablePanel>
+          <ResizablePanel priority={LayoutPriority.High}>
             <Resizable
               ref={resizableRef}
               vertical
