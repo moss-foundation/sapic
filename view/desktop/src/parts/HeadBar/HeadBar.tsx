@@ -85,13 +85,15 @@ const HeadBarLeftItems = ({
           handleWorkspaceMenuAction(item.id);
         }}
       />
-      <IconLabelButton
-        leftIcon="HeadBarVault"
-        leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
-        title="Vault"
-        className="h-[24px]"
-        compact={isLarge}
-      />
+      {selectedWorkspace && (
+        <IconLabelButton
+          leftIcon="HeadBarVault"
+          leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
+          title="Vault"
+          className="h-[24px]"
+          compact={isLarge}
+        />
+      )}
     </div>
   );
 };
