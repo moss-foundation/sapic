@@ -26,6 +26,7 @@ async-trait.workspace = true
 futures.workspace = true
 notify.workspace = true
 sweep-bptree.workspace = true
+file-id.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

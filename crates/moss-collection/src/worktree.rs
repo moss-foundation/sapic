@@ -1,4 +1,5 @@
 use anyhow::Result;
+use file_id::FileId;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
 use moss_fs::FileSystem;
@@ -10,22 +11,17 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::time::Duration;
 use std::{
     path::PathBuf,
-    sync::{atomic::AtomicUsize, Arc},
+    sync::{Arc, atomic::AtomicUsize},
     time::SystemTime,
 };
 use sweep_bptree::BPlusTreeMap;
-use tokio::sync::{mpsc, Barrier};
+use tokio::sync::{Barrier, mpsc};
 use tokio::sync::{
+    Mutex,
     mpsc::{UnboundedReceiver, UnboundedSender},
     watch::{self, Ref as WatchRef},
-    Mutex,
 };
 use tokio::task::JoinHandle;
-
-#[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
-#[cfg(windows)]
-use std::os::windows::fs::MetadataExt;
 
 struct ScanRequest {
     relative_paths: Vec<PathBuf>,
@@ -79,7 +75,7 @@ pub struct Entry {
     kind: EntryKind,
     unit_type: Option<UnitType>,
     mtime: Option<SystemTime>,
-    inode: u64,
+    file_id: FileId,
 }
 
 impl Entry {
@@ -105,16 +101,16 @@ impl Snapshot {
         self.entry_by_path("").await
     }
 
-    async fn ancestor_inodes_for_path(&self, path: &PathBuf) -> HashSet<u64> {
-        let mut inodes = HashSet::new();
+    async fn ancestor_file_ids_for_path(&self, path: &PathBuf) -> HashSet<FileId> {
+        let mut file_ids = HashSet::new();
 
         for ancestor in path.ancestors().skip(1) {
             if let Some(entry) = self.entry_by_path(ancestor).await {
-                inodes.insert(entry.inode);
+                file_ids.insert(entry.file_id);
             }
         }
 
-        inodes
+        file_ids
     }
 
     async fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Entry> {
@@ -154,7 +150,7 @@ struct ScanJob {
     abs_path: PathBuf,
     path: PathBuf,
     scan_queue: UnboundedSender<ScanJob>,
-    ancestor_inodes: HashSet<u64>,
+    ancestor_file_ids: HashSet<FileId>,
 }
 
 #[derive(Clone)]
@@ -164,7 +160,7 @@ pub struct BackgroundScannerState {
     pub prev_snapshot: Snapshot,
     pub changed_paths: Vec<PathBuf>,
     pub scanned_dirs: HashSet<EntryId>,
-    pub removed_entries: HashMap<u64, Entry>,
+    pub removed_entries: HashMap<FileId, Entry>,
 }
 
 impl BackgroundScannerState {
@@ -174,15 +170,15 @@ impl BackgroundScannerState {
         entry: &Entry,
         scan_job_tx: &UnboundedSender<ScanJob>,
     ) {
-        let mut ancestor_inodes = self.snapshot.ancestor_inodes_for_path(&entry.path).await;
-        if !ancestor_inodes.contains(&entry.inode) {
-            ancestor_inodes.insert(entry.inode);
+        let mut ancestor_file_ids = self.snapshot.ancestor_file_ids_for_path(&entry.path).await;
+        if !ancestor_file_ids.contains(&entry.file_id) {
+            ancestor_file_ids.insert(entry.file_id);
             scan_job_tx
                 .send(ScanJob {
                     abs_path,
                     path: entry.path.clone(),
                     scan_queue: scan_job_tx.clone(),
-                    ancestor_inodes,
+                    ancestor_file_ids,
                 })
                 .unwrap();
         }
@@ -190,7 +186,7 @@ impl BackgroundScannerState {
 
     async fn reuse_entry_id(&mut self, entry: &mut Entry) {
         if let Some(mtime) = entry.mtime {
-            if let Some(removed_entry) = self.removed_entries.remove(&entry.inode) {
+            if let Some(removed_entry) = self.removed_entries.remove(&entry.file_id) {
                 if removed_entry.mtime == Some(mtime) || removed_entry.path == entry.path {
                     entry.id = removed_entry.id;
                 }
@@ -388,11 +384,6 @@ impl BackgroundScanner {
                 }
             };
 
-            #[cfg(unix)]
-            let inode = child_metadata.ino();
-            #[cfg(windows)]
-            let inode = 0; // FIXME: child_metadata.file_index();
-
             let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
                 path: child_path.clone(),
@@ -403,21 +394,21 @@ impl BackgroundScanner {
                 },
                 unit_type: None,
                 mtime: Some(child_metadata.modified().unwrap()),
-                inode,
+                file_id: file_id::get_file_id(&child_abs_path)?,
             };
 
             if child_entry.is_dir() {
-                if job.ancestor_inodes.contains(&child_entry.inode) {
+                if job.ancestor_file_ids.contains(&child_entry.file_id) {
                     new_jobs.push(None);
                 } else {
-                    let mut ancestor_inodes = job.ancestor_inodes.clone();
-                    ancestor_inodes.insert(child_entry.inode);
+                    let mut ancestor_file_ids = job.ancestor_file_ids.clone();
+                    ancestor_file_ids.insert(child_entry.file_id);
 
                     new_jobs.push(Some(ScanJob {
                         abs_path: child_abs_path.clone(),
                         path: child_path,
                         scan_queue: job.scan_queue.clone(),
-                        ancestor_inodes,
+                        ancestor_file_ids,
                     }));
                 }
             }
@@ -474,18 +465,13 @@ impl Worktree {
         let root_entry = {
             let metadata = tokio::fs::metadata(&root_abs_path).await?;
 
-            #[cfg(unix)]
-            let root_inode = metadata.ino();
-            #[cfg(windows)]
-            let root_inode = 0; // FIXME: metadata.file_index();
-
             Entry {
                 id: EntryId::new(&next_entry_id),
                 path: PathBuf::new(),
                 kind: EntryKind::PendingDir,
                 unit_type: None,
                 mtime: Some(metadata.modified().unwrap()),
-                inode: root_inode,
+                file_id: file_id::get_file_id(&root_abs_path)?,
             }
         };
 
