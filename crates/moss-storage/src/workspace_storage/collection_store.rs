@@ -62,10 +62,12 @@ impl CollectionStore for CollectionStoreImpl {
     fn list_collection(&self) -> Result<Vec<(PathBuf, CollectionEntity)>> {
         let read_txn = self.client.begin_read()?;
 
-        Ok(self
+        let result = Ok(self
             .table
             .scan(&read_txn)?
             .map(|(path, metadata)| (PathBuf::from(path), metadata))
-            .collect())
+            .collect());
+
+        result
     }
 }
