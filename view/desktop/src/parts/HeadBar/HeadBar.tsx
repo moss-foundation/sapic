@@ -2,7 +2,7 @@ import { ActionButton, Divider, IconLabelButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useResponsive } from "@/hooks/useResponsive";
 
 import { Controls } from "./Controls/Controls";
@@ -111,6 +111,10 @@ interface HeadBarCenterItemsProps {
   setCollectionActionMenuOpen: (open: boolean) => void;
   handleCollectionActionMenuAction: (action: string) => void;
   selectedBranch: string | null;
+  collectionName: string;
+  onRenameCollection: (newName: string) => void;
+  collectionButtonRef: React.RefObject<HTMLButtonElement>;
+  startRenameCollection: () => void;
 }
 
 const HeadBarCenterItems = ({
@@ -123,6 +127,10 @@ const HeadBarCenterItems = ({
   setCollectionActionMenuOpen,
   handleCollectionActionMenuAction,
   selectedBranch,
+  collectionName,
+  onRenameCollection,
+  collectionButtonRef,
+  startRenameCollection,
 }: HeadBarCenterItemsProps) => {
   return (
     <div
@@ -133,6 +141,7 @@ const HeadBarCenterItems = ({
       data-tauri-drag-region
     >
       <IconLabelButton
+        ref={collectionButtonRef}
         leftIcon="HeadBarCollection"
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
@@ -140,7 +149,9 @@ const HeadBarCenterItems = ({
             ? "mr-[3px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
             : "mr-[30px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
-        title="Sapic Test Collection"
+        title={collectionName}
+        editable={true}
+        onRename={onRenameCollection}
       />
       <ActionButton
         icon="Reload"
@@ -266,6 +277,9 @@ export const HeadBar = () => {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [collectionName, setCollectionName] = useState("Sapic Test Collection");
+  const collectionButtonRef = useRef<HTMLButtonElement>(null);
+  const [isRenamingCollection, setIsRenamingCollection] = useState(false);
 
   const openPanel = (panelType: string) => {
     try {
@@ -316,7 +330,35 @@ export const HeadBar = () => {
   // Handle collection action menu actions
   const handleCollectionActionMenuAction = (action: string) => {
     console.log(`Collection action: ${action}`);
-    // Here you would handle different collection actions
+
+    // Check if the rename action was selected
+    if (action === "rename") {
+      startRenameCollection();
+    }
+  };
+
+  const handleRenameCollection = (newName: string) => {
+    if (newName.trim() !== "") {
+      setCollectionName(newName);
+    }
+    setIsRenamingCollection(false);
+  };
+
+  const startRenameCollection = () => {
+    setIsRenamingCollection(true);
+
+    // Use a small timeout to ensure the menu has closed
+    setTimeout(() => {
+      // Dispatch a double-click event to the collection button to trigger renaming
+      if (collectionButtonRef.current) {
+        const doubleClickEvent = new MouseEvent("dblclick", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        collectionButtonRef.current.dispatchEvent(doubleClickEvent);
+      }
+    }, 50);
   };
 
   // Handle workspace menu actions
@@ -377,6 +419,10 @@ export const HeadBar = () => {
             setCollectionActionMenuOpen={setCollectionActionMenuOpen}
             handleCollectionActionMenuAction={handleCollectionActionMenuAction}
             selectedBranch={selectedBranch}
+            collectionName={collectionName}
+            onRenameCollection={handleRenameCollection}
+            collectionButtonRef={collectionButtonRef}
+            startRenameCollection={startRenameCollection}
           />
 
           {/*HeadBar Right-side items*/}

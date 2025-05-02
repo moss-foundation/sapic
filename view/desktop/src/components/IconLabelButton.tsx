@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, forwardRef } from "react";
+import React, { ButtonHTMLAttributes, forwardRef, useState, useRef, useEffect } from "react";
 import { Icon, type Icons } from "@/components";
 import { cn } from "@/utils";
 
@@ -14,6 +14,8 @@ interface IconLabelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   placeholderClassName?: string;
   compact?: boolean;
   showPlaceholder?: boolean;
+  editable?: boolean;
+  onRename?: (newName: string) => void;
 }
 
 interface LabelProps {
@@ -22,6 +24,10 @@ interface LabelProps {
   className?: string;
   placeholderClassName?: string;
   showPlaceholder?: boolean;
+  editable?: boolean;
+  isEditing: boolean;
+  onStartEdit: () => void;
+  onRename: (newName: string) => void;
 }
 
 const buttonStyles =
@@ -33,14 +39,58 @@ const ButtonLabel: React.FC<LabelProps> = ({
   className,
   placeholderClassName,
   showPlaceholder,
+  editable,
+  isEditing,
+  onStartEdit,
+  onRename,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const [inputValue, setInputValue] = useState(title);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      onRename(inputValue);
+    } else if (e.key === "Escape") {
+      setInputValue(title);
+      onRename(title);
+    }
+  };
+
+  const handleBlur = () => {
+    onRename(inputValue);
+  };
+
+  if (isEditing && editable) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="text-md h-[18px] min-w-[80px] bg-[var(--moss-input-background)] px-1 text-[var(--moss-primary-text)] outline-none"
+      />
+    );
+  }
+
   if (showPlaceholder && placeholder) {
     return (
       <span
+        ref={spanRef}
         className={cn(
           "text-md overflow-hidden text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)]",
           placeholderClassName
         )}
+        onDoubleClick={editable ? onStartEdit : undefined}
       >
         {placeholder}
       </span>
@@ -49,10 +99,12 @@ const ButtonLabel: React.FC<LabelProps> = ({
 
   return (
     <span
+      ref={spanRef}
       className={cn(
         "text-md overflow-hidden text-ellipsis whitespace-nowrap text-[var(--moss-primary-text)] opacity-100",
         className
       )}
+      onDoubleClick={editable ? onStartEdit : undefined}
     >
       {title}
     </span>
@@ -73,13 +125,61 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
       placeholderClassName,
       compact = false,
       showPlaceholder = false,
+      editable = false,
+      onRename,
       ...props
     },
     ref
   ) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const labelContainerRef = useRef<HTMLDivElement>(null);
+
+    const handleStartEdit = () => {
+      if (editable) {
+        setIsEditing(true);
+      }
+    };
+
+    const handleRename = (newName: string) => {
+      setIsEditing(false);
+      if (onRename && newName.trim() !== "") {
+        onRename(newName);
+      }
+    };
+
+    useEffect(() => {
+      // Handle the programmatic double-click from the parent component
+      if (editable && ref && typeof ref !== "function" && ref.current) {
+        const button = ref.current;
+
+        const handleDoubleClick = (e: MouseEvent) => {
+          // Ensures we only process the event when it's a real double-click or our programmatic one
+          if (editable && !isEditing) {
+            handleStartEdit();
+            e.stopPropagation();
+          }
+        };
+
+        button.addEventListener("dblclick", handleDoubleClick);
+
+        return () => {
+          button.removeEventListener("dblclick", handleDoubleClick);
+        };
+      }
+    }, [editable, ref, isEditing]);
+
     return (
-      <button ref={ref} className={cn(buttonStyles, className)} {...props}>
-        <div className={compact ? "flex items-center gap-0.5" : "flex items-center gap-1 px-1"}>
+      <button
+        ref={ref}
+        className={cn(buttonStyles, className)}
+        {...props}
+        onClick={(e) => {
+          if (!isEditing && props.onClick) {
+            props.onClick(e);
+          }
+        }}
+      >
+        <div ref={labelContainerRef} className={compact ? "flex items-center gap-0.5" : "flex items-center gap-1 px-1"}>
           {leftIcon && <Icon icon={leftIcon} className={cn("size-4", leftIconClassName)} />}
           {!compact && (
             <ButtonLabel
@@ -88,6 +188,10 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
               className={cn("mx-0.5", labelClassName)}
               placeholderClassName={cn("mx-0.5", placeholderClassName)}
               showPlaceholder={showPlaceholder}
+              editable={editable}
+              isEditing={isEditing}
+              onStartEdit={handleStartEdit}
+              onRename={handleRename}
             />
           )}
           {rightIcon && <Icon icon={rightIcon} className={cn("size-4", rightIconClassName)} />}
