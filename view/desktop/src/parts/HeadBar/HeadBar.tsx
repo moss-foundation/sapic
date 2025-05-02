@@ -233,7 +233,7 @@ const HeadBarRightItems = ({
 };
 
 export const HeadBar = () => {
-  const os = type();
+  const os = "macos";
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
