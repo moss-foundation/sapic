@@ -16,17 +16,37 @@ EXCLUDED_VALUES = {"none", "transparent"}
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
-def setup_logging(verbose: bool = False) -> None:
+class CustomFormatter(logging.Formatter):
     """
-    Configure logging for the module.
+    Formatter for colored logging output
     """
-    level = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(
-        format="[%(asctime)s] %(levelname)s: %(message)s",
-        level=level,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    grey    = "\x1b[38;21m"
+    yellow  = "\x1b[33;21m"
+    red     = "\x1b[31;21m"
+    bold_red= "\x1b[31;1m"
+    reset   = "\x1b[0m"
+    format  = "[%(asctime)s] %(levelname)s: %(message)s"
 
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO:  grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt, datefmt="%Y-%m-%d %H:%M:%S")
+        return formatter.format(record)
+
+def setup_logging(verbose: bool = False) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    handler = logging.StreamHandler()
+    handler.setFormatter(CustomFormatter())
+    root = logging.getLogger()
+    root.setLevel(level)
+    root.addHandler(handler)
 
 def normalize_color(color: str) -> str:
     """
