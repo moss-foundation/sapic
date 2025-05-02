@@ -175,6 +175,7 @@ const HeadBarCenterItems = ({
 
 interface HeadBarRightItemsProps {
   isMedium: boolean;
+  isLarge: boolean;
   breakpoint: string;
   userMenuOpen: boolean;
   setUserMenuOpen: (open: boolean) => void;
@@ -187,6 +188,7 @@ interface HeadBarRightItemsProps {
 
 const HeadBarRightItems = ({
   isMedium,
+  isLarge,
   userMenuOpen,
   setUserMenuOpen,
   handleUserMenuAction,
@@ -217,7 +219,7 @@ const HeadBarRightItems = ({
       />
 
       {os === "macos" && (
-        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isMedium} />
+        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
       )}
 
       <CollapsibleActionMenu
@@ -353,6 +355,7 @@ export const HeadBar = () => {
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
             isMedium={isMedium}
+            isLarge={isLarge}
             breakpoint={breakpoint}
             userMenuOpen={userMenuOpen}
             setUserMenuOpen={setUserMenuOpen}
