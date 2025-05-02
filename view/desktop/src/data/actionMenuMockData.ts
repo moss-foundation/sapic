@@ -187,7 +187,7 @@ export const runConfigItems: MenuItemProps[] = [
     id: "all-configs",
     type: "accordion",
     label: "All Configurations",
-    icon: "TreeChevronRight",
+    icon: "ChevronRight",
     items: [
       { id: "config-web-app", type: "action", label: "Web Application", icon: "TestProject" },
       { id: "config-mobile-app", type: "action", label: "Mobile Application", icon: "TestProject" },

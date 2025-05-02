@@ -133,7 +133,7 @@ export const workspaceMenuItems: MenuItemProps[] = [
     id: "all-workspaces",
     type: "accordion",
     label: "All Workspaces",
-    icon: "TreeChevronRight",
+    icon: "ChevronRight",
     items: [
       {
         id: "microservices-api-test-suite",

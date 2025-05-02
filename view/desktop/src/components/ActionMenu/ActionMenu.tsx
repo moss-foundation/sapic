@@ -151,7 +151,7 @@ const MenuSubTrigger = React.forwardRef<
   >
     {children}
     {!hideChevron && (
-      <Icon icon="TreeChevronRight" className="mr-[-4px] ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />
+      <Icon icon="ChevronRight" className="mr-[-5px] ml-2 h-4 w-4 text-(--moss-not-selected-item-color)" />
     )}
   </DropdownMenu.SubTrigger>
 ));
@@ -436,7 +436,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             }}
           >
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("mr-2 h-5 w-5 text-(--moss-icon-primary-text)", isExpanded && "rotate-90 transform")}
             />
             <span className={cn("flex flex-grow items-center", labelStyles)}>

@@ -110,7 +110,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
@@ -134,7 +134,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             onDoubleClick={() => onRootDoubleClickCallback?.(node)}
           >
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
