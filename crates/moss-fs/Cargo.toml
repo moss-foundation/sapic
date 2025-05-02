@@ -8,3 +8,7 @@ async-trait.workspace = true
 anyhow.workspace = true
 regex.workspace = true
 tokio = { workspace = true, features = ["full"] }
+notify.workspace = true
+futures.workspace = true
+async-stream.workspace = true
+tokio-stream.workspace = true

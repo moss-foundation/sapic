@@ -1,18 +1,17 @@
-use anyhow::{Context, Result};
-use moss_fs::utils::encode_directory_name;
+use anyhow::Context;
+use moss_common::api::{OperationError, OperationResult};
+use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
 use std::sync::Arc;
+use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::models::operations::RenameWorkspaceInput;
 use crate::workspace::Workspace;
-use crate::workspace_manager::{OperationError, WorkspaceManager};
+use crate::workspace_manager::WorkspaceManager;
 
-impl WorkspaceManager {
-    pub async fn rename_workspace(
-        &self,
-        input: RenameWorkspaceInput,
-    ) -> Result<(), OperationError> {
+impl<R: TauriRuntime> WorkspaceManager<R> {
+    pub async fn rename_workspace(&self, input: RenameWorkspaceInput) -> OperationResult<()> {
         input.validate()?;
 
         let workspaces = self
@@ -40,7 +39,7 @@ impl WorkspaceManager {
         let new_path = old_path
             .parent()
             .context("Parent directory not found")?
-            .join(encode_directory_name(&input.new_name));
+            .join(encode_name(&input.new_name));
         if new_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.new_name,
@@ -53,6 +52,14 @@ impl WorkspaceManager {
 
         let current_entry = self.current_workspace.swap(None);
 
+        let workspace_storage = self.global_storage.workspaces_store();
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.rekey_workspace(
+            &mut txn,
+            workspace_info.name.clone(),
+            input.new_name.clone(),
+        )?;
+
         // FIXME: This is probably not the best approach
         // If the current workspace needs to be renamed
         // We will first drop the workspace, do fs renaming, and reload it
@@ -64,7 +71,12 @@ impl WorkspaceManager {
                     .await?;
                 entry = Arc::new((
                     input.key,
-                    Workspace::new(new_path.clone(), self.fs.clone())?,
+                    Workspace::new(
+                        self.app_handle.clone(),
+                        new_path.clone(),
+                        self.fs.clone(),
+                        self.activity_indicator.clone(),
+                    )?,
                 ))
             } else {
                 self.fs
@@ -80,6 +92,8 @@ impl WorkspaceManager {
 
         workspace_info.name = input.new_name;
         workspace_info.path = new_path;
+
+        txn.commit()?;
 
         Ok(())
     }

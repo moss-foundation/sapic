@@ -4,7 +4,7 @@
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
 //
-// If you need to add or modify imports, please update the imports.json and
+// If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
 import type { ResourceKey } from "@repo/bindings-utils";
@@ -65,13 +65,9 @@ export type RequestBody =
   | { "urlEncoded": Array<UrlEncodedItem> }
   | { "binary": string };
 
-export type RequestInfo = {
-  key: ResourceKey;
-  name: string;
-  requestDirRelativePath: string;
-  order: number | null;
-  typ: RequestProtocol;
-};
+export type RequestNodeInfo =
+  | { "request": { key: ResourceKey; name: string; path: string; order: number | null; protocol: RequestProtocol } }
+  | { "group": { key: ResourceKey; name: string; path: string; order: number | null } };
 
 export type RequestProtocol = { "http": HttpMethod } | "webSocket" | "graphQL" | "grpc";
 

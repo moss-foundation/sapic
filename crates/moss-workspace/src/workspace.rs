@@ -1,19 +1,18 @@
 pub mod api;
 
-mod error;
-pub use error::*;
-
-use crate::storage::state_db_manager::StateDbManagerImpl;
-use crate::storage::StateDbManager;
-use anyhow::{anyhow, Context, Result};
-use moss_collection::collection::{Collection, CollectionCache};
+use anyhow::{Context, Result};
+use moss_collection::{
+    collection::{Collection, CollectionCache},
+    indexer::{self, IndexerHandle},
+};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
-use moss_fs::{utils::decode_directory_name, FileSystem};
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::sync::Arc;
-use tokio::sync::{OnceCell, RwLock};
+use moss_fs::{utils::decode_name, FileSystem};
+use moss_storage::{workspace_storage::WorkspaceStorageImpl, WorkspaceStorage};
+use moss_workbench::activity_indicator::ActivityIndicator;
+use std::{collections::HashMap, future::Future, path::PathBuf, sync::Arc};
+use tauri::{AppHandle, Runtime as TauriRuntime};
+use tokio::sync::{mpsc, OnceCell, RwLock};
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -24,28 +23,49 @@ type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
-pub struct Workspace {
+pub struct Workspace<R: TauriRuntime> {
+    #[allow(dead_code)]
+    app_handle: AppHandle<R>,
     path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    // We have to use Option so that we can temporarily drop it
-    // TODO: implement is_external flag for absolute/relative path
-    // Right now, we are storing relative paths in the db_manager
-    state_db_manager: Option<Arc<dyn StateDbManager>>,
+    workspace_storage: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
     environments: OnceCell<RwLock<EnvironmentMap>>,
+    #[allow(dead_code)]
+    activity_indicator: ActivityIndicator<R>,
+    indexer_handle: IndexerHandle,
 }
 
-impl Workspace {
-    pub fn new(path: PathBuf, fs: Arc<dyn FileSystem>) -> Result<Self> {
-        let state_db_manager = StateDbManagerImpl::new(&path)
+impl<R: TauriRuntime> Workspace<R> {
+    pub fn new(
+        app_handle: AppHandle<R>,
+        path: PathBuf,
+        fs: Arc<dyn FileSystem>,
+        activity_indicator: ActivityIndicator<R>,
+    ) -> Result<Self> {
+        let state_db_manager = WorkspaceStorageImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
+        let (tx, rx) = mpsc::unbounded_channel();
+        let indexer_handle = IndexerHandle::new(tx);
+        tauri::async_runtime::spawn({
+            let fs_clone = Arc::clone(&fs);
+            let activity_indicator_clone = activity_indicator.clone();
+
+            async move {
+                indexer::run(activity_indicator_clone, fs_clone, rx).await;
+            }
+        });
+
         Ok(Self {
+            app_handle,
             path,
             fs,
-            state_db_manager: Some(Arc::new(state_db_manager)),
+            workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
+            indexer_handle,
+            activity_indicator,
         })
     }
 
@@ -78,12 +98,7 @@ impl Workspace {
                     }
                 }
 
-                let mut scan_result = self
-                    .state_db_manager
-                    .as_ref()
-                    .unwrap() // FIXME:
-                    .environment_store()
-                    .scan()?;
+                let mut scan_result = self.workspace_storage.environment_store().scan()?;
                 for (name, env) in envs_from_fs {
                     let environment_entity = scan_result.remove(&name);
 
@@ -94,8 +109,10 @@ impl Workspace {
                             variables_cache: environment_entity
                                 .local_values
                                 .into_iter()
-                                .map(|(name, state)| (name, VariableCache::from(state)))
-                                .collect(),
+                                .map(|(name, state_entity)| {
+                                    VariableCache::try_from(state_entity).map(|cache| (name, cache))
+                                })
+                                .collect::<Result<HashMap<_, _>, _>>()?,
                         }
                     } else {
                         EnvironmentCache {
@@ -115,28 +132,24 @@ impl Workspace {
         Ok(result)
     }
 
-    pub fn state_db_manager(&self) -> Result<Arc<dyn StateDbManager>> {
-        self.state_db_manager
-            .clone()
-            .ok_or(anyhow!("The state_db_manager has been dropped"))
-    }
-
-    async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
+    pub async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
 
                 if !self.path.join(COLLECTIONS_DIR).exists() {
-                    return Ok(RwLock::new(collections));
+                    return Ok::<_, anyhow::Error>(RwLock::new(collections));
                 }
 
                 // TODO: Support external collections with absolute path
-                for (relative_path, collection_data) in
-                    self.state_db_manager()?.collection_store().scan()?
+                for (relative_path, collection_data) in self
+                    .workspace_storage
+                    .collection_store()
+                    .list_collection()?
                 {
                     let name = match relative_path.file_name() {
-                        Some(name) => decode_directory_name(&name.to_string_lossy().to_string())?,
+                        Some(name) => decode_name(&name.to_string_lossy().to_string())?,
                         None => {
                             // TODO: logging
                             println!("failed to get the collection {:?} name", relative_path);
@@ -152,7 +165,8 @@ impl Workspace {
                     // TODO: implement is_external flag for relative/absolute path
 
                     let full_path = self.path.join(relative_path);
-                    let collection = Collection::new(full_path, self.fs.clone())?;
+                    let collection =
+                        Collection::new(full_path, self.fs.clone(), self.indexer_handle.clone())?;
                     let metadata = CollectionCache {
                         name,
                         order: collection_data.order,
@@ -167,36 +181,36 @@ impl Workspace {
 
         Ok(result)
     }
+
     pub fn path(&self) -> PathBuf {
         self.path.clone()
     }
+
+    pub async fn with_collection<T, Fut>(
+        &self,
+        key: ResourceKey,
+        f: impl FnOnce(&Collection) -> Fut,
+    ) -> Result<T>
+    where
+        Fut: Future<Output = Result<T>>,
+    {
+        let collections = self.collections().await?;
+        let collections_lock = collections.read().await;
+
+        let (collection, _cache) = collections_lock.get(key).context("Collection not found")?; // TODO: use operation error
+
+        f(collection).await
+    }
 }
 
-// impl Workspace {
-//     pub(crate) async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-//         let _ = self.state_db_manager.take();
-
-//         let old_path = std::mem::replace(&mut self.path, new_path.clone());
-//         self.fs
-//             .rename(&old_path, &new_path, RenameOptions::default())
-//             .await?;
-
-//         let state_db_manager_impl = StateDbManagerImpl::new(&new_path).context(format!(
-//             "Failed to open the workspace {} state database",
-//             self.path.display()
-//         ))?;
-//         self.state_db_manager = Some(Arc::new(state_db_manager_impl));
-
-//         Ok(())
-//     }
-// }
-
-impl Workspace {
+impl<R: TauriRuntime> Workspace<R> {
     #[cfg(test)]
     pub fn truncate(&self) -> Result<()> {
-        let collection_store = self.state_db_manager()?.collection_store();
-        let (mut txn, table) = collection_store.begin_write()?;
-        table.truncate(&mut txn)?;
-        Ok(txn.commit()?)
+        // let collection_store = self.workspace_storage.collection_store();
+
+        // let (mut txn, table) = collection_store.begin_write()?;
+        // table.truncate(&mut txn)?;
+        // Ok(txn.commit()?)
+        todo!()
     }
 }

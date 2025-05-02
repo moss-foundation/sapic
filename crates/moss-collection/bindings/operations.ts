@@ -4,16 +4,15 @@
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
 //
-// If you need to add or modify imports, please update the imports.json and
+// If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { HeaderParamItem } from "./types";
-import type { HttpMethod } from "./types";
-import type { PathParamItem } from "./types";
-import type { QueryParamItem } from "./types";
-import type { RequestBody } from "./types";
-import type { RequestInfo } from "./types";
+import type { HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo } from "./types";
 import type { ResourceKey } from "@repo/bindings-utils";
+
+export type CreateRequestGroupInput = { path: string };
+
+export type CreateRequestGroupOutput = { key: ResourceKey };
 
 export type CreateRequestInput = {
   name: string;
@@ -24,6 +23,11 @@ export type CreateRequestInput = {
 
 export type CreateRequestOutput = { key: ResourceKey };
 
+/**
+ * All the path and file names passed in the input should be unencoded.
+ * For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
+ * The frontend should simply use the name and path used in the user's original input
+ */
 export type CreateRequestProtocolSpecificPayload = {
   "http": {
     method: HttpMethod;
@@ -34,8 +38,12 @@ export type CreateRequestProtocolSpecificPayload = {
   };
 };
 
+export type DeleteRequestGroupInput = { key: ResourceKey };
+
 export type DeleteRequestInput = { key: ResourceKey };
 
-export type ListRequestsOutput = Array<RequestInfo>;
+export type ListRequestsOutput = Array<RequestNodeInfo>;
+
+export type RenameRequestGroupInput = { key: ResourceKey; newName: string };
 
 export type RenameRequestInput = { key: ResourceKey; newName: string };

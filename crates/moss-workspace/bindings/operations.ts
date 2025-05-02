@@ -4,12 +4,17 @@
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
 //
-// If you need to add or modify imports, please update the imports.json and
+// If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { CollectionInfo } from "./types";
-import type { EnvironmentInfo } from "./types";
-import type { WorkspaceInfo } from "./types";
+import type {
+  CollectionInfo,
+  EditorPartState,
+  EnvironmentInfo,
+  PanelPartState,
+  SidebarPartState,
+  WorkspaceInfo,
+} from "./types";
 import type { VariableInfo } from "@repo/moss-environment";
 import type { ResourceKey } from "@repo/bindings-utils";
 
@@ -19,7 +24,7 @@ export type CreateCollectionOutput = { key: ResourceKey; path: string };
 
 export type CreateWorkspaceInput = { name: string };
 
-export type CreateWorkspaceOutput = { key: ResourceKey };
+export type CreateWorkspaceOutput = { key: ResourceKey; path: string };
 
 export type DeleteCollectionInput = { key: ResourceKey };
 
@@ -29,6 +34,8 @@ export type DescribeEnvironmentInput = { key: ResourceKey };
 
 export type DescribeEnvironmentOutput = { variables: VariableInfo };
 
+export type DescribeStateOutput = { editor?: EditorPartState; sidebar?: SidebarPartState; panel?: PanelPartState };
+
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
 export type ListCollectionRequestsInput = { key: ResourceKey };
@@ -37,10 +44,27 @@ export type ListCollectionsOutput = Array<CollectionInfo>;
 
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
-export type OpenWorkspaceInput = { path: string };
+export type OpenCollectionInput = { path: string };
+
+export type OpenCollectionOutput = { key: ResourceKey; path: string };
+
+export type OpenWorkspaceInput = {
+  /**
+   * We use the workspace name instead of its path because
+   * all workspaces can only be stored within a single directory.
+   */
+  name: string;
+};
+
+export type OpenWorkspaceOutput = { path: string };
 
 export type RenameCollectionInput = { key: ResourceKey; newName: string };
 
 export type RenameCollectionOutput = { path: string };
 
 export type RenameWorkspaceInput = { key: ResourceKey; newName: string };
+
+export type UpdateStateInput =
+  | { "updateEditorPartState": EditorPartState }
+  | { "updateSidebarPartState": SidebarPartState }
+  | { "updatePanelPartState": PanelPartState };

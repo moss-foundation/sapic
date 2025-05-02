@@ -1,5 +1,8 @@
-pub mod cmd_base;
-pub mod cmd_window;
-pub mod collection;
+mod cmd_base;
+mod cmd_window;
+mod collection;
+mod workspace;
 
 pub use cmd_window::*;
+pub use collection::*;
+pub use workspace::*;

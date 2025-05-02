@@ -24,6 +24,7 @@ export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
   paddingLeft: 0,
   paddingRight: 0,
+  rootOffset: 0,
   nodeOffset: 0,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
@@ -33,9 +34,10 @@ export const TreeContext = createContext<TreeContextProps>({
 export const Tree = ({
   id,
   tree: initialTree,
-  paddingLeft = 16,
+  paddingLeft = 8,
   paddingRight = 8,
-  nodeOffset = 12,
+  rootOffset = 8,
+  nodeOffset = 16,
   searchInput,
 
   onTreeUpdate,
@@ -59,16 +61,24 @@ export const Tree = ({
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree));
 
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
-    setTree((prev) => updateTreeNode(prev, updatedNode));
-    onTreeUpdate?.(removeUniqueIdFromTree(updatedNode));
+    setTree((prev) => {
+      const newTree = updateTreeNode(prev, updatedNode);
+      onTreeUpdate?.(removeUniqueIdFromTree(newTree));
+      return newTree;
+    });
 
     if (updatedNode.isRoot) onRootUpdate?.(updatedNode);
     else onNodeUpdate?.(updatedNode);
   };
 
   useEffect(() => {
+    setTree(prepareCollectionForTree(initialTree));
+  }, [initialTree]);
+
+  useEffect(() => {
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target } = event.detail;
+
       if (source.treeId === target.treeId && source.treeId === treeId) {
         if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
           return;
@@ -76,6 +86,7 @@ export const Tree = ({
         setTree((prevTree) => {
           const treeWithoutSource = removeNodeFromTree(prevTree, source.node.uniqueId);
           const updatedTree = addNodeToFolder(treeWithoutSource, target.node.uniqueId, source.node);
+          onTreeUpdate?.(removeUniqueIdFromTree(sortNode(updatedTree)));
           return sortNode(updatedTree);
         });
       } else {
@@ -87,6 +98,7 @@ export const Tree = ({
             } else {
               onNodeAdd?.(source.node);
             }
+            onTreeUpdate?.(removeUniqueIdFromTree(sortNode(updatedTree)));
             return sortNode(updatedTree);
           });
         }
@@ -98,6 +110,7 @@ export const Tree = ({
             } else {
               onNodeRemove?.(source.node);
             }
+            onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
             return removedTree;
           });
         }
@@ -114,6 +127,7 @@ export const Tree = ({
           } else {
             onNodeRemove?.(source.node);
           }
+          onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
           return removedTree;
         });
       }
@@ -129,7 +143,7 @@ export const Tree = ({
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, treeId]);
+  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, treeId]);
 
   return (
     <TreeContext.Provider
@@ -137,6 +151,7 @@ export const Tree = ({
         treeId,
         paddingLeft,
         paddingRight,
+        rootOffset,
         nodeOffset,
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
@@ -157,7 +172,7 @@ export const Tree = ({
         onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
-      <div className="select-none">
+      <div>
         <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>

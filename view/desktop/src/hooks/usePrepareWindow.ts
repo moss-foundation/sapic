@@ -1,19 +1,35 @@
 import { useEffect, useState } from "react";
 
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+
+import { useDescribeWorkspaceState } from "./workspaces/useDescribeWorkspaceState";
+
 export interface WindowPreparationState {
   isPreparing: boolean;
 }
 
-const prepareWindowFn = (): WindowPreparationState => {
-  return { isPreparing: false };
-};
-
 export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
 
+  const { initialize } = useAppResizableLayoutStore();
+  const { isFetched, data: layout } = useDescribeWorkspaceState();
+
   useEffect(() => {
-    setIsPreparing(false);
-  }, []);
+    if (isFetched) setIsPreparing(false);
+
+    if (layout) {
+      initialize({
+        sideBar: {
+          width: layout?.sidebar?.preferredSize,
+          visible: layout?.sidebar?.isVisible,
+        },
+        bottomPane: {
+          height: layout?.panel?.preferredSize,
+          visible: layout?.panel?.isVisible,
+        },
+      });
+    }
+  }, [initialize, isFetched, layout]);
 
   return { isPreparing };
 };

@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_db.workspace = true
+
 slotmap.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
+thiserror.workspace = true
+validator.workspace = true
+tauri.workspace = true

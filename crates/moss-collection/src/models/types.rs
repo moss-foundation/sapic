@@ -139,12 +139,45 @@ pub enum RawBodyType {
 #[derive(Debug, PartialEq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct RequestInfo {
-    pub key: ResourceKey,
-    pub name: String,
-    pub request_dir_relative_path: PathBuf,
-    pub order: Option<usize>,
-    pub typ: RequestProtocol,
+pub enum RequestNodeInfo {
+    Request {
+        key: ResourceKey,
+        name: String,
+        // This field will be encoded if the input relative path contains special characters
+        path: PathBuf,
+        order: Option<usize>,
+        protocol: RequestProtocol,
+    },
+    Group {
+        key: ResourceKey,
+        name: String,
+        // This field will be encoded if the input relative path contains special characters
+        path: PathBuf,
+        order: Option<usize>,
+    },
+}
+
+impl RequestNodeInfo {
+    pub fn name(&self) -> &str {
+        match self {
+            RequestNodeInfo::Request { name, .. } => name,
+            RequestNodeInfo::Group { name, .. } => name,
+        }
+    }
+
+    pub fn path(&self) -> &PathBuf {
+        match self {
+            RequestNodeInfo::Request { path, .. } => path,
+            RequestNodeInfo::Group { path, .. } => path,
+        }
+    }
+
+    pub fn order(&self) -> &Option<usize> {
+        match self {
+            RequestNodeInfo::Request { order, .. } => order,
+            RequestNodeInfo::Group { order, .. } => order,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

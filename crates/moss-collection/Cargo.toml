@@ -8,17 +8,25 @@ moss_fs.workspace = true
 moss_db.workspace = true
 anyhow.workspace = true
 moss_common.workspace = true
-
+moss_workbench.workspace = true
+moss_storage.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 # miette = { workspace = true, features = ["fancy"] }
-tokio.workspace = true
+tokio = { workspace = true, features = ["sync"] }
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
 serde_json.workspace = true
 scraper.workspace = true
 xml-rs.workspace = true
 validator = { workspace = true, features = ["derive"] }
+tauri.workspace = true
+arc-swap.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+notify.workspace = true
+sweep-bptree.workspace = true
 
 [dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

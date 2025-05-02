@@ -2,7 +2,7 @@ import "@repo/moss-tabs/assets/styles.css";
 
 import { useEffect, useRef, useState } from "react";
 
-import { DropdownMenu, Icon, Input, Scrollbar, Tree } from "@/components";
+import { Icon, Input, Scrollbar, Tree } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
@@ -12,12 +12,12 @@ import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
 import { getActualDropSourceTarget } from "./Tree/utils";
 
 export const CollectionTreeView = () => {
+  const dropTargetToggleRef = useRef<HTMLDivElement>(null);
+
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const dropTargetToggleRef = useRef<HTMLDivElement>(null);
-
-  const { collections, setCollections } = useCollectionsStore();
+  const { collections, setCollections, updateCollection } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -102,66 +102,34 @@ export const CollectionTreeView = () => {
   }, [collections, setCollections]);
 
   return (
-    <div className="relative flex h-full flex-col pt-1 select-none" ref={dropTargetToggleRef}>
-      <div className="flex items-center gap-[7px] py-1.5 pr-[7px] pl-4">
-        <Input
-          iconLeft="Search"
-          variant="outlined"
-          onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-          placeholder="Search"
-          size="sm"
-        />
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger className="background-(--moss-icon-primary-background) hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded p-[5px] text-(--moss-icon-primary-text)">
-            <Icon icon="Plus" />
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content>
-            <DropdownMenu.Item label="Edit" />
-            <DropdownMenu.Item label="Duplicate" />
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Archive" />
-            <DropdownMenu.Sub>
-              <DropdownMenu.SubTrigger label="More" />
-              <DropdownMenu.SubContent>
-                <DropdownMenu.Item label="Move to project…" />
-                <DropdownMenu.Item label="Move to folder…" />
-
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item label="Advanced options…" />
-              </DropdownMenu.SubContent>
-            </DropdownMenu.Sub>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Share" />
-            <DropdownMenu.Item label="Add to favorites" />
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item label="Delete" />
-
-            <DropdownMenu.Separator />
-
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" />
-            <DropdownMenu.CheckboxItem label="Hide from sidebar" checked />
-
-            <DropdownMenu.Separator />
-            <DropdownMenu.RadioGroup>
-              <DropdownMenu.RadioItem value="1" label="Hide from sidebar" checked={false} />
-              <DropdownMenu.RadioItem value="2" label="Hide from sidebar" checked={true} />
-              <DropdownMenu.RadioItem value="3" label="Hide from sidebar" checked={false} />
-            </DropdownMenu.RadioGroup>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </div>
-
+    <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
-          {collections.map((collection) => (
-            <>
-              <Tree tree={collection.tree} id={collection.id} key={collection.id} searchInput={searchInput} />
-              <div className="background-(--moss-border-color) h-[1px] w-full" />
-            </>
-          ))}
+          <div className="flex shrink items-center gap-[7px] py-1 pr-2.5 pl-2">
+            <Input
+              variant="plain"
+              onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
+              placeholder="Search"
+              size="sm"
+            />
+          </div>
+
+          <div className="flex grow flex-col">
+            {collections.map((collection) => (
+              <div key={`${collection.id}`}>
+                <Tree
+                  onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
+                  tree={collection.tree}
+                  id={collection.id}
+                  searchInput={searchInput}
+                />
+                <div className="background-(--moss-border-color) h-[1px] w-full" />
+              </div>
+            ))}
+          </div>
+
           {showCollectionCreationZone && (
-            <div className="flex grow flex-col justify-end">
+            <div className="flex justify-end p-2">
               <CollectionCreationZone />
             </div>
           )}
@@ -214,20 +182,16 @@ const CollectionCreationZone = () => {
   return (
     <div
       ref={ref}
-      className={cn("grid h-max min-h-32 w-full place-items-center", {
-        "bg-[#EDF6FF]": canDrop === true,
-        "background-(--moss-primary-background)": canDrop === null,
-      })}
+      className={cn(
+        "background-(--moss-info-background) grid h-max min-h-32 w-full place-items-center rounded border-2 border-dashed border-(--moss-info-border) transition-[translate] duration-100",
+        {
+          "background-(--moss-info-background-hover) -translate-y-1": canDrop === true,
+        }
+      )}
     >
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-        <Icon
-          icon="PlusCircle"
-          className={cn("size-5 rounded-full", {
-            "text-(--moss-primary)": canDrop === true,
-            "text-(--moss-icon-primary-text)": canDrop === null,
-          })}
-        />
-        <span className="text-black">Drag & drop selected items here to create a new collection</span>
+        <Icon icon="PlusCircle" className={cn("size-5 rounded-full text-(--moss-primary)")} />
+        <span>Drag & drop selected items here to create a new collection</span>
       </div>
     </div>
   );

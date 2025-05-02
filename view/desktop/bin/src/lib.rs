@@ -11,19 +11,22 @@ extern crate tracing;
 
 use moss_app::manager::AppManager;
 use moss_fs::RealFileSystem;
+use moss_storage::global_storage::GlobalStorageImpl;
 use services::service_pool;
+use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, RunEvent, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
+
 use window::{create_window, CreateWindowInput};
 
 use crate::constants::*;
 use crate::plugins::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub async fn run() {
+pub async fn run<R: TauriRuntime>() {
     #[allow(unused_mut)]
-    let mut builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::<R>::new()
         .plugin(plugin_log::init())
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
@@ -39,7 +42,15 @@ pub async fn run() {
         .setup(|app| {
             let fs = Arc::new(RealFileSystem::new());
             let app_handle = app.app_handle();
-            let service_pool = service_pool(app_handle, fs.clone());
+
+            let app_dir =
+                PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
+
+            let global_storage = Arc::new(
+                GlobalStorageImpl::new(&app_dir).expect("Failed to create global storage"),
+            );
+
+            let service_pool = service_pool(app_handle, &app_dir, fs.clone(), global_storage);
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
             app_handle.manage(app_manager);
 
@@ -54,16 +65,24 @@ pub async fn run() {
             commands::set_locale,
             commands::list_locales,
             commands::get_translations,
+            commands::open_workspace,
+            commands::update_workspace_state,
+            commands::describe_workspace_state,
+            commands::create_workspace,
+            commands::list_workspaces,
+            commands::delete_workspace,
+            commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
-            #[cfg(target_os = "macos")]
-            WindowEvent::CloseRequested { api, .. } => {
-                if window.app_handle().webview_windows().len() == 1 {
-                    window.app_handle().hide().ok();
-                    api.prevent_close();
-                }
-            }
+            // #[cfg(target_os = "macos")]
+            // WindowEvent::CloseRequested { api, .. } => {
+            //     if window.app_handle().webview_windows().len() == 1 {
+            //         window.app_handle().hide().ok();
+            //         api.prevent_close();
+            //     }
+            // }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
+            WindowEvent::CloseRequested { api, .. } => {}
 
             _ => (),
         })
@@ -76,17 +95,15 @@ pub async fn run() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
-            #[cfg(target_os = "macos")]
-            RunEvent::ExitRequested { api, .. } => {
-                app_handle.hide().ok();
-                api.prevent_exit();
+            RunEvent::Exit => {
+                dbg!("Exit");
             }
 
             _ => {}
         });
 }
 
-fn create_main_window(app_handle: &AppHandle, url: &str) -> WebviewWindow {
+fn create_main_window<R: TauriRuntime>(app_handle: &AppHandle<R>, url: &str) -> WebviewWindow<R> {
     // TODO: Use ConfigurationService
 
     let window_inner_height = DEFAULT_WINDOW_HEIGHT;

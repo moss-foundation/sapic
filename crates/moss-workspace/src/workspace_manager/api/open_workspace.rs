@@ -1,65 +1,84 @@
 use anyhow::anyhow;
-use moss_fs::utils::decode_directory_name;
+use chrono::Utc;
+use moss_common::api::{OperationError, OperationResult};
+use moss_fs::utils::{decode_name, encode_name};
+use moss_storage::global_storage::entities::WorkspaceInfoEntity;
 use std::sync::Arc;
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    models::{operations::OpenWorkspaceInput, types::WorkspaceInfo},
+    models::{
+        operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
+        types::WorkspaceInfo,
+    },
     workspace::Workspace,
-    workspace_manager::{OperationError, WorkspaceManager},
+    workspace_manager::WorkspaceManager,
 };
 
-impl WorkspaceManager {
-    pub async fn open_workspace(&self, input: OpenWorkspaceInput) -> Result<(), OperationError> {
-        if !input.path.exists() {
+impl<R: TauriRuntime> WorkspaceManager<R> {
+    pub async fn open_workspace(
+        &self,
+        input: &OpenWorkspaceInput,
+    ) -> OperationResult<OpenWorkspaceOutput> {
+        let encoded_name = encode_name(&input.name);
+        let full_path = self.workspaces_dir.join(&encoded_name);
+
+        if !full_path.exists() {
             return Err(OperationError::NotFound {
-                name: input
-                    .path
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_string(),
-                path: input.path.clone(),
+                name: encoded_name,
+                path: full_path,
             });
         }
 
         // Check if the workspace is already active
-        let current_workspace = self.current_workspace();
-        if current_workspace.is_ok() && current_workspace.unwrap().1.path() == input.path {
-            return Ok(());
+        if let Ok(current_workspace) = self.current_workspace() {
+            if current_workspace.1.path() == full_path {
+                return Ok(OpenWorkspaceOutput { path: full_path });
+            }
         }
 
-        let workspace = Workspace::new(input.path.clone(), self.fs.clone())?;
+        let workspace = Workspace::new(
+            self.app_handle.clone(),
+            full_path.clone(),
+            self.fs.clone(),
+            self.activity_indicator.clone(),
+        )?;
 
         let known_workspaces = self.known_workspaces().await?;
         let mut workspaces_lock = known_workspaces.write().await;
 
-        // FIXME: Maybe the process can be improved
-        // Find the key for the workspace to be opened
-        // If not found, add the workspace to the known workspaces
-        // This would allow for opening a workspace in a non-default folder
+        let last_opened_at = Utc::now().timestamp();
         let workspace_key = if let Some((key, _)) = workspaces_lock
             .iter()
-            .filter(|(_, info)| &info.value().path == &input.path)
+            .filter(|(_, info)| &info.value().path == &full_path)
             .next()
         {
             key
         } else {
+            // INFO: This is an anomaly, the workspace should be already known, since
+            // we traverse the workspaces directory when opening the app.
+
             workspaces_lock.insert(WorkspaceInfo {
-                name: decode_directory_name(
-                    &input
-                        .path
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .to_string(),
-                )
-                .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
-                path: input.path,
+                name: decode_name(&full_path.file_name().unwrap().to_string_lossy().to_string())
+                    .map_err(|_| OperationError::Unknown(anyhow!("Invalid directory encoding")))?,
+                path: full_path.clone(),
+                last_opened_at: Some(last_opened_at),
             })
         };
 
+        let workspace_storage = self.global_storage.workspaces_store();
+        let mut txn = self.global_storage.begin_write().await?;
+        workspace_storage.upsert_workspace(
+            &mut txn,
+            encoded_name,
+            WorkspaceInfoEntity { last_opened_at },
+        )?;
+
         self.current_workspace
             .store(Some(Arc::new((workspace_key, workspace))));
-        Ok(())
+
+        txn.commit()?;
+
+        Ok(OpenWorkspaceOutput { path: full_path })
     }
 }

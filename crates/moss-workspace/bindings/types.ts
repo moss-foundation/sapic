@@ -4,13 +4,49 @@
 // This ensures that all required dependencies are correctly referenced and available
 // within this module.
 //
-// If you need to add or modify imports, please update the imports.json and
+// If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { ResourceKey } from "@repo/bindings-utils";
+import type { JsonValue, ResourceKey } from "@repo/bindings-utils";
 
 export type CollectionInfo = { key: ResourceKey; name: string; order?: number };
 
+export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
+
+export type EditorGridNode =
+  | { "type": "branch"; data: Array<EditorGridNode>; size: number }
+  | { "type": "leaf"; data: EditorGridLeafData; size: number };
+
+export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
+
+export type EditorGridState = {
+  root: EditorGridNode;
+  width: number;
+  height: number;
+  orientation: EditorGridOrientation;
+};
+
+export type EditorPanelState = {
+  id: string;
+  contentComponent?: string;
+  tabComponent?: string;
+  title?: string;
+  renderer?: PanelRenderer;
+  params?: { [key: string]: JsonValue };
+  minimumWidth?: number;
+  minimumHeight?: number;
+  maximumWidth?: number;
+  maximumHeight?: number;
+};
+
+export type EditorPartState = { grid: EditorGridState; panels: Record<string, EditorPanelState>; activeGroup?: string };
+
 export type EnvironmentInfo = { key: ResourceKey; collectionKey?: ResourceKey; name: string; order?: number };
 
-export type WorkspaceInfo = { path: string; name: string };
+export type PanelPartState = { preferredSize: number; isVisible: boolean };
+
+export type PanelRenderer = "onlyWhenVisible" | "always";
+
+export type SidebarPartState = { preferredSize: number; isVisible: boolean };
+
+export type WorkspaceInfo = { path: string; name: string; lastOpenedAt?: bigint };

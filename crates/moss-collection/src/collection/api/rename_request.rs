@@ -1,47 +1,55 @@
-use anyhow::{Context as _, Result};
-use moss_fs::utils::encode_directory_name;
+use anyhow::Context as _;
+use moss_common::api::{OperationError, OperationResult};
+use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
+use moss_storage::collection_storage::entities::request_store_entities::{
+    RequestEntity, RequestNodeEntity,
+};
 use validator::Validate;
 
-use crate::collection::primitives::EndpointFileExt;
-use crate::collection::{utils, Collection, OperationError, REQUESTS_DIR};
-use crate::models::{operations::RenameRequestInput, storage::RequestEntity};
+use crate::collection::{Collection, REQUESTS_DIR};
+use crate::models::operations::RenameRequestInput;
 
 impl Collection {
-    pub async fn rename_request(&self, input: RenameRequestInput) -> Result<(), OperationError> {
-        input.validate()?;
+    pub async fn rename_request(&self, input: RenameRequestInput) -> OperationResult<()> {
+        input
+            .validate()
+            .map_err(|error| OperationError::Validation(error.to_string()))?;
 
-        let requests = self.requests().await?;
-        let mut requests_lock = requests.write().await;
+        let request_nodes = self.registry().await?.requests_nodes();
+        let mut requests_lock = request_nodes.write().await;
 
         let mut lease_request_data = requests_lock.lease(input.key)?;
 
-        if lease_request_data.name == input.new_name {
+        if !lease_request_data.is_request() {
+            return Err(OperationError::Validation(format!(
+                "Resource {} is not a request",
+                input.key
+            )));
+        }
+
+        if lease_request_data.name() == input.new_name {
             return Ok(());
         }
 
-        let request_dir_relative_path_old = lease_request_data.request_dir_relative_path.to_owned();
+        let request_dir_relative_path_old = lease_request_data.path().to_owned();
         let request_dir_path_old = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path_old);
         if !request_dir_path_old.exists() {
             return Err(OperationError::NotFound {
-                name: lease_request_data.name.clone(),
+                name: lease_request_data.name().to_string(),
                 path: request_dir_path_old,
             });
         }
 
         let request_dir_relative_path_new = lease_request_data
-            .request_dir_relative_path
+            .path()
             .parent()
             .context("Failed to get the parent directory")?
-            .join(format!(
-                "{}.request",
-                encode_directory_name(&input.new_name)
-            ));
+            .join(format!("{}.request", encode_name(&input.new_name)));
 
-        // Rename the request directory
         let request_dir_path_new = self
             .abs_path
             .join(REQUESTS_DIR)
@@ -62,38 +70,18 @@ impl Collection {
             .await
             .context("Failed to rename the request directory")?;
 
-        // Rename the request file
-        let request_file_path_old =
-            request_dir_path_new.join(&lease_request_data.request_file_name());
-        let file_ext = EndpointFileExt::from(&lease_request_data.protocol);
-        let request_file_name_new = utils::request_file_name(&input.new_name, &file_ext);
-        let request_file_path_new = request_dir_path_new.join(&request_file_name_new);
-        self.fs
-            .rename(
-                &request_file_path_old,
-                &request_file_path_new,
-                RenameOptions::default(),
-            )
-            .await
-            .context("Failed to rename the request file")?;
+        let request_store = self.collection_storage.request_store().await;
+        let mut txn = self.collection_storage.begin_write().await?;
 
-        let request_store = self.state_db_manager()?.request_store();
-        let (mut txn, table) = request_store.begin_write()?;
-        table.remove(
+        request_store.rekey_request_node(
             &mut txn,
-            request_dir_relative_path_old.to_string_lossy().to_string(),
+            request_dir_relative_path_old,
+            request_dir_relative_path_new.clone(),
         )?;
 
-        table.insert(
-            &mut txn,
-            request_dir_relative_path_new.to_string_lossy().to_string(),
-            &RequestEntity {
-                order: lease_request_data.order,
-            },
-        )?;
+        lease_request_data.set_name(input.new_name);
+        lease_request_data.set_path(request_dir_relative_path_new.clone());
 
-        lease_request_data.name = input.new_name;
-        lease_request_data.request_dir_relative_path = request_dir_relative_path_new.clone();
         Ok(txn.commit()?)
     }
 }

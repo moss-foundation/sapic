@@ -17,7 +17,7 @@
 }
 
 .dv-drop-target > .dv-drop-target-dropzone > .dv-drop-target-selection {
-  @apply pointer-events-none relative box-border h-full w-full bg-[var(--moss-drag-over-background-color)];
+  @apply pointer-events-none relative box-border h-full w-full bg-[var(--moss-drag-over-background-color)] opacity-50;
   transition:
     top 70ms ease-out,
     left 70ms ease-out,
@@ -80,19 +80,23 @@
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply border-b border-(--moss-activegroup-visiblepanel-tab-border-color) bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply border-b text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  border-color: var(--moss-activegroup-visiblepanel-tab-border-color);
 }
 
 .dv-groupview.dv-active-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply border-b border-(--moss-activegroup-hiddenpanel-tab-border-color) bg-[var(--moss-activegroup-hiddenpanel-tab-background-color)] text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  @apply border-b text-[var(--moss-activegroup-hiddenpanel-tab-color)];
+  border-color: var(--moss-border-color);
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-active-tab {
-  @apply bg-[var(--moss-inactivegroup-visiblepanel-tab-background-color)] text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+  @apply border-b text-[var(--moss-inactivegroup-visiblepanel-tab-color)];
+  border-color: var(--moss-inactivegroup-visiblepanel-tab-border-color);
 }
 
 .dv-groupview.dv-inactive-group > .dv-tabs-and-actions-container > .dv-tabs-container > .dv-tab.dv-inactive-tab {
-  @apply bg-[var(--moss-inactivegroup-hiddenpanel-tab-background-color)] text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  @apply border-b text-[var(--moss-inactivegroup-hiddenpanel-tab-color)];
+  border-color: var(--moss-border-color);
 }
 
 /*--------------------dv-tab--------------------*/
@@ -108,7 +112,7 @@
 
 .dv-tab:focus-within::after,
 .dv-tab:focus::after {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-full !outline !outline-1 outline-offset-[-1px] !outline-[var(--moss-tab-divider-color)] content-[''];
+  @apply content-[''];
 }
 
 /**
@@ -116,7 +120,7 @@
  * therefore we also set some stylings for the dragging event
  **/
 .dv-tab.dv-tab-dragging {
-  @apply bg-[var(--moss-activegroup-visiblepanel-tab-background-color)] text-[var(--moss-activegroup-visiblepanel-tab-color)];
+  @apply text-[var(--moss-activegroup-visiblepanel-tab-color)];
 }
 
 .dv-tab.dv-tab-dragging .dv-default-tab-action {
@@ -139,6 +143,20 @@
   @apply relative flex h-full min-w-20 items-center border-b border-transparent px-2 text-ellipsis whitespace-nowrap;
 }
 
+.dv-tab .dv-default-tab:hover {
+  @apply text-black;
+}
+
+.dv-tab .dv-default-tab svg,
+.dv-tab .dv-default-tab img {
+  @apply opacity-60;
+}
+
+.dv-tab .dv-default-tab:hover svg,
+.dv-tab .dv-default-tab:hover img {
+  @apply opacity-100;
+}
+
 .dv-tab .dv-default-tab .dv-default-tab-content {
   @apply grow px-2;
 }
@@ -149,6 +167,11 @@
 
 .dv-tab .dv-default-tab .dv-default-tab-action:hover {
   @apply rounded-sm bg-[var(--moss-icon-hover-background-color)];
+}
+
+.dv-tab.dv-active-tab .dv-default-tab svg,
+.dv-tab.dv-active-tab .dv-default-tab img {
+  @apply opacity-100;
 }
 
 /*--------------------dv-root-wrapper--------------------*/
@@ -413,14 +436,16 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  transition: background-color 0.2s ease-out;
 }
 
 .dv-split-view-container .dv-sash-container .dv-sash:not(.disabled):active {
-  @apply bg-[var(--moss-active-sash-color,transparent)] transition-colors duration-100 ease-in-out;
+  @apply bg-[var(--moss-sash-active-highlight)] opacity-100;
+  transition: none;
 }
 
 .dv-split-view-container .dv-sash-container .dv-sash:not(.disabled):hover {
-  @apply bg-[var(--moss-active-sash-color,transparent)] transition-colors delay-500 duration-100 ease-in-out;
+  @apply bg-[var(--moss-sash-active-highlight)] opacity-100;
 }
 
 .dv-split-view-container .dv-view-container {
@@ -454,24 +479,11 @@
 }
 
 .dv-tabs-and-actions-container .dv-void-container {
-  @apply flex grow cursor-grab;
+  @apply flex grow cursor-grab border-b border-[var(--moss-border-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container {
   @apply flex overflow-x-auto overflow-y-hidden;
-  scrollbar-width: thin;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar {
-  @apply h-[3px];
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-.dv-tabs-and-actions-container .dv-tabs-container::-webkit-scrollbar-thumb {
-  @apply bg-[var(--moss-tabs-container-scrollbar-color)];
 }
 
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab {
@@ -479,12 +491,38 @@
   -webkit-user-drag: element;
 }
 
+.dv-tabs-and-actions-container .dv-tabs-container .dv-tab.dv-active-tab {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-tabs-container .dv-tab.dv-inactive-tab {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-left-actions-container {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
+.dv-tabs-and-actions-container .dv-right-actions-container {
+  @apply border-b border-[var(--moss-border-color)];
+}
+
 .dv-tabs-and-actions-container .dv-tabs-container .dv-tab:not(:first-child)::before {
-  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-[1px] bg-[var(--moss-tab-divider-color)] content-[''];
+  @apply pointer-events-none absolute top-0 left-0 z-[5] h-full w-0 bg-transparent content-[''];
 }
 
 /*--------------------dv-dragged--------------------*/
 
 .dv-dragged {
   transform: translate3d(0px, 0px, 0px);
+}
+
+.dv-split-view-container.dv-horizontal > .dv-sash-container > .dv-sash.dv-enabled:active {
+  width: 3px;
+  height: 100%;
+}
+
+.dv-split-view-container.dv-vertical > .dv-sash-container > .dv-sash.dv-enabled:active {
+  width: 100%;
+  height: 3px;
 }

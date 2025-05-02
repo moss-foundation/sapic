@@ -8,6 +8,7 @@ import { WillShowOverlayLocationEvent } from "../../dockviewGroupPanelModel";
 import { DockviewPanel, IDockviewPanel } from "../../dockviewPanel";
 import { Tab } from "../tab/tab";
 import { VoidContainer } from "./voidContainer";
+import { OverlayScrollbars } from "overlayscrollbars";
 
 export interface TabDropIndexEvent {
   readonly event: DragEvent;
@@ -54,6 +55,7 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
   private readonly leftActionsContainer: HTMLElement;
   private readonly preActionsContainer: HTMLElement;
   private readonly voidContainer: VoidContainer;
+  private scrollbarsInstance: OverlayScrollbars | null = null;
 
   private tabs: IValueDisposable<Tab>[] = [];
   private selectedIndex = -1;
@@ -179,6 +181,13 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
     this.tabContainer = document.createElement("div");
     this.tabContainer.className = "dv-tabs-container";
 
+    // Initialize OverlayScrollbars instead of using native scrolling
+    this.scrollbarsInstance = OverlayScrollbars(this.tabContainer, {
+      scrollbars: {
+        autoHide: "move",
+      },
+    });
+
     this.voidContainer = new VoidContainer(this.accessor, this.group);
 
     this._element.appendChild(this.preActionsContainer);
@@ -241,6 +250,18 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
         if (isLeftClick) {
           this.accessor.doSetGroupActive(this.group);
+        }
+      }),
+      addDisposableListener(this.tabContainer, "wheel", (event) => {
+        if (event.deltaY !== 0) {
+          if (this.tabContainer.scrollWidth > this.tabContainer.clientWidth) {
+            if (!event.shiftKey) {
+              event.preventDefault();
+
+              const scrollAmount = event.deltaY * 0.7;
+              this.tabContainer.scrollLeft += scrollAmount;
+            }
+          }
         }
       })
     );
@@ -343,6 +364,12 @@ export class TabsContainer extends CompositeDisposable implements ITabsContainer
 
   public dispose(): void {
     super.dispose();
+
+    // Dispose OverlayScrollbars instance
+    if (this.scrollbarsInstance) {
+      this.scrollbarsInstance.destroy();
+      this.scrollbarsInstance = null;
+    }
 
     for (const { value, disposable } of this.tabs) {
       disposable.dispose();

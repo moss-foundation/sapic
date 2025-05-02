@@ -1,4 +1,105 @@
 :root {
+  /* Palette */
+
+  --moss-gray-1: #1e1f22;
+  --moss-gray-2: #2b2d30;
+  --moss-gray-3: #393b40;
+  --moss-gray-4: #43454a;
+  --moss-gray-5: #4e5157;
+  --moss-gray-6: #5a5d63;
+  --moss-gray-7: #6f737a;
+  --moss-gray-8: #868a91;
+  --moss-gray-9: #9da0a8;
+  --moss-gray-10: #b4b8bf;
+  --moss-gray-11: #ced0d6;
+  --moss-gray-12: #dfe1e5;
+  --moss-gray-13: #f0f1f2;
+  --moss-gray-14: #ffffff;
+
+  --moss-blue-1: #25324d;
+  --moss-blue-2: #2e436e;
+  --moss-blue-3: #35538f;
+  --moss-blue-4: #375fad;
+  --moss-blue-5: #366acf;
+  --moss-blue-6: #3574f0;
+  --moss-blue-7: #467ff2;
+  --moss-blue-8: #548af7;
+  --moss-blue-9: #6b9bfa;
+  --moss-blue-10: #83acfc;
+  --moss-blue-11: #99bbff;
+
+  --moss-green-1: #253627;
+  --moss-green-2: #375239;
+  --moss-green-3: #436946;
+  --moss-green-4: #4e8052;
+  --moss-green-5: #57965c;
+  --moss-green-6: #5fad65;
+  --moss-green-7: #73bd79;
+  --moss-green-8: #89cc8e;
+  --moss-green-9: #a0dba5;
+  --moss-green-10: #b9ebbd;
+  --moss-green-11: #d4fad7;
+
+  --moss-yellow-1: #3d3223;
+  --moss-yellow-2: #5e4d33;
+  --moss-yellow-3: #826a41;
+  --moss-yellow-4: #9e814a;
+  --moss-yellow-5: #ba9752;
+  --moss-yellow-6: #d6ae58;
+  --moss-yellow-7: #f2c55c;
+  --moss-yellow-8: #f5d273;
+  --moss-yellow-9: #f7de8b;
+  --moss-yellow-10: #fceba4;
+  --moss-yellow-11: #fff6bd;
+
+  --moss-red-1: #402929;
+  --moss-red-2: #5e3838;
+  --moss-red-3: #7a4343;
+  --moss-red-4: #9c4e4e;
+  --moss-red-5: #bd5757;
+  --moss-red-6: #db5c5c;
+  --moss-red-7: #e37774;
+  --moss-red-8: #eb938d;
+  --moss-red-9: #f2b1aa;
+  --moss-red-10: #f7ccc6;
+  --moss-red-11: #fae3de;
+
+  --moss-orange-1: #45322b;
+  --moss-orange-2: #614438;
+  --moss-orange-3: #825845;
+  --moss-orange-4: #a36b4e;
+  --moss-orange-5: #c77d55;
+  --moss-orange-6: #e08855;
+  --moss-orange-7: #e5986c;
+  --moss-orange-8: #f0ac81;
+  --moss-orange-9: #f5bd98;
+  --moss-orange-10: #faceaf;
+  --moss-orange-11: #ffdfc7;
+
+  --moss-purple-1: #2f2936;
+  --moss-purple-2: #433358;
+  --moss-purple-3: #583d7a;
+  --moss-purple-4: #6c469c;
+  --moss-purple-5: #8150be;
+  --moss-purple-6: #955ae0;
+  --moss-purple-7: #a571e6;
+  --moss-purple-8: #b589ec;
+  --moss-purple-9: #c4a0f3;
+  --moss-purple-10: #d4b8f9;
+  --moss-purple-11: #e4ceff;
+
+  --moss-teal-1: #1d3838;
+  --moss-teal-2: #1e4d4a;
+  --moss-teal-3: #20635d;
+  --moss-teal-4: #21786f;
+  --moss-teal-5: #238e82;
+  --moss-teal-6: #24a394;
+  --moss-teal-7: #42b1a4;
+  --moss-teal-8: #60c0b5;
+  --moss-teal-9: #7dcec5;
+  --moss-teal-10: #9bddd6;
+  --moss-teal-11: #b9ebe6;
+
   /* Base Colors */
   --moss-primary: #0065ff;
   --moss-error: #fb2c36;
@@ -15,14 +116,35 @@
   --moss-secondary-background-hover: rgba(255, 255, 255, 0.1);
   --moss-secondary-text: #a1a1aa;
 
+  --moss-info-background: #edf3ff;
+  --moss-info-background-hover: #d4e2ff;
+  --moss-info-text: var(--moss-primary-text);
+  --moss-info-icon: var(--moss-primary);
+  --moss-info-border: var(--moss-primary);
+
+  --moss-divider-color: var(--moss-border-color);
+
+  --moss-not-selected-item-color: var(--moss-border-color);
+
+  /* Resizable */
+  --separator-border: var(--moss-border-color);
+
   /* Icons */
   --moss-icon-primary-background: transparent;
-  --moss-icon-primary-text: #6c707e;
+  --moss-icon-primary-text: var(--moss-gray-7);
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
-  /* Layout */
-  --moss-statusBar-background: #274323;
+  /* HeadBar */
+  --moss-headBar-icon-primary-text: var(--moss-gray-4);
+  --moss-headBar-primary-background: var(--moss-gray-12);
+  --moss-headBar-primary-background-hover: var(--moss-gray-11);
+  --moss-headBar-border-color: var(--moss-gray-11);
+
+  /* StatusBar */
+  --moss-statusBar-icon-primary-text: var(--moss-gray-1);
+  --moss-statusBar-icon-secondary-text: var(--moss-gray-4);
+  --moss-statusBar-icon-background-hover: var(--moss-gray-12);
 
   /* Window Controls */
   --moss-button-icon-color: white;
@@ -54,6 +176,7 @@
   --moss-inactivegroup-visiblepanel-tab-color: var(--moss-secondary-text);
   --moss-activegroup-visiblepanel-tab-border-color: var(--moss-primary);
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
+  --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
 
   --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
@@ -64,6 +187,7 @@
 
   /* Separators and Borders */
   --moss-separator-border: var(--moss-border-color);
+  --moss-sash-active-highlight: #047cd4;
 
   /* Overlay and Shadows */
   --moss-floating-box-shadow: 8px 8px 8px 0px rgba(83, 89, 93, 0.5);

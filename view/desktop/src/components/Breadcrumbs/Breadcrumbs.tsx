@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
-import { useDockviewStore } from "@/store/Dockview";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { DropdownMenu, Icon } from "..";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
@@ -12,7 +12,7 @@ import { BreadcrumbTree } from "./BreadcrumbTree";
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { collections } = useCollectionsStore();
   const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
-  const { addPanel } = useDockviewStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
   useEffect(() => {
@@ -39,8 +39,8 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   if (!activeTree) return null;
 
   return (
-    <div className="flex items-center justify-between px-3 py-[5px]">
-      <div className="flex items-center gap-1 text-[#6F6F6F] select-none">
+    <div className="flex items-center justify-between px-2 py-[5px]">
+      <div className="flex w-max items-center gap-1 overflow-hidden text-[#6F6F6F] select-none">
         {path.map((pathNode, index) => {
           const node = findNodeById(activeTree, pathNode)!;
           const lastItem = index === path.length - 1;
@@ -48,8 +48,8 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
           if (lastItem) {
             return (
               <div key={pathNode} className="contents">
-                <TestCollectionIcon type={node.type} className="size-4.5" />
-                <span>{pathNode}</span>
+                <TestCollectionIcon type={node.type} className="size-4" />
+                <span className="min-w-max">{pathNode}</span>
               </div>
             );
           }
@@ -57,19 +57,29 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
           return (
             <div key={pathNode} className="contents">
               <DropdownMenu.Root>
-                <DropdownMenu.Trigger className="cursor-pointer hover:underline">{pathNode}</DropdownMenu.Trigger>
+                <DropdownMenu.Trigger className="min-w-max cursor-pointer hover:underline">
+                  {pathNode}
+                </DropdownMenu.Trigger>
                 <DropdownMenu.Content align="start">
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
-                      if (!node.isFolder) addPanel({ id: `${node.id}` });
+                      if (!node.isFolder)
+                        addOrFocusPanel({
+                          id: `${node.id}`,
+                          params: {
+                            iconType: node.type,
+                            workspace: true,
+                          },
+                          component: "Default",
+                        });
                     }}
                   />
                 </DropdownMenu.Content>
               </DropdownMenu.Root>
               {!lastItem && (
                 <span>
-                  <Icon icon="TreeChevronRightIcon" />
+                  <Icon icon="ChevronRight" />
                 </span>
               )}
             </div>

@@ -2,7 +2,6 @@ import { useContext, type HTMLProps } from "react";
 
 import { cn } from "@/utils";
 
-import { CommonControls } from "./CommonControls";
 import { ControlButton } from "./ControlButton";
 import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
@@ -34,9 +33,6 @@ export function MacOSControls({ className, ...props }: HTMLProps<HTMLDivElement>
         >
           <ControlsIcons.fullMac className={cn(iconStyles)} />
         </ControlButton>
-      </div>
-      <div className="flex h-full">
-        <CommonControls />
       </div>
     </div>
   );

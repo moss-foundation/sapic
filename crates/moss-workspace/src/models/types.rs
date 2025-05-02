@@ -1,4 +1,11 @@
+mod editor;
+
+pub use editor::*;
+
 use moss_common::leased_slotmap::ResourceKey;
+use moss_storage::workspace_storage::entities::state_store_entities::{
+    PanelPartStateEntity, SidebarPartStateEntity,
+};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
@@ -11,6 +18,8 @@ pub type EnvironmentName = String;
 pub struct WorkspaceInfo {
     pub path: PathBuf,
     pub name: String,
+    #[ts(optional)]
+    pub last_opened_at: Option<i64>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
@@ -35,4 +44,56 @@ pub struct EnvironmentInfo {
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct SidebarPartState {
+    pub preferred_size: usize,
+    pub is_visible: bool,
+}
+
+impl From<SidebarPartStateEntity> for SidebarPartState {
+    fn from(value: SidebarPartStateEntity) -> Self {
+        SidebarPartState {
+            preferred_size: value.preferred_size,
+            is_visible: value.is_visible,
+        }
+    }
+}
+
+impl From<SidebarPartState> for SidebarPartStateEntity {
+    fn from(value: SidebarPartState) -> Self {
+        SidebarPartStateEntity {
+            preferred_size: value.preferred_size,
+            is_visible: value.is_visible,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct PanelPartState {
+    pub preferred_size: usize,
+    pub is_visible: bool,
+}
+
+impl From<PanelPartStateEntity> for PanelPartState {
+    fn from(value: PanelPartStateEntity) -> Self {
+        PanelPartState {
+            preferred_size: value.preferred_size,
+            is_visible: value.is_visible,
+        }
+    }
+}
+
+impl From<PanelPartState> for PanelPartStateEntity {
+    fn from(value: PanelPartState) -> Self {
+        PanelPartStateEntity {
+            preferred_size: value.preferred_size,
+            is_visible: value.is_visible,
+        }
+    }
 }

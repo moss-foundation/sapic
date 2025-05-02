@@ -33,6 +33,7 @@ moss_nls.workspace = true
 moss_state.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
+moss_storage.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",

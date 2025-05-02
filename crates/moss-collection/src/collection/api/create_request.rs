@@ -1,19 +1,27 @@
 use anyhow::Context as _;
-use moss_fs::{utils::encode_directory_name, CreateOptions};
+use moss_common::api::{OperationError, OperationResult};
+use moss_fs::{
+    utils::{encode_name, encode_path},
+    CreateOptions,
+};
+use moss_storage::collection_storage::entities::request_store_entities::{
+    RequestEntity, RequestNodeEntity,
+};
+use std::path::PathBuf;
 use validator::Validate;
 
 use crate::{
-    collection::{
-        primitives::EndpointFileExt, Collection, CollectionRequestData, OperationError,
-        REQUESTS_DIR,
+    collection::{Collection, CollectionRequestData, REQUESTS_DIR},
+    collection_registry::RequestNode,
+    constants::{
+        DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
     },
     kdl::http::HttpRequestFile,
     models::{
         operations::{
             CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
         },
-        storage::RequestEntity,
-        types::{HttpMethod, RequestProtocol},
+        types::HttpMethod,
     },
 };
 
@@ -21,29 +29,31 @@ impl Collection {
     pub async fn create_request(
         &self,
         input: CreateRequestInput,
-    ) -> Result<CreateRequestOutput, OperationError> {
+    ) -> OperationResult<CreateRequestOutput> {
         input.validate()?;
 
-        let request_dir_name = format!("{}.request", encode_directory_name(&input.name));
+        let request_dir_name = format!("{}.request", encode_name(&input.name));
 
-        let request_dir_relative_path = input
-            .relative_path
-            .unwrap_or_default()
-            .join(&request_dir_name);
+        let request_dir_relative_path = if let Some(relative_path) = input.relative_path {
+            encode_path(&relative_path, None)?
+        } else {
+            PathBuf::new()
+        }
+        .join(&request_dir_name);
 
-        let request_dir_full_path = self
+        let request_dir_abs_path = self
             .abs_path
             .join(REQUESTS_DIR)
             .join(&request_dir_relative_path);
 
-        if request_dir_full_path.exists() {
+        if request_dir_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.name,
-                path: request_dir_full_path,
+                path: request_dir_abs_path,
             });
         }
 
-        let (file_content, file_ext, protocol) = match input.payload {
+        let (file_content, spec_file_name) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
                 method,
                 query_params,
@@ -60,63 +70,54 @@ impl Collection {
                 )
                 .to_string();
 
-                let protocol = RequestProtocol::Http(method);
+                let file_name = match method {
+                    HttpMethod::Post => POST_ENTRY_SPEC_FILE,
+                    HttpMethod::Get => GET_ENTRY_SPEC_FILE,
+                    HttpMethod::Put => PUT_ENTRY_SPEC_FILE,
+                    HttpMethod::Delete => DELETE_ENTRY_SPEC_FILE,
+                };
 
-                (
-                    request_file.to_string(),
-                    EndpointFileExt::from(&protocol),
-                    protocol,
-                )
+                (request_file.to_string(), file_name.to_string())
             }
 
-            // FIXME:
-            None => {
-                let protocol = RequestProtocol::Http(HttpMethod::Get);
-
-                ("".to_string(), EndpointFileExt::from(&protocol), protocol)
-            }
+            None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
         };
 
-        let request_store = self.state_db_manager()?.request_store();
-        let requests = self.requests().await?;
+        let request_store = self.collection_storage.request_store().await;
+        let request_nodes = self.registry().await?.requests_nodes();
 
-        let (mut txn, table) = request_store.begin_write()?;
-        table.insert(
+        let mut txn = self.collection_storage.begin_write().await?;
+        request_store.upsert_request_node(
             &mut txn,
-            request_dir_relative_path.to_string_lossy().to_string(),
-            &RequestEntity { order: None },
+            request_dir_relative_path.clone(),
+            RequestNodeEntity::Request(RequestEntity { order: None }),
         )?;
 
-        // For consistency we are encoding both the directory and the request file
-        let request_file_name = format!(
-            "{}.{}.sapic",
-            encode_directory_name(&input.name),
-            file_ext.to_string()
-        );
         self.fs
-            .create_dir(&request_dir_full_path)
+            .create_dir(&request_dir_abs_path)
             .await
-            .context("Failed to create the collection directory")?;
+            .context("Failed to create the request directory")?;
+
         self.fs
             .create_file_with(
-                &request_dir_full_path.join(request_file_name),
+                &request_dir_abs_path.join(&spec_file_name),
                 file_content,
                 CreateOptions::default(),
             )
             .await
             .context("Failed to create the request file")?;
 
-        txn.commit()?;
-
         let request_key = {
-            let mut requests_lock = requests.write().await;
-            requests_lock.insert(CollectionRequestData {
+            let mut requests_lock = request_nodes.write().await;
+            requests_lock.insert(RequestNode::Request(CollectionRequestData {
                 name: input.name,
-                request_dir_relative_path: request_dir_relative_path.clone(),
+                path: request_dir_relative_path.clone(),
                 order: None,
-                protocol,
-            })
+                spec_file_name,
+            }))
         };
+
+        txn.commit()?;
 
         Ok(CreateRequestOutput { key: request_key })
     }

@@ -1,9 +1,9 @@
 mod shared;
 
-use moss_testutils::{fs_specific::SPECIAL_CHARS, random_name::random_collection_name};
+use moss_common::api::OperationError;
+use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 use moss_workspace::models::types::CollectionInfo;
-use moss_workspace::workspace::OperationError;
 
 use crate::shared::setup_test_workspace;
 
@@ -91,7 +91,7 @@ async fn create_collection_already_exists() {
 async fn create_collection_special_chars() {
     let (workspace_path, workspace) = setup_test_workspace().await;
 
-    let collection_name_list = SPECIAL_CHARS
+    let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", random_collection_name()))
         .collect::<Vec<String>>();

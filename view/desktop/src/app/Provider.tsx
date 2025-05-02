@@ -1,6 +1,8 @@
 import { ReactNode, useEffect } from "react";
 
-import { useDescribeAppState } from "@/hooks/useDescribeAppState";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
+import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorTheme } from "@/utils/applyTheme";
 
@@ -11,9 +13,13 @@ const Provider = ({ children }: { children: ReactNode }) => {
   useInitializeAppState();
 
   return (
-    <LanguageProvider>
-      <ThemeProvider>{children}</ThemeProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <ThemeProvider>
+          <ActivityEventsProvider>{children}</ActivityEventsProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 };
 

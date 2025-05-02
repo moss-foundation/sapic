@@ -20,6 +20,8 @@ members = [
     "crates/moss-environment",
     "crates/moss-testutils",
     "crates/moss-common",
+    "crates/moss-workbench",
+    "crates/moss-storage",
 
     "tools/xtask",
     "view/desktop/bin",
@@ -45,13 +47,14 @@ moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
+moss_workbench = { path = "crates/moss-workbench" }
+moss_storage = { path = "crates/moss-storage" }
 
-redb = "2.4.0"
-
+async-stream = "0.3.6"
+notify = "8.0"
+redb = "2.5.0"
 tauri = { version = "2.2.5", default-features = false }
-rand = { version = "0.9.0", default-features = false, features = [
-    "thread_rng",
-] }
+rand = { version = "0.9.0", features = ["thread_rng"] }
 serde = "1.0.217"
 kdl = "6.3.3"
 anyhow = "1.0.95"
@@ -68,13 +71,13 @@ serde_json = "1.0"
 ssh2 = "0.9.5"
 strum = "0.27.0"
 tokio = "1.43.0"
+tokio-stream = "0.1.17"
 tracing = "0.1"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", default-features = false }
 ts-rs = "10.1.0"
 thiserror = "2.0.11"
 dashmap = "6.1.0"
-bincode = "1.3.3"
 async-trait = "0.1.86"
 url = "2.5.4"
 dotenv = "0.15.0"
@@ -84,7 +87,7 @@ keyring = { version = "3", features = [
     "sync-secret-service",
 ] }
 whoami = "1.5.2"
-chrono = { version = "0.4.40", default-features = false }
+chrono = { version = "0.4.40", features = ["now"] }
 uuid = { version = "1.15.1", default-features = false }
 webbrowser = "1.0.3"
 # miette = "7.5.0"
@@ -100,3 +103,4 @@ xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
+sweep-bptree = "0.4.1"

@@ -9,7 +9,7 @@
 @layer base {
   html,
   body {
-    @apply font-sans transition;
+    @apply font-sans font-normal;
     overflow: hidden;
     position: fixed;
     width: 100vw;
@@ -18,15 +18,12 @@
   }
 }
 
-@keyframes slide {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 16px 0;
-  }
+.linux {
+  -webkit-font-smoothing: antialiased;
 }
 
-.animate-move {
-  animation: slide 0.4s linear infinite;
+svg:not(.animate-spin),
+svg:not(.animate-spin) * {
+  transform: translateZ(0);
+  image-rendering: optimizeSpeed;
 }

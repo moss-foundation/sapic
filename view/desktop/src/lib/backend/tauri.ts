@@ -1,6 +1,6 @@
 import { InvokeArgs, invoke as invokeTauri } from "@tauri-apps/api/core";
-import { listen as listenTauri } from "@tauri-apps/api/event";
 import type { EventCallback, EventName } from "@tauri-apps/api/event";
+import { listen as listenTauri } from "@tauri-apps/api/event";
 
 // Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
@@ -11,7 +11,12 @@ export type TauriIpcCommand =
   | "get_color_theme"
   | "list_locales"
   | "describe_app_state"
-  | "list_color_themes";
+  | "list_color_themes"
+  | "create_workspace"
+  | "open_workspace"
+  | "list_workspaces"
+  | "update_workspace_state"
+  | "describe_workspace_state";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

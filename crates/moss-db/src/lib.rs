@@ -1,42 +1,33 @@
 pub mod bincode_table;
-
-pub mod encrypted_bincode_store;
+pub mod common;
 pub mod encrypted_bincode_table;
 
+pub use common::*;
+
 use anyhow::Result;
-use redb::{
-    Database, Key, ReadTransaction as InnerReadTransaction, TableDefinition,
-    WriteTransaction as InnerWriteTransaction,
-};
+use redb::{Database, Key, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
-use std::borrow::Borrow;
-
-use std::{path::Path, sync::Arc};
-
-pub enum Transaction {
-    Read(InnerReadTransaction),
-    Write(InnerWriteTransaction),
-}
-
-impl Transaction {
-    pub fn commit(self) -> Result<()> {
-        match self {
-            Transaction::Read(_) => Ok(()),
-            Transaction::Write(txn) => Ok(txn.commit()?),
-        }
-    }
-}
+use std::{borrow::Borrow, path::Path, sync::Arc};
+use tokio::sync::Notify;
 
 pub trait DatabaseClient: Sized {
-    fn begin_write(&self) -> Result<Transaction>;
-    fn begin_read(&self) -> Result<Transaction>;
+    fn begin_write(&self) -> Result<Transaction, DatabaseError>;
+    fn begin_read(&self) -> Result<Transaction, DatabaseError>;
 }
 
-pub struct ReDbClient(Arc<Database>);
+pub enum ClientState<C> {
+    Loaded(C),
+    Reloading { notify: Arc<Notify> },
+}
+pub struct ReDbClient {
+    db: Arc<Database>,
+}
 
 impl Clone for ReDbClient {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self {
+            db: Arc::clone(&self.db),
+        }
     }
 }
 
@@ -51,7 +42,12 @@ where
 
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        Ok(Self(Arc::new(Database::create(path)?)))
+        // Using compact() on an empty ReDb database will shrink its file size by 1 mb
+        let mut database = Database::create(path)?;
+        database.compact()?;
+        Ok(Self {
+            db: Arc::new(database),
+        })
     }
 
     /// Initializes and registers a Bincode-based table within the database.
@@ -68,7 +64,7 @@ impl ReDbClient {
         V: Serialize + DeserializeOwned,
     {
         let table_def = table.table_definition();
-        let init_txn = self.0.begin_write()?;
+        let init_txn = self.db.begin_write()?;
         init_txn.open_table(table_def)?;
         init_txn.commit()?;
 
@@ -77,11 +73,11 @@ impl ReDbClient {
 }
 
 impl DatabaseClient for ReDbClient {
-    fn begin_write(&self) -> Result<Transaction> {
-        Ok(Transaction::Write(self.0.begin_write()?))
+    fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        Ok(Transaction::Write(self.db.begin_write()?))
     }
 
-    fn begin_read(&self) -> Result<Transaction> {
-        Ok(Transaction::Read(self.0.begin_read()?))
+    fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        Ok(Transaction::Read(self.db.begin_read()?))
     }
 }

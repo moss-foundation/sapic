@@ -2,6 +2,7 @@ import { OverlayScrollbarsComponent, OverlayScrollbarsComponentProps } from "ove
 
 interface ScrollbarProps extends OverlayScrollbarsComponentProps {
   children: React.ReactNode;
+  className?: string;
 }
 
 const defaultProps: OverlayScrollbarsComponentProps = {
@@ -13,9 +14,9 @@ const defaultProps: OverlayScrollbarsComponentProps = {
   defer: true,
 };
 
-export const Scrollbar = ({ children, ...props }: ScrollbarProps) => {
+export const Scrollbar = ({ children, className, ...props }: ScrollbarProps) => {
   return (
-    <OverlayScrollbarsComponent {...defaultProps} {...props}>
+    <OverlayScrollbarsComponent className={className} {...defaultProps} {...props}>
       {children}
     </OverlayScrollbarsComponent>
   );

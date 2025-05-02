@@ -1,17 +1,21 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
+import "@/app/i18n";
+
 import { PageLoader } from "./components/PageLoader";
 
+import "allotment/dist/style.css";
 import "overlayscrollbars/overlayscrollbars.css";
 import "./assets/index.css";
 
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { type } from "@tauri-apps/plugin-os";
 
 import GeneralProvider from "./app/Provider";
 
-const ENABLE_REACT_QUERY_DEVTOOLS = true;
+const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -52,4 +56,6 @@ if (rootElement) {
       </QueryClientProvider>
     </StrictMode>
   );
+
+  document.querySelector("html")!.classList.add(type());
 }

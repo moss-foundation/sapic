@@ -2,10 +2,13 @@ use moss_common::leased_slotmap::ResourceKey;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::types::{CollectionInfo, EnvironmentInfo};
+use crate::models::types::{
+    CollectionInfo, EditorPartState, EnvironmentInfo, PanelPartState, SidebarPartState,
+};
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -83,4 +86,41 @@ pub struct DescribeEnvironmentInput {
 pub struct DescribeEnvironmentOutput {
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct OpenCollectionInput {
+    pub path: PathBuf,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct OpenCollectionOutput {
+    #[ts(type = "ResourceKey")]
+    pub key: ResourceKey,
+    pub path: PathBuf,
+}
+
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeStateOutput {
+    #[ts(optional)]
+    pub editor: Option<EditorPartState>,
+    #[ts(optional)]
+    pub sidebar: Option<SidebarPartState>,
+    #[ts(optional)]
+    pub panel: Option<PanelPartState>,
+}
+
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum UpdateStateInput {
+    UpdateEditorPartState(EditorPartState),
+    UpdateSidebarPartState(SidebarPartState),
+    UpdatePanelPartState(PanelPartState),
 }

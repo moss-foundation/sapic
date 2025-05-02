@@ -18,7 +18,7 @@ export const NodeLabel = ({
     return parts.map((part, index) => {
       if (part.toLowerCase() === searchInput.toLowerCase()) {
         return (
-          <span key={index} className="bg-sky-600">
+          <span key={index} className="background-(--moss-primary)">
             {part}
           </span>
         );
@@ -28,7 +28,7 @@ export const NodeLabel = ({
   };
 
   return (
-    <span className={cn("w-max overflow-hidden text-ellipsis whitespace-nowrap", className)}>
+    <span className={cn("w-max overflow-hidden pr-[6px] text-ellipsis whitespace-nowrap", className)}>
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );

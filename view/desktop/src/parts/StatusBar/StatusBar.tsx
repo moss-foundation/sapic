@@ -17,6 +17,8 @@ import {
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import { DropIndicator } from "../../components/DropIndicator";
+import { StatusBarActivity } from "./StatusBarActivity";
+import { Divider } from "@/components/Divider";
 
 interface Item {
   id: number;
@@ -26,12 +28,25 @@ interface Item {
 }
 
 const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
+  const [isOnline, setIsOnline] = useState(true);
   const [DNDList, setDNDList] = useState<Item[]>([
     {
       id: 1,
-      icon: "StatusBarTerminal",
+      icon: "StatusBarConsole",
       label: "Console",
       order: 1,
+    },
+    {
+      id: 2,
+      icon: "StatusBarTrash",
+      label: "Trash",
+      order: 2,
+    },
+    {
+      id: 3,
+      icon: "StatusBarCookies",
+      label: "Cookies",
+      order: 3,
     },
   ]);
 
@@ -53,38 +68,54 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
     });
   }, [DNDList]);
 
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   return (
     <footer
       className={cn(
-        "background-(--moss-statusBar-background) flex h-[26px] w-screen justify-between pr-[26px]",
+        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pr-4 pl-3.5",
         className
       )}
     >
       <div className="flex h-full">
-        <div className="flex h-full gap-1">
+        <div className="flex h-full gap-1.5">
           {DNDList.map((item) => (
-            <StatusBarButton key={item.id} {...item} isDraggable draggableType="StatusBarButton" />
+            <StatusBarButton
+              key={item.id}
+              {...item}
+              isDraggable
+              draggableType="StatusBarButton"
+              className="text-(--moss-statusBar-icon-primary-text)"
+              iconClassName="text-(--moss-statusBar-icon-secondary-text)"
+            />
           ))}
         </div>
+        <Divider height="medium" />
+
+        <StatusBarIndicators />
+        <StatusBarActivity />
       </div>
 
-      <div className="flex h-full gap-1">
-        <StatusBarButton label="UTF-8" />
-        <StatusBarButton label="24 Ln, 16 Col" />
-        <StatusBarButton label="4 Spaces" />
-        <StatusBarButton label="Rust" />
-
-        <div className="group flex h-full items-center gap-1 px-2 text-white transition hover:bg-white hover:bg-white/10 focus:bg-white focus:bg-white/10">
-          <StatusCircle className="size-[6px] bg-[#D62A18]" />
-          <span>2 Errors</span>
-        </div>
-
-        <div className="group flex h-full items-center gap-1 px-2 text-white transition hover:bg-white hover:bg-white/10 focus:bg-white focus:bg-white/10">
-          <StatusCircle className="size-[6px] bg-[#FFC505]" />
-          <span>15 Warnings</span>
-        </div>
-
-        <StatusBarButton label="--READ--" />
+      <div className="flex h-full gap-0.5">
+        <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
+        <Divider height="medium" />
+        <StatusBarButton
+          icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
+          label={isOnline ? "Online" : "Offline"}
+          className="text-(--moss-statusBar-icon-primary-text)"
+          iconClassName={isOnline ? "text-[#1E6B33]" : "text-[#DF9303]"}
+        />
       </div>
     </footer>
   );
@@ -101,8 +132,25 @@ interface StatusBarButtonProps extends Omit<ComponentPropsWithoutRef<"button">, 
   draggableType?: string;
 }
 
-const StatusCircle = ({ className }: { className?: string }) => {
-  return <div className={cn("flex items-center justify-center rounded-full", className)} />;
+const StatusBarIndicators = () => {
+  return (
+    <div className="flex h-full items-center">
+      <button className="group flex h-full items-center">
+        <div className="flex items-center rounded px-1 transition">
+          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded px-1">
+            <div className="flex items-center gap-1">
+              <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
+              <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Icon className="size-[14px] text-[#FFAF0F]" icon="StatusBarWarnings" />
+              <span className="text-sm text-(--moss-statusBar-icon-primary-text)">5</span>
+            </div>
+          </div>
+        </div>
+      </button>
+    </div>
+  );
 };
 
 const StatusBarButton = ({
@@ -183,13 +231,12 @@ const StatusBarButton = ({
     <button
       ref={ref}
       {...props}
-      className={cn(
-        "group relative flex h-full items-center gap-1 px-2 text-white transition hover:bg-[rgb(39,114,255)]",
-        className
-      )}
+      className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      {icon && <Icon className={cn("size-[18px]", iconClassName)} icon={icon} />}
-      {label && <span className="text-sm">{label}</span>}
+      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center gap-1 rounded px-1.5 transition">
+        {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
+        {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
+      </div>
       {closestEdge ? <DropIndicator edge={closestEdge} gap={4} /> : null}
       {preview && createPortal(<StatusBarButton icon={icon} label={label} className="bg-sky-500" />, preview)}
     </button>

@@ -2,7 +2,6 @@ use aes_gcm::{
     aead::{rand_core::RngCore, Aead, KeyInit, Payload},
     Aes256Gcm, Key as AesKey, Nonce,
 };
-use anyhow::{anyhow, Context as _, Result};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
@@ -11,10 +10,10 @@ use redb::{Key, TableDefinition};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::borrow::Borrow;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use zeroize::Zeroizing;
 
-use crate::{Table, Transaction};
+use crate::{common::DatabaseError, Table, Transaction};
 
 pub const DEFAULT_ENCRYPTION_OPTIONS: EncryptionOptions = EncryptionOptions {
     memory_cost: 65536, // 64MB
@@ -48,7 +47,7 @@ impl Default for EncryptionOptions {
 #[derive(Clone)]
 pub struct EncryptedBincodeTable<'a, K, V>
 where
-    K: Key + 'static + Borrow<K::SelfType<'a>>,
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Debug + Display,
     V: Serialize + DeserializeOwned,
 {
     table: TableDefinition<'a, K, Vec<u8>>,
@@ -58,7 +57,7 @@ where
 
 impl<'a, K, V> From<&EncryptedBincodeTable<'a, K, V>> for TableDefinition<'a, K, Vec<u8>>
 where
-    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq,
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Debug + Display,
     for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
@@ -69,7 +68,7 @@ where
 
 impl<'a, K, V> Table<'a, K, V> for EncryptedBincodeTable<'a, K, V>
 where
-    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq,
+    K: Key + 'static + Borrow<K::SelfType<'a>> + Clone + Eq + Debug + Display,
     for<'b> K::SelfType<'b>: ToOwned<Owned = K>,
     V: Serialize + DeserializeOwned,
 {
@@ -80,7 +79,7 @@ where
 
 impl<'a, K, V> EncryptedBincodeTable<'a, K, V>
 where
-    K: Key + Borrow<K::SelfType<'a>>,
+    K: Key + Borrow<K::SelfType<'a>> + Debug + Display,
     V: Serialize + DeserializeOwned,
 {
     pub const fn new(table_name: &'static str, options: EncryptionOptions) -> Self {
@@ -99,29 +98,27 @@ where
         }
     }
 
-    fn derive_key(&self, password: &[u8], salt: &[u8]) -> Result<Zeroizing<[u8; 32]>> {
+    fn derive_key(
+        &self,
+        password: &[u8],
+        salt: &[u8],
+    ) -> Result<Zeroizing<[u8; 32]>, DatabaseError> {
         let salt = SaltString::encode_b64(salt)
-            .map_err(|e| anyhow::anyhow!("Failed to encode salt: {}", e))?;
+            .map_err(|e| DatabaseError::Internal(format!("Failed to encode salt: {}", e)))?;
 
         let argon2 = Argon2::default();
         let password_hash = argon2
             .hash_password(password, &salt)
-            .map_err(|e| anyhow::anyhow!("Failed to hash password: {}", e))?;
+            .map_err(|e| DatabaseError::Internal(format!("Failed to hash password: {}", e)))?;
 
         let mut key_bytes = [0u8; 32];
         key_bytes.copy_from_slice(&password_hash.hash.unwrap().as_bytes()[..32]);
         Ok(Zeroizing::new(key_bytes))
     }
 
-    fn encrypt(
-        &self,
-        data: &[u8],
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<Vec<u8>> {
-        let mut salt = vec![0u8; config.salt_len];
-        let mut nonce_bytes = vec![0u8; config.nonce_len];
+    fn encrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
+        let mut salt = vec![0u8; self.options.salt_len];
+        let mut nonce_bytes = vec![0u8; self.options.nonce_len];
 
         OsRng.fill_bytes(&mut salt);
         OsRng.fill_bytes(&mut nonce_bytes);
@@ -134,7 +131,7 @@ where
         let payload = Payload { msg: data, aad };
         let ciphertext = cipher
             .encrypt(nonce, payload)
-            .map_err(|e| anyhow::anyhow!("Encryption failed: {}", e))?;
+            .map_err(|e| DatabaseError::Internal(format!("Encryption failed: {}", e)))?;
 
         // Combine salt + nonce + ciphertext
         let mut result = Vec::with_capacity(salt.len() + nonce_bytes.len() + ciphertext.len());
@@ -144,20 +141,16 @@ where
         Ok(result)
     }
 
-    fn decrypt(
-        &self,
-        data: &[u8],
-        password: &[u8],
-        aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<Vec<u8>> {
-        let min_len = config.salt_len + config.nonce_len;
+    fn decrypt(&self, data: &[u8], password: &[u8], aad: &[u8]) -> Result<Vec<u8>, DatabaseError> {
+        let min_len = self.options.salt_len + self.options.nonce_len;
         if data.len() < min_len {
-            return Err(anyhow::anyhow!("Invalid encrypted data: too short"));
+            return Err(DatabaseError::Internal(
+                "Invalid encrypted data: too short".to_string(),
+            ));
         }
 
-        let (salt, rest) = data.split_at(config.salt_len);
-        let (nonce_bytes, ciphertext) = rest.split_at(config.nonce_len);
+        let (salt, rest) = data.split_at(self.options.salt_len);
+        let (nonce_bytes, ciphertext) = rest.split_at(self.options.nonce_len);
         let derived_key = self.derive_key(password, salt)?;
         let aes_key = AesKey::<Aes256Gcm>::from_slice(derived_key.as_slice());
         let cipher = Aes256Gcm::new(aes_key);
@@ -170,7 +163,7 @@ where
 
         cipher
             .decrypt(nonce, payload)
-            .map_err(|e| anyhow::anyhow!("Decryption failed: {}", e))
+            .map_err(|e| DatabaseError::Internal(format!("Decryption failed: {}", e)))
     }
 
     pub fn write(
@@ -180,17 +173,20 @@ where
         value: &V,
         password: &[u8],
         aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<()> {
+    ) -> Result<(), DatabaseError> {
         match txn {
             Transaction::Write(txn) => {
                 let mut table = txn.open_table(self.table)?;
-                let serialized = bincode::serialize(value)?;
-                let encrypted = self.encrypt(&serialized, password, aad, config)?;
+
+                let bytes = serde_json::to_vec(value)?;
+
+                let encrypted = self.encrypt(&bytes, password, aad)?;
                 table.insert(key.borrow(), encrypted)?;
                 Ok(())
             }
-            Transaction::Read(_) => Err(anyhow!("Cannot insert into read transaction")),
+            Transaction::Read(_) => Err(DatabaseError::Transaction(
+                "Cannot insert into read transaction".to_string(),
+            )),
         }
     }
 
@@ -200,24 +196,26 @@ where
         key: K,
         password: &[u8],
         aad: &[u8],
-        config: &EncryptionOptions,
-    ) -> Result<V> {
+    ) -> Result<V, DatabaseError> {
         match txn {
             Transaction::Read(txn) => {
-                let table = txn.open_table(self.table).context("Failed to open table")?;
-                let entry = table
-                    .get(key)
-                    .context("Failed to retrieve value from table")?
-                    .ok_or_else(|| anyhow!("No value found for the specified key"))?;
+                let table = txn.open_table(self.table)?;
 
-                let encrypted = entry.value();
-                let decrypted = self.decrypt(&encrypted, password, aad, config)?;
-                let result = bincode::deserialize(&decrypted)
-                    .context("Failed to deserialize the decrypted data")?;
+                let encrypted = table
+                    .get(key.borrow())?
+                    .ok_or_else(|| DatabaseError::NotFound {
+                        key: key.to_string(),
+                    })?
+                    .value();
+
+                let decrypted = self.decrypt(&encrypted, password, aad)?;
+                let result = serde_json::from_slice(&decrypted)?;
 
                 Ok(result)
             }
-            Transaction::Write(_) => Err(anyhow!("Cannot read from write transaction")),
+            Transaction::Write(_) => Err(DatabaseError::Transaction(
+                "Cannot read from write transaction".to_string(),
+            )),
         }
     }
 }
