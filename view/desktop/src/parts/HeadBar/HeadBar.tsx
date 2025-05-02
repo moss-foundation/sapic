@@ -11,6 +11,13 @@ import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { windowsMenuItems, getUserMenuItems, getGitBranchMenuItems } from "./mockHeadBarData";
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
+import {
+  useUserMenuActions,
+  useGitMenuActions,
+  useWindowsMenuActions,
+  useCollectionActions,
+  useWorkspaceActions,
+} from "./HeadBarActions";
 
 interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -64,9 +71,7 @@ const HeadBarLeftItems = ({
               handleWindowsMenuAction(item.id);
             }}
           />
-          {selectedWorkspace && (
-            <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
-          )}
+          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
         </>
       )}
       <ActionMenu
@@ -114,7 +119,6 @@ interface HeadBarCenterItemsProps {
   collectionName: string;
   onRenameCollection: (newName: string) => void;
   collectionButtonRef: React.RefObject<HTMLButtonElement>;
-  startRenameCollection: () => void;
 }
 
 const HeadBarCenterItems = ({
@@ -130,7 +134,6 @@ const HeadBarCenterItems = ({
   collectionName,
   onRenameCollection,
   collectionButtonRef,
-  startRenameCollection,
 }: HeadBarCenterItemsProps) => {
   return (
     <div
@@ -309,66 +312,28 @@ export const HeadBar = () => {
     }
   };
 
-  // Handle user menu actions
-  const handleUserMenuAction = (action: string) => {
-    console.log(`User action: ${action}`);
-    // Here you would handle different user actions like profile, settings, logout, etc.
-  };
+  // Use the action hooks from HeadBarActions
+  const handleUserMenuAction = useUserMenuActions();
+  const handleGitMenuAction = useGitMenuActions();
+  const handleWindowsMenuAction = useWindowsMenuActions();
 
-  // Handle git menu actions
-  const handleGitMenuAction = (action: string) => {
-    console.log(`Git action: ${action}`);
-    // Here you would handle different git actions like branch switching, pull, push, etc.
-  };
+  const { handleCollectionActionMenuAction, handleRenameCollection } = useCollectionActions({
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    setCollectionName,
+    collectionButtonRef,
+    setIsRenamingCollection,
+  });
 
-  // Handle Windows menu actions
-  const handleWindowsMenuAction = (action: string) => {
-    console.log(`Windows menu action: ${action}`);
-    // Here you would handle different Windows menu actions
-  };
-
-  // Handle collection action menu actions
-  const handleCollectionActionMenuAction = (action: string) => {
-    console.log(`Collection action: ${action}`);
-
-    // Check if the rename action was selected
-    if (action === "rename") {
-      startRenameCollection();
-    }
-  };
-
-  const handleRenameCollection = (newName: string) => {
-    if (newName.trim() !== "") {
-      setCollectionName(newName);
-    }
-    setIsRenamingCollection(false);
-  };
-
-  const startRenameCollection = () => {
-    setIsRenamingCollection(true);
-
-    // Use a small timeout to ensure the menu has closed
-    setTimeout(() => {
-      // Dispatch a double-click event to the collection button to trigger renaming
-      if (collectionButtonRef.current) {
-        const doubleClickEvent = new MouseEvent("dblclick", {
-          bubbles: true,
-          cancelable: true,
-          view: window,
-        });
-        collectionButtonRef.current.dispatchEvent(doubleClickEvent);
-      }
-    }, 50);
-  };
-
-  // Handle workspace menu actions
-  const handleWorkspaceMenuAction = (action: string) => {
-    console.log(`Workspace action: ${action}`);
-    // Handle different workspace actions
-    if (action === "home") openPanel("Home");
-    if (action === "logs") openPanel("Logs");
-    if (action === "debug") setShowDebugPanels(!showDebugPanels);
-  };
+  const handleWorkspaceMenuAction = useWorkspaceActions({
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    setCollectionName,
+    collectionButtonRef,
+    setIsRenamingCollection,
+  });
 
   return (
     <header
@@ -422,7 +387,6 @@ export const HeadBar = () => {
             collectionName={collectionName}
             onRenameCollection={handleRenameCollection}
             collectionButtonRef={collectionButtonRef}
-            startRenameCollection={startRenameCollection}
           />
 
           {/*HeadBar Right-side items*/}
