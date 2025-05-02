@@ -51,7 +51,7 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] w-72 max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
   {
     variants: {
       type: {
@@ -443,7 +443,15 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             </span>
           </MenuItem>
 
-          {isExpanded && <div className="pl-3">{item.items.map(renderMenuItem)}</div>}
+          {isExpanded && (
+            <div className="w-full overflow-hidden pl-3">
+              {item.items.map((subItem) => (
+                <div key={subItem.id} className="w-full overflow-hidden">
+                  {renderMenuItem(subItem)}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     }

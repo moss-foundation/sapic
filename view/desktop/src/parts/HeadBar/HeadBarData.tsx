@@ -138,7 +138,7 @@ export const workspaceMenuItems: MenuItemProps[] = [
       {
         id: "microservices-api-test-suite",
         type: "submenu",
-        label: "Microservices API Test Suite",
+        label: "Microservices API Test Suite long name",
         icon: "ActionMenuWorkspace" as Icons,
         items: createStandardMenuItems("microservices-api"),
       },
