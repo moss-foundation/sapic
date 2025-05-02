@@ -71,7 +71,9 @@ const HeadBarLeftItems = ({
               handleWindowsMenuAction(item.id);
             }}
           />
-          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
+          {selectedWorkspace && (
+            <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
+          )}
         </>
       )}
       <ActionMenu
