@@ -79,7 +79,17 @@ ready: gen-icons
 ## Generate application icons
 .PHONY: gen-icons
 gen-icons:
-	@cd $(ICONS_DIR) && $(PNPM) build --silent 
+	@cd $(ICONS_DIR) && $(PNPM) build --silent
+
+## New icon generator tool
+.PHONY: new-gen-icons
+new-gen-icons:
+	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --folder test_icons
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --folder test_icons \
+								 --light_css ../assets/themes/light.css \
+								 --dark_css ../assets/themes/dark.css \
+								 --output_path build
 
 # ======================================================
 # Run Commands
