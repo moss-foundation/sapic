@@ -7,7 +7,7 @@ import StatusBar from "../parts/StatusBar/StatusBar";
 
 export const RootLayout = ({ children, className, ...props }: ComponentProps<"main">) => {
   return (
-    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,46px)_1fr_auto] select-none">
+    <div className="background-(--moss-page-background) grid h-full grid-rows-[minmax(0px,33px)_1fr_auto] select-none">
       <HeadBar />
 
       <main className={cn("background-(--moss-page-background)", className)} {...props}>

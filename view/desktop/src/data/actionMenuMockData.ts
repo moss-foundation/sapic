@@ -183,7 +183,19 @@ export const runConfigItems: MenuItemProps[] = [
   { id: "app-tests", type: "action", label: "App tests", icon: "TestTests" },
   { id: "server-tests", type: "action", label: "Server tests", icon: "TestTests" },
   { id: "separator-run-1", type: "separator" },
-  { id: "all-configs", type: "action", label: "All Configurations", icon: "TreeChevronRight", count: 25 },
+  {
+    id: "all-configs",
+    type: "accordion",
+    label: "All Configurations",
+    icon: "ChevronRight",
+    items: [
+      { id: "config-web-app", type: "action", label: "Web Application", icon: "TestProject" },
+      { id: "config-mobile-app", type: "action", label: "Mobile Application", icon: "TestProject" },
+      { id: "config-api-server", type: "action", label: "API Server", icon: "TestProject" },
+      { id: "config-database", type: "action", label: "Database Integration", icon: "TestProject" },
+      { id: "config-junit", type: "action", label: "JUnit Tests", icon: "TestTests" },
+    ],
+  },
   { id: "separator-run-2", type: "separator" },
   { id: "edit-configs", type: "action", label: "Edit Configurations...", shortcut: "^⌥E", alignWithIcons: true },
 ];
