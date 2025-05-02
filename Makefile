@@ -37,6 +37,7 @@ export DEV_APP_DIR = ${HOME_DIR}/.sapic
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
+export NEW_ICONS_DIR = ${CURDIR}/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
@@ -84,11 +85,11 @@ gen-icons:
 ## New icon generator tool
 .PHONY: new-gen-icons
 new-gen-icons:
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source test_icons
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source test_icons \
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source ${NEW_ICONS_DIR}/svg
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source ${NEW_ICONS_DIR}/svg \
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
-								 --output-dir build
+								 --output-dir ${NEW_ICONS_DIR}/build
 
 # ======================================================
 # Run Commands
