@@ -1,7 +1,6 @@
 import { type HTMLProps } from "react";
 
 import { LinuxControls } from "./LinuxControls";
-import { MacOSControls } from "./MacOSControls";
 import { WindowsControls } from "./WindowsControls";
 
 export function Controls({ className, ...props }: HTMLProps<HTMLDivElement>) {
@@ -9,7 +8,8 @@ export function Controls({ className, ...props }: HTMLProps<HTMLDivElement>) {
 
   switch (platform) {
     case "darwin":
-      return <MacOSControls className={className} {...props} />;
+      // Use native macOS buttons instead of custom ones
+      return null;
     case "linux":
       return <LinuxControls className={className} {...props} />;
     default:

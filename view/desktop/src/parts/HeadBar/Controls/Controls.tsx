@@ -5,7 +5,6 @@ import { OsType, type } from "@tauri-apps/plugin-os";
 
 import { TauriAppWindowProvider } from "./ControlsContext";
 import { LinuxControls } from "./LinuxControls";
-import { MacOSControls } from "./MacOSControls";
 import { WindowsControls } from "./WindowsControls";
 
 interface ControlsProps extends HTMLProps<HTMLDivElement> {
@@ -23,7 +22,8 @@ export const Controls = ({ os, className, ...props }: ControlsProps) => {
       case "windows":
         return <WindowsControls className={cn(className)} {...props} />;
       case "macos":
-        return <MacOSControls className={cn(className)} {...props} />;
+        // Use native macOS buttons instead of custom ones
+        return null;
       case "linux":
         return <LinuxControls className={cn(className, "py-2.5")} {...props} />;
       default:
