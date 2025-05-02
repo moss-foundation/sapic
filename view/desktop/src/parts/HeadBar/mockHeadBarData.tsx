@@ -76,7 +76,7 @@ export const getUserMenuItems = (selectedUser: string | null): MenuItemProps[] =
   return selectedUser ? userMenuItems : noUserMenuItems;
 };
 
-// Mock git branch menu items
+// Mock git branch menu items when a branch is selected
 export const gitBranchMenuItems: MenuItemProps[] = [
   {
     id: "current-branch",
@@ -158,6 +158,33 @@ export const gitBranchMenuItems: MenuItemProps[] = [
     label: "Push",
   },
 ];
+
+// Git branch items when no branch is selected
+export const noBranchMenuItems: MenuItemProps[] = [
+  {
+    id: "select-branch",
+    type: "action",
+    label: "Select Branch",
+    icon: "HeadBarGit" as Icons,
+  },
+  {
+    id: "create-branch",
+    type: "action",
+    label: "Create New Branch...",
+    icon: "AddCircle" as Icons,
+  },
+  {
+    id: "init-repo",
+    type: "action",
+    label: "Initialize Repository",
+    icon: "TestHeadBarLogs" as Icons,
+  },
+];
+
+// Function to get git branch menu items based on branch selection state
+export const getGitBranchMenuItems = (selectedBranch: string | null): MenuItemProps[] => {
+  return selectedBranch ? gitBranchMenuItems : noBranchMenuItems;
+};
 
 // Mock Windows menu items
 export const windowsMenuItems: MenuItemProps[] = [

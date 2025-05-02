@@ -9,7 +9,7 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
-import { gitBranchMenuItems, windowsMenuItems, getUserMenuItems } from "./mockHeadBarData";
+import { windowsMenuItems, getUserMenuItems, getGitBranchMenuItems } from "./mockHeadBarData";
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
 interface HeadBarLeftItemsProps {
@@ -110,6 +110,7 @@ interface HeadBarCenterItemsProps {
   collectionActionMenuOpen: boolean;
   setCollectionActionMenuOpen: (open: boolean) => void;
   handleCollectionActionMenuAction: (action: string) => void;
+  selectedBranch: string | null;
 }
 
 const HeadBarCenterItems = ({
@@ -121,6 +122,7 @@ const HeadBarCenterItems = ({
   collectionActionMenuOpen,
   setCollectionActionMenuOpen,
   handleCollectionActionMenuAction,
+  selectedBranch,
 }: HeadBarCenterItemsProps) => {
   return (
     <div
@@ -165,14 +167,16 @@ const HeadBarCenterItems = ({
       />
       <Divider />
       <ActionMenu
-        items={gitBranchMenuItems}
+        items={getGitBranchMenuItems(selectedBranch)}
         trigger={
           <IconLabelButton
             leftIcon="HeadBarGit"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
             className="ml-[-2px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            title="main"
+            title={selectedBranch || "main"}
+            placeholder="No branch selected"
+            showPlaceholder={!selectedBranch}
           />
         }
         open={gitMenuOpen}
@@ -261,6 +265,7 @@ export const HeadBar = () => {
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
   const openPanel = (panelType: string) => {
     try {
@@ -371,6 +376,7 @@ export const HeadBar = () => {
             collectionActionMenuOpen={collectionActionMenuOpen}
             setCollectionActionMenuOpen={setCollectionActionMenuOpen}
             handleCollectionActionMenuAction={handleCollectionActionMenuAction}
+            selectedBranch={selectedBranch}
           />
 
           {/*HeadBar Right-side items*/}
