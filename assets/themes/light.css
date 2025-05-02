@@ -54,6 +54,47 @@
   --moss-red-10: #fff2f3;
   --moss-red-11: #fff7f7;
 
+  --moss-yellow-1: #a46704;
+  --moss-yellow-2: #c27d04;
+  --moss-yellow-3: #df9303;
+  --moss-yellow-4: #ffaf0f;
+  --moss-yellow-5: #fdbd3d;
+  --moss-yellow-6: #fed277;
+  --moss-yellow-7: #fee6b1;
+  --moss-yellow-8: #fff1d1;
+  --moss-yellow-9: #fff6de;
+  --moss-yellow-10: #fffaeb;
+
+  --moss-orange-1: #a14916;
+  --moss-orange-2: #b85516;
+  --moss-orange-3: #ce6117;
+  --moss-orange-4: #e56d17;
+  --moss-orange-5: #ec8f4c;
+  --moss-orange-6: #f2b181;
+  --moss-orange-7: #f9d2b6;
+  --moss-orange-8: #fce6d6;
+  --moss-orange-9: #fff4eb;
+
+  --moss-purple-1: #55339c;
+  --moss-purple-2: #643cb8;
+  --moss-purple-3: #7444d4;
+  --moss-purple-4: #834df0;
+  --moss-purple-5: #a177f4;
+  --moss-purple-6: #bfa1f8;
+  --moss-purple-7: #dccbfb;
+  --moss-purple-8: #efe5ff;
+  --moss-purple-9: #faf5ff;
+
+  --moss-teal-1: #096a6e;
+  --moss-teal-2: #077a7f;
+  --moss-teal-3: #058b90;
+  --moss-teal-4: #039ba1;
+  --moss-teal-5: #3fb3b8;
+  --moss-teal-6: #7bcccf;
+  --moss-teal-7: #b6e4e5;
+  --moss-teal-8: #daf4f5;
+  --moss-teal-9: #f2fcfc;
+
   /* Base Colors */
   --moss-primary: var(--moss-blue-4);
 
