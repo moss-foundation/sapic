@@ -84,12 +84,11 @@ gen-icons:
 ## New icon generator tool
 .PHONY: new-gen-icons
 new-gen-icons:
-	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --folder test_icons
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --folder test_icons \
-								 --light_css ../assets/themes/light.css \
-								 --dark_css ../assets/themes/dark.css \
-								 --output_path build
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source test_icons
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source test_icons \
+								 --light-css ../assets/themes/light.css \
+								 --dark-css ../assets/themes/dark.css \
+								 --output-dir build
 
 # ======================================================
 # Run Commands
