@@ -1,0 +1,8 @@
+{
+  "QuickFix": {
+    "identical": true
+  },
+  "__TestDifferentSvgStructure": {
+    "identical": false
+  }
+}

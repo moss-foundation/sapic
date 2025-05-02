@@ -110,7 +110,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <div className="flex grow cursor-pointer items-center gap-1">
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
@@ -134,7 +134,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             onDoubleClick={() => onRootDoubleClickCallback?.(node)}
           >
             <Icon
-              icon="TreeChevronRight"
+              icon="ChevronRight"
               className={cn("text-(--moss-icon-primary-text)", {
                 "rotate-90": shouldRenderChildNodes,
               })}
@@ -149,7 +149,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
             >
               <ActionButton icon="PlusButton" onClick={() => setIsAddingRootFileNode(true)} />
-              <ActionButton icon="TreeReload" />
+              <ActionButton icon="Reload" />
               <ActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
               <ActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
