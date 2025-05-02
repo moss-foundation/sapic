@@ -1,7 +1,7 @@
 import { type Icons } from "@/components/Icon";
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 
-// Mock user menu items
+// User menu items function that returns appropriate items based on whether a user is selected
 export const userMenuItems: MenuItemProps[] = [
   {
     id: "user-profile",
@@ -54,6 +54,27 @@ export const userMenuItems: MenuItemProps[] = [
     variant: "danger",
   },
 ];
+
+// User menu items when no user is selected
+export const noUserMenuItems: MenuItemProps[] = [
+  {
+    id: "sign-in",
+    type: "action",
+    label: "Sign In",
+    icon: "HeadBarUserAvatar" as Icons,
+  },
+  {
+    id: "create-account",
+    type: "action",
+    label: "Create Account",
+    icon: "AddCircle" as Icons,
+  },
+];
+
+// Function to get user menu items based on user selection state
+export const getUserMenuItems = (selectedUser: string | null): MenuItemProps[] => {
+  return selectedUser ? userMenuItems : noUserMenuItems;
+};
 
 // Mock git branch menu items
 export const gitBranchMenuItems: MenuItemProps[] = [

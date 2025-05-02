@@ -9,7 +9,7 @@ import { Controls } from "./Controls/Controls";
 import { ModeToggle } from "./ModeToggle";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
-import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadBarData";
+import { gitBranchMenuItems, windowsMenuItems, getUserMenuItems } from "./mockHeadBarData";
 import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
 
 interface HeadBarLeftItemsProps {
@@ -64,7 +64,9 @@ const HeadBarLeftItems = ({
               handleWindowsMenuAction(item.id);
             }}
           />
-          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
+          {selectedWorkspace && (
+            <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
+          )}
         </>
       )}
       <ActionMenu
@@ -194,6 +196,8 @@ interface HeadBarRightItemsProps {
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
   os: string | null;
+  selectedWorkspace: string | null;
+  selectedUser: string | null;
 }
 
 const HeadBarRightItems = ({
@@ -206,18 +210,21 @@ const HeadBarRightItems = ({
   setShowDebugPanels,
   openPanel,
   os,
+  selectedWorkspace,
+  selectedUser,
 }: HeadBarRightItemsProps) => {
   return (
     <div className="flex items-center">
       <ActionMenu
-        items={userMenuItems}
-        align="end"
+        items={getUserMenuItems(selectedUser)}
         trigger={
           <IconLabelButton
             leftIcon="HeadBarUserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"
             rightIcon="ChevronDown"
-            title="g10z3r"
+            title={selectedUser || "g10z3r"}
+            placeholder="No user selected"
+            showPlaceholder={!selectedUser}
             className="mr-2 h-[24px]"
             compact={isMedium}
           />
@@ -229,7 +236,7 @@ const HeadBarRightItems = ({
         }}
       />
 
-      {os === "macos" && (
+      {os === "macos" && selectedWorkspace && (
         <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
       )}
 
@@ -253,6 +260,7 @@ export const HeadBar = () => {
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
   const openPanel = (panelType: string) => {
     try {
@@ -377,6 +385,8 @@ export const HeadBar = () => {
             setShowDebugPanels={setShowDebugPanels}
             openPanel={openPanel}
             os={os}
+            selectedWorkspace={selectedWorkspace}
+            selectedUser={selectedUser}
           />
         </div>
       </div>
