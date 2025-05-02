@@ -84,6 +84,10 @@
   --moss-not-selected-item-color: var(--moss-gray-7);
 
   /* Resizable */
+  --focus-border: var(--moss-primary);
+  --separator-border: var(--moss-border-color);
+
+  /* Resizable */
   --separator-border: var(--moss-border-color);
   --moss-sash-active-highlight: #047cd4;
 

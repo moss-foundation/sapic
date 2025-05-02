@@ -3,7 +3,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import "@repo/moss-tabs/assets/styles.css";
 
 import { AllotmentHandle, LayoutPriority } from "allotment";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
@@ -23,6 +23,10 @@ export const AppLayout = () => {
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
+  };
+
+  const handleBottomPaneEdgeHandlerClick = () => {
+    if (!bottomPane.visible) bottomPane.setVisible(true);
   };
 
   const resizableRef = useRef<AllotmentHandle>(null);
@@ -102,6 +106,7 @@ export const AppLayout = () => {
           )}
           <ResizablePanel priority={LayoutPriority.High}>
             <Resizable
+              className="relative"
               ref={resizableRef}
               vertical
               onDragEnd={(sizes) => {
@@ -124,6 +129,9 @@ export const AppLayout = () => {
                 <BottomPaneContent />
               </ResizablePanel>
             </Resizable>
+            {!bottomPane.visible && (
+              <SidebarEdgeHandler alignment="bottom" onClick={handleBottomPaneEdgeHandlerClick} />
+            )}
           </ResizablePanel>
 
           {sideBarPosition === "right" && (
@@ -159,61 +167,47 @@ const BottomPaneContent = () => {
 };
 
 interface SidebarEdgeHandlerProps {
-  alignment?: "left" | "right";
+  alignment?: "left" | "right" | "bottom";
   onClick?: () => void;
 }
 
 const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerProps) => {
+  const [showBg, setShowBg] = useState(false);
   return (
     <div
-      className={cn("group/openHandle absolute z-40 h-full w-2 cursor-pointer", {
-        "left-0": alignment === "left",
-        "right-0": alignment === "right",
+      className={cn("absolute z-40", {
+        "left-0 h-full w-2": alignment === "left",
+        "right-0 h-full w-2": alignment === "right",
+        "bottom-0 h-2 w-full": alignment === "bottom",
       })}
-      onClick={onClick}
     >
+      {/* handle bg*/}
       <div
-        className={cn(
-          "background-(--moss-info-background-hover)/70 absolute top-0 z-40 h-full w-3 opacity-0 transition-[opacity] duration-100 group-hover/openHandle:opacity-100",
-          {
-            "left-0": alignment === "left",
-            "right-0": alignment === "right",
-          }
-        )}
+        className={cn(`background-(--moss-info-background-hover)/70 absolute z-40 hidden cursor-pointer`, {
+          "top-0 left-0 h-full w-3": alignment === "left",
+          "top-0 right-0 h-full w-3": alignment === "right",
+          "bottom-0 left-0 h-3 w-full": alignment === "bottom",
+          "block": showBg,
+        })}
+        onMouseEnter={() => setShowBg(true)}
+        onMouseLeave={() => setShowBg(false)}
+        onClick={onClick}
       />
 
+      {/* handle */}
       <div
         className={cn(
-          "background-(--moss-info-icon)/50 group-hover/openHandle:background-(--moss-info-icon)/80 absolute inset-y-[calc(50%-64px)] z-40 h-32 w-1.5 rounded transition-[opacity,translate] duration-100",
+          `background-(--moss-primary)/50 hover:background-(--moss-primary)/80 absolute z-50 cursor-pointer rounded`,
           {
-            "left-[3px]": alignment === "left",
-            "right-[3px]": alignment === "right",
+            "inset-y-[calc(50%-64px)] left-[3px] h-32 w-1.5": alignment === "left",
+            "inset-y-[calc(50%-64px)] right-[3px] h-32 w-1.5": alignment === "right",
+            "inset-x-[calc(50%-64px)] bottom-[3px] h-1.5 w-32": alignment === "bottom",
+            "background-(--moss-info-icon)/80": showBg,
           }
         )}
+        onMouseEnter={() => setShowBg(true)}
+        onClick={onClick}
       />
-
-      <div
-        className={cn(
-          "background-(--moss-info-icon) absolute inset-y-[calc(50%-12px)] z-40 flex size-6 items-center justify-center rounded-full opacity-0 transition-[opacity,translate] duration-100 group-hover/openHandle:opacity-100",
-          {
-            "left-1 group-hover/openHandle:translate-x-0.5": alignment === "left",
-            "right-1 group-hover/openHandle:-translate-x-0.5": alignment === "right",
-          }
-        )}
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={cn({
-            "rotate-180": alignment === "right",
-          })}
-        >
-          <path d="M6 3L11 8L6 13" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
     </div>
   );
 };
