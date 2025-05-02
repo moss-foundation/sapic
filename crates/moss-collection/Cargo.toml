@@ -30,3 +30,6 @@ sweep-bptree.workspace = true
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+file-id.workspace = true # Alternatie to the nightly api MetadataExt::file_index()

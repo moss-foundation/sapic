@@ -26,6 +26,8 @@ use tokio::task::JoinHandle;
 use std::os::unix::fs::MetadataExt;
 #[cfg(windows)]
 use std::os::windows::fs::MetadataExt;
+#[cfg(windows)]
+use file_id::FileId;
 
 struct ScanRequest {
     relative_paths: Vec<PathBuf>,
@@ -391,7 +393,13 @@ impl BackgroundScanner {
             #[cfg(unix)]
             let inode = child_metadata.ino();
             #[cfg(windows)]
-            let inode = 0; // FIXME: child_metadata.file_index();
+            let inode = {
+                let file_id = file_id::get_low_res_file_id(&child_abs_path)?;
+                match file_id {
+                    FileId::LowRes { file_index, .. } => {file_index}
+                    _ => unreachable!(),
+                }
+            };
 
             let child_entry = Entry {
                 id: EntryId::new(&self.next_entry_id),
