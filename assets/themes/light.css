@@ -87,10 +87,6 @@
   --focus-border: var(--moss-primary);
   --separator-border: var(--moss-border-color);
 
-  /* Resizable */
-  --separator-border: var(--moss-border-color);
-  --moss-sash-active-highlight: #047cd4;
-
   /* Icons */
   --moss-icon-primary-background: transparent;
   --moss-icon-primary-text: var(--moss-gray-6);
@@ -119,6 +115,8 @@
   --moss-windowControlsLinux-activeBackground: rgba(191, 191, 191, 1);
 
   /* Dockview */
+
+  --moss-sash-active-highlight: #047cd4;
 
   /* Pane View */
   --moss-paneview-active-outline-color: var(--moss-primary);

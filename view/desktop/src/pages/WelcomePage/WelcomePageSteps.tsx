@@ -4,7 +4,7 @@ export const WelcomePageSteps = () => {
   return (
     <div className="flex w-full flex-col gap-2">
       <h3 className="text-xl">Next steps</h3>
-      <div className="flex min-w-[1140px] flex-wrap gap-3">
+      <div className="flex min-w-[600px] flex-wrap gap-3">
         <StepCard isNew />
         <StepCard />
         <StepCard />
