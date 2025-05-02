@@ -22,6 +22,7 @@ interface HeadBarLeftItemsProps {
   setWorkspaceMenuOpen: (open: boolean) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
+  selectedWorkspace: string | null;
 }
 
 const HeadBarLeftItems = ({
@@ -34,6 +35,7 @@ const HeadBarLeftItems = ({
   setWorkspaceMenuOpen,
   handleWorkspaceMenuAction,
   os,
+  selectedWorkspace,
 }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
@@ -68,7 +70,14 @@ const HeadBarLeftItems = ({
       <ActionMenu
         items={workspaceMenuItems}
         trigger={
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" className="h-[24px]" />
+          <IconLabelButton
+            rightIcon="ChevronDown"
+            title={selectedWorkspace || "My Workspace"}
+            placeholder="No workspace selected"
+            showPlaceholder={!selectedWorkspace}
+            labelClassName="text-md"
+            className="h-[24px]"
+          />
         }
         open={workspaceMenuOpen}
         onOpenChange={setWorkspaceMenuOpen}
@@ -241,6 +250,7 @@ export const HeadBar = () => {
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
 
   const openPanel = (panelType: string) => {
     try {
@@ -337,6 +347,7 @@ export const HeadBar = () => {
             setWorkspaceMenuOpen={setWorkspaceMenuOpen}
             handleWorkspaceMenuAction={handleWorkspaceMenuAction}
             os={os}
+            selectedWorkspace={selectedWorkspace}
           />
 
           {/*HeadBar Center items*/}
