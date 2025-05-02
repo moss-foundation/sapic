@@ -79,7 +79,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
               </DropdownMenu.Root>
               {!lastItem && (
                 <span>
-                  <Icon icon="TreeChevronRight" />
+                  <Icon icon="ChevronRight" />
                 </span>
               )}
             </div>
