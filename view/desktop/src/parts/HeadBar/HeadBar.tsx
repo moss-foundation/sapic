@@ -17,6 +17,7 @@ import { HeadBarCenterItems } from "./HeadBarCenterItems";
 import { HeadBarRightItems } from "./HeadBarRightItems";
 
 export const HeadBar = () => {
+  // FIXME: Hardoce OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
@@ -25,6 +26,7 @@ export const HeadBar = () => {
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  // FIXME: Hardoce default workspace/user/branch for testing
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);

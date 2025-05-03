@@ -24,7 +24,7 @@ export const Controls = ({ os, className, ...props }: ControlsProps) => {
       case "macos":
         // Return a placeholder element with the appropriate space for native MacOS controls
         return (
-          <div className={cn("flex h-full", className)} style={{ width: "75px" }} data-tauri-drag-region {...props} />
+          <div className={cn("flex h-full", className)} style={{ width: "72px" }} data-tauri-drag-region {...props} />
         );
       case "linux":
         return <LinuxControls className={cn(className, "py-2.5")} {...props} />;
