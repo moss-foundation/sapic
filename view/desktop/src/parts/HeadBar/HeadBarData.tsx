@@ -87,6 +87,51 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
 
 export const collectionActionMenuItems: MenuItemProps[] = createStandardMenuItems();
 
+// Extract common "All Workspaces" menu section
+const allWorkspacesMenuSection: MenuItemProps = {
+  id: "all-workspaces",
+  type: "accordion",
+  label: "All Workspaces",
+  icon: "ChevronRight",
+  items: [
+    {
+      id: "microservices-api-test-suite",
+      type: "submenu",
+      label: "Microservices API Test Suite long name",
+      icon: "ActionMenuWorkspace" as Icons,
+      items: createStandardMenuItems("microservices-api"),
+    },
+    {
+      id: "user-management-api",
+      type: "submenu",
+      label: "User Management API",
+      icon: "ActionMenuWorkspace" as Icons,
+      items: createStandardMenuItems("user-management"),
+    },
+    {
+      id: "auth-security-tests",
+      type: "submenu",
+      label: "Auth & Security Tests",
+      icon: "ActionMenuWorkspace" as Icons,
+      items: createStandardMenuItems("auth-security"),
+    },
+    {
+      id: "development-api-sandbox",
+      type: "submenu",
+      label: "Development API Sandbox",
+      icon: "ActionMenuWorkspace" as Icons,
+      items: createStandardMenuItems("dev-sandbox"),
+    },
+    {
+      id: "microservices-endpoints",
+      type: "submenu",
+      label: "Microservices Endpoints",
+      icon: "ActionMenuWorkspace" as Icons,
+      items: createStandardMenuItems("micro-endpoints"),
+    },
+  ],
+};
+
 export const workspaceMenuItems: MenuItemProps[] = [
   {
     id: "new-workspace",
@@ -104,44 +149,7 @@ export const workspaceMenuItems: MenuItemProps[] = [
     id: "separator-1",
     type: "separator",
   },
-  {
-    id: "all-workspaces",
-    type: "accordion",
-    label: "All Workspaces",
-    icon: "ChevronRight",
-    items: [
-      {
-        id: "microservices-api-test-suite",
-        type: "action",
-        label: "Microservices API Test Suite",
-        icon: "ActionMenuWorkspace" as Icons,
-      },
-      {
-        id: "user-management-api",
-        type: "action",
-        label: "User Management API",
-        icon: "ActionMenuWorkspace" as Icons,
-      },
-      {
-        id: "auth-security-tests",
-        type: "action",
-        label: "Auth & Security Tests",
-        icon: "ActionMenuWorkspace" as Icons,
-      },
-      {
-        id: "development-api-sandbox",
-        type: "action",
-        label: "Development API Sandbox",
-        icon: "ActionMenuWorkspace" as Icons,
-      },
-      {
-        id: "microservices-endpoints",
-        type: "action",
-        label: "Microservices Endpoints",
-        icon: "ActionMenuWorkspace" as Icons,
-      },
-    ],
-  },
+  allWorkspacesMenuSection,
 ];
 
 // Only shown when a workspace is selected
@@ -187,49 +195,7 @@ export const selectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "separator-3",
     type: "separator",
   },
-  {
-    id: "all-workspaces",
-    type: "accordion",
-    label: "All Workspaces",
-    icon: "ChevronRight",
-    items: [
-      {
-        id: "microservices-api-test-suite",
-        type: "submenu",
-        label: "Microservices API Test Suite long name",
-        icon: "ActionMenuWorkspace" as Icons,
-        items: createStandardMenuItems("microservices-api"),
-      },
-      {
-        id: "user-management-api",
-        type: "submenu",
-        label: "User Management API",
-        icon: "ActionMenuWorkspace" as Icons,
-        items: createStandardMenuItems("user-management"),
-      },
-      {
-        id: "auth-security-tests",
-        type: "submenu",
-        label: "Auth & Security Tests",
-        icon: "ActionMenuWorkspace" as Icons,
-        items: createStandardMenuItems("auth-security"),
-      },
-      {
-        id: "development-api-sandbox",
-        type: "submenu",
-        label: "Development API Sandbox",
-        icon: "ActionMenuWorkspace" as Icons,
-        items: createStandardMenuItems("dev-sandbox"),
-      },
-      {
-        id: "microservices-endpoints",
-        type: "submenu",
-        label: "Microservices Endpoints",
-        icon: "ActionMenuWorkspace" as Icons,
-        items: createStandardMenuItems("micro-endpoints"),
-      },
-    ],
-  },
+  allWorkspacesMenuSection,
   {
     id: "separator-4",
     type: "separator",
