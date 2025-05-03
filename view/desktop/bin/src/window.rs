@@ -30,7 +30,7 @@ pub fn create_window<R: TauriRuntime>(
     .title(input.title)
     .center()
     .resizable(true)
-    .visible(true)
+    .visible(false)
     .disable_drag_drop_handler()
     .inner_size(input.inner_size.0, input.inner_size.1)
     .position(input.position.0, input.position.1)
@@ -38,7 +38,13 @@ pub fn create_window<R: TauriRuntime>(
 
     #[cfg(target_os = "windows")]
     {
-        win_builder = win_builder.transparent(true).shadow(true).decorations(true);
+        win_builder = win_builder
+            .transparent(false)
+            .shadow(true)
+            .minimizable(true)
+            .maximizable(true)
+            .closable(true)
+            .resizable(true);
     }
 
     #[cfg(target_os = "macos")]

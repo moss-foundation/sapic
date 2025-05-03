@@ -14,6 +14,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { type } from "@tauri-apps/plugin-os";
 
 import GeneralProvider from "./app/Provider";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
@@ -44,18 +45,23 @@ const App = lazy(() => import("@/app")); // lazy load the main App component
 const rootElement = document.getElementById("root") as HTMLElement; // cache the root element reference
 
 if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-        <GeneralProvider>
-          <Suspense fallback={<PageLoader />}>
-            <App />
-          </Suspense>
-        </GeneralProvider>
-      </QueryClientProvider>
-    </StrictMode>
-  );
+  // Prevent window flickering on startup by only showing the window after the webview is ready
+  getCurrentWindow()
+    .show()
+    .then(() =>
+      createRoot(rootElement).render(
+        <StrictMode>
+          <QueryClientProvider client={queryClient}>
+            {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
+            <GeneralProvider>
+              <Suspense fallback={<PageLoader />}>
+                <App />
+              </Suspense>
+            </GeneralProvider>
+          </QueryClientProvider>
+        </StrictMode>
+      )
+    );
 
   document.querySelector("html")!.classList.add(type());
 }
