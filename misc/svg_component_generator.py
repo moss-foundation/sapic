@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import tinycss2
 import webcolors
 import re
+import shutil
 
 # Constants
 COLOR_ATTRIBUTES = {"fill", "stroke"}
@@ -173,6 +174,9 @@ def generate_components(
     light_palette = extract_css_palette(light_css)
     dark_palette = extract_css_palette(dark_css)
 
+    # Remove old build artifacts
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for name, props in plan_data.items():
