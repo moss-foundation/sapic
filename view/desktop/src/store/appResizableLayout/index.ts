@@ -54,7 +54,7 @@ export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set
     }));
   },
   sideBar: {
-    minWidth: 120,
+    minWidth: 130,
     maxWidth: 400,
     width: 255,
     visible: true,

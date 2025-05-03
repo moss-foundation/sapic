@@ -91,10 +91,16 @@
   --moss-icon-primary-background-hover: rgba(0, 0, 0, 0.33);
   --moss-icon-primary-background-active: #3574f0;
 
+  /* HeadBar */
+  --moss-headBar-icon-primary-text: var(--moss-gray-4);
+  --moss-headBar-primary-background: var(--moss-gray-12);
+  --moss-headBar-primary-background-hover: var(--moss-gray-11);
+  --moss-headBar-border-color: var(--moss-gray-11);
+
   /* StatusBar */
-  --moss-statusBar-icon-primary-text: #d4d4d4;
-  --moss-statusBar-icon-secondary-text: #cccccc;
-  --moss-statusBar-icon-background-hover: #3c3c3c;
+  --moss-statusBar-icon-primary-text: var(--moss-gray-1);
+  --moss-statusBar-icon-secondary-text: var(--moss-gray-4);
+  --moss-statusBar-icon-background-hover: var(--moss-gray-12);
 
   /* Window Controls */
   --moss-button-icon-color: #d4d4d4;

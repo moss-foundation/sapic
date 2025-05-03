@@ -15,6 +15,16 @@ type ResizableProps = ComponentProps<typeof Allotment> & { smoothHide?: boolean 
 export const Resizable = forwardRef<AllotmentHandle, ResizableProps>(
   ({ smoothHide = false, className, children, ...props }, ref) => {
     const [disableSmoothHide, setDisableSmoothHide] = useState(false);
+    const [isReady, setIsReady] = useState(false);
+
+    useEffect(() => {
+      // Delay initialization to ensure the DOM is ready
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
       if (!smoothHide) return;
@@ -32,6 +42,11 @@ export const Resizable = forwardRef<AllotmentHandle, ResizableProps>(
         window.removeEventListener("resize", handleResize);
       };
     }, [smoothHide]);
+
+    if (!isReady) {
+      // Return a placeholder while component initializes
+      return <div className={cn("h-full w-full", className)} />;
+    }
 
     return (
       <Allotment

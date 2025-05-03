@@ -38,17 +38,16 @@ pub fn create_window<R: TauriRuntime>(
 
     #[cfg(target_os = "windows")]
     {
-        win_builder = win_builder
-            .transparent(true)
-            .shadow(false)
-            .decorations(false);
+        win_builder = win_builder.transparent(true).shadow(true).decorations(true);
     }
 
     #[cfg(target_os = "macos")]
     {
         win_builder = win_builder
             .hidden_title(true)
-            .title_bar_style(tauri::TitleBarStyle::Visible);
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .transparent(false)
+            .decorations(true);
     }
 
     let webview_window = win_builder
