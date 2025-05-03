@@ -41,10 +41,7 @@ pub fn create_window<R: TauriRuntime>(
         win_builder = win_builder
             .transparent(false)
             .shadow(true)
-            .minimizable(true)
-            .maximizable(true)
-            .closable(true)
-            .resizable(true);
+            .decorations(false);
     }
 
     #[cfg(target_os = "macos")]
