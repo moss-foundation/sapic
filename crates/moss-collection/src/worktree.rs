@@ -78,9 +78,6 @@ pub(crate) struct Snapshot {
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
-unsafe impl Send for Snapshot {}
-unsafe impl Sync for Snapshot {}
-
 impl Clone for Snapshot {
     fn clone(&self) -> Self {
         let entries_by_id =
@@ -102,39 +99,19 @@ impl Clone for Snapshot {
 }
 
 impl Snapshot {
-    pub async fn entries(&self) -> impl Iterator<Item = (&EntryId, &Arc<Entry>)> {
-        self.entries_by_id.iter()
-    }
-
     pub fn count_files(&self) -> usize {
         self.entries_by_path.len()
     }
 
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
-        prefix: &'a Path,
+        prefix: &'a str,
     ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<Entry>)> + 'a {
         self.entries_by_path
             .iter()
             .skip_while(move |(p, _)| !p.starts_with(prefix))
             .take_while(move |(p, _)| p.starts_with(prefix))
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
-    }
-
-    pub fn entries_by_prefix(&self, prefix: &str) -> Vec<(EntryId, Arc<Entry>)> {
-        dbg!(self.entries_by_path.len());
-        dbg!(&self.abs_path);
-
-        self.entries_by_path
-            .iter()
-            .skip_while(move |(p, _)| !p.starts_with(prefix))
-            .take_while(move |(p, _)| p.starts_with(prefix))
-            .filter_map(move |(_, &id)| {
-                self.entries_by_id
-                    .get(&id)
-                    .map(|entry| (id, Arc::clone(entry)))
-            })
-            .collect::<Vec<_>>()
     }
 
     pub fn root_entry(&self) -> Option<Arc<Entry>> {
@@ -600,6 +577,17 @@ impl Worktree {
         }
 
         self.snapshot.borrow()
+    }
+
+    pub async fn snapshot_rx(&self) -> tokio::sync::watch::Receiver<Snapshot> {
+        {
+            let mut is_scanning = self.is_scanning_rx.clone();
+            while *is_scanning.borrow() {
+                is_scanning.changed().await.unwrap();
+            }
+        }
+
+        self.snapshot.clone()
     }
 }
 

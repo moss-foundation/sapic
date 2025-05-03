@@ -1,7 +1,9 @@
+use futures::pin_mut;
 use moss_common::api::OperationResult;
-use std::{sync::Arc, time::Duration, vec};
+use std::{time::Duration, vec};
 use tauri::ipc::Channel;
-use tokio::sync::mpsc;
+use tokio_stream::StreamExt;
+use tokio_stream::StreamMap;
 
 use crate::{
     collection::Collection,
@@ -11,63 +13,41 @@ use crate::{
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 impl Collection {
-    pub async fn list_entries_by_prefixes(
+    pub async fn stream_entries_by_prefixes(
         &self,
         on_event: Channel<ListEntriesEvent>,
         input: ListUnitsInput,
     ) -> OperationResult<()> {
         let worktree = self.worktree().await?;
-        let files_count = worktree.snapshot().await.count_files();
-        let (tx, mut rx) = mpsc::channel(files_count);
+        let snapshot = worktree.snapshot().await;
 
-        // We don't want to spawn any tasks if there are no files in the worktree.
-        if files_count == 0 {
+        if snapshot.count_files() == 0 {
+            // We need to send a final empty event to signal the end of the stream.
             let _ = on_event.send(ListEntriesEvent(vec![]));
             return Ok(());
         }
 
-        for entry_prefix in input.0 {
-            tokio::task::spawn({
-                let tx_clone = tx.clone();
-                let worktree_clone = Arc::clone(&worktree);
-
-                async move {
-                    let entries = tokio::task::spawn_blocking(move || {
-                        let snapshot = futures::executor::block_on(worktree_clone.snapshot());
-                        snapshot.entries_by_prefix(entry_prefix)
-                    })
-                    .await
-                    .expect("Failed to spawn blocking task for listing entries");
-
-                    for (id, entry) in entries {
-                        let _ = tx_clone
-                            .send(EntryInfo {
-                                id,
-                                path: entry.path.to_path_buf(),
-                            })
-                            .await;
-                    }
-                }
-            });
+        let mut streams = StreamMap::new();
+        for prefix in input.0 {
+            let s = tokio_stream::iter(snapshot.iter_entries_by_prefix(&prefix).map(
+                |(&id, entry)| EntryInfo {
+                    id,
+                    path: entry.path.to_path_buf(),
+                },
+            ));
+            streams.insert(prefix, s);
         }
-        drop(tx);
 
-        let mut interval = tokio::time::interval(POLL_INTERVAL);
-        tokio::task::spawn(async move {
-            loop {
-                interval.tick().await;
+        let stream = streams.map(|(_key, value)| value);
+        let batched = stream.chunks_timeout(snapshot.count_files(), POLL_INTERVAL);
+        pin_mut!(batched);
 
-                let mut batch = Vec::with_capacity(files_count);
-                let received = rx.recv_many(&mut batch, files_count).await;
-                if received > 0 {
-                    let _ = on_event.send(ListEntriesEvent(batch));
-                } else {
-                    // We send empty event if there are no new entries, so the UI can stop polling.
-                    let _ = on_event.send(ListEntriesEvent(vec![]));
-                    break;
-                }
-            }
-        });
+        while let Some(batch) = batched.next().await {
+            let _ = on_event.send(ListEntriesEvent(batch));
+        }
+
+        // We need to send a final empty event to signal the end of the stream.
+        let _ = on_event.send(ListEntriesEvent(vec![]));
 
         Ok(())
     }

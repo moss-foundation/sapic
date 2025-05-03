@@ -30,7 +30,7 @@ async fn test() {
     // let on_event = TestChannel::new(evt_tx.clone());
     // let on_event: tauri::ipc::Channel<ListEntriesEvent> = unsafe { std::mem::transmute(on_event) };
 
-    let variants = vec!["requests"];
+    let variants = vec!["endpoints", "components", "schemas", "cases", "requests"];
 
     let on_event = tauri::ipc::Channel::<ListEntriesEvent>::new(|event| {
         dbg!(&event);
@@ -39,10 +39,8 @@ async fn test() {
     });
 
     let _ = collection
-        .list_entries_by_prefixes(on_event, ListUnitsInput(variants))
+        .stream_entries_by_prefixes(on_event, ListUnitsInput(variants))
         .await;
-
-    tokio::time::sleep(Duration::from_secs(3)).await;
 
     // let mut all: Vec<EntryInfo> = Vec::new();
 

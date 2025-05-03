@@ -27,6 +27,7 @@ futures.workspace = true
 notify.workspace = true
 sweep-bptree.workspace = true
 file-id.workspace = true
+tokio-stream.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
