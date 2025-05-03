@@ -233,11 +233,13 @@ def create_plan(icons_dir: Path, force: bool = False) -> None:
     plan_path = icons_dir / 'plan.json'
 
     existing = json.loads(plan_path.read_text()) if plan_path.exists() else {}
-    updated = existing.copy()
+    updated = {}
 
     for name in names:
         if not force and name in existing:
+            updated[name] = existing[name]
             continue
+
         light_svg = Path(icons_dir, name, "light.svg")
         if not light_svg.exists():
             logging.error(f"`light.svg` not found for icon `{name}`")
