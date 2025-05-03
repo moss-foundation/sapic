@@ -81,6 +81,7 @@ export const HeadBar = () => {
     setCollectionName,
     collectionButtonRef,
     setIsRenamingCollection,
+    setSelectedWorkspace,
   });
 
   return (

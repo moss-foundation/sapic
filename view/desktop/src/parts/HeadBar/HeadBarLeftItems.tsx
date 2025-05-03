@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { ModeToggle } from "./ModeToggle";
 import { windowsMenuItems } from "./mockHeadBarData";
-import { workspaceMenuItems } from "./HeadBarData";
+import { workspaceMenuItems, selectedWorkspaceMenuItems } from "./HeadBarData";
 
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -63,7 +63,7 @@ export const HeadBarLeftItems = ({
         </>
       )}
       <ActionMenu
-        items={workspaceMenuItems}
+        items={selectedWorkspace ? selectedWorkspaceMenuItems : workspaceMenuItems}
         trigger={
           <IconLabelButton
             rightIcon="ChevronDown"

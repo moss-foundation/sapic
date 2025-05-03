@@ -94,6 +94,64 @@ export const workspaceMenuItems: MenuItemProps[] = [
     label: "New Workspace",
     icon: "ActionMenuNew" as Icons,
   },
+  {
+    id: "open-workspace",
+    type: "action",
+    label: "Open Workspace",
+    icon: "ActionMenuOpen" as Icons,
+  },
+  {
+    id: "separator-1",
+    type: "separator",
+  },
+  {
+    id: "all-workspaces",
+    type: "accordion",
+    label: "All Workspaces",
+    icon: "ChevronRight",
+    items: [
+      {
+        id: "microservices-api-test-suite",
+        type: "action",
+        label: "Microservices API Test Suite",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "user-management-api",
+        type: "action",
+        label: "User Management API",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "auth-security-tests",
+        type: "action",
+        label: "Auth & Security Tests",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "development-api-sandbox",
+        type: "action",
+        label: "Development API Sandbox",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+      {
+        id: "microservices-endpoints",
+        type: "action",
+        label: "Microservices Endpoints",
+        icon: "ActionMenuWorkspace" as Icons,
+      },
+    ],
+  },
+];
+
+// Only shown when a workspace is selected
+export const selectedWorkspaceMenuItems: MenuItemProps[] = [
+  {
+    id: "new-workspace",
+    type: "action",
+    label: "New Workspace",
+    icon: "ActionMenuNew" as Icons,
+  },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
     id: "new-collection",

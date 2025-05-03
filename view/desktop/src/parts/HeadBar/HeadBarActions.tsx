@@ -7,6 +7,7 @@ export interface HeadBarActionProps {
   setCollectionName: (name: string) => void;
   collectionButtonRef: RefObject<HTMLButtonElement>;
   setIsRenamingCollection: (isRenaming: boolean) => void;
+  setSelectedWorkspace?: (workspace: string | null) => void;
 }
 
 /**
@@ -89,10 +90,21 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
-  const { openPanel, setShowDebugPanels, showDebugPanels } = props;
+  const { openPanel, setShowDebugPanels, showDebugPanels, setSelectedWorkspace } = props;
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
+
+    // Handle workspace selection
+    if (
+      action.includes("microservices") ||
+      action.includes("user-management") ||
+      action.includes("auth-security") ||
+      action.includes("development-api")
+    ) {
+      setSelectedWorkspace?.(action);
+    }
+
     // Handle different workspace actions
     if (action === "home") openPanel("Home");
     if (action === "logs") openPanel("Logs");
