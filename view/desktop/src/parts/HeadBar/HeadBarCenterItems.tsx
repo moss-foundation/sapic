@@ -19,6 +19,7 @@ export interface HeadBarCenterItemsProps {
   collectionName: string;
   onRenameCollection: (newName: string) => void;
   collectionButtonRef: React.RefObject<HTMLButtonElement>;
+  os: string | null;
 }
 
 export const HeadBarCenterItems = ({
@@ -34,12 +35,13 @@ export const HeadBarCenterItems = ({
   collectionName,
   onRenameCollection,
   collectionButtonRef,
+  os,
 }: HeadBarCenterItemsProps) => {
   return (
     <div
       className={cn(
         "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
-        isXLarge ? "" : "absolute left-1/2 -translate-x-1/2 transform"
+        isXLarge ? "" : os === "macos" ? "relative" : "absolute left-1/2 -translate-x-1/2 transform"
       )}
       data-tauri-drag-region
     >

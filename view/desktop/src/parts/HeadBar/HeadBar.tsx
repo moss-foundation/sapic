@@ -135,6 +135,7 @@ export const HeadBar = () => {
             collectionName={collectionName}
             onRenameCollection={handleRenameCollection}
             collectionButtonRef={collectionButtonRef}
+            os={os}
           />
 
           {/*HeadBar Right-side items*/}
