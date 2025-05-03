@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { ModeToggle } from "./ModeToggle";
 import { windowsMenuItems } from "./mockHeadBarData";
-import { workspaceMenuItems, selectedWorkspaceMenuItems } from "./HeadBarData";
+import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -31,6 +31,7 @@ export const HeadBarLeftItems = ({
   selectedWorkspace,
 }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
+  const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
   return (
     <div
