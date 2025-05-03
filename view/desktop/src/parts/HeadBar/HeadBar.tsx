@@ -121,22 +121,24 @@ export const HeadBar = () => {
           />
 
           {/*HeadBar Center items*/}
-          <HeadBarCenterItems
-            isMedium={isMedium}
-            isXLarge={isXLarge}
-            breakpoint={breakpoint}
-            gitMenuOpen={gitMenuOpen}
-            setGitMenuOpen={setGitMenuOpen}
-            handleGitMenuAction={handleGitMenuAction}
-            collectionActionMenuOpen={collectionActionMenuOpen}
-            setCollectionActionMenuOpen={setCollectionActionMenuOpen}
-            handleCollectionActionMenuAction={handleCollectionActionMenuAction}
-            selectedBranch={selectedBranch}
-            collectionName={collectionName}
-            onRenameCollection={handleRenameCollection}
-            collectionButtonRef={collectionButtonRef}
-            os={os}
-          />
+          {selectedWorkspace && (
+            <HeadBarCenterItems
+              isMedium={isMedium}
+              isXLarge={isXLarge}
+              breakpoint={breakpoint}
+              gitMenuOpen={gitMenuOpen}
+              setGitMenuOpen={setGitMenuOpen}
+              handleGitMenuAction={handleGitMenuAction}
+              collectionActionMenuOpen={collectionActionMenuOpen}
+              setCollectionActionMenuOpen={setCollectionActionMenuOpen}
+              handleCollectionActionMenuAction={handleCollectionActionMenuAction}
+              selectedBranch={selectedBranch}
+              collectionName={collectionName}
+              onRenameCollection={handleRenameCollection}
+              collectionButtonRef={collectionButtonRef}
+              os={os}
+            />
+          )}
 
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
