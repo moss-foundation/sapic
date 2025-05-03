@@ -1,238 +1,23 @@
-import { ActionButton, Divider, IconLabelButton } from "@/components";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useResponsive } from "@/hooks/useResponsive";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { Controls } from "./Controls/Controls";
-import { ModeToggle } from "./ModeToggle";
-import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import CollapsibleActionMenu from "./CollapsibleActionMenu";
-import { userMenuItems, gitBranchMenuItems, windowsMenuItems } from "./mockHeadBarData";
-import { collectionActionMenuItems, workspaceMenuItems } from "./HeadBarData";
-
-interface HeadBarLeftItemsProps {
-  isLarge: boolean;
-  breakpoint: string;
-  windowsMenuOpen: boolean;
-  setWindowsMenuOpen: (open: boolean) => void;
-  handleWindowsMenuAction: (action: string) => void;
-  workspaceMenuOpen: boolean;
-  setWorkspaceMenuOpen: (open: boolean) => void;
-  handleWorkspaceMenuAction: (action: string) => void;
-  os: string | null;
-}
-
-const HeadBarLeftItems = ({
-  isLarge,
-  breakpoint,
-  windowsMenuOpen,
-  setWindowsMenuOpen,
-  handleWindowsMenuAction,
-  workspaceMenuOpen,
-  setWorkspaceMenuOpen,
-  handleWorkspaceMenuAction,
-  os,
-}: HeadBarLeftItemsProps) => {
-  const isWindowsOrLinux = os === "windows" || os === "linux";
-
-  return (
-    <div
-      className={cn("flex items-center", {
-        "gap-0.5": breakpoint === "md",
-        "gap-1.5": ["lg", "xl", "2xl"].includes(breakpoint),
-      })}
-      data-tauri-drag-region
-    >
-      {isWindowsOrLinux && (
-        <>
-          <ActionMenu
-            items={windowsMenuItems}
-            trigger={
-              <ActionButton
-                icon="HeadBarWindowsMenu"
-                iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-                title="Menu"
-              />
-            }
-            open={windowsMenuOpen}
-            onOpenChange={setWindowsMenuOpen}
-            onSelect={(item) => {
-              handleWindowsMenuAction(item.id);
-            }}
-          />
-          <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
-        </>
-      )}
-      <ActionMenu
-        items={workspaceMenuItems}
-        trigger={
-          <IconLabelButton rightIcon="ChevronDown" title="My Workspace" labelClassName="text-md" className="h-[24px]" />
-        }
-        open={workspaceMenuOpen}
-        onOpenChange={setWorkspaceMenuOpen}
-        onSelect={(item) => {
-          handleWorkspaceMenuAction(item.id);
-        }}
-      />
-      <IconLabelButton
-        leftIcon="HeadBarVault"
-        leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
-        title="Vault"
-        className="h-[24px]"
-        compact={isLarge}
-      />
-    </div>
-  );
-};
-
-interface HeadBarCenterItemsProps {
-  isMedium: boolean;
-  isXLarge: boolean;
-  breakpoint: string;
-  gitMenuOpen: boolean;
-  setGitMenuOpen: (open: boolean) => void;
-  handleGitMenuAction: (action: string) => void;
-  collectionActionMenuOpen: boolean;
-  setCollectionActionMenuOpen: (open: boolean) => void;
-  handleCollectionActionMenuAction: (action: string) => void;
-}
-
-const HeadBarCenterItems = ({
-  isMedium,
-  isXLarge,
-  gitMenuOpen,
-  setGitMenuOpen,
-  handleGitMenuAction,
-  collectionActionMenuOpen,
-  setCollectionActionMenuOpen,
-  handleCollectionActionMenuAction,
-}: HeadBarCenterItemsProps) => {
-  return (
-    <div
-      className={cn(
-        "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
-        isXLarge ? "" : "absolute left-1/2 -translate-x-1/2 transform"
-      )}
-      data-tauri-drag-region
-    >
-      <IconLabelButton
-        leftIcon="HeadBarCollection"
-        leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-        className={
-          isMedium
-            ? "mr-[3px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            : "mr-[30px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-        }
-        title="Sapic Test Collection"
-      />
-      <ActionButton
-        icon="Reload"
-        iconClassName="text-(--moss-headBar-icon-primary-text)"
-        customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-        title="Reload"
-      />
-      <ActionMenu
-        items={collectionActionMenuItems}
-        trigger={
-          <ActionButton
-            icon="ThreeVerticalDots"
-            iconClassName="text-(--moss-headBar-icon-primary-text)"
-            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            className="mr-[-4px]"
-            title="Collection Actions"
-          />
-        }
-        open={collectionActionMenuOpen}
-        onOpenChange={setCollectionActionMenuOpen}
-        onSelect={(item) => {
-          handleCollectionActionMenuAction(item.id);
-        }}
-      />
-      <Divider />
-      <ActionMenu
-        items={gitBranchMenuItems}
-        trigger={
-          <IconLabelButton
-            leftIcon="HeadBarGit"
-            leftIconClassName="text-(--moss-headBar-icon-primary-text)"
-            rightIcon="ChevronDown"
-            className="ml-[-2px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            title="main"
-          />
-        }
-        open={gitMenuOpen}
-        onOpenChange={setGitMenuOpen}
-        onSelect={(item) => {
-          handleGitMenuAction(item.id);
-        }}
-      />
-    </div>
-  );
-};
-
-interface HeadBarRightItemsProps {
-  isMedium: boolean;
-  isLarge: boolean;
-  breakpoint: string;
-  userMenuOpen: boolean;
-  setUserMenuOpen: (open: boolean) => void;
-  handleUserMenuAction: (action: string) => void;
-  showDebugPanels: boolean;
-  setShowDebugPanels: (show: boolean) => void;
-  openPanel: (panel: string) => void;
-  os: string | null;
-}
-
-const HeadBarRightItems = ({
-  isMedium,
-  isLarge,
-  userMenuOpen,
-  setUserMenuOpen,
-  handleUserMenuAction,
-  showDebugPanels,
-  setShowDebugPanels,
-  openPanel,
-  os,
-}: HeadBarRightItemsProps) => {
-  return (
-    <div className="flex items-center">
-      <ActionMenu
-        items={userMenuItems}
-        align="end"
-        trigger={
-          <IconLabelButton
-            leftIcon="HeadBarUserAvatar"
-            leftIconClassName="text-(--moss-primary) size-4.5"
-            rightIcon="ChevronDown"
-            title="g10z3r"
-            className="mr-2 h-[24px]"
-            compact={isMedium}
-          />
-        }
-        open={userMenuOpen}
-        onOpenChange={setUserMenuOpen}
-        onSelect={(item) => {
-          handleUserMenuAction(item.id);
-        }}
-      />
-
-      {os === "macos" && (
-        <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
-      )}
-
-      <CollapsibleActionMenu
-        isCompact={isMedium}
-        showDebugPanels={showDebugPanels}
-        setShowDebugPanels={setShowDebugPanels}
-        openPanel={openPanel}
-      />
-    </div>
-  );
-};
+import {
+  useUserMenuActions,
+  useGitMenuActions,
+  useWindowsMenuActions,
+  useCollectionActions,
+  useWorkspaceActions,
+} from "./HeadBarActions";
+import { HeadBarLeftItems } from "./HeadBarLeftItems";
+import { HeadBarCenterItems } from "./HeadBarCenterItems";
+import { HeadBarRightItems } from "./HeadBarRightItems";
 
 export const HeadBar = () => {
+  // FIXME: Hardoce OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
@@ -241,6 +26,13 @@ export const HeadBar = () => {
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  // FIXME: Hardoce default workspace/user/branch for testing
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [collectionName, setCollectionName] = useState("Sapic Test Collection");
+  const collectionButtonRef = useRef<HTMLButtonElement>(null);
+  const [isRenamingCollection, setIsRenamingCollection] = useState(false);
 
   const openPanel = (panelType: string) => {
     try {
@@ -270,38 +62,29 @@ export const HeadBar = () => {
     }
   };
 
-  // Handle user menu actions
-  const handleUserMenuAction = (action: string) => {
-    console.log(`User action: ${action}`);
-    // Here you would handle different user actions like profile, settings, logout, etc.
-  };
+  // Use the action hooks from HeadBarActions
+  const handleUserMenuAction = useUserMenuActions();
+  const handleGitMenuAction = useGitMenuActions();
+  const handleWindowsMenuAction = useWindowsMenuActions();
 
-  // Handle git menu actions
-  const handleGitMenuAction = (action: string) => {
-    console.log(`Git action: ${action}`);
-    // Here you would handle different git actions like branch switching, pull, push, etc.
-  };
+  const { handleCollectionActionMenuAction, handleRenameCollection } = useCollectionActions({
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    setCollectionName,
+    collectionButtonRef,
+    setIsRenamingCollection,
+  });
 
-  // Handle Windows menu actions
-  const handleWindowsMenuAction = (action: string) => {
-    console.log(`Windows menu action: ${action}`);
-    // Here you would handle different Windows menu actions
-  };
-
-  // Handle collection action menu actions
-  const handleCollectionActionMenuAction = (action: string) => {
-    console.log(`Collection action: ${action}`);
-    // Here you would handle different collection actions
-  };
-
-  // Handle workspace menu actions
-  const handleWorkspaceMenuAction = (action: string) => {
-    console.log(`Workspace action: ${action}`);
-    // Handle different workspace actions
-    if (action === "home") openPanel("Home");
-    if (action === "logs") openPanel("Logs");
-    if (action === "debug") setShowDebugPanels(!showDebugPanels);
-  };
+  const handleWorkspaceMenuAction = useWorkspaceActions({
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    setCollectionName,
+    collectionButtonRef,
+    setIsRenamingCollection,
+    setSelectedWorkspace,
+  });
 
   return (
     <header
@@ -337,20 +120,28 @@ export const HeadBar = () => {
             setWorkspaceMenuOpen={setWorkspaceMenuOpen}
             handleWorkspaceMenuAction={handleWorkspaceMenuAction}
             os={os}
+            selectedWorkspace={selectedWorkspace}
           />
 
           {/*HeadBar Center items*/}
-          <HeadBarCenterItems
-            isMedium={isMedium}
-            isXLarge={isXLarge}
-            breakpoint={breakpoint}
-            gitMenuOpen={gitMenuOpen}
-            setGitMenuOpen={setGitMenuOpen}
-            handleGitMenuAction={handleGitMenuAction}
-            collectionActionMenuOpen={collectionActionMenuOpen}
-            setCollectionActionMenuOpen={setCollectionActionMenuOpen}
-            handleCollectionActionMenuAction={handleCollectionActionMenuAction}
-          />
+          {selectedWorkspace && (
+            <HeadBarCenterItems
+              isMedium={isMedium}
+              isXLarge={isXLarge}
+              breakpoint={breakpoint}
+              gitMenuOpen={gitMenuOpen}
+              setGitMenuOpen={setGitMenuOpen}
+              handleGitMenuAction={handleGitMenuAction}
+              collectionActionMenuOpen={collectionActionMenuOpen}
+              setCollectionActionMenuOpen={setCollectionActionMenuOpen}
+              handleCollectionActionMenuAction={handleCollectionActionMenuAction}
+              selectedBranch={selectedBranch}
+              collectionName={collectionName}
+              onRenameCollection={handleRenameCollection}
+              collectionButtonRef={collectionButtonRef}
+              os={os}
+            />
+          )}
 
           {/*HeadBar Right-side items*/}
           <HeadBarRightItems
@@ -364,6 +155,8 @@ export const HeadBar = () => {
             setShowDebugPanels={setShowDebugPanels}
             openPanel={openPanel}
             os={os}
+            selectedWorkspace={selectedWorkspace}
+            selectedUser={selectedUser}
           />
         </div>
       </div>
