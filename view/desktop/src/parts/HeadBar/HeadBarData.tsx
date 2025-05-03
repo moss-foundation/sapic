@@ -92,14 +92,14 @@ export const workspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "PlusButton" as Icons,
+    icon: "ActionMenuNew" as Icons,
   },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
     id: "new-collection",
     type: "action",
     label: "New Collection",
-    icon: "ActionMenuNewCollection" as Icons,
+    icon: "PlusButton" as Icons,
   },
   {
     id: "import-collection",
