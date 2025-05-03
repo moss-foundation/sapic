@@ -36,7 +36,7 @@ export const Item = forwardRef<ItemElement, ItemProps>(
           (props.icon ? (
             <Icon icon={props.icon} className={cn("shrink-0 opacity-30", iconClassName)} />
           ) : (
-            <Icon icon="DropdownMenuRadioIndicator" className={cn("shrink-0 opacity-0", iconClassName)} />
+            <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />
           ))}
         <div className="flex w-full items-center gap-2.5">
           <span>{props.label}</span>

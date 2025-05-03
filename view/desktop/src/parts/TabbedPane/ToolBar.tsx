@@ -1,4 +1,5 @@
 import React from "react";
+
 import { ActionButton, Divider, IconLabelButton } from "@/components";
 
 interface ToolBarProps {
@@ -8,7 +9,7 @@ interface ToolBarProps {
 const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
   return (
     <div className="group-control mr-0.5 flex h-full items-center px-2 select-none">
-      <ActionButton icon="ThreeVerticalDots" />
+      <ActionButton icon="MoreHorizontal" />
 
       {workspace && (
         <>

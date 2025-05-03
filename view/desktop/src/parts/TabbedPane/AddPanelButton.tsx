@@ -1,7 +1,8 @@
-import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
-import { nextId } from "./defaultLayout";
 import { ActionButton } from "@/components";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { IDockviewHeaderActionsProps } from "@repo/moss-tabs";
+
+import { nextId } from "./defaultLayout";
 
 export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -24,7 +25,7 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
 
   return (
     <div className="group-control flex h-full items-center px-2 select-none">
-      <ActionButton icon="PlusButton" onClick={onClick} />
+      <ActionButton icon="Add" onClick={onClick} />
     </div>
   );
 };

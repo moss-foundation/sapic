@@ -37,7 +37,7 @@ export DEV_APP_DIR = ${HOME_DIR}/.sapic
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
-export NEW_ICONS_DIR = ${CURDIR}/assets/icons
+export NEW_ICONS_DIR = ${CURDIR}/view/desktop/src/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
 

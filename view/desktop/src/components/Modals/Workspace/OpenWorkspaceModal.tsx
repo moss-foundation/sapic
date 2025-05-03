@@ -84,7 +84,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
                     onClick={() => setMode("RequestFirstMode")}
                   >
                     <Radio.Indicator>
-                      <Icon icon="DropdownMenuRadioIndicator" className="size-2! text-white" />
+                      <Icon icon="RadioIndicator" className="text-white" />
                     </Radio.Indicator>
                   </Radio.Item>
 
@@ -104,7 +104,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
                     onClick={() => setMode("DesignFirstMode")}
                   >
                     <Radio.Indicator>
-                      <Icon icon="DropdownMenuRadioIndicator" className="size-2! text-white" />
+                      <Icon icon="RadioIndicator" className="text-white" />
                     </Radio.Indicator>
                   </Radio.Item>
 
@@ -132,8 +132,8 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
                 if (check !== "indeterminate") setOpenAutomatically(check);
               }}
             >
-              <Checkbox.Indicator className="size-4">
-                <Icon icon="CheckboxIndicator" className="mx-auto mt-0.25 size-3.5 text-white" />
+              <Checkbox.Indicator>
+                <Icon icon="CheckboxIndicator" />
               </Checkbox.Indicator>
             </Checkbox.Root>
             <label htmlFor="OpenAutomaticallyAfterCreationId" className="cursor-pointer">
