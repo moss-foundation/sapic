@@ -1,4 +1,5 @@
 import { RefObject } from "react";
+import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -10,6 +11,8 @@ export interface HeadBarActionProps {
   setSelectedWorkspace?: (workspace: string | null) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
+  openNewWorkspaceModal?: () => void;
+  openOpenWorkspaceModal?: () => void;
 }
 
 /**
@@ -102,12 +105,20 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
-  const { openPanel, setShowDebugPanels, showDebugPanels, setSelectedWorkspace } = props;
+  const {
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    setSelectedWorkspace,
+    openNewWorkspaceModal,
+    openOpenWorkspaceModal,
+  } = props;
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
 
-    // Handle workspace selection - now handles any workspace name
+    // Handle workspace selection - now handles any workspace name and opens it
     if (
       action !== "home" &&
       action !== "logs" &&
@@ -120,19 +131,21 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       !action.startsWith("save") &&
       !action.startsWith("edit-")
     ) {
+      // Set the selected workspace in UI state
       setSelectedWorkspace?.(action);
+
+      // Open the workspace using the same method as in OpenWorkspaceModal
+      openWorkspace(action);
     }
 
-    // Handle new workspace
+    // Handle new workspace modal
     if (action === "new-workspace") {
-      // Handle new workspace action
-      console.log("Creating new workspace");
+      openNewWorkspaceModal?.();
     }
 
-    // Handle open workspace
+    // Handle open workspace modal
     if (action === "open-workspace") {
-      // Navigate to open workspace modal
-      console.log("Opening workspace selector");
+      openOpenWorkspaceModal?.();
     }
 
     // Handle different workspace actions

@@ -3,6 +3,9 @@ import { type } from "@tauri-apps/plugin-os";
 import { useState, useRef } from "react";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useModal } from "@/hooks/useModal";
+import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
+import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 
 import { Controls } from "./Controls/Controls";
 import {
@@ -37,6 +40,18 @@ export const HeadBar = () => {
   const collectionButtonRef = useRef<HTMLButtonElement>(null);
   const [isRenamingCollection, setIsRenamingCollection] = useState(false);
 
+  // Modal hooks for workspace dialogs
+  const {
+    showModal: showNewWorkspaceModal,
+    closeModal: closeNewWorkspaceModal,
+    openModal: openNewWorkspaceModal,
+  } = useModal();
+  const {
+    showModal: showOpenWorkspaceModal,
+    closeModal: closeOpenWorkspaceModal,
+    openModal: openOpenWorkspaceModal,
+  } = useModal();
+
   // User menu actions
   const actionProps: HeadBarActionProps = {
     openPanel,
@@ -45,6 +60,8 @@ export const HeadBar = () => {
     setSelectedWorkspace,
     setSelectedUser,
     setSelectedBranch,
+    openNewWorkspaceModal,
+    openOpenWorkspaceModal,
   };
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
@@ -76,6 +93,10 @@ export const HeadBar = () => {
 
   return (
     <WorkspaceMenuProvider>
+      {/* Workspace Modals */}
+      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+
       <header
         data-tauri-drag-region
         className={cn(
