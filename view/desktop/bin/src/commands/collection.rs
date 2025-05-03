@@ -7,6 +7,14 @@ use moss_workspace::{
 use std::path::PathBuf;
 use tauri::State;
 
+pub async fn stream_collection_entries_by_prefixes(
+    app_manager: State<'_, AppManager<tauri::Wry>>,
+    collection_key: String,
+    prefixes: Vec<String>,
+) -> TauriResult<()> {
+    Ok(())
+}
+
 // HACK: This command is just for testing
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager))]
