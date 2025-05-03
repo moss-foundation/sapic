@@ -6,4 +6,4 @@ pub mod list_requests;
 pub mod rename_request;
 pub mod rename_request_group;
 
-pub mod list_units;
+pub mod stream_entries_by_prefixes;
