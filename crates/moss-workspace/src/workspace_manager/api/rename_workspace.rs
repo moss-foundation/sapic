@@ -1,7 +1,7 @@
 use anyhow::Context;
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
+use moss_fs::utils::encode_name;
 use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;

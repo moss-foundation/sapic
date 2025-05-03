@@ -134,8 +134,8 @@ pub struct EntryInfo {
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListUnitsInput(pub Vec<&'static str>);
+pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListEntriesEvent(pub Vec<EntryInfo>);
+pub struct StreamEntriesByPrefixesEvent(pub Vec<EntryInfo>);

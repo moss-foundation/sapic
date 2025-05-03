@@ -7,7 +7,15 @@
 // If you need to add or modify imports, please update the package.json and
 // re-run `make gen-models` it to regenerate the file accordingly.
 
-import type { HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo } from "./types";
+import type {
+  EntryId,
+  HeaderParamItem,
+  HttpMethod,
+  PathParamItem,
+  QueryParamItem,
+  RequestBody,
+  RequestNodeInfo,
+} from "./types";
 import type { ResourceKey } from "@repo/bindings-utils";
 
 export type CreateRequestGroupInput = { path: string };
@@ -42,6 +50,8 @@ export type DeleteRequestGroupInput = { key: ResourceKey };
 
 export type DeleteRequestInput = { key: ResourceKey };
 
+export type EntryInfo = { id: EntryId; path: string };
+
 export type ListRequestsOutput = Array<RequestNodeInfo>;
 
 export type RenameRequestGroupInput = { key: ResourceKey; newName: string };
@@ -49,3 +59,7 @@ export type RenameRequestGroupInput = { key: ResourceKey; newName: string };
 export type RenameRequestGroupOutput = { key: ResourceKey; affectedItems: Array<ResourceKey> };
 
 export type RenameRequestInput = { key: ResourceKey; newName: string };
+
+export type StreamEntriesByPrefixesEvent = Array<EntryInfo>;
+
+export type StreamEntriesByPrefixesInput = Array<string>;

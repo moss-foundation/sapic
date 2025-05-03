@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use moss_collection::{
     collection::Collection,
-    models::operations::{EntryInfo, ListEntriesEvent, ListUnitsInput},
+    models::operations::{EntryInfo, StreamEntriesByPrefixesEvent, StreamEntriesByPrefixesInput},
 };
 use tokio::sync::mpsc;
 
@@ -12,13 +12,13 @@ use crate::shared::set_up_test_collection;
 
 #[derive(Clone)]
 struct TestChannel {
-    tx: mpsc::UnboundedSender<ListEntriesEvent>,
+    tx: mpsc::UnboundedSender<StreamEntriesByPrefixesEvent>,
 }
 impl TestChannel {
-    fn new(tx: mpsc::UnboundedSender<ListEntriesEvent>) -> Self {
+    fn new(tx: mpsc::UnboundedSender<StreamEntriesByPrefixesEvent>) -> Self {
         Self { tx }
     }
-    pub fn send(&self, event: ListEntriesEvent) -> Result<(), String> {
+    pub fn send(&self, event: StreamEntriesByPrefixesEvent) -> Result<(), String> {
         self.tx.send(event).map_err(|e| e.to_string())
     }
 }
@@ -32,14 +32,14 @@ async fn test() {
 
     let variants = vec!["endpoints", "components", "schemas", "cases", "requests"];
 
-    let on_event = tauri::ipc::Channel::<ListEntriesEvent>::new(|event| {
+    let on_event = tauri::ipc::Channel::<StreamEntriesByPrefixesEvent>::new(|event| {
         dbg!(&event);
 
         Ok(())
     });
 
     let _ = collection
-        .stream_entries_by_prefixes(on_event, ListUnitsInput(variants))
+        .stream_entries_by_prefixes(on_event, StreamEntriesByPrefixesInput(variants))
         .await;
 
     // let mut all: Vec<EntryInfo> = Vec::new();

@@ -7,7 +7,7 @@ use tokio_stream::StreamMap;
 
 use crate::{
     collection::Collection,
-    models::operations::{EntryInfo, ListEntriesEvent, ListUnitsInput},
+    models::operations::{EntryInfo, StreamEntriesByPrefixesEvent, StreamEntriesByPrefixesInput},
 };
 
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -15,15 +15,15 @@ const POLL_INTERVAL: Duration = Duration::from_millis(100);
 impl Collection {
     pub async fn stream_entries_by_prefixes(
         &self,
-        on_event: Channel<ListEntriesEvent>,
-        input: ListUnitsInput,
+        on_event: Channel<StreamEntriesByPrefixesEvent>,
+        input: StreamEntriesByPrefixesInput,
     ) -> OperationResult<()> {
         let worktree = self.worktree().await?;
         let snapshot = worktree.snapshot().await;
 
         if snapshot.count_files() == 0 {
             // We need to send a final empty event to signal the end of the stream.
-            let _ = on_event.send(ListEntriesEvent(vec![]));
+            let _ = on_event.send(StreamEntriesByPrefixesEvent(vec![]));
             return Ok(());
         }
 
@@ -43,11 +43,11 @@ impl Collection {
         pin_mut!(batched);
 
         while let Some(batch) = batched.next().await {
-            let _ = on_event.send(ListEntriesEvent(batch));
+            let _ = on_event.send(StreamEntriesByPrefixesEvent(batch));
         }
 
         // We need to send a final empty event to signal the end of the stream.
-        let _ = on_event.send(ListEntriesEvent(vec![]));
+        let _ = on_event.send(StreamEntriesByPrefixesEvent(vec![]));
 
         Ok(())
     }
