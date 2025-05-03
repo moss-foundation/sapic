@@ -94,7 +94,7 @@ const menuItemStyles = cva(
   }
 );
 
-const labelStyles = "truncate max-w-[200px] text-(--moss-primary-text)";
+const labelStyles = "truncate max-w-[200px] text-(--moss-primary-text) min-w-0";
 
 const MenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.Content>,
@@ -270,7 +270,7 @@ const MenuItemIcon = ({ icon, iconColor }: { icon?: Icons | null; iconColor?: st
   if (!icon) return null;
 
   return (
-    <div className="mr-2 flex h-5 w-5 items-center justify-center">
+    <div className="mr-2 flex h-5 w-5 flex-shrink-0 items-center justify-center">
       <Icon
         icon={icon}
         className={cn(
@@ -437,7 +437,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
           >
             <Icon
               icon="ChevronRight"
-              className={cn("mr-2 h-5 w-5 text-(--moss-icon-primary-text)", isExpanded && "rotate-90 transform")}
+              className={cn("mr-2 h-4 w-4 text-(--moss-icon-primary-text)", isExpanded && "rotate-90 transform")}
             />
             <span className={cn("flex flex-grow items-center", labelStyles)}>
               {item.label}
