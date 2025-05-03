@@ -1,12 +1,12 @@
 use moss_collection::collection::Collection;
 use moss_collection::indexer::{self, IndexerHandle};
-use moss_fs::utils::{encode_name, encode_path};
 use moss_fs::RealFileSystem;
+use moss_fs::utils::{encode_name, encode_path};
 use moss_testutils::random_name::random_collection_name;
 use moss_workbench::activity_indicator::ActivityIndicator;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
 use tokio::sync::mpsc;
 
 pub fn random_collection_path() -> PathBuf {
@@ -43,13 +43,9 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
         });
     }
 
-    let collection_path_test = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("TestCollection");
-
     let next_entry_id = Arc::new(AtomicUsize::new(0));
     let collection =
-        Collection::new(collection_path_test, fs, indexer_handle, next_entry_id).unwrap();
+        Collection::new(collection_path.clone(), fs, indexer_handle, next_entry_id).unwrap();
 
     (collection_path, collection)
 }
