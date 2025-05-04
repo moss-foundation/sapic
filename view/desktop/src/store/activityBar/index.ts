@@ -27,8 +27,8 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       "id": "collections.groupId",
       "title": "Collections",
       "order": 1,
-      "icon": "FolderOutlined",
-      "iconActive": "FolderOutlinedActive",
+      "icon": "Folder",
+      "iconActive": "FolderActive",
       "isActive": true,
     },
     {

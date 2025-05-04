@@ -98,11 +98,8 @@
   "Folder": {
     "identical": true
   },
-  "FolderOutlined": {
-    "identical": true
-  },
-  "FolderOutlinedActive": {
-    "identical": true
+  "FolderActive": {
+    "identical": false
   },
   "GreenCheckmark": {
     "identical": true

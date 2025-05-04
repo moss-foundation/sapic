@@ -73,7 +73,7 @@ RUSTUP := rustup
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons
+ready: new-gen-icons
 	$(PNPM) i
 	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
 
