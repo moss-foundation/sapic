@@ -111,7 +111,7 @@ impl FileSystem for RealFileSystem {
 
     fn watch(
         &self,
-        path: PathBuf,
+        path: &Path,
         latency: Duration,
     ) -> Result<(
         BoxStream<'static, Vec<notify::Event>>,
@@ -127,7 +127,7 @@ impl FileSystem for RealFileSystem {
             Config::default(),
         )?;
 
-        watcher.watch(&path, RecursiveMode::Recursive)?;
+        watcher.watch(path, RecursiveMode::Recursive)?;
 
         let mut stream_rx = UnboundedReceiverStream::new(rx);
         let stream = stream! {

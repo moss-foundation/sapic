@@ -32,4 +32,10 @@ impl From<validator::ValidationErrors> for OperationError {
     }
 }
 
+impl From<tauri::Error> for OperationError {
+    fn from(error: tauri::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
