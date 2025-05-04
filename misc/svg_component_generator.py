@@ -195,15 +195,19 @@ def generate_components(
         light_tree = ET.parse(icons_dir / name / 'light.svg')
         dark_tree = ET.parse(icons_dir / name / 'dark.svg')
 
-        # Reformat and filter the attributes
+        # ignore `width` and `height` attributes at the top level
+        for attr in EXCLUDED_ATTRIBUTES:
+            if attr in light_tree.getroot().attrib:
+                del light_tree.getroot().attrib[attr]
+            if attr in dark_tree.getroot().attrib:
+                del dark_tree.getroot().attrib[attr]
+
+        # Reformat the attribute names
         elems = list(light_tree.iter()) + list(dark_tree.iter())
         for elem in elems:
             for attr in elem.attrib.copy():
-                # Ignore `width` and `height` attributes
-                if attr in EXCLUDED_ATTRIBUTES:
-                    del elem.attrib[attr]
                 # Convert kebab-case to camelCase
-                elif "-" in attr:
+                if "-" in attr:
                     camel = to_lower_camel_case(attr)
                     val = elem.attrib[attr]
                     del elem.attrib[attr]
