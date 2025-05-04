@@ -1,8 +1,8 @@
-use anyhow::Result;
+use anyhow::{Context, Result, anyhow};
 use file_id::FileId;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
-use moss_fs::FileSystem;
+use moss_fs::{CreateOptions, FileSystem};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::collections::{HashMap, HashSet};
 use std::mem;
@@ -14,10 +14,10 @@ use std::{
     time::SystemTime,
 };
 use sweep_bptree::BPlusTreeMap;
-use tokio::sync::{Barrier, mpsc};
 use tokio::sync::{
     Mutex,
-    mpsc::{UnboundedReceiver, UnboundedSender},
+    mpsc::{self, UnboundedReceiver, UnboundedSender},
+    oneshot::{self, Receiver as OneshotReceiver, Sender as OneshotSender},
     watch::{self, Ref as WatchRef},
 };
 use tokio::task::JoinHandle;
@@ -29,8 +29,8 @@ const ROOT_PATH: &str = "";
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 struct ScanRequest {
-    relative_paths: Vec<PathBuf>,
-    done: Vec<PathBuf>,
+    relative_paths: Vec<Arc<Path>>,
+    done: Vec<OneshotSender<()>>,
 }
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ pub enum PathChange {
     Loaded,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EntryKind {
     Unit,
     PendingDir,
@@ -61,6 +61,14 @@ pub(crate) struct Entry {
     pub file_id: FileId,
 }
 
+type EntryRef = Arc<Entry>;
+
+#[derive(Debug)]
+pub(crate) enum CreatedEntry {
+    Included(EntryRef),
+    Excluded { abs_path: PathBuf },
+}
+
 impl Entry {
     pub fn is_dir(&self) -> bool {
         matches!(self.kind, EntryKind::Dir | EntryKind::PendingDir)
@@ -74,7 +82,7 @@ impl Entry {
 pub(crate) struct Snapshot {
     scan_id: usize,
     abs_path: Arc<Path>,
-    entries_by_id: BPlusTreeMap<EntryId, Arc<Entry>>,
+    entries_by_id: BPlusTreeMap<EntryId, EntryRef>,
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
@@ -106,7 +114,7 @@ impl Snapshot {
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
         prefix: &'a str,
-    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<Entry>)> + 'a {
+    ) -> impl Iterator<Item = (&'a EntryId, &'a EntryRef)> + 'a {
         self.entries_by_path
             .iter()
             .skip_while(move |(p, _)| !p.starts_with(prefix))
@@ -114,11 +122,11 @@ impl Snapshot {
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
     }
 
-    pub fn root_entry(&self) -> Option<Arc<Entry>> {
+    pub fn root_entry(&self) -> Option<EntryRef> {
         self.entry_by_path(ROOT_PATH)
     }
 
-    async fn ancestor_file_ids_for_path(&self, path: &Arc<Path>) -> HashSet<FileId> {
+    fn ancestor_file_ids_for_path(&self, path: &Arc<Path>) -> HashSet<FileId> {
         let mut file_ids = HashSet::new();
 
         for ancestor in path.ancestors().skip(1) {
@@ -130,7 +138,7 @@ impl Snapshot {
         file_ids
     }
 
-    fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Arc<Entry>> {
+    fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<EntryRef> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
@@ -147,7 +155,7 @@ pub enum ScanState {
         snapshot: Snapshot,
         changes: UpdatedEntriesSet,
         scanning: bool,
-        barrier: Vec<Barrier>,
+        barrier: Vec<OneshotSender<()>>,
     },
     RootUpdated {
         new_path: Option<PathBuf>,
@@ -176,16 +184,17 @@ pub struct BackgroundScannerState {
     pub changed_paths: Vec<Arc<Path>>,
     pub scanned_dirs: HashSet<EntryId>,
     pub removed_entries: HashMap<FileId, Entry>,
+    pub paths_to_scan: HashSet<Arc<Path>>,
 }
 
 impl BackgroundScannerState {
-    async fn enqueue_scan_dir(
+    fn enqueue_scan_dir(
         &self,
         abs_path: Arc<Path>,
-        entry: &Entry,
+        entry: &EntryRef,
         scan_job_tx: &UnboundedSender<ScanJob>,
     ) {
-        let mut ancestor_file_ids = self.snapshot.ancestor_file_ids_for_path(&entry.path).await;
+        let mut ancestor_file_ids = self.snapshot.ancestor_file_ids_for_path(&entry.path);
         if !ancestor_file_ids.contains(&entry.file_id) {
             ancestor_file_ids.insert(entry.file_id);
             scan_job_tx
@@ -195,7 +204,7 @@ impl BackgroundScannerState {
                     scan_queue: scan_job_tx.clone(),
                     ancestor_file_ids,
                 })
-                .unwrap();
+                .ok();
         }
     }
 
@@ -286,9 +295,7 @@ impl BackgroundScanner {
             state.scan_id += 1;
 
             if let Some(root_entry) = state.snapshot.root_entry() {
-                state
-                    .enqueue_scan_dir(root_abs_path, &root_entry, &scan_job_tx)
-                    .await;
+                state.enqueue_scan_dir(root_abs_path, &root_entry, &scan_job_tx);
             }
         }
 
@@ -302,7 +309,7 @@ impl BackgroundScanner {
             tokio::select! {
                 maybe_scan_req = self.scan_req_rx.recv() => {
                     let Some(scan_req) = maybe_scan_req else { break; };
-                    self.handle_scan_request(scan_req).await;
+                    self.handle_scan_request(scan_req, false).await;
                 }
 
                 maybe_fs_events = fs_events.next() => {
@@ -313,7 +320,7 @@ impl BackgroundScanner {
         }
     }
 
-    async fn send_status_update(&self, scanning: bool, barrier: Vec<Barrier>) -> bool {
+    async fn send_status_update(&self, scanning: bool, barrier: Vec<OneshotSender<()>>) -> bool {
         let mut state = self.state.lock().await;
 
         // if state.changed_paths.is_empty() && scanning {
@@ -342,7 +349,41 @@ impl BackgroundScanner {
             .is_ok()
     }
 
-    async fn handle_scan_request(&self, scan_req: ScanRequest) {
+    async fn forcibly_load_paths(&mut self, paths: &[Arc<Path>]) -> bool {
+        let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
+        {
+            let mut state = self.state.lock().await;
+            let root_path = state.snapshot.abs_path.clone();
+            for path in paths {
+                for ancestor in path.ancestors() {
+                    if let Some(entry) = state.snapshot.entry_by_path(ancestor) {
+                        if entry.kind == EntryKind::UnloadedDir {
+                            let abs_path = root_path.join(ancestor);
+                            state.enqueue_scan_dir(abs_path.into(), &entry, &scan_job_tx);
+                            state.paths_to_scan.insert(path.clone());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        drop(scan_job_tx);
+
+        while let Some(job) = scan_job_rx.recv().await {
+            if let Err(e) = self.scan_dir(job).await {
+                println!("Error scanning directory: {}", e);
+            }
+        }
+
+        !mem::take(&mut self.state.lock().await.paths_to_scan).is_empty()
+    }
+
+    async fn handle_scan_request(&mut self, mut scan_req: ScanRequest, scanning: bool) -> bool {
+        scan_req.relative_paths.sort_unstable();
+        self.forcibly_load_paths(&scan_req.relative_paths).await;
+
+        let root_path = self.state.lock().await.snapshot.abs_path.clone();
+
         todo!()
     }
 
@@ -367,7 +408,10 @@ impl BackgroundScanner {
         let mut progress = tokio::time::interval(POLL_INTERVAL);
         loop {
             tokio::select! {
-                // maybe_scan_req = self.next_scan_request().fuse() => {}
+                maybe_scan_req = self.next_scan_request().fuse() => {
+                    let Some(scan_req) = maybe_scan_req else { break; };
+                    self.handle_scan_request(scan_req, true).await;
+                }
 
                 _ = progress.tick() => {
                     let _ = self.send_status_update(true, Vec::new()).await;
@@ -469,6 +513,7 @@ impl BackgroundScanner {
 }
 
 pub(crate) struct Worktree {
+    fs: Arc<dyn FileSystem>,
     snapshot: watch::Receiver<Snapshot>,
     scan_requests_tx: UnboundedSender<ScanRequest>,
     is_scanning_rx: watch::Receiver<bool>,
@@ -518,6 +563,7 @@ impl Worktree {
                 changed_paths: Vec::new(),
                 scanned_dirs: HashSet::new(),
                 removed_entries: HashMap::new(),
+                paths_to_scan: HashSet::new(),
             };
 
             let mut background_scanner = BackgroundScanner {
@@ -556,11 +602,41 @@ impl Worktree {
         });
 
         Ok(Self {
+            fs,
             snapshot: snapshot_rx,
             scan_requests_tx,
             is_scanning_rx,
             _background_tasks: vec![scanner_handle, updater_handle],
         })
+    }
+
+    pub async fn absolutize(&self, path: &Path) -> Result<PathBuf> {
+        if path
+            .components()
+            .any(|component| !matches!(component, std::path::Component::Normal(_)))
+        {
+            return Err(anyhow!("invalid path"));
+        }
+
+        let snapshot = self.snapshot().await;
+        if path.file_name().is_some() {
+            Ok(snapshot.abs_path.join(path))
+        } else {
+            Ok(snapshot.abs_path.to_path_buf())
+        }
+    }
+
+    pub async fn lowest_ancestor(&self, path: &Path) -> PathBuf {
+        let snapshot = self.snapshot().await;
+        let mut lowest_ancestor = None;
+        for path in path.ancestors() {
+            if snapshot.entry_by_path(path).is_some() {
+                lowest_ancestor = Some(path.to_path_buf());
+                break;
+            }
+        }
+
+        lowest_ancestor.unwrap_or_else(|| PathBuf::from(""))
     }
 
     pub async fn has_changed(&self) -> Result<bool> {
@@ -579,15 +655,94 @@ impl Worktree {
         self.snapshot.borrow()
     }
 
-    pub async fn snapshot_rx(&self) -> tokio::sync::watch::Receiver<Snapshot> {
-        {
-            let mut is_scanning = self.is_scanning_rx.clone();
-            while *is_scanning.borrow() {
-                is_scanning.changed().await.unwrap();
-            }
+    pub async fn create_entry(
+        &self,
+        path: impl Into<Arc<Path>>,
+        is_dir: bool,
+        content: Option<Vec<u8>>,
+    ) -> Result<CreatedEntry> {
+        let path = path.into();
+        let abs_path = self
+            .absolutize(&path)
+            .await
+            .context(format!("absolutizing path {path:?}"))?;
+
+        if is_dir {
+            self.fs.create_dir(&abs_path).await?;
+        } else {
+            self.fs
+                .create_file_with(
+                    &abs_path,
+                    String::from_utf8(content.as_deref().unwrap_or(&[]).to_vec())?,
+                    CreateOptions {
+                        overwrite: true,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
         }
 
-        self.snapshot.clone()
+        let lowest_ancestor = self.lowest_ancestor(&path).await;
+        let mut refreshes = Vec::new();
+        let refresh_paths = path.strip_prefix(&lowest_ancestor).unwrap();
+
+        for refresh_path in refresh_paths.ancestors() {
+            if refresh_path == Path::new("") {
+                continue;
+            }
+
+            let refresh_full_path = lowest_ancestor.join(refresh_path);
+
+            refreshes.push(self.refresh_entry(refresh_full_path.into(), None));
+        }
+        let result_refresh_entry_handle = self.refresh_entry(path.into(), None);
+
+        if let Err(e) = futures::future::try_join_all(refreshes).await {
+            println!("error refreshing entry: {}", e); // TODO: log error
+        }
+
+        Ok(result_refresh_entry_handle
+            .await??
+            .map(CreatedEntry::Included)
+            .unwrap_or_else(|| CreatedEntry::Excluded { abs_path }))
+    }
+
+    fn refresh_entry(
+        &self,
+        path: Arc<Path>,
+        old_path: Option<Arc<Path>>,
+    ) -> JoinHandle<Result<Option<EntryRef>>> {
+        let paths = if let Some(old_path) = old_path.as_ref() {
+            vec![old_path.clone(), path.clone()]
+        } else {
+            vec![path.clone()]
+        };
+
+        let refresh_rx = self.refresh_entries_for_paths(paths);
+        let snapshot_rx = self.snapshot.clone();
+
+        tokio::spawn(async move {
+            refresh_rx.await.ok();
+
+            let snapshot = snapshot_rx.borrow();
+            let entry = snapshot
+                .entry_by_path(&path)
+                .ok_or_else(|| anyhow!("failed to read path after update"))?;
+
+            Ok(Some(entry))
+        })
+    }
+
+    fn refresh_entries_for_paths(&self, paths: Vec<Arc<Path>>) -> OneshotReceiver<()> {
+        let (tx, rx) = oneshot::channel();
+        self.scan_requests_tx
+            .send(ScanRequest {
+                relative_paths: paths,
+                done: vec![tx],
+            })
+            .ok();
+
+        rx
     }
 }
 

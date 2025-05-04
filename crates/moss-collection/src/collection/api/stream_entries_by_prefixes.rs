@@ -27,12 +27,22 @@ impl Collection {
             return Ok(());
         }
 
+        let state_store = self.collection_storage.state_store().await;
+        let worktree_entries_state = state_store.list_worktree_entries()?;
+
         let mut streams = StreamMap::new();
         for prefix in input.0 {
             let s = tokio_stream::iter(snapshot.iter_entries_by_prefix(&prefix).map(
-                |(&id, entry)| EntryInfo {
-                    id,
-                    path: entry.path.to_path_buf(),
+                |(&id, entry)| {
+                    let restored_entry_state = worktree_entries_state
+                        .iter()
+                        .find(|e| e.path == entry.path.as_ref());
+
+                    EntryInfo {
+                        id,
+                        path: entry.path.to_path_buf(),
+                        order: restored_entry_state.map(|e| e.order),
+                    }
                 },
             ));
             streams.insert(prefix, s);

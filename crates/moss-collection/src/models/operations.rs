@@ -32,10 +32,31 @@ pub enum CreateRequestProtocolSpecificPayload {
     },
 }
 
+// TODO: remove this
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateRequestInput {
+    #[validate(length(min = 1))]
+    pub name: String,
+    #[ts(optional)]
+    pub relative_path: Option<PathBuf>,
+    #[ts(optional)]
+    pub url: Option<String>,
+    #[ts(optional)]
+    pub payload: Option<CreateRequestProtocolSpecificPayload>,
+}
+
+// TODO: remove this
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateRequestOutput {
+    pub key: ResourceKey,
+}
+
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestInput {
+pub struct CreateRequestEntryInput {
     #[validate(length(min = 1))]
     pub name: String,
     #[ts(optional)]
@@ -49,8 +70,8 @@ pub struct CreateRequestInput {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestOutput {
-    pub key: ResourceKey,
+pub struct CreateRequestEntryOutput {
+    pub id: EntryId,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -130,6 +151,7 @@ pub struct RenameRequestGroupOutput {
 pub struct EntryInfo {
     pub id: EntryId,
     pub path: PathBuf,
+    pub order: Option<usize>,
 }
 
 #[derive(Debug, Serialize, TS)]
