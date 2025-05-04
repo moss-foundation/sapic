@@ -140,9 +140,6 @@ def consolidate_svg(
             existing = relem.attrib.get("className", "")
             combined = " ".join(filter(None, [existing, class_str]))
             relem.set("className", combined)
-        for attr in EXCLUDED_ATTRIBUTES:
-            if attr in relem.attrib:
-                del relem.attrib[attr]
 
     return result
 
@@ -187,6 +184,19 @@ def generate_components(
         logging.info("Processing icon '%s'", name)
         light_tree = ET.parse(icons_dir / name / 'light.svg')
         dark_tree = ET.parse(icons_dir / name / 'dark.svg')
+
+        # Remove `width` and `height` attributes from the generated components
+        light_elems = light_tree.iter()
+        dark_elems = dark_tree.iter()
+        for elem in light_elems:
+            for attr in EXCLUDED_ATTRIBUTES:
+                if attr in elem.attrib:
+                    del elem.attrib[attr]
+
+        for elem in dark_elems:
+            for attr in EXCLUDED_ATTRIBUTES:
+                if attr in elem.attrib:
+                    del elem.attrib[attr]
 
         if props.get('identical', False) and compare_svg_structure(light_tree, dark_tree):
             merged = consolidate_svg(light_tree, dark_tree, light_palette, dark_palette)
