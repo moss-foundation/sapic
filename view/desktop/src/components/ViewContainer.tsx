@@ -5,8 +5,8 @@ import { useModal } from "@/hooks/useModal";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
+import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
 import CollectionTreeView from "./CollectionTreeView";
-import { Icon } from "./index";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
@@ -66,7 +66,7 @@ const NoWorkspaceComponent = () => {
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
 
       <div>
-        <Icon icon="ErrorNaughtyDog" className="mx-auto h-auto w-full max-w-[200px]" />
+        <img src={ErrorNaughtyDog} className="mx-auto h-auto w-full max-w-[200px]" />
         <p className="text-(--moss-secondary-text)">
           You need to open a workspace before accessing collections, environments, or sending requests. Please open or
           create a workspace to proceed.
