@@ -4,7 +4,7 @@ const SvgWebServerActive: React.FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" {...props}>
     <path
       d="M13 9C13.5523 9 14 9.44772 14 10V13C14 13.5523 13.5523 14 13 14H3C2.44772 14 2 13.5523 2 13V10C2 9.44771 2.44772 9 3 9H13ZM3.99805 10.999V12H5.99805V10.999H3.99805ZM13 2C13.5523 2 14 2.44772 14 3V6C14 6.55228 13.5523 7 13 7H3C2.44772 7 2 6.55228 2 6V3C2 2.44772 2.44772 2 3 2H13ZM3.99805 4V4.99902H5.99805V4H3.99805Z"
-      className="fill-[var(--moss-blue-4)] dark:fill-[var(--moss-icon-primary-background-active)]"
+      className="fill-[var(--moss-blue-4)] dark:fill-[var(--moss-blue-6)]"
     />
   </svg>
 );

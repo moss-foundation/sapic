@@ -5,11 +5,11 @@ const SvgInfo: React.FC<SVGProps<SVGSVGElement>> = (props) => (
     <circle cx="8" cy="8" r="7" className="fill-[var(--moss-blue-5)] dark:fill-[var(--moss-blue-8)]" />
     <path
       d="M7 11C7 11.5523 7.44772 12 8 12C8.55228 12 9 11.5523 9 11L9 8.5C9 7.94771 8.55228 7.5 8 7.5C7.44771 7.5 7 7.94772 7 8.5L7 11Z"
-      className="fill-[var(--moss-gray-14)] dark:fill-[var(--moss-input-bg-outlined)]"
+      className="fill-[var(--moss-gray-14)] dark:fill-[var(--moss-gray-14)]"
     />
     <path
       d="M8 4C7.44771 4 7 4.44772 7 5C7 5.55228 7.44771 6 8 6C8.55228 6 9 5.55228 9 5C9 4.44772 8.55228 4 8 4Z"
-      className="fill-[var(--moss-gray-14)] dark:fill-[var(--moss-input-bg-outlined)]"
+      className="fill-[var(--moss-gray-14)] dark:fill-[var(--moss-gray-14)]"
     />
   </svg>
 );

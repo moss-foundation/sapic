@@ -8,7 +8,7 @@ const SvgSuccess: React.FC<SVGProps<SVGSVGElement>> = (props) => (
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="stroke-[var(--moss-gray-14)] dark:stroke-[var(--moss-input-bg-outlined)]"
+      className="stroke-[var(--moss-gray-14)] dark:stroke-[var(--moss-gray-14)]"
     />
   </svg>
 );
