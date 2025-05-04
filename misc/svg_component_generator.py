@@ -57,6 +57,16 @@ def normalize_color(color: str) -> str:
     rgb = webcolors.html5_parse_legacy_color(color)
     return webcolors.rgb_to_hex(rgb)
 
+def to_camel_case(snake_str):
+    return "".join(x.capitalize() for x in snake_str.lower().split("-"))
+
+def to_lower_camel_case(snake_str):
+    # We capitalize the first letter of each component except the first one
+    # with the 'capitalize' method and join them together.
+    camel_string = to_camel_case(snake_str)
+    return snake_str[0].lower() + camel_string[1:]
+
+
 
 def extract_css_palette(css_path: Path) -> Dict[str, str]:
     """
@@ -185,18 +195,19 @@ def generate_components(
         light_tree = ET.parse(icons_dir / name / 'light.svg')
         dark_tree = ET.parse(icons_dir / name / 'dark.svg')
 
-        # Remove `width` and `height` attributes from the generated components
-        light_elems = light_tree.iter()
-        dark_elems = dark_tree.iter()
-        for elem in light_elems:
-            for attr in EXCLUDED_ATTRIBUTES:
-                if attr in elem.attrib:
+        # Reformat and filter the attributes
+        elems = list(light_tree.iter()) + list(dark_tree.iter())
+        for elem in elems:
+            for attr in elem.attrib.copy():
+                # Ignore `width` and `height` attributes
+                if attr in EXCLUDED_ATTRIBUTES:
                     del elem.attrib[attr]
-
-        for elem in dark_elems:
-            for attr in EXCLUDED_ATTRIBUTES:
-                if attr in elem.attrib:
+                # Convert kebab-case to camelCase
+                elif "-" in attr:
+                    camel = to_lower_camel_case(attr)
+                    val = elem.attrib[attr]
                     del elem.attrib[attr]
+                    elem.set(camel, val)
 
         if props.get('identical', False) and compare_svg_structure(light_tree, dark_tree):
             merged = consolidate_svg(light_tree, dark_tree, light_palette, dark_palette)
