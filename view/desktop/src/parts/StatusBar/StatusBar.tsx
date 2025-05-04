@@ -111,7 +111,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
         <Divider height="medium" />
         <StatusBarButton
-          icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
+          icon={isOnline ? "Success" : "Error"}
           label={isOnline ? "Online" : "Offline"}
           className="text-(--moss-statusBar-icon-primary-text)"
           iconClassName={isOnline ? "text-[#1E6B33]" : "text-[#DF9303]"}
@@ -234,7 +234,7 @@ const StatusBarButton = ({
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
       <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center gap-1 rounded px-1.5 transition">
-        {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
+        {icon && <Icon className={cn("my-auto size-[12px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
       {closestEdge ? <DropIndicator edge={closestEdge} gap={4} /> : null}
