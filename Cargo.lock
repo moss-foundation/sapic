@@ -2988,6 +2988,7 @@ dependencies = [
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "tokio-stream",
  "ts-rs",
  "validator",
  "xml-rs",

@@ -208,3 +208,14 @@ impl RequestProtocol {
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum UnitType {
+    Endpoint,
+    Request,
+    Case,
+    Schema,
+    Component,
+}
