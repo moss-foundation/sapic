@@ -12,7 +12,7 @@ import {
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
-import * as iconsNames from "../assets/icons/build";
+import * as iconsNames from "../assets/icons";
 import { Button, Icon, Icons, Scrollbar } from "../components";
 
 export const Home = () => {
