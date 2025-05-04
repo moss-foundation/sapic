@@ -2,6 +2,12 @@
   "Add": {
     "identical": true
   },
+  "AddCircle": {
+    "identical": true
+  },
+  "AddCircleActive": {
+    "identical": true
+  },
   "Bell": {
     "identical": false
   },
@@ -44,6 +50,15 @@
   "Console": {
     "identical": false
   },
+  "ConsoleActive": {
+    "identical": false
+  },
+  "Cookie": {
+    "identical": true
+  },
+  "CookieActive": {
+    "identical": true
+  },
   "Copy": {
     "identical": true
   },
@@ -51,6 +66,15 @@
     "identical": true
   },
   "Edit": {
+    "identical": true
+  },
+  "Env": {
+    "identical": true
+  },
+  "EnvActive": {
+    "identical": true
+  },
+  "Error": {
     "identical": true
   },
   "ErrorNaughtyDog": {
@@ -72,6 +96,12 @@
     "identical": true
   },
   "Folder": {
+    "identical": true
+  },
+  "FolderOutlined": {
+    "identical": true
+  },
+  "FolderOutlinedActive": {
     "identical": true
   },
   "GreenCheckmark": {
@@ -101,6 +131,12 @@
   "NewFolder": {
     "identical": true
   },
+  "NewWorkspace": {
+    "identical": true
+  },
+  "NewWorkspaceActive": {
+    "identical": true
+  },
   "OpenPanelBottom": {
     "identical": true
   },
@@ -119,6 +155,12 @@
   "OpenPanelRightFilled": {
     "identical": true
   },
+  "OpenWorkspace": {
+    "identical": true
+  },
+  "OpenWorkspaceActive": {
+    "identical": true
+  },
   "PersistenceRelationship": {
     "identical": true
   },
@@ -128,10 +170,16 @@
   "Refresh": {
     "identical": true
   },
+  "Send": {
+    "identical": false
+  },
   "Settings": {
     "identical": true
   },
   "Success": {
+    "identical": true
+  },
+  "ToolBarVariables": {
     "identical": true
   },
   "ToolWindowDuplicates": {
@@ -140,13 +188,25 @@
   "Trash": {
     "identical": true
   },
+  "TrashActive": {
+    "identical": true
+  },
   "UnloadedModule": {
     "identical": true
+  },
+  "UserAvatar": {
+    "identical": false
   },
   "VCS": {
     "identical": true
   },
   "Warning": {
+    "identical": true
+  },
+  "WebServer": {
+    "identical": true
+  },
+  "WebServerActive": {
     "identical": true
   },
   "WindowsMenu": {

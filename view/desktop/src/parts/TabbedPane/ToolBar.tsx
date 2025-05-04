@@ -15,7 +15,7 @@ const ToolBar: React.FC<ToolBarProps> = ({ workspace = false }) => {
         <>
           <Divider height="large" className="mr-2.5" />
           <IconLabelButton
-            leftIcon="ToolBarEnvironment"
+            leftIcon="Env"
             rightIcon="ChevronDown"
             title="No environment"
             labelClassName="text-[var(--moss-not-selected-item-color)]"

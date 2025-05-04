@@ -65,11 +65,11 @@ const FirstColumn = () => {
         <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
-            <Icon icon="NewFolder" className="size-4 text-(--moss-primary)" />
+            <Icon icon="NewWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>New workspace</span>
           </button>
           <button className="flex cursor-pointer gap-1.5" onClick={openOpenWorkspaceModal}>
-            <Icon icon="Folder" className="size-4 text-(--moss-primary)" />
+            <Icon icon="OpenWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>Open workspace</span>
           </button>
         </div>

@@ -73,7 +73,12 @@ export const ActivityBar = () => {
   );
 };
 
-const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
+const ActivityBarButton = ({
+  icon,
+  iconActive,
+  isActive,
+  ...props
+}: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const { alignment, setItems, items, position } = useActivityBarStore();
@@ -172,13 +177,14 @@ const ActivityBarButton = ({ icon, isActive, ...props }: ActivityBarItem & Compo
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      <Icon icon={icon} className="size-5" />
+      <Icon icon={isActive ? iconActive : icon} className="size-5" />
       {closestEdge ? <DropIndicator edge={closestEdge} gap={12} /> : null}
       {preview &&
         createPortal(
           <ActivityBarButton
             {...props}
             icon={icon}
+            iconActive={iconActive}
             isActive={false}
             className="background-(--moss-icon-primary-background-hover) rounded-md p-1"
           />,
