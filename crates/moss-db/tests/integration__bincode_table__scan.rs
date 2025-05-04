@@ -1,7 +1,7 @@
 mod shared;
 
-use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
+use moss_db::common::DatabaseError;
 
 use crate::shared::setup_test_bincode_table;
 
@@ -49,7 +49,7 @@ fn scan_in_write_transaction() {
     let (client, table, path) = setup_test_bincode_table::<i32>();
 
     {
-        let mut write = client.begin_write().unwrap();
+        let write = client.begin_write().unwrap();
         let result = table.scan(&write);
         assert!(matches!(result, Err(DatabaseError::Transaction(_))));
     }

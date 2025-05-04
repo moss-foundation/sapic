@@ -1,10 +1,10 @@
 mod shared;
 
-use moss_db::common::DatabaseError;
 use moss_db::DatabaseClient;
+use moss_db::common::DatabaseError;
 
 use crate::shared::{
-    setup_test_encrypted_bincode_table, TEST_AAD_1, TEST_AAD_2, TEST_PASSWORD_1, TEST_PASSWORD_2,
+    TEST_AAD_1, TEST_AAD_2, TEST_PASSWORD_1, TEST_PASSWORD_2, setup_test_encrypted_bincode_table,
 };
 
 #[test]
@@ -108,7 +108,7 @@ fn read_in_write_transaction() {
     }
 
     {
-        let mut write = client.begin_write().unwrap();
+        let write = client.begin_write().unwrap();
         let result = table.read(&write, "1".to_string(), TEST_PASSWORD_1, TEST_AAD_1);
         assert!(matches!(result, Err(DatabaseError::Transaction(..))))
     }
