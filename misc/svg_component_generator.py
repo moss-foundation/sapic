@@ -14,6 +14,7 @@ import shutil
 # Constants
 COLOR_ATTRIBUTES = {"fill", "stroke"}
 EXCLUDED_VALUES = {"none", "transparent"}
+EXCLUDED_ATTRIBUTES = {"width", "height"}
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
@@ -139,6 +140,9 @@ def consolidate_svg(
             existing = relem.attrib.get("className", "")
             combined = " ".join(filter(None, [existing, class_str]))
             relem.set("className", combined)
+        for attr in EXCLUDED_ATTRIBUTES:
+            if attr in relem.attrib:
+                del relem.attrib[attr]
 
     return result
 
