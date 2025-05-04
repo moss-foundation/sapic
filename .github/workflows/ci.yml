@@ -144,7 +144,7 @@ jobs:
         run: |
           cd misc
           pip3 install --break-system-packages -r requirements.txt
-          cd..
+          cd ..
           make gen-icons
 
       - name: Execute Task - ${{ matrix.task.name }}
