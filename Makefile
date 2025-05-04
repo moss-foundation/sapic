@@ -37,7 +37,7 @@ export DEV_APP_DIR = ${HOME_DIR}/.sapic
 # ---- Asset Directories ----
 export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
-export NEW_ICONS_DIR = ${CURDIR}/view/desktop/src/assets/icons
+export ICONS_DIR = ${CURDIR}/view/desktop/src/assets/icons
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
 
@@ -47,7 +47,6 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 # ---- Directory Paths ----
 # Application directories
 DESKTOP_DIR := view/desktop
-ICONS_DIR := tools/icongen
 XTASK_DIR := tools/xtask
 MISC_DIR := misc
 
@@ -73,23 +72,18 @@ RUSTUP := rustup
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: new-gen-icons
+ready: gen-icons
 	$(PNPM) i
 	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
 
-## Generate application icons
+## Icon generator tool
 .PHONY: gen-icons
 gen-icons:
-	@cd $(ICONS_DIR) && $(PNPM) build --silent
-
-## New icon generator tool
-.PHONY: new-gen-icons
-new-gen-icons:
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source ${NEW_ICONS_DIR}/svg
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source ${NEW_ICONS_DIR}/svg \
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source ${ICONS_DIR}/svg
+	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source ${ICONS_DIR}/svg \
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
-								 --output-dir ${NEW_ICONS_DIR}/build
+								 --output-dir ${ICONS_DIR}/build
 
 # ======================================================
 # Run Commands
