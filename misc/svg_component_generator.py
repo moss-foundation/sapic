@@ -82,7 +82,8 @@ def extract_css_palette(css_path: Path) -> Dict[str, str]:
         if rule.type != "qualified-rule":
             continue
         for decl in tinycss2.parse_declaration_list(rule.content):
-            if decl.type == "declaration" and decl.lower_name.startswith("--"):
+            if decl.type == "declaration" and decl.lower_name.startswith("--")\
+                    and decl.lower_name.split("-")[-1].isdigit():
                 vals = [tok for tok in decl.value if tok.type == "hash"]
                 if len(vals) == 1:
                     hex_code = webcolors.normalize_hex(f"#{vals[0].value}")
