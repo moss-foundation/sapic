@@ -42,9 +42,9 @@ export const RadioItem = forwardRef<RadioItemElement, RadioItemProps>(
         })}
       >
         {props.checked ? (
-          <Icon icon="DropdownMenuRadioIndicator" className="size-2" />
+          <Icon icon="RadioIndicator" className="h-4 w-4" />
         ) : (
-          <Icon icon="DropdownMenuRadioIndicator" className="size-2 opacity-0" />
+          <Icon icon="RadioIndicator" className="h-4 w-4 opacity-0" />
         )}
 
         <div className="flex w-full items-center gap-2.5">

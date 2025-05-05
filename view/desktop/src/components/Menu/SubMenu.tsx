@@ -32,12 +32,12 @@ export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
           (props.icon ? (
             <Icon icon={props.icon} className="opacity-40" />
           ) : (
-            <Icon icon="DropdownMenuRadioIndicator" className="opacity-0" />
+            <Icon icon="RadioIndicator" className="opacity-0" />
           ))}
 
         <span>{props.label}</span>
 
-        <Icon icon="ArrowheadRight" className="ml-auto opacity-40" />
+        <Icon icon="ChevronRight" className="ml-auto opacity-40" />
       </MenuPrimitive.SubTrigger>
     );
   }

@@ -1,5 +1,5 @@
-import { type Icons } from "@/components/Icon";
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
 
 /**
  * Helper function to generate standard menu items with unique IDs
@@ -14,21 +14,21 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}rename`,
       type: "action",
       label: "Rename...",
-      icon: "ActionMenuRename" as Icons,
+      icon: "Edit" as Icons,
       shortcut: "⌘⏎",
     },
     {
       id: `${idPrefix}duplicate`,
       type: "action",
       label: "Duplicate",
-      icon: "ActionMenuDuplicate" as Icons,
+      icon: "ToolWindowDuplicates" as Icons,
       shortcut: "⌘V",
     },
     {
       id: `${idPrefix}delete`,
       type: "action",
       label: "Delete",
-      icon: "ActionMenuDelete" as Icons,
+      icon: "Delete" as Icons,
       shortcut: "⌥⇧⏎",
     },
     {
@@ -39,7 +39,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}new`,
       type: "submenu",
       label: "New...",
-      icon: "PlusButton" as Icons,
+      icon: "Add" as Icons,
       items: [
         {
           id: `${idPrefix}new-request`,
@@ -98,35 +98,35 @@ const allWorkspacesMenuSection: MenuItemProps = {
       id: "microservices-api-test-suite",
       type: "submenu",
       label: "Microservices API Test Suite long name",
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems("microservices-api"),
     },
     {
       id: "user-management-api",
       type: "submenu",
       label: "User Management API",
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems("user-management"),
     },
     {
       id: "auth-security-tests",
       type: "submenu",
       label: "Auth & Security Tests",
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems("auth-security"),
     },
     {
       id: "development-api-sandbox",
       type: "submenu",
       label: "Development API Sandbox",
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems("dev-sandbox"),
     },
     {
       id: "microservices-endpoints",
       type: "submenu",
       label: "Microservices Endpoints",
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems("micro-endpoints"),
     },
   ],
@@ -137,13 +137,13 @@ export const workspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "ActionMenuNew" as Icons,
+    icon: "NewFolder" as Icons,
   },
   {
     id: "open-workspace",
     type: "action",
     label: "Open Workspace",
-    icon: "ActionMenuOpen" as Icons,
+    icon: "Folder" as Icons,
   },
   {
     id: "separator-1",
@@ -158,20 +158,20 @@ export const selectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "ActionMenuNew" as Icons,
+    icon: "NewFolder" as Icons,
   },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
     id: "new-collection",
     type: "action",
     label: "New Collection",
-    icon: "PlusButton" as Icons,
+    icon: "Add" as Icons,
   },
   {
     id: "import-collection",
     type: "action",
     label: "Import Collection",
-    icon: "ActionMenuImportCollection" as Icons,
+    icon: "Import" as Icons,
   },
   {
     id: "separator-2",

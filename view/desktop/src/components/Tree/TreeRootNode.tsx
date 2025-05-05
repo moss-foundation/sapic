@@ -148,15 +148,15 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             <div
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
             >
-              <ActionButton icon="PlusButton" onClick={() => setIsAddingRootFileNode(true)} />
-              <ActionButton icon="Reload" />
-              <ActionButton icon="TreeExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
-              <ActionButton icon="TreeCollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
+              <ActionButton icon="Add" onClick={() => setIsAddingRootFileNode(true)} />
+              <ActionButton icon="Refresh" />
+              <ActionButton icon="ExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
+              <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <ActionButton icon="ThreeVerticalDots" />
+              <ActionButton icon="MoreHorizontal" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content className="z-30">

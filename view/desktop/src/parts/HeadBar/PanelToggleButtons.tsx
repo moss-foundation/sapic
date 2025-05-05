@@ -19,36 +19,29 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
   return (
     <div className={cn("flex shrink-0 -space-x-0.5", className)}>
-      {sideBarPosition === "left" ? (
-        <>
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
-            icon={sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar"}
-            onClick={toggleSidebar}
-            title="Toggle Left Sidebar"
-          />
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
-            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-            onClick={toggleBottomPane}
-            title="Toggle Bottom Panel"
-          />
-        </>
-      ) : (
-        <>
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
-            icon={bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel"}
-            onClick={toggleBottomPane}
-            title="Toggle Bottom Panel"
-          />
-          <ActionButton
-            iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
-            icon={sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar"}
-            onClick={toggleSidebar}
-            title="Toggle Right Sidebar"
-          />
-        </>
+      {sideBarPosition === "left" && (
+        <ActionButton
+          iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+          icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+          onClick={toggleSidebar}
+          title="Toggle Left Sidebar"
+        />
+      )}
+
+      <ActionButton
+        iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+        icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+        onClick={toggleBottomPane}
+        title="Toggle Bottom Panel"
+      />
+
+      {sideBarPosition === "right" && (
+        <ActionButton
+          iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
+          icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+          onClick={toggleSidebar}
+          title="Toggle Right Sidebar"
+        />
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { Icons } from "@/components";
 export interface ActivityBarItem {
   id: string;
   icon: Icons;
+  iconActive: Icons;
   title: string;
   order: number;
   isActive: boolean;
@@ -26,21 +27,24 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       "id": "collections.groupId",
       "title": "Collections",
       "order": 1,
-      "icon": "ActivityBarCollections",
+      "icon": "Folder",
+      "iconActive": "FolderActive",
       "isActive": true,
     },
     {
       "id": "environments.groupId",
       "title": "Environments",
       "order": 2,
-      "icon": "ActivityBarEnvironments",
+      "icon": "Env",
+      "iconActive": "EnvActive",
       "isActive": false,
     },
     {
       "id": "mock.groupId",
       "title": "Mock",
       "order": 3,
-      "icon": "ActivityBarMock",
+      "icon": "WebServer",
+      "iconActive": "WebServerActive",
       "isActive": false,
     },
   ],
