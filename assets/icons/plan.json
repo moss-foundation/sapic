@@ -158,6 +158,9 @@
   "PersistenceRelationship": {
     "identical": true
   },
+  "Placeholder": {
+    "identical": true
+  },
   "RadioIndicator": {
     "identical": true
   },

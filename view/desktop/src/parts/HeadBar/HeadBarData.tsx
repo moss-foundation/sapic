@@ -103,7 +103,7 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
       id: `workspace:${workspace.name}`,
       type: "submenu",
       label: workspace.name,
-      icon: "ActionMenuWorkspace" as Icons,
+      icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems(workspace.name),
     })),
   };
@@ -183,19 +183,19 @@ export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "home",
     type: "action",
     label: "Kitchensink",
-    icon: "TestHeadBarHome" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "logs",
     type: "action",
     label: "Logs",
-    icon: "TestHeadBarLogs" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "debug",
     type: "action",
     label: "Debug Panels",
-    icon: "TestHeadBarDebug" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "separator-5",

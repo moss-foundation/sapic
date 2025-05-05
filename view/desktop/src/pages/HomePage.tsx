@@ -318,7 +318,9 @@ const ComponentGallery = () => {
           {Object.keys(iconsNames).map((value) => (
             <div key={value} className="flex flex-col items-center gap-2">
               <Icon icon={value as Icons} />
-              <span>{value}</span>
+              <span className="cursor-text rounded px-1 select-text hover:bg-gray-100 dark:hover:bg-gray-700">
+                {value}
+              </span>
             </div>
           ))}
         </div>
