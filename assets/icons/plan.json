@@ -1,0 +1,215 @@
+{
+  "Add": {
+    "identical": true
+  },
+  "AddCircle": {
+    "identical": true
+  },
+  "AddCircleActive": {
+    "identical": true
+  },
+  "Bell": {
+    "identical": false
+  },
+  "Changes": {
+    "identical": true
+  },
+  "CheckboxIndicator": {
+    "identical": true
+  },
+  "Checkmark": {
+    "identical": true
+  },
+  "ChevronDown": {
+    "identical": true
+  },
+  "ChevronDownHovered": {
+    "identical": false
+  },
+  "ChevronLeft": {
+    "identical": true
+  },
+  "ChevronRight": {
+    "identical": true
+  },
+  "ChevronUp": {
+    "identical": true
+  },
+  "Close": {
+    "identical": true
+  },
+  "CloseSmall": {
+    "identical": true
+  },
+  "CloseSmallHovered": {
+    "identical": false
+  },
+  "CollapseAll": {
+    "identical": true
+  },
+  "Console": {
+    "identical": false
+  },
+  "ConsoleActive": {
+    "identical": false
+  },
+  "Cookie": {
+    "identical": true
+  },
+  "CookieActive": {
+    "identical": true
+  },
+  "Copy": {
+    "identical": true
+  },
+  "Delete": {
+    "identical": true
+  },
+  "Edit": {
+    "identical": true
+  },
+  "Env": {
+    "identical": true
+  },
+  "EnvActive": {
+    "identical": true
+  },
+  "Error": {
+    "identical": true
+  },
+  "ExpandAll": {
+    "identical": true
+  },
+  "ExternalLink": {
+    "identical": true
+  },
+  "ExternalLinkActive": {
+    "identical": true
+  },
+  "Failed": {
+    "identical": false
+  },
+  "Find": {
+    "identical": true
+  },
+  "Folder": {
+    "identical": true
+  },
+  "FolderActive": {
+    "identical": false
+  },
+  "GreenCheckmark": {
+    "identical": true
+  },
+  "History": {
+    "identical": true
+  },
+  "Import": {
+    "identical": true
+  },
+  "Info": {
+    "identical": true
+  },
+  "Key": {
+    "identical": true
+  },
+  "Loader": {
+    "identical": true
+  },
+  "MoreHorizontal": {
+    "identical": true
+  },
+  "MoreVertical": {
+    "identical": true
+  },
+  "NewFolder": {
+    "identical": true
+  },
+  "NewWorkspace": {
+    "identical": true
+  },
+  "NewWorkspaceActive": {
+    "identical": true
+  },
+  "OpenPanelBottom": {
+    "identical": true
+  },
+  "OpenPanelBottomFilled": {
+    "identical": true
+  },
+  "OpenPanelLeft": {
+    "identical": true
+  },
+  "OpenPanelLeftFilled": {
+    "identical": true
+  },
+  "OpenPanelRight": {
+    "identical": true
+  },
+  "OpenPanelRightFilled": {
+    "identical": true
+  },
+  "OpenWorkspace": {
+    "identical": true
+  },
+  "OpenWorkspaceActive": {
+    "identical": true
+  },
+  "PersistenceRelationship": {
+    "identical": true
+  },
+  "RadioIndicator": {
+    "identical": true
+  },
+  "Refresh": {
+    "identical": true
+  },
+  "Send": {
+    "identical": false
+  },
+  "Settings": {
+    "identical": true
+  },
+  "Success": {
+    "identical": true
+  },
+  "ToolBarVariables": {
+    "identical": true
+  },
+  "ToolWindowDuplicates": {
+    "identical": true
+  },
+  "Trash": {
+    "identical": true
+  },
+  "TrashActive": {
+    "identical": true
+  },
+  "UnloadedModule": {
+    "identical": true
+  },
+  "UserAvatar": {
+    "identical": false
+  },
+  "VCS": {
+    "identical": true
+  },
+  "Warning": {
+    "identical": true
+  },
+  "WebServer": {
+    "identical": true
+  },
+  "WebServerActive": {
+    "identical": true
+  },
+  "WindowsMenu": {
+    "identical": true
+  },
+  "Workspace": {
+    "identical": true
+  },
+  "WorkspaceActive": {
+    "identical": true
+  }
+}

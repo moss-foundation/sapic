@@ -1,5 +1,5 @@
-import { type Icons } from "@/components/Icon";
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
 import { ListWorkspacesOutput } from "@repo/moss-workspace";
 
 /**
@@ -15,21 +15,21 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}rename`,
       type: "action",
       label: "Rename...",
-      icon: "ActionMenuRename" as Icons,
+      icon: "Edit" as Icons,
       shortcut: "⌘⏎",
     },
     {
       id: `${idPrefix}duplicate`,
       type: "action",
       label: "Duplicate",
-      icon: "ActionMenuDuplicate" as Icons,
+      icon: "ToolWindowDuplicates" as Icons,
       shortcut: "⌘V",
     },
     {
       id: `${idPrefix}delete`,
       type: "action",
       label: "Delete",
-      icon: "ActionMenuDelete" as Icons,
+      icon: "Delete" as Icons,
       shortcut: "⌥⇧⏎",
     },
     {
@@ -40,7 +40,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
       id: `${idPrefix}new`,
       type: "submenu",
       label: "New...",
-      icon: "PlusButton" as Icons,
+      icon: "Add" as Icons,
       items: [
         {
           id: `${idPrefix}new-request`,
@@ -115,13 +115,13 @@ export const baseWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "ActionMenuNew" as Icons,
+    icon: "NewFolder" as Icons,
   },
   {
     id: "open-workspace",
     type: "action",
     label: "Open Workspace",
-    icon: "ActionMenuOpen" as Icons,
+    icon: "Folder" as Icons,
   },
   {
     id: "separator-1",
@@ -135,20 +135,20 @@ export const baseSelectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "new-workspace",
     type: "action",
     label: "New Workspace",
-    icon: "ActionMenuNew" as Icons,
+    icon: "NewFolder" as Icons,
   },
   ...createStandardMenuItems().slice(0, 4), // Include only the first 4 items (rename, duplicate, delete, separator)
   {
     id: "new-collection",
     type: "action",
     label: "New Collection",
-    icon: "PlusButton" as Icons,
+    icon: "Add" as Icons,
   },
   {
     id: "import-collection",
     type: "action",
     label: "Import Collection",
-    icon: "ActionMenuImportCollection" as Icons,
+    icon: "Import" as Icons,
   },
   {
     id: "separator-2",

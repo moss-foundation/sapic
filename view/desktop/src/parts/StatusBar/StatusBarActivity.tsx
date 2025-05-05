@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { Icon } from "@/components";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { cn } from "@/utils";
@@ -174,7 +175,7 @@ export const StatusBarActivity = () => {
               "size-[14px] flex-shrink-0 text-(--moss-statusBar-icon-secondary-text)",
               animateIcon && "animate-spin"
             )}
-            icon="Reload"
+            icon="Refresh"
           />
           {textToDisplay && <span className="text-(--moss-statusBar-icon-primary-text)">{textToDisplay}</span>}
         </div>

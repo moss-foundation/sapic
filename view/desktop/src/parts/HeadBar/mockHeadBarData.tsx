@@ -1,5 +1,5 @@
-import { type Icons } from "@/components/Icon";
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
 
 // User menu items function that returns appropriate items based on whether a user is selected
 export const userMenuItems: MenuItemProps[] = [
@@ -61,7 +61,7 @@ export const noUserMenuItems: MenuItemProps[] = [
     id: "sign-in",
     type: "action",
     label: "Sign In",
-    icon: "HeadBarUserAvatar" as Icons,
+    icon: "UserAvatar" as Icons,
   },
   {
     id: "create-account",

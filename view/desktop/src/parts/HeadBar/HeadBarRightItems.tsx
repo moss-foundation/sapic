@@ -1,9 +1,10 @@
 import { IconLabelButton } from "@/components";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { ModeToggle } from "./ModeToggle";
+
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { getUserMenuItems } from "./mockHeadBarData";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { ModeToggle } from "./ModeToggle";
 
 export interface HeadBarRightItemsProps {
   isMedium: boolean;
@@ -41,7 +42,7 @@ export const HeadBarRightItems = ({
         items={getUserMenuItems(selectedUser)}
         trigger={
           <IconLabelButton
-            leftIcon="HeadBarUserAvatar"
+            leftIcon="UserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"
             rightIcon="ChevronDown"
             title={selectedUser || "g10z3r"}

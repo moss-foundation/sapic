@@ -1,10 +1,11 @@
 import { ActionButton, IconLabelButton } from "@/components";
-import { cn } from "@/utils";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { ModeToggle } from "./ModeToggle";
+import { cn } from "@/utils";
+
 import { windowsMenuItems } from "./mockHeadBarData";
 import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { ModeToggle } from "./ModeToggle";
 
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -48,7 +49,7 @@ export const HeadBarLeftItems = ({
             items={windowsMenuItems}
             trigger={
               <ActionButton
-                icon="HeadBarWindowsMenu"
+                icon="WindowsMenu"
                 iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
                 title="Menu"
               />
@@ -84,7 +85,7 @@ export const HeadBarLeftItems = ({
       />
       {selectedWorkspace && (
         <IconLabelButton
-          leftIcon="HeadBarVault"
+          leftIcon="Key"
           leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
           title="Vault"
           className="h-[24px]"

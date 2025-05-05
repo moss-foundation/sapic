@@ -71,7 +71,7 @@ pub trait FileSystem: Send + Sync {
     async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>>;
     fn watch(
         &self,
-        path: PathBuf,
+        path: &Path,
         latency: Duration,
     ) -> Result<(
         BoxStream<'static, Vec<notify::Event>>,

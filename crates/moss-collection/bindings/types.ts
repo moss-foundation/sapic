@@ -9,6 +9,8 @@
 
 import type { ResourceKey } from "@repo/bindings-utils";
 
+export type EntryId = number;
+
 export type FormDataItem = {
   key: string;
   value: FormDataValue;
@@ -70,6 +72,8 @@ export type RequestNodeInfo =
   | { "group": { key: ResourceKey; name: string; path: string; order: number | null } };
 
 export type RequestProtocol = { "http": HttpMethod } | "webSocket" | "graphQL" | "grpc";
+
+export type UnitType = "endpoint" | "request" | "case" | "schema" | "component";
 
 export type UrlEncodedItem = {
   key: string;

@@ -7,6 +7,7 @@ use moss_storage::collection_storage::entities::request_store_entities::RequestN
 use moss_storage::collection_storage::CollectionStorageImpl;
 use moss_storage::CollectionStorage;
 use std::collections::HashMap;
+use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{mpsc, OnceCell};
 
@@ -27,11 +28,12 @@ pub struct CollectionCache {
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Worktree>,
+    worktree: OnceCell<Arc<Worktree>>,
     abs_path: PathBuf,
     collection_storage: Arc<dyn CollectionStorage>,
     registry: OnceCell<CollectionRegistry>,
     indexer_handle: IndexerHandle,
+    next_entry_id: Arc<AtomicUsize>,
 }
 
 impl Collection {
@@ -39,7 +41,10 @@ impl Collection {
         path: PathBuf,
         fs: Arc<dyn FileSystem>,
         indexer_handle: IndexerHandle,
+        next_entry_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
+        debug_assert!(path.is_absolute());
+
         let state_db_manager_impl = CollectionStorageImpl::new(&path).context(format!(
             "Failed to open the collection {} state database",
             path.display()
@@ -52,7 +57,23 @@ impl Collection {
             worktree: OnceCell::new(),
             collection_storage: Arc::new(state_db_manager_impl),
             indexer_handle,
+            next_entry_id,
         })
+    }
+
+    async fn worktree(&self) -> Result<&Arc<Worktree>> {
+        self.worktree
+            .get_or_try_init(|| async move {
+                let worktree = Worktree::new(
+                    self.fs.clone(),
+                    Arc::from(self.abs_path.clone()),
+                    self.next_entry_id.clone(),
+                )
+                .await?;
+
+                Ok(Arc::new(worktree))
+            })
+            .await
     }
 
     fn handle_indexed_request_node(

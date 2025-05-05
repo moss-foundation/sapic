@@ -42,7 +42,7 @@ export const HeadBar = () => {
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
   const collectionButtonRef = useRef<HTMLButtonElement>(null);
-  const [isRenamingCollection, setIsRenamingCollection] = useState(false);
+  const [, setIsRenamingCollection] = useState(false);
 
   // Modal hooks for workspace dialogs
   const {

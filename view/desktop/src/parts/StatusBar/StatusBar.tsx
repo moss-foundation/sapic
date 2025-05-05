@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "reac
 import { createPortal } from "react-dom";
 
 import { Icon, Icons } from "@/components";
+import { Divider } from "@/components/Divider";
 import { cn, swapListById } from "@/utils";
 import {
   attachClosestEdge,
@@ -18,7 +19,6 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { DropIndicator } from "../../components/DropIndicator";
 import { StatusBarActivity } from "./StatusBarActivity";
-import { Divider } from "@/components/Divider";
 
 interface Item {
   id: number;
@@ -32,19 +32,19 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [DNDList, setDNDList] = useState<Item[]>([
     {
       id: 1,
-      icon: "StatusBarConsole",
+      icon: "Console",
       label: "Console",
       order: 1,
     },
     {
       id: 2,
-      icon: "StatusBarTrash",
+      icon: "Trash",
       label: "Trash",
       order: 2,
     },
     {
       id: 3,
-      icon: "StatusBarCookies",
+      icon: "Cookie",
       label: "Cookies",
       order: 3,
     },
@@ -111,7 +111,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
         <StatusBarButton label="60 FPS" className="text-(--moss-statusBar-icon-primary-text)" />
         <Divider height="medium" />
         <StatusBarButton
-          icon={isOnline ? "StatusBarOnline" : "StatusBarOffline"}
+          icon={isOnline ? "Success" : "Error"}
           label={isOnline ? "Online" : "Offline"}
           className="text-(--moss-statusBar-icon-primary-text)"
           iconClassName={isOnline ? "text-[#1E6B33]" : "text-[#DF9303]"}
@@ -139,11 +139,11 @@ const StatusBarIndicators = () => {
         <div className="flex items-center rounded px-1 transition">
           <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded px-1">
             <div className="flex items-center gap-1">
-              <Icon className="size-[14px] text-[#E55765]" icon="StatusBarErrors" />
+              <Icon className="size-[14px] text-[#E55765]" icon="Failed" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
             </div>
             <div className="flex items-center gap-1">
-              <Icon className="size-[14px] text-[#FFAF0F]" icon="StatusBarWarnings" />
+              <Icon className="size-[14px] text-[#FFAF0F]" icon="Warning" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">5</span>
             </div>
           </div>
