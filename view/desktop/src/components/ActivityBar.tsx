@@ -47,7 +47,7 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("background-(--moss-secondary-background) flex items-center gap-3", {
+      className={cn("flex items-center gap-3 background-(--moss-secondary-background)", {
         "w-full border-b border-b-(--moss-border-color) px-1.5": position === "top",
         "w-full border-t border-t-(--moss-border-color) px-1.5": position === "bottom",
         "h-full flex-col py-1.5": position === "default",
@@ -170,14 +170,14 @@ const ActivityBarButton = ({
     <button
       ref={ref}
       className={cn("relative cursor-pointer rounded-md p-1", {
-        "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && visible,
-        "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
+        "text-(--moss-info-icon) background-(--moss-icon-primary-background-active)": isActive && visible,
+        "text-(--moss-icon-primary-text) hover:background-(--moss-icon-primary-background-hover)":
           !isActive || !visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      <Icon icon={isActive ? iconActive : icon} className="size-5" />
+      <Icon icon={isActive && visible ? iconActive : icon} className="size-5" />
       {closestEdge ? <DropIndicator edge={closestEdge} gap={12} /> : null}
       {preview &&
         createPortal(
@@ -186,7 +186,7 @@ const ActivityBarButton = ({
             icon={icon}
             iconActive={iconActive}
             isActive={false}
-            className="background-(--moss-icon-primary-background-hover) rounded-md p-1"
+            className="rounded-md p-1 background-(--moss-icon-primary-background-hover)"
           />,
           preview
         )}
