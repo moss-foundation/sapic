@@ -208,5 +208,8 @@
   },
   "Workspace": {
     "identical": true
+  },
+  "WorkspaceActive": {
+    "identical": true
   }
 }
