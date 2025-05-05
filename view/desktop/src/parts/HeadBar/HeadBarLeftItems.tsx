@@ -4,6 +4,7 @@ import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { ModeToggle } from "./ModeToggle";
 import { windowsMenuItems } from "./mockHeadBarData";
 import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -15,7 +16,7 @@ export interface HeadBarLeftItemsProps {
   setWorkspaceMenuOpen: (open: boolean) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
-  selectedWorkspace: string | null;
+  selectedWorkspace?: string | null;
 }
 
 export const HeadBarLeftItems = ({
@@ -28,10 +29,10 @@ export const HeadBarLeftItems = ({
   setWorkspaceMenuOpen,
   handleWorkspaceMenuAction,
   os,
-  selectedWorkspace,
 }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
+  const { selectedWorkspace } = useWorkspaceContext();
 
   return (
     <div

@@ -3,6 +3,7 @@ import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { ModeToggle } from "./ModeToggle";
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
 import { getUserMenuItems } from "./mockHeadBarData";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 export interface HeadBarRightItemsProps {
   isMedium: boolean;
@@ -15,7 +16,7 @@ export interface HeadBarRightItemsProps {
   setShowDebugPanels: (show: boolean) => void;
   openPanel: (panel: string) => void;
   os: string | null;
-  selectedWorkspace: string | null;
+  selectedWorkspace?: string | null;
   selectedUser: string | null;
 }
 
@@ -29,9 +30,11 @@ export const HeadBarRightItems = ({
   setShowDebugPanels,
   openPanel,
   os,
-  selectedWorkspace,
   selectedUser,
 }: HeadBarRightItemsProps) => {
+  const isMac = os === "macos";
+  const { selectedWorkspace } = useWorkspaceContext();
+
   return (
     <div className="flex items-center">
       <ActionMenu
@@ -55,7 +58,7 @@ export const HeadBarRightItems = ({
         }}
       />
 
-      {os === "macos" && selectedWorkspace && (
+      {isMac && selectedWorkspace && (
         <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
       )}
 

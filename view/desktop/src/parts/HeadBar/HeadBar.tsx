@@ -6,6 +6,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { useModal } from "@/hooks/useModal";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 import { Controls } from "./Controls/Controls";
 import {
@@ -32,8 +33,11 @@ export const HeadBar = () => {
   const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
   const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
-  // TEST: Hardoce default workspace/user/branch for testing
-  const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
+
+  // Use the workspace context instead of local state
+  const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
+
+  // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
@@ -130,7 +134,6 @@ export const HeadBar = () => {
               setWorkspaceMenuOpen={setWorkspaceMenuOpen}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
-              selectedWorkspace={selectedWorkspace}
             />
 
             {/*HeadBar Center items*/}
@@ -165,7 +168,6 @@ export const HeadBar = () => {
               setShowDebugPanels={setShowDebugPanels}
               openPanel={openPanel}
               os={os}
-              selectedWorkspace={selectedWorkspace}
               selectedUser={selectedUser}
             />
           </div>

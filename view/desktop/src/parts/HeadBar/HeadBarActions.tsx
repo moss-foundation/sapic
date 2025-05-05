@@ -1,5 +1,5 @@
 import { RefObject } from "react";
-import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -105,15 +105,10 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
-  const {
-    openPanel,
-    setShowDebugPanels,
-    showDebugPanels,
-    setSelectedWorkspace,
-    openNewWorkspaceModal,
-    openOpenWorkspaceModal,
-  } = props;
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { openPanel, setShowDebugPanels, showDebugPanels, openNewWorkspaceModal, openOpenWorkspaceModal } = props;
+
+  // Use the context for opening workspaces
+  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
@@ -131,11 +126,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       !action.startsWith("save") &&
       !action.startsWith("edit-")
     ) {
-      // Set the selected workspace in UI state
-      setSelectedWorkspace?.(action);
-
-      // Open the workspace using the same method as in OpenWorkspaceModal
-      openWorkspace(action);
+      // Use the context function that handles both opening and selecting
+      openAndSelectWorkspace(action);
     }
 
     // Handle new workspace modal
