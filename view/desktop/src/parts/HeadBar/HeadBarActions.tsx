@@ -1,5 +1,5 @@
 import { RefObject } from "react";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useWorkspaceContext, extractWorkspaceName } from "@/context/WorkspaceContext";
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -113,36 +113,40 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
 
-    // Handle workspace selection - now handles any workspace name and opens it
-    if (
-      action !== "home" &&
-      action !== "logs" &&
-      action !== "debug" &&
-      action !== "new-workspace" &&
-      action !== "open-workspace" &&
-      !action.startsWith("separator") &&
-      !action.startsWith("new-") &&
-      !action.startsWith("import-") &&
-      !action.startsWith("save") &&
-      !action.startsWith("edit-")
-    ) {
-      // Use the context function that handles both opening and selecting
-      openAndSelectWorkspace(action);
+    // Handle opening workspace when the action ID has the workspace: prefix
+    if (action.startsWith("workspace:")) {
+      const workspaceName = extractWorkspaceName(action);
+      openAndSelectWorkspace(workspaceName);
+      return;
     }
 
-    // Handle new workspace modal
+    // Handle menu item for a specific workspace
+    // e.g., "workspaceName-rename" for renaming a workspace
+    const workspaceAction = action.match(/^(.+?)-(rename|duplicate|delete|new|save|edit-.+)$/);
+    if (workspaceAction) {
+      const [, workspaceName, actionType] = workspaceAction;
+      console.log(`Workspace action for ${workspaceName}: ${actionType}`);
+
+      // Here you can implement specific actions for workspace items
+      // For example:
+      // if (actionType === "rename") { handleRenameWorkspace(workspaceName); }
+
+      return;
+    }
+
+    // Handle other specific actions
     if (action === "new-workspace") {
       openNewWorkspaceModal?.();
-    }
-
-    // Handle open workspace modal
-    if (action === "open-workspace") {
+    } else if (action === "open-workspace") {
       openOpenWorkspaceModal?.();
+    } else if (action === "home") {
+      openPanel("Home");
+    } else if (action === "logs") {
+      openPanel("Logs");
+    } else if (action === "debug") {
+      setShowDebugPanels(!showDebugPanels);
     }
 
-    // Handle different workspace actions
-    if (action === "home") openPanel("Home");
-    if (action === "logs") openPanel("Logs");
-    if (action === "debug") setShowDebugPanels(!showDebugPanels);
+    // Other actions like "rename", "duplicate", etc. will be handled elsewhere
   };
 };

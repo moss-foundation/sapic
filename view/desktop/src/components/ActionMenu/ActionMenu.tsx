@@ -142,11 +142,22 @@ MenuSeparator.displayName = "MenuSeparator";
 
 const MenuSubTrigger = React.forwardRef<
   React.ElementRef<typeof DropdownMenu.SubTrigger>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & { hideChevron?: boolean }
->(({ className, children, hideChevron, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubTrigger> & {
+    hideChevron?: boolean;
+    item?: MenuItemProps;
+    onTriggerClick?: (item: MenuItemProps) => void;
+  }
+>(({ className, children, hideChevron, item, onTriggerClick, ...props }, ref) => (
   <DropdownMenu.SubTrigger
     ref={ref}
     className={cn(menuItemStyles({ highlighted: true, state: "open" }), "h-6", className)}
+    onClick={(e) => {
+      // If this is a workspace submenu, trigger the action before expanding
+      if (item && item.id.startsWith("workspace:") && onTriggerClick) {
+        e.stopPropagation();
+        onTriggerClick(item);
+      }
+    }}
     {...props}
   >
     {children}
@@ -319,7 +330,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
   // Handler for item selection
   const handleSelect = (item: MenuItemProps) => {
     if (onSelect && item.type !== "separator" && item.type !== "header" && item.type !== "section" && !item.disabled) {
-      onSelect(item);
+      // For accordion header, we don't want to trigger the select callback
+      if (item.type !== "accordion") {
+        onSelect(item);
+      }
     }
   };
 
@@ -406,7 +420,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     if (item.type === "submenu" && item.items?.length) {
       return (
         <DropdownMenu.Sub key={item.id}>
-          <MenuSubTrigger>
+          <MenuSubTrigger item={item} onTriggerClick={handleSelect}>
             <MenuItemIcon icon={item.icon} iconColor={item.iconColor} />
             {!item.icon && item.alignWithIcons && <div className="mr-2 flex h-5 w-5 items-center justify-center"></div>}
             <span className={cn("flex-grow", labelStyles)}>{item.label}</span>
@@ -449,6 +463,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             <div className="w-full overflow-hidden pl-3">
               {item.items.map((subItem) => (
                 <div key={subItem.id} className="w-full overflow-hidden">
+                  {/* Each subitem is rendered through renderMenuItem which will handle onSelect properly */}
                   {renderMenuItem(subItem)}
                 </div>
               ))}

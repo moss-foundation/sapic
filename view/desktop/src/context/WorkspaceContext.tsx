@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
+// Helper to extract workspace name from prefixed ID
+export const extractWorkspaceName = (actionId: string): string => {
+  return actionId.startsWith("workspace:") ? actionId.replace("workspace:", "") : actionId;
+};
+
 interface WorkspaceContextType {
   selectedWorkspace: string | null;
   setSelectedWorkspace: (workspace: string | null) => void;
@@ -20,8 +25,10 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({ children 
   const { mutate: openWorkspace } = useOpenWorkspace();
 
   const openAndSelectWorkspace = (workspace: string) => {
-    openWorkspace(workspace);
-    setSelectedWorkspace(workspace);
+    // Extract the workspace name in case it has a prefix
+    const workspaceName = extractWorkspaceName(workspace);
+    openWorkspace(workspaceName);
+    setSelectedWorkspace(workspaceName);
   };
 
   return (
