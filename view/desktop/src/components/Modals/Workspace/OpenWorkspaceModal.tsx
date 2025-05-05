@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
 import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 import { ModalWrapperProps } from "../types";
 
@@ -14,11 +14,11 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
   const [openAutomatically, setOpenAutomatically] = useState<boolean>(true);
 
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   const handleSubmit = () => {
     if (selectedWorkspace) {
-      openWorkspace(selectedWorkspace);
+      openAndSelectWorkspace(selectedWorkspace);
       closeModal();
       reset();
     }
