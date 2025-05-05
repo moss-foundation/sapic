@@ -2,11 +2,13 @@ import { useState } from "react";
 
 import { Button, Checkbox, Icon, Input, Modal, Radio } from "@/components";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 import { ModalWrapperProps } from "../types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { mutate: createWorkspace } = useCreateWorkspace();
+  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
@@ -14,7 +16,16 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
 
   const handleSubmit = async () => {
     if (name) {
-      createWorkspace({ name });
+      createWorkspace(
+        { name },
+        {
+          onSuccess: (data) => {
+            if (openAutomatically) {
+              openAndSelectWorkspace(name);
+            }
+          },
+        }
+      );
       closeModal();
       reset();
     }
