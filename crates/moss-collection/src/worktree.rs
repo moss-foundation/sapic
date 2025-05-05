@@ -183,11 +183,48 @@ pub struct BackgroundScannerState {
     pub prev_snapshot: Snapshot,
     pub changed_paths: Vec<Arc<Path>>,
     pub scanned_dirs: HashSet<EntryId>,
-    pub removed_entries: HashMap<FileId, Entry>,
+    pub removed_entries: HashMap<FileId, EntryRef>,
     pub paths_to_scan: HashSet<Arc<Path>>,
 }
 
 impl BackgroundScannerState {
+    fn remove_path(&mut self, path: &Path) {
+        let mut new_entries = BPlusTreeMap::new();
+        let mut removed_entries = Vec::new();
+
+        // Remove entries from entries_by_path
+        for (entry_path, entry_id) in self.snapshot.entries_by_path.iter() {
+            if entry_path.starts_with(path) {
+                let entry_arc = self
+                    .snapshot
+                    .entries_by_id
+                    .get(entry_id)
+                    .expect(&format!("entry_id {} not found in entries_by_id", entry_id));
+
+                removed_entries.push(entry_arc.clone());
+            } else {
+                new_entries.insert(entry_path.clone(), entry_id.clone());
+            }
+        }
+
+        self.snapshot.entries_by_path = new_entries;
+
+        // Update removed_entries for possible reuse of EntryId
+        // for entries with the same file_id
+        for entry in &removed_entries {
+            self.removed_entries.entry(entry.file_id).and_modify(|old| {
+                if entry.id > old.id {
+                    *old = entry.clone();
+                }
+            });
+        }
+
+        // Remove entries from entries_by_id
+        for entry in removed_entries {
+            self.snapshot.entries_by_id.remove(&entry.id);
+        }
+    }
+
     fn enqueue_scan_dir(
         &self,
         abs_path: Arc<Path>,
@@ -376,6 +413,23 @@ impl BackgroundScanner {
         }
 
         !mem::take(&mut self.state.lock().await.paths_to_scan).is_empty()
+    }
+
+    async fn reload_entries_for_paths(&self, root_abs_path: Arc<Path>, abs_paths: Vec<Arc<Path>>) {
+        let metadata = futures::future::join_all(
+            abs_paths
+                .iter()
+                .map(|abs_path| async move {
+                    let metadata = tokio::fs::metadata(&abs_path).await;
+                    if let Ok(metadata) = metadata {
+                        anyhow::Ok(Some((metadata, abs_path)))
+                    } else {
+                        anyhow::Ok(None)
+                    }
+                })
+                .collect::<Vec<_>>(),
+        )
+        .await;
     }
 
     async fn handle_scan_request(&mut self, mut scan_req: ScanRequest, scanning: bool) -> bool {
