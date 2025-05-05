@@ -8,8 +8,8 @@
   "bracketSpacing": true,
   "endOfLine": "lf",
   "plugins": [
-    "prettier-plugin-tailwindcss",
     "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss",
     "@typespec/prettier-plugin-typespec"
   ],
   "tailwindConfig": "packages/config-tailwind/tailwind.config.ts",
