@@ -18,7 +18,6 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
-    # Check if py command exists, otherwise fall back to python
     ifeq ($(shell where py 2>NUL),)
         PYTHON := python
     else
