@@ -216,7 +216,7 @@ const MenuCheckboxItem = React.forwardRef<
   >
     <div className="mr-2 flex h-5 w-5 items-center justify-center">
       <DropdownMenu.ItemIndicator>
-        <Icon icon="CheckboxIndicator" className="h-4 w-4 text-(--moss-icon-primary-text)" />
+        <Icon icon="Checkmark" className="h-4 w-4 text-(--moss-icon-primary-text)" />
       </DropdownMenu.ItemIndicator>
     </div>
     {children}

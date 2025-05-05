@@ -1,9 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
-
-import { Button, Scrollbar } from "../components";
 import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import {
   editorContextItems,
@@ -13,6 +10,10 @@ import {
   runSelectorItems,
   themeItems,
 } from "@/data/actionMenuMockData";
+import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
+
+import * as iconsNames from "../assets/icons";
+import { Button, Icon, Icons, Scrollbar } from "../components";
 
 export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -63,6 +64,8 @@ const ComponentGallery = () => {
       setSelectedTheme(item.value);
     }
   };
+
+  console.log(Object.keys(iconsNames));
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
@@ -305,6 +308,20 @@ const ComponentGallery = () => {
         >
           Example Command
         </button>
+      </section>
+
+      {/* Icons */}
+      <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
+        <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Icons</h2>
+        <p className="mb-6 text-gray-600 dark:text-gray-300">Various icons available in the application.</p>
+        <div className="grid grid-cols-6 gap-y-2">
+          {Object.keys(iconsNames).map((value) => (
+            <div key={value} className="flex flex-col items-center gap-2">
+              <Icon icon={value as Icons} />
+              <span>{value}</span>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

@@ -1,9 +1,11 @@
 import React from "react";
+
 import { ActionButton, Divider, IconLabelButton } from "@/components";
-import { cn } from "@/utils";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { getGitBranchMenuItems } from "./mockHeadBarData";
+import { cn } from "@/utils";
+
 import { collectionActionMenuItems } from "./HeadBarData";
+import { getGitBranchMenuItems } from "./mockHeadBarData";
 
 export interface HeadBarCenterItemsProps {
   isMedium: boolean;
@@ -47,7 +49,7 @@ export const HeadBarCenterItems = ({
     >
       <IconLabelButton
         ref={collectionButtonRef}
-        leftIcon="HeadBarCollection"
+        leftIcon="UnloadedModule"
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
           isMedium
@@ -59,7 +61,7 @@ export const HeadBarCenterItems = ({
         onRename={onRenameCollection}
       />
       <ActionButton
-        icon="Reload"
+        icon="Refresh"
         iconClassName="text-(--moss-headBar-icon-primary-text)"
         customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
         title="Reload"
@@ -68,7 +70,7 @@ export const HeadBarCenterItems = ({
         items={collectionActionMenuItems}
         trigger={
           <ActionButton
-            icon="ThreeVerticalDots"
+            icon="MoreHorizontal"
             iconClassName="text-(--moss-headBar-icon-primary-text)"
             customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
             className="mr-[-4px]"
@@ -86,7 +88,7 @@ export const HeadBarCenterItems = ({
         items={getGitBranchMenuItems(selectedBranch)}
         trigger={
           <IconLabelButton
-            leftIcon="HeadBarGit"
+            leftIcon="VCS"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
             className="ml-[-2px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"

@@ -1,8 +1,10 @@
-import { ActionButton } from "@/components";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useState } from "react";
+
+import { ActionButton } from "@/components";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/components/Icon";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+
 import PanelToggleButtons from "./PanelToggleButtons";
 
 export interface CollapsibleActionMenuProps {
@@ -22,9 +24,9 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
     return (
       <div className="flex items-center gap-0">
         <PanelToggleButtons className="mr-1" />
-        <ActionButton icon="HeadBarNotifications" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
+        <ActionButton icon="Bell" iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5" />
         <ActionButton
-          icon="HeadBarSettings"
+          icon="Settings"
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
           onClick={() => openPanel("Settings")}
           title="Settings"
@@ -81,7 +83,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
       ]}
       trigger={
         <ActionButton
-          icon="ThreeHorizontalDots"
+          icon="MoreHorizontal"
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
           title="More actions"
         />

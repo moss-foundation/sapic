@@ -9,10 +9,12 @@ import xml.etree.ElementTree as ET
 import tinycss2
 import webcolors
 import re
+import shutil
 
 # Constants
 COLOR_ATTRIBUTES = {"fill", "stroke"}
 EXCLUDED_VALUES = {"none", "transparent"}
+EXCLUDED_ATTRIBUTES = {"width", "height"}
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
 
@@ -55,6 +57,16 @@ def normalize_color(color: str) -> str:
     rgb = webcolors.html5_parse_legacy_color(color)
     return webcolors.rgb_to_hex(rgb)
 
+def to_camel_case(snake_str):
+    return "".join(x.capitalize() for x in snake_str.lower().split("-"))
+
+def to_lower_camel_case(snake_str):
+    # We capitalize the first letter of each component except the first one
+    # with the 'capitalize' method and join them together.
+    camel_string = to_camel_case(snake_str)
+    return snake_str[0].lower() + camel_string[1:]
+
+
 
 def extract_css_palette(css_path: Path) -> Dict[str, str]:
     """
@@ -70,7 +82,8 @@ def extract_css_palette(css_path: Path) -> Dict[str, str]:
         if rule.type != "qualified-rule":
             continue
         for decl in tinycss2.parse_declaration_list(rule.content):
-            if decl.type == "declaration" and decl.lower_name.startswith("--"):
+            if decl.type == "declaration" and decl.lower_name.startswith("--")\
+                    and decl.lower_name.split("-")[-1].isdigit():
                 vals = [tok for tok in decl.value if tok.type == "hash"]
                 if len(vals) == 1:
                     hex_code = webcolors.normalize_hex(f"#{vals[0].value}")
@@ -101,13 +114,14 @@ def compare_svg_structure(a: ET.ElementTree, b: ET.ElementTree) -> bool:
 
 
 def consolidate_svg(
+        svg_path: Path,
         light_tree: ET.ElementTree,
         dark_tree: ET.ElementTree,
         light_palette: Dict[str, str],
         dark_palette: Dict[str, str]
-) -> ET.ElementTree:
+) -> ET.ElementTree | None:
     """
-    Merge light and dark SVGs into a single tree by mapping colors to Tailwind CSS variables.
+    Consolidate identical-structured light and dark svg into a single tree
     """
     result = deepcopy(light_tree)
 
@@ -118,20 +132,25 @@ def consolidate_svg(
     dark_elements = list(dark_tree.iter())
     res_elements = list(result.iter())
 
+    # Replace raw color attribute with consolidated tailwind class
     for le, de, relem in zip(light_elements, dark_elements, res_elements):
         for attr in COLOR_ATTRIBUTES:
             lc = le.attrib.get(attr)
             dc = de.attrib.get(attr)
             if not lc or not dc or lc in EXCLUDED_VALUES:
                 continue
-            try:
-                lc_norm = normalize_color(lc)
-                dc_norm = normalize_color(dc)
-                light_var = light_palette[lc_norm]
-                dark_var = dark_palette[dc_norm]
-            except KeyError as e:
-                logging.warning("Unrecognized color %s in %s", e, relem.tag)
-                continue
+
+            lc_norm = normalize_color(lc)
+            if lc_norm not in light_palette:
+                logging.error("Unrecognized color %s in file %s", lc, svg_path / "light.svg")
+                return None
+            light_var = light_palette[lc_norm]
+
+            dc_norm = normalize_color(dc)
+            if dc_norm not in dark_palette:
+                logging.error("Unrecognized color %s in file %s", dc, svg_path / "dark.svg")
+                return None
+            dark_var = dark_palette[dc_norm]
 
             class_str = f"{attr}-[var({light_var})] dark:{attr}-[var({dark_var})]"
             prev = relem.attrib.pop(attr, None)
@@ -140,6 +159,71 @@ def consolidate_svg(
             relem.set("className", combined)
 
     return result
+
+
+def merge_svg_to_component(
+        svg_path: Path,
+        name: str,
+        light_tree: ET.ElementTree,
+        dark_tree: ET.ElementTree,
+        light_palette: Dict[str, str],
+        dark_palette: Dict[str, str]
+) -> str | None:
+    """
+    Merge light and dark svg with different structures into a component
+    """
+    # Separate rendering for light/dark
+    light_el = light_tree.getroot()
+    dark_el = dark_tree.getroot()
+    light_el.set('className', 'block dark:hidden')
+    dark_el.set('className', 'hidden dark:block')
+
+    light_elements = list(light_tree.iter())
+    dark_elements = list(dark_tree.iter())
+
+    # Replace raw color attribute with tailwind class
+    for le, de in zip(light_elements, dark_elements):
+        for attr in COLOR_ATTRIBUTES:
+            lc = le.attrib.get(attr)
+            dc = de.attrib.get(attr)
+            if not lc or not dc or lc in EXCLUDED_VALUES:
+                continue
+
+            lc_norm = normalize_color(lc)
+            if lc_norm not in light_palette:
+                logging.error("Unrecognized color %s in file %s", lc, svg_path / "light.svg")
+                return None
+            light_var = light_palette[lc_norm]
+            class_str = f"{attr}-[var({light_var})]"
+            del le.attrib[attr]
+            existing = le.attrib.get("className", "")
+            combined = " ".join(filter(None, [existing, class_str]))
+            le.set("className", combined)
+
+            dc_norm = normalize_color(dc)
+            if dc_norm not in dark_palette:
+                logging.error("Unrecognized color %s in file %s", dc, svg_path / "dark.svg")
+                return None
+            dark_var = dark_palette[dc_norm]
+            class_str = f"{attr}-[var({dark_var})]"
+            del de.attrib[attr]
+            existing = de.attrib.get("className", "")
+            combined = " ".join(filter(None, [existing, class_str]))
+            de.set("className", combined)
+
+    light_xml = ET.tostring(light_el, encoding='unicode')
+    dark_xml = ET.tostring(dark_el, encoding='unicode')
+    return (
+        f"import React from 'react';"
+        f"\nimport type {{ SVGProps }} from 'react';"
+        f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => ("
+        f"\n  <div {{...props}}>"
+        f"\n    {light_xml}"  # Light theme
+        f"\n    {dark_xml}"   # Dark theme
+        f"\n  </div>"
+        f"\n);"
+        f"\nexport default Svg{name};"
+    )
 
 
 def svg_to_component(name: str, svg_xml: str) -> str:
@@ -173,36 +257,45 @@ def generate_components(
     light_palette = extract_css_palette(light_css)
     dark_palette = extract_css_palette(dark_css)
 
+    # Remove old build artifacts
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for name, props in plan_data.items():
+        svg_path = icons_dir / name
         logging.info("Processing icon '%s'", name)
-        light_tree = ET.parse(icons_dir / name / 'light.svg')
-        dark_tree = ET.parse(icons_dir / name / 'dark.svg')
+        light_tree = ET.parse(svg_path / 'light.svg')
+        dark_tree = ET.parse(svg_path / 'dark.svg')
+
+        # ignore `width` and `height` attributes at the top level
+        for attr in EXCLUDED_ATTRIBUTES:
+            if attr in light_tree.getroot().attrib:
+                del light_tree.getroot().attrib[attr]
+            if attr in dark_tree.getroot().attrib:
+                del dark_tree.getroot().attrib[attr]
+
+        # Reformat the attribute names
+        elems = list(light_tree.iter()) + list(dark_tree.iter())
+        for elem in elems:
+            for attr in elem.attrib.copy():
+                # Convert kebab-case to camelCase
+                if "-" in attr:
+                    camel = to_lower_camel_case(attr)
+                    val = elem.attrib[attr]
+                    del elem.attrib[attr]
+                    elem.set(camel, val)
 
         if props.get('identical', False) and compare_svg_structure(light_tree, dark_tree):
-            merged = consolidate_svg(light_tree, dark_tree, light_palette, dark_palette)
+            merged = consolidate_svg(svg_path, light_tree, dark_tree, light_palette, dark_palette)
+            if not merged:
+                continue
             svg_xml = ET.tostring(merged.getroot(), encoding='unicode')
             component = svg_to_component(name, svg_xml)
         else:
-            # Separate rendering for light/dark
-            light_el = light_tree.getroot()
-            dark_el = dark_tree.getroot()
-            light_el.set('className', 'block dark:hidden')
-            dark_el.set('className', 'hidden dark:block')
-            light_xml = ET.tostring(light_el, encoding='unicode')
-            dark_xml = ET.tostring(dark_el, encoding='unicode')
-            component = (
-                f"import React from 'react';"
-                f"\nimport type {{ SVGProps }} from 'react';"
-                f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => ("
-                f"\n  <div {{...props}}>"
-                f"\n    {light_xml}"  # Light theme
-                f"\n    {dark_xml}"   # Dark theme
-                f"\n  </div>"
-                f"\n);"
-                f"\nexport default Svg{name};"
-            )
+            component = merge_svg_to_component(svg_path, name, light_tree, dark_tree, light_palette, dark_palette)
+            if not component:
+                continue
 
         (output_dir / f"{name}.tsx").write_text(component)
 
@@ -233,11 +326,13 @@ def create_plan(icons_dir: Path, force: bool = False) -> None:
     plan_path = icons_dir / 'plan.json'
 
     existing = json.loads(plan_path.read_text()) if plan_path.exists() else {}
-    updated = existing.copy()
+    updated = {}
 
     for name in names:
         if not force and name in existing:
+            updated[name] = existing[name]
             continue
+
         light_svg = Path(icons_dir, name, "light.svg")
         if not light_svg.exists():
             logging.error(f"`light.svg` not found for icon `{name}`")

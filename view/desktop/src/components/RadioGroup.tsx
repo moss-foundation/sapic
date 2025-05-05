@@ -57,20 +57,13 @@ const Item = forwardRef<
     />
   );
 });
-const defaultRadioGroupIndicatorStyles = `*:size-[10px]`;
 const Indicator = forwardRef<
   ElementRef<typeof RadioGroupPrimitive.Indicator>,
   ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Indicator> & {
     className?: string;
   }
 >((props, forwardedRef) => {
-  return (
-    <RadioGroupPrimitive.Indicator
-      {...props}
-      ref={forwardedRef}
-      className={cn(defaultRadioGroupIndicatorStyles, props.className)}
-    />
-  );
+  return <RadioGroupPrimitive.Indicator {...props} ref={forwardedRef} className={props.className} />;
 });
 
 export { Indicator, Item, Root };

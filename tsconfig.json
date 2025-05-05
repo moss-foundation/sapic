@@ -33,9 +33,6 @@
     },
     {
       "path": "view/desktop"
-    },
-    {
-      "path": "tools/icongen"
     }
   ]
 }

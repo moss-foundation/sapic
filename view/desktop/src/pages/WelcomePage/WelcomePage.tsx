@@ -13,7 +13,8 @@ export const WelcomePage = () => {
     <div className="relative min-h-screen select-none">
       <div className="relative flex h-full min-w-min flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
         <div className="flex flex-col gap-0.5">
-          <h1 className="text-[34px]">Simple API Client</h1>
+          <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
+
           <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
         </div>
 
@@ -29,7 +30,7 @@ export const WelcomePage = () => {
         <div className="mt-auto mb-8 flex justify-center">
           <div className="flex flex-col items-center gap-2 text-sm">
             <span>Learn more</span>
-            <Icon icon="ChevronDownEllipse" />
+            <Icon icon="ChevronDownHovered" />
           </div>
         </div>
       </div>
@@ -64,11 +65,11 @@ const FirstColumn = () => {
         <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
           <button className="flex cursor-pointer gap-1.5" onClick={openNewWorkspaceModal}>
-            <Icon icon="FolderAdd" className="size-4 text-(--moss-primary)" />
+            <Icon icon="NewWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>New workspace</span>
           </button>
           <button className="flex cursor-pointer gap-1.5" onClick={openOpenWorkspaceModal}>
-            <Icon icon="Folder" className="size-4 text-(--moss-primary)" />
+            <Icon icon="OpenWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>Open workspace</span>
           </button>
         </div>

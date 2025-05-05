@@ -139,7 +139,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         {loading && (
           <div className="LoadingIcon absolute inset-0 grid place-items-center">
-            <Icon icon="LoaderTailus" className={cn(loadingIconStyles({ size }))} />
+            <Icon icon="Loader" className={cn(loadingIconStyles({ size }))} />
           </div>
         )}
       </button>

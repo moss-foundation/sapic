@@ -140,7 +140,7 @@ const SelectContent = forwardRef<
 const SelectItemIndicator = forwardRef<
   ElementRef<typeof SelectPrimitive.ItemIndicator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.ItemIndicator> & { icon?: Icons }
->(({ className, icon = "CheckboxIndicator", ...props }, forwardedRef) => (
+>(({ className, icon = "Checkmark", ...props }, forwardedRef) => (
   <SelectPrimitive.ItemIndicator
     {...props}
     ref={forwardedRef}
