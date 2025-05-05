@@ -9,8 +9,6 @@ export type Button = typeof Button;
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   disabled?: boolean;
-  href?: string;
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
 }
 
 const buttonRootStyles = cva(
@@ -26,7 +24,7 @@ const buttonRootStyles = cva(
       },
       isDisabled: {
         false: null,
-        true: "cursor-not-allowed border hover:brightness-100 active:brightness-100",
+        true: "cursor-not-allowed border",
       },
       loading: {
         false: null,
@@ -105,7 +103,7 @@ const loadingIconStyles = cva("animate-spin", {
 });
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, size = "md", disabled, loading, href, children, ...props }, forwardedRef) => {
+  ({ className, disabled, loading, children, ...props }, forwardedRef) => {
     const iconOnly =
       Children.toArray(children).length === 1 &&
       Children.toArray(children).some((child) => isValidElement(child) && child.type === Icon);
@@ -117,7 +115,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={forwardedRef}
-        className={cn(buttonRootStyles({ size, isDisabled, loading, iconOnly }), className)}
+        className={cn(buttonRootStyles({ isDisabled, loading, iconOnly }), className)}
         disabled={isDisabled}
         {...props}
       >
@@ -125,7 +123,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         {loading && (
           <div className="LoadingIcon absolute inset-0 grid place-items-center">
-            <Icon icon="Loader" className={cn(loadingIconStyles({ size }))} />
+            <Icon icon="Loader" className={cn(loadingIconStyles())} />
           </div>
         )}
       </button>
