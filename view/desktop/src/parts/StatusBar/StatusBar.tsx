@@ -234,7 +234,7 @@ const StatusBarButton = ({
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
       <div className="flex h-[22px] items-center gap-1 rounded px-1.5 transition hover:background-(--moss-statusBar-icon-background-hover)">
-        {icon && <Icon className={cn("my-auto flex-shrink-0", iconClassName)} icon={icon} />}
+        {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
       {closestEdge ? <DropIndicator edge={closestEdge} gap={4} /> : null}
