@@ -60,3 +60,6 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 /logs/
 /crates/moss-collection/Collections
 /crates/moss-collection/tests/data
+
+# Icons
+view/desktop/src/assets/icons/
