@@ -13,6 +13,7 @@
     "@typespec/prettier-plugin-typespec"
   ],
   "tailwindConfig": "packages/config-tailwind/tailwind.config.ts",
+  "tailwindFunctions": ["cn", "clsx", "cva"],
   "importOrder": ["^[a-z]", "", "^@/(.*)$", "^@(.*)/(.*)$", "", "^[./]", "", "^.*\\.(css)$"],
   "importOrderParserPlugins": ["typescript", "jsx", "tsx"],
   "importOrderSeparation": true,
