@@ -1,6 +1,8 @@
 import { useState } from "react";
 
-import { Button, Checkbox, Icon, Modal, Radio } from "@/components";
+import { Checkbox, Icon, Modal, Radio } from "@/components";
+import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import ButtonPrimary from "@/components/ButtonPrimary";
 import Select from "@/components/Select";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
@@ -141,12 +143,12 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
             </label>
           </div>
           <div className="flex gap-3 px-0.25 py-1.25">
-            <Button variant="outlined" intent="neutral" size="md" onClick={handleCancel}>
+            <ButtonNeutralOutlined size="md" onClick={handleCancel}>
               Close
-            </Button>
-            <Button disabled={!selectedWorkspace} type="submit">
+            </ButtonNeutralOutlined>
+            <ButtonPrimary disabled={!selectedWorkspace} type="submit">
               Open
-            </Button>
+            </ButtonPrimary>
           </div>
         </div>
       }

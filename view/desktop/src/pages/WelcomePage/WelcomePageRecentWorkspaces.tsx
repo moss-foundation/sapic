@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Button } from "@/components";
+import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
 import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
@@ -25,9 +25,7 @@ export const WelcomePageRecentWorkspaces = () => {
 
       {!showAll && workspaces?.length && workspaces.length > 3 && (
         <div>
-          <Button variant="outlined" intent="neutral" onClick={() => setShowAll(true)}>
-            More
-          </Button>
+          <ButtonNeutralOutlined onClick={() => setShowAll(true)}>More</ButtonNeutralOutlined>
         </div>
       )}
     </div>

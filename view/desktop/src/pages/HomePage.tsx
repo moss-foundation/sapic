@@ -13,7 +13,7 @@ import {
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 
 import * as iconsNames from "../assets/icons";
-import { Button, Icon, Icons, Scrollbar } from "../components";
+import { Icon, Icons, Scrollbar } from "../components";
 
 export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -198,7 +198,7 @@ const ComponentGallery = () => {
       </section>
 
       {/* Button Components */}
-      <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
+      {/* <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
         <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Button Components</h2>
         <p className="mb-6 text-gray-600 dark:text-gray-300">
           Various button states and variants available in the application.
@@ -292,7 +292,7 @@ const ComponentGallery = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Command Section */}
       <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">

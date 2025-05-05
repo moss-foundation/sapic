@@ -1,6 +1,8 @@
 import { useState } from "react";
 
-import { Button, Checkbox, Icon, Input, Modal, Radio } from "@/components";
+import { Checkbox, Icon, Input, Modal, Radio } from "@/components";
+import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import ButtonPrimary from "@/components/ButtonPrimary";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
 
 import { ModalWrapperProps } from "../types";
@@ -128,17 +130,12 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             </label>
           </div>
           <div className="flex gap-3 px-0.25 py-1.25">
-            <Button variant="outlined" intent="neutral" size="md" onClick={handleCancel}>
+            <ButtonNeutralOutlined size="md" onClick={handleCancel}>
               Close
-            </Button>
-            {/* //TODO This should be a button component */}
-            <button
-              disabled={name.length === 0}
-              type="submit"
-              className="background-(--moss-primary) hover:background-(--moss-blue-3) disabled:background-(--moss-gray-12) disabled:hover:background-(--moss-gray-12) flex cursor-pointer items-center justify-center rounded px-3.75 text-white disabled:cursor-not-allowed disabled:text-(--moss-gray-8)"
-            >
+            </ButtonNeutralOutlined>
+            <ButtonPrimary disabled={name.length === 0} type="submit">
               Create
-            </button>
+            </ButtonPrimary>
           </div>
         </div>
       }

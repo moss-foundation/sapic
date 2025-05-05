@@ -5,7 +5,6 @@ export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
 export * from "./ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
-export * from "./Button";
 export * as Checkbox from "./Checkbox";
 export * from "./Divider";
 export * from "./DropIndicator";
