@@ -1,5 +1,6 @@
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/lib/ui/Icon";
+import { ListWorkspacesOutput } from "@repo/moss-workspace";
 
 /**
  * Helper function to generate standard menu items with unique IDs
@@ -87,52 +88,29 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
 
 export const collectionActionMenuItems: MenuItemProps[] = createStandardMenuItems();
 
-// Extract common "All Workspaces" menu section
-const allWorkspacesMenuSection: MenuItemProps = {
-  id: "all-workspaces",
-  type: "accordion",
-  label: "All Workspaces",
-  icon: "ChevronRight",
-  items: [
-    {
-      id: "microservices-api-test-suite",
+/**
+ * Creates the "All Workspaces" menu section with real workspace data
+ * @param workspaces List of workspaces from the backend
+ * @returns MenuItemProps for the all workspaces accordion section
+ */
+export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput = []): MenuItemProps => {
+  return {
+    id: "all-workspaces",
+    type: "accordion",
+    label: "All Workspaces",
+    icon: "ChevronRight",
+    items: workspaces.map((workspace) => ({
+      id: `workspace:${workspace.name}`,
       type: "submenu",
-      label: "Microservices API Test Suite long name",
+      label: workspace.name,
       icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems("microservices-api"),
-    },
-    {
-      id: "user-management-api",
-      type: "submenu",
-      label: "User Management API",
-      icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems("user-management"),
-    },
-    {
-      id: "auth-security-tests",
-      type: "submenu",
-      label: "Auth & Security Tests",
-      icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems("auth-security"),
-    },
-    {
-      id: "development-api-sandbox",
-      type: "submenu",
-      label: "Development API Sandbox",
-      icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems("dev-sandbox"),
-    },
-    {
-      id: "microservices-endpoints",
-      type: "submenu",
-      label: "Microservices Endpoints",
-      icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems("micro-endpoints"),
-    },
-  ],
+      items: createStandardMenuItems(workspace.name),
+    })),
+  };
 };
 
-export const workspaceMenuItems: MenuItemProps[] = [
+// Base workspace menu items without dynamic workspaces
+export const baseWorkspaceMenuItems: MenuItemProps[] = [
   {
     id: "new-workspace",
     type: "action",
@@ -149,11 +127,10 @@ export const workspaceMenuItems: MenuItemProps[] = [
     id: "separator-1",
     type: "separator",
   },
-  allWorkspacesMenuSection,
 ];
 
-// Only shown when a workspace is selected
-export const selectedWorkspaceMenuItems: MenuItemProps[] = [
+// Only shown when a workspace is selected - base items without dynamic workspaces
+export const baseSelectedWorkspaceMenuItems: MenuItemProps[] = [
   {
     id: "new-workspace",
     type: "action",
@@ -195,7 +172,9 @@ export const selectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "separator-3",
     type: "separator",
   },
-  allWorkspacesMenuSection,
+];
+
+export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [
   {
     id: "separator-4",
     type: "separator",
@@ -204,19 +183,19 @@ export const selectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "home",
     type: "action",
     label: "Kitchensink",
-    icon: "TestHeadBarHome" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "logs",
     type: "action",
     label: "Logs",
-    icon: "TestHeadBarLogs" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "debug",
     type: "action",
     label: "Debug Panels",
-    icon: "TestHeadBarDebug" as Icons,
+    alignWithIcons: true,
   },
   {
     id: "separator-5",

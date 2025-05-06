@@ -43,7 +43,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
           id: "notifications",
           type: "action" as const,
           label: "Notifications",
-          icon: "HeadBarNotifications" as Icons,
+          icon: "Bell" as Icons,
         },
         ...(sideBarPosition === "left"
           ? [
@@ -51,13 +51,13 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
                 id: "toggleLeftSidebar",
                 type: "action" as const,
                 label: sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar",
-                icon: (sideBar.visible ? "HeadBarLeftSideBarActive" : "HeadBarLeftSideBar") as Icons,
+                icon: (sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft") as Icons,
               },
               {
                 id: "toggleBottomPanel",
                 type: "action" as const,
                 label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+                icon: (bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom") as Icons,
               },
             ]
           : [
@@ -65,20 +65,20 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
                 id: "toggleBottomPanel",
                 type: "action" as const,
                 label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "HeadBarPanelActive" : "HeadBarPanel") as Icons,
+                icon: (bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom") as Icons,
               },
               {
                 id: "toggleRightSidebar",
                 type: "action" as const,
                 label: sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar",
-                icon: (sideBar.visible ? "HeadBarRightSideBarActive" : "HeadBarRightSideBar") as Icons,
+                icon: (sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight") as Icons,
               },
             ]),
         {
           id: "settings",
           type: "action" as const,
           label: "Settings",
-          icon: "HeadBarSettings" as Icons,
+          icon: "Settings" as Icons,
         },
       ]}
       trigger={

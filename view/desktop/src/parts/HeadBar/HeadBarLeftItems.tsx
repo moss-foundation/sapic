@@ -2,8 +2,9 @@ import { ActionButton, IconLabelButton } from "@/components";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
 import { cn } from "@/utils";
 
-import { selectedWorkspaceMenuItems, workspaceMenuItems } from "./HeadBarData";
 import { windowsMenuItems } from "./mockHeadBarData";
+import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { ModeToggle } from "./ModeToggle";
 
 export interface HeadBarLeftItemsProps {
@@ -16,7 +17,7 @@ export interface HeadBarLeftItemsProps {
   setWorkspaceMenuOpen: (open: boolean) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
-  selectedWorkspace: string | null;
+  selectedWorkspace?: string | null;
 }
 
 export const HeadBarLeftItems = ({
@@ -29,9 +30,10 @@ export const HeadBarLeftItems = ({
   setWorkspaceMenuOpen,
   handleWorkspaceMenuAction,
   os,
-  selectedWorkspace,
 }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
+  const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
+  const { selectedWorkspace } = useWorkspaceContext();
 
   return (
     <div

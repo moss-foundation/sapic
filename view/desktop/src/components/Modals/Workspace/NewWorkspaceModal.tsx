@@ -5,11 +5,13 @@ import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 
 import { ModalWrapperProps } from "../types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { mutate: createWorkspace } = useCreateWorkspace();
+  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
@@ -17,7 +19,16 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
 
   const handleSubmit = async () => {
     if (name) {
-      createWorkspace({ name });
+      createWorkspace(
+        { name },
+        {
+          onSuccess: () => {
+            if (openAutomatically) {
+              openAndSelectWorkspace(name);
+            }
+          },
+        }
+      );
       closeModal();
       reset();
     }
@@ -50,7 +61,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               variant="outlined"
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
-              pattern=""
+              pattern={'^[^\\/:\\*\\?"><>|]+$'}
               required
             />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>

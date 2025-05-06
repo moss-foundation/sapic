@@ -84,7 +84,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   return (
     <footer
       className={cn(
-        "flex w-screen justify-between border-t border-t-(--moss-border-color) pr-4 pl-3.5 background-(--moss-secondary-background)",
+        "background-(--moss-secondary-background) flex w-screen justify-between border-t border-t-(--moss-border-color) pr-4 pl-3.5",
         className
       )}
     >
@@ -137,7 +137,7 @@ const StatusBarIndicators = () => {
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center">
         <div className="flex items-center rounded px-1 transition">
-          <div className="flex h-[22px] items-center space-x-2 rounded px-1 hover:background-(--moss-statusBar-icon-background-hover)">
+          <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center space-x-2 rounded px-1">
             <div className="flex items-center gap-1">
               <Icon className="size-[14px] text-[#E55765]" icon="Failed" />
               <span className="text-sm text-(--moss-statusBar-icon-primary-text)">2</span>
@@ -233,7 +233,7 @@ const StatusBarButton = ({
       {...props}
       className={cn("group relative flex h-full items-center justify-center text-white", className)}
     >
-      <div className="flex h-[22px] items-center gap-1 rounded px-1.5 transition hover:background-(--moss-statusBar-icon-background-hover)">
+      <div className="hover:background-(--moss-statusBar-icon-background-hover) flex h-[22px] items-center gap-1 rounded px-1.5 transition">
         {icon && <Icon className={cn("my-auto size-[14px] flex-shrink-0", iconClassName)} icon={icon} />}
         {label && <span className="inline-block flex-shrink-0 align-middle leading-[14px]">{label}</span>}
       </div>
