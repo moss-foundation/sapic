@@ -5,3 +5,4 @@ export * from "./Modal";
 export * as RadioGroup from "./RadioGroup";
 export * from "./Resizable";
 export * from "./Scrollbar";
+export * from "./Select";

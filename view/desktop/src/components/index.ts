@@ -20,7 +20,7 @@ export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";
 export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
 export * from "./PageLoader";
 export * as RadioGroup from "./RadioGroup";
-export * from "./Select";
+export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
 export * from "./ViewContainer";

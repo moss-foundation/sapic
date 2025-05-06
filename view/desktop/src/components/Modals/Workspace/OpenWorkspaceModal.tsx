@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { Icon, Modal, RadioGroup } from "@/components";
+import { Modal, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import Select from "@/components/Select";
-import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
+import SelectOutlined from "@/components/SelectOutlined";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
 
 import { ModalWrapperProps } from "../types";
 
@@ -51,22 +51,16 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
           <div className="flex items-center gap-x-2 py-1.5">
             <div>Name:</div>
 
-            <Select.Root onValueChange={setSelectedWorkspace} value={selectedWorkspace}>
-              <Select.Trigger className="flex w-56 justify-between">
-                <Select.Value placeholder="Select workspace" />
-                <Icon icon="ChevronDown" />
-              </Select.Trigger>
-
-              <Select.Content className="z-50" position="popper">
-                <Select.Viewport>
-                  {workspaces?.map((workspace) => (
-                    <Select.Item value={workspace.name} key={workspace.name}>
-                      <Select.ItemText>{workspace.name}</Select.ItemText>
-                    </Select.Item>
-                  ))}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Root>
+            <SelectOutlined.Root onValueChange={setSelectedWorkspace} value={selectedWorkspace}>
+              <SelectOutlined.Trigger placeholder="Select workspace" />
+              <SelectOutlined.Content>
+                {workspaces?.map((workspace) => (
+                  <SelectOutlined.Item value={workspace.name} key={workspace.name}>
+                    {workspace.name}
+                  </SelectOutlined.Item>
+                ))}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
 
           <div>
