@@ -1,4 +1,5 @@
 import { MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { type Icons } from "@/components/Icon";
 
 // 1. Editor context menu items
 export const editorContextItems: MenuItemProps[] = [
@@ -7,10 +8,10 @@ export const editorContextItems: MenuItemProps[] = [
     type: "action",
     label: "Show Context Actions",
     shortcut: "⌘⏎",
-    icon: "TestShowContextActions",
+    icon: "Placeholder" as Icons,
   },
   { id: "separator-1", type: "separator" },
-  { id: "build", type: "action", label: "Build", shortcut: "⌘V", icon: "TestBuild" },
+  { id: "build", type: "action", label: "Build", shortcut: "⌘V", icon: "Placeholder" },
   {
     id: "copy-paste",
     type: "submenu",
@@ -74,16 +75,16 @@ export const editorContextItems: MenuItemProps[] = [
     alignWithIcons: true,
   },
   { id: "separator-5", type: "separator" },
-  { id: "run", type: "action", label: "Run 'PetClinicApplication'", icon: "TestRun", iconColor: "green" },
-  { id: "debug", type: "action", label: "Debug 'PetClinicApplication'", icon: "TestDebug" },
+  { id: "run", type: "action", label: "Run 'PetClinicApplication'", icon: "Placeholder", iconColor: "green" },
+  { id: "debug", type: "action", label: "Debug 'PetClinicApplication'", icon: "Placeholder" },
   {
     id: "more-run-debug",
     type: "submenu",
     label: "More Run/Debug",
     alignWithIcons: true,
     items: [
-      { id: "run-with-coverage", type: "action", label: "Run with Coverage", icon: "TestRunWith" },
-      { id: "profile", type: "action", label: "Profile", icon: "TestProfileWith" },
+      { id: "run-with-coverage", type: "action", label: "Run with Coverage", icon: "Placeholder" },
+      { id: "profile", type: "action", label: "Profile", icon: "Placeholder" },
     ],
   },
   { id: "separator-6", type: "separator" },
@@ -122,7 +123,7 @@ export const editorContextItems: MenuItemProps[] = [
     ],
   },
   { id: "separator-8", type: "separator" },
-  { id: "compare-clipboard", type: "action", label: "Compare with Clipboard", icon: "TestCompare" },
+  { id: "compare-clipboard", type: "action", label: "Compare with Clipboard", icon: "Placeholder" },
   { id: "separator-8", type: "separator" },
   {
     id: "diagrams",
@@ -178,10 +179,10 @@ export const generateItems: MenuItemProps[] = [
 // 3. Run configuration selector menu
 export const runConfigItems: MenuItemProps[] = [
   { id: "header-3", type: "section", sectionTitle: "Recent" },
-  { id: "accuratemath-app", type: "action", label: "AccurateMath app", icon: "TestProject" },
-  { id: "server", type: "action", label: "Server", icon: "TestProject" },
-  { id: "app-tests", type: "action", label: "App tests", icon: "TestTests" },
-  { id: "server-tests", type: "action", label: "Server tests", icon: "TestTests" },
+  { id: "accuratemath-app", type: "action", label: "AccurateMath app", icon: "Placeholder" },
+  { id: "server", type: "action", label: "Server", icon: "Placeholder" },
+  { id: "app-tests", type: "action", label: "App tests", icon: "Placeholder" },
+  { id: "server-tests", type: "action", label: "Server tests", icon: "Placeholder" },
   { id: "separator-run-1", type: "separator" },
   {
     id: "all-configs",
@@ -189,11 +190,11 @@ export const runConfigItems: MenuItemProps[] = [
     label: "All Configurations",
     icon: "ChevronRight",
     items: [
-      { id: "config-web-app", type: "action", label: "Web Application", icon: "TestProject" },
-      { id: "config-mobile-app", type: "action", label: "Mobile Application", icon: "TestProject" },
-      { id: "config-api-server", type: "action", label: "API Server", icon: "TestProject" },
-      { id: "config-database", type: "action", label: "Database Integration", icon: "TestProject" },
-      { id: "config-junit", type: "action", label: "JUnit Tests", icon: "TestTests" },
+      { id: "config-web-app", type: "action", label: "Web Application", icon: "Placeholder" },
+      { id: "config-mobile-app", type: "action", label: "Mobile Application", icon: "Placeholder" },
+      { id: "config-api-server", type: "action", label: "API Server", icon: "Placeholder" },
+      { id: "config-database", type: "action", label: "Database Integration", icon: "Placeholder" },
+      { id: "config-junit", type: "action", label: "JUnit Tests", icon: "Placeholder" },
     ],
   },
   { id: "separator-run-2", type: "separator" },
@@ -202,8 +203,8 @@ export const runConfigItems: MenuItemProps[] = [
 
 // 4. Run options menu
 export const runOptionsItems: MenuItemProps[] = [
-  { id: "profile-intellij", type: "action", label: "Profile with 'IntelliJ Profiler'", icon: "TestProfileWith" },
-  { id: "run-with-coverage", type: "action", label: "Run with Coverage", icon: "TestRunWith" },
+  { id: "profile-intellij", type: "action", label: "Profile with 'IntelliJ Profiler'", icon: "Placeholder" },
+  { id: "run-with-coverage", type: "action", label: "Run with Coverage", icon: "Placeholder" },
   { id: "separator-options-1", type: "separator" },
   { id: "section-config", type: "section", sectionTitle: "Configuration" },
   { id: "edit-config", type: "action", label: "Edit...", alignWithIcons: true },
@@ -220,7 +221,7 @@ export const runSelectorItems: MenuItemProps[] = [
     id: "idea",
     type: "submenu",
     label: "IDEA",
-    icon: "TestProject",
+    icon: "Placeholder",
     items: [
       { id: "idea-run", type: "action", label: "Run" },
       { id: "idea-debug", type: "action", label: "Debug" },
@@ -231,7 +232,7 @@ export const runSelectorItems: MenuItemProps[] = [
     id: "idea-android",
     type: "submenu",
     label: "IDEA with Android",
-    icon: "TestProject",
+    icon: "Placeholder",
     items: [
       { id: "android-run", type: "action", label: "Run on Device" },
       { id: "android-emulator", type: "action", label: "Run on Emulator" },
@@ -242,7 +243,7 @@ export const runSelectorItems: MenuItemProps[] = [
     id: "idea-python",
     type: "submenu",
     label: "IDEA with Python plugin",
-    icon: "TestProject",
+    icon: "Placeholder",
     items: [
       { id: "python-run", type: "action", label: "Run" },
       { id: "python-debug", type: "action", label: "Debug" },
@@ -253,7 +254,7 @@ export const runSelectorItems: MenuItemProps[] = [
     id: "pycharm",
     type: "submenu",
     label: "PyCharm",
-    icon: "TestProject",
+    icon: "Placeholder",
     items: [
       { id: "pycharm-run", type: "action", label: "Run" },
       { id: "pycharm-debug", type: "action", label: "Debug" },
@@ -261,8 +262,8 @@ export const runSelectorItems: MenuItemProps[] = [
     ],
   },
   { id: "separator-run-sel-2", type: "separator" },
-  { id: "dart-tests", type: "action", label: "Dart tests", icon: "TestScript" },
-  { id: "generate-icon-classes", type: "action", label: "Generate icon classes", icon: "TestScript" },
+  { id: "dart-tests", type: "action", label: "Dart tests", icon: "Placeholder" },
+  { id: "generate-icon-classes", type: "action", label: "Generate icon classes", icon: "Placeholder" },
   { id: "footer-1", type: "footer", footerText: "Hold ⇧ to debug" },
 ];
 

@@ -7,13 +7,13 @@ export const userMenuItems: MenuItemProps[] = [
     id: "user-profile",
     type: "action",
     label: "Profile",
-    icon: "HeadBarUserAvatar" as Icons,
+    icon: "UserAvatar" as Icons,
   },
   {
     id: "user-settings",
     type: "action",
     label: "User Settings",
-    icon: "HeadBarSettings" as Icons,
+    icon: "Settings" as Icons,
   },
   {
     id: "separator",
@@ -23,7 +23,7 @@ export const userMenuItems: MenuItemProps[] = [
     id: "status",
     type: "submenu",
     label: "Status",
-    icon: "TestHeadBarLogs" as Icons,
+    icon: "Placeholder" as Icons,
     items: [
       {
         id: "status-online",
@@ -165,7 +165,7 @@ export const noBranchMenuItems: MenuItemProps[] = [
     id: "select-branch",
     type: "action",
     label: "Select Branch",
-    icon: "HeadBarGit" as Icons,
+    icon: "VCS" as Icons,
   },
   {
     id: "create-branch",
@@ -177,7 +177,7 @@ export const noBranchMenuItems: MenuItemProps[] = [
     id: "init-repo",
     type: "action",
     label: "Initialize Repository",
-    icon: "TestHeadBarLogs" as Icons,
+    icon: "Placeholder" as Icons,
   },
 ];
 

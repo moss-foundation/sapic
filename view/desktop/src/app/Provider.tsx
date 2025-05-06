@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from "react";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
+import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
 import { applyColorTheme } from "@/utils/applyTheme";
@@ -16,7 +17,9 @@ const Provider = ({ children }: { children: ReactNode }) => {
     <ErrorBoundary>
       <LanguageProvider>
         <ThemeProvider>
-          <ActivityEventsProvider>{children}</ActivityEventsProvider>
+          <ActivityEventsProvider>
+            <WorkspaceProvider>{children}</WorkspaceProvider>
+          </ActivityEventsProvider>
         </ThemeProvider>
       </LanguageProvider>
     </ErrorBoundary>
