@@ -69,7 +69,7 @@ impl Snapshot {
         &self.abs_path
     }
 
-    pub fn insert(&mut self, entry: EntryRef) {
+    pub fn create_entry(&mut self, entry: EntryRef) {
         self.entries_by_path.insert(entry.path.clone(), entry.id);
         self.entries_by_id.insert(entry.id, entry);
     }
@@ -87,5 +87,41 @@ impl Snapshot {
             .skip_while(move |(p, _)| !p.starts_with(prefix))
             .take_while(move |(p, _)| p.starts_with(prefix))
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
+    }
+
+    pub fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<EntryRef> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let entry_id = self.entries_by_path.get(path)?;
+        self.entries_by_id.get(entry_id).cloned()
+    }
+
+    pub fn remove_entry(&mut self, path: impl AsRef<Path>) {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let is_dir = if let Some(entry) = self.entry_by_path(path) {
+            matches!(entry.kind, EntryKind::Dir)
+        } else {
+            return;
+        };
+
+        if is_dir {
+            let prefix = path.to_string_lossy();
+            let entries_to_remove = self
+                .iter_entries_by_prefix(&prefix)
+                .map(|(&id, entry)| (Arc::clone(&entry.path), id))
+                .collect::<Vec<(Arc<Path>, EntryId)>>();
+
+            for (entry_path, entry_id) in entries_to_remove {
+                self.entries_by_path.remove(&entry_path);
+                self.entries_by_id.remove(&entry_id);
+            }
+        } else {
+            if let Some(entry_id) = self.entries_by_path.remove(path) {
+                self.entries_by_id.remove(&entry_id);
+            }
+        }
     }
 }
