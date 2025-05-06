@@ -30,7 +30,6 @@ const inputStyles = cva(`
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, disabled = false, iconLeft, iconRight, iconClassName, ...props }, forwardedRef) => {
-    console.log(cn(inputStyles({ disabled }), className));
     return (
       <div className={cn(inputStyles({ disabled }), className)}>
         {iconLeft && <Icon icon={iconLeft} className={iconClassName} />}
