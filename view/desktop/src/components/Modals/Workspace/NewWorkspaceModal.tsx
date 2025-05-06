@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-import { Input, Modal, RadioGroup } from "@/components";
+import { InputOutlined, Modal, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
-import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
 
 import { ModalWrapperProps } from "../types";
 
@@ -56,9 +56,8 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
             <div className="self-start">Name:</div>
-            <Input
+            <InputOutlined
               value={name}
-              variant="outlined"
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
               pattern={'^[^\\/:\\*\\?"><>|]+$'}

@@ -2,7 +2,7 @@ import "@repo/moss-tabs/assets/styles.css";
 
 import { useEffect, useRef, useState } from "react";
 
-import { Icon, Input, Scrollbar, Tree } from "@/components";
+import { Icon, InputPlain, Scrollbar, Tree } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
@@ -106,8 +106,7 @@ export const CollectionTreeView = () => {
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] py-1 pr-2.5 pl-2">
-            <Input
-              variant="plain"
+            <InputPlain
               onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
               placeholder="Search"
               size="sm"
