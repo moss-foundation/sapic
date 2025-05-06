@@ -3,7 +3,7 @@ import React from "react";
 
 import { cn } from "@/utils";
 
-import Icon, { Icons } from "./Icon";
+import Icon, { Icons } from "../lib/ui/Icon";
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   variant?: "plain" | "outlined";
@@ -12,33 +12,11 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   iconRight?: Icons;
 }
 
-const inputStyles = cva("w-full flex gap-2 items-center peer placeholder-(--moss-controls-placeholder) font-medium", {
+const inputStyles = cva("peer flex w-full items-center gap-2 font-medium placeholder-(--moss-controls-placeholder)", {
   variants: {
     variant: {
-      plain: `
-          text-(--moss-controls-plain-text)
-          py-0 rounded-sm
-          background-(--moss-input-bg-plain)
-          transition-[outline]
-
-          has-data-invalid:text-(--moss-error)
-          has-[input:focus-within]:outline 
-          has-[input:focus-within]:-outline-offset-1 
-          has-[input:focus-within]:outline-(--moss-primary)
-        `,
-      outlined: `
-          text-(--moss-controls-outlined-text)
-          rounded-sm
-          background-(--moss-controls-outlined-bg)
-          transition-[outline]
-          has-[input:focus-within]:outline-2
-          has-[input:focus-within]:outline-(--moss-primary)
-          has-[input:focus-within]:-outline-offset-1
-          border border-(--moss-controls-outlined-border)
-
-          has-data-invalid:border-(--moss-error)
-          has-[input:focus-within]:has-data-invalid:outline-(--moss-error)
-        `,
+      plain: `background-(--moss-input-bg-plain) rounded-sm py-0 text-(--moss-controls-plain-text) transition-[outline] has-data-invalid:text-(--moss-error) has-[input:focus-within]:outline has-[input:focus-within]:-outline-offset-1 has-[input:focus-within]:outline-(--moss-primary)`,
+      outlined: `background-(--moss-controls-outlined-bg) rounded-sm border border-(--moss-controls-outlined-border) text-(--moss-controls-outlined-text) transition-[outline] has-data-invalid:border-(--moss-error) has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-1 has-[input:focus-within]:outline-(--moss-primary) has-[input:focus-within]:has-data-invalid:outline-(--moss-error)`,
     },
     size: {
       xs: "h-6 px-1.5",

@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-import { Checkbox, Icon, Input, Modal, Radio } from "@/components";
+import { Input, Modal, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
+import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
 
 import { ModalWrapperProps } from "../types";
@@ -64,75 +65,40 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
-              <Radio.Root>
-                <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2">
-                  <Radio.Item
-                    value="RequestFirstMode"
-                    id="RequestFirstModeRadioNewWorkspace"
-                    checked={mode === "RequestFirstMode"}
-                    onClick={() => setMode("RequestFirstMode")}
-                  >
-                    <Radio.Indicator>
-                      <Icon icon="RadioIndicator" className="text-white" />
-                    </Radio.Indicator>
-                  </Radio.Item>
+              <RadioGroup.Root>
+                <RadioGroup.ItemWithLabel
+                  label="Request-first mode"
+                  description="Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for
+                    planning and generating documentation upfront."
+                  value="RequestFirstMode"
+                  checked={mode === "RequestFirstMode"}
+                  onClick={() => setMode("RequestFirstMode")}
+                />
 
-                  <label htmlFor="RequestFirstModeRadioNewWorkspace" className="cursor-pointer py-2">
-                    Request-first mode
-                  </label>
-                  <p className="col-start-2 text-left text-xs leading-3.75 text-(--moss-secondary-text)">
-                    Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for
-                    planning and generating documentation upfront.
-                  </p>
-                </div>
-                <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2">
-                  <Radio.Item
-                    value="DesignFirstMode"
-                    id="DesignFirstModeRadioNewWorkspace"
-                    checked={mode === "DesignFirstMode"}
-                    onClick={() => setMode("DesignFirstMode")}
-                  >
-                    <Radio.Indicator>
-                      <Icon icon="RadioIndicator" className="text-white" />
-                    </Radio.Indicator>
-                  </Radio.Item>
-
-                  <label htmlFor="DesignFirstModeRadioNewWorkspace" className="cursor-pointer py-2">
-                    Design-first mode
-                  </label>
-                  <p className="col-start-2 text-left text-xs leading-3.75 text-(--moss-secondary-text)">
-                    Begin by writing and testing requests, then define the API structure based on actual usage. Great
-                    for quick prototyping and iterating.
-                  </p>
-                </div>
-              </Radio.Root>
+                <RadioGroup.ItemWithLabel
+                  label="Design-first mode"
+                  description="Begin by writing and testing requests, then define the API structure based on actual usage. Great
+                    for quick prototyping and iterating."
+                  value="DesignFirstMode"
+                  checked={mode === "DesignFirstMode"}
+                  onClick={() => setMode("DesignFirstMode")}
+                />
+              </RadioGroup.Root>
             </div>
           </div>
         </div>
       }
       footer={
         <div className="flex items-center justify-between py-0.75">
-          <div className="flex gap-2">
-            <Checkbox.Root
-              id="c1"
-              className="cursor-pointer"
-              checked={openAutomatically}
-              onCheckedChange={(check) => {
-                if (check !== "indeterminate") setOpenAutomatically(check);
-              }}
-            >
-              <Checkbox.Indicator>
-                <Icon icon="CheckboxIndicator" />
-              </Checkbox.Indicator>
-            </Checkbox.Root>
-            <label htmlFor="c1" className="cursor-pointer">
-              Open automatically after creation
-            </label>
-          </div>
+          <CheckboxWithLabel
+            label="Open automatically after creation"
+            checked={openAutomatically}
+            onCheckedChange={(check) => {
+              if (check !== "indeterminate") setOpenAutomatically(check);
+            }}
+          />
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined size="md" onClick={handleCancel}>
-              Close
-            </ButtonNeutralOutlined>
+            <ButtonNeutralOutlined onClick={handleCancel}>Close</ButtonNeutralOutlined>
             <ButtonPrimary disabled={name.length === 0} type="submit">
               Create
             </ButtonPrimary>

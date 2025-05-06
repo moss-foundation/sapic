@@ -11,7 +11,7 @@ import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPart
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 
-import { Resizable, ResizablePanel } from "../components/Resizable";
+import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 export const AppLayout = () => {

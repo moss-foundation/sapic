@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 import React from "react";
 
-import { Icon, Icons } from "@/components/Icon";
+import { Icon, Icons } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
@@ -51,7 +51,7 @@ export interface ActionMenuProps {
 
 // Shared menu content styles
 const menuContentStyles = cva(
-  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] w-36 max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pb-1.5 pt-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+  "border-(solid 1 --moss-border-primary) z-50 max-h-[35rem] w-36 max-w-72 rounded-lg bg-(--moss-primary-background) p-1 pt-1.5 pb-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
   {
     variants: {
       type: {

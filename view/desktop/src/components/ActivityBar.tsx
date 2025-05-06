@@ -1,8 +1,7 @@
 import { ComponentPropsWithoutRef, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { DropIndicator } from "@/components";
-import { Icon } from "@/components/Icon";
+import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn, swapListById } from "@/utils";
@@ -18,6 +17,8 @@ import {
   monitorForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+
+import DropIndicator from "./DropIndicator";
 
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();
@@ -47,7 +48,7 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("flex items-center gap-3 background-(--moss-secondary-background)", {
+      className={cn("background-(--moss-secondary-background) flex items-center gap-3", {
         "w-full border-b border-b-(--moss-border-color) px-1.5": position === "top",
         "w-full border-t border-t-(--moss-border-color) px-1.5": position === "bottom",
         "h-full flex-col py-1.5": position === "default",
@@ -170,8 +171,8 @@ const ActivityBarButton = ({
     <button
       ref={ref}
       className={cn("relative cursor-pointer rounded-md p-1", {
-        "text-(--moss-info-icon) background-(--moss-icon-primary-background-active)": isActive && visible,
-        "text-(--moss-icon-primary-text) hover:background-(--moss-icon-primary-background-hover)":
+        "background-(--moss-icon-primary-background-active) text-(--moss-info-icon)": isActive && visible,
+        "hover:background-(--moss-icon-primary-background-hover) text-(--moss-icon-primary-text)":
           !isActive || !visible,
       })}
       onClick={() => handleClick(props.id)}
@@ -186,7 +187,7 @@ const ActivityBarButton = ({
             icon={icon}
             iconActive={iconActive}
             isActive={false}
-            className="rounded-md p-1 background-(--moss-icon-primary-background-hover)"
+            className="background-(--moss-icon-primary-background-hover) rounded-md p-1"
           />,
           preview
         )}
