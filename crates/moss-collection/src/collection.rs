@@ -1,15 +1,16 @@
 pub mod api;
+mod worktree;
 
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
-use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
-use moss_storage::collection_storage::CollectionStorageImpl;
 use moss_storage::CollectionStorage;
+use moss_storage::collection_storage::CollectionStorageImpl;
+use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::{mpsc, OnceCell};
+use tokio::sync::{OnceCell, mpsc};
 
 use crate::collection_registry::{
     CollectionRegistry, CollectionRequestData, CollectionRequestGroupData, RequestNode,
