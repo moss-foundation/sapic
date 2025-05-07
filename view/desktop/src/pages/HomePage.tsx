@@ -11,9 +11,9 @@ import {
   themeItems,
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
+import { Icon, Icons, Scrollbar } from "@/lib/ui";
 
 import * as iconsNames from "../assets/icons";
-import { Icon, Icons, Scrollbar } from "../components";
 
 export const Home = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -53,9 +53,6 @@ const ComponentGallery = () => {
     fetchData();
   }, []);
 
-  const intent = ["primary", "neutral"];
-  const variant = ["solid", "outlined"];
-
   const handleItemSelect = (item: MenuItemProps) => {
     console.log(`Selected: ${item.id}`);
 
@@ -77,7 +74,6 @@ const ComponentGallery = () => {
           </p>
         </div>
       )}
-
       {/* Action Menu Components */}
       <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
         <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Action Menus</h2>
@@ -196,104 +192,13 @@ const ComponentGallery = () => {
           </div>
         </div>
       </section>
-
-      {/* Button Components */}
-      {/* <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
+      Button Components
+      <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
         <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Button Components</h2>
         <p className="mb-6 text-gray-600 dark:text-gray-300">
           Various button states and variants available in the application.
         </p>
-
-        <div className="mb-10 space-y-8">
-          <div>
-            <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Standard Buttons</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-700">
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Variant</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Primary</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Neutral</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variant.map((v) => (
-                    <tr key={v} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="p-3 font-medium text-gray-700 dark:text-gray-300">{v}</td>
-                      {intent.map((i) => (
-                        <td key={`${v}-${i}`} className="p-3">
-                          <Button variant={v as any} intent={i as any} size="md" loading={false}>
-                            OK
-                          </Button>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Disabled Buttons</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-700">
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Variant</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Primary</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Neutral</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variant.map((v) => (
-                    <tr key={v} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="p-3 font-medium text-gray-700 dark:text-gray-300">{v}</td>
-                      {intent.map((i) => (
-                        <td key={`${v}-${i}`} className="p-3">
-                          <Button disabled variant={v as any} intent={i as any} size="md">
-                            {t("button")}
-                          </Button>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Loading Buttons</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100 dark:bg-gray-700">
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Variant</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Primary</th>
-                    <th className="p-3 text-left font-medium text-gray-600 dark:text-gray-300">Neutral</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {variant.map((v) => (
-                    <tr key={v} className="border-t border-gray-200 dark:border-gray-700">
-                      <td className="p-3 font-medium text-gray-700 dark:text-gray-300">{v}</td>
-                      {intent.map((i) => (
-                        <td key={`${v}-${i}`} className="p-3">
-                          <Button variant={v as any} intent={i as any} size="md" loading>
-                            {t("button")}
-                          </Button>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section> */}
-
+      </section>
       {/* Command Section */}
       <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
         <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Command Example</h2>
@@ -309,7 +214,6 @@ const ComponentGallery = () => {
           Example Command
         </button>
       </section>
-
       {/* Icons */}
       <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
         <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">Icons</h2>

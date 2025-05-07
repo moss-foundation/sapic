@@ -3,7 +3,7 @@ import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 import { cn } from "@/utils";
 import * as MenuPrimitive from "@radix-ui/react-menu";
 
-import Icon from "../../lib/ui/Icon";
+import Icon from "../Icon";
 import { ScopedProps } from "./types";
 
 /* -------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ export const RadioItem = forwardRef<RadioItemElement, RadioItemProps>(
         ref={forwardedRef}
         className={cn("flex items-center gap-1.5 rounded px-2 py-1", {
           "cursor-not-allowed opacity-50": props.disabled,
-          "hover:background-(--moss-primary-background-hover) cursor-pointer hover:outline-hidden": !props.disabled,
+          "cursor-pointer hover:outline-hidden": !props.disabled,
         })}
       >
         {props.checked ? (

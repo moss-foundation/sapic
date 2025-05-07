@@ -2,7 +2,8 @@ import "@repo/moss-tabs/assets/styles.css";
 
 import { useEffect, useRef, useState } from "react";
 
-import { Icon, InputPlain, Scrollbar, Tree } from "@/components";
+import { InputPlain, Tree } from "@/components";
+import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";

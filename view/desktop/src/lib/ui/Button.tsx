@@ -1,8 +1,9 @@
 import { cva } from "class-variance-authority";
 import { ButtonHTMLAttributes, Children, forwardRef, isValidElement } from "react";
 
-import { Icon } from "@/components";
 import { cn } from "@/utils";
+
+import { Icon } from "./Icon";
 
 export type Button = typeof Button;
 
@@ -15,13 +16,6 @@ const buttonRootStyles = cva(
   "relative flex min-w-18 cursor-pointer items-center justify-center rounded-sm transition duration-150 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2",
   {
     variants: {
-      size: {
-        "xs": "h-[22px]",
-        "sm": "h-[26px]",
-        "md": "h-[28px]",
-        "lg": "h-[34px]",
-        "xl": "h-[38px]",
-      },
       isDisabled: {
         false: null,
         true: "cursor-not-allowed border",
@@ -35,58 +29,6 @@ const buttonRootStyles = cva(
         true: "iconOnly",
       },
     },
-    compoundVariants: [
-      {
-        iconOnly: true,
-        size: "xs",
-        className: "px-1.5",
-      },
-      {
-        iconOnly: false,
-        size: "xs",
-        className: "px-3",
-      },
-      {
-        iconOnly: true,
-        size: "sm",
-        className: "px-2",
-      },
-      {
-        iconOnly: false,
-        size: "sm",
-        className: "px-3.5",
-      },
-      {
-        iconOnly: true,
-        size: "md",
-        className: "px-2.5",
-      },
-      {
-        iconOnly: false,
-        size: "md",
-        className: "px-4",
-      },
-      {
-        iconOnly: true,
-        size: "lg",
-        className: "px-3",
-      },
-      {
-        iconOnly: false,
-        size: "lg",
-        className: "px-5",
-      },
-      {
-        iconOnly: true,
-        size: "xl",
-        className: "px-4",
-      },
-      {
-        iconOnly: false,
-        size: "xl",
-        className: "px-6",
-      },
-    ],
   }
 );
 

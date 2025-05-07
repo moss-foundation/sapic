@@ -309,6 +309,7 @@ const DropdownMenuArrow = React.forwardRef<DropdownMenuArrowElement, DropdownMen
  * -----------------------------------------------------------------------------------------------*/
 
 interface DropdownMenuSubProps {
+  className?: string;
   children?: React.ReactNode;
   open?: boolean;
   defaultOpen?: boolean;

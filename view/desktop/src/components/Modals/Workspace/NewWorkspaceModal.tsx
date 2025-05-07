@@ -1,11 +1,12 @@
 import { useState } from "react";
 
-import { InputOutlined, Modal, RadioGroup } from "@/components";
+import { InputOutlined, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
+import { Modal } from "@/lib/ui";
 
 import { ModalWrapperProps } from "../types";
 

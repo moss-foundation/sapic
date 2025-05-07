@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 
+import { Icon } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { DropdownMenu, Icon } from "..";
+import DropdownMenu from "../DropdownMenu";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
 import { NodeProps } from "../Tree/types";
 import { findNodeById } from "../Tree/utils";

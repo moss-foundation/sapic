@@ -1,7 +1,7 @@
-import { Icon } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
+import { Icon } from "@/lib/ui";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";

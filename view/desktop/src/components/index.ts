@@ -1,8 +1,4 @@
 export * from "../layouts/index";
-export * from "../lib/ui/Icon";
-export * from "../lib/ui/Modal";
-export * from "../lib/ui/Resizable";
-export * from "../lib/ui/Scrollbar";
 export * from "../parts/BottomPane";
 export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
@@ -16,11 +12,13 @@ export * from "./DropIndicator";
 export * from "./IconLabelButton";
 export * from "./InputOutlined";
 export * from "./InputPlain";
-export * as ContextMenu from "./Menu/ContextMenu/ContextMenu";
-export * as DropdownMenu from "./Menu/DropdownMenu/DropdownMenu";
+
 export * from "./PageLoader";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
 export * from "./ViewContainer";
+
+export * as ContextMenu from "./ContextMenu";
+export * from "./DropdownMenu";

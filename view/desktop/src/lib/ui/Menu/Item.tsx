@@ -3,7 +3,7 @@ import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 import { cn } from "@/utils";
 import * as MenuPrimitive from "@radix-ui/react-menu";
 
-import Icon, { Icons } from "../../lib/ui/Icon";
+import { Icon, type Icons } from "../Icon";
 import { ScopedProps } from "./types";
 
 export type ItemElement = ElementRef<typeof MenuPrimitive.Item>;
@@ -26,8 +26,7 @@ export const Item = forwardRef<ItemElement, ItemProps>(
           "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
           {
             "cursor-not-allowed grayscale-100": props.disabled,
-            "hover:background-(--moss-primary-background-hover) cursor-pointer hover:text-black hover:outline-hidden dark:text-(--moss-primary-text)":
-              !props.disabled,
+            "cursor-pointer hover:outline-hidden": !props.disabled,
           },
           className
         )}

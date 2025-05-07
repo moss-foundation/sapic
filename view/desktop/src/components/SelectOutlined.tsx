@@ -66,7 +66,9 @@ const Content = forwardRef<
   );
 });
 
-const selectItemStyles = cva(`text-gray-700 data-[highlighted]:bg-[#D4E2FF]`);
+const selectItemStyles = cva(
+  `text-(--moss-select-text-outlined) data-[highlighted]:bg-(--moss-select-bg-outlined-selected)`
+);
 
 const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsWithoutRef<typeof SelectPrimitive.Item>>(
   ({ className, children, ...props }, forwardedRef) => {
