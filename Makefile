@@ -70,6 +70,7 @@ WORKBENCH_MODELS_DIR := crates/moss-workbench
 PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
+NPX := npx
 
 # ======================================================
 # Setup Commands
@@ -141,6 +142,15 @@ gen-models: \
 	gen-workspace-models \
 	gen-common-models \
 	gen-workbench-models
+
+# ======================================================
+# Zod Schema Generation
+# ======================================================
+
+# Zod Schema provides information about function calling arguments for the AI agent
+.PHONY: gen-zod-schemas
+gen-zod-schemas:
+	@cd misc/zod-generator && $(PNPM) run gen
 
 # ======================================================
 # Utility Commands

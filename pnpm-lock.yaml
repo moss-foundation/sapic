@@ -72,6 +72,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.0
         version: 4.1.5
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@22.15.3)(typescript@5.8.3)
       turbo:
         specifier: ^2.4.2
         version: 2.5.2
@@ -90,6 +93,9 @@ importers:
       typescript:
         specifier: ^5.8.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -113,6 +119,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -123,6 +132,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -146,6 +158,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/moss-nls':
         specifier: workspace:*
@@ -182,6 +197,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -192,6 +210,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -208,6 +229,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -4071,9 +4095,6 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@3.24.3:
-    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
-
   zod@3.24.4:
     resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
@@ -4804,8 +4825,8 @@ snapshots:
       express-rate-limit: 7.5.0(express@5.1.0)
       pkce-challenge: 5.0.0
       raw-body: 3.0.0
-      zod: 3.24.3
-      zod-to-json-schema: 3.24.5(zod@3.24.3)
+      zod: 3.24.4
+      zod-to-json-schema: 3.24.5(zod@3.24.4)
     transitivePeerDependencies:
       - supports-color
 
@@ -6127,7 +6148,7 @@ snapshots:
       minimatch: 3.1.2
       natural-compare: 1.4.0
       optionator: 0.9.4
-      zod: 3.24.3
+      zod: 3.24.4
     optionalDependencies:
       jiti: 2.4.2
     transitivePeerDependencies:
@@ -7464,15 +7485,9 @@ snapshots:
 
   yoctocolors-cjs@2.1.2: {}
 
-  zod-to-json-schema@3.24.5(zod@3.24.3):
-    dependencies:
-      zod: 3.24.3
-
   zod-to-json-schema@3.24.5(zod@3.24.4):
     dependencies:
       zod: 3.24.4
-
-  zod@3.24.3: {}
 
   zod@3.24.4: {}
 
