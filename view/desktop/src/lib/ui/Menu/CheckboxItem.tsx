@@ -20,7 +20,7 @@ export const CheckboxItem = forwardRef<CheckboxItemElement, CheckboxItemProps>(
         {...props}
         ref={forwardedRef}
         className={cn(
-          "flex items-center gap-1.5 rounded px-2 py-1",
+          "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
           {
             "cursor-not-allowed opacity-50": props.disabled,
             "cursor-pointer hover:outline-hidden": !props.disabled,

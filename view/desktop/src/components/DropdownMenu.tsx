@@ -20,7 +20,7 @@ const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className,
   return (
     <DropdownMenuPrimitive.Content
       ref={ref}
-      className={cn("background-(--moss-primary-background) border border-(--moss-border-color)", className)}
+      className={cn("background-(--moss-primary-background) min-w-48 border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}

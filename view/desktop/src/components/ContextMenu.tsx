@@ -21,7 +21,7 @@ const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className,
   return (
     <ContextMenuPrimitive.Content
       ref={ref}
-      className={cn("background-(--moss-primary-background) border border-(--moss-border-color)", className)}
+      className={cn("background-(--moss-primary-background) min-w-48 border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}
@@ -49,7 +49,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, 
   return (
     <ContextMenuPrimitive.CheckboxItem
       ref={ref}
-      className={cn("hover:background-(--moss-primary-background-hover)", className)}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
     >
       {props.checked ? <Icon icon="GreenCheckmark" /> : <Icon icon="GreenCheckmark" className="opacity-0" />}
@@ -68,7 +68,7 @@ const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, classN
   return (
     <ContextMenuPrimitive.RadioItem
       ref={ref}
-      className={cn("hover:background-(--moss-primary-background-hover)", className)}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
     />
   );
@@ -80,7 +80,7 @@ const SubTrigger = forwardRef<HTMLDivElement, SubTriggerProps>(({ children, clas
   return (
     <ContextMenuPrimitive.SubTrigger
       ref={ref}
-      className={cn("hover:background-(--moss-primary-background-hover)", className)}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
     >
       {children}

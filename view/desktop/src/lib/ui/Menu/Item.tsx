@@ -37,6 +37,7 @@ export const Item = forwardRef<ItemElement, ItemProps>(
           ) : (
             <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />
           ))}
+
         <div className="flex w-full items-center gap-2.5">
           <span>{props.label}</span>
 
