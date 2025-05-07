@@ -4,10 +4,10 @@ import { RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
-import { Modal } from "@/lib/ui";
 
 import { ModalWrapperProps } from "../types";
 
@@ -42,11 +42,14 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   };
 
   return (
-    <Modal
+    <ModalForm
       title="Open Workspace"
       onBackdropClick={handleCancel}
       showModal={showModal}
       onSubmit={handleSubmit}
+      className="background-(--moss-primary-background)"
+      titleClassName="border-b border-(--moss-border-color)"
+      footerClassName="border-t border-(--moss-border-color)"
       content={
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-x-2 py-1.5">

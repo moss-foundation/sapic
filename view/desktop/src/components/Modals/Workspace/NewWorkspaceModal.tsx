@@ -4,9 +4,9 @@ import { InputOutlined, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
+import { ModalForm } from "@/components/ModalForm";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
-import { Modal } from "@/lib/ui";
 
 import { ModalWrapperProps } from "../types";
 
@@ -48,11 +48,14 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
   };
 
   return (
-    <Modal
+    <ModalForm
       title="New Workspace"
       onBackdropClick={handleCancel}
       showModal={showModal}
       onSubmit={handleSubmit}
+      className="background-(--moss-primary-background)"
+      titleClassName="border-b border-(--moss-border-color)"
+      footerClassName="border-t border-(--moss-border-color)"
       content={
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
