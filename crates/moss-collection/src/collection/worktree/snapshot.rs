@@ -23,12 +23,6 @@ pub(crate) struct Entry {
     pub file_id: FileId,
 }
 
-impl Entry {
-    pub fn path(&self) -> &Arc<Path> {
-        &self.path
-    }
-}
-
 pub(super) type EntryRef = Arc<Entry>;
 
 pub(crate) struct Snapshot {
@@ -75,6 +69,8 @@ impl Snapshot {
     }
 
     pub fn count_files(&self) -> usize {
+        debug_assert_eq!(self.entries_by_path.len(), self.entries_by_id.len());
+
         self.entries_by_path.len()
     }
 
@@ -123,5 +119,118 @@ impl Snapshot {
                 self.entries_by_id.remove(&entry_id);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{path::PathBuf, sync::atomic::AtomicUsize};
+
+    fn create_test_entry(id: usize, path: &str, kind: EntryKind) -> Entry {
+        Entry {
+            id: EntryId::new(&Arc::new(AtomicUsize::new(id))),
+            path: Arc::from(PathBuf::from(path)),
+            kind,
+            unit_type: None,
+            mtime: None,
+            file_id: FileId::new_inode(0, 0),
+        }
+    }
+
+    #[test]
+    fn test_remove_file() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let entry = create_test_entry(1, "test.txt", EntryKind::File);
+        let entry_ref = Arc::new(entry.clone());
+
+        snapshot.create_entry(entry_ref.clone());
+        assert_eq!(snapshot.count_files(), 1);
+
+        snapshot.remove_entry("test.txt");
+        assert_eq!(snapshot.count_files(), 0);
+        assert!(snapshot.entry_by_path("test.txt").is_none());
+    }
+
+    #[test]
+    fn test_remove_nonexistent_file() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        snapshot.remove_entry("nonexistent.txt");
+        assert_eq!(snapshot.count_files(), 0);
+    }
+
+    #[test]
+    fn test_remove_directory_with_files() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create a directory and some files inside it
+        let dir_entry = create_test_entry(1, "test_dir", EntryKind::Dir);
+        let file1_entry = create_test_entry(2, "test_dir/file1.txt", EntryKind::File);
+        let file2_entry = create_test_entry(3, "test_dir/file2.txt", EntryKind::File);
+
+        snapshot.create_entry(Arc::new(dir_entry));
+        snapshot.create_entry(Arc::new(file1_entry));
+        snapshot.create_entry(Arc::new(file2_entry));
+
+        assert_eq!(snapshot.count_files(), 3);
+
+        // Remove the directory
+        snapshot.remove_entry("test_dir");
+
+        // Verify all entries are removed
+        assert_eq!(snapshot.count_files(), 0);
+        assert!(snapshot.entry_by_path("test_dir").is_none());
+        assert!(snapshot.entry_by_path("test_dir/file1.txt").is_none());
+        assert!(snapshot.entry_by_path("test_dir/file2.txt").is_none());
+    }
+
+    #[test]
+    fn test_remove_nested_directory() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create a nested directory structure
+        let dir1_entry = create_test_entry(1, "dir1", EntryKind::Dir);
+        let dir2_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
+        let file_entry = create_test_entry(3, "dir1/dir2/file.txt", EntryKind::File);
+
+        snapshot.create_entry(Arc::new(dir1_entry));
+        snapshot.create_entry(Arc::new(dir2_entry));
+        snapshot.create_entry(Arc::new(file_entry));
+
+        assert_eq!(snapshot.count_files(), 3);
+
+        // Remove the parent directory
+        snapshot.remove_entry("dir1");
+
+        // Verify all entries are removed
+        assert_eq!(snapshot.count_files(), 0);
+        assert!(snapshot.entry_by_path("dir1").is_none());
+        assert!(snapshot.entry_by_path("dir1/dir2").is_none());
+        assert!(snapshot.entry_by_path("dir1/dir2/file.txt").is_none());
+    }
+
+    #[test]
+    fn test_remove_partial_path() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create entries with similar prefixes
+        let dir1_entry = create_test_entry(1, "test", EntryKind::Dir);
+        let dir2_entry = create_test_entry(2, "test_dir", EntryKind::Dir);
+        let file_entry = create_test_entry(3, "test_file.txt", EntryKind::File);
+
+        snapshot.create_entry(Arc::new(dir1_entry));
+        snapshot.create_entry(Arc::new(dir2_entry));
+        snapshot.create_entry(Arc::new(file_entry));
+
+        assert_eq!(snapshot.count_files(), 3);
+
+        // Remove only the "test" directory
+        snapshot.remove_entry("test");
+
+        // Verify only the "test" directory is removed
+        assert_eq!(snapshot.count_files(), 2);
+        assert!(snapshot.entry_by_path("test").is_none());
+        assert!(snapshot.entry_by_path("test_dir").is_some());
+        assert!(snapshot.entry_by_path("test_file.txt").is_some());
     }
 }

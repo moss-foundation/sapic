@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, mpsc};
+use worktree::Worktree;
 
 use crate::collection_registry::{
     CollectionRegistry, CollectionRequestData, CollectionRequestGroupData, RequestNode,
@@ -19,7 +20,6 @@ use crate::constants::*;
 use crate::indexer::{
     IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
 };
-use crate::worktree::Worktree;
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -69,8 +69,7 @@ impl Collection {
                     self.fs.clone(),
                     Arc::from(self.abs_path.clone()),
                     self.next_entry_id.clone(),
-                )
-                .await?;
+                );
 
                 Ok(Arc::new(worktree))
             })

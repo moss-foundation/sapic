@@ -1,13 +1,12 @@
 pub mod snapshot;
 
 use anyhow::Result;
-use file_id::FileId;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::{Mutex, mpsc};
 
 use crate::models::primitives::EntryId;
 
@@ -22,24 +21,27 @@ struct ScanJob {
 pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
-    snapshot: Arc<RwLock<Snapshot>>,
+    snapshot: Arc<Mutex<Snapshot>>,
 }
 
 impl Worktree {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        next_entry_id: Arc<AtomicUsize>,
         abs_path: Arc<Path>,
+        next_entry_id: Arc<AtomicUsize>,
     ) -> Self {
         debug_assert!(abs_path.is_absolute());
 
         let initial_snapshot = Snapshot::new(abs_path);
-
         Self {
             fs,
             next_entry_id,
-            snapshot: Arc::new(RwLock::new(initial_snapshot)),
+            snapshot: Arc::new(Mutex::new(initial_snapshot)),
         }
+    }
+
+    pub async fn snapshot(&self) -> &Arc<Mutex<Snapshot>> {
+        &self.snapshot
     }
 
     pub async fn absolutize(&self, path: &Path) -> Result<PathBuf> {
@@ -55,7 +57,7 @@ impl Worktree {
             ));
         }
 
-        let snapshot = self.snapshot.read().await;
+        let snapshot = self.snapshot.lock().await;
         if path.file_name().is_some() {
             Ok(snapshot.abs_path().join(path))
         } else {
@@ -66,7 +68,7 @@ impl Worktree {
     pub async fn relativize(&self, abs_path: &Path) -> Result<PathBuf> {
         debug_assert!(abs_path.is_absolute());
 
-        let snapshot = self.snapshot.read().await;
+        let snapshot = self.snapshot.lock().await;
         let root_path = snapshot.abs_path();
 
         if !abs_path.starts_with(root_path) {
@@ -111,7 +113,7 @@ impl Worktree {
 
         let file_id = file_id::get_file_id(&abs_path)?;
 
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.snapshot.lock().await;
         snapshot_lock.create_entry(
             (Entry {
                 id: EntryId::new(&self.next_entry_id),
@@ -137,7 +139,7 @@ impl Worktree {
 
         let abs_path = self.absolutize(&path).await?;
 
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.snapshot.lock().await;
 
         if abs_path.is_dir() {
             let mut temp_dir = abs_path.clone();
@@ -196,7 +198,7 @@ impl Worktree {
         let abs_old_path = self.absolutize(old_path).await?;
         let abs_new_path = self.absolutize(new_path).await?;
 
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.snapshot.lock().await;
 
         self.fs
             .rename(
@@ -220,12 +222,12 @@ impl Worktree {
 
     pub async fn initial_scan(&self) -> Result<()> {
         let root_abs_path = {
-            let snapshot = self.snapshot.read().await;
+            let snapshot = self.snapshot.lock().await;
             snapshot.abs_path().clone()
         };
 
         let entries = self.scan(root_abs_path).await?;
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.snapshot.lock().await;
         for entry in entries {
             snapshot_lock.create_entry(entry.into());
         }
@@ -343,13 +345,13 @@ mod tests {
                 .join("TestCollection"),
         );
 
-        let worktree = Worktree::new(fs, Arc::new(AtomicUsize::new(0)), abs_path);
+        let worktree = Worktree::new(fs, abs_path, Arc::new(AtomicUsize::new(0)));
         worktree.initial_scan().await.unwrap();
 
-        let snapshot = worktree.snapshot.read().await;
+        let snapshot = worktree.snapshot.lock().await;
 
         for (_, entry) in snapshot.iter_entries_by_prefix("") {
-            println!("{}", entry.path().to_path_buf().display());
+            println!("{}", entry.path.to_path_buf().display());
         }
     }
 }
