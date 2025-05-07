@@ -1,59 +1,29 @@
-use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::{
-    utils::{encode_name, encode_path},
-    CreateOptions,
-};
 use moss_storage::collection_storage::entities::request_store_entities::{
     RequestEntity, RequestNodeEntity,
 };
-use std::path::PathBuf;
 use validator::Validate;
 
 use crate::{
-    collection::{Collection, CollectionRequestData, REQUESTS_DIR},
-    collection_registry::RequestNode,
+    collection::Collection,
     constants::{
         DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
     },
     kdl::http::HttpRequestFile,
     models::{
-        operations::{
-            CreateRequestInput, CreateRequestOutput, CreateRequestProtocolSpecificPayload,
-        },
+        operations::{CreateRequestEntryInput, CreateRequestProtocolSpecificPayload},
         types::HttpMethod,
     },
 };
 
 impl Collection {
-    pub async fn create_request(
-        &self,
-        input: CreateRequestInput,
-    ) -> OperationResult<CreateRequestOutput> {
+    // TODO: return key or something
+    pub async fn create_request(&self, input: CreateRequestEntryInput) -> OperationResult<()> {
         input.validate()?;
 
-        let request_dir_name = format!("{}.request", encode_name(&input.name));
+        let worktree = self.worktree().await?;
 
-        let request_dir_relative_path = if let Some(relative_path) = input.relative_path {
-            encode_path(&relative_path, None)?
-        } else {
-            PathBuf::new()
-        }
-        .join(&request_dir_name);
-
-        let request_dir_abs_path = self
-            .abs_path
-            .join(REQUESTS_DIR)
-            .join(&request_dir_relative_path);
-
-        if request_dir_abs_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.name,
-                path: request_dir_abs_path,
-            });
-        }
-
-        let (file_content, spec_file_name) = match input.payload {
+        let (content_as_bytes, protocol_as_string) = match input.payload {
             Some(CreateRequestProtocolSpecificPayload::Http {
                 method,
                 query_params,
@@ -71,54 +41,50 @@ impl Collection {
                 .to_string();
 
                 let file_name = match method {
-                    HttpMethod::Post => POST_ENTRY_SPEC_FILE,
-                    HttpMethod::Get => GET_ENTRY_SPEC_FILE,
-                    HttpMethod::Put => PUT_ENTRY_SPEC_FILE,
-                    HttpMethod::Delete => DELETE_ENTRY_SPEC_FILE,
+                    HttpMethod::Post => "post",
+                    HttpMethod::Get => "get",
+                    HttpMethod::Put => "put",
+                    HttpMethod::Delete => "del",
                 };
 
-                (request_file.to_string(), file_name.to_string())
+                (request_file.to_string().into_bytes(), file_name.to_string())
             }
 
-            None => ("".to_string(), GET_ENTRY_SPEC_FILE.to_string()),
+            None => (vec![], "get".to_string()),
         };
 
-        let request_store = self.collection_storage.request_store().await;
-        let request_nodes = self.registry().await?.requests_nodes();
+        let mut encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
+        let last_segment = encoded_path.file_name().ok_or_else(|| {
+            OperationError::Validation(format!(
+                "Invalid destination path: {}",
+                input.destination.display()
+            ))
+        })?;
+
+        // Updating the last segment of the path to create a directory with the correct extension.
+        // The directory extension is necessary to distinguish regular subdirs from unit dirs.
+        encoded_path.set_file_name(format!("{}.request", last_segment.to_string_lossy()));
+
+        let _dir_entry = worktree.create_entry(&encoded_path, true, None).await?;
+
+        let spec_file_name = format!("{}.sapic", protocol_as_string);
+        let _file_entry = worktree
+            .create_entry(
+                encoded_path.join(spec_file_name),
+                false,
+                Some(content_as_bytes),
+            )
+            .await?;
 
         let mut txn = self.collection_storage.begin_write().await?;
+        let request_store = self.collection_storage.request_store().await;
         request_store.upsert_request_node(
             &mut txn,
-            request_dir_relative_path.clone(),
-            RequestNodeEntity::Request(RequestEntity { order: None }),
+            encoded_path,
+            RequestNodeEntity::Request(RequestEntity { order: None }), // TODO: add order
         )?;
-
-        self.fs
-            .create_dir(&request_dir_abs_path)
-            .await
-            .context("Failed to create the request directory")?;
-
-        self.fs
-            .create_file_with(
-                &request_dir_abs_path.join(&spec_file_name),
-                file_content,
-                CreateOptions::default(),
-            )
-            .await
-            .context("Failed to create the request file")?;
-
-        let request_key = {
-            let mut requests_lock = request_nodes.write().await;
-            requests_lock.insert(RequestNode::Request(CollectionRequestData {
-                name: input.name,
-                path: request_dir_relative_path.clone(),
-                order: None,
-                spec_file_name,
-            }))
-        };
-
         txn.commit()?;
 
-        Ok(CreateRequestOutput { key: request_key })
+        Ok(())
     }
 }

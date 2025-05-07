@@ -16,7 +16,7 @@ async fn delete_request_success() {
     let request_name = random_request_name();
     let expected_request_path = collection_path.join(request_relative_path(&request_name, None));
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -55,7 +55,7 @@ async fn delete_request_in_subfolder() {
         Some(Path::new("subfolder")),
     ));
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: Some(PathBuf::from("subfolder")),
             url: None,
@@ -94,7 +94,7 @@ async fn delete_request_nonexistent_key() {
     let request_name = random_request_name();
 
     collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -124,7 +124,7 @@ async fn delete_request_fs_already_deleted() {
     let request_name = random_request_name();
     let expected_path = collection_path.join(request_relative_path(&request_name, None));
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,

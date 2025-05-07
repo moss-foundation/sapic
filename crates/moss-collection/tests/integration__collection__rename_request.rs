@@ -18,7 +18,7 @@ async fn rename_request_success() {
     let request_name = random_request_name();
     let old_path = collection_path.join(request_relative_path(&request_name, None));
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -57,9 +57,7 @@ async fn rename_request_success() {
     );
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -68,7 +66,7 @@ async fn rename_request_empty_name() {
 
     let request_name = random_request_name();
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
 
             relative_path: None,
@@ -92,9 +90,7 @@ async fn rename_request_empty_name() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -103,7 +99,7 @@ async fn rename_request_unchanged() {
 
     let request_name = random_request_name();
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
 
             relative_path: None,
@@ -124,9 +120,7 @@ async fn rename_request_unchanged() {
     assert!(rename_request_result.is_ok());
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -136,7 +130,7 @@ async fn rename_request_already_exists() {
     let existing_request_name = random_request_name();
     // Create an existing request
     collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: existing_request_name.to_string(),
 
             relative_path: None,
@@ -149,7 +143,7 @@ async fn rename_request_already_exists() {
     let new_request_name = random_request_name();
     // Create a request to test renaming
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: new_request_name,
 
             relative_path: None,
@@ -172,9 +166,7 @@ async fn rename_request_already_exists() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -183,7 +175,7 @@ async fn rename_request_special_chars() {
 
     let request_name = random_request_name();
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -218,9 +210,7 @@ async fn rename_request_special_chars() {
     }
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -233,7 +223,7 @@ async fn rename_request_with_relative_path() {
         Some(Path::new("subfolder")),
     ));
     let create_request_output = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: Some(PathBuf::from("subfolder")),
             url: None,

@@ -1,4 +1,5 @@
 pub mod api;
+mod utils;
 mod worktree;
 
 use anyhow::{Context, Result};

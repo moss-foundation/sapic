@@ -1,7 +1,11 @@
+mod common;
 pub mod snapshot;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
+use common::ROOT_PATH;
+use file_id::FileId;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use snapshot::EntryRef;
 use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
@@ -82,22 +86,45 @@ impl Worktree {
         Ok(abs_path
             .strip_prefix(root_path)
             .map(|p| p.to_path_buf())
-            .unwrap_or_else(|_| PathBuf::from("")))
+            .unwrap_or_else(|_| PathBuf::from(ROOT_PATH)))
     }
 
     pub async fn create_entry(
         &self,
-        path: impl Into<Arc<Path>>,
+        path: impl AsRef<Path>,
         is_dir: bool,
         content: Option<Vec<u8>>,
-    ) -> Result<()> {
-        let path = path.into();
+    ) -> Result<EntryRef> {
+        let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
 
         let abs_path = self.absolutize(&path).await?;
+        let entry = if is_dir {
+            let first_segment = path.components().next().context("Path is empty")?;
 
-        if is_dir {
             self.fs.create_dir(&abs_path).await?;
+
+            let metadata = tokio::fs::metadata(&abs_path).await?;
+            let entry = Arc::new(Entry {
+                id: EntryId::new(&self.next_entry_id),
+                path: Arc::clone(&path),
+                kind: EntryKind::Dir,
+                unit_type: None,
+                mtime: metadata.modified().ok(),
+                file_id: file_id::get_file_id(&abs_path)?,
+            });
+
+            let lowest_ancestor_path = self.snapshot.lock().await.lowest_ancestor_path(&path);
+
+            // Scan the path to ensure all the entries are in the snapshot.
+            let entries = self.scan(lowest_ancestor_path.join(first_segment)).await?;
+
+            let mut snapshot_lock = self.snapshot.lock().await;
+            for e in entries {
+                snapshot_lock.create_entry(Arc::new(e));
+            }
+
+            entry
         } else {
             self.fs
                 .create_file_with(
@@ -109,28 +136,24 @@ impl Worktree {
                     },
                 )
                 .await?;
-        }
 
-        let file_id = file_id::get_file_id(&abs_path)?;
-
-        let mut snapshot_lock = self.snapshot.lock().await;
-        snapshot_lock.create_entry(
-            (Entry {
+            let metadata = tokio::fs::metadata(&abs_path).await?;
+            let entry = Arc::new(Entry {
                 id: EntryId::new(&self.next_entry_id),
                 path,
-                kind: if is_dir {
-                    EntryKind::Dir
-                } else {
-                    EntryKind::File
-                },
+                kind: EntryKind::File,
                 unit_type: None,
-                mtime: None,
-                file_id,
-            })
-            .into(),
-        );
+                mtime: metadata.modified().ok(),
+                file_id: file_id::get_file_id(&abs_path)?,
+            });
 
-        Ok(())
+            let mut snapshot_lock = self.snapshot.lock().await;
+            snapshot_lock.create_entry(Arc::clone(&entry));
+
+            entry
+        };
+
+        Ok(entry)
     }
 
     pub async fn remove_entry(&self, path: impl AsRef<Path>) -> Result<()> {
@@ -213,7 +236,7 @@ impl Worktree {
 
         snapshot_lock.remove_entry(old_path);
 
-        for entry in self.scan(abs_new_path.into()).await? {
+        for entry in self.scan(new_path).await? {
             snapshot_lock.create_entry(entry.into());
         }
 
@@ -221,12 +244,7 @@ impl Worktree {
     }
 
     pub async fn initial_scan(&self) -> Result<()> {
-        let root_abs_path = {
-            let snapshot = self.snapshot.lock().await;
-            snapshot.abs_path().clone()
-        };
-
-        let entries = self.scan(root_abs_path).await?;
+        let entries = self.scan(ROOT_PATH).await?;
         let mut snapshot_lock = self.snapshot.lock().await;
         for entry in entries {
             snapshot_lock.create_entry(entry.into());
@@ -235,12 +253,13 @@ impl Worktree {
         Ok(())
     }
 
-    pub async fn scan(&self, abs_path: Arc<Path>) -> Result<Vec<Entry>> {
-        debug_assert!(abs_path.is_absolute());
+    pub async fn scan(&self, path: impl AsRef<Path>) -> Result<Vec<Entry>> {
+        let path: Arc<Path> = path.as_ref().into();
+        debug_assert!(path.is_relative());
 
+        let abs_path: Arc<Path> = self.absolutize(&path).await?.into();
         let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
 
-        let path: Arc<Path> = self.relativize(&abs_path).await?.into();
         let initial_job = ScanJob {
             abs_path,
             path,

@@ -1,13 +1,18 @@
 use file_id::FileId;
-use std::{path::Path, sync::Arc, time::SystemTime};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::SystemTime,
+};
 use sweep_bptree::BPlusTreeMap;
 
 use crate::models::{primitives::EntryId, types::UnitType};
 
+use super::ROOT_PATH;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum EntryKind {
     Unit, // Do we need this?
-    PendingDir,
     UnloadedDir,
     Dir,
     File,
@@ -119,6 +124,25 @@ impl Snapshot {
                 self.entries_by_id.remove(&entry_id);
             }
         }
+    }
+
+    /// Finds the closest ancestor path of the given `path` that is known in the snapshot.
+    ///
+    /// This function iteratively checks the `path` and its parents until a known path is found
+    /// in the snapshot's entries. For example, if the snapshot contains "a/b" and "a/b/c",
+    /// and the input `path` is "a/b/c/d/e", this function will return "a/b/c".
+    pub fn lowest_ancestor_path(&self, path: impl AsRef<Path>) -> Arc<Path> {
+        let input_path = path.as_ref();
+
+        for ancestor in input_path.ancestors() {
+            if let Some(entry_ref) = self.entry_by_path(ancestor) {
+                return entry_ref.path.clone();
+            }
+        }
+
+        // No ancestor (including the path itself) was found in the snapshot.
+        // Return an empty path representing the root of the snapshot context.
+        Arc::from(PathBuf::from(ROOT_PATH))
     }
 }
 
@@ -232,5 +256,88 @@ mod tests {
         assert!(snapshot.entry_by_path("test").is_none());
         assert!(snapshot.entry_by_path("test_dir").is_some());
         assert!(snapshot.entry_by_path("test_file.txt").is_some());
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_exact_match() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create some entries
+        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
+        let subdir_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
+        let file_entry = create_test_entry(3, "dir1/dir2/file.txt", EntryKind::File);
+
+        snapshot.create_entry(Arc::new(dir_entry));
+        snapshot.create_entry(Arc::new(subdir_entry));
+        snapshot.create_entry(Arc::new(file_entry));
+
+        // Test exact path match
+        let result = snapshot.lowest_ancestor_path("dir1/dir2/file.txt");
+        assert_eq!(result.to_string_lossy(), "dir1/dir2/file.txt");
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_direct_ancestor() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create some entries, but not the leaf
+        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
+        let subdir_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
+
+        snapshot.create_entry(Arc::new(dir_entry));
+        snapshot.create_entry(Arc::new(subdir_entry));
+
+        // Test path that doesn't exist but has ancestors
+        let result = snapshot.lowest_ancestor_path("dir1/dir2/file.txt");
+        assert_eq!(result.to_string_lossy(), "dir1/dir2");
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_multiple_ancestors() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create some entries
+        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
+
+        snapshot.create_entry(Arc::new(dir_entry));
+
+        // Test deeply nested path - should find the lowest/closest ancestor
+        let result = snapshot.lowest_ancestor_path("dir1/dir2/dir3/dir4/file.txt");
+        assert_eq!(result.to_string_lossy(), "dir1");
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_no_ancestors() {
+        let snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Test path with no ancestors in the snapshot
+        let result = snapshot.lowest_ancestor_path("non/existent/path");
+        assert_eq!(result.to_string_lossy(), ROOT_PATH);
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_empty_snapshot() {
+        let snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Test any path with empty snapshot
+        let result = snapshot.lowest_ancestor_path("dir1/file.txt");
+        assert_eq!(result.to_string_lossy(), ROOT_PATH);
+    }
+
+    #[test]
+    fn test_lowest_ancestor_path_root_level_file() {
+        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+
+        // Create a root-level file
+        let file_entry = create_test_entry(1, "file.txt", EntryKind::File);
+        snapshot.create_entry(Arc::new(file_entry));
+
+        // Test a different root-level file
+        let result = snapshot.lowest_ancestor_path("different.txt");
+        assert_eq!(result.to_string_lossy(), ROOT_PATH);
+
+        // Test the actual file
+        let result = snapshot.lowest_ancestor_path("file.txt");
+        assert_eq!(result.to_string_lossy(), "file.txt");
     }
 }

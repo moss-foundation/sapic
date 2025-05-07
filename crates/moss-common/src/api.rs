@@ -5,10 +5,10 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum OperationError {
     #[error("validation error: {0}")]
-    Validation(String),
+    Validation(String), // TODO: rename InvalidInput
 
     #[error("{name} not found at {path}")]
-    NotFound { name: String, path: PathBuf },
+    NotFound { name: String, path: PathBuf }, // TODO: should be just a string
 
     #[error("{name} already exists at {path}")]
     AlreadyExists { name: String, path: PathBuf },
