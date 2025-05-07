@@ -1,5 +1,7 @@
 import { ComponentPropsWithoutRef } from "react";
 
-export const Separator = (props: ComponentPropsWithoutRef<"div">) => {
-  return <div className="my-1 h-px w-full" {...props} />;
+import { cn } from "@/utils";
+
+export const Separator = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => {
+  return <div className={cn("my-1 h-px w-full", className)} {...props} />;
 };

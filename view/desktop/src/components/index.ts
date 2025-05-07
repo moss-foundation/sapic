@@ -21,4 +21,4 @@ export * from "./Tree/Tree";
 export * from "./ViewContainer";
 
 export * as ContextMenu from "./ContextMenu";
-export * from "./DropdownMenu";
+export * as DropdownMenu from "./DropdownMenu";

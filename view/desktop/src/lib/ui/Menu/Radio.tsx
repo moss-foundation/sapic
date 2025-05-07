@@ -36,15 +36,19 @@ export const RadioItem = forwardRef<RadioItemElement, RadioItemProps>(
       <MenuPrimitive.RadioItem
         {...props}
         ref={forwardedRef}
-        className={cn("flex items-center gap-1.5 rounded px-2 py-1", {
-          "cursor-not-allowed opacity-50": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
-        })}
+        className={cn(
+          "flex items-center gap-1.5 rounded px-2 py-1",
+          {
+            "cursor-not-allowed opacity-50": props.disabled,
+            "cursor-pointer hover:outline-hidden": !props.disabled,
+          },
+          props.className
+        )}
       >
         {props.checked ? (
-          <Icon icon="RadioIndicator" className="h-4 w-4" />
+          <Icon icon="MenuRadioIndicator" className="size-4" />
         ) : (
-          <Icon icon="RadioIndicator" className="h-4 w-4 opacity-0" />
+          <Icon icon="MenuRadioIndicator" className="size-4 opacity-0" />
         )}
 
         <div className="flex w-full items-center gap-2.5">

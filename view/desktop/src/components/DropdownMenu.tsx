@@ -1,13 +1,20 @@
 import { forwardRef } from "react";
 
 import { Icon } from "@/lib/ui";
-import { CheckboxItemProps, ContentProps, ItemProps, RadioItemProps, SubContentProps } from "@/lib/ui/Menu";
+import {
+  CheckboxItemProps,
+  ContentProps,
+  ItemProps,
+  RadioItemProps,
+  SubContentProps,
+  SubTriggerProps,
+} from "@/lib/ui/Menu";
 import * as DropdownMenuPrimitive from "@/lib/ui/Menu/DropdownMenu/DropdownMenu";
 import { cn } from "@/utils";
 
-const Root = DropdownMenuPrimitive.Root;
-const Trigger = DropdownMenuPrimitive.Trigger;
-const Portal = DropdownMenuPrimitive.Portal;
+const Root: typeof DropdownMenuPrimitive.Root = DropdownMenuPrimitive.Root;
+const Trigger: typeof DropdownMenuPrimitive.Trigger = DropdownMenuPrimitive.Trigger;
+const Portal: typeof DropdownMenuPrimitive.Portal = DropdownMenuPrimitive.Portal;
 
 const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className, ...props }, ref) => {
   return (
@@ -41,7 +48,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, 
   return (
     <DropdownMenuPrimitive.CheckboxItem
       ref={ref}
-      className={cn("hover:background-(--moss-primary-background-hover)", className)}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
     >
       {props.checked ? <Icon icon="GreenCheckmark" /> : <Icon icon="GreenCheckmark" className="opacity-0" />}
@@ -58,25 +65,25 @@ const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, classN
   return (
     <DropdownMenuPrimitive.RadioItem
       ref={ref}
-      className={cn("hover:background-(--moss-primary-background-hover)", className)}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
-    >
-      {props.checked ? (
-        <Icon icon="RadioIndicator" className="h-4 w-4" />
-      ) : (
-        <Icon icon="RadioIndicator" className="h-4 w-4 opacity-0" />
-      )}
-
-      <div className="flex w-full items-center gap-2.5">
-        <span>{props.label}</span>
-      </div>
-    </DropdownMenuPrimitive.RadioItem>
+    />
   );
 });
 
-const Sub = DropdownMenuPrimitive.Sub;
+const Sub: typeof DropdownMenuPrimitive.Sub = DropdownMenuPrimitive.Sub;
 
-const SubTrigger = DropdownMenuPrimitive.SubTrigger;
+const SubTrigger = forwardRef<HTMLDivElement, SubTriggerProps>(({ children, className, ...props }, ref) => {
+  return (
+    <DropdownMenuPrimitive.SubTrigger
+      ref={ref}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
+      {...props}
+    >
+      {children}
+    </DropdownMenuPrimitive.SubTrigger>
+  );
+});
 
 const SubContent = forwardRef<HTMLDivElement, SubContentProps>(({ children, className, ...props }, ref) => {
   return (
@@ -90,32 +97,17 @@ const SubContent = forwardRef<HTMLDivElement, SubContentProps>(({ children, clas
   );
 });
 
-const DropdownMenu = {
-  Root,
-  Trigger,
-  Portal,
+export {
+  CheckboxItem,
   Content,
   Item,
-  Separator,
-  Sub,
-  SubTrigger,
-  SubContent,
-  CheckboxItem,
+  Portal,
   RadioGroup,
   RadioItem,
-};
-
-export default DropdownMenu as {
-  Root: typeof DropdownMenuPrimitive.Root;
-  Trigger: typeof DropdownMenuPrimitive.Trigger;
-  Portal: typeof DropdownMenuPrimitive.Portal;
-  Content: typeof Content;
-  Item: typeof Item;
-  Separator: typeof Separator;
-  Sub;
-  SubTrigger: typeof SubTrigger;
-  SubContent: typeof SubContent;
-  CheckboxItem: typeof CheckboxItem;
-  RadioGroup: typeof RadioGroup;
-  RadioItem: typeof RadioItem;
+  Root,
+  Separator,
+  Sub,
+  SubContent,
+  SubTrigger,
+  Trigger,
 };

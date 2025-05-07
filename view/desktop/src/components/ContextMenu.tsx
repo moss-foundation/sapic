@@ -16,6 +16,7 @@ import * as ContextMenuPrimitive from "../lib/ui/Menu/ContextMenu/ContextMenu";
 const Root = ContextMenuPrimitive.Root;
 const Trigger = ContextMenuPrimitive.Trigger;
 const Portal = ContextMenuPrimitive.Portal;
+
 const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className, ...props }, ref) => {
   return (
     <ContextMenuPrimitive.Content
@@ -69,17 +70,7 @@ const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, classN
       ref={ref}
       className={cn("hover:background-(--moss-primary-background-hover)", className)}
       {...props}
-    >
-      {props.checked ? (
-        <Icon icon="RadioIndicator" className="h-4 w-4" />
-      ) : (
-        <Icon icon="RadioIndicator" className="h-4 w-4 opacity-0" />
-      )}
-
-      <div className="flex w-full items-center gap-2.5">
-        <span>{props.label}</span>
-      </div>
-    </ContextMenuPrimitive.RadioItem>
+    />
   );
 });
 

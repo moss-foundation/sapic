@@ -116,6 +116,9 @@
   "Loader": {
     "identical": true
   },
+  "MenuRadioIndicator": {
+    "identical": true
+  },
   "MoreHorizontal": {
     "identical": true
   },

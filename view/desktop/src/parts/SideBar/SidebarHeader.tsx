@@ -1,4 +1,6 @@
-import { ActionButton } from "@/components";
+import { useState } from "react";
+
+import { ActionButton, DropdownMenu } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -14,10 +16,52 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <ActionButton icon="Add" />
         <ActionButton icon="CollapseAll" onClick={collapseAll} />
         <ActionButton icon="Import" />
-        <ActionButton icon="MoreHorizontal" />
+        {/* <ActionButton icon="MoreHorizontal" /> */}
+        <ExampleDropdownMenu />
       </div>
     </div>
   );
 };
 
 export default SidebarHeader;
+
+const ExampleDropdownMenu = () => {
+  const [isChecked, setIsChecked] = useState(false);
+  const [radioValue, setRadioValue] = useState("option1");
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <ActionButton icon="MoreHorizontal" />
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item label="Item 1" onSelect={() => console.log("Item 1 selected")} />
+          <DropdownMenu.Item label="Item 2" onSelect={() => console.log("Item 2 selected")} />
+
+          <DropdownMenu.Separator />
+
+          <DropdownMenu.CheckboxItem label="Check me" checked={isChecked} onCheckedChange={setIsChecked} />
+
+          <DropdownMenu.Separator />
+
+          <DropdownMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
+            <DropdownMenu.RadioItem checked={radioValue === "option1"} value="option1" label="Option 1" />
+            <DropdownMenu.RadioItem checked={radioValue === "option2"} value="option2" label="Option 2" />
+          </DropdownMenu.RadioGroup>
+
+          <DropdownMenu.Separator />
+
+          <DropdownMenu.Sub>
+            <DropdownMenu.SubTrigger label="Submenu">Submenu</DropdownMenu.SubTrigger>
+            <DropdownMenu.SubContent>
+              <DropdownMenu.Item hideIcon label="Sub Item 1" onSelect={() => console.log("Sub Item 1 selected")} />
+              <DropdownMenu.Item hideIcon label="Sub Item 2" onSelect={() => console.log("Sub Item 2 selected")} />
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Sub>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+};
