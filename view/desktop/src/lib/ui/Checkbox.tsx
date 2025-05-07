@@ -7,7 +7,9 @@ export interface CheckboxProps {
   className?: string;
 }
 
-const defaultCheckboxRootStyles = `border-1 border-solid rounded flex justify-center items-center size-4 text-white
+const defaultCheckboxRootStyles = `
+  border-1 border-solid rounded flex justify-center items-center size-4 text-white
+  
   focus-visible:outline-2
   focus-visible:outline-offset-2
   focus-visible:outline
@@ -16,7 +18,6 @@ const defaultCheckboxRootStyles = `border-1 border-solid rounded flex justify-ce
 
   data-[state=checked]:border-none
   data-[state=indeterminate]:border-none
-
 
   disabled:pointer-events-none
   disabled:hover:brightness-100
