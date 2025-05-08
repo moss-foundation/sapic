@@ -1,10 +1,11 @@
 import { useContext, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-import { ContextMenu, Icon, TreeContext } from "..";
+import { ContextMenu, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";

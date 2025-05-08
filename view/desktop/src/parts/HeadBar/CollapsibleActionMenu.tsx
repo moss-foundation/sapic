@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { ActionButton } from "@/components";
 import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { type Icons } from "@/components/Icon";
+import { type Icons } from "@/lib/ui/Icon";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import PanelToggleButtons from "./PanelToggleButtons";

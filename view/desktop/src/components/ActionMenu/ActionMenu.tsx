@@ -1,7 +1,7 @@
 import { cva } from "class-variance-authority";
 import React from "react";
 
-import { Icon, Icons } from "@/components/Icon";
+import { Icon, Icons } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 

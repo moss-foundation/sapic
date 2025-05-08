@@ -1,5 +1,6 @@
-import React, { ButtonHTMLAttributes, forwardRef, useState, useRef, useEffect } from "react";
-import { Icon, type Icons } from "@/components";
+import React, { ButtonHTMLAttributes, forwardRef, useEffect, useRef, useState } from "react";
+
+import { Icon, type Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface IconLabelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -166,6 +167,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
           button.removeEventListener("dblclick", handleDoubleClick);
         };
       }
+      return () => {};
     }, [editable, ref, isEditing]);
 
     return (

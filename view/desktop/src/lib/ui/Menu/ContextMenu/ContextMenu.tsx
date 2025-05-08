@@ -263,6 +263,7 @@ const ContextMenuRadioItem = forwardRef<CustomPrimitive.RadioItemElement, Custom
  * -----------------------------------------------------------------------------------------------*/
 
 interface ContextMenuSubProps {
+  className?: string;
   children?: React.ReactNode;
   open?: boolean;
   defaultOpen?: boolean;
@@ -270,7 +271,7 @@ interface ContextMenuSubProps {
 }
 
 const ContextMenuSub: React.FC<ContextMenuSubProps> = (props: ScopedProps<ContextMenuSubProps>) => {
-  const { __scopeContextMenu, children, onOpenChange, open: openProp, defaultOpen } = props;
+  const { __scopeContextMenu, children, onOpenChange, open: openProp, defaultOpen = false } = props;
   const menuScope = useMenuScope(__scopeContextMenu);
   const [open, setOpen] = useControllableState({
     prop: openProp,
@@ -336,16 +337,16 @@ export {
   CheckboxItem,
   Content,
   createContextMenuScope,
+  Item,
+  Portal,
   RadioGroup,
   RadioItem,
-  Portal,
   Root,
   Separator,
-  Item,
   Sub,
   SubContent,
   SubTrigger,
   Trigger,
 };
 
-export type { ContextMenuPortalProps, ContextMenuProps, ContextMenuTriggerProps };
+export type { ContextMenuPortalProps, ContextMenuProps, ContextMenuSubProps, ContextMenuTriggerProps };

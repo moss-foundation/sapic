@@ -101,6 +101,7 @@
   --moss-error: var(--moss-red-3);
   --moss-error-background: var(--moss-red-9);
 
+  --moss-success: var(--moss-green-3);
   --moss-success-background: var(--moss-green-11);
 
   --moss-border-color: var(--moss-gray-12);
@@ -238,7 +239,6 @@
   --moss-button-neutral-outlined-text: var(--moss-gray-1);
 
   /* --- Disabled buttons */
-
   --moss-button-background-disabled: var(--moss-gray-12);
   --moss-button-background-disabled-hover: var(--moss-gray-12);
   --moss-button-background-disabled-active: var(--moss-gray-12);
@@ -261,6 +261,9 @@
   --moss-select-border-outlined: var(--moss-gray-12);
   --moss-select-text-outlined: var(--moss-gray-1);
   --moss-select-hover-bg: var(--moss-gray-13);
+
+  --moss-select-bg-outlined-selected: var(--moss-blue-11);
+  --moss-select-text-outlined-selected: var(--moss-gray-7);
 
   /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);

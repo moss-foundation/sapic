@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 
-import { Icon } from "@/components/Icon";
 import { TestCollectionIcon } from "@/components/Tree/TestCollectionIcon";
+import { Icon } from "@/lib/ui/Icon";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &

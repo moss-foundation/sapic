@@ -1,5 +1,5 @@
 import { MenuItemProps } from "@/components/ActionMenu/ActionMenu";
-import { type Icons } from "@/components/Icon";
+import { type Icons } from "@/lib/ui/Icon";
 
 // 1. Editor context menu items
 export const editorContextItems: MenuItemProps[] = [

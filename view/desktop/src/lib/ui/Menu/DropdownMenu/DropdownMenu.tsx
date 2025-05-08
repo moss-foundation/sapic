@@ -2,8 +2,8 @@ import React, { forwardRef } from "react";
 
 import { composeEventHandlers } from "@radix-ui/primitive";
 import { composeRefs } from "@radix-ui/react-compose-refs";
-import { createContextScope } from "@radix-ui/react-context";
 import type { Scope } from "@radix-ui/react-context";
+import { createContextScope } from "@radix-ui/react-context";
 import { useId } from "@radix-ui/react-id";
 import * as MenuPrimitive from "@radix-ui/react-menu";
 import { createMenuScope } from "@radix-ui/react-menu";
@@ -47,7 +47,7 @@ interface DropdownMenuProps {
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = (props: ScopedProps<DropdownMenuProps>) => {
-  const { __scopeDropdownMenu, children, dir, open: openProp, defaultOpen, onOpenChange, modal = true } = props;
+  const { __scopeDropdownMenu, children, dir, open: openProp, defaultOpen = false, onOpenChange, modal = true } = props;
   const menuScope = useMenuScope(__scopeDropdownMenu);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [open = false, setOpen] = useControllableState({
@@ -309,6 +309,7 @@ const DropdownMenuArrow = React.forwardRef<DropdownMenuArrowElement, DropdownMen
  * -----------------------------------------------------------------------------------------------*/
 
 interface DropdownMenuSubProps {
+  className?: string;
   children?: React.ReactNode;
   open?: boolean;
   defaultOpen?: boolean;
@@ -316,7 +317,7 @@ interface DropdownMenuSubProps {
 }
 
 const DropdownMenuSub: React.FC<DropdownMenuSubProps> = (props: ScopedProps<DropdownMenuSubProps>) => {
-  const { __scopeDropdownMenu, children, open: openProp, onOpenChange, defaultOpen } = props;
+  const { __scopeDropdownMenu, children, open: openProp, onOpenChange, defaultOpen = false } = props;
   const menuScope = useMenuScope(__scopeDropdownMenu);
   const [open = false, setOpen] = useControllableState({
     prop: openProp,
@@ -390,21 +391,21 @@ const SubTrigger = DropdownMenuSubTrigger;
 const SubContent = DropdownMenuSubContent;
 
 export {
-  createDropdownMenuScope,
-  Root,
-  Trigger,
-  Portal,
-  Content,
-  Group,
-  Label,
-  Item,
+  Arrow,
   CheckboxItem,
+  Content,
+  createDropdownMenuScope,
+  Group,
+  Item,
+  ItemIndicator,
+  Label,
+  Portal,
   RadioGroup,
   RadioItem,
-  ItemIndicator,
+  Root,
   Separator,
-  Arrow,
   Sub,
-  SubTrigger,
   SubContent,
+  SubTrigger,
+  Trigger,
 };
