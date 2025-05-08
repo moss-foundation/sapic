@@ -1,5 +1,5 @@
 import { testLogEntries } from "@/assets/testLogEntries";
-import { Scrollbar } from "@/components";
+import { Scrollbar } from "@/lib/ui";
 
 export const BottomPane = () => {
   return (

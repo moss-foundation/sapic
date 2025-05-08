@@ -3,10 +3,10 @@ import "./assets/styles.css";
 import React from "react";
 
 import { Breadcrumbs } from "@/components";
-import { Scrollbar } from "@/components/Scrollbar";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
+import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";

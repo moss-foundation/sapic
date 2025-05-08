@@ -1,8 +1,9 @@
 import { useContext, useEffect, useRef } from "react";
 
+import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ActionButton, DropdownMenu, DropIndicator, Icon, Scrollbar, TreeContext } from "..";
+import { ActionButton, DropdownMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";

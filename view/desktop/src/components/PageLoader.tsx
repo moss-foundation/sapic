@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import Icon from "./Icon";
+import Icon from "../lib/ui/Icon";
 
 // FIXME:
 // The statically created array `tips` is a temporary solution.

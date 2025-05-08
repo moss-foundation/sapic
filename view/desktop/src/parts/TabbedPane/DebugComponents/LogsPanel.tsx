@@ -1,4 +1,4 @@
-import { Scrollbar } from "@/components/Scrollbar";
+import { Scrollbar } from "@/lib/ui/Scrollbar";
 
 const LogsPanel = ({
   logLines,

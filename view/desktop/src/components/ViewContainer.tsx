@@ -6,6 +6,7 @@ import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
+import ButtonPrimary from "./ButtonPrimary";
 import CollectionTreeView from "./CollectionTreeView";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
@@ -74,20 +75,8 @@ const NoWorkspaceComponent = () => {
       </div>
 
       <div className="flex flex-col gap-3.5">
-        {/* //TODO This should be a button component */}
-        <button
-          onClick={openNewWorkspaceModal}
-          className="background-(--moss-primary) hover:background-(--moss-blue-3) flex cursor-pointer items-center justify-center rounded py-1.5 text-white"
-        >
-          New workspace
-        </button>
-        {/* //TODO This should be a button component */}
-        <button
-          onClick={openOpenWorkspaceModal}
-          className="background-(--moss-primary) hover:background-(--moss-blue-3) flex cursor-pointer items-center justify-center rounded py-1.5 text-white"
-        >
-          Open workspace
-        </button>
+        <ButtonPrimary onClick={openNewWorkspaceModal}>New workspace</ButtonPrimary>
+        <ButtonPrimary onClick={openOpenWorkspaceModal}>Open workspace</ButtonPrimary>
       </div>
     </div>
   );

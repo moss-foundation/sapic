@@ -1,4 +1,4 @@
-import { Icon } from "@/components";
+import { Icon } from "@/lib/ui";
 
 export const WelcomePageSteps = () => {
   return (

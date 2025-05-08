@@ -2,7 +2,7 @@ import { ComponentPropsWithoutRef, forwardRef } from "react";
 
 import { cn } from "@/utils";
 
-import * as icons from "../assets/icons";
+import * as icons from "../../assets/icons";
 
 export type Icons = keyof typeof icons;
 
