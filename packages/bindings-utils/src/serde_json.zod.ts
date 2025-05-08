@@ -4,5 +4,5 @@ import { z } from "zod";
 import { type JsonValue } from "./serde_json";
 
 export const jsonValueSchema: z.ZodSchema<JsonValue> = z.lazy(() =>
-  z.union([z.number(), z.string(), z.boolean(), z.array(jsonValueSchema), z.any()]).nullable()
+  z.union([z.number(), z.string(), z.boolean(), z.array(jsonValueSchema), z.record(jsonValueSchema)]).nullable()
 );
