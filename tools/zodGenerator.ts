@@ -1,17 +1,12 @@
+/*
+  Convert typescript models to zod schema
+  Argument: path to the crate
+*/
+
 import { Project, SourceFile } from "ts-morph";
 import fs, { readdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { exec } from "node:child_process";
-
-// Types that might be useful for AI agent
-const PATHS = [
-  "../../crates/moss-collection/bindings",
-  "../../crates/moss-state/bindings",
-  "../../crates/moss-logging/bindings",
-  "../../crates/moss-environment/bindings",
-  "../../crates/moss-workspace/bindings",
-  "../../crates/moss-workbench/bindings",
-];
 
 function postprocessZod(tsPath: string, zodPath: string) {
   // Compare the original file and zod file, and process the latter
@@ -65,7 +60,7 @@ function processFile(path: fs.PathLike) {
   });
 }
 
-let path = process.argv[2];
+let path = join(process.argv[2], "bindings");
 
 console.log(`Processing path ${path}`);
 try {
