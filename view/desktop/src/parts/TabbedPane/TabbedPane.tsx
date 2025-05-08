@@ -4,6 +4,7 @@ import React from "react";
 
 import { Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
+import { useWorkspaceState } from "@/hooks/appState/useWorkspaceState";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
@@ -52,6 +53,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
 const TabbedPane = ({ theme }: { theme?: string }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
+  const { state: workspaceState } = useWorkspaceState();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -72,15 +74,22 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { data: layout } = useDescribeWorkspaceState();
+  const { data: layout } = useDescribeWorkspaceState({
+    enabled: workspaceState === "inWorkspace",
+  });
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      if (layout?.editor) {
+      if (workspaceState === "empty") {
+        // We're not in a workspace, so show the welcome page
+        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      } else if (layout?.editor) {
+        // We have a workspace with a saved layout
         event.api?.fromJSON(layout.editor);
       } else {
+        // We have a workspace but no saved layout, show empty workspace page
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }
     } catch (error) {
@@ -91,6 +100,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         panel.api.close();
       }
 
+      // If layout restoration fails, show welcome page
       event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
     }
   };
@@ -113,11 +123,36 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
     if (!api) return;
 
     const event = api.onDidLayoutChange(() => {
-      updateEditorPartState(api.toJSON());
+      // Only update layout state if we're in a workspace
+      if (workspaceState === "inWorkspace") {
+        updateEditorPartState(api.toJSON());
+      }
     });
 
     return () => event.dispose();
-  }, [api, updateEditorPartState]);
+  }, [api, updateEditorPartState, workspaceState]);
+
+  // Effect to handle workspace state changes
+  React.useEffect(() => {
+    if (!api) return;
+
+    // If we have panels but workspace state changed to empty,
+    // close all panels and show welcome page
+    if (workspaceState === "empty" && api.panels.length > 0) {
+      const hasWelcomePanel = api.panels.some((panel) => panel.api.id === "WelcomePage");
+
+      if (!hasWelcomePanel) {
+        // Only close non-welcome panels
+        const panelsToClose = api.panels.filter((panel) => panel.api.id !== "WelcomePage");
+        for (const panel of panelsToClose) {
+          panel.api.close();
+        }
+
+        // Add welcome panel if none exists
+        api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      }
+    }
+  }, [api, workspaceState]);
 
   const components = {
     Default: (props: IDockviewPanelProps) => {

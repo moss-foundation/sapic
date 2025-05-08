@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useDescribeAppState } from "@/hooks";
+import { useWorkspaceState } from "@/hooks/appState/useWorkspaceState";
 import { useModal } from "@/hooks/useModal";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -13,19 +13,21 @@ import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
 export const ViewContainer = ({ groupId }: { groupId: string }) => {
   const { data: viewGroup } = useGetViewGroup(groupId);
-  const { data: appState } = useDescribeAppState();
+  const { state: workspaceState } = useWorkspaceState();
   const { api } = useTabbedPaneStore();
 
   useEffect(() => {
-    if (appState?.lastWorkspace) {
+    // Only close the welcome panel when we have a workspace
+    if (workspaceState === "inWorkspace") {
       const WelcomePanel = api?.getPanel("WelcomePage");
       if (WelcomePanel) {
         WelcomePanel.api.close();
       }
     }
-  }, [appState?.lastWorkspace, api]);
+  }, [workspaceState, api]);
 
-  if (!appState?.lastWorkspace) {
+  // Always show the NoWorkspaceComponent in sidebars if we're in empty state
+  if (workspaceState === "empty") {
     return (
       <div className="flex h-full flex-col">
         <NoWorkspaceComponent />

@@ -6,6 +6,7 @@ export * from "./appState/useDescribeAppState";
 export * from "./appState/useUpdateEditorPartState";
 export * from "./appState/useUpdatePanelPartState";
 export * from "./appState/useUpdateSidebarPartState";
+export * from "./appState/useWorkspaceState";
 
 export * from "./colorTheme/useListColorThemes";
 export * from "./colorTheme/useSetColorTheme";

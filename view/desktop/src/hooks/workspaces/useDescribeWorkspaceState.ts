@@ -21,9 +21,14 @@ export const describeWorkspaceState = async () => {
   };
 };
 
-export const useDescribeWorkspaceState = () => {
+type UseDescribeWorkspaceStateOptions = {
+  enabled?: boolean;
+};
+
+export const useDescribeWorkspaceState = (options?: UseDescribeWorkspaceStateOptions) => {
   return useQuery({
     queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
     queryFn: describeWorkspaceState,
+    enabled: options?.enabled !== false, // Default to true if not specified
   });
 };
