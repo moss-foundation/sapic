@@ -1,35 +1,36 @@
 {
-    "name": "@repo/moss-collection",
-    "exports": {
-      ".": "./index.ts"
+  "name": "@repo/moss-collection",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@repo/bindings-utils": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "typescript": "^5.8.2",
+    "zod": "^3.24.4"
+  },
+  "tsImportRules": {
+    "bindings/operations.ts": {
+      "@repo/bindings-utils": {
+        "types": [
+          "ResourceKey"
+        ],
+        "is_type_import": true
+      }
     },
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
-    },
-    "devDependencies": {
-      "@repo/typescript-config": "workspace:*",
-      "@repo/bindings-utils": "workspace:*"
-    },
-    "dependencies": {
-      "typescript": "^5.8.2"
-    },
-    "tsImportRules": {
-      "bindings/operations.ts": {
-        "@repo/bindings-utils": {
-          "types": [
-            "ResourceKey"
-          ],
-          "is_type_import": true
-        }
-      },
-      "bindings/types.ts": {
-        "@repo/bindings-utils": {
-          "types": [
-            "ResourceKey"
-          ],
-          "is_type_import": true
-        }
+    "bindings/types.ts": {
+      "@repo/bindings-utils": {
+        "types": [
+          "ResourceKey"
+        ],
+        "is_type_import": true
       }
     }
   }
+}
