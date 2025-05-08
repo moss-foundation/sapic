@@ -3,10 +3,10 @@
   Argument: path to the crate
 */
 
-import { Project, SourceFile } from "ts-morph";
+import { exec } from "node:child_process";
 import fs, { readdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { exec } from "node:child_process";
+import { Project, SourceFile } from "ts-morph";
 
 function postprocessZod(tsPath: string, zodPath: string) {
   // Compare the original file and zod file, and process the latter
