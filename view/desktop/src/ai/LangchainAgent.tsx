@@ -63,7 +63,7 @@ const LangchainAgent = () => {
   const agent = useAgent();
 
   function handleClick() {
-    const prompt = `Please create a workspace with the following name: TestWorkspace"`;
+    const prompt = `Please create a workspace with the following name: TestWorkspace`;
     agent
       .invoke({
         messages: [{ role: "user", content: prompt }],

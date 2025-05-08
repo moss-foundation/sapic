@@ -101,56 +101,56 @@ run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
 
 # ======================================================
-# TypeScript Model Generation
+# TypeScript Bindings Generation
 # ======================================================
 
-# The gen_models function generates TypeScript models from Rust structures.
+# The gen_bindings function generates TypeScript models and Zod Schema from Rust structures.
+# Zod Schema provides information about function calling arguments for the AI agent
 # The export_bindings_ prefix is used to run only those tests that trigger
 # the generation of models. 
-define gen_models
-.PHONY: gen-$(1)-models
-gen-$(1)-models:
+
+define gen_bindings
+.PHONY: gen-$(1)-bindings
+gen-$(1)-bindings:
 	@echo "Generating $(1) models..."
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_imports_injector.py package.json
+
+	@echo "Generating $(1) zod schemas..."
+	@cd tools/zod-generator && $(PNPM) run gen ../../$($(2))/bindings
+
+	@echo "Updating exports in index.ts..."
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_exports_injector.py
+
+	@echo "Formatting generated files"
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_imports_consolidator.py bindings
 	@cd $($(2)) && $(PNPM) format
-	@echo "$(1) models generated successfully"
+	@echo "$(1) bindings generated successfully"
 endef
 
-# Apply the gen_models function to each crate
-$(eval $(call gen_models,collection,COLLECTION_MODELS_DIR))
-$(eval $(call gen_models,theme,THEME_MODELS_DIR))
-$(eval $(call gen_models,state,STATE_MODELS_DIR))
-$(eval $(call gen_models,nls,NLS_MODELS_DIR))
-$(eval $(call gen_models,logging,LOGGING_MODELS_DIR))
-$(eval $(call gen_models,environment,ENVIRONMENT_MODELS_DIR))
-$(eval $(call gen_models,workspace,WORKSPACE_MODELS_DIR))
-$(eval $(call gen_models,common,COMMON_MODELS_DIR))
-$(eval $(call gen_models,workbench,WORKBENCH_MODELS_DIR))
+# Apply the gen_bindings function to each crate
+$(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
+$(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
+$(eval $(call gen_bindings,state,STATE_MODELS_DIR))
+$(eval $(call gen_bindings,nls,NLS_MODELS_DIR))
+$(eval $(call gen_bindings,logging,LOGGING_MODELS_DIR))
+$(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
+$(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
+$(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
+$(eval $(call gen_bindings,workbench,WORKBENCH_MODELS_DIR))
 
-## Generate all TypeScript models
-.PHONY: gen-models
-gen-models: \
-	gen-collection-models \
-	gen-theme-models \
-	gen-state-models \
-	gen-nls-models \
-	gen-logging-models \
-	gen-environment-models \
-	gen-workspace-models \
-	gen-common-models \
-	gen-workbench-models
-
-# ======================================================
-# Zod Schema Generation
-# ======================================================
-
-# Zod Schema provides information about function calling arguments for the AI agent
-.PHONY: gen-zod-schemas
-gen-zod-schemas:
-	@cd misc/zod-generator && $(PNPM) run gen
+## Generate all TypeScript bindings
+.PHONY: gen-bindings
+gen-bindings: \
+	gen-collection-bindings \
+	gen-theme-bindings \
+	gen-state-bindings \
+	gen-nls-bindings \
+	gen-logging-bindings \
+	gen-environment-bindings \
+	gen-workspace-bindings \
+	gen-common-bindings \
+	gen-workbench-bindings
 
 # ======================================================
 # Utility Commands

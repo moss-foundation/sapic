@@ -40,8 +40,9 @@ function postprocessZod(tsPath: string, zodPath: string) {
       });
       zodFile.getVariableDeclaration(schemaName)?.remove();
     }
-    project.saveSync();
   }
+  zodFile.organizeImports();
+  project.saveSync();
 }
 
 function processFile(path: fs.PathLike) {
@@ -64,19 +65,19 @@ function processFile(path: fs.PathLike) {
   });
 }
 
-for (let path of PATHS) {
-  console.log(`Processing path ${path}`);
-  try {
-    const files = readdirSync(path, { recursive: true }) as string[];
-    for (let file of files) {
-      if (file.endsWith(".zod.ts")) {
-        continue;
-      }
-      let filePath = join(path, file);
-      console.log(`Processing file ${filePath}`);
-      processFile(filePath);
+let path = process.argv[2];
+
+console.log(`Processing path ${path}`);
+try {
+  const files = readdirSync(path, { recursive: true }) as string[];
+  for (let file of files) {
+    if (file.endsWith(".zod.ts")) {
+      continue;
     }
-  } catch (error) {
-    console.log(error);
+    let filePath = join(path, file);
+    console.log(`Processing file ${filePath}`);
+    processFile(filePath);
   }
+} catch (error) {
+  console.log(error);
 }
