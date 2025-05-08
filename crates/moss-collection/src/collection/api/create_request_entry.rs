@@ -6,9 +6,6 @@ use validator::Validate;
 
 use crate::{
     collection::Collection,
-    constants::{
-        DELETE_ENTRY_SPEC_FILE, GET_ENTRY_SPEC_FILE, POST_ENTRY_SPEC_FILE, PUT_ENTRY_SPEC_FILE,
-    },
     kdl::http::HttpRequestFile,
     models::{
         operations::{CreateRequestEntryInput, CreateRequestProtocolSpecificPayload},
@@ -18,7 +15,10 @@ use crate::{
 
 impl Collection {
     // TODO: return key or something
-    pub async fn create_request(&self, input: CreateRequestEntryInput) -> OperationResult<()> {
+    pub async fn create_request_entry(
+        &self,
+        input: CreateRequestEntryInput,
+    ) -> OperationResult<()> {
         input.validate()?;
 
         let worktree = self.worktree().await?;

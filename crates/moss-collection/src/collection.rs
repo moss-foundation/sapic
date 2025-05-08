@@ -231,3 +231,20 @@ impl Collection {
         Ok(())
     }
 }
+
+impl Collection {
+    #[cfg(test)]
+    pub async fn known_entries(&self) -> Result<()> {
+        use worktree::snapshot;
+
+        let snapshot = self.worktree().await?.lock().await;
+
+        let entries = snapshot
+            .iter_entries_by_prefix("")
+            .map(|(&id, entry)| (id, entry.clone()))
+            .collect::<Vec<_>>();
+        dbg!(entries);
+
+        Ok(())
+    }
+}

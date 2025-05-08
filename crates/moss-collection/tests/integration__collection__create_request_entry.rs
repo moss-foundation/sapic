@@ -13,7 +13,7 @@ async fn create_request_success() {
     let request_name = random_request_name();
 
     let create_request_result = collection
-        .create_request(CreateRequestEntryInput {
+        .create_request_entry(CreateRequestEntryInput {
             destination: PathBuf::from("requests").join(request_name.to_string()),
             url: None,
             payload: None,

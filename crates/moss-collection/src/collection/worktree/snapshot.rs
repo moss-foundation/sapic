@@ -28,9 +28,15 @@ pub(crate) struct Entry {
     pub file_id: FileId,
 }
 
-pub(super) type EntryRef = Arc<Entry>;
+impl Entry {
+    pub fn is_dir(&self) -> bool {
+        matches!(self.kind, EntryKind::Dir)
+    }
+}
 
-pub(crate) struct Snapshot {
+pub(crate) type EntryRef = Arc<Entry>;
+
+pub struct Snapshot {
     abs_path: Arc<Path>,
     entries_by_id: BPlusTreeMap<EntryId, EntryRef>,
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
@@ -98,6 +104,23 @@ impl Snapshot {
         self.entries_by_id.get(entry_id).cloned()
     }
 
+    pub fn entry_by_id(&self, id: EntryId) -> Option<&EntryRef> {
+        self.entries_by_id.get(&id)
+    }
+
+    /// Removes an entry and all its children (if it's a directory) from the snapshot.
+    ///
+    /// This method removes the specified entry from the snapshot's internal collections.
+    /// If the entry is a directory, it also recursively removes all entries whose paths
+    /// have the directory's path as a prefix.
+    ///
+    /// # Behavior
+    ///
+    /// - If the path doesn't exist in the snapshot, the method returns without making changes.
+    /// - If the path points to a file, only that file entry is removed.
+    /// - If the path points to a directory, the directory and all its contents (files and subdirectories)
+    ///   are removed recursively.
+    /// - Only exact path matches are considered; similar prefixes are not affected.
     pub fn remove_entry(&mut self, path: impl AsRef<Path>) {
         let path = path.as_ref();
         debug_assert!(path.is_relative());

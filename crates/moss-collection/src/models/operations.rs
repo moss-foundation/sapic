@@ -53,7 +53,7 @@ pub struct CreateRequestOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestEntryInput {
-    #[validate(custom(function = "validate_create_request_destination"))]
+    #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     #[ts(optional)]
     pub url: Option<String>,
@@ -67,7 +67,7 @@ pub struct CreateRequestEntryInput {
 /// - First segment must be 'requests'
 /// - Path must not contain invalid characters
 /// - Path must have at least one component after 'requests'
-fn validate_create_request_destination(destination: &Path) -> Result<(), ValidationError> {
+fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
     if destination.is_absolute() {
         return Err(ValidationError::new("Destination path cannot be absolute"));
     }
@@ -117,6 +117,34 @@ fn validate_create_request_destination(destination: &Path) -> Result<(), Validat
 // pub struct CreateRequestEntryOutput {
 //     pub id: EntryId,
 // }
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestDirEntryInput {
+    #[validate(custom(function = "validate_request_destination"))]
+    pub destination: PathBuf,
+}
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestDirEntryOutput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateRequestDirEntryInput {
+    pub id: EntryId,
+
+    /// A new name for the directory, if provided,
+    /// the directory will be renamed to this name.
+    #[ts(optional)]
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+}
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]

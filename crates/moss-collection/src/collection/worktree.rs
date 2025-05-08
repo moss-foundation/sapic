@@ -3,10 +3,10 @@ pub mod snapshot;
 
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
-use file_id::FileId;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use snapshot::EntryRef;
 use std::{
+    ops::Deref,
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
@@ -26,6 +26,14 @@ pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
     snapshot: Arc<Mutex<Snapshot>>,
+}
+
+impl Deref for Worktree {
+    type Target = Arc<Mutex<Snapshot>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.snapshot
+    }
 }
 
 impl Worktree {
