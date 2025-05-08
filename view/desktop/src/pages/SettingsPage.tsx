@@ -11,6 +11,7 @@ import { useSetLocale } from "@/hooks/locales/useSetLocale";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
+import LangchainAgent from "@/ai/LangchainAgent";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -165,6 +166,7 @@ export const Settings = () => {
 
   return (
     <main className="">
+      <LangchainAgent />
       <div className="p-5">
         <h1 className="mb-5 text-2xl font-bold">{t("settings")}</h1>
 
