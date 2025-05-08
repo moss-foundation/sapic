@@ -167,6 +167,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
           button.removeEventListener("dblclick", handleDoubleClick);
         };
       }
+      return () => {};
     }, [editable, ref, isEditing]);
 
     return (
