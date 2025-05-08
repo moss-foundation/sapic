@@ -13,6 +13,9 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.5.2",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
+    "@langchain/core": "^0.3.53",
+    "@langchain/langgraph": "^0.2.68",
+    "@langchain/ollama": "^0.2.0",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.2.2",
     "@radix-ui/react-compose-refs": "^1.1.1",
@@ -47,6 +50,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.4.1",
+    "zod": "^3.24.4",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

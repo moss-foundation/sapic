@@ -1,48 +1,49 @@
 {
-    "name": "@repo/moss-state",
-    "exports": {
-      ".": "./index.ts"
-    },
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
-    },
-    "devDependencies": {
-      "@repo/typescript-config": "workspace:*",
-      "@repo/moss-theme": "workspace:*",
-      "@repo/moss-nls": "workspace:*"
-    },
-    "dependencies": {
-      "typescript": "^5.7.2"
-    },
-    "tsImportRules": {
-      "bindings/types.ts": {
-        "@repo/moss-theme": {
-          "types": [
-            "ColorThemeInfo"
-          ],
-          "is_type_import": true
-        },
-        "@repo/moss-nls": {
-          "types": [
-            "LocaleInfo"
-          ],
-          "is_type_import": true
-        }
+  "name": "@repo/moss-state",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@repo/moss-nls": "workspace:*",
+    "@repo/moss-theme": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "typescript": "^5.7.2",
+    "zod": "^3.24.4"
+  },
+  "tsImportRules": {
+    "bindings/types.ts": {
+      "@repo/moss-theme": {
+        "types": [
+          "ColorThemeInfo"
+        ],
+        "is_type_import": true
       },
-      "bindings/operations.ts": {
-        "@repo/moss-theme": {
-          "types": [
-            "ColorThemeInfo"
-          ],
-          "is_type_import": true
-        },
-        "@repo/moss-nls": {
-          "types": [
-            "LocaleInfo"
-          ],
-          "is_type_import": true
-        }
+      "@repo/moss-nls": {
+        "types": [
+          "LocaleInfo"
+        ],
+        "is_type_import": true
+      }
+    },
+    "bindings/operations.ts": {
+      "@repo/moss-theme": {
+        "types": [
+          "ColorThemeInfo"
+        ],
+        "is_type_import": true
+      },
+      "@repo/moss-nls": {
+        "types": [
+          "LocaleInfo"
+        ],
+        "is_type_import": true
       }
     }
   }
+}
