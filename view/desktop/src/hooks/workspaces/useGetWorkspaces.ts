@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { ListWorkspacesOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
-export const USE_GET_WORKSPACE_QUERY_KEY = "getWorkspace";
+export const USE_GET_WORKSPACES_QUERY_KEY = "getWorkspace";
 
 const getWorkspaceFn = async (): Promise<ListWorkspacesOutput> => {
   const result = await invokeTauriIpc<ListWorkspacesOutput>("list_workspaces");
@@ -16,7 +16,7 @@ const getWorkspaceFn = async (): Promise<ListWorkspacesOutput> => {
 
 export const useGetWorkspaces = () => {
   return useQuery<ListWorkspacesOutput, Error>({
-    queryKey: [USE_GET_WORKSPACE_QUERY_KEY],
+    queryKey: [USE_GET_WORKSPACES_QUERY_KEY],
     queryFn: getWorkspaceFn,
   });
 };

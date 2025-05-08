@@ -4,7 +4,7 @@ import { OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "./useDescribeWorkspaceState";
-import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
+import { USE_GET_WORKSPACES_QUERY_KEY } from "./useGetWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
@@ -28,7 +28,7 @@ export const useOpenWorkspace = () => {
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACES_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY] });
       setAllow(true);
     },
