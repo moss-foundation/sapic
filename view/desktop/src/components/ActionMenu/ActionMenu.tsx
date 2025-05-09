@@ -2,6 +2,7 @@ import { cva } from "class-variance-authority";
 import React from "react";
 
 import { Icon, Icons } from "@/lib/ui/Icon";
+import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { cn } from "@/utils";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
@@ -436,6 +437,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     if (item.type === "accordion" && item.items?.length) {
       const isExpanded = expandedAccordions[item.id] || false;
       const itemsCount = item.items.length;
+      const needsScrollbar = itemsCount > 5;
 
       return (
         <div key={item.id} className="w-full">
@@ -461,12 +463,21 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
 
           {isExpanded && (
             <div className="w-full overflow-hidden pl-3">
-              {item.items.map((subItem) => (
-                <div key={subItem.id} className="w-full overflow-hidden">
-                  {/* Each subitem is rendered through renderMenuItem which will handle onSelect properly */}
-                  {renderMenuItem(subItem)}
-                </div>
-              ))}
+              {needsScrollbar ? (
+                <Scrollbar className="max-h-40">
+                  {item.items.map((subItem) => (
+                    <div key={subItem.id} className="w-full overflow-hidden py-0.5">
+                      {renderMenuItem(subItem)}
+                    </div>
+                  ))}
+                </Scrollbar>
+              ) : (
+                item.items.map((subItem) => (
+                  <div key={subItem.id} className="w-full overflow-hidden py-0.5">
+                    {renderMenuItem(subItem)}
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

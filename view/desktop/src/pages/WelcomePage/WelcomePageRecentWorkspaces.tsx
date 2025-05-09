@@ -1,14 +1,14 @@
 import { useState } from "react";
 
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
 import WelcomePageLink from "./WelcomePageLink";
 
 export const WelcomePageRecentWorkspaces = () => {
   const { data: workspaces } = useGetWorkspaces();
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   const [showAll, setShowAll] = useState(false);
 
@@ -19,7 +19,11 @@ export const WelcomePageRecentWorkspaces = () => {
       <h2 className="text-lg">Recent</h2>
       <div className="flex flex-col items-start gap-1.5">
         {workspacesToShow?.map((workspace) => (
-          <WelcomePageLink key={workspace.name} label={workspace.name} onClick={() => openWorkspace(workspace.name)} />
+          <WelcomePageLink
+            key={workspace.name}
+            label={workspace.name}
+            onClick={() => openAndSelectWorkspace(workspace.name)}
+          />
         ))}
       </div>
 
