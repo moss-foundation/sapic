@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Scrollbar } from "@/components/Scrollbar";
+import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { DockviewGroupLocation, DockviewPanelApi, DockviewPanelRenderer } from "@repo/moss-tabs";
 
 export interface PanelApiMetadata {

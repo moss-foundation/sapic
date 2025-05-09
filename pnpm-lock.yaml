@@ -277,7 +277,7 @@ importers:
         specifier: ^22.10.1
         version: 22.15.3
 
-  tools/zod-generator:
+  tools:
     dependencies:
       ts-morph:
         specifier: ^25.0.1
@@ -288,16 +288,6 @@ importers:
       zod:
         specifier: ^3.24.4
         version: 3.24.4
-    devDependencies:
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.15.3
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@types/node@22.15.3)(typescript@5.8.3)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
 
   view/desktop:
     dependencies:

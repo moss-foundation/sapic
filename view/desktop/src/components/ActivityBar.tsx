@@ -1,8 +1,7 @@
 import { ComponentPropsWithoutRef, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { DropIndicator } from "@/components";
-import { Icon } from "@/components/Icon";
+import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn, swapListById } from "@/utils";
@@ -18,6 +17,8 @@ import {
   monitorForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
+
+import DropIndicator from "./DropIndicator";
 
 export const ActivityBar = () => {
   const { items, position, setItems } = useActivityBarStore();

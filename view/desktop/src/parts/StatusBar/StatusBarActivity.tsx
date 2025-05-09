@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Icon } from "@/components";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ActivityEvent } from "@repo/moss-workbench";
 

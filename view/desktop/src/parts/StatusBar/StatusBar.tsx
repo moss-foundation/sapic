@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
 import { createPortal } from "react-dom";
 
-import { Icon, Icons } from "@/components";
 import { Divider } from "@/components/Divider";
+import { Icon, Icons } from "@/lib/ui";
 import { cn, swapListById } from "@/utils";
 import {
   attachClosestEdge,

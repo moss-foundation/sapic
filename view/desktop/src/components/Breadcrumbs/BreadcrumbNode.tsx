@@ -1,7 +1,7 @@
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-import Icon from "../Icon";
+import Icon from "../../lib/ui/Icon";
 import NodeLabel from "../Tree/NodeLabel";
 import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
 import { TreeNodeProps } from "../Tree/types";

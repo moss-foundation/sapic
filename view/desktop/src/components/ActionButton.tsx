@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
-import { Icon, Icons } from "@/components";
+import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 
 interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

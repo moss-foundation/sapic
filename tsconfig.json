@@ -35,7 +35,7 @@
       "path": "view/desktop"
     },
     {
-      "path": "tools/zod-generator"
+      "path": "tools"
     }
   ]
 }

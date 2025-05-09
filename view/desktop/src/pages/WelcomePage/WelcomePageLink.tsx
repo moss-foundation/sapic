@@ -1,4 +1,4 @@
-import { Icon } from "@/components";
+import { Icon } from "@/lib/ui";
 
 export interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   label: string;
