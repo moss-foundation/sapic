@@ -1,15 +1,18 @@
 pub mod api;
+mod utils;
+pub mod worktree;
 
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_fs::{FileSystem, RenameOptions};
-use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
-use moss_storage::collection_storage::CollectionStorageImpl;
 use moss_storage::CollectionStorage;
+use moss_storage::collection_storage::CollectionStorageImpl;
+use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::{mpsc, OnceCell};
+use tokio::sync::{OnceCell, mpsc};
+use worktree::Worktree;
 
 use crate::collection_registry::{
     CollectionRegistry, CollectionRequestData, CollectionRequestGroupData, RequestNode,
@@ -18,7 +21,6 @@ use crate::constants::*;
 use crate::indexer::{
     IndexJob, IndexMessage, IndexedNode, IndexedRequestGroupNode, IndexedRequestNode, IndexerHandle,
 };
-use crate::worktree::Worktree;
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -61,15 +63,14 @@ impl Collection {
         })
     }
 
-    async fn worktree(&self) -> Result<&Arc<Worktree>> {
+    pub async fn worktree(&self) -> Result<&Arc<Worktree>> {
         self.worktree
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(
                     self.fs.clone(),
                     Arc::from(self.abs_path.clone()),
                     self.next_entry_id.clone(),
-                )
-                .await?;
+                );
 
                 Ok(Arc::new(worktree))
             })

@@ -1,17 +1,17 @@
 use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
+use super::types::PathChangeKind;
 use crate::models::{
     primitives::EntryId,
     types::{
         HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
-        UnitType,
     },
 };
 
@@ -32,9 +32,9 @@ pub enum CreateRequestProtocolSpecificPayload {
     },
 }
 
+// TODO: remove this
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestInput {
     #[validate(length(min = 1))]
     pub name: String,
@@ -46,9 +46,9 @@ pub struct CreateRequestInput {
     pub payload: Option<CreateRequestProtocolSpecificPayload>,
 }
 
+// TODO: remove this
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestOutput {
     pub key: ResourceKey,
 }
@@ -124,18 +124,134 @@ pub struct RenameRequestGroupOutput {
     pub affected_items: Vec<ResourceKey>,
 }
 
-#[derive(Debug, Serialize, TS)]
+// Create Request Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct EntryInfo {
-    pub id: EntryId,
-    pub path: PathBuf,
+pub struct CreateRequestEntryInput {
+    #[validate(custom(function = "validate_request_destination"))]
+    pub destination: PathBuf,
+    #[ts(optional)]
+    pub url: Option<String>,
+    #[ts(optional)]
+    pub payload: Option<CreateRequestProtocolSpecificPayload>,
 }
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Create Request Directory Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestDirEntryInput {
+    #[validate(custom(function = "validate_request_destination"))]
+    pub destination: PathBuf,
+}
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestDirEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Update Request Directory Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateRequestDirEntryInput {
+    pub id: EntryId,
+
+    /// A new name for the directory, if provided,
+    /// the directory will be renamed to this name.
+    #[ts(optional)]
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateRequestDirEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Delete Request Directory Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Stream Entries By Prefixes
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
 
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamEntriesByPrefixesEvent(pub Vec<EntryInfo>);
+/// Validates the destination path for creating a request entry.
+/// Requirements:
+/// - Path must not be absolute
+/// - First segment must be 'requests'
+/// - Path must not contain invalid characters
+/// - Path must have at least one component after 'requests'
+fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
+    if destination.is_absolute() {
+        return Err(ValidationError::new("Destination path cannot be absolute"));
+    }
+
+    if destination.as_os_str().is_empty() {
+        return Err(ValidationError::new("Destination path cannot be empty"));
+    }
+
+    // Check that the first segment is 'requests'
+    let mut components = destination.components();
+    let first = components.next();
+
+    match first {
+        Some(std::path::Component::Normal(name)) => {
+            if name != "requests" {
+                return Err(ValidationError::new(
+                    "First path segment must be 'requests'",
+                ));
+            }
+        }
+        _ => {
+            return Err(ValidationError::new(
+                "First path segment must be 'requests'",
+            ));
+        }
+    }
+
+    // Ensure there's at least one more component after 'requests'
+    if components.next().is_none() {
+        return Err(ValidationError::new(
+            "Path must contain at least one component after 'requests'",
+        ));
+    }
+
+    // Check for invalid path characters
+    let path_str = destination.to_string_lossy();
+    if path_str.contains("..") || path_str.contains("//") {
+        return Err(ValidationError::new("Path contains invalid sequences"));
+    }
+
+    Ok(())
+}

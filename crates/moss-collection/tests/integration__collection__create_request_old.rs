@@ -17,7 +17,7 @@ async fn create_request_success() {
     let request_name = random_request_name();
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -50,9 +50,7 @@ async fn create_request_success() {
     );
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -61,7 +59,7 @@ async fn create_request_empty_name() {
 
     let request_name = "".to_string();
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.to_string(),
             relative_path: None,
             url: None,
@@ -75,9 +73,7 @@ async fn create_request_empty_name() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -86,7 +82,7 @@ async fn create_request_already_exists() {
 
     let request_name = random_request_name();
     collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.clone(),
             relative_path: None,
             url: None,
@@ -96,7 +92,7 @@ async fn create_request_already_exists() {
         .unwrap();
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.clone(),
             relative_path: None,
             url: None,
@@ -110,9 +106,7 @@ async fn create_request_already_exists() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -126,7 +120,7 @@ async fn create_request_special_chars() {
 
     for name in request_name_list {
         let create_request_result = collection
-            .create_request(CreateRequestInput {
+            .create_request_old(CreateRequestInput {
                 name: name.clone(),
                 relative_path: None,
                 url: None,
@@ -156,9 +150,7 @@ async fn create_request_special_chars() {
                 protocol: RequestProtocol::Http(HttpMethod::Get),
             }));
     }
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -167,7 +159,7 @@ async fn create_request_with_relative_path() {
 
     let request_name = random_request_name();
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.clone(),
             relative_path: Some(PathBuf::from("relative")),
             url: None,
@@ -203,9 +195,7 @@ async fn create_request_with_relative_path() {
     );
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -214,7 +204,7 @@ async fn create_request_with_special_chars_in_relative_path() {
 
     let request_name = random_request_name();
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name.clone(),
             relative_path: Some(PathBuf::from("rela.tive")),
             url: None,
@@ -250,9 +240,7 @@ async fn create_request_with_special_chars_in_relative_path() {
     );
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -260,7 +248,7 @@ async fn create_request_http_get() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "get".to_string(),
             relative_path: None,
             url: None,
@@ -297,9 +285,7 @@ async fn create_request_http_get() {
         }
     );
 
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -307,7 +293,7 @@ async fn create_request_http_post() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "post".to_string(),
             relative_path: None,
             url: None,
@@ -344,9 +330,7 @@ async fn create_request_http_post() {
         }
     );
 
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -354,7 +338,7 @@ async fn create_request_http_put() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "put".to_string(),
             relative_path: None,
             url: None,
@@ -391,9 +375,7 @@ async fn create_request_http_put() {
         }
     );
 
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }
 
 #[tokio::test]
@@ -401,7 +383,7 @@ async fn create_request_http_delete() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let create_request_result = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "delete".to_string(),
             relative_path: None,
             url: None,
@@ -438,7 +420,5 @@ async fn create_request_http_delete() {
         }
     );
 
-    {
-        tokio::fs::remove_dir_all(&collection_path).await.unwrap()
-    }
+    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
 }

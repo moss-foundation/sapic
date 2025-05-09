@@ -3,6 +3,8 @@ use thiserror::Error;
 
 pub type AnyEntity = Vec<u8>;
 
+pub type DatabaseResult<T> = Result<T, DatabaseError>;
+
 #[derive(Error, Debug)]
 pub enum DatabaseError {
     #[error("entity with key {key} is not found")]

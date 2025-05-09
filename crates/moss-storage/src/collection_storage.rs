@@ -1,15 +1,19 @@
 pub mod entities;
 pub mod request_store;
-
+pub mod state_store;
 use anyhow::Result;
 use arc_swap::ArcSwap;
 use async_trait::async_trait;
-use entities::request_store_entities::RequestNodeEntity;
+use entities::{
+    request_store_entities::RequestNodeEntity, state_store_entries::WorktreeEntryEntity,
+};
 use moss_db::{
-    bincode_table::BincodeTable, common::DatabaseError, ClientState, DatabaseClient, ReDbClient,
-    Transaction,
+    AnyEntity, ClientState, DatabaseClient, ReDbClient, Transaction,
+    bincode_table::BincodeTable,
+    common::{DatabaseError, DatabaseResult},
 };
 use request_store::RequestStoreImpl;
+use state_store::StateStoreImpl;
 
 use std::{
     collections::HashMap,
@@ -20,35 +24,43 @@ use std::{
 };
 use tokio::sync::Notify;
 
-use crate::{common::Transactional, CollectionStorage, ResettableStorage};
+use crate::{CollectionStorage, ResettableStorage, common::Transactional};
 
 const COLLECTION_STATE_DB_NAME: &str = "state.db";
 
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestNodeEntity>;
 pub trait RequestStore: Send + Sync + 'static {
-    fn list_request_nodes(&self) -> Result<HashMap<PathBuf, RequestNodeEntity>, DatabaseError>;
+    fn list_request_nodes(&self) -> DatabaseResult<HashMap<PathBuf, RequestNodeEntity>>;
     fn upsert_request_node(
         &self,
         txn: &mut Transaction,
         path: PathBuf,
         node: RequestNodeEntity,
-    ) -> Result<(), DatabaseError>;
+    ) -> DatabaseResult<()>;
     fn rekey_request_node(
         &self,
         txn: &mut Transaction,
         old_path: PathBuf,
         new_path: PathBuf,
-    ) -> Result<(), DatabaseError>;
-    fn delete_request_node(
+    ) -> DatabaseResult<()>;
+    fn delete_request_node(&self, txn: &mut Transaction, path: PathBuf) -> DatabaseResult<()>;
+}
+
+pub(crate) type StateStoreTable<'a> = BincodeTable<'a, String, AnyEntity>;
+
+pub trait StateStore: Send + Sync + 'static {
+    fn list_worktree_entries(&self) -> DatabaseResult<Vec<WorktreeEntryEntity>>;
+    fn upsert_worktree_entry(
         &self,
         txn: &mut Transaction,
-        path: PathBuf,
-    ) -> Result<(), DatabaseError>;
+        entry: WorktreeEntryEntity,
+    ) -> DatabaseResult<()>;
 }
 
 struct ResettableStorageCell {
     db_client: ReDbClient,
     request_store: Arc<dyn RequestStore>,
+    state_store: Arc<dyn StateStore>,
 }
 
 impl ResettableStorageCell {
@@ -57,9 +69,11 @@ impl ResettableStorageCell {
             .with_table(&request_store::TABLE_REQUESTS)?;
 
         let request_store = Arc::new(RequestStoreImpl::new(db_client.clone()));
+        let state_store = Arc::new(StateStoreImpl::new(db_client.clone()));
         Ok(Self {
             db_client,
             request_store,
+            state_store,
         })
     }
 }
@@ -105,6 +119,15 @@ impl CollectionStorage for CollectionStorageImpl {
         loop {
             match self.state.load().as_ref() {
                 ClientState::Loaded(cell) => return cell.request_store.clone(),
+                ClientState::Reloading { notify } => notify.notified().await,
+            }
+        }
+    }
+
+    async fn state_store(&self) -> Arc<dyn StateStore> {
+        loop {
+            match self.state.load().as_ref() {
+                ClientState::Loaded(cell) => return cell.state_store.clone(),
                 ClientState::Reloading { notify } => notify.notified().await,
             }
         }

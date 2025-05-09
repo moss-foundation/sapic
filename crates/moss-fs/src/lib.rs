@@ -61,10 +61,11 @@ pub trait FileSystem: Send + Sync {
     async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> Result<()>;
 
     async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()>;
+
     async fn create_file_with(
         &self,
         path: &Path,
-        content: String,
+        content: String, // TODO: Change to Vec<u8>
         options: CreateOptions,
     ) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;

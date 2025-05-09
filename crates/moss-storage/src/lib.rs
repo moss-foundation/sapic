@@ -8,18 +8,14 @@ use async_trait::async_trait;
 use common::Transactional;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc};
 
-use collection_storage::*;
-use global_storage::*;
-use workspace_storage::*;
-
 pub trait GlobalStorage: Transactional + Send + Sync {
-    fn workspaces_store(&self) -> Arc<dyn WorkspacesStore>;
+    fn workspaces_store(&self) -> Arc<dyn global_storage::WorkspacesStore>;
 }
 
 pub trait WorkspaceStorage: Transactional + Send + Sync {
-    fn collection_store(&self) -> Arc<dyn CollectionStore>;
-    fn environment_store(&self) -> Arc<dyn EnvironmentStore>;
-    fn state_store(&self) -> Arc<dyn StateStore>;
+    fn collection_store(&self) -> Arc<dyn workspace_storage::CollectionStore>;
+    fn environment_store(&self) -> Arc<dyn workspace_storage::EnvironmentStore>;
+    fn state_store(&self) -> Arc<dyn workspace_storage::StateStore>;
 }
 
 #[async_trait]
@@ -33,5 +29,6 @@ pub trait ResettableStorage {
 
 #[async_trait]
 pub trait CollectionStorage: ResettableStorage + Transactional + Send + Sync {
-    async fn request_store(&self) -> Arc<dyn RequestStore>;
+    async fn request_store(&self) -> Arc<dyn collection_storage::RequestStore>;
+    async fn state_store(&self) -> Arc<dyn collection_storage::StateStore>;
 }
