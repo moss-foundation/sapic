@@ -1,6 +1,6 @@
 pub mod api;
 mod utils;
-mod worktree;
+pub mod worktree;
 
 use anyhow::{Context, Result};
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
@@ -63,7 +63,7 @@ impl Collection {
         })
     }
 
-    async fn worktree(&self) -> Result<&Arc<Worktree>> {
+    pub async fn worktree(&self) -> Result<&Arc<Worktree>> {
         self.worktree
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(
@@ -227,23 +227,6 @@ impl Collection {
         });
 
         self.collection_storage.reset(new_path, after_drop).await?;
-
-        Ok(())
-    }
-}
-
-impl Collection {
-    #[cfg(test)]
-    pub async fn known_entries(&self) -> Result<()> {
-        use worktree::snapshot;
-
-        let snapshot = self.worktree().await?.lock().await;
-
-        let entries = snapshot
-            .iter_entries_by_prefix("")
-            .map(|(&id, entry)| (id, entry.clone()))
-            .collect::<Vec<_>>();
-        dbg!(entries);
 
         Ok(())
     }

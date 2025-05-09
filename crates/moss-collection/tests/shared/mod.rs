@@ -23,7 +23,7 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     std::fs::create_dir_all(collection_path.clone()).unwrap();
 
     // Create collection/requests to prevent indexation error
-    std::fs::create_dir_all(collection_path.join("requests")).unwrap();
+    // std::fs::create_dir_all(collection_path.join("requests")).unwrap();
 
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();

@@ -8,7 +8,9 @@ use crate::{
     collection::Collection,
     kdl::http::HttpRequestFile,
     models::{
-        operations::{CreateRequestEntryInput, CreateRequestProtocolSpecificPayload},
+        operations::{
+            CreateRequestEntryInput, CreateRequestEntryOutput, CreateRequestProtocolSpecificPayload,
+        },
         types::HttpMethod,
     },
 };
@@ -18,7 +20,7 @@ impl Collection {
     pub async fn create_request_entry(
         &self,
         input: CreateRequestEntryInput,
-    ) -> OperationResult<()> {
+    ) -> OperationResult<CreateRequestEntryOutput> {
         input.validate()?;
 
         let worktree = self.worktree().await?;
@@ -65,16 +67,20 @@ impl Collection {
         // The directory extension is necessary to distinguish regular subdirs from unit dirs.
         encoded_path.set_file_name(format!("{}.request", last_segment.to_string_lossy()));
 
-        let _dir_entry = worktree.create_entry(&encoded_path, true, None).await?;
+        let mut changes = vec![];
+
+        let create_dir_changes = worktree.create_entry(&encoded_path, true, None).await?;
+        changes.extend(create_dir_changes.into_iter().cloned());
 
         let spec_file_name = format!("{}.sapic", protocol_as_string);
-        let _file_entry = worktree
+        let create_file_changes = worktree
             .create_entry(
                 encoded_path.join(spec_file_name),
                 false,
                 Some(content_as_bytes),
             )
             .await?;
+        changes.extend(create_file_changes.into_iter().cloned());
 
         let mut txn = self.collection_storage.begin_write().await?;
         let request_store = self.collection_storage.request_store().await;
@@ -85,6 +91,8 @@ impl Collection {
         )?;
         txn.commit()?;
 
-        Ok(())
+        Ok(CreateRequestEntryOutput {
+            changes: changes.into(),
+        })
     }
 }

@@ -16,8 +16,8 @@ impl Collection {
         let worktree = self.worktree().await?;
 
         let encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
-        let dir_entry = worktree.create_entry(&encoded_path, true, None).await?;
+        let changes = worktree.create_entry(&encoded_path, true, None).await?;
 
-        Ok(CreateRequestDirEntryOutput { id: dir_entry.id })
+        Ok(CreateRequestDirEntryOutput { changes })
     }
 }

@@ -9,7 +9,7 @@ use crate::{
         Collection,
         worktree::snapshot::{self, EntryRef},
     },
-    models::operations::UpdateRequestDirEntryInput,
+    models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
     worktree,
 };
 
@@ -17,7 +17,7 @@ impl Collection {
     pub async fn update_request_dir_entry(
         &self,
         input: UpdateRequestDirEntryInput,
-    ) -> OperationResult<()> {
+    ) -> OperationResult<UpdateRequestDirEntryOutput> {
         input.validate()?;
 
         let snapshot = self.worktree().await?.lock().await;
@@ -35,7 +35,9 @@ impl Collection {
             self.process_dir_renaming(&entry, &new_name).await?;
         }
 
-        Ok(())
+        todo!()
+
+        // Ok(())
     }
 
     async fn process_dir_renaming(&self, entry: &EntryRef, new_name: &str) -> OperationResult<()> {

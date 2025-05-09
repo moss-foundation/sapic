@@ -4,7 +4,6 @@ pub mod snapshot;
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use snapshot::EntryRef;
 use std::{
     ops::Deref,
     path::{Path, PathBuf},
@@ -12,9 +11,14 @@ use std::{
 };
 use tokio::sync::{Mutex, mpsc};
 
-use crate::models::primitives::EntryId;
+use crate::models::{
+    primitives::EntryId,
+    types::{EntryKind, PathChangeKind},
+};
 
-use self::snapshot::{Entry, EntryKind, Snapshot};
+use self::snapshot::{Entry, Snapshot};
+
+pub(crate) type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
 
 struct ScanJob {
     abs_path: Arc<Path>,
@@ -26,6 +30,7 @@ pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
     snapshot: Arc<Mutex<Snapshot>>,
+    prev_snapshot: Arc<Mutex<Snapshot>>,
 }
 
 impl Deref for Worktree {
@@ -48,7 +53,8 @@ impl Worktree {
         Self {
             fs,
             next_entry_id,
-            snapshot: Arc::new(Mutex::new(initial_snapshot)),
+            snapshot: Arc::new(Mutex::new(initial_snapshot.clone())),
+            prev_snapshot: Arc::new(Mutex::new(initial_snapshot)),
         }
     }
 
@@ -102,37 +108,50 @@ impl Worktree {
         path: impl AsRef<Path>,
         is_dir: bool,
         content: Option<Vec<u8>>,
-    ) -> Result<EntryRef> {
+    ) -> Result<ChangesDiffSet> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
 
         let abs_path = self.absolutize(&path).await?;
-        let entry = if is_dir {
+        let changes = if is_dir {
             let first_segment = path.components().next().context("Path is empty")?;
+            let lowest_ancestor_path = self.snapshot.lock().await.lowest_ancestor_path(&path);
 
             self.fs.create_dir(&abs_path).await?;
 
-            let metadata = tokio::fs::metadata(&abs_path).await?;
-            let entry = Arc::new(Entry {
+            let first_segment_path: Arc<Path> = lowest_ancestor_path.join(first_segment).into();
+            let first_segment_abs_path = self.absolutize(&first_segment_path).await?;
+            let first_segment_metadata = tokio::fs::metadata(&first_segment_abs_path)
+                .await
+                .context("Failed to get metadata for first segment")?;
+            let first_segment_entry = Arc::new(Entry {
                 id: EntryId::new(&self.next_entry_id),
-                path: Arc::clone(&path),
+                path: Arc::clone(&first_segment_path),
                 kind: EntryKind::Dir,
                 unit_type: None,
-                mtime: metadata.modified().ok(),
-                file_id: file_id::get_file_id(&abs_path)?,
+                mtime: first_segment_metadata.modified().ok(),
+                file_id: file_id::get_file_id(&first_segment_abs_path)?,
             });
 
-            let lowest_ancestor_path = self.snapshot.lock().await.lowest_ancestor_path(&path);
-
-            // Scan the path to ensure all the entries are in the snapshot.
-            let entries = self.scan(lowest_ancestor_path.join(first_segment)).await?;
-
-            let mut snapshot_lock = self.snapshot.lock().await;
-            for e in entries {
-                snapshot_lock.create_entry(Arc::new(e));
+            {
+                let mut snapshot_lock = self.snapshot.lock().await;
+                snapshot_lock.create_entry(Arc::clone(&first_segment_entry));
             }
 
-            entry
+            let entries = self.scan(lowest_ancestor_path.join(first_segment)).await?;
+            let mut changes = vec![(
+                first_segment_path,
+                first_segment_entry.id,
+                PathChangeKind::Created,
+            )];
+
+            let mut snapshot_lock = self.snapshot.lock().await;
+            for e in entries.into_iter().map(Arc::new) {
+                changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
+                snapshot_lock.create_entry(e);
+            }
+
+            changes
         } else {
             self.fs
                 .create_file_with(
@@ -148,7 +167,7 @@ impl Worktree {
             let metadata = tokio::fs::metadata(&abs_path).await?;
             let entry = Arc::new(Entry {
                 id: EntryId::new(&self.next_entry_id),
-                path,
+                path: Arc::clone(&path),
                 kind: EntryKind::File,
                 unit_type: None,
                 mtime: metadata.modified().ok(),
@@ -158,13 +177,13 @@ impl Worktree {
             let mut snapshot_lock = self.snapshot.lock().await;
             snapshot_lock.create_entry(Arc::clone(&entry));
 
-            entry
+            vec![(path.into(), entry.id, PathChangeKind::Created)]
         };
 
-        Ok(entry)
+        Ok(ChangesDiffSet::from(changes))
     }
 
-    pub async fn remove_entry(&self, path: impl AsRef<Path>) -> Result<()> {
+    pub async fn remove_entry(&self, path: impl AsRef<Path>) -> Result<ChangesDiffSet> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
@@ -211,16 +230,22 @@ impl Worktree {
                 .await?;
         }
 
-        snapshot_lock.remove_entry(path);
+        let removed_entries = snapshot_lock.remove_entry(path);
+        drop(snapshot_lock);
 
-        Ok(())
+        let changes = removed_entries
+            .into_iter()
+            .map(|entry| (entry.path.clone(), entry.id, PathChangeKind::Removed))
+            .collect::<Vec<_>>();
+
+        Ok(ChangesDiffSet::from(changes))
     }
 
     pub async fn rename_entry(
         &self,
         old_path: impl AsRef<Path>,
         new_path: impl AsRef<Path>,
-    ) -> Result<()> {
+    ) -> Result<ChangesDiffSet> {
         let old_path = old_path.as_ref();
         let new_path = new_path.as_ref();
         debug_assert!(old_path.is_relative());
@@ -242,13 +267,23 @@ impl Worktree {
             )
             .await?;
 
-        snapshot_lock.remove_entry(old_path);
+        let removed_entries = snapshot_lock.remove_entry(old_path);
 
-        for entry in self.scan(new_path).await? {
-            snapshot_lock.create_entry(entry.into());
-        }
+        // Scan new path and add the entries with Created kind
+        // let new_entries = self.scan(new_path).await?;
+        // for entry in new_entries {
+        //     let entry_ref = Arc::new(entry);
+        //     changes.push((
+        //         entry_ref.path.clone(),
+        //         entry_ref.id,
+        //         PathChangeKind::Created,
+        //     ));
+        //     snapshot_lock.create_entry(entry_ref);
+        // }
 
-        Ok(())
+        // Ok(ChangesDiffSet::from(changes))
+
+        todo!()
     }
 
     pub async fn initial_scan(&self) -> Result<()> {

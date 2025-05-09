@@ -1,9 +1,13 @@
 use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
+use super::types::{Entry, PathChangeKind};
 use crate::models::{
     primitives::EntryId,
     types::{
@@ -49,6 +53,8 @@ pub struct CreateRequestOutput {
     pub key: ResourceKey,
 }
 
+// Create Request Entry
+
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -61,62 +67,14 @@ pub struct CreateRequestEntryInput {
     pub payload: Option<CreateRequestProtocolSpecificPayload>,
 }
 
-/// Validates the destination path for creating a request entry.
-/// Requirements:
-/// - Path must not be absolute
-/// - First segment must be 'requests'
-/// - Path must not contain invalid characters
-/// - Path must have at least one component after 'requests'
-fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
-    if destination.is_absolute() {
-        return Err(ValidationError::new("Destination path cannot be absolute"));
-    }
-
-    if destination.as_os_str().is_empty() {
-        return Err(ValidationError::new("Destination path cannot be empty"));
-    }
-
-    // Check that the first segment is 'requests'
-    let mut components = destination.components();
-    let first = components.next();
-
-    match first {
-        Some(std::path::Component::Normal(name)) => {
-            if name != "requests" {
-                return Err(ValidationError::new(
-                    "First path segment must be 'requests'",
-                ));
-            }
-        }
-        _ => {
-            return Err(ValidationError::new(
-                "First path segment must be 'requests'",
-            ));
-        }
-    }
-
-    // Ensure there's at least one more component after 'requests'
-    if components.next().is_none() {
-        return Err(ValidationError::new(
-            "Path must contain at least one component after 'requests'",
-        ));
-    }
-
-    // Check for invalid path characters
-    let path_str = destination.to_string_lossy();
-    if path_str.contains("..") || path_str.contains("//") {
-        return Err(ValidationError::new("Path contains invalid sequences"));
-    }
-
-    Ok(())
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateRequestEntryOutput {
+    pub changes: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
-// #[derive(Clone, Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct CreateRequestEntryOutput {
-//     pub id: EntryId,
-// }
+// Create Request Directory Entry
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -130,8 +88,10 @@ pub struct CreateRequestDirEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestDirEntryOutput {
-    pub id: EntryId,
+    pub changes: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
+
+// Update Request Directory Entry
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -144,6 +104,13 @@ pub struct UpdateRequestDirEntryInput {
     #[ts(optional)]
     #[validate(length(min = 1))]
     pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateRequestDirEntryOutput {
+    pub changes: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -229,3 +196,53 @@ pub struct EntryInfo {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
+
+/// Validates the destination path for creating a request entry.
+/// Requirements:
+/// - Path must not be absolute
+/// - First segment must be 'requests'
+/// - Path must not contain invalid characters
+/// - Path must have at least one component after 'requests'
+fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
+    if destination.is_absolute() {
+        return Err(ValidationError::new("Destination path cannot be absolute"));
+    }
+
+    if destination.as_os_str().is_empty() {
+        return Err(ValidationError::new("Destination path cannot be empty"));
+    }
+
+    // Check that the first segment is 'requests'
+    let mut components = destination.components();
+    let first = components.next();
+
+    match first {
+        Some(std::path::Component::Normal(name)) => {
+            if name != "requests" {
+                return Err(ValidationError::new(
+                    "First path segment must be 'requests'",
+                ));
+            }
+        }
+        _ => {
+            return Err(ValidationError::new(
+                "First path segment must be 'requests'",
+            ));
+        }
+    }
+
+    // Ensure there's at least one more component after 'requests'
+    if components.next().is_none() {
+        return Err(ValidationError::new(
+            "Path must contain at least one component after 'requests'",
+        ));
+    }
+
+    // Check for invalid path characters
+    let path_str = destination.to_string_lossy();
+    if path_str.contains("..") || path_str.contains("//") {
+        return Err(ValidationError::new("Path contains invalid sequences"));
+    }
+
+    Ok(())
+}

@@ -1,7 +1,14 @@
+use file_id::FileId;
 use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::SystemTime,
+};
 use ts_rs::TS;
+
+use super::primitives::EntryId;
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -218,4 +225,34 @@ pub enum UnitType {
     Case,
     Schema,
     Component,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum PathChangeKind {
+    Loaded,
+    Created,
+    Removed,
+    Updated,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum EntryKind {
+    Unit, // Do we need this?
+    UnloadedDir,
+    Dir,
+    File,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct Entry {
+    pub id: EntryId,
+    pub path: Arc<Path>,
+    pub kind: EntryKind,
+    pub mtime: Option<u64>,
 }

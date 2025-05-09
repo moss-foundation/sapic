@@ -16,17 +16,26 @@ async fn rename_request_dir_entry() {
 
     let create_request_dir_entry_result = collection
         .create_request_dir_entry(CreateRequestDirEntryInput {
-            destination: PathBuf::from("requests").join(request_name.to_string()),
+            destination: PathBuf::from("requests")
+                .join("test")
+                .join(request_name.to_string()),
         })
         .await
         .unwrap();
-    // collection.worktree().await.unwrap().lock().await;
 
-    let update_request_dir_entry_result = collection
-        .update_request_dir_entry(UpdateRequestDirEntryInput {
-            id: create_request_dir_entry_result.id,
-            name: Some("new_name".to_string()),
-        })
-        .await
-        .unwrap();
+    dbg!(create_request_dir_entry_result);
+
+    let worktree = collection.worktree().await.unwrap();
+
+    for (id, entry) in worktree.lock().await.iter_entries_by_prefix("") {
+        dbg!(entry);
+    }
+
+    // let update_request_dir_entry_result = collection
+    //     .update_request_dir_entry(UpdateRequestDirEntryInput {
+    //         id: create_request_dir_entry_result.id,
+    //         name: Some("new_name".to_string()),
+    //     })
+    //     .await
+    //     .unwrap();
 }

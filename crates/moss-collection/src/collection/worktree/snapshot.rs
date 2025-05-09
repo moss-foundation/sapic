@@ -6,20 +6,15 @@ use std::{
 };
 use sweep_bptree::BPlusTreeMap;
 
-use crate::models::{primitives::EntryId, types::UnitType};
+use crate::models::{
+    primitives::EntryId,
+    types::{EntryKind, UnitType},
+};
 
 use super::ROOT_PATH;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum EntryKind {
-    Unit, // Do we need this?
-    UnloadedDir,
-    Dir,
-    File,
-}
-
 #[derive(Debug, Clone)]
-pub(crate) struct Entry {
+pub struct Entry {
     pub id: EntryId,
     pub path: Arc<Path>,
     pub kind: EntryKind,
@@ -34,7 +29,7 @@ impl Entry {
     }
 }
 
-pub(crate) type EntryRef = Arc<Entry>;
+pub type EntryRef = Arc<Entry>;
 
 pub struct Snapshot {
     abs_path: Arc<Path>,
@@ -114,39 +109,49 @@ impl Snapshot {
     /// If the entry is a directory, it also recursively removes all entries whose paths
     /// have the directory's path as a prefix.
     ///
+    /// # Returns
+    ///
+    /// A vector of removed entries (EntryRef objects).
+    ///
     /// # Behavior
     ///
-    /// - If the path doesn't exist in the snapshot, the method returns without making changes.
+    /// - If the path doesn't exist in the snapshot, the method returns an empty list.
     /// - If the path points to a file, only that file entry is removed.
     /// - If the path points to a directory, the directory and all its contents (files and subdirectories)
     ///   are removed recursively.
     /// - Only exact path matches are considered; similar prefixes are not affected.
-    pub fn remove_entry(&mut self, path: impl AsRef<Path>) {
+    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> Vec<EntryRef> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        let is_dir = if let Some(entry) = self.entry_by_path(path) {
+        let entry_opt = self.entry_by_path(path);
+        let is_dir = if let Some(entry) = &entry_opt {
             matches!(entry.kind, EntryKind::Dir)
         } else {
-            return;
+            return Vec::new();
         };
+
+        let mut removed_entries = Vec::new();
 
         if is_dir {
             let prefix = path.to_string_lossy();
             let entries_to_remove = self
                 .iter_entries_by_prefix(&prefix)
-                .map(|(&id, entry)| (Arc::clone(&entry.path), id))
-                .collect::<Vec<(Arc<Path>, EntryId)>>();
+                .map(|(id, entry)| (*id, entry.clone()))
+                .collect::<Vec<(EntryId, EntryRef)>>();
 
-            for (entry_path, entry_id) in entries_to_remove {
-                self.entries_by_path.remove(&entry_path);
+            for (entry_id, entry) in entries_to_remove {
+                self.entries_by_path.remove(&entry.path);
                 self.entries_by_id.remove(&entry_id);
+                removed_entries.push(entry);
             }
-        } else {
-            if let Some(entry_id) = self.entries_by_path.remove(path) {
-                self.entries_by_id.remove(&entry_id);
-            }
+        } else if let Some(entry) = entry_opt {
+            self.entries_by_path.remove(&entry.path);
+            self.entries_by_id.remove(&entry.id);
+            removed_entries.push(entry);
         }
+
+        removed_entries
     }
 
     /// Finds the closest ancestor path of the given `path` that is known in the snapshot.
@@ -194,16 +199,24 @@ mod tests {
         snapshot.create_entry(entry_ref.clone());
         assert_eq!(snapshot.count_files(), 1);
 
-        snapshot.remove_entry("test.txt");
+        let removed = snapshot.remove_entry("test.txt");
         assert_eq!(snapshot.count_files(), 0);
         assert!(snapshot.entry_by_path("test.txt").is_none());
+
+        // Verify the returned result
+        assert_eq!(removed.len(), 1);
+        assert_eq!(removed[0].path.to_string_lossy(), "test.txt");
+        assert_eq!(removed[0].id, entry.id);
     }
 
     #[test]
     fn test_remove_nonexistent_file() {
         let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
-        snapshot.remove_entry("nonexistent.txt");
+        let removed = snapshot.remove_entry("nonexistent.txt");
         assert_eq!(snapshot.count_files(), 0);
+
+        // Verify the result is empty
+        assert_eq!(removed.len(), 0);
     }
 
     #[test]
@@ -215,20 +228,38 @@ mod tests {
         let file1_entry = create_test_entry(2, "test_dir/file1.txt", EntryKind::File);
         let file2_entry = create_test_entry(3, "test_dir/file2.txt", EntryKind::File);
 
-        snapshot.create_entry(Arc::new(dir_entry));
-        snapshot.create_entry(Arc::new(file1_entry));
-        snapshot.create_entry(Arc::new(file2_entry));
+        snapshot.create_entry(Arc::new(dir_entry.clone()));
+        snapshot.create_entry(Arc::new(file1_entry.clone()));
+        snapshot.create_entry(Arc::new(file2_entry.clone()));
 
         assert_eq!(snapshot.count_files(), 3);
 
         // Remove the directory
-        snapshot.remove_entry("test_dir");
+        let removed = snapshot.remove_entry("test_dir");
 
         // Verify all entries are removed
         assert_eq!(snapshot.count_files(), 0);
         assert!(snapshot.entry_by_path("test_dir").is_none());
         assert!(snapshot.entry_by_path("test_dir/file1.txt").is_none());
         assert!(snapshot.entry_by_path("test_dir/file2.txt").is_none());
+
+        // Verify the returned result
+        assert_eq!(removed.len(), 3);
+
+        // Check that all removed paths and IDs are present in the result
+        let paths: Vec<String> = removed
+            .iter()
+            .map(|entry| entry.path.to_string_lossy().to_string())
+            .collect();
+        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id).collect();
+
+        assert!(paths.contains(&"test_dir".to_string()));
+        assert!(paths.contains(&"test_dir/file1.txt".to_string()));
+        assert!(paths.contains(&"test_dir/file2.txt".to_string()));
+
+        assert!(ids.contains(&dir_entry.id));
+        assert!(ids.contains(&file1_entry.id));
+        assert!(ids.contains(&file2_entry.id));
     }
 
     #[test]
@@ -240,20 +271,38 @@ mod tests {
         let dir2_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
         let file_entry = create_test_entry(3, "dir1/dir2/file.txt", EntryKind::File);
 
-        snapshot.create_entry(Arc::new(dir1_entry));
-        snapshot.create_entry(Arc::new(dir2_entry));
-        snapshot.create_entry(Arc::new(file_entry));
+        snapshot.create_entry(Arc::new(dir1_entry.clone()));
+        snapshot.create_entry(Arc::new(dir2_entry.clone()));
+        snapshot.create_entry(Arc::new(file_entry.clone()));
 
         assert_eq!(snapshot.count_files(), 3);
 
         // Remove the parent directory
-        snapshot.remove_entry("dir1");
+        let removed = snapshot.remove_entry("dir1");
 
         // Verify all entries are removed
         assert_eq!(snapshot.count_files(), 0);
         assert!(snapshot.entry_by_path("dir1").is_none());
         assert!(snapshot.entry_by_path("dir1/dir2").is_none());
         assert!(snapshot.entry_by_path("dir1/dir2/file.txt").is_none());
+
+        // Verify the returned result
+        assert_eq!(removed.len(), 3);
+
+        // Check that all removed paths and IDs are present in the result
+        let paths: Vec<String> = removed
+            .iter()
+            .map(|entry| entry.path.to_string_lossy().to_string())
+            .collect();
+        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id).collect();
+
+        assert!(paths.contains(&"dir1".to_string()));
+        assert!(paths.contains(&"dir1/dir2".to_string()));
+        assert!(paths.contains(&"dir1/dir2/file.txt".to_string()));
+
+        assert!(ids.contains(&dir1_entry.id));
+        assert!(ids.contains(&dir2_entry.id));
+        assert!(ids.contains(&file_entry.id));
     }
 
     #[test]
@@ -265,20 +314,25 @@ mod tests {
         let dir2_entry = create_test_entry(2, "test_dir", EntryKind::Dir);
         let file_entry = create_test_entry(3, "test_file.txt", EntryKind::File);
 
-        snapshot.create_entry(Arc::new(dir1_entry));
+        snapshot.create_entry(Arc::new(dir1_entry.clone()));
         snapshot.create_entry(Arc::new(dir2_entry));
         snapshot.create_entry(Arc::new(file_entry));
 
         assert_eq!(snapshot.count_files(), 3);
 
         // Remove only the "test" directory
-        snapshot.remove_entry("test");
+        let removed = snapshot.remove_entry("test");
 
         // Verify only the "test" directory is removed
         assert_eq!(snapshot.count_files(), 2);
         assert!(snapshot.entry_by_path("test").is_none());
         assert!(snapshot.entry_by_path("test_dir").is_some());
         assert!(snapshot.entry_by_path("test_file.txt").is_some());
+
+        // Verify the returned result
+        assert_eq!(removed.len(), 1);
+        assert_eq!(removed[0].path.to_string_lossy(), "test");
+        assert_eq!(removed[0].id, dir1_entry.id);
     }
 
     #[test]
