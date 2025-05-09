@@ -247,12 +247,11 @@ pub enum EntryKind {
     File,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct Entry {
+pub struct EntryInfo {
     pub id: EntryId,
-    pub path: Arc<Path>,
-    pub kind: EntryKind,
-    pub mtime: Option<u64>,
+    pub path: PathBuf,
+    pub order: Option<usize>,
 }

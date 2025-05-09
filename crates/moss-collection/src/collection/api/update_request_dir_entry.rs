@@ -1,16 +1,18 @@
-use std::sync::Arc;
-
-use anyhow::Context;
+use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
+use std::sync::Arc;
 use validator::Validate;
 
 use crate::{
     collection::{
         Collection,
-        worktree::snapshot::{self, EntryRef},
+        worktree::{
+            ChangesDiffSet, Worktree,
+            common::{is_dir, path_not_ends_with, path_not_starts_with, validate_entry},
+            snapshot::EntryRef,
+        },
     },
     models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
-    worktree,
 };
 
 impl Collection {
@@ -20,34 +22,52 @@ impl Collection {
     ) -> OperationResult<UpdateRequestDirEntryOutput> {
         input.validate()?;
 
-        let snapshot = self.worktree().await?.lock().await;
+        let worktree = self.worktree().await?;
+        let entry = {
+            let snapshot_lock = worktree.read().await;
+            let entry = snapshot_lock
+                .entry_by_id(input.id)
+                .context("Entry not found")?; // TODO: replace with OperationError::NotFound
 
-        let entry = snapshot.entry_by_id(input.id).context("Entry not found")?; // TODO: replace with OperationError::NotFound
+            Arc::clone(&entry)
+        };
 
-        if !entry.is_dir() {
-            return Err(OperationError::Validation(format!(
-                "Entry is not a directory: {}",
-                entry.path.display()
-            )));
-        }
+        validate_entry(
+            &entry,
+            &[
+                is_dir(),
+                path_not_ends_with(".request"),
+                path_not_starts_with("requests"),
+            ],
+        )?;
 
-        if let Some(new_name) = input.name {
-            self.process_dir_renaming(&entry, &new_name).await?;
-        }
+        let changes = if let Some(new_name) = input.name {
+            self.process_dir_renaming(&worktree, &entry, &new_name)
+                .await?
+        } else {
+            Arc::from((vec![]).into_boxed_slice())
+        };
 
-        todo!()
-
-        // Ok(())
+        Ok(UpdateRequestDirEntryOutput {
+            changed_paths: changes,
+        })
     }
 
-    async fn process_dir_renaming(&self, entry: &EntryRef, new_name: &str) -> OperationResult<()> {
-        let worktree = self.worktree().await?;
+    async fn process_dir_renaming(
+        &self,
+        worktree: &Arc<Worktree>,
+        entry: &EntryRef,
+        new_name: &str,
+    ) -> OperationResult<ChangesDiffSet> {
+        let mut new_path = entry.path.to_path_buf();
+        new_path.set_file_name(new_name);
 
-        let new_path = entry.path.with_file_name(&format!("{}.request", new_name));
-        worktree
+        let changes = worktree
             .rename_entry(Arc::clone(&entry.path), new_path)
             .await?;
 
-        Ok(())
+        // TODO: update the state database
+
+        Ok(changes)
     }
 }

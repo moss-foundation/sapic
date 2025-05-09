@@ -82,17 +82,18 @@ impl Collection {
             .await?;
         changes.extend(create_file_changes.into_iter().cloned());
 
-        let mut txn = self.collection_storage.begin_write().await?;
-        let request_store = self.collection_storage.request_store().await;
-        request_store.upsert_request_node(
-            &mut txn,
-            encoded_path,
-            RequestNodeEntity::Request(RequestEntity { order: None }), // TODO: add order
-        )?;
-        txn.commit()?;
+        // TODO: update the state database
+        // let mut txn = self.collection_storage.begin_write().await?;
+        // let request_store = self.collection_storage.request_store().await;
+        // request_store.upsert_request_node(
+        //     &mut txn,
+        //     encoded_path,
+        //     RequestNodeEntity::Request(RequestEntity { order: None }), // TODO: add order
+        // )?;
+        // txn.commit()?;
 
         Ok(CreateRequestEntryOutput {
-            changes: changes.into(),
+            changed_paths: changes.into(),
         })
     }
 }

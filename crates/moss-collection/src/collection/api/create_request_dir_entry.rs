@@ -18,6 +18,8 @@ impl Collection {
         let encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
         let changes = worktree.create_entry(&encoded_path, true, None).await?;
 
-        Ok(CreateRequestDirEntryOutput { changes })
+        Ok(CreateRequestDirEntryOutput {
+            changed_paths: changes,
+        })
     }
 }

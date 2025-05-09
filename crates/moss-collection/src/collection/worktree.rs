@@ -1,15 +1,18 @@
-mod common;
+pub mod common;
 pub mod snapshot;
 
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
+use file_id::FileId;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use snapshot::EntryRef;
 use std::{
+    collections::HashMap,
     ops::Deref,
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
-use tokio::sync::{Mutex, mpsc};
+use tokio::sync::{Mutex, RwLock, mpsc};
 
 use crate::models::{
     primitives::EntryId,
@@ -29,12 +32,13 @@ struct ScanJob {
 pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
-    snapshot: Arc<Mutex<Snapshot>>,
-    prev_snapshot: Arc<Mutex<Snapshot>>,
+    snapshot: Arc<RwLock<Snapshot>>,
+    // removed_entries: Mutex<HashMap<FileId, EntryRef>>,
+    // changed_paths: Mutex<Vec<Arc<Path>>>,
 }
 
 impl Deref for Worktree {
-    type Target = Arc<Mutex<Snapshot>>;
+    type Target = Arc<RwLock<Snapshot>>;
 
     fn deref(&self) -> &Self::Target {
         &self.snapshot
@@ -53,16 +57,17 @@ impl Worktree {
         Self {
             fs,
             next_entry_id,
-            snapshot: Arc::new(Mutex::new(initial_snapshot.clone())),
-            prev_snapshot: Arc::new(Mutex::new(initial_snapshot)),
+            snapshot: Arc::new(RwLock::new(initial_snapshot.clone())),
+            // removed_entries: Mutex::new(HashMap::new()),
+            // changed_paths: Mutex::new(Vec::new()),
         }
     }
 
-    pub async fn snapshot(&self) -> &Arc<Mutex<Snapshot>> {
+    pub async fn snapshot(&self) -> &Arc<RwLock<Snapshot>> {
         &self.snapshot
     }
 
-    pub async fn absolutize(&self, path: &Path) -> Result<PathBuf> {
+    pub async fn absolutize(&self, root_abs_path: &Path, path: &Path) -> Result<PathBuf> {
         debug_assert!(path.is_relative());
 
         if path
@@ -75,30 +80,26 @@ impl Worktree {
             ));
         }
 
-        let snapshot = self.snapshot.lock().await;
         if path.file_name().is_some() {
-            Ok(snapshot.abs_path().join(path))
+            Ok(root_abs_path.join(path))
         } else {
-            Ok(snapshot.abs_path().to_path_buf())
+            Ok(root_abs_path.to_path_buf())
         }
     }
 
-    pub async fn relativize(&self, abs_path: &Path) -> Result<PathBuf> {
+    pub async fn relativize(&self, root_abs_path: &Path, abs_path: &Path) -> Result<PathBuf> {
         debug_assert!(abs_path.is_absolute());
 
-        let snapshot = self.snapshot.lock().await;
-        let root_path = snapshot.abs_path();
-
-        if !abs_path.starts_with(root_path) {
+        if !abs_path.starts_with(root_abs_path) {
             return Err(anyhow::anyhow!(
                 "Path {} is outside of the worktree root {}",
                 abs_path.display(),
-                root_path.display()
+                root_abs_path.display()
             ));
         }
 
         Ok(abs_path
-            .strip_prefix(root_path)
+            .strip_prefix(root_abs_path)
             .map(|p| p.to_path_buf())
             .unwrap_or_else(|_| PathBuf::from(ROOT_PATH)))
     }
@@ -112,43 +113,25 @@ impl Worktree {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
 
-        let abs_path = self.absolutize(&path).await?;
+        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let abs_path = self.absolutize(&root_abs_path, &path).await?;
         let changes = if is_dir {
             let first_segment = path.components().next().context("Path is empty")?;
-            let lowest_ancestor_path = self.snapshot.lock().await.lowest_ancestor_path(&path);
+            let lowest_ancestor_path = self.snapshot.read().await.lowest_ancestor_path(&path);
 
             self.fs.create_dir(&abs_path).await?;
 
-            let first_segment_path: Arc<Path> = lowest_ancestor_path.join(first_segment).into();
-            let first_segment_abs_path = self.absolutize(&first_segment_path).await?;
-            let first_segment_metadata = tokio::fs::metadata(&first_segment_abs_path)
-                .await
-                .context("Failed to get metadata for first segment")?;
-            let first_segment_entry = Arc::new(Entry {
-                id: EntryId::new(&self.next_entry_id),
-                path: Arc::clone(&first_segment_path),
-                kind: EntryKind::Dir,
-                unit_type: None,
-                mtime: first_segment_metadata.modified().ok(),
-                file_id: file_id::get_file_id(&first_segment_abs_path)?,
-            });
+            let entries = self
+                .scan(&root_abs_path, lowest_ancestor_path.join(first_segment))
+                .await?;
+            let mut changes = vec![];
 
             {
-                let mut snapshot_lock = self.snapshot.lock().await;
-                snapshot_lock.create_entry(Arc::clone(&first_segment_entry));
-            }
-
-            let entries = self.scan(lowest_ancestor_path.join(first_segment)).await?;
-            let mut changes = vec![(
-                first_segment_path,
-                first_segment_entry.id,
-                PathChangeKind::Created,
-            )];
-
-            let mut snapshot_lock = self.snapshot.lock().await;
-            for e in entries.into_iter().map(Arc::new) {
-                changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
-                snapshot_lock.create_entry(e);
+                let mut snapshot_lock = self.snapshot.write().await;
+                for e in entries.into_iter().map(Arc::new) {
+                    changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
+                    snapshot_lock.create_entry(e);
+                }
             }
 
             changes
@@ -174,8 +157,10 @@ impl Worktree {
                 file_id: file_id::get_file_id(&abs_path)?,
             });
 
-            let mut snapshot_lock = self.snapshot.lock().await;
-            snapshot_lock.create_entry(Arc::clone(&entry));
+            {
+                let mut snapshot_lock = self.snapshot.write().await;
+                snapshot_lock.create_entry(Arc::clone(&entry));
+            }
 
             vec![(path.into(), entry.id, PathChangeKind::Created)]
         };
@@ -187,9 +172,10 @@ impl Worktree {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        let abs_path = self.absolutize(&path).await?;
+        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let abs_path = self.absolutize(&root_abs_path, &path).await?;
 
-        let mut snapshot_lock = self.snapshot.lock().await;
+        let mut snapshot_lock = self.snapshot.write().await;
 
         if abs_path.is_dir() {
             let mut temp_dir = abs_path.clone();
@@ -251,11 +237,11 @@ impl Worktree {
         debug_assert!(old_path.is_relative());
         debug_assert!(new_path.is_relative());
 
-        let abs_old_path = self.absolutize(old_path).await?;
-        let abs_new_path = self.absolutize(new_path).await?;
+        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let abs_old_path = self.absolutize(&root_abs_path, &old_path).await?;
+        let abs_new_path = self.absolutize(&root_abs_path, &new_path).await?;
 
-        let mut snapshot_lock = self.snapshot.lock().await;
-
+        let mut snapshot_lock = self.snapshot.write().await;
         self.fs
             .rename(
                 &abs_old_path,
@@ -267,45 +253,54 @@ impl Worktree {
             )
             .await?;
 
-        let removed_entries = snapshot_lock.remove_entry(old_path);
+        let mut changes = Vec::new();
+        let mut removed_entries_by_file_id = snapshot_lock
+            .remove_entry(old_path)
+            .into_iter()
+            .map(|e| (e.file_id, e))
+            .collect::<HashMap<_, _>>();
 
-        // Scan new path and add the entries with Created kind
-        // let new_entries = self.scan(new_path).await?;
-        // for entry in new_entries {
-        //     let entry_ref = Arc::new(entry);
-        //     changes.push((
-        //         entry_ref.path.clone(),
-        //         entry_ref.id,
-        //         PathChangeKind::Created,
-        //     ));
-        //     snapshot_lock.create_entry(entry_ref);
-        // }
+        let changed_entries = self.scan(&root_abs_path, new_path).await?;
 
-        // Ok(ChangesDiffSet::from(changes))
+        for entry in changed_entries {
+            let (entry, change) =
+                if let Some(removed_entry) = removed_entries_by_file_id.remove(&entry.file_id) {
+                    let entry = reuse_id(&removed_entry, entry);
+                    (Arc::new(entry), PathChangeKind::Updated)
+                } else {
+                    (Arc::new(entry), PathChangeKind::Created)
+                };
 
-        todo!()
+            changes.push((entry.path.clone(), entry.id, change));
+            snapshot_lock.create_entry(entry);
+        }
+
+        Ok(ChangesDiffSet::from(changes))
     }
 
     pub async fn initial_scan(&self) -> Result<()> {
-        let entries = self.scan(ROOT_PATH).await?;
-        let mut snapshot_lock = self.snapshot.lock().await;
-        for entry in entries {
-            snapshot_lock.create_entry(entry.into());
+        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let entries = self.scan(&root_abs_path, ROOT_PATH).await?;
+        {
+            let mut snapshot_lock = self.snapshot.write().await;
+            for entry in entries {
+                snapshot_lock.create_entry(entry.into());
+            }
         }
 
         Ok(())
     }
 
-    pub async fn scan(&self, path: impl AsRef<Path>) -> Result<Vec<Entry>> {
+    pub async fn scan(&self, root_abs_path: &Path, path: impl AsRef<Path>) -> Result<Vec<Entry>> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
 
-        let abs_path: Arc<Path> = self.absolutize(&path).await?.into();
+        let abs_path: Arc<Path> = self.absolutize(&root_abs_path, &path).await?.into();
         let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
 
         let initial_job = ScanJob {
-            abs_path,
-            path,
+            abs_path: Arc::clone(&abs_path),
+            path: Arc::clone(&path),
             scan_queue: scan_job_tx.clone(),
         };
         scan_job_tx.send(initial_job).unwrap();
@@ -318,7 +313,7 @@ impl Worktree {
             let next_entry_id = self.next_entry_id.clone();
 
             let handle = tokio::spawn(async move {
-                let mut new_entries = Vec::new();
+                let mut new_entries = vec![];
                 let mut new_jobs: Vec<ScanJob> = Vec::new();
 
                 let mut read_dir = fs_clone.read_dir(&job.abs_path).await.unwrap();
@@ -380,14 +375,42 @@ impl Worktree {
             handles.push(handle);
         }
 
-        Ok(futures::future::join_all(handles)
+        let metadata = tokio::fs::metadata(&abs_path)
             .await
-            .into_iter()
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .flatten()
+            .expect("Failed to get scan job abs path metadata");
+        let file_id =
+            file_id::get_file_id(&abs_path).expect("Failed to get scan job abs path file id");
+
+        let next_entry_id = self.next_entry_id.clone();
+        let entry = Entry {
+            id: EntryId::new(&next_entry_id),
+            path,
+            kind: if metadata.is_dir() {
+                EntryKind::Dir
+            } else {
+                EntryKind::File
+            },
+            unit_type: None,
+            mtime: metadata.modified().ok(),
+            file_id,
+        };
+
+        Ok(std::iter::once(entry)
+            .chain(
+                futures::future::join_all(handles)
+                    .await
+                    .into_iter()
+                    .collect::<Result<Vec<_>, _>>()?
+                    .into_iter()
+                    .flatten(),
+            )
             .collect())
     }
+}
+
+fn reuse_id(old_entry: &Entry, mut new_entry: Entry) -> Entry {
+    new_entry.id = old_entry.id;
+    new_entry
 }
 
 #[cfg(test)]
@@ -410,7 +433,7 @@ mod tests {
         let worktree = Worktree::new(fs, abs_path, Arc::new(AtomicUsize::new(0)));
         worktree.initial_scan().await.unwrap();
 
-        let snapshot = worktree.snapshot.lock().await;
+        let snapshot = worktree.snapshot.read().await;
 
         for (_, entry) in snapshot.iter_entries_by_prefix("") {
             println!("{}", entry.path.to_path_buf().display());

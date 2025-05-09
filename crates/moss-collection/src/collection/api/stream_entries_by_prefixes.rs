@@ -5,12 +5,10 @@ use tauri::ipc::Channel;
 use tokio_stream::StreamExt;
 use tokio_stream::StreamMap;
 
+use crate::models::types::EntryInfo;
 use crate::{
     collection::Collection,
-    models::{
-        events::StreamEntriesByPrefixesEvent,
-        operations::{EntryInfo, StreamEntriesByPrefixesInput},
-    },
+    models::{events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput},
 };
 
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -25,7 +23,7 @@ impl Collection {
         let worktree_entries_state = state_store.list_worktree_entries()?;
 
         let worktree = self.worktree().await?;
-        let snapshot_lock = worktree.snapshot().await.lock().await;
+        let snapshot_lock = worktree.snapshot().await.read().await;
 
         if snapshot_lock.count_files() == 0 {
             // We need to send a final empty event to signal the end of the stream.

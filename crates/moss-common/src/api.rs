@@ -32,6 +32,12 @@ impl From<validator::ValidationErrors> for OperationError {
     }
 }
 
+impl From<validator::ValidationError> for OperationError {
+    fn from(error: validator::ValidationError) -> Self {
+        OperationError::Validation(error.to_string())
+    }
+}
+
 impl From<tauri::Error> for OperationError {
     fn from(error: tauri::Error) -> Self {
         OperationError::Internal(error.to_string())
