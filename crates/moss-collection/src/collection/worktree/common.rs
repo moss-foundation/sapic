@@ -35,9 +35,9 @@ pub(crate) fn path_not_ends_with(value: &'static str) -> Rule {
     })
 }
 
-pub(crate) fn path_not_starts_with(value: &'static str) -> Rule {
+pub(crate) fn path_starts_with(value: &'static str) -> Rule {
     Box::new(move |entry: &EntryRef| {
-        if entry.path.starts_with(value) {
+        if !entry.path.starts_with(value) {
             return Err(ValidationError::new(
                 "Entry path starts with forbidden value",
             ));

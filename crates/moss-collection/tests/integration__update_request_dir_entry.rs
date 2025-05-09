@@ -18,7 +18,7 @@ async fn rename_request_dir_entry() {
 
     let create_request_dir_entry_result = collection
         .create_request_dir_entry(CreateRequestDirEntryInput {
-            destination: destination.clone(),
+            destination: destination.clone(), // my_request|| /foo/bar/sub
         })
         .await
         .unwrap();

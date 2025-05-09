@@ -8,7 +8,7 @@ use crate::{
         Collection,
         worktree::{
             ChangesDiffSet, Worktree,
-            common::{is_dir, path_not_ends_with, path_not_starts_with, validate_entry},
+            common::{is_dir, path_not_ends_with, path_starts_with, validate_entry},
             snapshot::EntryRef,
         },
     },
@@ -37,7 +37,7 @@ impl Collection {
             &[
                 is_dir(),
                 path_not_ends_with(".request"),
-                path_not_starts_with("requests"),
+                path_starts_with("requests"),
             ],
         )?;
 

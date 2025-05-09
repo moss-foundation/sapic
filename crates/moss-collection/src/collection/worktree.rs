@@ -3,16 +3,14 @@ pub mod snapshot;
 
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
-use file_id::FileId;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use snapshot::EntryRef;
 use std::{
     collections::HashMap,
     ops::Deref,
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
-use tokio::sync::{Mutex, RwLock, mpsc};
+use tokio::sync::{RwLock, mpsc};
 
 use crate::models::{
     primitives::EntryId,
@@ -33,8 +31,6 @@ pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
     snapshot: Arc<RwLock<Snapshot>>,
-    // removed_entries: Mutex<HashMap<FileId, EntryRef>>,
-    // changed_paths: Mutex<Vec<Arc<Path>>>,
 }
 
 impl Deref for Worktree {
@@ -58,8 +54,6 @@ impl Worktree {
             fs,
             next_entry_id,
             snapshot: Arc::new(RwLock::new(initial_snapshot.clone())),
-            // removed_entries: Mutex::new(HashMap::new()),
-            // changed_paths: Mutex::new(Vec::new()),
         }
     }
 

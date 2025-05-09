@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::{
     collection::{
         Collection,
-        worktree::common::{is_dir, path_not_ends_with, path_not_starts_with, validate_entry},
+        worktree::common::{is_dir, path_not_ends_with, path_starts_with, validate_entry},
     },
     models::operations::{DeleteRequestDirEntryInput, DeleteRequestDirEntryOutput},
 };
@@ -31,7 +31,7 @@ impl Collection {
             &[
                 is_dir(),
                 path_not_ends_with(".request"),
-                path_not_starts_with("requests"),
+                path_starts_with("requests"),
             ],
         )?;
 
