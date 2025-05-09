@@ -12,6 +12,5 @@
     },
     "dependencies": {
       "typescript": "^5.7.2"
-    },
-    "tsImportRules": {}
+    }
   }
