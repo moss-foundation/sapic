@@ -5,9 +5,14 @@
 import { join } from "path";
 import { Project } from "ts-morph";
 
-const path = join(process.argv[2], "tsconfig.json");
+const path = process.argv[2];
+const configPath = join(path, "tsconfig.json");
 
-let project = new Project({ tsConfigFilePath: path, skipFileDependencyResolution: true, skipLoadingLibFiles: true });
+let project = new Project({ tsConfigFilePath: configPath });
 
-project.getSourceFiles().forEach((file) => file.fixMissingImports());
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "bindings-utils", "index.ts"));
+project.resolveSourceFileDependencies();
+project.getSourceFiles().forEach((file) => {
+  file.fixMissingImports();
+});
 project.saveSync();
