@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::OperationResult;
 use std::sync::Arc;
 use validator::Validate;
 
