@@ -2951,6 +2951,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_activity_indicator"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "serde",
+ "tauri",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_app"
 version = "0.1.0"
 dependencies = [
@@ -2974,12 +2984,12 @@ dependencies = [
  "file-id",
  "futures",
  "kdl",
+ "moss_activity_indicator",
  "moss_common",
  "moss_db",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
- "moss_workbench",
  "notify",
  "scraper",
  "serde",
@@ -3218,9 +3228,19 @@ name = "moss_workbench"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "arc-swap",
+ "chrono",
+ "moss_activity_indicator",
+ "moss_common",
+ "moss_fs",
+ "moss_storage",
+ "moss_testutils",
+ "moss_workspace",
  "serde",
  "tauri",
+ "tokio",
  "ts-rs",
+ "validator",
 ]
 
 [[package]]
@@ -3230,6 +3250,7 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "chrono",
+ "moss_activity_indicator",
  "moss_app",
  "moss_collection",
  "moss_common",
@@ -3238,7 +3259,6 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
- "moss_workbench",
  "serde",
  "serde_json",
  "tauri",

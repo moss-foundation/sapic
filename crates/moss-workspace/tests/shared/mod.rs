@@ -1,13 +1,13 @@
+use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
 use moss_testutils::random_name::{random_string, random_workspace_name};
-use moss_workbench::activity_indicator::ActivityIndicator;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
 use moss_workspace::workspace::Workspace;
-use moss_workspace::workspace_manager::WorkspaceManager;
+// use moss_workspace::workspace_manager::WorkspaceManager;
 use std::collections::HashMap;
 use std::fs;
 use std::future::Future;
@@ -33,41 +33,41 @@ pub fn random_workspace_path() -> PathBuf {
         .join(random_workspace_name())
 }
 
-pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager<MockRuntime>, CleanupFn) {
-    let mock_app = tauri::test::mock_app();
-    let app_handle = mock_app.handle().clone();
+// pub async fn setup_test_workspace_manager() -> (PathBuf, WorkspaceManager<MockRuntime>, CleanupFn) {
+//     let mock_app = tauri::test::mock_app();
+//     let app_handle = mock_app.handle().clone();
 
-    let fs = Arc::new(RealFileSystem::new());
+//     let fs = Arc::new(RealFileSystem::new());
 
-    let random_app_dir_path: PathBuf = random_app_dir_path();
-    let workspaces_dir_path = random_app_dir_path.join("workspaces");
-    let globals_dir_path = random_app_dir_path.join("globals");
+//     let random_app_dir_path: PathBuf = random_app_dir_path();
+//     let workspaces_dir_path = random_app_dir_path.join("workspaces");
+//     let globals_dir_path = random_app_dir_path.join("globals");
 
-    {
-        tokio::fs::create_dir_all(&random_app_dir_path)
-            .await
-            .unwrap();
-        tokio::fs::create_dir(&workspaces_dir_path).await.unwrap();
-        tokio::fs::create_dir(&globals_dir_path).await.unwrap();
-    }
+//     {
+//         tokio::fs::create_dir_all(&random_app_dir_path)
+//             .await
+//             .unwrap();
+//         tokio::fs::create_dir(&workspaces_dir_path).await.unwrap();
+//         tokio::fs::create_dir(&globals_dir_path).await.unwrap();
+//     }
 
-    let global_storage = Arc::new(GlobalStorageImpl::new(&globals_dir_path).unwrap());
+//     let global_storage = Arc::new(GlobalStorageImpl::new(&globals_dir_path).unwrap());
 
-    let workspace_manager =
-        WorkspaceManager::new(app_handle, fs, workspaces_dir_path.clone(), global_storage).unwrap();
+//     let workspace_manager =
+//         WorkspaceManager::new(app_handle, fs, workspaces_dir_path.clone(), global_storage).unwrap();
 
-    let app_dir = random_app_dir_path.clone();
-    let cleanup_fn = Box::new(move || {
-        let path = app_dir;
-        Box::pin(async move {
-            if let Err(e) = tokio::fs::remove_dir_all(&path).await {
-                eprintln!("Failed to clean up test directory: {}", e);
-            }
-        }) as Pin<Box<dyn Future<Output = ()> + Send>>
-    });
+//     let app_dir = random_app_dir_path.clone();
+//     let cleanup_fn = Box::new(move || {
+//         let path = app_dir;
+//         Box::pin(async move {
+//             if let Err(e) = tokio::fs::remove_dir_all(&path).await {
+//                 eprintln!("Failed to clean up test directory: {}", e);
+//             }
+//         }) as Pin<Box<dyn Future<Output = ()> + Send>>
+//     });
 
-    (workspaces_dir_path, workspace_manager, cleanup_fn)
-}
+//     (workspaces_dir_path, workspace_manager, cleanup_fn)
+// }
 
 pub async fn setup_test_workspace() -> (PathBuf, Workspace<MockRuntime>) {
     let mock_app = tauri::test::mock_app();

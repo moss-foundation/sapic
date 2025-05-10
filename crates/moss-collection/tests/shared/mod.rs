@@ -1,9 +1,9 @@
+use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_collection::indexer::{self, IndexerHandle};
 use moss_fs::RealFileSystem;
 use moss_fs::utils::{encode_name, encode_path};
 use moss_testutils::random_name::random_collection_name;
-use moss_workbench::activity_indicator::ActivityIndicator;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;

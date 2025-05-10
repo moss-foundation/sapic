@@ -18,7 +18,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
-use window::{create_window, CreateWindowInput};
+use window::{CreateWindowInput, create_window};
 
 use crate::constants::*;
 use crate::plugins::*;
@@ -57,21 +57,21 @@ pub async fn run<R: TauriRuntime>() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            commands::execute_command,
-            commands::set_color_theme,
-            commands::get_color_theme,
-            commands::list_color_themes,
-            commands::describe_app_state,
-            commands::set_locale,
-            commands::list_locales,
-            commands::get_translations,
-            commands::open_workspace,
-            commands::update_workspace_state,
-            commands::describe_workspace_state,
-            commands::create_workspace,
-            commands::list_workspaces,
-            commands::delete_workspace,
-            commands::example_index_collection_command,
+            // commands::execute_command,
+            // commands::set_color_theme,
+            // commands::get_color_theme,
+            // commands::list_color_themes,
+            // commands::describe_app_state,
+            // commands::set_locale,
+            // commands::list_locales,
+            // commands::get_translations,
+            // commands::open_workspace,
+            // commands::update_workspace_state,
+            // commands::describe_workspace_state,
+            // commands::create_workspace,
+            // commands::list_workspaces,
+            // commands::delete_workspace,
+            // commands::example_index_collection_command,
         ])
         .on_window_event(|window, event| match event {
             // #[cfg(target_os = "macos")]

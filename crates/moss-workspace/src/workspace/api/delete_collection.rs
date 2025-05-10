@@ -15,7 +15,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to remove the collection")?;
 
         let collection_path = collection.path();
-        let collection_relative_path = collection_path.strip_prefix(&self.path).unwrap();
+        let collection_relative_path = collection_path.strip_prefix(&self.abs_path).unwrap();
 
         // TODO: If any of the following operations fail, we should place the task
         // in the dead queue and attempt the deletion later.

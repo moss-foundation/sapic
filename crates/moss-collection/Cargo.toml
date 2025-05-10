@@ -6,10 +6,11 @@ edition = "2024"
 [dependencies]
 moss_fs.workspace = true
 moss_db.workspace = true
-anyhow.workspace = true
+moss_activity_indicator.workspace = true
 moss_common.workspace = true
-moss_workbench.workspace = true
 moss_storage.workspace = true
+
+anyhow.workspace = true
 kdl.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
