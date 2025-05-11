@@ -8,26 +8,13 @@ import {
   environmentInfoSchema,
   panelPartStateSchema,
   sidebarPartStateSchema,
-  workspaceInfoSchema,
 } from "./types.zod";
 
 export const createCollectionInputSchema = z.object({
   name: z.string(),
 });
 
-export const createWorkspaceInputSchema = z.object({
-  name: z.string(),
-});
-
 export const openCollectionInputSchema = z.object({
-  path: z.string(),
-});
-
-export const openWorkspaceInputSchema = z.object({
-  name: z.string(),
-});
-
-export const openWorkspaceOutputSchema = z.object({
   path: z.string(),
 });
 
@@ -39,16 +26,7 @@ export const createCollectionOutputSchema = z.object({
   path: z.string(),
 });
 
-export const createWorkspaceOutputSchema = z.object({
-  key: resourceKeySchema,
-  path: z.string(),
-});
-
 export const deleteCollectionInputSchema = z.object({
-  key: resourceKeySchema,
-});
-
-export const deleteWorkspaceInputSchema = z.object({
   key: resourceKeySchema,
 });
 
@@ -77,19 +55,12 @@ export const listCollectionRequestsInputSchema = z.object({
 
 export const listCollectionsOutputSchema = z.array(collectionInfoSchema);
 
-export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
-
 export const openCollectionOutputSchema = z.object({
   key: resourceKeySchema,
   path: z.string(),
 });
 
 export const renameCollectionInputSchema = z.object({
-  key: resourceKeySchema,
-  newName: z.string(),
-});
-
-export const renameWorkspaceInputSchema = z.object({
   key: resourceKeySchema,
   newName: z.string(),
 });

@@ -18,7 +18,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
-use window::{create_window, CreateWindowInput};
+use window::{CreateWindowInput, create_window};
 
 use crate::constants::*;
 use crate::plugins::*;

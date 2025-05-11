@@ -4,6 +4,10 @@ import { ResourceKey } from "@repo/bindings-utils";
 
 export type EntryId = number;
 
+export type EntryInfo = { id: EntryId; path: string; order: number | null };
+
+export type EntryKind = "unit" | "unloadedDir" | "dir" | "file";
+
 export type FormDataItem = {
   key: string;
   value: FormDataValue;
@@ -29,6 +33,8 @@ export type HeaderParamItem = {
 export type HeaderParamOptions = { propagate: boolean };
 
 export type HttpMethod = "post" | "get" | "put" | "delete";
+
+export type PathChangeKind = "loaded" | "created" | "removed" | "updated";
 
 export type PathParamItem = {
   key: string;

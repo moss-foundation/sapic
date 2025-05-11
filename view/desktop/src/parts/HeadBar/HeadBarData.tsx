@@ -1,6 +1,6 @@
 import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/lib/ui/Icon";
-import { ListWorkspacesOutput } from "@repo/moss-workspace";
+import { ListWorkspacesOutput } from "@repo/moss-workbench";
 
 /**
  * Helper function to generate standard menu items with unique IDs
@@ -100,11 +100,11 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
     label: "All Workspaces",
     icon: "ChevronRight",
     items: workspaces.map((workspace) => ({
-      id: `workspace:${workspace.name}`,
+      id: `workspace:${workspace.displayName}`,
       type: "submenu",
-      label: workspace.name,
+      label: workspace.displayName,
       icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems(workspace.name),
+      items: createStandardMenuItems(workspace.displayName),
     })),
   };
 };

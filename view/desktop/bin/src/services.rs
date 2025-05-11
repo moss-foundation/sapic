@@ -10,8 +10,10 @@ use moss_storage::GlobalStorage;
 use moss_tauri::TauriResult;
 use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
-use moss_workspace::workspace_manager::WorkspaceManager;
+use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::marker::PhantomData;
+use std::path::Path;
+use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use tauri::{AppHandle, Manager};
@@ -100,8 +102,8 @@ fn state_service<R: TauriRuntime>(
     }
 }
 
-fn session_service<R: TauriRuntime>(
-) -> impl Fn(&ServicePool<R>, &AppHandle<R>) -> SessionService + Send + Sync + 'static {
+fn session_service<R: TauriRuntime>()
+-> impl Fn(&ServicePool<R>, &AppHandle<R>) -> SessionService + Send + Sync + 'static {
     move |_, _| SessionService::new()
 }
 
@@ -156,17 +158,19 @@ fn workspace_manager<R: tauri::Runtime>(
     fs: Arc<dyn FileSystem>,
     global_storage: Arc<dyn GlobalStorage>,
     app_dir: &PathBuf,
-) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> WorkspaceManager<R> + Send + Sync + 'static {
-    let workspaces_dir: PathBuf = app_dir.join("workspaces");
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> Workbench<R> + Send + Sync + 'static {
+    let workspaces_dir: Arc<Path> = app_dir.join("workspaces").into();
 
     move |_, app_handle| {
-        WorkspaceManager::new(
+        Workbench::new(
             app_handle.clone(),
             fs,
-            workspaces_dir.clone(),
             global_storage,
+            WorkbenchOptions {
+                workspaces_abs_path: workspaces_dir.clone(),
+                next_workspace_id: Arc::new(AtomicUsize::new(0)),
+            },
         )
-        .unwrap()
     }
 }
 

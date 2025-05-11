@@ -16,7 +16,7 @@ use moss_state::{
     service::StateService,
 };
 use moss_tauri::{TauriError, TauriResult};
-use moss_text::{quote, ReadOnlyStr};
+use moss_text::{ReadOnlyStr, quote};
 use moss_theme::{
     models::{
         events::ColorThemeChangeEventPayload,
@@ -24,7 +24,7 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
-use moss_workspace::workspace_manager::WorkspaceManager;
+use moss_workbench::workbench::Workbench;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
@@ -106,22 +106,21 @@ pub async fn describe_app_state<R: TauriRuntime>(
 
     let workspace_manager = app_manager
         .services()
-        .get_by_type::<WorkspaceManager<R>>(&app_handle)
+        .get_by_type::<Workbench<R>>(&app_handle)
         .await?;
 
     // HACK: This is a hack to get the last workspace name
-    let last_workspace_name = if let Ok(data) = workspace_manager.current_workspace() {
-        Some(
-            data.1
-                .path()
+    let last_workspace_name = workspace_manager
+        .active_workspace()
+        .map(|active_workspace| {
+            active_workspace
+                .inner
+                .abs_path()
                 .file_name()
                 .unwrap()
                 .to_string_lossy()
-                .to_string(),
-        )
-    } else {
-        None
-    };
+                .to_string()
+        });
 
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
@@ -203,11 +202,9 @@ pub async fn execute_command<R: TauriRuntime>(
         Some(command_handler) => {
             command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
         }
-        _ => {
-            Err(TauriError(format!(
-                "command with id {} is not found",
-                quote!(cmd)
-            )))
-        }
+        _ => Err(TauriError(format!(
+            "command with id {} is not found",
+            quote!(cmd)
+        ))),
     }
 }

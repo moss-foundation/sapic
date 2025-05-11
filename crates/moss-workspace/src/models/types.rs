@@ -7,20 +7,35 @@ use moss_storage::workspace_storage::entities::state_store_entities::{
     PanelPartStateEntity, SidebarPartStateEntity,
 };
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 
 pub type EnvironmentName = String;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "types.ts")]
-pub struct WorkspaceInfo {
-    pub path: PathBuf,
-    pub name: String,
-    #[ts(optional)]
-    pub last_opened_at: Option<i64>,
+pub enum WorkspaceMode {
+    #[serde(rename = "DESIGN_FIRST")]
+    DesignFirst,
+
+    #[serde(rename = "REQUEST_FIRST")]
+    RequestFirst,
 }
+
+impl Default for WorkspaceMode {
+    fn default() -> Self {
+        Self::RequestFirst
+    }
+}
+
+// #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct WorkspaceInfo {
+//     pub path: PathBuf,
+//     pub name: String,
+//     #[ts(optional)]
+//     pub last_opened_at: Option<i64>,
+// }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]

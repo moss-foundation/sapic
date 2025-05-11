@@ -11,7 +11,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn rename_collection_success() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -46,14 +46,12 @@ async fn rename_collection_success() {
         }
     );
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_collection_empty_name() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -76,14 +74,12 @@ async fn rename_collection_empty_name() {
         Err(OperationError::Validation(_))
     ));
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_collection_unchanged() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -103,14 +99,12 @@ async fn rename_collection_unchanged() {
 
     assert!(rename_collection_result.is_ok());
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_collection_already_exists() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let existing_collection_name = random_collection_name();
 
@@ -141,14 +135,12 @@ async fn rename_collection_already_exists() {
     assert!(matches!(result, Err(OperationError::AlreadyExists { .. })));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_collection_special_chars() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -160,7 +152,7 @@ async fn rename_collection_special_chars() {
 
     for char in FILENAME_SPECIAL_CHARS {
         let new_collection_name = format!("{collection_name}{char}");
-        let expected_path = workspace_path
+        let expected_path = _workspace_path
             .join(COLLECTIONS_DIR)
             .join(encode_name(&new_collection_name));
 
@@ -186,7 +178,5 @@ async fn rename_collection_special_chars() {
         );
     }
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }

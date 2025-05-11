@@ -42,4 +42,4 @@ export type PanelRenderer = "onlyWhenVisible" | "always";
 
 export type SidebarPartState = { preferredSize: number; isVisible: boolean };
 
-export type WorkspaceInfo = { path: string; name: string; lastOpenedAt?: bigint };
+export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

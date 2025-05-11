@@ -13,14 +13,18 @@ use entities::{
 };
 use environment_store::EnvironmentStoreImpl;
 use moss_db::{
+    DatabaseClient, ReDbClient,
     bincode_table::BincodeTable,
     common::{AnyEntity, DatabaseError, Transaction},
-    DatabaseClient, ReDbClient,
 };
 use state_store::StateStoreImpl;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
-use crate::{common::Transactional, WorkspaceStorage};
+use crate::{WorkspaceStorage, common::Transactional};
 
 const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
@@ -74,7 +78,7 @@ pub struct WorkspaceStorageImpl {
 }
 
 impl WorkspaceStorageImpl {
-    pub fn new(path: &PathBuf) -> Result<Self> {
+    pub fn new(path: &Path) -> Result<Self> {
         let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?
             .with_table(&collection_store::TABLE_COLLECTIONS)?
             .with_table(&environment_store::TABLE_ENVIRONMENTS)?

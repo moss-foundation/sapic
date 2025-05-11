@@ -46,11 +46,7 @@ export const sidebarPartStateSchema = z.object({
   isVisible: z.boolean(),
 });
 
-export const workspaceInfoSchema = z.object({
-  path: z.string(),
-  name: z.string(),
-  lastOpenedAt: z.bigint().optional(),
-});
+export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
 export const collectionInfoSchema = z.object({
   key: resourceKeySchema,
   name: z.string(),

@@ -8,7 +8,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn describe_layout_parts_state_empty() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace.describe_state().await;
     assert!(result.is_ok());
@@ -21,14 +21,12 @@ async fn describe_layout_parts_state_empty() {
     assert!(describe_layout_parts_state_output.panel.is_none());
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn describe_layout_parts_state_sidebar_only() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up only the sidebar state
     let sidebar_state = SidebarPartState {
@@ -55,14 +53,12 @@ async fn describe_layout_parts_state_sidebar_only() {
     assert_eq!(retrieved_sidebar.is_visible, true);
 
     // Cleanup
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn describe_layout_parts_state_panel_only() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up only the panel state
     let panel_state = PanelPartState {
@@ -89,14 +85,12 @@ async fn describe_layout_parts_state_panel_only() {
     assert_eq!(retrieved_panel.is_visible, false);
 
     // Cleanup
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn describe_layout_parts_state_editor_only() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up only the editor state
     let editor_state = create_simple_editor_state();
@@ -123,14 +117,12 @@ async fn describe_layout_parts_state_editor_only() {
     assert_eq!(retrieved_editor.active_group, Some("group1".to_string()));
 
     // Cleanup
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn describe_layout_parts_state_all() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up all states
     let editor_state = create_simple_editor_state();
@@ -182,14 +174,12 @@ async fn describe_layout_parts_state_all() {
     assert_eq!(retrieved_panel.is_visible, false);
 
     // Cleanup
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn describe_layout_parts_state_after_update() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // First set all states
     let initial_editor_state = create_simple_editor_state();
@@ -252,8 +242,6 @@ async fn describe_layout_parts_state_after_update() {
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.is_visible, false);
 
-    // Cleanup
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    // Clean up
+    cleanup().await;
 }

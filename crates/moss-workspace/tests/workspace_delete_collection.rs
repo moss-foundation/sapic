@@ -7,7 +7,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let key = workspace
@@ -26,14 +26,12 @@ async fn delete_collection_success() {
     let describe_output = workspace.describe().await.unwrap();
     assert!(describe_output.collections.is_empty());
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_collection_nonexistent_key() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let key = workspace
@@ -56,14 +54,12 @@ async fn delete_collection_nonexistent_key() {
 
     assert!(delete_collection_result.is_err());
 
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -89,7 +85,5 @@ async fn delete_collection_fs_already_deleted() {
     let describe_output = workspace.describe().await.unwrap();
     assert!(describe_output.collections.is_empty());
 
-    {
-        std::fs::remove_dir_all(workspace_path).unwrap();
-    }
+    cleanup().await;
 }
