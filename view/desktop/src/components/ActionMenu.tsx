@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 
-import { Icon } from "@/lib/ui";
+import { Icon, Menu } from "@/lib/ui";
 import {
   CheckboxItemProps,
   ContentProps,
@@ -8,45 +8,40 @@ import {
   RadioItemProps,
   SubContentProps,
   SubTriggerProps,
-} from "@/lib/ui/Menu";
-import * as DropdownMenuPrimitive from "@/lib/ui/Menu/DropdownMenu/DropdownMenu";
+} from "@/lib/ui/Menu/Menu";
 import { cn } from "@/utils";
 
-const Root: typeof DropdownMenuPrimitive.Root = DropdownMenuPrimitive.Root;
-const Trigger: typeof DropdownMenuPrimitive.Trigger = DropdownMenuPrimitive.Trigger;
-const Portal: typeof DropdownMenuPrimitive.Portal = DropdownMenuPrimitive.Portal;
+const Root = Menu.Root;
+const Trigger = Menu.Trigger;
+const Portal = Menu.Portal;
 
 const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.Content
+    <Menu.Content
       ref={ref}
       className={cn("background-(--moss-primary-background) min-w-48 border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}
-    </DropdownMenuPrimitive.Content>
+    </Menu.Content>
   );
 });
 
 const Item = forwardRef<HTMLDivElement, ItemProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.Item
-      ref={ref}
-      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
-      {...props}
-    >
+    <Menu.Item ref={ref} className={cn("hover:background-(--moss-secondary-background-hover)", className)} {...props}>
       {children}
-    </DropdownMenuPrimitive.Item>
+    </Menu.Item>
   );
 });
 
 const Separator = () => {
-  return <DropdownMenuPrimitive.Separator className="background-(--moss-border-color)" />;
+  return <Menu.Separator className="background-(--moss-border-color)" />;
 };
 
 const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.CheckboxItem
+    <Menu.CheckboxItem
       ref={ref}
       className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
@@ -54,16 +49,18 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, 
       {props.checked ? <Icon icon="GreenCheckmark" /> : <Icon icon="GreenCheckmark" className="opacity-0" />}
 
       <div className="flex w-full items-center gap-2.5">
-        <span>{props.label}</span>
+        <span>{children}</span>
+
+        {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut.join("")}</div>}
       </div>
-    </DropdownMenuPrimitive.CheckboxItem>
+    </Menu.CheckboxItem>
   );
 });
 
-const RadioGroup = DropdownMenuPrimitive.RadioGroup;
+const RadioGroup = Menu.RadioGroup;
 const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.RadioItem
+    <Menu.RadioItem
       ref={ref}
       className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
@@ -71,29 +68,29 @@ const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, classN
   );
 });
 
-const Sub: typeof DropdownMenuPrimitive.Sub = DropdownMenuPrimitive.Sub;
+const Sub = Menu.Sub;
 
 const SubTrigger = forwardRef<HTMLDivElement, SubTriggerProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.SubTrigger
+    <Menu.SubTrigger
       ref={ref}
       className={cn("hover:background-(--moss-secondary-background-hover)", className)}
       {...props}
     >
       {children}
-    </DropdownMenuPrimitive.SubTrigger>
+    </Menu.SubTrigger>
   );
 });
 
 const SubContent = forwardRef<HTMLDivElement, SubContentProps>(({ children, className, ...props }, ref) => {
   return (
-    <DropdownMenuPrimitive.SubContent
+    <Menu.SubContent
       ref={ref}
       className={cn("background-(--moss-primary-background) border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}
-    </DropdownMenuPrimitive.SubContent>
+    </Menu.SubContent>
   );
 });
 

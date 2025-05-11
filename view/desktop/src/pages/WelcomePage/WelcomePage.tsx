@@ -1,7 +1,7 @@
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
-import { Icon } from "@/lib/ui";
+import { Icon, Menu } from "@/lib/ui";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";
@@ -16,6 +16,36 @@ export const WelcomePage = () => {
           <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
 
           <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
+        </div>
+
+        <div className="flex gap-2">
+          <Menu.Root>
+            <Menu.Trigger>
+              <button>Dropdown</button>
+            </Menu.Trigger>
+            <Menu.Content>
+              <Menu.Item>asf</Menu.Item>
+              <Menu.Item>2</Menu.Item>
+              <Menu.Item>3</Menu.Item>
+              <Menu.Item>4</Menu.Item>
+            </Menu.Content>
+          </Menu.Root>
+
+          <Menu.Root>
+            <Menu.Trigger asChild openOnRightClick>
+              <button id="T" className="bg-amber-400 p-4">
+                Context menu
+              </button>
+            </Menu.Trigger>
+            <Menu.Portal>
+              <Menu.Content>
+                <Menu.Item>asf</Menu.Item>
+                <Menu.Item>2</Menu.Item>
+                <Menu.Item>3</Menu.Item>
+                <Menu.Item>4</Menu.Item>
+              </Menu.Content>
+            </Menu.Portal>
+          </Menu.Root>
         </div>
 
         <div className="flex flex-col gap-7.5">

@@ -5,7 +5,7 @@ import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-import { ContextMenu, TreeContext } from "..";
+import { ActionMenuRadix, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -96,8 +96,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           </span>
         </div>
       ) : (
-        <ContextMenu.Root modal={false}>
-          <ContextMenu.Trigger>
+        <ActionMenuRadix.Root modal={false}>
+          <ActionMenuRadix.Trigger>
             <div>
               <button
                 ref={draggableNodeRef}
@@ -170,16 +170,20 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   )}
               </button>
             </div>
-          </ContextMenu.Trigger>
+          </ActionMenuRadix.Trigger>
 
-          <ContextMenu.Portal>
-            <ContextMenu.Content>
-              {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
-              {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
-              <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
-            </ContextMenu.Content>
-          </ContextMenu.Portal>
-        </ContextMenu.Root>
+          <ActionMenuRadix.Portal>
+            <ActionMenuRadix.Content>
+              {node.isFolder && (
+                <ActionMenuRadix.Item onClick={() => setIsAddingFileNode(true)}>Add File</ActionMenuRadix.Item>
+              )}
+              {node.isFolder && (
+                <ActionMenuRadix.Item onClick={() => setIsAddingFolderNode(true)}>Add Folder</ActionMenuRadix.Item>
+              )}
+              <ActionMenuRadix.Item onClick={() => setIsRenamingNode(true)}>Edit</ActionMenuRadix.Item>
+            </ActionMenuRadix.Content>
+          </ActionMenuRadix.Portal>
+        </ActionMenuRadix.Root>
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (

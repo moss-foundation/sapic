@@ -3,6 +3,7 @@ export * from "../parts/BottomPane";
 export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
+export * as ActionMenuRadix from "./ActionMenu";
 export * from "./ActionMenu/MenuItem";
 export * from "./ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
@@ -19,6 +20,3 @@ export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
 export * from "./ViewContainer";
-
-export * as ContextMenu from "./ContextMenu";
-export * as DropdownMenu from "./DropdownMenu";
