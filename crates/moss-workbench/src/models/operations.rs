@@ -113,3 +113,22 @@ pub struct UpdateWorkspaceInput {
     #[validate(length(min = 1))]
     pub name: Option<String>,
 }
+
+// Describe Workbench State
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeWorkbenchStateOutput {
+    #[serde(skip)]
+    #[ts(skip)]
+    pub active_workspace_id: Option<Identifier>,
+
+    #[ts(optional)]
+    #[ts(type = "Identifier")]
+    pub prev_workspace_id: Option<Identifier>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
+}
