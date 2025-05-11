@@ -11,6 +11,8 @@ export type DeleteWorkspaceInput = { id: Identifier };
 
 export type DeleteWorkspaceOutput = { id: Identifier };
 
+export type DescribeWorkbenchStateOutput = { prevWorkspaceId?: Identifier };
+
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
 export type OpenWorkspaceInput = {

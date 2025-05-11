@@ -25,6 +25,10 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: identifierSchema,
 });
 
+export const describeWorkbenchStateOutputSchema = z.object({
+  prevWorkspaceId: identifierSchema.optional(),
+});
+
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
 
 export const openWorkspaceOutputSchema = z.object({
