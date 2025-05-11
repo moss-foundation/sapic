@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use thiserror::Error;
 
+// TODO: add PreconditionFailed
 #[derive(Error, Debug)]
 pub enum OperationError {
     #[error("validation error: {0}")]

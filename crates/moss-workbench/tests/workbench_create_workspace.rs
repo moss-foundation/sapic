@@ -171,7 +171,7 @@ async fn create_workspace_not_open_on_creation() {
     // Check that the workspace was not set as active
     let active_workspace_result = workspace_manager.active_workspace();
     assert!(
-        active_workspace_result.is_err(),
+        active_workspace_result.is_none(),
         "No workspace should be active"
     );
 

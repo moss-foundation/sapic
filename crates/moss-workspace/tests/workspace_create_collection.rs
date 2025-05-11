@@ -9,7 +9,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -31,14 +31,12 @@ async fn create_collection_success() {
     assert_eq!(describe_output.collections[0].name, collection_name);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap()
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
@@ -53,14 +51,12 @@ async fn create_collection_empty_name() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap()
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_collection_already_exists() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     workspace
@@ -82,14 +78,12 @@ async fn create_collection_already_exists() {
     ));
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap()
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -116,7 +110,5 @@ async fn create_collection_special_chars() {
     }
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }

@@ -8,7 +8,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn update_state_editor_part() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let editor_state = create_simple_editor_state();
 
@@ -26,14 +26,12 @@ async fn update_state_editor_part() {
     assert_eq!(state.editor.unwrap(), editor_state);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn update_state_sidebar_part() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let sidebar_state = SidebarPartState {
         preferred_size: 250,
@@ -54,14 +52,12 @@ async fn update_state_sidebar_part() {
     assert_eq!(state.sidebar.unwrap(), sidebar_state);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn update_state_panel_part() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let panel_state = PanelPartState {
         preferred_size: 200,
@@ -80,14 +76,12 @@ async fn update_state_panel_part() {
     assert_eq!(state.panel.unwrap(), panel_state);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn update_state_multiple_updates() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Initial states
     let editor_state = create_simple_editor_state();
@@ -144,14 +138,12 @@ async fn update_state_multiple_updates() {
     assert_eq!(state.panel.unwrap(), panel_state);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn update_state_overwrite_existing() {
-    let (workspace_path, workspace) = setup_test_workspace().await;
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     // Set initial state
     let initial_sidebar_state = SidebarPartState {
@@ -184,7 +176,5 @@ async fn update_state_overwrite_existing() {
     assert_eq!(state.sidebar.unwrap(), updated_sidebar_state);
 
     // Clean up
-    {
-        tokio::fs::remove_dir_all(workspace_path).await.unwrap();
-    }
+    cleanup().await;
 }

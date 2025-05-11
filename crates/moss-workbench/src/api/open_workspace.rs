@@ -33,7 +33,11 @@ impl<R: TauriRuntime> Workbench<R> {
         }
 
         // Check if the workspace is already active
-        if self.active_workspace()?.id == target_workspace_entry.id {
+        if self
+            .active_workspace()
+            .map(|active_workspace| active_workspace.id == target_workspace_entry.id)
+            .unwrap_or(false)
+        {
             return Ok(OpenWorkspaceOutput {
                 id: target_workspace_entry.id,
                 abs_path: Arc::clone(&target_workspace_entry.abs_path),

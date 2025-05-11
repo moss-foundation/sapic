@@ -1,5 +1,5 @@
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-use moss_fs::RenameOptions;
+use moss_fs::{RenameOptions, utils::encode_name};
 use moss_workspace::workspace::Workspace;
 use std::{path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
@@ -42,10 +42,11 @@ impl<R: TauriRuntime> Workbench<R> {
             return Ok(());
         }
 
-        let new_abs_path: Arc<Path> = self.absolutize(&new_name).into();
+        let new_encoded_name = encode_name(&new_name);
+        let new_abs_path: Arc<Path> = self.absolutize(&new_encoded_name).into();
         if new_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
-                name: new_name,
+                name: new_encoded_name,
                 path: new_abs_path.to_path_buf(),
             });
         }
@@ -53,7 +54,11 @@ impl<R: TauriRuntime> Workbench<R> {
         // An opened workspace db will prevent its parent folder from being renamed
         // If we are renaming the current workspace, we need to call the reset method
 
-        if self.active_workspace()?.id == workspace_info.id {
+        if self
+            .active_workspace()
+            .map(|active_workspace| active_workspace.id == workspace_info.id)
+            .unwrap_or(false)
+        {
             // FIXME: This is probably not the best approach
             // If the current workspace needs to be renamed
             // We will first drop the workspace, do fs renaming, and reload it
@@ -94,10 +99,12 @@ impl<R: TauriRuntime> Workbench<R> {
             self.global_storage.workspaces_store().rekey_workspace(
                 &mut txn,
                 workspace_info.name.clone(),
-                new_name.clone(),
+                new_encoded_name.clone(),
             )?;
             txn.commit()?;
         }
+
+        dbg!(&new_name);
 
         {
             let mut workspaces_lock = self.known_workspaces().await?.write().await;
@@ -105,8 +112,8 @@ impl<R: TauriRuntime> Workbench<R> {
                 workspace_info.id,
                 Arc::new(WorkspaceInfoEntry {
                     id: workspace_info.id,
-                    name: new_name,
-                    display_name: workspace_info.display_name.to_owned(),
+                    name: new_encoded_name,
+                    display_name: new_name,
                     abs_path: new_abs_path,
                     last_opened_at: workspace_info.last_opened_at,
                 }),

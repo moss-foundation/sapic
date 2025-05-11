@@ -73,13 +73,8 @@ impl<R: TauriRuntime> Workbench<R> {
         }
     }
 
-    pub fn active_workspace(&self) -> Result<Arc<ActiveWorkspace<R>>> {
-        let workspace = self
-            .active_workspace
-            .load_full()
-            .ok_or(anyhow::anyhow!("Workspace is not opened"))?;
-
-        Ok(workspace)
+    pub fn active_workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
+        self.active_workspace.load_full()
     }
 
     pub(super) fn set_active_workspace(&self, id: Identifier, workspace: Workspace<R>) {
