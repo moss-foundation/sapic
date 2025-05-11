@@ -23,6 +23,7 @@ validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
+dashmap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

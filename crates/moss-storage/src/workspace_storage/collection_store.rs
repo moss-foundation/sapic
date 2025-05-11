@@ -1,11 +1,11 @@
 use anyhow::Result;
 use moss_db::{
-    bincode_table::BincodeTable, common::Transaction, DatabaseClient, DatabaseError, ReDbClient,
+    DatabaseClient, DatabaseError, ReDbClient, bincode_table::BincodeTable, common::Transaction,
 };
 use std::path::PathBuf;
 
 use super::{
-    entities::collection_store_entities::CollectionEntity, CollectionStore, CollectionStoreTable,
+    CollectionStore, CollectionStoreTable, entities::collection_store_entities::CollectionEntity,
 };
 
 #[rustfmt::skip]

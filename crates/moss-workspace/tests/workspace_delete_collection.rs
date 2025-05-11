@@ -10,15 +10,15 @@ async fn delete_collection_success() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let key = workspace
+    let id = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
         })
         .await
         .unwrap()
-        .key;
+        .id;
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput { key })
+        .delete_collection(DeleteCollectionInput { id })
         .await;
     assert!(delete_collection_result.is_ok());
 
@@ -30,26 +30,26 @@ async fn delete_collection_success() {
 }
 
 #[tokio::test]
-async fn delete_collection_nonexistent_key() {
+async fn delete_collection_nonexistent_id() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let key = workspace
+    let id = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
         })
         .await
         .unwrap()
-        .key;
+        .id;
 
     workspace
-        .delete_collection(DeleteCollectionInput { key })
+        .delete_collection(DeleteCollectionInput { id })
         .await
         .unwrap();
 
     // Delete the collection again
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput { key })
+        .delete_collection(DeleteCollectionInput { id })
         .await;
 
     assert!(delete_collection_result.is_err());
@@ -69,19 +69,20 @@ async fn delete_collection_fs_already_deleted() {
         .await
         .unwrap();
 
-    // Delete the collection
-    tokio::fs::remove_dir_all(create_collection_output.path)
+    // Delete the collection manually from the filesystem
+    tokio::fs::remove_dir_all(&*create_collection_output.abs_path)
         .await
         .unwrap();
 
+    // Even though filesystem is already deleted, deletion should succeed
     let result = workspace
         .delete_collection(DeleteCollectionInput {
-            key: create_collection_output.key,
+            id: create_collection_output.id,
         })
         .await;
     assert!(result.is_ok());
 
-    // Check updating collections
+    // Check collections are updated
     let describe_output = workspace.describe().await.unwrap();
     assert!(describe_output.collections.is_empty());
 

@@ -49,19 +49,13 @@ impl<R: TauriRuntime> Workspace<R> {
         let collections = self.collections().await?;
         let collections_lock = collections.read().await;
 
-        let collections_info = collections_lock
+        Ok(collections_lock
             .iter()
-            .filter(|(_, iter_slot)| !iter_slot.is_leased())
-            .map(|(key, iter_slot)| {
-                let (_, metadata) = iter_slot.value();
-                CollectionInfo {
-                    key,
-                    name: metadata.name.clone(),
-                    order: metadata.order,
-                }
+            .map(|(_, entry)| CollectionInfo {
+                id: entry.id,
+                display_name: entry.display_name.clone(),
+                order: entry.order,
             })
-            .collect();
-
-        Ok(collections_info)
+            .collect())
     }
 }

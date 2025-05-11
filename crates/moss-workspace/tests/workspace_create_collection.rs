@@ -25,10 +25,13 @@ async fn create_collection_success() {
 
     assert_eq!(describe_output.collections.len(), 1);
     assert_eq!(
-        describe_output.collections[0].key,
-        create_collection_output.key
+        describe_output.collections[0].id,
+        create_collection_output.id
     );
-    assert_eq!(describe_output.collections[0].name, collection_name);
+    assert_eq!(describe_output.collections[0].display_name, collection_name);
+
+    // Verify the directory was created
+    assert!(create_collection_output.abs_path.exists());
 
     // Clean up
     cleanup().await;
@@ -103,10 +106,13 @@ async fn create_collection_special_chars() {
 
         assert!(describe_output.collections.iter().any(|info| info
             == &CollectionInfo {
-                key: create_collection_output.key,
-                name: collection_name.clone(),
+                id: create_collection_output.id,
+                display_name: collection_name.clone(),
                 order: None,
             }));
+
+        // Verify the directory was created
+        assert!(create_collection_output.abs_path.exists());
     }
 
     // Clean up

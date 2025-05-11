@@ -1,32 +1,62 @@
 pub mod api;
 
 use anyhow::{Context, Result};
+use dashmap::DashMap;
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::{
-    collection::{Collection, CollectionCache},
+    collection::Collection,
     indexer::{self, IndexerHandle},
 };
-use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
+use moss_common::{
+    leased_slotmap::{LeasedSlotMap, ResourceKey},
+    models::primitives::Identifier,
+};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
 use moss_fs::{FileSystem, utils::decode_name};
 use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
 use std::{
     collections::HashMap,
-    future::Future,
-    path::Path,
+    ops::Deref,
+    path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, mpsc};
 
+use crate::models::types::CollectionInfo;
+
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
 
-type CollectionSlot = (Collection, CollectionCache);
-type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
+// pub struct CollectionInfoNew {
+//     pub id: Identifier,
+//     pub name: String,
+//     pub order: Option<usize>,
+// }
+
+type CollectionSlot = (Collection, CollectionInfo);
+// type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
 
 type EnvironmentSlot = (Environment, EnvironmentCache);
 type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
+
+pub struct CollectionEntry {
+    pub id: Identifier,
+    pub name: String,
+    pub display_name: String,
+    pub order: Option<usize>,
+    pub inner: Collection,
+}
+
+impl Deref for CollectionEntry {
+    type Target = Collection;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+type CollectionMap = HashMap<Identifier, Arc<CollectionEntry>>;
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
@@ -39,7 +69,8 @@ pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     activity_indicator: ActivityIndicator<R>,
     indexer_handle: IndexerHandle,
-    next_entry_id: Arc<AtomicUsize>,
+    next_collection_entry_id: Arc<AtomicUsize>,
+    next_collection_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -72,12 +103,17 @@ impl<R: TauriRuntime> Workspace<R> {
             environments: OnceCell::new(),
             indexer_handle,
             activity_indicator,
-            next_entry_id: Arc::new(AtomicUsize::new(0)),
+            next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
+            next_collection_id: Arc::new(AtomicUsize::new(0)),
         })
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
+    }
+
+    pub(super) fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
+        self.abs_path.join(path)
     }
 
     async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
@@ -149,47 +185,57 @@ impl<R: TauriRuntime> Workspace<R> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
-                let mut collections = LeasedSlotMap::new();
+                let mut collections = HashMap::new();
 
                 if !self.abs_path.join(COLLECTIONS_DIR).exists() {
-                    return Ok::<_, anyhow::Error>(RwLock::new(collections));
+                    return Ok(RwLock::new(collections));
                 }
 
                 // TODO: Support external collections with absolute path
-                for (relative_path, collection_data) in self
+                for (path, collection_data) in self
                     .workspace_storage
                     .collection_store()
                     .list_collection()?
                 {
-                    let name = match relative_path.file_name() {
-                        Some(name) => decode_name(&name.to_string_lossy().to_string())?,
+                    debug_assert!(path.is_relative());
+
+                    let (display_name, encoded_name) = match path.file_name() {
+                        Some(name) => {
+                            let name = name.to_string_lossy().to_string();
+
+                            (decode_name(&name)?, name)
+                        }
                         None => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", relative_path);
+                            println!("failed to get the collection {:?} name", path);
                             continue;
                         }
                     };
 
-                    // TODO:A self-healing mechanism needs to be implemented here.
+                    // TODO: A self-healing mechanism needs to be implemented here.
                     // Collections that are found in the database but do not actually exist
                     // in the file system should be collected and deleted from the database in
                     // a parallel thread.
 
-                    // TODO: implement is_external flag for relative/absolute path
-
-                    let full_path = self.abs_path.join(relative_path);
+                    let id = Identifier::new(&self.next_collection_id);
+                    let abs_path: Arc<Path> = self.abs_path.join(path).into();
                     let collection = Collection::new(
-                        full_path,
+                        abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
                         self.fs.clone(),
                         self.indexer_handle.clone(),
-                        self.next_entry_id.clone(),
+                        self.next_collection_entry_id.clone(),
                     )?;
-                    let metadata = CollectionCache {
-                        name,
-                        order: collection_data.order,
-                    };
-
-                    collections.insert((collection, metadata));
+                    collections.insert(
+                        id,
+                        CollectionEntry {
+                            id,
+                            name: encoded_name,
+                            display_name,
+                            order: collection_data.order,
+                            inner: collection,
+                        }
+                        .into(),
+                    );
                 }
 
                 Ok::<_, anyhow::Error>(RwLock::new(collections))
@@ -197,22 +243,6 @@ impl<R: TauriRuntime> Workspace<R> {
             .await?;
 
         Ok(result)
-    }
-
-    pub async fn with_collection<T, Fut>(
-        &self,
-        key: ResourceKey,
-        f: impl FnOnce(&Collection) -> Fut,
-    ) -> Result<T>
-    where
-        Fut: Future<Output = Result<T>>,
-    {
-        let collections = self.collections().await?;
-        let collections_lock = collections.read().await;
-
-        let (collection, _cache) = collections_lock.get(key).context("Collection not found")?; // TODO: use operation error
-
-        f(collection).await
     }
 }
 
