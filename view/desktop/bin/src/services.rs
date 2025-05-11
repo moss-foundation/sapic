@@ -10,8 +10,10 @@ use moss_storage::GlobalStorage;
 use moss_tauri::TauriResult;
 use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
-// use moss_workspace::workspace_manager::WorkspaceManager;
+use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::marker::PhantomData;
+use std::path::Path;
+use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use tauri::{AppHandle, Manager};
@@ -48,13 +50,13 @@ pub fn service_pool<R: TauriRuntime>(
         Instantiation::Instant(logging_service(session_service_key), PhantomData),
         app_handle,
     );
-    // builder.register(
-    //     Instantiation::Instant(
-    //         workspace_manager(fs.clone(), global_storage.clone(), app_dir),
-    //         PhantomData,
-    //     ),
-    //     app_handle,
-    // );
+    builder.register(
+        Instantiation::Instant(
+            workspace_manager(fs.clone(), global_storage.clone(), app_dir),
+            PhantomData,
+        ),
+        app_handle,
+    );
 
     builder.build()
 }
@@ -152,23 +154,25 @@ fn logging_service<R: TauriRuntime>(
     }
 }
 
-// fn workspace_manager<R: tauri::Runtime>(
-//     fs: Arc<dyn FileSystem>,
-//     global_storage: Arc<dyn GlobalStorage>,
-//     app_dir: &PathBuf,
-// ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> WorkspaceManager<R> + Send + Sync + 'static {
-//     let workspaces_dir: PathBuf = app_dir.join("workspaces");
+fn workspace_manager<R: tauri::Runtime>(
+    fs: Arc<dyn FileSystem>,
+    global_storage: Arc<dyn GlobalStorage>,
+    app_dir: &PathBuf,
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> Workbench<R> + Send + Sync + 'static {
+    let workspaces_dir: Arc<Path> = app_dir.join("workspaces").into();
 
-//     move |_, app_handle| {
-//         WorkspaceManager::new(
-//             app_handle.clone(),
-//             fs,
-//             workspaces_dir.clone(),
-//             global_storage,
-//         )
-//         .unwrap()
-//     }
-// }
+    move |_, app_handle| {
+        Workbench::new(
+            app_handle.clone(),
+            fs,
+            global_storage,
+            WorkbenchOptions {
+                workspaces_abs_path: workspaces_dir.clone(),
+                next_workspace_id: Arc::new(AtomicUsize::new(0)),
+            },
+        )
+    }
+}
 
 async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResult<String> {
     let app_handle = ctx.app_handle();

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
+use moss_app::service::prelude::AppService;
 use moss_common::models::primitives::Identifier;
 use moss_fs::FileSystem;
 use moss_storage::GlobalStorage;
@@ -54,6 +55,8 @@ pub struct Workbench<R: TauriRuntime> {
     pub(super) global_storage: Arc<dyn GlobalStorage>,
     pub(crate) options: Options,
 }
+
+impl<R: tauri::Runtime> AppService for Workbench<R> {}
 
 impl<R: TauriRuntime> Workbench<R> {
     pub fn new(

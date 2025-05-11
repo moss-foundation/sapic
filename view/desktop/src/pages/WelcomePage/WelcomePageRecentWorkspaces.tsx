@@ -19,7 +19,11 @@ export const WelcomePageRecentWorkspaces = () => {
       <h2 className="text-lg">Recent</h2>
       <div className="flex flex-col items-start gap-1.5">
         {workspacesToShow?.map((workspace) => (
-          <WelcomePageLink key={workspace.name} label={workspace.name} onClick={() => openWorkspace(workspace.name)} />
+          <WelcomePageLink
+            key={workspace.displayName}
+            label={workspace.displayName}
+            onClick={() => openWorkspace(workspace.displayName)}
+          />
         ))}
       </div>
 
