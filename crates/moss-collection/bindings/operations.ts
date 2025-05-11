@@ -4,24 +4,28 @@ import type {
   EntryId,
   HeaderParamItem,
   HttpMethod,
+  PathChangeKind,
   PathParamItem,
   QueryParamItem,
   RequestBody,
   RequestNodeInfo,
 } from "./types";
 
-export type CreateRequestGroupInput = { path: string };
+export type CreateRequestDirEntryInput = { destination: string };
 
-export type CreateRequestGroupOutput = { key: ResourceKey };
+export type CreateRequestDirEntryOutput = { changedPaths: Array<[string, EntryId, PathChangeKind]> };
 
-export type CreateRequestInput = {
-  name: string;
-  relativePath?: string;
+export type CreateRequestEntryInput = {
+  destination: string;
   url?: string;
   payload?: CreateRequestProtocolSpecificPayload;
 };
 
-export type CreateRequestOutput = { key: ResourceKey };
+export type CreateRequestEntryOutput = { changedPaths: Array<[string, EntryId, PathChangeKind]> };
+
+export type CreateRequestGroupInput = { path: string };
+
+export type CreateRequestGroupOutput = { key: ResourceKey };
 
 /**
  * All the path and file names passed in the input should be unencoded.
@@ -38,11 +42,13 @@ export type CreateRequestProtocolSpecificPayload = {
   };
 };
 
+export type DeleteRequestDirEntryInput = { id: EntryId };
+
+export type DeleteRequestDirEntryOutput = { changedPaths: Array<[string, EntryId, PathChangeKind]> };
+
 export type DeleteRequestGroupInput = { key: ResourceKey };
 
 export type DeleteRequestInput = { key: ResourceKey };
-
-export type EntryInfo = { id: EntryId; path: string };
 
 export type ListRequestsOutput = Array<RequestNodeInfo>;
 
@@ -52,6 +58,15 @@ export type RenameRequestGroupOutput = { key: ResourceKey; affectedItems: Array<
 
 export type RenameRequestInput = { key: ResourceKey; newName: string };
 
-export type StreamEntriesByPrefixesEvent = Array<EntryInfo>;
-
 export type StreamEntriesByPrefixesInput = Array<string>;
+
+export type UpdateRequestDirEntryInput = {
+  id: EntryId;
+  /**
+   * A new name for the directory, if provided,
+   * the directory will be renamed to this name.
+   */
+  name?: string;
+};
+
+export type UpdateRequestDirEntryOutput = { changedPaths: Array<[string, EntryId, PathChangeKind]> };

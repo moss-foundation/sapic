@@ -4,7 +4,7 @@ use anyhow::Context as _;
 use chrono::Utc;
 use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
-    identifier::Identifier,
+    models::primitives::Identifier,
 };
 use moss_fs::utils::encode_name;
 use moss_storage::global_storage::entities::WorkspaceInfoEntity;

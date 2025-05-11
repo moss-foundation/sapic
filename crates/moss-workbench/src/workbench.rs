@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
-use moss_common::identifier::Identifier;
+use moss_common::models::primitives::Identifier;
 use moss_fs::FileSystem;
 use moss_storage::GlobalStorage;
 use moss_workspace::workspace::Workspace;

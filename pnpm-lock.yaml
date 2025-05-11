@@ -88,6 +88,19 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.15.3)(@vitest/browser@2.1.9)(jsdom@26.1.0)(lightningcss@1.29.2)(msw@2.7.3(@types/node@22.15.3)(typescript@5.8.3))
 
+  crates/moss-activity-indicator:
+    dependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   crates/moss-collection:
     dependencies:
       typescript:
@@ -109,6 +122,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -145,6 +161,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/bindings-utils':
         specifier: workspace:*
@@ -177,6 +196,9 @@ importers:
       typescript:
         specifier: ^5.8.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -187,6 +209,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.8.3
+      zod:
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -201,6 +226,12 @@ importers:
         specifier: ^3.24.4
         version: 3.24.4
     devDependencies:
+      '@repo/moss-common':
+        specifier: workspace:*
+        version: link:../moss-common
+      '@repo/moss-workspace':
+        specifier: workspace:*
+        version: link:../moss-workspace
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript

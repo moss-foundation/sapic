@@ -4,6 +4,19 @@ import { z } from "zod";
 
 export const entryIdSchema = z.number();
 
+export const entryInfoSchema = z.object({
+  id: entryIdSchema,
+  path: z.string(),
+  order: z.number().nullable(),
+});
+
+export const entryKindSchema = z.union([
+  z.literal("unit"),
+  z.literal("unloadedDir"),
+  z.literal("dir"),
+  z.literal("file"),
+]);
+
 export const formDataValueSchema = z.union([
   z.object({
     "text": z.string(),
@@ -22,6 +35,13 @@ export const headerParamOptionsSchema = z.object({
 });
 
 export const httpMethodSchema = z.union([z.literal("post"), z.literal("get"), z.literal("put"), z.literal("delete")]);
+
+export const pathChangeKindSchema = z.union([
+  z.literal("loaded"),
+  z.literal("created"),
+  z.literal("removed"),
+  z.literal("updated"),
+]);
 
 export const pathParamOptionsSchema = z.object({
   propagate: z.boolean(),

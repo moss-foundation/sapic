@@ -65,12 +65,23 @@ ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
 WORKBENCH_MODELS_DIR := crates/moss-workbench
+ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
 
 # ---- Command Executables ----
 PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
 NPX := npx
+
+# ======================================================
+# Run Commands
+# ======================================================
+
+## Run the desktop application in development mode
+.PHONY: run-desktop
+run-desktop:
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
+
 
 # ======================================================
 # Setup Commands
@@ -90,15 +101,6 @@ gen-icons:
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
-
-# ======================================================
-# Run Commands
-# ======================================================
-
-## Run the desktop application in development mode
-.PHONY: run-desktop
-run-desktop:
-	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev
 
 # ======================================================
 # TypeScript Bindings Generation
@@ -138,6 +140,7 @@ $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
 $(eval $(call gen_bindings,workbench,WORKBENCH_MODELS_DIR))
+$(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -150,7 +153,8 @@ gen-bindings: \
 	gen-environment-bindings \
 	gen-workspace-bindings \
 	gen-common-bindings \
-	gen-workbench-bindings
+	gen-workbench-bindings \
+	gen-activity-indicator-bindings
 
 # ======================================================
 # Utility Commands

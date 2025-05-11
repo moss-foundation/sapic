@@ -11,6 +11,9 @@ const configPath = join(path, "tsconfig.json");
 let project = new Project({ tsConfigFilePath: configPath });
 
 project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "bindings-utils", "index.ts"));
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-common", "index.ts"));
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-environment", "index.ts"));
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-workspace", "index.ts"));
 project.resolveSourceFileDependencies();
 project.getSourceFiles().forEach((file) => {
   file.fixMissingImports();

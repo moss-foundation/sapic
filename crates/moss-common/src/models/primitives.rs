@@ -5,7 +5,7 @@ use ts_rs::TS;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, TS)]
 #[serde(transparent)]
-#[ts(export, export_to = "identifier.ts")]
+#[ts(export, export_to = "primitives.ts")]
 pub struct Identifier(usize);
 
 impl Identifier {

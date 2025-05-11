@@ -1,11 +1,14 @@
 mod shared;
 
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, models::primitives::Identifier};
 use moss_fs::utils::encode_name;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workbench::models::operations::{CreateWorkspaceInput, UpdateWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
-use std::{path::Path, sync::Arc};
+use std::{
+    path::Path,
+    sync::{Arc, atomic::AtomicUsize},
+};
 
 use crate::shared::setup_test_workspace_manager;
 
@@ -172,9 +175,7 @@ async fn rename_workspace_nonexistent_id() {
     let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     // Create a non-existent ID
-    let id = moss_common::identifier::Identifier::new(&std::sync::Arc::new(
-        std::sync::atomic::AtomicUsize::new(1000),
-    ));
+    let id = Identifier::new(&std::sync::Arc::new(AtomicUsize::new(1000)));
 
     // Try renaming a workspace with a non-existent ID
     let rename_workspace_result = workspace_manager
