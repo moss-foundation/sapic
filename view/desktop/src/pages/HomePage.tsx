@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActionMenuRadix } from "@/components";
-import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import SelectOutlined from "@/components/SelectOutlined";
 import {
   editorContextItems,
   generateItems,
@@ -38,7 +38,6 @@ const ComponentGallery = () => {
   const [data, setData] = React.useState<number | null>(null);
 
   // Action Menu States
-  const [themeMenuOpen, setThemeMenuOpen] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("light");
 
   React.useEffect(() => {
@@ -49,16 +48,12 @@ const ComponentGallery = () => {
     fetchData();
   }, []);
 
-  const handleItemSelect = (item: MenuItemProps) => {
-    console.log(`Selected: ${item.id}`);
+  const handleItemSelect = (value: string) => {
+    console.log(`Selected: ${value}`);
 
     // Handle theme selection
-    if (item.type === "radio" && item.value) {
-      setSelectedTheme(item.value);
-    }
+    setSelectedTheme(value);
   };
-
-  console.log(Object.keys(iconsNames));
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
@@ -91,11 +86,7 @@ const ComponentGallery = () => {
                 <ActionMenuRadix.Portal>
                   <ActionMenuRadix.Content align="start">
                     {editorContextItems.map((item) => (
-                      <ActionMenuRadix.Item
-                        key={item.id}
-                        onClick={() => handleItemSelect(item)}
-                        icon={item.icon || undefined}
-                      >
+                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
                       </ActionMenuRadix.Item>
                     ))}
@@ -113,11 +104,7 @@ const ComponentGallery = () => {
                 <ActionMenuRadix.Portal>
                   <ActionMenuRadix.Content align="start">
                     {generateItems.map((item) => (
-                      <ActionMenuRadix.Item
-                        key={item.id}
-                        onClick={() => handleItemSelect(item)}
-                        icon={item.icon || undefined}
-                      >
+                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
                       </ActionMenuRadix.Item>
                     ))}
@@ -135,11 +122,7 @@ const ComponentGallery = () => {
                 <ActionMenuRadix.Portal>
                   <ActionMenuRadix.Content align="start">
                     {runConfigItems.map((item) => (
-                      <ActionMenuRadix.Item
-                        key={item.id}
-                        onClick={() => handleItemSelect(item)}
-                        icon={item.icon || undefined}
-                      >
+                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
                       </ActionMenuRadix.Item>
                     ))}
@@ -157,11 +140,7 @@ const ComponentGallery = () => {
                 <ActionMenuRadix.Portal>
                   <ActionMenuRadix.Content align="start">
                     {runOptionsItems.map((item) => (
-                      <ActionMenuRadix.Item
-                        key={item.id}
-                        onClick={() => handleItemSelect(item)}
-                        icon={item.icon || undefined}
-                      >
+                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
                       </ActionMenuRadix.Item>
                     ))}
@@ -179,11 +158,7 @@ const ComponentGallery = () => {
                 <ActionMenuRadix.Portal>
                   <ActionMenuRadix.Content align="start">
                     {runSelectorItems.map((item) => (
-                      <ActionMenuRadix.Item
-                        key={item.id}
-                        onClick={() => handleItemSelect(item)}
-                        icon={item.icon || undefined}
-                      >
+                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
                       </ActionMenuRadix.Item>
                     ))}
@@ -199,15 +174,23 @@ const ComponentGallery = () => {
             <div className="flex items-center gap-3 rounded-md bg-gray-100 p-4 dark:bg-gray-800/50">
               <span className="font-medium text-gray-700 dark:text-gray-300">Theme:</span>
               <div className="w-56">
-                <ActionMenu
-                  type="dropdown"
-                  items={themeItems}
-                  open={themeMenuOpen}
-                  onOpenChange={setThemeMenuOpen}
-                  onSelect={handleItemSelect}
-                  selectedValue={selectedTheme}
-                  placeholder="Select theme"
-                />
+                <SelectOutlined.Root value={selectedTheme} onValueChange={handleItemSelect}>
+                  <SelectOutlined.Trigger />
+
+                  <SelectOutlined.Content>
+                    {themeItems.map((item) => {
+                      if (item.type === "separator") {
+                        return <SelectOutlined.Separator key={item.id} />;
+                      }
+
+                      return (
+                        <SelectOutlined.Item key={item.id} value={item.value!}>
+                          {item.label}
+                        </SelectOutlined.Item>
+                      );
+                    })}
+                  </SelectOutlined.Content>
+                </SelectOutlined.Root>
               </div>
             </div>
           </div>
