@@ -1,8 +1,9 @@
-mod cmd_base;
-mod cmd_window;
+mod app;
 mod collection;
+mod workbench;
 mod workspace;
 
-pub use cmd_window::*;
+pub use app::*;
 pub use collection::*;
+pub use workbench::*;
 pub use workspace::*;

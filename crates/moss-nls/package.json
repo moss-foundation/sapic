@@ -12,16 +12,7 @@
       "@repo/bindings-utils": "workspace:*"
     },
     "dependencies": {
-      "typescript": "^5.7.2"
-    },
-    "tsImportRules": {
-      "bindings/operations.ts": {
-        "@repo/bindings-utils": {
-          "types": [
-            "JsonValue"
-          ],
-          "is_type_import": true
-        }
-      }
+      "typescript": "^5.7.2",
+      "zod": "^3.24.4"
     }
   }

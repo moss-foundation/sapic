@@ -15,35 +15,5 @@
   "dependencies": {
     "typescript": "^5.7.2",
     "zod": "^3.24.4"
-  },
-  "tsImportRules": {
-    "bindings/types.ts": {
-      "@repo/moss-theme": {
-        "types": [
-          "ColorThemeInfo"
-        ],
-        "is_type_import": true
-      },
-      "@repo/moss-nls": {
-        "types": [
-          "LocaleInfo"
-        ],
-        "is_type_import": true
-      }
-    },
-    "bindings/operations.ts": {
-      "@repo/moss-theme": {
-        "types": [
-          "ColorThemeInfo"
-        ],
-        "is_type_import": true
-      },
-      "@repo/moss-nls": {
-        "types": [
-          "LocaleInfo"
-        ],
-        "is_type_import": true
-      }
-    }
   }
 }

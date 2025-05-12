@@ -1,9 +1,9 @@
+use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_collection::indexer::{self, IndexerHandle};
 use moss_fs::RealFileSystem;
 use moss_fs::utils::{encode_name, encode_path};
 use moss_testutils::random_name::random_collection_name;
-use moss_workbench::activity_indicator::ActivityIndicator;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
@@ -23,7 +23,7 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     std::fs::create_dir_all(collection_path.clone()).unwrap();
 
     // Create collection/requests to prevent indexation error
-    std::fs::create_dir_all(collection_path.join("requests")).unwrap();
+    // std::fs::create_dir_all(collection_path.join("requests")).unwrap();
 
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();

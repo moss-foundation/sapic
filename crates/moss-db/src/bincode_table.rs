@@ -1,12 +1,13 @@
 use redb::{Key, ReadableTable, TableDefinition};
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::str::FromStr;
 
-use crate::common::{DatabaseError, Transaction};
 use crate::Table;
+use crate::common::{DatabaseError, Transaction};
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>
@@ -176,6 +177,40 @@ where
             }
             Transaction::Read(_txn) => Err(DatabaseError::Transaction(
                 "Cannot truncate table in read transaction".to_string(),
+            )),
+        }
+    }
+
+    pub fn scan_by_prefix<P>(
+        &self,
+        txn: &Transaction,
+        prefix: P,
+    ) -> Result<Vec<(K, V)>, DatabaseError>
+    where
+        P: AsRef<str>,
+    {
+        match txn {
+            Transaction::Read(txn) => {
+                let table = txn.open_table(self.table)?;
+                let mut result = Vec::new();
+                let prefix_str = prefix.as_ref();
+
+                for entry in table.iter()? {
+                    let (key_guard, value_guard) = entry?;
+                    let key = key_guard.value().to_owned();
+                    let key_str = key.to_string();
+
+                    if key_str.starts_with(prefix_str) {
+                        let bytes = value_guard.value();
+                        let value: V = serde_json::from_slice(&bytes)?;
+                        result.push((key, value));
+                    }
+                }
+
+                Ok(result)
+            }
+            Transaction::Write(_txn) => Err(DatabaseError::Transaction(
+                "Cannot scan from write transaction".to_string(),
             )),
         }
     }

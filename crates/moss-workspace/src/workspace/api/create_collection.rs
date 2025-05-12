@@ -9,7 +9,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    workspace::{Workspace, COLLECTIONS_DIR},
+    workspace::{COLLECTIONS_DIR, Workspace},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -21,7 +21,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         // workspace_path/encoded_collection_folder
         let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_name(&input.name));
-        let full_path = self.path().join(&relative_path);
+        let full_path = self.abs_path().join(&relative_path);
 
         if full_path.exists() {
             return Err(OperationError::AlreadyExists {

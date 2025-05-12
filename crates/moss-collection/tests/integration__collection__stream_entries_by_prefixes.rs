@@ -1,7 +1,7 @@
 mod shared;
 
-use moss_collection::models::operations::{
-    StreamEntriesByPrefixesEvent, StreamEntriesByPrefixesInput,
+use moss_collection::models::{
+    events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput,
 };
 
 use crate::shared::set_up_test_collection;

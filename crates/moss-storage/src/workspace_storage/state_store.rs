@@ -1,16 +1,16 @@
 use anyhow::Result;
 use moss_db::{
+    DatabaseClient, ReDbClient,
     bincode_table::BincodeTable,
     common::{AnyEntity, DatabaseError},
-    DatabaseClient, ReDbClient,
 };
 use serde::de::DeserializeOwned;
 
 use super::{
+    StateStore, StateStoreTable,
     entities::state_store_entities::{
         EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
     },
-    StateStore, StateStoreTable,
 };
 
 const WORKBENCH_PARTS_EDITOR_GRID_STATE_KEY: &str = "workbench.parts.editor.grid";
@@ -20,7 +20,7 @@ const WORKBENCH_PARTS_SIDEBAR_STATE_KEY: &str = "workbench.parts.sidebar";
 const WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY: &str = "workbench.parts.editor.activeGroup";
 
 #[rustfmt::skip]
-pub(in crate::workspace_storage) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("parts_state");
+pub(in crate::workspace_storage) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("states");
 
 pub struct StateStoreImpl {
     client: ReDbClient,

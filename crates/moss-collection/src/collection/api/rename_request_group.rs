@@ -2,11 +2,8 @@ use anyhow::Result;
 use moss_common::api::{OperationError, OperationResult};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_db::Transaction;
-use moss_fs::utils::encode_name;
 use moss_fs::RenameOptions;
-use moss_storage::collection_storage::entities::request_store_entities::{
-    GroupEntity, RequestNodeEntity,
-};
+use moss_fs::utils::encode_name;
 use std::path::Path;
 use validator::Validate;
 

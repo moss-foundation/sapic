@@ -1,23 +1,23 @@
 pub mod api;
 
 use anyhow::{Context, Result};
+use moss_activity_indicator::ActivityIndicator;
 use moss_collection::{
     collection::{Collection, CollectionCache},
     indexer::{self, IndexerHandle},
 };
 use moss_common::leased_slotmap::{LeasedSlotMap, ResourceKey};
 use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
-use moss_fs::{utils::decode_name, FileSystem};
-use moss_storage::{workspace_storage::WorkspaceStorageImpl, WorkspaceStorage};
-use moss_workbench::activity_indicator::ActivityIndicator;
+use moss_fs::{FileSystem, utils::decode_name};
+use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
 use std::{
     collections::HashMap,
     future::Future,
-    path::PathBuf,
-    sync::{atomic::AtomicUsize, Arc},
+    path::Path,
+    sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{mpsc, OnceCell, RwLock};
+use tokio::sync::{OnceCell, RwLock, mpsc};
 
 pub const COLLECTIONS_DIR: &'static str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -31,7 +31,7 @@ type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     app_handle: AppHandle<R>,
-    path: PathBuf,
+    abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     workspace_storage: Arc<dyn WorkspaceStorage>,
     collections: OnceCell<RwLock<CollectionMap>>,
@@ -45,7 +45,7 @@ pub struct Workspace<R: TauriRuntime> {
 impl<R: TauriRuntime> Workspace<R> {
     pub fn new(
         app_handle: AppHandle<R>,
-        path: PathBuf,
+        path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
@@ -65,7 +65,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         Ok(Self {
             app_handle,
-            path,
+            abs_path: path,
             fs,
             workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
@@ -76,19 +76,25 @@ impl<R: TauriRuntime> Workspace<R> {
         })
     }
 
+    pub fn abs_path(&self) -> &Arc<Path> {
+        &self.abs_path
+    }
+
     async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
         let result = self
             .environments
             .get_or_try_init(|| async move {
                 let mut environments = LeasedSlotMap::new();
 
-                if !self.path.join(ENVIRONMENTS_DIR).exists() {
+                if !self.abs_path.join(ENVIRONMENTS_DIR).exists() {
                     return Ok(RwLock::new(environments));
                 }
 
                 let mut envs_from_fs = HashMap::new();
-                let mut environment_dir =
-                    self.fs.read_dir(&self.path.join(ENVIRONMENTS_DIR)).await?;
+                let mut environment_dir = self
+                    .fs
+                    .read_dir(&self.abs_path.join(ENVIRONMENTS_DIR))
+                    .await?;
                 while let Some(entry) = environment_dir.next_entry().await? {
                     if entry.file_type().await?.is_dir() {
                         continue;
@@ -145,7 +151,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .get_or_try_init(|| async move {
                 let mut collections = LeasedSlotMap::new();
 
-                if !self.path.join(COLLECTIONS_DIR).exists() {
+                if !self.abs_path.join(COLLECTIONS_DIR).exists() {
                     return Ok::<_, anyhow::Error>(RwLock::new(collections));
                 }
 
@@ -171,7 +177,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
                     // TODO: implement is_external flag for relative/absolute path
 
-                    let full_path = self.path.join(relative_path);
+                    let full_path = self.abs_path.join(relative_path);
                     let collection = Collection::new(
                         full_path,
                         self.fs.clone(),
@@ -191,10 +197,6 @@ impl<R: TauriRuntime> Workspace<R> {
             .await?;
 
         Ok(result)
-    }
-
-    pub fn path(&self) -> PathBuf {
-        self.path.clone()
     }
 
     pub async fn with_collection<T, Fut>(

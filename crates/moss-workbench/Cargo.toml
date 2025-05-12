@@ -4,7 +4,22 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_app.workspace = true
+moss_workspace.workspace = true
+moss_common.workspace = true
+moss_fs.workspace = true
+moss_storage.workspace = true
+moss_activity_indicator.workspace = true
+
+tokio.workspace = true
 anyhow.workspace = true
 tauri.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs.workspace = true
+arc-swap.workspace = true
+validator.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+moss_testutils.workspace = true

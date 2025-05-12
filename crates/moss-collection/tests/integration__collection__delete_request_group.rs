@@ -72,7 +72,7 @@ async fn delete_request_group_with_requests() {
         .key;
 
     let inner_request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "inner_request".to_string(),
             relative_path: Some(PathBuf::from(&request_group_name)),
             url: None,
@@ -83,7 +83,7 @@ async fn delete_request_group_with_requests() {
         .key;
 
     let outer_request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "outer_request".to_string(),
             relative_path: None,
             url: None,
@@ -131,7 +131,7 @@ async fn delete_request_group_fs_already_deleted() {
         .key;
 
     let request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "request".to_string(),
             relative_path: Some(PathBuf::from(&request_group_name)),
             url: None,
@@ -185,7 +185,7 @@ async fn delete_request_group_subfolder() {
 
     // Create a request in the outer request group
     let outer_request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "outer_request".to_string(),
             relative_path: Some(PathBuf::from(&request_group_name)),
             url: None,
@@ -197,7 +197,7 @@ async fn delete_request_group_subfolder() {
 
     // Create a request in the inner request group
     let inner_request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: "inner_request".to_string(),
             relative_path: Some(PathBuf::from(&request_group_name).join("subfolder")),
             url: None,
@@ -299,7 +299,7 @@ async fn delete_request_group_incorrect_entity_type() {
     let request_name = random_request_name();
 
     let request_key = collection
-        .create_request(CreateRequestInput {
+        .create_request_old(CreateRequestInput {
             name: request_name,
             relative_path: None,
             url: None,

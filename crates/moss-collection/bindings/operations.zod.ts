@@ -5,19 +5,24 @@ import {
   entryIdSchema,
   headerParamItemSchema,
   httpMethodSchema,
+  pathChangeKindSchema,
   pathParamItemSchema,
   queryParamItemSchema,
   requestBodySchema,
   requestNodeInfoSchema,
 } from "./types.zod";
 
+export const createRequestDirEntryInputSchema = z.object({
+  destination: z.string(),
+});
+
 export const createRequestGroupInputSchema = z.object({
   path: z.string(),
 });
 
 export const streamEntriesByPrefixesInputSchema = z.array(z.string());
-export const createRequestGroupOutputSchema = z.object({
-  key: resourceKeySchema,
+export const createRequestDirEntryOutputSchema = z.object({
+  changedPaths: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });
 
 export const createRequestProtocolSpecificPayloadSchema = z.object({
@@ -30,8 +35,20 @@ export const createRequestProtocolSpecificPayloadSchema = z.object({
   }),
 });
 
-export const createRequestOutputSchema = z.object({
+export const createRequestEntryOutputSchema = z.object({
+  changedPaths: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
+});
+
+export const createRequestGroupOutputSchema = z.object({
   key: resourceKeySchema,
+});
+
+export const deleteRequestDirEntryInputSchema = z.object({
+  id: entryIdSchema,
+});
+
+export const deleteRequestDirEntryOutputSchema = z.object({
+  changedPaths: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });
 
 export const deleteRequestGroupInputSchema = z.object({
@@ -40,11 +57,6 @@ export const deleteRequestGroupInputSchema = z.object({
 
 export const deleteRequestInputSchema = z.object({
   key: resourceKeySchema,
-});
-
-export const entryInfoSchema = z.object({
-  id: entryIdSchema,
-  path: z.string(),
 });
 
 export const listRequestsOutputSchema = z.array(requestNodeInfoSchema);
@@ -64,11 +76,17 @@ export const renameRequestInputSchema = z.object({
   newName: z.string(),
 });
 
-export const streamEntriesByPrefixesEventSchema = z.array(entryInfoSchema);
+export const updateRequestDirEntryInputSchema = z.object({
+  id: entryIdSchema,
+  name: z.string().optional(),
+});
 
-export const createRequestInputSchema = z.object({
-  name: z.string(),
-  relativePath: z.string().optional(),
+export const updateRequestDirEntryOutputSchema = z.object({
+  changedPaths: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
+});
+
+export const createRequestEntryInputSchema = z.object({
+  destination: z.string(),
   url: z.string().optional(),
   payload: createRequestProtocolSpecificPayloadSchema.optional(),
 });

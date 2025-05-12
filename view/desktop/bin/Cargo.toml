@@ -34,6 +34,7 @@ moss_state.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true
+moss_workbench.workspace = true
 
 tauri = { workspace = true, features = [
     "wry",

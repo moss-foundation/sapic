@@ -1,4 +1,4 @@
-use rand::{distr::Alphanumeric, Rng};
+use rand::{Rng, distr::Alphanumeric};
 
 pub fn random_workspace_name() -> String {
     format!("Test_{}_Workspace", random_string(10))

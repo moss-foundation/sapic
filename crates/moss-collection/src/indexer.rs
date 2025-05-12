@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
+use moss_activity_indicator::{ActivityIndicator, handle::ActivityHandle};
 use moss_common::leased_slotmap::ResourceKey;
 use moss_fs::FileSystem;
-use moss_workbench::activity_indicator::{ActivityHandle, ActivityIndicator};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;

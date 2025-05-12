@@ -43,12 +43,12 @@ impl<R: TauriRuntime> Workspace<R> {
         }
 
         // requests/request_name
-        let old_relative_path = old_full_path.strip_prefix(&self.path).unwrap();
+        let old_relative_path = old_full_path.strip_prefix(&self.abs_path).unwrap();
         let new_relative_path = old_relative_path
             .parent()
             .context("Parent directory not found")?
             .join(encode_name(&input.new_name));
-        let new_full_path = self.path.join(&new_relative_path);
+        let new_full_path = self.abs_path.join(&new_relative_path);
 
         if new_full_path.exists() {
             return Err(OperationError::AlreadyExists {
