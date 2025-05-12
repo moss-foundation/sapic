@@ -38,11 +38,6 @@ const ComponentGallery = () => {
   const [data, setData] = React.useState<number | null>(null);
 
   // Action Menu States
-  const [contextMenuOpen, setContextMenuOpen] = React.useState(false);
-  const [generateMenuOpen, setGenerateMenuOpen] = React.useState(false);
-  const [runConfigMenuOpen, setRunConfigMenuOpen] = React.useState(false);
-  const [runOptionsMenuOpen, setRunOptionsMenuOpen] = React.useState(false);
-  const [runSelectorMenuOpen, setRunSelectorMenuOpen] = React.useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("light");
 
