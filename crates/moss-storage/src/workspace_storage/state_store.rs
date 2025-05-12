@@ -5,9 +5,12 @@ use moss_db::{
     common::{AnyEntity, DatabaseError},
 };
 use serde::de::DeserializeOwned;
+use std::sync::Arc;
+
+use crate::common::NamespacedStore;
 
 use super::{
-    StateStore, StateStoreTable,
+    PartNamespace, StateStore, StateStoreNamespaceExt, StateStoreTable,
     entities::state_store_entities::{
         EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
     },
@@ -21,6 +24,14 @@ const WORKBENCH_PARTS_EDITOR_ACTIVE_GROUP_STATE_KEY: &str = "workbench.parts.edi
 
 #[rustfmt::skip]
 pub(in crate::workspace_storage) const PARTS_STATE: BincodeTable<String, AnyEntity> = BincodeTable::new("states");
+
+pub struct NamespaceRegistry {
+    part_namespace: Arc<dyn PartNamespace>,
+}
+
+pub struct PartNamespaceImpl {}
+
+impl PartNamespace for PartNamespaceImpl {}
 
 pub struct StateStoreImpl {
     client: ReDbClient,
@@ -40,6 +51,18 @@ impl StateStoreImpl {
         let data = self.table.read(&txn, key)?;
 
         Ok(serde_json::from_slice(&data)?)
+    }
+}
+
+impl StateStoreNamespaceExt for StateStoreImpl {
+    fn part(self: Arc<Self>) -> Arc<dyn PartNamespace> {
+        Arc::new(PartNamespaceImpl {})
+    }
+}
+
+impl NamespacedStore<dyn StateStoreNamespaceExt> for StateStoreImpl {
+    fn namespaces(self: Arc<Self>) -> Arc<dyn StateStoreNamespaceExt> {
+        self
     }
 }
 

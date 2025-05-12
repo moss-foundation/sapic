@@ -24,7 +24,10 @@ use std::{
 };
 use variable_store::VariableStoreImpl;
 
-use crate::{WorkspaceStorage, common::Transactional};
+use crate::{
+    WorkspaceStorage,
+    common::{NamespacedStore, Transactional},
+};
 
 const WORKSPACE_STATE_DB_NAME: &str = "state.db";
 
@@ -58,7 +61,7 @@ pub trait VariableStore: Send + Sync {
 }
 
 pub(crate) type StateStoreTable<'a> = BincodeTable<'a, String, AnyEntity>;
-pub trait StateStore: Send + Sync + 'static {
+pub trait StateStore: NamespacedStore<dyn StateStoreNamespaceExt> + Send + Sync {
     fn get_sidebar_part_state(&self) -> Result<SidebarPartStateEntity, DatabaseError>;
     fn get_panel_part_state(&self) -> Result<PanelPartStateEntity, DatabaseError>;
     fn get_editor_part_state(&self) -> Result<EditorPartStateEntity, DatabaseError>;
@@ -70,6 +73,16 @@ pub trait StateStore: Send + Sync + 'static {
     fn delete_sidebar_part_state(&self) -> Result<(), DatabaseError>;
     fn delete_panel_part_state(&self) -> Result<(), DatabaseError>;
     fn delete_editor_part_state(&self) -> Result<(), DatabaseError>;
+}
+
+pub trait PartNamespace: Send + Sync {}
+pub trait CollectionNamespace: Send + Sync {}
+pub trait EnvironmentNamespace: Send + Sync {}
+
+pub trait StateStoreNamespaceExt: Send + Sync {
+    fn part(self: Arc<Self>) -> Arc<dyn PartNamespace>;
+    // fn collection(&self) -> Arc<dyn CollectionNamespace>;
+    // fn environment(&self) -> Arc<dyn EnvironmentNamespace>;
 }
 
 pub struct WorkspaceStorageImpl {

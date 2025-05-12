@@ -1,5 +1,11 @@
+use std::sync::Arc;
+
 use async_trait::async_trait;
-use moss_db::{common::DatabaseError, Transaction};
+use moss_db::{Transaction, common::DatabaseError};
+
+pub trait NamespacedStore<T: Send + Sync + ?Sized> {
+    fn namespaces(self: Arc<Self>) -> Arc<T>;
+}
 
 #[async_trait]
 pub trait Transactional {
