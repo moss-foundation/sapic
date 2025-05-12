@@ -77,7 +77,7 @@ interface ActionMenuTriggerProps extends PrimitiveSpanProps {
 
 const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProps>(
   (props: ScopedProps<ActionMenuTriggerProps>, forwardedRef) => {
-    const { __scopeActionMenu, disabled = false, openOnRightClick = false, ...triggerProps } = props;
+    const { __scopeActionMenu, disabled = false, openOnRightClick = false, className, ...triggerProps } = props;
     const context = useActionMenuContext(TRIGGER_NAME, __scopeActionMenu);
     const menuScope = useMenuScope(__scopeActionMenu);
     const pointRef = React.useRef<Point>({ x: 0, y: 0 });
@@ -102,6 +102,12 @@ const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProp
           data-disabled={disabled ? "" : undefined}
           {...triggerProps}
           ref={forwardedRef}
+          className={cn(
+            {
+              "cursor-pointer": !disabled || openOnRightClick,
+            },
+            className
+          )}
           // prevent iOS context menu from appearing
           style={{ WebkitTouchCallout: "none", ...props.style }}
           // if trigger is disabled, enable the native Context Menu
@@ -183,44 +189,38 @@ const Label = MenuPrimitive.Label;
 
 type ItemElement = ElementRef<typeof MenuPrimitive.Item>;
 type ItemProps = {
-  shortcut?: string[];
+  shortcut?: string;
   disabled?: boolean;
   icon?: Icons;
-  hideIcon?: boolean;
+  leftIconPadding?: boolean;
   iconClassName?: string;
 } & React.ComponentPropsWithoutRef<typeof MenuPrimitive.Item>;
 
-const Item = forwardRef<ItemElement, ItemProps>(
-  ({ iconClassName, className, hideIcon = false, ...props }, forwardedRef) => {
-    return (
-      <MenuPrimitive.Item
-        {...props}
-        ref={forwardedRef}
-        className={cn(
-          "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-          {
-            "cursor-not-allowed grayscale-100": props.disabled,
-            "cursor-pointer hover:outline-hidden": !props.disabled,
-          },
-          className
-        )}
-      >
-        {!hideIcon &&
-          (props.icon ? (
-            <Icon icon={props.icon} className={cn("shrink-0 opacity-30", iconClassName)} />
-          ) : (
-            <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />
-          ))}
+const Item = forwardRef<ItemElement, ItemProps>(({ iconClassName, className, ...props }, forwardedRef) => {
+  return (
+    <MenuPrimitive.Item
+      {...props}
+      ref={forwardedRef}
+      className={cn(
+        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
+        {
+          "cursor-not-allowed grayscale-100": props.disabled,
+          "cursor-pointer hover:outline-hidden": !props.disabled,
+        },
+        className
+      )}
+    >
+      {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
+      {props.leftIconPadding && <div className="size-4 shrink-0 opacity-0" />}
 
-        <div className="flex w-full items-center gap-2.5">
-          <span>{props.children}</span>
+      <div className="flex w-full items-center gap-2.5">
+        <span>{props.children}</span>
 
-          {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut.join("")}</div>}
-        </div>
-      </MenuPrimitive.Item>
-    );
-  }
-);
+        {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut}</div>}
+      </div>
+    </MenuPrimitive.Item>
+  );
+});
 
 /* -------------------------------------------------------------------------------------------------
  * CheckboxItem
@@ -228,7 +228,7 @@ const Item = forwardRef<ItemElement, ItemProps>(
 
 type CheckboxItemElement = ElementRef<typeof MenuPrimitive.CheckboxItem>;
 type CheckboxItemProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.CheckboxItem>> & {
-  shortcut?: string[];
+  shortcut?: string;
   disabled?: boolean;
 };
 
@@ -365,15 +365,11 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(({ hideIcon = 
       )}
     >
       {!hideIcon &&
-        (props.icon ? (
-          <Icon icon={props.icon} className="opacity-40" />
-        ) : (
-          <Icon icon="RadioIndicator" className="opacity-0" />
-        ))}
+        (props.icon ? <Icon icon={props.icon} className="" /> : <Icon icon="RadioIndicator" className="opacity-0" />)}
 
       <span>{props.children}</span>
 
-      <Icon icon="ChevronRight" className="ml-auto opacity-40" />
+      <Icon icon="ChevronRight" className="ml-auto" />
     </MenuPrimitive.SubTrigger>
   );
 });
@@ -442,7 +438,9 @@ const Accordion: React.FC<AccordionProps> = (props: AccordionProps) => {
  * -----------------------------------------------------------------------------------------------*/
 
 type AccordionTriggerElement = ElementRef<"div">;
-type AccordionTriggerProps = ComponentPropsWithoutRef<"div">;
+type AccordionTriggerProps = ComponentPropsWithoutRef<"div"> & {
+  total?: number;
+};
 
 const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerProps>(
   (props: ScopedProps<AccordionTriggerProps>, forwardedRef) => {
@@ -471,6 +469,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
       >
         <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} className="opacity-40" />
         {children}
+        {props.total && <span className="ml-1 text-(--moss-not-selected-item-color)">{props.total}</span>}
       </div>
     );
   }

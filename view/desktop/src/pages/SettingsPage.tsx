@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import LangchainAgent from "@/ai/LangchainAgent";
 import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { ActivityBarState } from "@/hooks";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
@@ -11,7 +12,6 @@ import { useSetLocale } from "@/hooks/locales/useSetLocale";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
-import LangchainAgent from "@/ai/LangchainAgent";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);

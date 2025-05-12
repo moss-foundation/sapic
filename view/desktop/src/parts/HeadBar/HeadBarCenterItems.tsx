@@ -1,8 +1,8 @@
 import React from "react";
 
-import { ActionButton, Divider, IconLabelButton } from "@/components";
-import ActionMenu from "@/components/ActionMenu/ActionMenu";
+import { ActionButton, ActionMenuRadix, Divider, IconLabelButton } from "@/components";
 import { cn } from "@/utils";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { collectionActionMenuItems } from "./HeadBarData";
 import { getGitBranchMenuItems } from "./mockHeadBarData";
@@ -66,9 +66,8 @@ export const HeadBarCenterItems = ({
         customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
         title="Reload"
       />
-      <ActionMenu
-        items={collectionActionMenuItems}
-        trigger={
+      <ActionMenuRadix.Root>
+        <ActionMenuRadix.Trigger>
           <ActionButton
             icon="MoreHorizontal"
             iconClassName="text-(--moss-headBar-icon-primary-text)"
@@ -76,17 +75,16 @@ export const HeadBarCenterItems = ({
             className="mr-[-4px]"
             title="Collection Actions"
           />
-        }
-        open={collectionActionMenuOpen}
-        onOpenChange={setCollectionActionMenuOpen}
-        onSelect={(item) => {
-          handleCollectionActionMenuAction(item.id);
-        }}
-      />
+        </ActionMenuRadix.Trigger>
+        <ActionMenuRadix.Portal>
+          <ActionMenuRadix.Content>
+            {collectionActionMenuItems.map((item) => renderActionMenuItem(item, handleCollectionActionMenuAction))}
+          </ActionMenuRadix.Content>
+        </ActionMenuRadix.Portal>
+      </ActionMenuRadix.Root>
       <Divider />
-      <ActionMenu
-        items={getGitBranchMenuItems(selectedBranch)}
-        trigger={
+      <ActionMenuRadix.Root>
+        <ActionMenuRadix.Trigger>
           <IconLabelButton
             leftIcon="VCS"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
@@ -96,13 +94,13 @@ export const HeadBarCenterItems = ({
             placeholder="No branch selected"
             showPlaceholder={!selectedBranch}
           />
-        }
-        open={gitMenuOpen}
-        onOpenChange={setGitMenuOpen}
-        onSelect={(item) => {
-          handleGitMenuAction(item.id);
-        }}
-      />
+        </ActionMenuRadix.Trigger>
+        <ActionMenuRadix.Portal>
+          <ActionMenuRadix.Content>
+            {getGitBranchMenuItems(selectedBranch).map((item) => renderActionMenuItem(item, handleGitMenuAction))}
+          </ActionMenuRadix.Content>
+        </ActionMenuRadix.Portal>
+      </ActionMenuRadix.Root>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { ActionMenuRadix } from "@/components";
 import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import {
   editorContextItems,
@@ -86,89 +87,114 @@ const ComponentGallery = () => {
             <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Standard Menu Triggers</h3>
             <div className="flex flex-wrap gap-4">
               {/* Context Actions Button */}
-              <ActionMenu
-                items={editorContextItems}
-                open={contextMenuOpen}
-                onOpenChange={setContextMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setContextMenuOpen(true)}
-                  >
+              <ActionMenuRadix.Root>
+                <ActionMenuRadix.Trigger asChild>
+                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Show Context Actions
                   </button>
-                }
-              />
+                </ActionMenuRadix.Trigger>
+                <ActionMenuRadix.Portal>
+                  <ActionMenuRadix.Content align="start">
+                    {editorContextItems.map((item) => (
+                      <ActionMenuRadix.Item
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        icon={item.icon || undefined}
+                      >
+                        {item.label}
+                      </ActionMenuRadix.Item>
+                    ))}
+                  </ActionMenuRadix.Content>
+                </ActionMenuRadix.Portal>
+              </ActionMenuRadix.Root>
 
               {/* Generate Menu Button */}
-              <ActionMenu
-                items={generateItems}
-                open={generateMenuOpen}
-                onOpenChange={setGenerateMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setGenerateMenuOpen(true)}
-                  >
+              <ActionMenuRadix.Root>
+                <ActionMenuRadix.Trigger asChild>
+                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Generate Menu
                   </button>
-                }
-              />
+                </ActionMenuRadix.Trigger>
+                <ActionMenuRadix.Portal>
+                  <ActionMenuRadix.Content align="start">
+                    {generateItems.map((item) => (
+                      <ActionMenuRadix.Item
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        icon={item.icon || undefined}
+                      >
+                        {item.label}
+                      </ActionMenuRadix.Item>
+                    ))}
+                  </ActionMenuRadix.Content>
+                </ActionMenuRadix.Portal>
+              </ActionMenuRadix.Root>
 
               {/* Run Configurations Button */}
-              <ActionMenu
-                items={runConfigItems}
-                open={runConfigMenuOpen}
-                onOpenChange={setRunConfigMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunConfigMenuOpen(true)}
-                  >
+              <ActionMenuRadix.Root>
+                <ActionMenuRadix.Trigger asChild>
+                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Configurations
                   </button>
-                }
-              />
+                </ActionMenuRadix.Trigger>
+                <ActionMenuRadix.Portal>
+                  <ActionMenuRadix.Content align="start">
+                    {runConfigItems.map((item) => (
+                      <ActionMenuRadix.Item
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        icon={item.icon || undefined}
+                      >
+                        {item.label}
+                      </ActionMenuRadix.Item>
+                    ))}
+                  </ActionMenuRadix.Content>
+                </ActionMenuRadix.Portal>
+              </ActionMenuRadix.Root>
 
               {/* Run Options Button */}
-              <ActionMenu
-                items={runOptionsItems}
-                open={runOptionsMenuOpen}
-                onOpenChange={setRunOptionsMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunOptionsMenuOpen(true)}
-                  >
+              <ActionMenuRadix.Root>
+                <ActionMenuRadix.Trigger asChild>
+                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Options
                   </button>
-                }
-              />
+                </ActionMenuRadix.Trigger>
+                <ActionMenuRadix.Portal>
+                  <ActionMenuRadix.Content align="start">
+                    {runOptionsItems.map((item) => (
+                      <ActionMenuRadix.Item
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        icon={item.icon || undefined}
+                      >
+                        {item.label}
+                      </ActionMenuRadix.Item>
+                    ))}
+                  </ActionMenuRadix.Content>
+                </ActionMenuRadix.Portal>
+              </ActionMenuRadix.Root>
 
               {/* Run Selector Button */}
-              <ActionMenu
-                items={runSelectorItems}
-                open={runSelectorMenuOpen}
-                onOpenChange={setRunSelectorMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunSelectorMenuOpen(true)}
-                  >
+              <ActionMenuRadix.Root>
+                <ActionMenuRadix.Trigger asChild>
+                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Selector
                   </button>
-                }
-              />
+                </ActionMenuRadix.Trigger>
+                <ActionMenuRadix.Portal>
+                  <ActionMenuRadix.Content align="start">
+                    {runSelectorItems.map((item) => (
+                      <ActionMenuRadix.Item
+                        key={item.id}
+                        onClick={() => handleItemSelect(item)}
+                        icon={item.icon || undefined}
+                      >
+                        {item.label}
+                      </ActionMenuRadix.Item>
+                    ))}
+                  </ActionMenuRadix.Content>
+                </ActionMenuRadix.Portal>
+              </ActionMenuRadix.Root>
             </div>
           </div>
 

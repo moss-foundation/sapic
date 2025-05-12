@@ -1,11 +1,12 @@
-import { ActionButton, IconLabelButton } from "@/components";
-import ActionMenu from "@/components/ActionMenu/ActionMenu";
+import { ActionMenuRadix, IconLabelButton } from "@/components";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { windowsMenuItems } from "./mockHeadBarData";
-import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { ModeToggle } from "./ModeToggle";
+import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
@@ -23,11 +24,7 @@ export interface HeadBarLeftItemsProps {
 export const HeadBarLeftItems = ({
   isLarge,
   breakpoint,
-  windowsMenuOpen,
-  setWindowsMenuOpen,
   handleWindowsMenuAction,
-  workspaceMenuOpen,
-  setWorkspaceMenuOpen,
   handleWorkspaceMenuAction,
   os,
 }: HeadBarLeftItemsProps) => {
@@ -45,29 +42,23 @@ export const HeadBarLeftItems = ({
     >
       {isWindowsOrLinux && (
         <>
-          <ActionMenu
-            items={windowsMenuItems}
-            trigger={
-              <ActionButton
-                icon="WindowsMenu"
-                iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
-                title="Menu"
-              />
-            }
-            open={windowsMenuOpen}
-            onOpenChange={setWindowsMenuOpen}
-            onSelect={(item) => {
-              handleWindowsMenuAction(item.id);
-            }}
-          />
+          <ActionMenuRadix.Root>
+            <ActionMenuRadix.Trigger>
+              <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
+            </ActionMenuRadix.Trigger>
+            <ActionMenuRadix.Content>
+              {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
+            </ActionMenuRadix.Content>
+          </ActionMenuRadix.Root>
+
           {selectedWorkspace && (
             <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
           )}
         </>
       )}
-      <ActionMenu
-        items={selectedWorkspace ? selectedWorkspaceMenuItems : workspaceMenuItems}
-        trigger={
+
+      <ActionMenuRadix.Root>
+        <ActionMenuRadix.Trigger>
           <IconLabelButton
             rightIcon="ChevronDown"
             title={selectedWorkspace || "My Workspace"}
@@ -76,13 +67,14 @@ export const HeadBarLeftItems = ({
             labelClassName="text-md"
             className="h-[24px]"
           />
-        }
-        open={workspaceMenuOpen}
-        onOpenChange={setWorkspaceMenuOpen}
-        onSelect={(item) => {
-          handleWorkspaceMenuAction(item.id);
-        }}
-      />
+        </ActionMenuRadix.Trigger>
+        <ActionMenuRadix.Content>
+          {selectedWorkspace
+            ? selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))
+            : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
+        </ActionMenuRadix.Content>
+      </ActionMenuRadix.Root>
+
       {selectedWorkspace && (
         <IconLabelButton
           leftIcon="Key"

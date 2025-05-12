@@ -19,7 +19,7 @@ const Content = forwardRef<HTMLDivElement, ContentProps>(({ children, className,
   return (
     <Menu.Content
       ref={ref}
-      className={cn("background-(--moss-primary-background) min-w-48 border border-(--moss-border-color)", className)}
+      className={cn("background-(--moss-primary-background) min-w-60 border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}
@@ -51,7 +51,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, 
       <div className="flex w-full items-center gap-2.5">
         <span>{children}</span>
 
-        {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut.join("")}</div>}
+        {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut}</div>}
       </div>
     </Menu.CheckboxItem>
   );

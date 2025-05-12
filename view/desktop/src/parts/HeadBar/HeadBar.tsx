@@ -1,29 +1,30 @@
-import { cn } from "@/utils";
-import { type } from "@tauri-apps/plugin-os";
-import { useState, useRef } from "react";
-import { useResponsive } from "@/hooks/useResponsive";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { useModal } from "@/hooks/useModal";
+import { useRef, useState } from "react";
+
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useModal } from "@/hooks/useModal";
+import { useResponsive } from "@/hooks/useResponsive";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
+import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
 import {
-  useUserMenuActions,
-  useGitMenuActions,
-  useWindowsMenuActions,
-  useCollectionActions,
-  useWorkspaceActions,
   HeadBarActionProps,
+  useCollectionActions,
+  useGitMenuActions,
+  useUserMenuActions,
+  useWindowsMenuActions,
+  useWorkspaceActions,
 } from "./HeadBarActions";
-import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarCenterItems } from "./HeadBarCenterItems";
+import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarRightItems } from "./HeadBarRightItems";
 import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
-  // TEST: Hardoce OS type for testing
+  // TEST: Hardcode OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
@@ -37,7 +38,7 @@ export const HeadBar = () => {
   // Use the workspace context instead of local state
   const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
 
-  // TEST: Hardoce default user/branch for testing
+  // TEST: Hardcode default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
