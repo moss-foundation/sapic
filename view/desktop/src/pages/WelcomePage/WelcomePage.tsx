@@ -1,7 +1,8 @@
+import { ActionMenuRadix } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
-import { Icon, Menu } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";
@@ -19,33 +20,33 @@ export const WelcomePage = () => {
         </div>
 
         <div className="flex gap-2">
-          <Menu.Root>
-            <Menu.Trigger>
+          <ActionMenuRadix.Root>
+            <ActionMenuRadix.Trigger>
               <button>Dropdown</button>
-            </Menu.Trigger>
-            <Menu.Content>
-              <Menu.Item>asf</Menu.Item>
-              <Menu.Item>2</Menu.Item>
-              <Menu.Item>3</Menu.Item>
-              <Menu.Item>4</Menu.Item>
-            </Menu.Content>
-          </Menu.Root>
+            </ActionMenuRadix.Trigger>
+            <ActionMenuRadix.Content>
+              <ActionMenuRadix.Item>asf</ActionMenuRadix.Item>
+              <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
+              <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
+              <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
+            </ActionMenuRadix.Content>
+          </ActionMenuRadix.Root>
 
-          <Menu.Root>
-            <Menu.Trigger asChild openOnRightClick>
+          <ActionMenuRadix.Root>
+            <ActionMenuRadix.Trigger asChild openOnRightClick>
               <button id="T" className="bg-amber-400 p-4">
                 Context menu
               </button>
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Content>
-                <Menu.Item>asf</Menu.Item>
-                <Menu.Item>2</Menu.Item>
-                <Menu.Item>3</Menu.Item>
-                <Menu.Item>4</Menu.Item>
-              </Menu.Content>
-            </Menu.Portal>
-          </Menu.Root>
+            </ActionMenuRadix.Trigger>
+            <ActionMenuRadix.Portal>
+              <ActionMenuRadix.Content>
+                <ActionMenuRadix.Item>asf</ActionMenuRadix.Item>
+                <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
+                <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
+                <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
+              </ActionMenuRadix.Content>
+            </ActionMenuRadix.Portal>
+          </ActionMenuRadix.Root>
         </div>
 
         <div className="flex flex-col gap-7.5">

@@ -58,7 +58,7 @@ const CheckboxItem = forwardRef<HTMLDivElement, CheckboxItemProps>(({ children, 
 });
 
 const RadioGroup = Menu.RadioGroup;
-const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ children, className, ...props }, ref) => {
+const RadioItem = forwardRef<HTMLDivElement, RadioItemProps>(({ className, ...props }, ref) => {
   return (
     <Menu.RadioItem
       ref={ref}

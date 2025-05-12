@@ -7,6 +7,7 @@ import * as MenuPrimitive from "@radix-ui/react-menu";
 import { createMenuScope } from "@radix-ui/react-menu";
 import { Primitive } from "@radix-ui/react-primitive";
 import { useCallbackRef } from "@radix-ui/react-use-callback-ref";
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
 
@@ -246,13 +247,7 @@ const CheckboxItem = forwardRef<CheckboxItemElement, CheckboxItemProps>(
           props.className
         )}
       >
-        {props.checked ? <Icon icon="GreenCheckmark" /> : <Icon icon="GreenCheckmark" className="opacity-0" />}
-
-        <div className="flex w-full items-center gap-2.5">
-          <span>{props.children}</span>
-
-          {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut.join("")}</div>}
-        </div>
+        {props.children}
       </MenuPrimitive.CheckboxItem>
     );
   }
@@ -312,7 +307,36 @@ const Separator = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => 
   return <div className={cn("my-1 h-px w-full", className)} {...props} />;
 };
 
-const Sub = MenuPrimitive.Sub;
+/* -------------------------------------------------------------------------------------------------
+ * Sub
+ * -----------------------------------------------------------------------------------------------*/
+
+const SUB_NAME = "ActionMenuSub";
+
+interface ActionMenuSubProps {
+  children?: React.ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?(open: boolean): void;
+}
+
+const Sub: React.FC<ActionMenuSubProps> = (props: ScopedProps<ActionMenuSubProps>) => {
+  const { __scopeActionMenu, children, onOpenChange, open: openProp, defaultOpen = false } = props;
+  const menuScope = useMenuScope(__scopeActionMenu);
+
+  const [open, setOpen] = useControllableState({
+    prop: openProp,
+    defaultProp: defaultOpen,
+    onChange: onOpenChange,
+    caller: SUB_NAME,
+  });
+
+  return (
+    <MenuPrimitive.Sub {...menuScope} open={open} onOpenChange={setOpen}>
+      {children}
+    </MenuPrimitive.Sub>
+  );
+};
 
 /* -------------------------------------------------------------------------------------------------
  * SubTrigger
@@ -325,12 +349,14 @@ type SubTriggerProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive
 };
 
 const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(({ hideIcon = false, ...props }, forwardedRef) => {
+  const { __scopeActionMenu, ...triggerItemProps } = props;
+
   return (
     <MenuPrimitive.SubTrigger
-      {...props}
+      {...triggerItemProps}
       ref={forwardedRef}
       className={cn(
-        "flex items-center gap-1.5 rounded px-2 py-1",
+        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
         {
           "cursor-not-allowed opacity-50": props.disabled,
           "cursor-pointer hover:outline-hidden": !props.disabled,
@@ -396,6 +422,7 @@ export {
 export type {
   ActionMenuContextValue,
   ActionMenuProps,
+  ActionMenuSubProps,
   ActionMenuTriggerElement,
   ActionMenuTriggerProps,
   CheckboxItemProps,
