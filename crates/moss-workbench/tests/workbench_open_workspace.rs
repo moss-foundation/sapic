@@ -79,7 +79,7 @@ async fn open_workspace_already_active() {
     let expected_path: Arc<Path> = workspaces_path.join(&workspace_name).into();
 
     // Create workspace with open_on_creation=true to make it active immediately
-    let create_result = workspace_manager
+    let create_workspace_output = workspace_manager
         .create_workspace(&CreateWorkspaceInput {
             name: workspace_name.clone(),
             mode: WorkspaceMode::default(),
@@ -89,7 +89,7 @@ async fn open_workspace_already_active() {
         .unwrap();
 
     // Get the workspace ID
-    let workspace_id = create_result.id;
+    let workspace_id = create_workspace_output.id;
 
     // Try to open the same workspace again
     let open_workspace_result = workspace_manager

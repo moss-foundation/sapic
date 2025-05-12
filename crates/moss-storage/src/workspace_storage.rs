@@ -1,17 +1,16 @@
 pub mod collection_store;
 pub mod entities;
-pub mod environment_store;
 pub mod state_store;
+pub mod variable_store;
 
 use anyhow::Result;
 use async_trait::async_trait;
 use collection_store::CollectionStoreImpl;
 use entities::{
     collection_store_entities::CollectionEntity,
-    environment_store_entities::EnvironmentEntity,
     state_store_entities::{EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity},
+    variable_store_entities::VariableEntity,
 };
-use environment_store::EnvironmentStoreImpl;
 use moss_db::{
     DatabaseClient, ReDbClient,
     bincode_table::BincodeTable,
@@ -23,6 +22,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+use variable_store::VariableStoreImpl;
 
 use crate::{WorkspaceStorage, common::Transactional};
 
@@ -45,14 +45,16 @@ pub trait CollectionStore: Send + Sync {
 
     fn delete_collection(&self, txn: &mut Transaction, path: PathBuf) -> Result<(), DatabaseError>;
 
+    // TODO: rename to list_collections
     fn list_collection(&self) -> Result<Vec<(PathBuf, CollectionEntity)>>;
 }
 
-type EnvironmentName = String;
-pub(crate) type EnvironmentStoreTable<'a> = BincodeTable<'a, EnvironmentName, EnvironmentEntity>;
+pub(crate) type VariableStoreTable<'a> = BincodeTable<'a, String, VariableEntity>;
 
-pub trait EnvironmentStore: Send + Sync {
-    fn scan(&self) -> Result<HashMap<EnvironmentName, EnvironmentEntity>>;
+// <environment_name>:<variable_name>
+pub type VariableKey = String;
+pub trait VariableStore: Send + Sync {
+    fn list_variables(&self) -> Result<HashMap<VariableKey, VariableEntity>, DatabaseError>;
 }
 
 pub(crate) type StateStoreTable<'a> = BincodeTable<'a, String, AnyEntity>;
@@ -73,26 +75,29 @@ pub trait StateStore: Send + Sync + 'static {
 pub struct WorkspaceStorageImpl {
     db_client: ReDbClient,
     collection_store: Arc<dyn CollectionStore>,
-    environment_store: Arc<dyn EnvironmentStore>,
+    environment_store: Arc<dyn VariableStore>,
     state_store: Arc<dyn StateStore>,
+    variable_store: Arc<dyn VariableStore>,
 }
 
 impl WorkspaceStorageImpl {
     pub fn new(path: &Path) -> Result<Self> {
         let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?
             .with_table(&collection_store::TABLE_COLLECTIONS)?
-            .with_table(&environment_store::TABLE_ENVIRONMENTS)?
+            .with_table(&variable_store::TABLE_VARIABLES)?
             .with_table(&state_store::PARTS_STATE)?;
 
         let collection_store = Arc::new(CollectionStoreImpl::new(db_client.clone()));
-        let environment_store = Arc::new(EnvironmentStoreImpl::new(db_client.clone()));
+        let environment_store = Arc::new(VariableStoreImpl::new(db_client.clone()));
         let state_store = Arc::new(StateStoreImpl::new(db_client.clone()));
+        let variable_store = Arc::new(VariableStoreImpl::new(db_client.clone()));
 
         Ok(Self {
             db_client,
             collection_store,
             environment_store,
             state_store,
+            variable_store,
         })
     }
 }
@@ -113,11 +118,15 @@ impl WorkspaceStorage for WorkspaceStorageImpl {
         self.collection_store.clone()
     }
 
-    fn environment_store(&self) -> Arc<dyn EnvironmentStore> {
+    fn environment_store(&self) -> Arc<dyn VariableStore> {
         self.environment_store.clone()
     }
 
     fn state_store(&self) -> Arc<dyn StateStore> {
         self.state_store.clone()
+    }
+
+    fn variable_store(&self) -> Arc<dyn VariableStore> {
+        self.variable_store.clone()
     }
 }

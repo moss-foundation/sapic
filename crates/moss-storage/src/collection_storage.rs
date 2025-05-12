@@ -64,8 +64,8 @@ struct ResettableStorageCell {
 }
 
 impl ResettableStorageCell {
-    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
-        let db_client = ReDbClient::new(path.as_ref().join(COLLECTION_STATE_DB_NAME))?
+    pub fn new(path: &Path) -> Result<Self> {
+        let db_client = ReDbClient::new(path.join(COLLECTION_STATE_DB_NAME))?
             .with_table(&request_store::TABLE_REQUESTS)?;
 
         let request_store = Arc::new(RequestStoreImpl::new(db_client.clone()));
@@ -83,7 +83,7 @@ pub struct CollectionStorageImpl {
 }
 
 impl CollectionStorageImpl {
-    pub fn new(path: impl AsRef<Path>) -> Result<Self> {
+    pub fn new(path: &Path) -> Result<Self> {
         let cell = ResettableStorageCell::new(path)?;
 
         Ok(Self {
@@ -138,7 +138,7 @@ impl CollectionStorage for CollectionStorageImpl {
 impl ResettableStorage for CollectionStorageImpl {
     async fn reset(
         &self,
-        new_path: PathBuf,
+        path: &Path,
         after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
     ) -> Result<()> {
         let local_notify = Arc::new(Notify::new());
@@ -153,7 +153,7 @@ impl ResettableStorage for CollectionStorageImpl {
 
         after_drop.await?;
 
-        let new_cell = ResettableStorageCell::new(new_path)?;
+        let new_cell = ResettableStorageCell::new(path)?;
         let new_state = Arc::new(ClientState::Loaded(new_cell));
         self.state.store(new_state);
 
