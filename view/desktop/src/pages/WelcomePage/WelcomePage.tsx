@@ -1,4 +1,3 @@
-import { ActionMenu } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
@@ -17,53 +16,6 @@ export const WelcomePage = () => {
           <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
 
           <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
-        </div>
-
-        <div className="flex gap-2">
-          <ActionMenu.Root>
-            <ActionMenu.Trigger>
-              <button>Dropdown</button>
-            </ActionMenu.Trigger>
-            <ActionMenu.Content>
-              <ActionMenu.Item>asf</ActionMenu.Item>
-              <ActionMenu.Item>2</ActionMenu.Item>
-              <ActionMenu.Item>3</ActionMenu.Item>
-              <ActionMenu.Item>4</ActionMenu.Item>
-
-              <ActionMenu.Accordion>
-                <ActionMenu.AccordionTrigger>Accordion</ActionMenu.AccordionTrigger>
-                <ActionMenu.AccordionContent>
-                  <ActionMenu.Item>123</ActionMenu.Item>
-                  <ActionMenu.Item>123</ActionMenu.Item>
-                  <ActionMenu.Item>123</ActionMenu.Item>
-                </ActionMenu.AccordionContent>
-              </ActionMenu.Accordion>
-            </ActionMenu.Content>
-          </ActionMenu.Root>
-
-          <ActionMenu.Root>
-            <ActionMenu.Trigger asChild openOnRightClick>
-              <button id="T" className="bg-amber-400 p-4">
-                Context menu
-              </button>
-            </ActionMenu.Trigger>
-            <ActionMenu.Portal>
-              <ActionMenu.Content>
-                <ActionMenu.Item>asf</ActionMenu.Item>
-                <ActionMenu.Item>2</ActionMenu.Item>
-                <ActionMenu.Item>3</ActionMenu.Item>
-                <ActionMenu.Item>4</ActionMenu.Item>
-                <ActionMenu.Accordion>
-                  <ActionMenu.AccordionTrigger>Accordion</ActionMenu.AccordionTrigger>
-                  <ActionMenu.AccordionContent>
-                    <ActionMenu.Item>123</ActionMenu.Item>
-                    <ActionMenu.Item>123</ActionMenu.Item>
-                    <ActionMenu.Item>123</ActionMenu.Item>
-                  </ActionMenu.AccordionContent>
-                </ActionMenu.Accordion>
-              </ActionMenu.Content>
-            </ActionMenu.Portal>
-          </ActionMenu.Root>
         </div>
 
         <div className="flex flex-col gap-7.5">

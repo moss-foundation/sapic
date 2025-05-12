@@ -3,7 +3,7 @@ export * from "../parts/BottomPane";
 export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
-export * as ActionMenu from "./ActionMenu/ActionMenu";
+export * as ActionMenu from "./ActionMenu";
 export * from "./ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
 export * as Checkbox from "./CheckboxWithLabel";

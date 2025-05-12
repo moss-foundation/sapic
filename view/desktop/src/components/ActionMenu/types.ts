@@ -1,3 +1,4 @@
+//TODO This file should be removed when we will have real data
 import { Icons } from "@/lib/ui";
 
 export type MenuItemType =

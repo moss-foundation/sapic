@@ -2,12 +2,11 @@ import React, { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 
 import { cn } from "@/utils";
 import { composeEventHandlers } from "@radix-ui/primitive";
-import { createContext, createContextScope, Scope } from "@radix-ui/react-context";
+import { createContextScope, Scope } from "@radix-ui/react-context";
 import * as MenuPrimitive from "@radix-ui/react-menu";
 import { createMenuScope } from "@radix-ui/react-menu";
 import { Primitive } from "@radix-ui/react-primitive";
 import { useCallbackRef } from "@radix-ui/react-use-callback-ref";
-import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
 
@@ -22,7 +21,7 @@ const ACTION_MENU_NAME = "ActionMenu";
 
 type ScopedProps<P> = P & { __scopeActionMenu?: Scope };
 const [createActionMenuContext, createActionMenuScope] = createContextScope(ACTION_MENU_NAME, [createMenuScope]);
-const useMenuScope = createActionMenuScope();
+export const useMenuScope = createActionMenuScope();
 
 type ActionMenuContextValue = {
   open: boolean;
@@ -181,8 +180,6 @@ const Content = forwardRef<ContentElement, ContentProps>((props, forwardedRef) =
 
 const Portal = MenuPrimitive.Portal;
 
-const Label = MenuPrimitive.Label;
-
 /* -------------------------------------------------------------------------------------------------
  * Item
  * -----------------------------------------------------------------------------------------------*/
@@ -222,323 +219,21 @@ const Item = forwardRef<ItemElement, ItemProps>(({ iconClassName, className, ...
   );
 });
 
-/* -------------------------------------------------------------------------------------------------
- * CheckboxItem
- * -----------------------------------------------------------------------------------------------*/
-
-type CheckboxItemElement = ElementRef<typeof MenuPrimitive.CheckboxItem>;
-type CheckboxItemProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.CheckboxItem>> & {
-  shortcut?: string;
-  disabled?: boolean;
-};
-
-const CheckboxItem = forwardRef<CheckboxItemElement, CheckboxItemProps>(
-  (props: ScopedProps<CheckboxItemProps>, forwardedRef) => {
-    return (
-      <MenuPrimitive.CheckboxItem
-        {...props}
-        ref={forwardedRef}
-        className={cn(
-          "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-          {
-            "cursor-not-allowed opacity-50": props.disabled,
-            "cursor-pointer hover:outline-hidden": !props.disabled,
-          },
-          props.className
-        )}
-      >
-        {props.children}
-      </MenuPrimitive.CheckboxItem>
-    );
-  }
-);
-
-/* -------------------------------------------------------------------------------------------------
- * RadioGroup
- * -----------------------------------------------------------------------------------------------*/
-
-type RadioGroupElement = ElementRef<typeof MenuPrimitive.RadioGroup>;
-type RadioGroupProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.RadioGroup>>;
-
-const RadioGroup = forwardRef<RadioGroupElement, RadioGroupProps>(
-  (props: ScopedProps<RadioGroupProps>, forwardedRef) => {
-    return <MenuPrimitive.RadioGroup {...props} ref={forwardedRef} />;
-  }
-);
-
-/* -------------------------------------------------------------------------------------------------
- * RadioItem
- * -----------------------------------------------------------------------------------------------*/
-
-type RadioItemElement = ElementRef<typeof MenuPrimitive.RadioItem>;
-type RadioItemProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.RadioItem>> & {
-  checked: boolean;
-  disabled?: boolean;
-};
-
-const RadioItem = forwardRef<RadioItemElement, RadioItemProps>((props: ScopedProps<RadioItemProps>, forwardedRef) => {
-  return (
-    <MenuPrimitive.RadioItem
-      {...props}
-      ref={forwardedRef}
-      className={cn(
-        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-        {
-          "cursor-not-allowed opacity-50": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
-        },
-        props.className
-      )}
-    >
-      {props.checked ? (
-        <Icon icon="MenuRadioIndicator" className="size-4" />
-      ) : (
-        <Icon icon="MenuRadioIndicator" className="size-4 opacity-0" />
-      )}
-
-      <div className="flex w-full items-center gap-2.5">
-        <span>{props.children}</span>
-      </div>
-    </MenuPrimitive.RadioItem>
-  );
-});
-
-const Separator = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => {
-  return <div className={cn("my-1 h-px w-full", className)} {...props} />;
-};
-
-/* -------------------------------------------------------------------------------------------------
- * Sub
- * -----------------------------------------------------------------------------------------------*/
-
-const SUB_NAME = "ActionMenuSub";
-
-interface ActionMenuSubProps {
-  children?: React.ReactNode;
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?(open: boolean): void;
-}
-
-const Sub: React.FC<ActionMenuSubProps> = (props: ScopedProps<ActionMenuSubProps>) => {
-  const { __scopeActionMenu, children, onOpenChange, open: openProp, defaultOpen = false } = props;
-  const menuScope = useMenuScope(__scopeActionMenu);
-
-  const [open, setOpen] = useControllableState({
-    prop: openProp,
-    defaultProp: defaultOpen,
-    onChange: onOpenChange,
-    caller: SUB_NAME,
-  });
-
-  return (
-    <MenuPrimitive.Sub {...menuScope} open={open} onOpenChange={setOpen}>
-      {children}
-    </MenuPrimitive.Sub>
-  );
-};
-
-/* -------------------------------------------------------------------------------------------------
- * SubTrigger
- * -----------------------------------------------------------------------------------------------*/
-
-type SubTriggerElement = ElementRef<typeof MenuPrimitive.SubTrigger>;
-type SubTriggerProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubTrigger>> & {
-  icon?: Icons;
-  hideIcon?: boolean;
-};
-
-const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(({ hideIcon = false, ...props }, forwardedRef) => {
-  const { __scopeActionMenu, ...triggerItemProps } = props;
-
-  return (
-    <MenuPrimitive.SubTrigger
-      {...triggerItemProps}
-      ref={forwardedRef}
-      className={cn(
-        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-        {
-          "cursor-not-allowed opacity-50": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
-        },
-        props.className
-      )}
-    >
-      {!hideIcon &&
-        (props.icon ? <Icon icon={props.icon} className="" /> : <Icon icon="RadioIndicator" className="opacity-0" />)}
-
-      <span>{props.children}</span>
-
-      <Icon icon="ChevronRight" className="ml-auto" />
-    </MenuPrimitive.SubTrigger>
-  );
-});
-
-/* -------------------------------------------------------------------------------------------------
- * SubContent
- * -----------------------------------------------------------------------------------------------*/
-
-type SubContentElement = ElementRef<typeof MenuPrimitive.Content>;
-type SubContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubContent>>;
-
-const SubContent = forwardRef<SubContentElement, SubContentProps>(
-  (props: ScopedProps<SubContentProps>, forwardedRef) => {
-    return (
-      <MenuPrimitive.SubContent
-        {...props}
-        ref={forwardedRef}
-        sideOffset={16}
-        style={{ ...props.style }}
-        className={cn("z-50 min-w-36 rounded-lg px-1 py-1.5 shadow-lg", props.className)}
-      />
-    );
-  }
-);
-
 function whenTouchOrPen<E>(handler: React.PointerEventHandler<E>): React.PointerEventHandler<E> {
   return (event) => (event.pointerType !== "mouse" ? handler(event) : undefined);
 }
 
-/* -------------------------------------------------------------------------------------------------
- * Accordion
- * -----------------------------------------------------------------------------------------------*/
-
-const ACCORDION_NAME = "ActionMenuAccordion";
-
-type AccordionContextValue = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
-
-const [AccordionProvider, useAccordionContext] = createContext<AccordionContextValue>(ACCORDION_NAME);
-
-interface AccordionProps {
-  children?: React.ReactNode;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
-const Accordion: React.FC<AccordionProps> = (props: AccordionProps) => {
-  const { children, defaultOpen = false, onOpenChange } = props;
-  const [open, setOpen] = useControllableState({
-    prop: undefined,
-    defaultProp: defaultOpen,
-    onChange: onOpenChange,
-  });
-
-  return (
-    <AccordionProvider open={open} onOpenChange={setOpen}>
-      {children}
-    </AccordionProvider>
-  );
-};
-
-/* -------------------------------------------------------------------------------------------------
- * AccordionTrigger
- * -----------------------------------------------------------------------------------------------*/
-
-type AccordionTriggerElement = ElementRef<"div">;
-type AccordionTriggerProps = ComponentPropsWithoutRef<"div"> & {
-  total?: number;
-};
-
-const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerProps>(
-  (props: ScopedProps<AccordionTriggerProps>, forwardedRef) => {
-    const { __scopeActionMenu, className, children, ...triggerProps } = props;
-    const context = useAccordionContext(ACCORDION_NAME);
-
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={context.open}
-        {...triggerProps}
-        ref={forwardedRef}
-        className={cn("flex cursor-pointer items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]", className)}
-        onClick={(e) => {
-          e.stopPropagation();
-          context.onOpenChange(!context.open);
-          triggerProps.onClick?.(e);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            context.onOpenChange(!context.open);
-          }
-        }}
-      >
-        <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} className="opacity-40" />
-        {children}
-        {props.total && <span className="ml-1 text-(--moss-not-selected-item-color)">{props.total}</span>}
-      </div>
-    );
-  }
-);
-
-/* -------------------------------------------------------------------------------------------------
- * AccordionContent
- * -----------------------------------------------------------------------------------------------*/
-
-type AccordionContentElement = ElementRef<"div">;
-type AccordionContentProps = ComponentPropsWithoutRef<"div">;
-
-const AccordionContent = forwardRef<AccordionContentElement, AccordionContentProps>(
-  (props: ScopedProps<AccordionContentProps>, forwardedRef) => {
-    const { __scopeActionMenu, className, children, ...contentProps } = props;
-    const context = useAccordionContext(ACCORDION_NAME);
-
-    if (!context.open) return null;
-
-    return (
-      <div {...contentProps} ref={forwardedRef} className={cn("pl-4", className)}>
-        {children}
-      </div>
-    );
-  }
-);
-
-export {
-  Accordion,
-  AccordionContent,
-  AccordionTrigger,
-  CheckboxItem,
-  Content,
-  Item,
-  Label,
-  Portal,
-  RadioGroup,
-  RadioItem,
-  Root,
-  Separator,
-  Sub,
-  SubContent,
-  SubTrigger,
-  Trigger,
-};
+export { Content, Item, Portal, Root, Trigger };
 
 export type {
-  AccordionContextValue,
-  AccordionProps,
-  AccordionTriggerElement,
-  AccordionTriggerProps,
   ActionMenuContextValue,
   ActionMenuProps,
-  ActionMenuSubProps,
   ActionMenuTriggerElement,
   ActionMenuTriggerProps,
-  CheckboxItemProps,
   ContentElement,
   ContentProps,
   Direction,
   ItemElement,
   ItemProps,
-  RadioGroupElement,
-  RadioGroupProps,
-  RadioItemElement,
-  RadioItemProps,
   ScopedProps,
-  SubContentElement,
-  SubContentProps,
-  SubTriggerElement,
-  SubTriggerProps,
 };

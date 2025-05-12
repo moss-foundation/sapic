@@ -43,7 +43,7 @@ export const HeadBarLeftItems = ({
       {isWindowsOrLinux && (
         <>
           <ActionMenu.Root>
-            <ActionMenu.Trigger>
+            <ActionMenu.Trigger className="rounded p-1 hover:bg-(--moss-secondary-background-hover)">
               <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
             </ActionMenu.Trigger>
             <ActionMenu.Content>
