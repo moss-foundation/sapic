@@ -1,12 +1,10 @@
-pub mod api;
-
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::{
     collection::Collection,
     indexer::{self, IndexerHandle},
 };
-use moss_common::{leased_slotmap::LeasedSlotMap, models::primitives::Identifier};
+use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
 use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
@@ -21,9 +19,6 @@ use tokio::sync::{OnceCell, RwLock, mpsc};
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
-
-// type EnvironmentSlot = (Environment, EnvironmentCache);
-// type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct CollectionEntry {
     pub id: Identifier,
@@ -62,19 +57,19 @@ type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentEntry>>;
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
-    app_handle: AppHandle<R>,
-    abs_path: Arc<Path>,
-    fs: Arc<dyn FileSystem>,
-    workspace_storage: Arc<dyn WorkspaceStorage>,
-    collections: OnceCell<RwLock<CollectionMap>>,
-    environments: OnceCell<RwLock<EnvironmentMap>>,
+    pub(super) app_handle: AppHandle<R>,
+    pub(super) abs_path: Arc<Path>,
+    pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) workspace_storage: Arc<dyn WorkspaceStorage>,
+    pub(super) collections: OnceCell<RwLock<CollectionMap>>,
+    pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
-    activity_indicator: ActivityIndicator<R>,
-    indexer_handle: IndexerHandle,
-    next_collection_entry_id: Arc<AtomicUsize>,
-    next_collection_id: Arc<AtomicUsize>,
-    next_variable_id: Arc<AtomicUsize>,
-    next_environment_id: Arc<AtomicUsize>,
+    pub(super) activity_indicator: ActivityIndicator<R>,
+    pub(super) indexer_handle: IndexerHandle,
+    pub(super) next_collection_entry_id: Arc<AtomicUsize>,
+    pub(super) next_collection_id: Arc<AtomicUsize>,
+    pub(super) next_variable_id: Arc<AtomicUsize>,
+    pub(super) next_environment_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
