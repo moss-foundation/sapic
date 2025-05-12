@@ -4,3 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct WorkspaceInfoEntity {
     pub last_opened_at: i64,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct EnvironmentInfoEntity {
+    pub order: Option<usize>,
+}

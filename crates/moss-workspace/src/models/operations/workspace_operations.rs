@@ -1,7 +1,11 @@
-use moss_common::leased_slotmap::ResourceKey;
+use moss_common::{leased_slotmap::ResourceKey, models::primitives::Identifier};
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{
+    ops::Deref,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use ts_rs::TS;
 use validator::Validate;
@@ -13,6 +17,14 @@ use crate::models::types::{
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
+
+impl Deref for ListCollectionsOutput {
+    type Target = Vec<CollectionInfo>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -30,38 +42,59 @@ pub struct CreateCollectionInput {
     pub name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
-    pub path: PathBuf,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct RenameCollectionInput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
+pub struct UpdateCollectionEntryInput {
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
     #[validate(length(min = 1))]
-    pub new_name: String,
+    pub new_name: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct RenameCollectionOutput {
-    pub path: PathBuf,
+pub struct UpdateCollectionEntryOutput {
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteCollectionOutput {
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

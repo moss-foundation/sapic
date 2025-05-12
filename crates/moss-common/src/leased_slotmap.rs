@@ -7,7 +7,7 @@ pub use lease_guard::*;
 mod iterator;
 pub use iterator::*;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result, anyhow};
 use slotmap::SlotMap;
 use std::collections::HashSet;
 

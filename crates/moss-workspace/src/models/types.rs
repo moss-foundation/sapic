@@ -2,7 +2,7 @@ mod editor;
 
 pub use editor::*;
 
-use moss_common::leased_slotmap::ResourceKey;
+use moss_common::{leased_slotmap::ResourceKey, models::primitives::Identifier};
 use moss_storage::workspace_storage::entities::state_store_entities::{
     PanelPartStateEntity, SidebarPartStateEntity,
 };
@@ -41,9 +41,11 @@ impl Default for WorkspaceMode {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
-    pub name: String,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    pub display_name: String,
+
     #[ts(optional)]
     pub order: Option<usize>,
 }
