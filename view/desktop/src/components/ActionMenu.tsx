@@ -94,7 +94,14 @@ const SubContent = forwardRef<HTMLDivElement, SubContentProps>(({ children, clas
   );
 });
 
+const Accordion = Menu.Accordion;
+const AccordionTrigger = Menu.AccordionTrigger;
+const AccordionContent = Menu.AccordionContent;
+
 export {
+  Accordion,
+  AccordionContent,
+  AccordionTrigger,
   CheckboxItem,
   Content,
   Item,

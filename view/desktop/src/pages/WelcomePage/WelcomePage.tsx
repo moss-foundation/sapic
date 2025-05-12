@@ -29,6 +29,15 @@ export const WelcomePage = () => {
               <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
               <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
               <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
+
+              <ActionMenuRadix.Accordion>
+                <ActionMenuRadix.AccordionTrigger>Accordion</ActionMenuRadix.AccordionTrigger>
+                <ActionMenuRadix.AccordionContent>
+                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                </ActionMenuRadix.AccordionContent>
+              </ActionMenuRadix.Accordion>
             </ActionMenuRadix.Content>
           </ActionMenuRadix.Root>
 
@@ -44,6 +53,14 @@ export const WelcomePage = () => {
                 <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
                 <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
                 <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
+                <ActionMenuRadix.Accordion>
+                  <ActionMenuRadix.AccordionTrigger>Accordion</ActionMenuRadix.AccordionTrigger>
+                  <ActionMenuRadix.AccordionContent>
+                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
+                  </ActionMenuRadix.AccordionContent>
+                </ActionMenuRadix.Accordion>
               </ActionMenuRadix.Content>
             </ActionMenuRadix.Portal>
           </ActionMenuRadix.Root>
