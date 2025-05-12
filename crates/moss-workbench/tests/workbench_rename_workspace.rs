@@ -89,7 +89,7 @@ async fn rename_workspace_empty_name() {
 
 #[tokio::test]
 async fn rename_workspace_unchanged() {
-    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
