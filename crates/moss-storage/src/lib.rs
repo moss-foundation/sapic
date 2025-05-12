@@ -14,13 +14,14 @@ use std::{
 };
 
 pub trait GlobalStorage: Transactional + Send + Sync {
-    fn workspaces_store(&self) -> Arc<dyn global_storage::WorkspacesStore>;
+    fn workspaces_store(&self) -> Arc<dyn global_storage::WorkbenchStore>;
 }
 
 pub trait WorkspaceStorage: Transactional + Send + Sync {
     fn collection_store(&self) -> Arc<dyn workspace_storage::CollectionStore>;
-    fn environment_store(&self) -> Arc<dyn workspace_storage::EnvironmentStore>;
+    fn environment_store(&self) -> Arc<dyn workspace_storage::VariableStore>;
     fn state_store(&self) -> Arc<dyn workspace_storage::StateStore>;
+    fn variable_store(&self) -> Arc<dyn workspace_storage::VariableStore>;
 }
 
 #[async_trait]

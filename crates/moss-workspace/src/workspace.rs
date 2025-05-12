@@ -1,17 +1,13 @@
 pub mod api;
 
 use anyhow::{Context, Result};
-use dashmap::DashMap;
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::{
     collection::Collection,
     indexer::{self, IndexerHandle},
 };
-use moss_common::{
-    leased_slotmap::{LeasedSlotMap, ResourceKey},
-    models::primitives::Identifier,
-};
-use moss_environment::environment::{Environment, EnvironmentCache, VariableCache};
+use moss_common::{leased_slotmap::LeasedSlotMap, models::primitives::Identifier};
+use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
 use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
 use std::{
@@ -23,22 +19,11 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, mpsc};
 
-use crate::models::types::CollectionInfo;
-
-pub const COLLECTIONS_DIR: &'static str = "collections";
+pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
 
-// pub struct CollectionInfoNew {
-//     pub id: Identifier,
-//     pub name: String,
-//     pub order: Option<usize>,
-// }
-
-type CollectionSlot = (Collection, CollectionInfo);
-// type CollectionMap = LeasedSlotMap<ResourceKey, CollectionSlot>;
-
-type EnvironmentSlot = (Environment, EnvironmentCache);
-type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
+// type EnvironmentSlot = (Environment, EnvironmentCache);
+// type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct CollectionEntry {
     pub id: Identifier,
@@ -56,7 +41,24 @@ impl Deref for CollectionEntry {
     }
 }
 
+pub struct EnvironmentEntry {
+    pub id: Identifier,
+    pub name: String,
+    pub display_name: String,
+    pub order: Option<usize>,
+    pub inner: Environment,
+}
+
+impl Deref for EnvironmentEntry {
+    type Target = Environment;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
 type CollectionMap = HashMap<Identifier, Arc<CollectionEntry>>;
+type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentEntry>>;
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
@@ -71,6 +73,8 @@ pub struct Workspace<R: TauriRuntime> {
     indexer_handle: IndexerHandle,
     next_collection_entry_id: Arc<AtomicUsize>,
     next_collection_id: Arc<AtomicUsize>,
+    next_variable_id: Arc<AtomicUsize>,
+    next_environment_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -105,6 +109,8 @@ impl<R: TauriRuntime> Workspace<R> {
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
             next_collection_id: Arc::new(AtomicUsize::new(0)),
+            next_variable_id: Arc::new(AtomicUsize::new(0)),
+            next_environment_id: Arc::new(AtomicUsize::new(0)),
         })
     }
 
@@ -120,58 +126,46 @@ impl<R: TauriRuntime> Workspace<R> {
         let result = self
             .environments
             .get_or_try_init(|| async move {
-                let mut environments = LeasedSlotMap::new();
+                let mut environments = HashMap::new();
 
-                if !self.abs_path.join(ENVIRONMENTS_DIR).exists() {
+                let abs_path = self.abs_path.join(ENVIRONMENTS_DIR);
+                if !abs_path.exists() {
                     return Ok(RwLock::new(environments));
                 }
 
-                let mut envs_from_fs = HashMap::new();
-                let mut environment_dir = self
-                    .fs
-                    .read_dir(&self.abs_path.join(ENVIRONMENTS_DIR))
-                    .await?;
-                while let Some(entry) = environment_dir.next_entry().await? {
+                // TODO: restore environments cache from the database
+
+                for entry in self.fs.read_dir(&abs_path).await?.next_entry().await? {
                     if entry.file_type().await?.is_dir() {
                         continue;
                     }
 
-                    let path = entry.path();
+                    let entry_abs_path: Arc<Path> = entry.path().into();
+                    let name = entry_abs_path
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_string();
+                    let decoded_name = decode_name(&name)?;
 
-                    if path.extension().map(|ext| ext == "json").unwrap_or(false) {
-                        let environment_name =
-                            path.file_name().unwrap().to_string_lossy().to_string(); // TODO: Is unwrap here is safe?
+                    let environment = Environment::new(
+                        entry_abs_path,
+                        self.fs.clone(),
+                        self.workspace_storage.variable_store().clone(),
+                        self.next_variable_id.clone(),
+                    )
+                    .await?;
 
-                        let environment = Environment::new(path, self.fs.clone()).await?;
-                        envs_from_fs.insert(environment_name, environment);
-                    }
-                }
-
-                let mut scan_result = self.workspace_storage.environment_store().scan()?;
-                for (name, env) in envs_from_fs {
-                    let environment_entity = scan_result.remove(&name);
-
-                    let environment_cache = if let Some(environment_entity) = environment_entity {
-                        EnvironmentCache {
-                            decoded_name: name, // TODO: decode name
-                            order: environment_entity.order,
-                            variables_cache: environment_entity
-                                .local_values
-                                .into_iter()
-                                .map(|(name, state_entity)| {
-                                    VariableCache::try_from(state_entity).map(|cache| (name, cache))
-                                })
-                                .collect::<Result<HashMap<_, _>, _>>()?,
-                        }
-                    } else {
-                        EnvironmentCache {
-                            decoded_name: name, // TODO: decode name,
-                            order: None,
-                            variables_cache: HashMap::new(),
-                        }
+                    let id = Identifier::new(&self.next_environment_id);
+                    let entry = EnvironmentEntry {
+                        id,
+                        name,
+                        display_name: decoded_name,
+                        order: None,
+                        inner: environment,
                     };
 
-                    environments.insert((env, environment_cache));
+                    environments.insert(id, Arc::new(entry));
                 }
 
                 Ok::<_, anyhow::Error>(RwLock::new(environments))

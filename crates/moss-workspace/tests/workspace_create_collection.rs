@@ -3,7 +3,6 @@ mod shared;
 use moss_common::api::OperationError;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
-use moss_workspace::models::types::CollectionInfo;
 
 use crate::shared::setup_test_workspace;
 
@@ -21,14 +20,13 @@ async fn create_collection_success() {
     assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
-    let describe_output = workspace.describe().await.unwrap();
+    let collections = workspace.collections().await.unwrap().read().await;
 
-    assert_eq!(describe_output.collections.len(), 1);
+    assert_eq!(collections.len(), 1);
     assert_eq!(
-        describe_output.collections[0].id,
-        create_collection_output.id
+        collections[&create_collection_output.id].display_name,
+        collection_name
     );
-    assert_eq!(describe_output.collections[0].display_name, collection_name);
 
     // Verify the directory was created
     assert!(create_collection_output.abs_path.exists());
@@ -102,14 +100,13 @@ async fn create_collection_special_chars() {
         assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
-        let describe_output = workspace.describe().await.unwrap();
+        let collections = workspace.collections().await.unwrap().read().await;
 
-        assert!(describe_output.collections.iter().any(|info| info
-            == &CollectionInfo {
-                id: create_collection_output.id,
-                display_name: collection_name.clone(),
-                order: None,
-            }));
+        assert!(collections.contains_key(&create_collection_output.id));
+        assert_eq!(
+            collections[&create_collection_output.id].display_name,
+            collection_name
+        );
 
         // Verify the directory was created
         assert!(create_collection_output.abs_path.exists());

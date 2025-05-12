@@ -1,35 +1,32 @@
 pub mod entities;
-pub mod workspace_store;
+pub mod workbench_store;
 
 use std::{path::PathBuf, sync::Arc};
 
 use async_trait::async_trait;
-use entities::WorkspaceInfoEntity;
-use moss_db::{common::DatabaseError, DatabaseClient, ReDbClient, Transaction};
+use entities::{EnvironmentInfoEntity, WorkspaceInfoEntity};
+use moss_db::{DatabaseClient, ReDbClient, Transaction, common::DatabaseError};
 use std::collections::HashMap;
-use workspace_store::{WorkspacesStoreImpl, TABLE_WORKSPACES};
+use workbench_store::{TABLE_WORKSPACES, WorkbenchStoreImpl};
 
-use crate::{common::Transactional, GlobalStorage};
+use crate::{GlobalStorage, common::Transactional};
 
 const GLOBAL_STATE_DB_NAME: &str = "state.db";
 
-pub trait WorkspacesStore: Send + Sync {
+pub trait WorkbenchStore: Send + Sync {
     fn upsert_workspace(
         &self,
         txn: &mut Transaction,
         workspace_name: String,
         entity: WorkspaceInfoEntity,
     ) -> Result<(), DatabaseError>;
-
     fn rekey_workspace(
         &self,
         txn: &mut Transaction,
         old_workspace_name: String,
         new_workspace_name: String,
     ) -> Result<(), DatabaseError>;
-
     fn list_workspaces(&self) -> Result<HashMap<String, WorkspaceInfoEntity>, DatabaseError>;
-
     fn delete_workspace(
         &self,
         txn: &mut Transaction,
@@ -39,7 +36,7 @@ pub trait WorkspacesStore: Send + Sync {
 
 pub struct GlobalStorageImpl {
     db_client: ReDbClient,
-    workspaces_store: Arc<WorkspacesStoreImpl>,
+    workspaces_store: Arc<WorkbenchStoreImpl>,
 }
 
 impl GlobalStorageImpl {
@@ -47,7 +44,7 @@ impl GlobalStorageImpl {
         let db_client =
             ReDbClient::new(path.join(GLOBAL_STATE_DB_NAME))?.with_table(&TABLE_WORKSPACES)?;
 
-        let workspaces_store = Arc::new(WorkspacesStoreImpl::new(db_client.clone()));
+        let workspaces_store = Arc::new(WorkbenchStoreImpl::new(db_client.clone()));
 
         Ok(Self {
             db_client,
@@ -68,7 +65,7 @@ impl Transactional for GlobalStorageImpl {
 }
 
 impl GlobalStorage for GlobalStorageImpl {
-    fn workspaces_store(&self) -> Arc<dyn WorkspacesStore> {
+    fn workspaces_store(&self) -> Arc<dyn WorkbenchStore> {
         self.workspaces_store.clone()
     }
 }

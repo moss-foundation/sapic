@@ -3040,6 +3040,7 @@ name = "moss_environment"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_common",
  "moss_fs",
  "moss_storage",
  "rand 0.9.1",
@@ -3252,7 +3253,6 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "chrono",
- "dashmap",
  "moss_activity_indicator",
  "moss_app",
  "moss_collection",

@@ -23,8 +23,8 @@ async fn delete_collection_success() {
     assert!(delete_collection_result.is_ok());
 
     // Check updating collections
-    let describe_output = workspace.describe().await.unwrap();
-    assert!(describe_output.collections.is_empty());
+    let collections = workspace.collections().await.unwrap().read().await;
+    assert!(collections.is_empty());
 
     cleanup().await;
 }
@@ -75,16 +75,16 @@ async fn delete_collection_fs_already_deleted() {
         .unwrap();
 
     // Even though filesystem is already deleted, deletion should succeed
-    let result = workspace
+    let delete_collection_result = workspace
         .delete_collection(DeleteCollectionInput {
             id: create_collection_output.id,
         })
         .await;
-    assert!(result.is_ok());
+    assert!(delete_collection_result.is_ok());
 
     // Check collections are updated
-    let describe_output = workspace.describe().await.unwrap();
-    assert!(describe_output.collections.is_empty());
+    let collections = workspace.collections().await.unwrap().read().await;
+    assert!(collections.is_empty());
 
     cleanup().await;
 }

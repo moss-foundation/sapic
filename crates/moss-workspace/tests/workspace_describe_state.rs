@@ -10,15 +10,15 @@ use crate::shared::setup_test_workspace;
 async fn describe_layout_parts_state_empty() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
-    let result = workspace.describe_state().await;
-    assert!(result.is_ok());
+    let describe_state_result = workspace.describe_state().await;
+    assert!(describe_state_result.is_ok());
 
-    let describe_layout_parts_state_output = result.unwrap();
+    let describe_state_output = describe_state_result.unwrap();
 
     // With a fresh workspace, we expect no layout states to be present
-    assert!(describe_layout_parts_state_output.editor.is_none());
-    assert!(describe_layout_parts_state_output.sidebar.is_none());
-    assert!(describe_layout_parts_state_output.panel.is_none());
+    assert!(describe_state_output.editor.is_none());
+    assert!(describe_state_output.sidebar.is_none());
+    assert!(describe_state_output.panel.is_none());
 
     // Clean up
     cleanup().await;
@@ -34,21 +34,21 @@ async fn describe_layout_parts_state_sidebar_only() {
         is_visible: true,
     };
 
-    workspace
+    let update_state_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_state_result.is_ok());
 
-    // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
+    // Check the describe_state operation
+    let describe_state_output = workspace.describe_state().await.unwrap();
 
     // Editor and Panel should be None
-    assert!(describe_layout_parts_state_output.editor.is_none());
-    assert!(describe_layout_parts_state_output.panel.is_none());
+    assert!(describe_state_output.editor.is_none());
+    assert!(describe_state_output.panel.is_none());
 
     // Sidebar should match the set value
-    assert!(describe_layout_parts_state_output.sidebar.is_some());
-    let retrieved_sidebar = describe_layout_parts_state_output.sidebar.unwrap();
+    assert!(describe_state_output.sidebar.is_some());
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 250);
     assert_eq!(retrieved_sidebar.is_visible, true);
 
@@ -66,21 +66,21 @@ async fn describe_layout_parts_state_panel_only() {
         is_visible: false,
     };
 
-    workspace
+    let update_state_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_state_result.is_ok());
 
-    // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
+    // Check the describe_state operation
+    let describe_state_output = workspace.describe_state().await.unwrap();
 
     // Editor and Sidebar should be None
-    assert!(describe_layout_parts_state_output.editor.is_none());
-    assert!(describe_layout_parts_state_output.sidebar.is_none());
+    assert!(describe_state_output.editor.is_none());
+    assert!(describe_state_output.sidebar.is_none());
 
     // Panel should match the set value
-    assert!(describe_layout_parts_state_output.panel.is_some());
-    let retrieved_panel = describe_layout_parts_state_output.panel.unwrap();
+    assert!(describe_state_output.panel.is_some());
+    let retrieved_panel = describe_state_output.panel.unwrap();
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.is_visible, false);
 
@@ -95,21 +95,21 @@ async fn describe_layout_parts_state_editor_only() {
     // Set up only the editor state
     let editor_state = create_simple_editor_state();
 
-    workspace
+    let update_state_result = workspace
         .update_state(UpdateStateInput::UpdateEditorPartState(editor_state))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_state_result.is_ok());
 
-    // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
+    // Check the describe_state operation
+    let describe_state_output = workspace.describe_state().await.unwrap();
 
     // Sidebar and Panel should be None
-    assert!(describe_layout_parts_state_output.sidebar.is_none());
-    assert!(describe_layout_parts_state_output.panel.is_none());
+    assert!(describe_state_output.sidebar.is_none());
+    assert!(describe_state_output.panel.is_none());
 
     // Editor should be set
-    assert!(describe_layout_parts_state_output.editor.is_some());
-    let retrieved_editor = describe_layout_parts_state_output.editor.unwrap();
+    assert!(describe_state_output.editor.is_some());
+    let retrieved_editor = describe_state_output.editor.unwrap();
 
     // Check editor values
     assert!(!retrieved_editor.panels.is_empty());
@@ -136,40 +136,42 @@ async fn describe_layout_parts_state_all() {
     };
 
     // Update each state individually
-    workspace
+    let update_editor_result = workspace
         .update_state(UpdateStateInput::UpdateEditorPartState(editor_state))
-        .await
-        .unwrap();
-    workspace
-        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
-        .await
-        .unwrap();
-    workspace
-        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_editor_result.is_ok());
 
-    // Check the describe_layout_parts_state operation
-    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
+    let update_sidebar_result = workspace
+        .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
+        .await;
+    assert!(update_sidebar_result.is_ok());
+
+    let update_panel_result = workspace
+        .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
+        .await;
+    assert!(update_panel_result.is_ok());
+
+    // Check the describe_state operation
+    let describe_state_output = workspace.describe_state().await.unwrap();
 
     // All states should be set
 
     // Check Editor
-    assert!(describe_layout_parts_state_output.editor.is_some());
-    let retrieved_editor = describe_layout_parts_state_output.editor.unwrap();
+    assert!(describe_state_output.editor.is_some());
+    let retrieved_editor = describe_state_output.editor.unwrap();
     assert!(!retrieved_editor.panels.is_empty());
     assert!(retrieved_editor.panels.contains_key("panel1"));
     assert_eq!(retrieved_editor.active_group, Some("group1".to_string()));
 
     // Check Sidebar
-    assert!(describe_layout_parts_state_output.sidebar.is_some());
-    let retrieved_sidebar = describe_layout_parts_state_output.sidebar.unwrap();
+    assert!(describe_state_output.sidebar.is_some());
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 250);
     assert_eq!(retrieved_sidebar.is_visible, true);
 
     // Check Panel
-    assert!(describe_layout_parts_state_output.panel.is_some());
-    let retrieved_panel = describe_layout_parts_state_output.panel.unwrap();
+    assert!(describe_state_output.panel.is_some());
+    let retrieved_panel = describe_state_output.panel.unwrap();
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.is_visible, false);
 
@@ -192,53 +194,55 @@ async fn describe_layout_parts_state_after_update() {
         is_visible: false,
     };
 
-    workspace
+    let update_editor_result = workspace
         .update_state(UpdateStateInput::UpdateEditorPartState(
             initial_editor_state,
         ))
-        .await
-        .unwrap();
-    workspace
+        .await;
+    assert!(update_editor_result.is_ok());
+
+    let update_sidebar_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(
             initial_sidebar_state,
         ))
-        .await
-        .unwrap();
-    workspace
+        .await;
+    assert!(update_sidebar_result.is_ok());
+
+    let update_panel_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(initial_panel_state))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_panel_result.is_ok());
 
     // Now update only the sidebar
     let updated_sidebar_state = SidebarPartState {
         preferred_size: 300,
         is_visible: false,
     };
-    workspace
+    let update_sidebar_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(
             updated_sidebar_state,
         ))
-        .await
-        .unwrap();
+        .await;
+    assert!(update_sidebar_result.is_ok());
 
-    // Check the describe_layout_parts_state operation after update
-    let describe_layout_parts_state_output = workspace.describe_state().await.unwrap();
+    // Check the describe_state operation after update
+    let describe_state_output = workspace.describe_state().await.unwrap();
 
     // Editor should not change
-    assert!(describe_layout_parts_state_output.editor.is_some());
-    let retrieved_editor = describe_layout_parts_state_output.editor.unwrap();
+    assert!(describe_state_output.editor.is_some());
+    let retrieved_editor = describe_state_output.editor.unwrap();
     assert!(!retrieved_editor.panels.is_empty());
     assert!(retrieved_editor.panels.contains_key("panel1"));
 
     // Sidebar should be updated
-    assert!(describe_layout_parts_state_output.sidebar.is_some());
-    let retrieved_sidebar = describe_layout_parts_state_output.sidebar.unwrap();
+    assert!(describe_state_output.sidebar.is_some());
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 300); // Updated value
     assert_eq!(retrieved_sidebar.is_visible, false); // Updated value
 
     // Panel should not change
-    assert!(describe_layout_parts_state_output.panel.is_some());
-    let retrieved_panel = describe_layout_parts_state_output.panel.unwrap();
+    assert!(describe_state_output.panel.is_some());
+    let retrieved_panel = describe_state_output.panel.unwrap();
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.is_visible, false);
 
