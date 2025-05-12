@@ -29,13 +29,13 @@ async fn rename_workspace_success() {
     let id = create_workspace_output.id;
 
     let new_workspace_name = random_workspace_name();
-    let rename_workspace_result = workspace_manager
+    let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
             id,
             name: Some(new_workspace_name.clone()),
         })
         .await;
-    assert!(rename_workspace_result.is_ok());
+    assert!(update_workspace_result.is_ok());
 
     // Check filesystem rename
     let expected_path: Arc<Path> = workspaces_path.join(&new_workspace_name).into();
@@ -71,16 +71,16 @@ async fn rename_workspace_empty_name() {
     let id = create_workspace_output.id;
 
     let new_workspace_name = "";
-    let rename_workspace_result = workspace_manager
+    let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
             id,
             name: Some(new_workspace_name.to_string()),
         })
         .await;
 
-    assert!(rename_workspace_result.is_err());
+    assert!(update_workspace_result.is_err());
     assert!(matches!(
-        rename_workspace_result,
+        update_workspace_result,
         Err(OperationError::Validation(_))
     ));
 
@@ -103,7 +103,7 @@ async fn rename_workspace_unchanged() {
     let id = create_workspace_output.id;
 
     // Rename to same name
-    let rename_workspace_result = workspace_manager
+    let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
             id,
             name: Some(workspace_name.clone()),
@@ -111,17 +111,17 @@ async fn rename_workspace_unchanged() {
         .await;
 
     // This should be a no-op
-    assert!(rename_workspace_result.is_ok());
+    assert!(update_workspace_result.is_ok());
 
     // Check active workspace unchanged
     let active_workspace = workspace_manager.active_workspace().unwrap();
     assert_eq!(active_workspace.id, id);
 
     // Check known_workspaces unchanged
-    let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-    assert_eq!(workspaces_list.len(), 1);
-    assert_eq!(workspaces_list[0].id, id);
-    assert_eq!(workspaces_list[0].display_name, workspace_name);
+    let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+    assert_eq!(list_workspaces_output.len(), 1);
+    assert_eq!(list_workspaces_output[0].id, id);
+    assert_eq!(list_workspaces_output[0].display_name, workspace_name);
 
     cleanup().await;
 }
@@ -155,15 +155,15 @@ async fn rename_workspace_already_exists() {
     let id = create_workspace_output.id;
 
     // Try renaming the new workspace to an existing workspace name
-    let rename_workspace_result = workspace_manager
+    let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
             id,
             name: Some(existing_workspace_name.clone()),
         })
         .await;
-    assert!(rename_workspace_result.is_err());
+    assert!(update_workspace_result.is_err());
     assert!(matches!(
-        rename_workspace_result,
+        update_workspace_result,
         Err(OperationError::AlreadyExists { .. })
     ));
 
@@ -178,16 +178,16 @@ async fn rename_workspace_nonexistent_id() {
     let id = Identifier::new(&std::sync::Arc::new(AtomicUsize::new(1000)));
 
     // Try renaming a workspace with a non-existent ID
-    let rename_workspace_result = workspace_manager
+    let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
             id,
             name: Some(random_workspace_name()),
         })
         .await;
 
-    assert!(rename_workspace_result.is_err());
+    assert!(update_workspace_result.is_err());
     assert!(matches!(
-        rename_workspace_result,
+        update_workspace_result,
         Err(OperationError::NotFound { .. })
     ));
 
@@ -211,14 +211,14 @@ async fn rename_workspace_special_chars() {
 
     for char in FILENAME_SPECIAL_CHARS {
         let new_workspace_name = format!("{workspace_name}{char}");
-        let rename_result = workspace_manager
+        let update_workspace_result = workspace_manager
             .update_workspace(UpdateWorkspaceInput {
                 id,
                 name: Some(new_workspace_name.clone()),
             })
             .await;
 
-        assert!(rename_result.is_ok());
+        assert!(update_workspace_result.is_ok());
 
         // Check folder was renamed
         let expected_path: Arc<Path> = workspaces_path
