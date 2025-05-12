@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { ActionMenuRadix } from "@/components";
+import { ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -57,11 +57,9 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
 
           return (
             <div key={pathNode} className="contents">
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger className="min-w-max cursor-pointer hover:underline">
-                  {pathNode}
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Content align="start">
+              <ActionMenu.Root>
+                <ActionMenu.Trigger className="min-w-max cursor-pointer hover:underline">{pathNode}</ActionMenu.Trigger>
+                <ActionMenu.Content align="start">
                   <BreadcrumbTree
                     tree={node}
                     onNodeClick={(node) => {
@@ -76,8 +74,8 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
                         });
                     }}
                   />
-                </ActionMenuRadix.Content>
-              </ActionMenuRadix.Root>
+                </ActionMenu.Content>
+              </ActionMenu.Root>
               {!lastItem && (
                 <span>
                   <Icon icon="ChevronRight" />

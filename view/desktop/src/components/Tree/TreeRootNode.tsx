@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef } from "react";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ActionButton, ActionMenuRadix, DropIndicator, TreeContext } from "..";
+import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -155,18 +155,18 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
-          <ActionMenuRadix.Root>
-            <ActionMenuRadix.Trigger asChild>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger asChild>
               <ActionButton icon="MoreHorizontal" />
-            </ActionMenuRadix.Trigger>
-            <ActionMenuRadix.Portal>
-              <ActionMenuRadix.Content className="z-30">
-                <ActionMenuRadix.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenuRadix.Item>
-                <ActionMenuRadix.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenuRadix.Item>
-                <ActionMenuRadix.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenuRadix.Item>
-              </ActionMenuRadix.Content>
-            </ActionMenuRadix.Portal>
-          </ActionMenuRadix.Root>
+            </ActionMenu.Trigger>
+            <ActionMenu.Portal>
+              <ActionMenu.Content className="z-30">
+                <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
+              </ActionMenu.Content>
+            </ActionMenu.Portal>
+          </ActionMenu.Root>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>

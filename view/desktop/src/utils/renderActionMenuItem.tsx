@@ -1,11 +1,11 @@
-import { ActionMenuRadix } from "@/components";
+import { ActionMenu } from "@/components";
 import { MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 
 export const renderActionMenuItem = (item: MenuItemProps, callback: (id: string) => void) => {
   switch (item.type) {
     case "action":
       return (
-        <ActionMenuRadix.Item
+        <ActionMenu.Item
           key={item.id}
           className="flex items-center justify-between"
           shortcut={item.shortcut}
@@ -14,40 +14,40 @@ export const renderActionMenuItem = (item: MenuItemProps, callback: (id: string)
           onSelect={() => callback?.(item.id)}
         >
           <span>{item.label}</span>
-        </ActionMenuRadix.Item>
+        </ActionMenu.Item>
       );
     case "separator":
-      return <ActionMenuRadix.Separator key={item.id} />;
+      return <ActionMenu.Separator key={item.id} />;
     case "submenu":
       return (
-        <ActionMenuRadix.Sub key={item.id}>
-          <ActionMenuRadix.SubTrigger icon={item.icon || undefined} onClick={() => callback?.(item.id)}>
+        <ActionMenu.Sub key={item.id}>
+          <ActionMenu.SubTrigger icon={item.icon || undefined} onClick={() => callback?.(item.id)}>
             {item.label}
-          </ActionMenuRadix.SubTrigger>
-          <ActionMenuRadix.SubContent>
+          </ActionMenu.SubTrigger>
+          <ActionMenu.SubContent>
             {item.items?.map((item) => renderActionMenuItem(item, callback))}
-          </ActionMenuRadix.SubContent>
-        </ActionMenuRadix.Sub>
+          </ActionMenu.SubContent>
+        </ActionMenu.Sub>
       );
     case "checkable":
       return (
-        <ActionMenuRadix.CheckboxItem
+        <ActionMenu.CheckboxItem
           key={item.id}
           className="flex items-center justify-between"
           shortcut={item.shortcut}
           checked={item.checked}
         >
           <span>{item.label}</span>
-        </ActionMenuRadix.CheckboxItem>
+        </ActionMenu.CheckboxItem>
       );
     case "accordion":
       return (
-        <ActionMenuRadix.Accordion key={item.id}>
-          <ActionMenuRadix.AccordionTrigger>{item.label}</ActionMenuRadix.AccordionTrigger>
-          <ActionMenuRadix.AccordionContent>
+        <ActionMenu.Accordion key={item.id}>
+          <ActionMenu.AccordionTrigger>{item.label}</ActionMenu.AccordionTrigger>
+          <ActionMenu.AccordionContent>
             {item.items?.map((item) => renderActionMenuItem(item, callback))}
-          </ActionMenuRadix.AccordionContent>
-        </ActionMenuRadix.Accordion>
+          </ActionMenu.AccordionContent>
+        </ActionMenu.Accordion>
       );
     default:
       return null;

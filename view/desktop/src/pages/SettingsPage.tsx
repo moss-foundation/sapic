@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import LangchainAgent from "@/ai/LangchainAgent";
-import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { MenuItemProps } from "@/components/ActionMenu/types";
+import SelectOutlined from "@/components/SelectOutlined";
 import { ActivityBarState } from "@/hooks";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useListColorThemes } from "@/hooks/colorTheme/useListColorThemes";
@@ -36,8 +37,8 @@ export const Settings = () => {
   const [bottomPaneMenuOpen, setBottomPaneMenuOpen] = useState(false);
   const [activityBarMenuOpen, setActivityBarMenuOpen] = useState(false);
 
-  const handleLanguageChange = (item: MenuItemProps) => {
-    const selectedLocaleCode = item.value;
+  const handleLanguageChange = (value: string) => {
+    const selectedLocaleCode = value;
     const selectedLocaleInfo = languages?.find(
       (lang: { code: string; displayName: string }) => lang.code === selectedLocaleCode
     );
@@ -48,8 +49,8 @@ export const Settings = () => {
     }
   };
 
-  const handleThemeChange = (item: MenuItemProps) => {
-    const lastIdentifier = item.value || "";
+  const handleThemeChange = (value: string) => {
+    const lastIdentifier = value || "";
     // Find the theme that ends with the selected value
     const selectedTheme = themes?.find((theme: { identifier: string; displayName: string }) =>
       theme.identifier.endsWith(lastIdentifier)
@@ -61,23 +62,23 @@ export const Settings = () => {
     }
   };
 
-  const handleSidebarTypeChange = (item: MenuItemProps) => {
-    const sidebarType = item.value as "left" | "right";
+  const handleSidebarTypeChange = (value: string) => {
+    const sidebarType = value as "left" | "right";
     setSideBarPosition(sidebarType);
   };
 
-  const handleBottomPaneVisibilityChange = (item: MenuItemProps) => {
-    const visibility = item.value === "visible";
+  const handleBottomPaneVisibilityChange = (value: string) => {
+    const visibility = value === "visible";
     bottomPane.setVisible(visibility);
   };
 
-  const handleActivityBarPositionChange = (item: MenuItemProps) => {
-    const position = item.value as ActivityBarState["position"];
+  const handleActivityBarPositionChange = (value: string) => {
+    const position = value as ActivityBarState["position"];
     setPosition(position);
   };
 
-  const handleSidebarVisibilityChange = (item: MenuItemProps) => {
-    const isVisible = item.value === "visible";
+  const handleSidebarVisibilityChange = (value: string) => {
+    const isVisible = value === "visible";
     sideBar.setVisible(isVisible);
   };
 
@@ -173,92 +174,146 @@ export const Settings = () => {
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectLanguage")}</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={languageItems}
-              open={languageMenuOpen}
-              onOpenChange={setLanguageMenuOpen}
-              onSelect={handleLanguageChange}
-              selectedValue={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
-              placeholder="Select language"
-            />
+            <SelectOutlined.Root
+              value={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
+              onValueChange={handleLanguageChange}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {languageItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectTheme")}</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={themeItems}
-              open={themeMenuOpen}
-              onOpenChange={setThemeMenuOpen}
-              onSelect={handleThemeChange}
-              selectedValue={(appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || "")
+            <SelectOutlined.Root
+              value={(appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || "")
                 .split(/[./]/)
                 .pop()}
-              placeholder="Select theme"
-            />
+              onValueChange={handleThemeChange}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {themeItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Type</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={sidebarTypeItems}
-              open={sidebarTypeMenuOpen}
-              onOpenChange={setSidebarTypeMenuOpen}
-              onSelect={handleSidebarTypeChange}
-              selectedValue={sideBarPosition || "left"}
-              placeholder="Select sidebar type"
-            />
+            <SelectOutlined.Root value={sideBarPosition || "left"} onValueChange={handleSidebarTypeChange}>
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {sidebarTypeItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Visibility</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={visibilityItems}
-              open={sidebarVisibilityMenuOpen}
-              onOpenChange={setSidebarVisibilityMenuOpen}
-              onSelect={handleSidebarVisibilityChange}
-              selectedValue={sideBar.visible ? "visible" : "hidden"}
-              placeholder="Select visibility"
-            />
+            <SelectOutlined.Root
+              value={sideBar.visible ? "visible" : "hidden"}
+              onValueChange={handleSidebarVisibilityChange}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {visibilityItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Bottom Pane Visibility</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={visibilityItems}
-              open={bottomPaneMenuOpen}
-              onOpenChange={setBottomPaneMenuOpen}
-              onSelect={handleBottomPaneVisibilityChange}
-              selectedValue={bottomPane.visible ? "visible" : "hidden"}
-              placeholder="Select visibility"
-            />
+            <SelectOutlined.Root
+              value={bottomPane.visible ? "visible" : "hidden"}
+              onValueChange={handleBottomPaneVisibilityChange}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {visibilityItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
           <div className="w-[200px]">
-            <ActionMenu
-              type="dropdown"
-              items={activityBarPositionItems}
-              open={activityBarMenuOpen}
-              onOpenChange={setActivityBarMenuOpen}
-              onSelect={handleActivityBarPositionChange}
-              selectedValue={position || "default"}
-              placeholder="Select position"
-            />
+            <SelectOutlined.Root value={position || "default"} onValueChange={handleActivityBarPositionChange}>
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {activityBarPositionItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
       </div>

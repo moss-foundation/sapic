@@ -1,4 +1,4 @@
-import { ActionMenuRadix, IconLabelButton } from "@/components";
+import { ActionMenu, IconLabelButton } from "@/components";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
@@ -42,14 +42,14 @@ export const HeadBarLeftItems = ({
     >
       {isWindowsOrLinux && (
         <>
-          <ActionMenuRadix.Root>
-            <ActionMenuRadix.Trigger>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger>
               <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
-            </ActionMenuRadix.Trigger>
-            <ActionMenuRadix.Content>
+            </ActionMenu.Trigger>
+            <ActionMenu.Content>
               {windowsMenuItems.map((item) => renderActionMenuItem(item, handleWindowsMenuAction))}
-            </ActionMenuRadix.Content>
-          </ActionMenuRadix.Root>
+            </ActionMenu.Content>
+          </ActionMenu.Root>
 
           {selectedWorkspace && (
             <ModeToggle className="mr-0.5 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />
@@ -57,8 +57,8 @@ export const HeadBarLeftItems = ({
         </>
       )}
 
-      <ActionMenuRadix.Root>
-        <ActionMenuRadix.Trigger>
+      <ActionMenu.Root>
+        <ActionMenu.Trigger>
           <IconLabelButton
             rightIcon="ChevronDown"
             title={selectedWorkspace || "My Workspace"}
@@ -67,13 +67,13 @@ export const HeadBarLeftItems = ({
             labelClassName="text-md"
             className="h-[24px]"
           />
-        </ActionMenuRadix.Trigger>
-        <ActionMenuRadix.Content>
+        </ActionMenu.Trigger>
+        <ActionMenu.Content>
           {selectedWorkspace
             ? selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))
             : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
-        </ActionMenuRadix.Content>
-      </ActionMenuRadix.Root>
+        </ActionMenu.Content>
+      </ActionMenu.Root>
 
       {selectedWorkspace && (
         <IconLabelButton

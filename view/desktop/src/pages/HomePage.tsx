@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActionMenuRadix } from "@/components";
+import { ActionMenu } from "@/components";
 import SelectOutlined from "@/components/SelectOutlined";
 import {
   editorContextItems,
@@ -77,94 +77,94 @@ const ComponentGallery = () => {
             <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Standard Menu Triggers</h3>
             <div className="flex flex-wrap gap-4">
               {/* Context Actions Button */}
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger asChild>
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
                   <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Show Context Actions
                   </button>
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Portal>
-                  <ActionMenuRadix.Content align="start">
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content align="start">
                     {editorContextItems.map((item) => (
-                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
+                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
-                      </ActionMenuRadix.Item>
+                      </ActionMenu.Item>
                     ))}
-                  </ActionMenuRadix.Content>
-                </ActionMenuRadix.Portal>
-              </ActionMenuRadix.Root>
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Generate Menu Button */}
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger asChild>
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
                   <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Generate Menu
                   </button>
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Portal>
-                  <ActionMenuRadix.Content align="start">
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content align="start">
                     {generateItems.map((item) => (
-                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
+                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
-                      </ActionMenuRadix.Item>
+                      </ActionMenu.Item>
                     ))}
-                  </ActionMenuRadix.Content>
-                </ActionMenuRadix.Portal>
-              </ActionMenuRadix.Root>
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Configurations Button */}
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger asChild>
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
                   <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Configurations
                   </button>
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Portal>
-                  <ActionMenuRadix.Content align="start">
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content align="start">
                     {runConfigItems.map((item) => (
-                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
+                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
-                      </ActionMenuRadix.Item>
+                      </ActionMenu.Item>
                     ))}
-                  </ActionMenuRadix.Content>
-                </ActionMenuRadix.Portal>
-              </ActionMenuRadix.Root>
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Options Button */}
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger asChild>
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
                   <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Options
                   </button>
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Portal>
-                  <ActionMenuRadix.Content align="start">
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content align="start">
                     {runOptionsItems.map((item) => (
-                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
+                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
-                      </ActionMenuRadix.Item>
+                      </ActionMenu.Item>
                     ))}
-                  </ActionMenuRadix.Content>
-                </ActionMenuRadix.Portal>
-              </ActionMenuRadix.Root>
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Selector Button */}
-              <ActionMenuRadix.Root>
-                <ActionMenuRadix.Trigger asChild>
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
                   <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Selector
                   </button>
-                </ActionMenuRadix.Trigger>
-                <ActionMenuRadix.Portal>
-                  <ActionMenuRadix.Content align="start">
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content align="start">
                     {runSelectorItems.map((item) => (
-                      <ActionMenuRadix.Item key={item.id} icon={item.icon || undefined}>
+                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
                         {item.label}
-                      </ActionMenuRadix.Item>
+                      </ActionMenu.Item>
                     ))}
-                  </ActionMenuRadix.Content>
-                </ActionMenuRadix.Portal>
-              </ActionMenuRadix.Root>
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { ActionMenuRadix, IconLabelButton } from "@/components";
+import { ActionMenu, IconLabelButton } from "@/components";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
@@ -36,8 +36,8 @@ export const HeadBarRightItems = ({
 
   return (
     <div className="flex items-center">
-      <ActionMenuRadix.Root>
-        <ActionMenuRadix.Trigger>
+      <ActionMenu.Root>
+        <ActionMenu.Trigger>
           <IconLabelButton
             leftIcon="UserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"
@@ -48,11 +48,11 @@ export const HeadBarRightItems = ({
             className="mr-2 h-[24px]"
             compact={isMedium}
           />
-        </ActionMenuRadix.Trigger>
-        <ActionMenuRadix.Content>
+        </ActionMenu.Trigger>
+        <ActionMenu.Content>
           {getUserMenuItems(selectedUser).map((item) => renderActionMenuItem(item, handleUserMenuAction))}
-        </ActionMenuRadix.Content>
-      </ActionMenuRadix.Root>
+        </ActionMenu.Content>
+      </ActionMenu.Root>
 
       {isMac && selectedWorkspace && (
         <ModeToggle className="mr-2 border-1 border-[var(--moss-headBar-border-color)]" compact={isLarge} />

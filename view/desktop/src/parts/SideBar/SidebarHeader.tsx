@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ActionButton, ActionMenuRadix } from "@/components";
+import { ActionButton, ActionMenu } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -31,49 +31,49 @@ const ExampleDropdownMenu = () => {
   const [radioValue, setRadioValue] = useState("option1");
 
   return (
-    <ActionMenuRadix.Root>
-      <ActionMenuRadix.Trigger asChild>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild>
         <ActionButton icon="MoreHorizontal" />
-      </ActionMenuRadix.Trigger>
+      </ActionMenu.Trigger>
 
-      <ActionMenuRadix.Portal>
-        <ActionMenuRadix.Content>
-          <ActionMenuRadix.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenuRadix.Item>
-          <ActionMenuRadix.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenuRadix.Item>
+      <ActionMenu.Portal>
+        <ActionMenu.Content>
+          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
+          <ActionMenu.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
             Check me
-          </ActionMenuRadix.CheckboxItem>
+          </ActionMenu.CheckboxItem>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.RadioGroup value={radioValue} onValueChange={setRadioValue}>
-            <ActionMenuRadix.RadioItem checked={radioValue === "option1"} value="option1">
+          <ActionMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
+            <ActionMenu.RadioItem checked={radioValue === "option1"} value="option1">
               Option 1
-            </ActionMenuRadix.RadioItem>
-            <ActionMenuRadix.RadioItem checked={radioValue === "option2"} value="option2">
+            </ActionMenu.RadioItem>
+            <ActionMenu.RadioItem checked={radioValue === "option2"} value="option2">
               Option 2
-            </ActionMenuRadix.RadioItem>
-          </ActionMenuRadix.RadioGroup>
+            </ActionMenu.RadioItem>
+          </ActionMenu.RadioGroup>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.Sub>
-            <ActionMenuRadix.SubTrigger>Submenu</ActionMenuRadix.SubTrigger>
-            <ActionMenuRadix.SubContent>
-              <ActionMenuRadix.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
+          <ActionMenu.Sub>
+            <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
+            <ActionMenu.SubContent>
+              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
                 Sub Item 1
-              </ActionMenuRadix.Item>
-              <ActionMenuRadix.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
+              </ActionMenu.Item>
+              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
                 Sub Item 2
-              </ActionMenuRadix.Item>
-            </ActionMenuRadix.SubContent>
-          </ActionMenuRadix.Sub>
-        </ActionMenuRadix.Content>
-      </ActionMenuRadix.Portal>
-    </ActionMenuRadix.Root>
+              </ActionMenu.Item>
+            </ActionMenu.SubContent>
+          </ActionMenu.Sub>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
   );
 };
 
@@ -82,48 +82,48 @@ const ExampleContextMenuRadix = () => {
   const [radioValue, setRadioValue] = useState("option1");
 
   return (
-    <ActionMenuRadix.Root>
-      <ActionMenuRadix.Trigger asChild openOnRightClick>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild openOnRightClick>
         <ActionButton icon="Import" />
-      </ActionMenuRadix.Trigger>
+      </ActionMenu.Trigger>
 
-      <ActionMenuRadix.Portal>
-        <ActionMenuRadix.Content>
-          <ActionMenuRadix.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenuRadix.Item>
-          <ActionMenuRadix.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenuRadix.Item>
+      <ActionMenu.Portal>
+        <ActionMenu.Content>
+          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
+          <ActionMenu.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
             Check me
-          </ActionMenuRadix.CheckboxItem>
+          </ActionMenu.CheckboxItem>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.RadioGroup value={radioValue} onValueChange={setRadioValue}>
-            <ActionMenuRadix.RadioItem checked={radioValue === "option1"} value="option1">
+          <ActionMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
+            <ActionMenu.RadioItem checked={radioValue === "option1"} value="option1">
               Option 1
-            </ActionMenuRadix.RadioItem>
-            <ActionMenuRadix.RadioItem checked={radioValue === "option2"} value="option2">
+            </ActionMenu.RadioItem>
+            <ActionMenu.RadioItem checked={radioValue === "option2"} value="option2">
               Option 2
-            </ActionMenuRadix.RadioItem>
-          </ActionMenuRadix.RadioGroup>
+            </ActionMenu.RadioItem>
+          </ActionMenu.RadioGroup>
 
-          <ActionMenuRadix.Separator />
+          <ActionMenu.Separator />
 
-          <ActionMenuRadix.Sub>
-            <ActionMenuRadix.SubTrigger>Submenu</ActionMenuRadix.SubTrigger>
-            <ActionMenuRadix.SubContent>
-              <ActionMenuRadix.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
+          <ActionMenu.Sub>
+            <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
+            <ActionMenu.SubContent>
+              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
                 Sub Item 1
-              </ActionMenuRadix.Item>
-              <ActionMenuRadix.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
+              </ActionMenu.Item>
+              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
                 Sub Item 2
-              </ActionMenuRadix.Item>
-            </ActionMenuRadix.SubContent>
-          </ActionMenuRadix.Sub>
-        </ActionMenuRadix.Content>
-      </ActionMenuRadix.Portal>
-    </ActionMenuRadix.Root>
+              </ActionMenu.Item>
+            </ActionMenu.SubContent>
+          </ActionMenu.Sub>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
   );
 };

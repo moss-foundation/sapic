@@ -1,4 +1,4 @@
-import { ActionMenuRadix } from "@/components";
+import { ActionMenu } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
@@ -20,50 +20,50 @@ export const WelcomePage = () => {
         </div>
 
         <div className="flex gap-2">
-          <ActionMenuRadix.Root>
-            <ActionMenuRadix.Trigger>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger>
               <button>Dropdown</button>
-            </ActionMenuRadix.Trigger>
-            <ActionMenuRadix.Content>
-              <ActionMenuRadix.Item>asf</ActionMenuRadix.Item>
-              <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
-              <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
-              <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
+            </ActionMenu.Trigger>
+            <ActionMenu.Content>
+              <ActionMenu.Item>asf</ActionMenu.Item>
+              <ActionMenu.Item>2</ActionMenu.Item>
+              <ActionMenu.Item>3</ActionMenu.Item>
+              <ActionMenu.Item>4</ActionMenu.Item>
 
-              <ActionMenuRadix.Accordion>
-                <ActionMenuRadix.AccordionTrigger>Accordion</ActionMenuRadix.AccordionTrigger>
-                <ActionMenuRadix.AccordionContent>
-                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                  <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                </ActionMenuRadix.AccordionContent>
-              </ActionMenuRadix.Accordion>
-            </ActionMenuRadix.Content>
-          </ActionMenuRadix.Root>
+              <ActionMenu.Accordion>
+                <ActionMenu.AccordionTrigger>Accordion</ActionMenu.AccordionTrigger>
+                <ActionMenu.AccordionContent>
+                  <ActionMenu.Item>123</ActionMenu.Item>
+                  <ActionMenu.Item>123</ActionMenu.Item>
+                  <ActionMenu.Item>123</ActionMenu.Item>
+                </ActionMenu.AccordionContent>
+              </ActionMenu.Accordion>
+            </ActionMenu.Content>
+          </ActionMenu.Root>
 
-          <ActionMenuRadix.Root>
-            <ActionMenuRadix.Trigger asChild openOnRightClick>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger asChild openOnRightClick>
               <button id="T" className="bg-amber-400 p-4">
                 Context menu
               </button>
-            </ActionMenuRadix.Trigger>
-            <ActionMenuRadix.Portal>
-              <ActionMenuRadix.Content>
-                <ActionMenuRadix.Item>asf</ActionMenuRadix.Item>
-                <ActionMenuRadix.Item>2</ActionMenuRadix.Item>
-                <ActionMenuRadix.Item>3</ActionMenuRadix.Item>
-                <ActionMenuRadix.Item>4</ActionMenuRadix.Item>
-                <ActionMenuRadix.Accordion>
-                  <ActionMenuRadix.AccordionTrigger>Accordion</ActionMenuRadix.AccordionTrigger>
-                  <ActionMenuRadix.AccordionContent>
-                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                    <ActionMenuRadix.Item>123</ActionMenuRadix.Item>
-                  </ActionMenuRadix.AccordionContent>
-                </ActionMenuRadix.Accordion>
-              </ActionMenuRadix.Content>
-            </ActionMenuRadix.Portal>
-          </ActionMenuRadix.Root>
+            </ActionMenu.Trigger>
+            <ActionMenu.Portal>
+              <ActionMenu.Content>
+                <ActionMenu.Item>asf</ActionMenu.Item>
+                <ActionMenu.Item>2</ActionMenu.Item>
+                <ActionMenu.Item>3</ActionMenu.Item>
+                <ActionMenu.Item>4</ActionMenu.Item>
+                <ActionMenu.Accordion>
+                  <ActionMenu.AccordionTrigger>Accordion</ActionMenu.AccordionTrigger>
+                  <ActionMenu.AccordionContent>
+                    <ActionMenu.Item>123</ActionMenu.Item>
+                    <ActionMenu.Item>123</ActionMenu.Item>
+                    <ActionMenu.Item>123</ActionMenu.Item>
+                  </ActionMenu.AccordionContent>
+                </ActionMenu.Accordion>
+              </ActionMenu.Content>
+            </ActionMenu.Portal>
+          </ActionMenu.Root>
         </div>
 
         <div className="flex flex-col gap-7.5">

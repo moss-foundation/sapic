@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ActionButton, ActionMenuRadix } from "@/components";
+import { ActionButton, ActionMenu } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import PanelToggleButtons from "./PanelToggleButtons";
@@ -35,54 +35,54 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
 
   // In compact mode, use ActionMenu
   return (
-    <ActionMenuRadix.Root>
-      <ActionMenuRadix.Trigger>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger>
         <ActionButton
           icon="MoreHorizontal"
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
           title="More actions"
         />
-      </ActionMenuRadix.Trigger>
-      <ActionMenuRadix.Content>
-        <ActionMenuRadix.Item onClick={() => {}} icon="Bell">
+      </ActionMenu.Trigger>
+      <ActionMenu.Content>
+        <ActionMenu.Item onClick={() => {}} icon="Bell">
           Notifications
-        </ActionMenuRadix.Item>
+        </ActionMenu.Item>
         {sideBarPosition === "left" ? (
           <>
-            <ActionMenuRadix.Item
+            <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}
               icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
             >
               {sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar"}
-            </ActionMenuRadix.Item>
-            <ActionMenuRadix.Item
+            </ActionMenu.Item>
+            <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
-            </ActionMenuRadix.Item>
+            </ActionMenu.Item>
           </>
         ) : (
           <>
-            <ActionMenuRadix.Item
+            <ActionMenu.Item
               onClick={() => bottomPane.setVisible(!bottomPane.visible)}
               icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
             >
               {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
-            </ActionMenuRadix.Item>
-            <ActionMenuRadix.Item
+            </ActionMenu.Item>
+            <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}
               icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
             >
               {sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar"}
-            </ActionMenuRadix.Item>
+            </ActionMenu.Item>
           </>
         )}
-        <ActionMenuRadix.Item onClick={() => openPanel("Settings")} icon="Settings">
+        <ActionMenu.Item onClick={() => openPanel("Settings")} icon="Settings">
           Settings
-        </ActionMenuRadix.Item>
-      </ActionMenuRadix.Content>
-    </ActionMenuRadix.Root>
+        </ActionMenu.Item>
+      </ActionMenu.Content>
+    </ActionMenu.Root>
   );
 };
 
