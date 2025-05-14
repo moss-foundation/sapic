@@ -80,7 +80,7 @@ const ComponentGallery = () => {
               {/* Context Actions Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Show Context Actions
                   </button>
                 </ActionMenu.Trigger>
@@ -94,7 +94,7 @@ const ComponentGallery = () => {
               {/* Generate Menu Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Generate Menu
                   </button>
                 </ActionMenu.Trigger>
@@ -106,7 +106,7 @@ const ComponentGallery = () => {
               {/* Run Configurations Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Configurations
                   </button>
                 </ActionMenu.Trigger>
@@ -118,7 +118,7 @@ const ComponentGallery = () => {
               {/* Run Options Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Options
                   </button>
                 </ActionMenu.Trigger>
@@ -130,7 +130,7 @@ const ComponentGallery = () => {
               {/* Run Selector Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Selector
                   </button>
                 </ActionMenu.Trigger>

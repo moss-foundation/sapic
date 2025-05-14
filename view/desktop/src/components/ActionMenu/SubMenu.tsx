@@ -21,7 +21,7 @@ const SubContent = forwardRef<HTMLDivElement, Menu.SubContentProps>(({ children,
   return (
     <Menu.SubContent
       ref={ref}
-      className={cn("background-(--moss-primary-background) min-w-60 border border-(--moss-border-color)", className)}
+      className={cn("background-(--moss-primary-background) w-60 border border-(--moss-border-color)", className)}
       {...props}
     >
       {children}
