@@ -3,14 +3,10 @@ use async_trait::async_trait;
 use moss_db::{
     DatabaseClient, ReDbClient,
     bincode_table::BincodeTable,
-    common::{AnyEntity, DatabaseError, Transaction},
+    common::{DatabaseError, Transaction},
     primitives::{AnyKey, AnyValue},
 };
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     common::item_store::{ItemStore, store_impl::ItemStoreImpl},

@@ -3,10 +3,12 @@ use std::{path::Path, sync::Arc};
 use anyhow::Context as _;
 use moss_common::api::{OperationResult, OperationResultExt};
 use moss_fs::RemoveOptions;
+use moss_storage::common::item_store::RemoveItem;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
+    storage::segments::COLLECTION_SEGKEY,
     workspace::Workspace,
 };
 
@@ -43,10 +45,10 @@ impl<R: TauriRuntime> Workspace<R> {
             collections_lock.remove(&input.id);
         }
 
-        let collection_store = self.workspace_storage.collection_store();
-        let mut txn = self.workspace_storage.begin_write().await?;
-        collection_store.delete_collection(&mut txn, abs_path.to_owned().to_path_buf())?;
-        txn.commit()?;
+        {
+            let key = COLLECTION_SEGKEY.join(&collection_entry.name);
+            RemoveItem::remove(self.workspace_storage.item_store().as_ref(), key)?;
+        }
 
         Ok(DeleteCollectionOutput {
             id: collection_entry.id,

@@ -206,19 +206,24 @@ impl<R: TauriRuntime> Workspace<R> {
                 });
                 for (segkey, any_value) in collection_items.into_iter() {
                     let value: CollectionEntity = any_value.deserialize()?;
-                    let path: PathBuf = match String::from_utf8(segkey.as_bytes().to_owned()) {
-                        Ok(path_str) => Path::new(&path_str).to_path_buf(),
+                    let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
+                        Ok(name) => name,
                         Err(_) => {
                             // TODO: logging
                             println!("failed to get the collection {:?} name", segkey);
                             continue;
                         }
                     };
-                    let abs_path: Arc<Path> = if path.is_absolute() {
-                        path.into()
-                    } else {
-                        self.abs_path.join(path).into()
-                    };
+
+                    let abs_path: Arc<Path> =
+                        if let Some(external_abs_path) = value.external_abs_path {
+                            external_abs_path.into()
+                        } else {
+                            self.abs_path
+                                .join(COLLECTIONS_DIR)
+                                .join(encoded_name)
+                                .into()
+                        };
 
                     let (display_name, encoded_name) = match abs_path.file_name() {
                         Some(name) => {

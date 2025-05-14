@@ -58,25 +58,6 @@ impl<R: TauriRuntime> Workspace<R> {
             self.next_collection_entry_id.clone(),
         )?;
 
-        {
-            // NOTE:
-            // This is still an open question. Here’s what I’m thinking:
-            // It makes sense to add an `is_external` field to the `Input` structure,
-            // it would signal that the collection being created is located outside the
-            // workspace folder, and in that case, we’d store the absolute path. If the
-            // collection is inside the workspace, we store a relative path instead.
-            // The reason we store relative paths for internal collections is to avoid
-            // needing to update all DB entries if the workspace gets renamed — otherwise,
-            // we’d have outdated absolute paths everywhere.
-            //
-            // For now, we’re storing the relative path, since internal collections
-            // are the priority.
-
-            let key = COLLECTION_SEGKEY.join(&encoded_name);
-            let value = AnyValue::serialize(&CollectionEntity { order: None })?;
-            PutItem::put(self.workspace_storage.item_store().as_ref(), key, value)?;
-        }
-
         let id = Identifier::new(&self.next_collection_id);
         {
             let mut collections_lock = collections.write().await;
@@ -91,6 +72,21 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
                 .into(),
             );
+        }
+
+        {
+            // NOTE:
+            // This is still an open question. Here’s what I’m thinking:
+            // It makes sense to add an `is_external` field to the `Input` structure,
+            // it would signal that the collection being created is located outside the
+            // workspace folder.
+
+            let key = COLLECTION_SEGKEY.join(&encoded_name);
+            let value = AnyValue::serialize(&CollectionEntity {
+                order: None,
+                external_abs_path: None,
+            })?;
+            PutItem::put(self.workspace_storage.item_store().as_ref(), key, value)?;
         }
 
         Ok(CreateCollectionOutput { id, abs_path })

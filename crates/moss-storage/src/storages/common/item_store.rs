@@ -1,10 +1,6 @@
 pub mod store_impl;
 
-use moss_db::{
-    AnyEntity, DatabaseResult, Transaction,
-    bincode_table::BincodeTable,
-    primitives::{AnyKey, AnyValue},
-};
+use moss_db::{DatabaseResult, Transaction, bincode_table::BincodeTable, primitives::AnyValue};
 
 use crate::primitives::segkey::SegKeyBuf;
 

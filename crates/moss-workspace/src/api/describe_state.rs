@@ -1,41 +1,76 @@
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::common::DatabaseError;
+use moss_db::primitives::AnyValue;
+use moss_storage::common::item_store::TransactionalGetItem;
 use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
+use serde::de::DeserializeOwned;
 use tauri::Runtime as TauriRuntime;
 
 use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
+use crate::storage::segments::PART_SEGKEY;
 use crate::{models::operations::DescribeStateOutput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {
-        let state_store = self.workspace_storage.state_store();
+        let item_store = self.workspace_storage.item_store();
 
-        fn to_option<T, U>(
-            result: Result<T, DatabaseError>,
-            convert_fn: impl FnOnce(T) -> U,
-        ) -> Result<Option<U>, OperationError> {
+        fn to_option<E, S>(
+            result: Result<AnyValue, DatabaseError>,
+            _: std::marker::PhantomData<E>,
+            convert_fn: impl FnOnce(E) -> S,
+        ) -> Result<Option<S>, OperationError>
+        where
+            E: DeserializeOwned,
+        {
             match result {
-                Ok(entity) => Ok(Some(convert_fn(entity))),
+                Ok(value) => {
+                    let entity: E = value.deserialize()?;
+                    Ok(Some(convert_fn(entity)))
+                }
                 Err(DatabaseError::NotFound { .. }) => Ok(None),
                 Err(err) => Err(err.into()),
             }
         }
 
+        let mut txn = self.workspace_storage.begin_read().await?;
+
+        // Get editor state
+
+        let editor_result = TransactionalGetItem::get_item(
+            item_store.as_ref(),
+            &mut txn,
+            PART_SEGKEY.join("editor"),
+        );
         let editor = to_option(
-            state_store.get_editor_part_state(),
-            |entity: EditorPartStateEntity| EditorPartState::from(entity),
+            editor_result,
+            std::marker::PhantomData::<EditorPartStateEntity>,
+            EditorPartState::from,
         )?;
 
+        // Get sidebar state
+        let sidebar_result = TransactionalGetItem::get_item(
+            item_store.as_ref(),
+            &mut txn,
+            PART_SEGKEY.join("sidebar"),
+        );
         let sidebar = to_option(
-            state_store.get_sidebar_part_state(),
-            |entity: SidebarPartStateEntity| SidebarPartState::from(entity),
+            sidebar_result,
+            std::marker::PhantomData::<SidebarPartStateEntity>,
+            SidebarPartState::from,
         )?;
 
+        // Get panel state
+        let panel_result = TransactionalGetItem::get_item(
+            item_store.as_ref(),
+            &mut txn,
+            PART_SEGKEY.join("panel"),
+        );
         let panel = to_option(
-            state_store.get_panel_part_state(),
-            |entity: PanelPartStateEntity| PanelPartState::from(entity),
+            panel_result,
+            std::marker::PhantomData::<PanelPartStateEntity>,
+            PanelPartState::from,
         )?;
 
         Ok(DescribeStateOutput {
