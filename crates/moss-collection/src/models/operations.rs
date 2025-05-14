@@ -33,96 +33,96 @@ pub enum CreateRequestProtocolSpecificPayload {
 }
 
 // TODO: remove this
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequestInput {
-    #[validate(length(min = 1))]
-    pub name: String,
-    #[ts(optional)]
-    pub relative_path: Option<PathBuf>,
-    #[ts(optional)]
-    pub url: Option<String>,
-    #[ts(optional)]
-    pub payload: Option<CreateRequestProtocolSpecificPayload>,
-}
+// #[derive(Clone, Debug, Serialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// pub struct CreateRequestInput {
+//     #[validate(length(min = 1))]
+//     pub name: String,
+//     #[ts(optional)]
+//     pub relative_path: Option<PathBuf>,
+//     #[ts(optional)]
+//     pub url: Option<String>,
+//     #[ts(optional)]
+//     pub payload: Option<CreateRequestProtocolSpecificPayload>,
+// }
 
 // TODO: remove this
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequestOutput {
-    pub key: ResourceKey,
-}
+// #[derive(Clone, Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// pub struct CreateRequestOutput {
+//     pub key: ResourceKey,
+// }
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestInput {
-    pub key: ResourceKey,
-    #[validate(length(min = 1))]
-    pub new_name: String,
-}
+// #[derive(Clone, Debug, Serialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct RenameRequestInput {
+//     pub key: ResourceKey,
+//     #[validate(length(min = 1))]
+//     pub new_name: String,
+// }
 
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestInput {
-    pub key: ResourceKey,
-}
+// #[derive(Clone, Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteRequestInput {
+//     pub key: ResourceKey,
+// }
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListRequestsOutput(pub Vec<RequestNodeInfo>);
 
-#[derive(Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestGroupInput {
-    #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf, // TODO: spec payload
-}
+// #[derive(Debug, Serialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateRequestGroupInput {
+//     #[validate(custom(function = "validate_path"))]
+//     pub path: PathBuf, // TODO: spec payload
+// }
 
 // TODO: More sophisticated path validation
 // Right now, we will encode each part of the path in the input
 // This will prevent special characters from causing confusion
 
-fn validate_path(path: &Path) -> Result<(), ValidationError> {
-    // Check the path ends with a non-empty folder name
-    if path.file_name().unwrap_or_default().is_empty() {
-        Err(ValidationError::new(""))
-    } else {
-        Ok(())
-    }
-}
+// fn validate_path(path: &Path) -> Result<(), ValidationError> {
+//     // Check the path ends with a non-empty folder name
+//     if path.file_name().unwrap_or_default().is_empty() {
+//         Err(ValidationError::new(""))
+//     } else {
+//         Ok(())
+//     }
+// }
 
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestGroupOutput {
-    pub key: ResourceKey,
-}
+// #[derive(Debug, Serialize, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateRequestGroupOutput {
+//     pub key: ResourceKey,
+// }
+//
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteRequestGroupInput {
+//     pub key: ResourceKey,
+// }
+//
+// #[derive(Debug, Serialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct RenameRequestGroupInput {
+//     pub key: ResourceKey,
+//     #[validate(length(min = 1))]
+//     pub new_name: String,
+// }
 
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestGroupInput {
-    pub key: ResourceKey,
-}
-
-#[derive(Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestGroupInput {
-    pub key: ResourceKey,
-    #[validate(length(min = 1))]
-    pub new_name: String,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestGroupOutput {
-    pub key: ResourceKey,
-    pub affected_items: Vec<ResourceKey>,
-}
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct RenameRequestGroupOutput {
+//     pub key: ResourceKey,
+//     pub affected_items: Vec<ResourceKey>,
+// }
 
 // Create Request Entry
 
@@ -151,7 +151,7 @@ pub struct CreateRequestEntryOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestDirEntryInput {
-    #[validate(custom(function = "validate_request_destination"))]
+    #[validate(custom(function = "validate_request_dir_destination"))]
     pub destination: PathBuf,
 }
 
@@ -159,6 +159,37 @@ pub struct CreateRequestDirEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestDirEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Delete Request Entry
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Delete Request Directory Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
@@ -184,19 +215,26 @@ pub struct UpdateRequestDirEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
-// Delete Request Directory Entry
+// Update Request Entry
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryInput {
+pub struct UpdateRequestEntryInput {
     pub id: EntryId,
+
+    /// A new name for the request, if provided,
+    /// the request will be renamed to this name.
+    #[ts(optional)]
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+    // TODO: url and payload?
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryOutput {
+pub struct UpdateRequestEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
@@ -254,4 +292,74 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
     }
 
     Ok(())
+}
+
+/// Validates the destination path for creating a request dir entry.
+/// Requirements:
+/// - All the requirement for request destination
+/// - The dir entry's name should not end in `.request`
+fn validate_request_dir_destination(destination: &Path) -> Result<(), ValidationError> {
+    validate_request_destination(destination)?;
+
+    if let Some(extension) = destination.extension() {
+        if &extension.to_string_lossy().to_string() == ".request" {
+            return Err(ValidationError::new(
+                "Request dir name should not end in '.request'",
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn validate_request_destination_correct() {
+        let path = Path::new("requests").join("1");
+        assert!(validate_request_destination(&path).is_ok());
+    }
+
+    // TODO: Test validate absolute path in a cross platform manner
+    #[test]
+    fn validate_request_destination_empty() {
+        let path = PathBuf::new();
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_no_components_after_requests() {
+        let path = PathBuf::from("requests");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_first_component_not_requests() {
+        let path = PathBuf::from("non-requests").join("1");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_invalid_path_characters() {
+        let path = PathBuf::from("requests\\1\\..");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ));
+
+        let path = PathBuf::from("requests\\1//");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ));
+    }
 }
