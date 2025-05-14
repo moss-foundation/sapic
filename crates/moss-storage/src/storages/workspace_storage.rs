@@ -1,17 +1,20 @@
 pub mod entities;
-pub mod namespaced_store;
 pub mod variable_store;
 
 mod storage_impl;
 pub use storage_impl::*;
 
+use moss_db::primitives::AnyValue;
 use std::sync::Arc;
 
+use crate::primitives::segkey::SegKeyBuf;
 use crate::storage::Transactional;
 
+use super::common::item_store::ItemStore;
+
 pub trait WorkspaceStorage: Transactional + Send + Sync {
-    fn namespaced_store(&self) -> Arc<dyn NamespacedStore>;
     fn variable_store(&self) -> Arc<dyn VariableStore>;
+    fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>>;
 }
 
 // pub mod collection_store;

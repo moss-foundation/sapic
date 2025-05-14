@@ -7,7 +7,14 @@ use moss_collection::{
 use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
-use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
+use moss_storage::{
+    common::item_store::ListByPrefix,
+    primitives::segkey::SegmentExt,
+    workspace_storage::{
+        WorkspaceStorage, WorkspaceStorageImpl,
+        entities::collection_store_entities::CollectionEntity,
+    },
+};
 use std::{
     collections::HashMap,
     ops::Deref,
@@ -16,6 +23,8 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, mpsc};
+
+use crate::storage::segments::COLLECTION_SEGKEY;
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -181,14 +190,37 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: Support external collections with absolute path
-                for (path, collection_data) in self
-                    .workspace_storage
-                    .collection_store()
-                    .list_collection()?
-                {
-                    debug_assert!(path.is_relative());
 
-                    let (display_name, encoded_name) = match path.file_name() {
+                let collection_items = ListByPrefix::list_by_prefix(
+                    self.workspace_storage.item_store().as_ref(),
+                    COLLECTIONS_DIR,
+                )?
+                .into_iter()
+                .filter_map(|(k, v)| {
+                    let path = k.after(&COLLECTION_SEGKEY);
+                    if let Some(path) = path {
+                        Some((path, v))
+                    } else {
+                        None
+                    }
+                });
+                for (segkey, any_value) in collection_items.into_iter() {
+                    let value: CollectionEntity = any_value.deserialize()?;
+                    let path: PathBuf = match String::from_utf8(segkey.as_bytes().to_owned()) {
+                        Ok(path_str) => Path::new(&path_str).to_path_buf(),
+                        Err(_) => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} name", segkey);
+                            continue;
+                        }
+                    };
+                    let abs_path: Arc<Path> = if path.is_absolute() {
+                        path.into()
+                    } else {
+                        self.abs_path.join(path).into()
+                    };
+
+                    let (display_name, encoded_name) = match abs_path.file_name() {
                         Some(name) => {
                             let name = name.to_string_lossy().to_string();
 
@@ -196,7 +228,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                         None => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", path);
+                            println!("failed to get the collection {:?} name", segkey);
                             continue;
                         }
                     };
@@ -207,7 +239,6 @@ impl<R: TauriRuntime> Workspace<R> {
                     // a parallel thread.
 
                     let id = Identifier::new(&self.next_collection_id);
-                    let abs_path: Arc<Path> = self.abs_path.join(path).into();
                     let collection = Collection::new(
                         abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
                         self.fs.clone(),
@@ -220,7 +251,7 @@ impl<R: TauriRuntime> Workspace<R> {
                             id,
                             name: encoded_name,
                             display_name,
-                            order: collection_data.order,
+                            order: value.order,
                             inner: collection,
                         }
                         .into(),

@@ -11,5 +11,6 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 async-trait.workspace = true
 arc-swap.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["rt"] }
 smallvec.workspace = true
+redb.workspace = true

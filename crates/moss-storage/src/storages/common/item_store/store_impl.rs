@@ -1,4 +1,9 @@
-use moss_db::{AnyEntity, DatabaseClient, DatabaseResult, ReDbClient, Transaction};
+use moss_db::{
+    DatabaseClient, DatabaseResult, ReDbClient, Transaction,
+    primitives::{AnyKey, AnyValue},
+};
+
+use crate::primitives::segkey::SegKeyBuf;
 
 use super::{
     GetItem, ItemStore, ItemStoreTable, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
@@ -16,11 +21,11 @@ impl ItemStoreImpl {
     }
 }
 
-impl ItemStore<Vec<u8>, AnyEntity> for ItemStoreImpl {}
+impl ItemStore<SegKeyBuf, AnyValue> for ItemStoreImpl {}
 
 impl TransactionalPutItem for ItemStoreImpl {
-    type Key = Vec<u8>;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn put(
         &self,
@@ -34,7 +39,7 @@ impl TransactionalPutItem for ItemStoreImpl {
 }
 
 impl TransactionalRemoveItem for ItemStoreImpl {
-    type Key = Vec<u8>;
+    type Key = SegKeyBuf;
 
     fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<()> {
         self.table.remove(txn, key)?;
@@ -43,8 +48,8 @@ impl TransactionalRemoveItem for ItemStoreImpl {
 }
 
 impl PutItem for ItemStoreImpl {
-    type Key = String;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
         let mut txn = self.client.begin_write()?;
@@ -55,7 +60,7 @@ impl PutItem for ItemStoreImpl {
 }
 
 impl RemoveItem for ItemStoreImpl {
-    type Key = String;
+    type Key = SegKeyBuf;
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<()> {
         let mut txn = self.client.begin_write()?;
@@ -66,8 +71,8 @@ impl RemoveItem for ItemStoreImpl {
 }
 
 impl TransactionalGetItem for ItemStoreImpl {
-    type Key = String;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn get_item(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.read(txn, key)
@@ -75,8 +80,8 @@ impl TransactionalGetItem for ItemStoreImpl {
 }
 
 impl GetItem for ItemStoreImpl {
-    type Key = String;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn get_item(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut txn = self.client.begin_read()?;
@@ -88,8 +93,8 @@ impl GetItem for ItemStoreImpl {
 }
 
 impl TransactionalListByPrefix for ItemStoreImpl {
-    type Key = String;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn list_by_prefix(
         &self,
@@ -101,8 +106,8 @@ impl TransactionalListByPrefix for ItemStoreImpl {
 }
 
 impl ListByPrefix for ItemStoreImpl {
-    type Key = String;
-    type Entity = AnyEntity;
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
     fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         let mut txn = self.client.begin_read()?;

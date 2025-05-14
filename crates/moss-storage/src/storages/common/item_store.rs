@@ -1,6 +1,12 @@
 pub mod store_impl;
 
-use moss_db::{AnyEntity, DatabaseResult, Transaction, bincode_table::BincodeTable};
+use moss_db::{
+    AnyEntity, DatabaseResult, Transaction,
+    bincode_table::BincodeTable,
+    primitives::{AnyKey, AnyValue},
+};
+
+use crate::primitives::segkey::SegKeyBuf;
 
 pub trait TransactionalGetItem: Send + Sync {
     type Key;
@@ -65,7 +71,7 @@ pub trait RemoveItem: Send + Sync {
     fn remove(&self, key: Self::Key) -> DatabaseResult<()>;
 }
 
-pub(crate) type ItemStoreTable<'a> = BincodeTable<'a, Vec<u8>, AnyEntity>;
+pub(crate) type ItemStoreTable<'a> = BincodeTable<'a, SegKeyBuf, AnyValue>;
 
 pub trait ItemStore<K, E>:
     TransactionalGetItem<Key = K, Entity = E>

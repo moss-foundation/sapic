@@ -4,6 +4,7 @@ use moss_db::{
     DatabaseClient, ReDbClient,
     bincode_table::BincodeTable,
     common::{AnyEntity, DatabaseError, Transaction},
+    primitives::{AnyKey, AnyValue},
 };
 use std::{
     collections::HashMap,
@@ -11,7 +12,11 @@ use std::{
     sync::Arc,
 };
 
-use crate::storage::Transactional;
+use crate::{
+    common::item_store::{ItemStore, store_impl::ItemStoreImpl},
+    primitives::segkey::SegKeyBuf,
+    storage::Transactional,
+};
 
 use super::{
     WorkspaceStorage,
@@ -31,10 +36,13 @@ pub trait VariableStore: Send + Sync {
 
 pub trait NamespacedStore: Send + Sync {}
 
+#[rustfmt::skip]
+pub(in crate::workspace_storage) const ITEM_STORE: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("item");
+
 pub struct WorkspaceStorageImpl {
     db_client: ReDbClient,
     variable_store: Arc<dyn VariableStore>,
-    // namespaced_store: Arc<dyn NamespacedStore>,
+    item_store: Arc<dyn ItemStore<SegKeyBuf, AnyValue>>,
 }
 
 impl WorkspaceStorageImpl {
@@ -43,10 +51,12 @@ impl WorkspaceStorageImpl {
             .with_table(&variable_store::TABLE_VARIABLES)?;
 
         let variable_store = Arc::new(VariableStoreImpl::new(db_client.clone()));
+        let item_store = Arc::new(ItemStoreImpl::new(db_client.clone(), ITEM_STORE));
 
         Ok(Self {
             db_client,
             variable_store,
+            item_store,
         })
     }
 }
@@ -67,7 +77,7 @@ impl WorkspaceStorage for WorkspaceStorageImpl {
         self.variable_store.clone()
     }
 
-    fn namespaced_store(&self) -> Arc<dyn NamespacedStore> {
-        todo!()
+    fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
+        self.item_store.clone()
     }
 }

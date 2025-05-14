@@ -4,14 +4,22 @@ use moss_common::{
     api::{OperationError, OperationResult},
     models::primitives::Identifier,
 };
+use moss_db::primitives::AnyValue;
 use moss_fs::utils::encode_name;
-use moss_storage::workspace_storage::entities::collection_store_entities::CollectionEntity;
-use std::{path::Path, sync::Arc};
+use moss_storage::{
+    common::item_store::PutItem,
+    workspace_storage::entities::collection_store_entities::CollectionEntity,
+};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
+    storage::segments::COLLECTION_SEGKEY,
     workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
@@ -23,11 +31,8 @@ impl<R: TauriRuntime> Workspace<R> {
         input.validate()?;
 
         let encoded_name = encode_name(&input.name);
-        let abs_path: Arc<Path> = self
-            .abs_path()
-            .join(COLLECTIONS_DIR)
-            .join(&encoded_name)
-            .into();
+        let path = PathBuf::from(COLLECTIONS_DIR).join(&encoded_name);
+        let abs_path: Arc<Path> = self.abs_path().join(path).into();
 
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists {
@@ -54,15 +59,22 @@ impl<R: TauriRuntime> Workspace<R> {
         )?;
 
         {
-            let collection_store = self.workspace_storage.collection_store();
-            let mut txn = self.workspace_storage.begin_write().await?;
-            collection_store.upsert_collection(
-                &mut txn,
-                // NOTE: We’re using an absolute path here to keep the option open for implementing functionality that stores collections outside the workspace folder.
-                abs_path.to_path_buf(),
-                CollectionEntity { order: None },
-            )?;
-            txn.commit()?;
+            // NOTE:
+            // This is still an open question. Here’s what I’m thinking:
+            // It makes sense to add an `is_external` field to the `Input` structure,
+            // it would signal that the collection being created is located outside the
+            // workspace folder, and in that case, we’d store the absolute path. If the
+            // collection is inside the workspace, we store a relative path instead.
+            // The reason we store relative paths for internal collections is to avoid
+            // needing to update all DB entries if the workspace gets renamed — otherwise,
+            // we’d have outdated absolute paths everywhere.
+            //
+            // For now, we’re storing the relative path, since internal collections
+            // are the priority.
+
+            let key = COLLECTION_SEGKEY.join(&encoded_name);
+            let value = AnyValue::serialize(&CollectionEntity { order: None })?;
+            PutItem::put(self.workspace_storage.item_store().as_ref(), key, value)?;
         }
 
         let id = Identifier::new(&self.next_collection_id);

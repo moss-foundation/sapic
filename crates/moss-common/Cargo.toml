@@ -13,3 +13,4 @@ ts-rs.workspace = true
 thiserror.workspace = true
 validator.workspace = true
 tauri.workspace = true
+serde_json.workspace = true
