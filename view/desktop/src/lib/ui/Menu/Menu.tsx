@@ -255,7 +255,7 @@ const Item = forwardRef<ItemElement, ItemProps>(
         {icon && <Icon icon={icon} className={cn("shrink-0", iconClassName)} />}
         {alignWithIcons && <div className="size-4 shrink-0 opacity-0" />}
 
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-1.5">
           <span className="min-w-0 truncate">{props.children}</span>
           {shortcut && <span className={cn("shrink-0", shortcutClassName)}>{shortcut}</span>}
         </div>
