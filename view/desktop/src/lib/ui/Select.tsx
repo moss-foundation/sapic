@@ -65,7 +65,7 @@ const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, Sel
 const SelectContent = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, align = "start", position = "popper", children, ...props }, forwardedRef) => {
+>(({ className, align = "start", position = "popper", sideOffset = 6, children, ...props }, forwardedRef) => {
   const { variant: contextVariant } = useContext(SelectContext);
 
   return (
@@ -74,6 +74,7 @@ const SelectContent = forwardRef<
         {...props}
         align={align}
         position={position}
+        sideOffset={sideOffset}
         ref={forwardedRef}
         className={cn(`z-50 rounded-lg border px-3 py-1.5 shadow-lg`, className)}
       >

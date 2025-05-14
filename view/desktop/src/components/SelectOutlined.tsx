@@ -53,7 +53,7 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
   }
 );
 
-const selectContentStyles = cva(`border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
+const selectContentStyles = cva(`min-w-56 border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
 
 const Content = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,

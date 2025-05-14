@@ -206,16 +206,19 @@ const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProp
 type ContentElement = ElementRef<typeof MenuPrimitive.Content>;
 type ContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.Content>>;
 
-const Content = forwardRef<ContentElement, ContentProps>(({ className, align = "start", ...props }, forwardedRef) => {
-  return (
-    <MenuPrimitive.Content
-      {...props}
-      align={align}
-      className={cn("z-50 rounded-lg px-1 py-1.5 shadow-lg", className)}
-      ref={forwardedRef}
-    />
-  );
-});
+const Content = forwardRef<ContentElement, ContentProps>(
+  ({ className, align = "start", sideOffset = 4, ...props }, forwardedRef) => {
+    return (
+      <MenuPrimitive.Content
+        {...props}
+        align={align}
+        sideOffset={sideOffset}
+        className={cn("z-50 rounded-lg px-1 py-1.5 shadow-lg", className)}
+        ref={forwardedRef}
+      />
+    );
+  }
+);
 
 const Portal = MenuPrimitive.Portal;
 
