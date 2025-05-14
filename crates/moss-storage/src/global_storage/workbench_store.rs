@@ -1,20 +1,23 @@
 use std::collections::HashMap;
 
 use moss_db::{
-    bincode_table::BincodeTable, common::DatabaseError, DatabaseClient, ReDbClient, Transaction,
+    DatabaseClient, ReDbClient, Transaction, bincode_table::BincodeTable, common::DatabaseError,
 };
 
-use super::{entities::WorkspaceInfoEntity, WorkspacesStore};
+use super::{
+    WorkbenchStore,
+    entities::{EnvironmentInfoEntity, WorkspaceInfoEntity},
+};
 
 #[rustfmt::skip]
 pub(in crate::global_storage) const TABLE_WORKSPACES: BincodeTable<String, WorkspaceInfoEntity> = BincodeTable::new("workspaces");
 
-pub struct WorkspacesStoreImpl {
+pub struct WorkbenchStoreImpl {
     client: ReDbClient,
     table: BincodeTable<'static, String, WorkspaceInfoEntity>,
 }
 
-impl WorkspacesStoreImpl {
+impl WorkbenchStoreImpl {
     pub fn new(client: ReDbClient) -> Self {
         Self {
             client,
@@ -23,7 +26,7 @@ impl WorkspacesStoreImpl {
     }
 }
 
-impl WorkspacesStore for WorkspacesStoreImpl {
+impl WorkbenchStore for WorkbenchStoreImpl {
     fn list_workspaces(&self) -> Result<HashMap<String, WorkspaceInfoEntity>, DatabaseError> {
         let read_txn = self.client.begin_read()?;
         let workspaces = self.table.scan(&read_txn)?;
@@ -34,6 +37,7 @@ impl WorkspacesStore for WorkspacesStoreImpl {
             .collect())
     }
 
+    // TODO: implement this
     fn upsert_workspace(
         &self,
         txn: &mut Transaction,
@@ -45,6 +49,7 @@ impl WorkspacesStore for WorkspacesStoreImpl {
         Ok(())
     }
 
+    // TODO: implement this
     fn rekey_workspace(
         &self,
         txn: &mut Transaction,
@@ -57,6 +62,7 @@ impl WorkspacesStore for WorkspacesStoreImpl {
         Ok(())
     }
 
+    // TODO: implement this
     fn delete_workspace(
         &self,
         txn: &mut Transaction,

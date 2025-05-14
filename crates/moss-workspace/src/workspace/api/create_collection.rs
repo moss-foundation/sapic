@@ -1,15 +1,18 @@
 use anyhow::Context as _;
-use moss_collection::collection::{Collection, CollectionCache};
-use moss_common::api::{OperationError, OperationResult};
+use moss_collection::collection::Collection;
+use moss_common::{
+    api::{OperationError, OperationResult},
+    models::primitives::Identifier,
+};
 use moss_fs::utils::encode_name;
 use moss_storage::workspace_storage::entities::collection_store_entities::CollectionEntity;
-use std::path::PathBuf;
+use std::{path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    workspace::{COLLECTIONS_DIR, Workspace},
+    workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -19,14 +22,17 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
-        // workspace_path/encoded_collection_folder
-        let relative_path = PathBuf::from(COLLECTIONS_DIR).join(encode_name(&input.name));
-        let full_path = self.abs_path().join(&relative_path);
+        let encoded_name = encode_name(&input.name);
+        let abs_path: Arc<Path> = self
+            .abs_path()
+            .join(COLLECTIONS_DIR)
+            .join(&encoded_name)
+            .into();
 
-        if full_path.exists() {
+        if abs_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: input.name,
-                path: full_path,
+                path: abs_path.to_path_buf(),
             });
         }
 
@@ -35,41 +41,46 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to get collections")?;
 
-        let collection_store = self.workspace_storage.collection_store();
-        let mut txn = self.workspace_storage.begin_write().await?;
-
-        collection_store.upsert_collection(
-            &mut txn,
-            relative_path.to_owned(),
-            CollectionEntity { order: None },
-        )?;
-
         self.fs
-            .create_dir(&full_path)
+            .create_dir(&abs_path)
             .await
             .context("Failed to create the collection directory")?;
 
         let collection = Collection::new(
-            full_path.clone(),
+            abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
             self.fs.clone(),
             self.indexer_handle.clone(),
-            self.next_entry_id.clone(),
+            self.next_collection_entry_id.clone(),
         )?;
-        let metadata = CollectionCache {
-            name: input.name.clone(),
-            order: None,
-        };
 
-        let collection_key = {
+        {
+            let collection_store = self.workspace_storage.collection_store();
+            let mut txn = self.workspace_storage.begin_write().await?;
+            collection_store.upsert_collection(
+                &mut txn,
+                // NOTE: We’re using an absolute path here to keep the option open for implementing functionality that stores collections outside the workspace folder.
+                abs_path.to_path_buf(),
+                CollectionEntity { order: None },
+            )?;
+            txn.commit()?;
+        }
+
+        let id = Identifier::new(&self.next_collection_id);
+        {
             let mut collections_lock = collections.write().await;
-            collections_lock.insert((collection, metadata))
-        };
+            collections_lock.insert(
+                id,
+                CollectionEntry {
+                    id,
+                    name: encoded_name.to_owned(),
+                    display_name: input.name.to_owned(),
+                    order: None,
+                    inner: collection,
+                }
+                .into(),
+            );
+        }
 
-        txn.commit()?;
-
-        Ok(CreateCollectionOutput {
-            key: collection_key,
-            path: full_path,
-        })
+        Ok(CreateCollectionOutput { id, abs_path })
     }
 }

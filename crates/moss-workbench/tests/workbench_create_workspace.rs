@@ -134,8 +134,8 @@ async fn create_workspace_special_chars() {
         assert_eq!(active_workspace.id, create_workspace_output.id);
 
         // Check updating known_workspaces
-        let workspaces_list = workspace_manager.list_workspaces().await.unwrap();
-        let matching_workspace = workspaces_list
+        let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+        let matching_workspace = list_workspaces_output
             .iter()
             .find(|info| info.display_name == name)
             .expect("Workspace should exist in the list");

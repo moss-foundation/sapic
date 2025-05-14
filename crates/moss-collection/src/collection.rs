@@ -9,6 +9,7 @@ use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
 use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, mpsc};
@@ -213,8 +214,10 @@ impl Collection {
         &self.abs_path
     }
 
-    pub async fn reset(&mut self, new_path: PathBuf) -> Result<()> {
-        let old_path = std::mem::replace(&mut self.abs_path, new_path.clone());
+    pub async fn reset(&mut self, new_path: Arc<Path>) -> Result<()> {
+        debug_assert!(new_path.is_absolute());
+
+        let old_path = std::mem::replace(&mut self.abs_path, new_path.to_path_buf());
         let fs_clone = self.fs.clone();
         let new_path_clone = new_path.clone();
 
@@ -226,7 +229,7 @@ impl Collection {
             Ok(())
         });
 
-        self.collection_storage.reset(new_path, after_drop).await?;
+        self.collection_storage.reset(&new_path, after_drop).await?;
 
         Ok(())
     }
