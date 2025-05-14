@@ -13,6 +13,7 @@ import {
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import * as iconsNames from "../assets/icons";
 
@@ -85,11 +86,7 @@ const ComponentGallery = () => {
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
                   <ActionMenu.Content align="start">
-                    {editorContextItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                    {editorContextItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
@@ -103,11 +100,7 @@ const ComponentGallery = () => {
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
                   <ActionMenu.Content align="start">
-                    {generateItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                    {generateItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
@@ -121,11 +114,7 @@ const ComponentGallery = () => {
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
                   <ActionMenu.Content align="start">
-                    {runConfigItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                    {runConfigItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
@@ -139,11 +128,7 @@ const ComponentGallery = () => {
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
                   <ActionMenu.Content align="start">
-                    {runOptionsItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                    {runOptionsItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
@@ -157,11 +142,7 @@ const ComponentGallery = () => {
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
                   <ActionMenu.Content align="start">
-                    {runSelectorItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                    {runSelectorItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>

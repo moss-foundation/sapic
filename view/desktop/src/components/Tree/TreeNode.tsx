@@ -97,7 +97,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         </div>
       ) : (
         <ActionMenu.Root modal={false}>
-          <ActionMenu.Trigger>
+          <ActionMenu.Trigger openOnRightClick>
             <div>
               <button
                 ref={draggableNodeRef}
