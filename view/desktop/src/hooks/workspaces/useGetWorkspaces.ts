@@ -10,7 +10,7 @@ const getWorkspaceFn = async (): Promise<ListWorkspacesOutput> => {
   if (result.status === "error") {
     throw new Error(String(result.error));
   }
-  console.log(result.data);
+
   return result.data;
 };
 

@@ -107,7 +107,7 @@ const SelectItem = forwardRef<
 >(({ className, children, ...props }, forwardedRef) => {
   return (
     <SelectPrimitive.Item ref={forwardedRef} className={cn(selectItemStyles(), className)} {...props}>
-      <SelectPrimitive.ItemText className="truncate">{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   );
 });

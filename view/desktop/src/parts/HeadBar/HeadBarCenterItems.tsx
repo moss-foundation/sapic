@@ -11,11 +11,7 @@ export interface HeadBarCenterItemsProps {
   isMedium: boolean;
   isXLarge: boolean;
   breakpoint: string;
-  gitMenuOpen: boolean;
-  setGitMenuOpen: (open: boolean) => void;
   handleGitMenuAction: (action: string) => void;
-  collectionActionMenuOpen: boolean;
-  setCollectionActionMenuOpen: (open: boolean) => void;
   handleCollectionActionMenuAction: (action: string) => void;
   selectedBranch: string | null;
   collectionName: string;
@@ -27,11 +23,7 @@ export interface HeadBarCenterItemsProps {
 export const HeadBarCenterItems = ({
   isMedium,
   isXLarge,
-  gitMenuOpen,
-  setGitMenuOpen,
   handleGitMenuAction,
-  collectionActionMenuOpen,
-  setCollectionActionMenuOpen,
   handleCollectionActionMenuAction,
   selectedBranch,
   collectionName,
@@ -43,7 +35,7 @@ export const HeadBarCenterItems = ({
     <div
       className={cn(
         "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
-        isXLarge ? "" : os === "macos" ? "relative" : "absolute left-1/2 -translate-x-1/2 transform"
+        isXLarge ? "" : os === "macos" ? "relative" : ""
       )}
       data-tauri-drag-region
     >
@@ -67,7 +59,7 @@ export const HeadBarCenterItems = ({
         title="Reload"
       />
       <ActionMenu.Root>
-        <ActionMenu.Trigger>
+        <ActionMenu.Trigger asChild>
           <ActionButton
             icon="MoreHorizontal"
             iconClassName="text-(--moss-headBar-icon-primary-text)"
@@ -84,7 +76,7 @@ export const HeadBarCenterItems = ({
       </ActionMenu.Root>
       <Divider />
       <ActionMenu.Root>
-        <ActionMenu.Trigger>
+        <ActionMenu.Trigger asChild>
           <IconLabelButton
             leftIcon="VCS"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"

@@ -11,11 +11,7 @@ import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 export interface HeadBarLeftItemsProps {
   isLarge: boolean;
   breakpoint: string;
-  windowsMenuOpen: boolean;
-  setWindowsMenuOpen: (open: boolean) => void;
   handleWindowsMenuAction: (action: string) => void;
-  workspaceMenuOpen: boolean;
-  setWorkspaceMenuOpen: (open: boolean) => void;
   handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
   selectedWorkspace?: string | null;
@@ -58,7 +54,7 @@ export const HeadBarLeftItems = ({
       )}
 
       <ActionMenu.Root>
-        <ActionMenu.Trigger>
+        <ActionMenu.Trigger asChild>
           <IconLabelButton
             rightIcon="ChevronDown"
             title={selectedWorkspace || "My Workspace"}
@@ -76,13 +72,10 @@ export const HeadBarLeftItems = ({
       </ActionMenu.Root>
 
       {selectedWorkspace && (
-        <IconLabelButton
-          leftIcon="Key"
-          leftIconClassName="--moss-headBar-icon-primary-text size-4.5"
-          title="Vault"
-          className="h-[24px]"
-          compact={isLarge}
-        />
+        <button className="flex h-[24px] cursor-pointer items-center gap-1 rounded px-1 text-[var(--moss-icon-primary-text)] hover:bg-[var(--moss-icon-primary-background-hover)]">
+          <Icon icon="Key" className="size-4.5 text-(--moss-headBar-icon-primary-text)" />
+          <span className="text-md">Vault</span>
+        </button>
       )}
     </div>
   );
