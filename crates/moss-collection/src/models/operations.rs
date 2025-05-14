@@ -59,7 +59,7 @@ pub struct CreateRequestEntryOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateRequestDirEntryInput {
-    #[validate(custom(function = "validate_request_dir_destination"))]
+    #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
 }
 
@@ -157,6 +157,9 @@ pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
 /// - First segment must be 'requests'
 /// - Path must not contain invalid characters
 /// - Path must have at least one component after 'requests'
+/// - Last segment cannot end with forbidden extension, e.g. ".request"
+
+const FORBIDDEN_EXTENSIONS: [&str; 1] = ["request"];
 fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
     if destination.is_absolute() {
         return Err(ValidationError::new("Destination path cannot be absolute"));
@@ -198,23 +201,18 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
         return Err(ValidationError::new("Path contains invalid sequences"));
     }
 
-    Ok(())
-}
-
-/// Validates the destination path for creating a request dir entry.
-/// Requirements:
-/// - All the requirement for request destination
-/// - The dir entry's name should not end in `.request`
-fn validate_request_dir_destination(destination: &Path) -> Result<(), ValidationError> {
-    validate_request_destination(destination)?;
-
-    if let Some(extension) = destination.extension() {
-        if &extension.to_string_lossy().to_string() == ".request" {
-            return Err(ValidationError::new(
-                "Request dir name should not end in '.request'",
-            ));
-        }
+    let extension = destination
+        .extension()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+    // Check for forbidden extensions
+    if FORBIDDEN_EXTENSIONS.contains(&extension.as_ref()) {
+        return Err(ValidationError::new(
+            "Filename contains forbidden extension",
+        ));
     }
+
     Ok(())
 }
 
@@ -268,5 +266,14 @@ mod tests {
             validate_request_destination(&path),
             Err(ValidationError)
         ));
+    }
+
+    #[test]
+    fn validate_request_destination_forbidden_extension() {
+        let path = PathBuf::from("requests").join("1.request");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError)
+        ))
     }
 }
