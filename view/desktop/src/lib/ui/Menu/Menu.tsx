@@ -92,10 +92,10 @@ interface ActionMenuTriggerProps extends PrimitiveSpanProps {
 
 const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProps>(
   (props: ScopedProps<ActionMenuTriggerProps>, forwardedRef) => {
-    const { __scopeActionMenu, disabled = false, ...triggerProps } = props;
+    const { __scopeActionMenu, disabled = false, openOnRightClick = false, ...triggerProps } = props;
     const context = useActionMenuContext(TRIGGER_NAME, __scopeActionMenu);
 
-    if (props.openOnRightClick) {
+    if (openOnRightClick) {
       const menuScope = useMenuScope(__scopeActionMenu);
       const pointRef = React.useRef<Point>({ x: 0, y: 0 });
       const virtualRef = React.useRef({
@@ -160,9 +160,8 @@ const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProp
         </>
       );
     } else {
-      const menuScope = useMenuScope(__scopeActionMenu);
       return (
-        <MenuPrimitive.Anchor asChild {...menuScope}>
+        <MenuPrimitive.Anchor asChild>
           <Primitive.button
             type="button"
             id={context.triggerId}
@@ -208,9 +207,11 @@ type ContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.Co
 
 const Content = forwardRef<ContentElement, ContentProps>(
   ({ className, align = "start", sideOffset = 4, ...props }, forwardedRef) => {
+    const { __scopeActionMenu, ...contentProps } = props;
+
     return (
       <MenuPrimitive.Content
-        {...props}
+        {...contentProps}
         align={align}
         sideOffset={sideOffset}
         className={cn("z-50 rounded-lg px-1 py-1.5 shadow-lg", className)}
@@ -235,31 +236,33 @@ type ItemProps = {
   iconClassName?: string;
 } & React.ComponentPropsWithoutRef<typeof MenuPrimitive.Item>;
 
-const Item = forwardRef<ItemElement, ItemProps>(({ iconClassName, className, ...props }, forwardedRef) => {
-  return (
-    <MenuPrimitive.Item
-      {...props}
-      ref={forwardedRef}
-      className={cn(
-        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-        {
-          "cursor-not-allowed grayscale-100": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
-        },
-        className
-      )}
-    >
-      {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
-      {props.alignWithIcons && <div className="size-4 shrink-0 opacity-0" />}
+const Item = forwardRef<ItemElement, ItemProps>(
+  ({ iconClassName, alignWithIcons = false, icon, shortcut, className, ...props }, forwardedRef) => {
+    return (
+      <MenuPrimitive.Item
+        {...props}
+        ref={forwardedRef}
+        className={cn(
+          "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
+          {
+            "cursor-not-allowed grayscale-100": props.disabled,
+            "cursor-pointer hover:outline-hidden": !props.disabled,
+          },
+          className
+        )}
+      >
+        {icon && <Icon icon={icon} className={cn("shrink-0", iconClassName)} />}
+        {alignWithIcons && <div className="size-4 shrink-0 opacity-0" />}
 
-      <div className="flex w-full items-center gap-2.5">
-        <span>{props.children}</span>
+        <div className="flex w-full items-center gap-2.5">
+          <span>{props.children}</span>
 
-        {props.shortcut && <div className="ml-auto opacity-30">{props.shortcut}</div>}
-      </div>
-    </MenuPrimitive.Item>
-  );
-});
+          {shortcut && <div className="ml-auto opacity-30">{shortcut}</div>}
+        </div>
+      </MenuPrimitive.Item>
+    );
+  }
+);
 
 function whenTouchOrPen<E>(handler: React.PointerEventHandler<E>): React.PointerEventHandler<E> {
   return (event) => (event.pointerType !== "mouse" ? handler(event) : undefined);

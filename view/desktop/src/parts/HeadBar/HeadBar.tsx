@@ -118,7 +118,13 @@ export const HeadBar = () => {
           data-tauri-drag-region
         >
           {/* Main content container with proper layout */}
-          <div className="grid w-full grid-cols-[minmax(1px,673px)_1fr_1fr]" data-tauri-drag-region>
+          <div
+            className={cn("grid w-full", {
+              "grid-cols-[minmax(1px,673px)_1fr_1fr]": selectedWorkspace,
+              "grid-cols-[1fr_1fr]": !selectedWorkspace,
+            })}
+            data-tauri-drag-region
+          >
             {/*HeadBar Left-side items*/}
             <HeadBarLeftItems
               isLarge={isLarge}

@@ -1,5 +1,5 @@
-import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/lib/ui/Icon";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ListWorkspacesOutput } from "@repo/moss-workbench";
 
 /**

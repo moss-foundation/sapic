@@ -35,7 +35,7 @@ export const HeadBarRightItems = ({
   return (
     <div className="flex items-center place-self-end">
       <ActionMenu.Root>
-        <ActionMenu.Trigger>
+        <ActionMenu.Trigger asChild>
           <IconLabelButton
             leftIcon="UserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"

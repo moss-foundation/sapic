@@ -38,7 +38,7 @@ export const renderActionMenuItem = (item: MenuItemProps, callback?: (id: string
           className="flex items-center justify-between"
           shortcut={item.shortcut}
           icon={item.icon || undefined}
-          alignWithIcons={item.alignWithIcons}
+          alignWithIcons={item.alignWithIcons || false}
           onSelect={() => callback?.(item.id)}
         >
           <span>{item.label}</span>
@@ -51,7 +51,7 @@ export const renderActionMenuItem = (item: MenuItemProps, callback?: (id: string
           <ActionMenu.SubTrigger
             icon={item.icon || undefined}
             onClick={() => callback?.(item.id)}
-            alignWithIcons={item.alignWithIcons}
+            alignWithIcons={item.alignWithIcons || false}
           >
             {item.label}
           </ActionMenu.SubTrigger>

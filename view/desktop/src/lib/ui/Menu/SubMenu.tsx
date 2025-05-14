@@ -86,9 +86,11 @@ type SubContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive
 
 const SubContent = forwardRef<SubContentElement, SubContentProps>(
   (props: ScopedProps<SubContentProps>, forwardedRef) => {
+    const { __scopeActionMenu, ...subContentProps } = props;
+
     return (
       <MenuPrimitive.SubContent
-        {...props}
+        {...subContentProps}
         ref={forwardedRef}
         style={{ ...props.style }}
         className={cn("z-50 min-w-36 rounded-lg px-1 py-1.5 shadow-lg", props.className)}
