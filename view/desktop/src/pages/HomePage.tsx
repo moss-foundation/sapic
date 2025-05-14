@@ -152,7 +152,6 @@ const ComponentGallery = () => {
 
                   <SelectOutlined.Content>
                     {themeItems.map((item) => {
-                      console.log(item);
                       if (item.type === "separator") {
                         return <SelectOutlined.Separator key={item.id} />;
                       }
