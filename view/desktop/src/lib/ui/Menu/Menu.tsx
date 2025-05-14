@@ -244,7 +244,7 @@ const Item = forwardRef<ItemElement, ItemProps>(
         {...props}
         ref={forwardedRef}
         className={cn(
-          "flex items-center gap-1.5 rounded py-0.5 pr-1 pl-[7px]",
+          "flex items-center gap-1.5 rounded py-0.5 pr-2 pl-[7px]",
           {
             "cursor-not-allowed grayscale-100": props.disabled,
             "cursor-pointer hover:outline-hidden": !props.disabled,
