@@ -11,7 +11,10 @@ const Content = forwardRef<HTMLDivElement, Menu.ContentProps>(({ children, class
   return (
     <Menu.Content
       ref={ref}
-      className={cn("background-(--moss-primary-background) min-w-60 border border-(--moss-border-color)", className)}
+      className={cn(
+        "background-(--moss-primary-background) max-w-80 min-w-60 border border-(--moss-border-color)",
+        className
+      )}
       {...props}
     >
       {children}

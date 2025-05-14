@@ -98,7 +98,7 @@ const SelectItemIndicator = forwardRef<
 ));
 
 const selectItemStyles = cva(
-  `relative flex items-center gap-1.5 rounded py-1 pr-5 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
+  `relative flex items-center gap-1.5 truncate rounded py-1 pr-5 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
 );
 
 const SelectItem = forwardRef<
@@ -106,8 +106,8 @@ const SelectItem = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, forwardedRef) => {
   return (
-    <SelectPrimitive.Item {...props} ref={forwardedRef} className={cn(selectItemStyles(), className)}>
-      {children}
+    <SelectPrimitive.Item ref={forwardedRef} className={cn(selectItemStyles(), className)} {...props}>
+      <SelectPrimitive.ItemText className="truncate">{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   );
 });

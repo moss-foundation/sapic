@@ -69,7 +69,7 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
         {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
 
-        <span>{props.children}</span>
+        <span className="truncate">{props.children}</span>
 
         <Icon icon="ChevronRight" className="ml-auto" />
       </MenuPrimitive.SubTrigger>

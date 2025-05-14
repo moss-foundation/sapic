@@ -7,7 +7,7 @@ import { cn } from "@/utils";
 
 //prettier-ignore
 const selectTriggerStyles = cva(`
-    flex w-56 justify-between
+    flex w-56 justify-between 
 
     outline-(--moss-primary)
 
@@ -46,14 +46,16 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
         disabled={disabled}
         className={cn(selectTriggerStyles({ size }), className)}
       >
-        <SelectPrimitive.Value placeholder={placeholder} />
+        <span className="truncate">
+          <SelectPrimitive.Value placeholder={placeholder} />
+        </span>
         <Icon icon="ChevronDown" />
       </SelectPrimitive.Trigger>
     );
   }
 );
 
-const selectContentStyles = cva(`min-w-56 border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
+const selectContentStyles = cva(`w-56 border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
 
 const Content = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,
@@ -74,7 +76,7 @@ const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsW
   ({ className, children, ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Item {...props} ref={forwardedRef} className={cn(selectItemStyles(), className)}>
-        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+        {children}
       </SelectPrimitive.Item>
     );
   }

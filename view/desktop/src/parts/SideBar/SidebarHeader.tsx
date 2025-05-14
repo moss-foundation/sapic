@@ -37,7 +37,7 @@ const ExampleDropdownMenu = () => {
       </ActionMenu.Trigger>
 
       <ActionMenu.Portal>
-        <ActionMenu.Content>
+        <ActionMenu.Content align="center">
           <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
           <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
 
@@ -63,12 +63,8 @@ const ExampleDropdownMenu = () => {
           <ActionMenu.Sub>
             <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
             <ActionMenu.SubContent>
-              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
-                Sub Item 1
-              </ActionMenu.Item>
-              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
-                Sub Item 2
-              </ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 1 selected")}>Sub Item 1</ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 2 selected")}>Sub Item 2</ActionMenu.Item>
             </ActionMenu.SubContent>
           </ActionMenu.Sub>
         </ActionMenu.Content>
@@ -114,12 +110,8 @@ const ExampleContextMenuRadix = () => {
           <ActionMenu.Sub>
             <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
             <ActionMenu.SubContent>
-              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 1 selected")}>
-                Sub Item 1
-              </ActionMenu.Item>
-              <ActionMenu.Item hideIcon onSelect={() => console.log("Sub Item 2 selected")}>
-                Sub Item 2
-              </ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 1 selected")}>Sub Item 1</ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 2 selected")}>Sub Item 2</ActionMenu.Item>
             </ActionMenu.SubContent>
           </ActionMenu.Sub>
         </ActionMenu.Content>
