@@ -159,7 +159,7 @@ pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
 /// - Path must have at least one component after 'requests'
 /// - Last segment cannot end with forbidden extension, e.g. ".request"
 
-const FORBIDDEN_EXTENSIONS: [&str; 1] = ["request"];
+const RESERVED_EXTENSIONS: [&str; 1] = ["request"];
 fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
     if destination.is_absolute() {
         return Err(ValidationError::new("Destination path cannot be absolute"));
@@ -207,7 +207,7 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
         .to_string_lossy()
         .to_string();
     // Check for forbidden extensions
-    if FORBIDDEN_EXTENSIONS.contains(&extension.as_ref()) {
+    if RESERVED_EXTENSIONS.contains(&extension.as_ref()) {
         return Err(ValidationError::new(
             "Filename contains forbidden extension",
         ));
