@@ -48,7 +48,11 @@ export const renderActionMenuItem = (item: MenuItemProps, callback?: (id: string
     case "submenu":
       return (
         <ActionMenu.Sub key={item.id}>
-          <ActionMenu.SubTrigger icon={item.icon || undefined} onClick={() => callback?.(item.id)}>
+          <ActionMenu.SubTrigger
+            icon={item.icon || undefined}
+            onClick={() => callback?.(item.id)}
+            alignWithIcons={item.alignWithIcons}
+          >
             {item.label}
           </ActionMenu.SubTrigger>
           <ActionMenu.SubContent>

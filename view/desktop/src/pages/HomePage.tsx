@@ -85,7 +85,7 @@ const ComponentGallery = () => {
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
+                  <ActionMenu.Content>
                     {editorContextItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
@@ -99,9 +99,7 @@ const ComponentGallery = () => {
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {generateItems.map((item) => renderActionMenuItem(item))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{generateItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
@@ -113,9 +111,7 @@ const ComponentGallery = () => {
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runConfigItems.map((item) => renderActionMenuItem(item))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runConfigItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
@@ -127,9 +123,7 @@ const ComponentGallery = () => {
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runOptionsItems.map((item) => renderActionMenuItem(item))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runOptionsItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
@@ -141,9 +135,7 @@ const ComponentGallery = () => {
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runSelectorItems.map((item) => renderActionMenuItem(item))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runSelectorItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
             </div>

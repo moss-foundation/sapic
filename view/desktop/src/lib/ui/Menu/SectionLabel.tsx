@@ -7,7 +7,7 @@ type SectionLabelProps = React.ComponentPropsWithoutRef<typeof Menu.Label>;
 
 const SectionLabel = forwardRef<HTMLDivElement, Menu.LabelProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.Label ref={ref} className={cn("px-3 py-1 text-left font-medium", className)} {...props}>
+    <Menu.Label ref={ref} className={cn("-ml-1 px-3 py-1 text-left font-medium", className)} {...props}>
       {children}
     </Menu.Label>
   );
