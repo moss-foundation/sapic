@@ -98,7 +98,7 @@ const SelectItemIndicator = forwardRef<
 ));
 
 const selectItemStyles = cva(
-  `relative flex items-center gap-1.5 truncate rounded py-1 pr-5 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
+  `relative flex min-w-0 items-center gap-1.5 truncate rounded py-1 pr-2 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
 );
 
 const SelectItem = forwardRef<
@@ -107,7 +107,9 @@ const SelectItem = forwardRef<
 >(({ className, children, ...props }, forwardedRef) => {
   return (
     <SelectPrimitive.Item ref={forwardedRef} className={cn(selectItemStyles(), className)} {...props}>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <span className="min-w-0 truncate">
+        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      </span>
     </SelectPrimitive.Item>
   );
 });
