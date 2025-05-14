@@ -12,3 +12,4 @@ serde_json.workspace = true
 async-trait.workspace = true
 arc-swap.workspace = true
 tokio.workspace = true
+smallvec.workspace = true

@@ -107,3 +107,4 @@ futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
 sweep-bptree = "0.4.1"
 file-id = "0.2.2"
+smallvec = "1.15.0"

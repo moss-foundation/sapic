@@ -1,15 +1,16 @@
-pub mod entities;
-pub mod workbench_store;
-
 use std::{path::PathBuf, sync::Arc};
 
 use async_trait::async_trait;
-use entities::{EnvironmentInfoEntity, WorkspaceInfoEntity};
 use moss_db::{DatabaseClient, ReDbClient, Transaction, common::DatabaseError};
 use std::collections::HashMap;
-use workbench_store::{TABLE_WORKSPACES, WorkbenchStoreImpl};
 
-use crate::{GlobalStorage, common::Transactional};
+use crate::storage::Transactional;
+
+use super::{
+    GlobalStorage,
+    entities::WorkspaceInfoEntity,
+    workbench_store::{TABLE_WORKSPACES, WorkbenchStoreImpl},
+};
 
 const GLOBAL_STATE_DB_NAME: &str = "state.db";
 
