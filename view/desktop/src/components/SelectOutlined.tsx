@@ -71,7 +71,7 @@ const Content = forwardRef<
 });
 
 const selectItemStyles = cva(
-  `leading-5 text-(--moss-select-text-outlined) data-[highlighted]:bg-(--moss-select-bg-outlined-selected)`
+  `leading-5 text-(--moss-select-item-text-outlined) data-[highlighted]:bg-(--moss-select-item-bg-outlined-hover) data-[state=checked]:bg-(--moss-select-item-bg-outlined-selected)`
 );
 
 const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsWithoutRef<typeof SelectPrimitive.Item>>(
