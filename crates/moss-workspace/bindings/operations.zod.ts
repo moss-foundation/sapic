@@ -2,6 +2,7 @@
 import { resourceKeySchema } from "@repo/bindings-utils";
 import { variableInfoSchema } from "@repo/moss-environment";
 import { z } from "zod";
+import { identifierSchema } from "./primitives.zod";
 import {
   collectionInfoSchema,
   editorPartStateSchema,
@@ -17,17 +18,16 @@ export const createCollectionInputSchema = z.object({
 export const openCollectionInputSchema = z.object({
   path: z.string(),
 });
-
-export const renameCollectionOutputSchema = z.object({
-  path: z.string(),
-});
 export const createCollectionOutputSchema = z.object({
-  key: resourceKeySchema,
-  path: z.string(),
+  id: identifierSchema,
 });
 
 export const deleteCollectionInputSchema = z.object({
-  key: resourceKeySchema,
+  id: identifierSchema,
+});
+
+export const deleteCollectionOutputSchema = z.object({
+  id: identifierSchema,
 });
 
 export const describeEnvironmentInputSchema = z.object({
@@ -60,9 +60,13 @@ export const openCollectionOutputSchema = z.object({
   path: z.string(),
 });
 
-export const renameCollectionInputSchema = z.object({
-  key: resourceKeySchema,
-  newName: z.string(),
+export const updateCollectionEntryInputSchema = z.object({
+  id: identifierSchema,
+  newName: z.string().nullable(),
+});
+
+export const updateCollectionEntryOutputSchema = z.object({
+  id: identifierSchema,
 });
 
 export const updateStateInputSchema = z.union([
