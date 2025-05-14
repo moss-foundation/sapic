@@ -5,9 +5,8 @@ use std::path::PathBuf;
 use moss_collection::models::operations::CreateRequestDirEntryInput;
 use moss_collection::models::types::PathChangeKind;
 use moss_common::api::{OperationError, OperationResult};
-use moss_testutils::random_name::random_request_dir_name;
 
-use crate::shared::set_up_test_collection;
+use crate::shared::{random_request_dir_name, set_up_test_collection};
 
 #[tokio::test]
 async fn create_request_dir_entry_success() {
@@ -33,7 +32,7 @@ async fn create_request_dir_entry_success() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -60,7 +59,7 @@ async fn create_request_dir_entry_already_exists() {
     ));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -95,5 +94,5 @@ async fn create_request_dir_entry_nested() {
             && kind == &PathChangeKind::Created
     }));
 
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

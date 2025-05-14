@@ -22,7 +22,6 @@ impl Collection {
                     name: input.id.to_string(),
                     path: Default::default(),
                 })?;
-            // TODO: Check unit type?
             Arc::clone(&entry)
         };
 

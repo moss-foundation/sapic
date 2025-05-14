@@ -1,5 +1,3 @@
-pub mod list_requests;
-
 pub mod create_request_dir_entry;
 pub mod create_request_entry;
 pub mod delete_request_dir_entry;

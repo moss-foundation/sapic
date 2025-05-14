@@ -31,7 +31,6 @@ impl Collection {
                     path: Default::default(),
                 })?;
 
-            // TODO: Check unit type?
             Arc::clone(&entry)
         };
 

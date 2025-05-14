@@ -48,7 +48,7 @@ async fn create_request_entry_success() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -94,7 +94,7 @@ async fn create_request_entry_with_payload() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -125,7 +125,7 @@ async fn create_request_entry_already_exists() {
     ));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -166,7 +166,7 @@ async fn create_request_entry_multiple_same_level() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -207,7 +207,7 @@ async fn create_request_entry_nested() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -259,7 +259,7 @@ async fn create_request_entry_multiple_nested() {
     }));
 
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -296,7 +296,7 @@ async fn create_request_entry_special_chars_in_name() {
         }));
     }
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
 
 #[tokio::test]
@@ -334,5 +334,5 @@ async fn create_request_entry_special_chars_in_path() {
         }));
     }
     // Clean up
-    { tokio::fs::remove_dir_all(&collection_path).await.unwrap() }
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

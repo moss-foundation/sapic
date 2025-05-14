@@ -3,11 +3,15 @@ use moss_collection::collection::Collection;
 use moss_collection::indexer::{self, IndexerHandle};
 use moss_fs::RealFileSystem;
 use moss_fs::utils::{encode_name, encode_path};
-use moss_testutils::random_name::random_collection_name;
+use moss_testutils::random_name::{random_collection_name, random_string};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 use tokio::sync::mpsc;
+
+pub fn random_request_dir_name() -> String {
+    format!("Test_{}_Dir", random_string(10))
+}
 
 pub fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

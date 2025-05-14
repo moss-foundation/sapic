@@ -1,6 +1,6 @@
 mod shared;
 
-use crate::shared::set_up_test_collection;
+use crate::shared::{random_request_dir_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestDirEntryInput,
 };
@@ -8,7 +8,7 @@ use moss_collection::models::types::PathChangeKind;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_path;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::{random_request_dir_name, random_request_name};
+use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
 use std::time::Duration;
 
