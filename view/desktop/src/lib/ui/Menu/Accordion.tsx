@@ -77,7 +77,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
       >
         <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} className="opacity-40" />
         {children}
-        {props.total && <span className="ml-1">{props.total}</span>}
+        {props.total && <span className="ml-1 text-(--moss-secondary-text)">{props.total}</span>}
       </div>
     );
   }

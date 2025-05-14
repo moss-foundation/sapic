@@ -234,16 +234,17 @@ type ItemProps = {
   icon?: Icons;
   alignWithIcons?: boolean;
   iconClassName?: string;
+  shortcutClassName?: string;
 } & React.ComponentPropsWithoutRef<typeof MenuPrimitive.Item>;
 
 const Item = forwardRef<ItemElement, ItemProps>(
-  ({ iconClassName, alignWithIcons = false, icon, shortcut, className, ...props }, forwardedRef) => {
+  ({ iconClassName, alignWithIcons = false, icon, shortcut, shortcutClassName, className, ...props }, forwardedRef) => {
     return (
       <MenuPrimitive.Item
         {...props}
         ref={forwardedRef}
         className={cn(
-          "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
+          "flex items-center gap-1.5 rounded py-0.5 pr-1 pl-[7px]",
           {
             "cursor-not-allowed grayscale-100": props.disabled,
             "cursor-pointer hover:outline-hidden": !props.disabled,
@@ -257,7 +258,7 @@ const Item = forwardRef<ItemElement, ItemProps>(
         <div className="flex w-full items-center gap-2.5">
           <span>{props.children}</span>
 
-          {shortcut && <div className="ml-auto opacity-30">{shortcut}</div>}
+          {shortcut && <div className={cn("ml-auto", shortcutClassName)}>{shortcut}</div>}
         </div>
       </MenuPrimitive.Item>
     );

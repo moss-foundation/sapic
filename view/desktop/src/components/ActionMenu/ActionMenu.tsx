@@ -21,7 +21,12 @@ const Content = forwardRef<HTMLDivElement, Menu.ContentProps>(({ children, class
 
 const Item = forwardRef<HTMLDivElement, Menu.ItemProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.Item ref={ref} className={cn("hover:background-(--moss-secondary-background-hover)", className)} {...props}>
+    <Menu.Item
+      ref={ref}
+      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
+      shortcutClassName="text-(--moss-shortcut-text)"
+      {...props}
+    >
       {children}
     </Menu.Item>
   );

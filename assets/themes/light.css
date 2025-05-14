@@ -125,6 +125,8 @@
 
   --moss-not-selected-item-color: var(--moss-gray-7);
 
+  --moss-shortcut-text: var(--moss-gray-7);
+
   /* Resizable */
   --focus-border: var(--moss-primary);
   --separator-border: var(--moss-border-color);

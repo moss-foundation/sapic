@@ -87,7 +87,7 @@ export const renderActionMenuItem = (item: MenuItemProps, callback?: (id: string
     case "accordion":
       return (
         <ActionMenu.Accordion key={item.id}>
-          <ActionMenu.AccordionTrigger>{item.label}</ActionMenu.AccordionTrigger>
+          <ActionMenu.AccordionTrigger total={item.items?.length}>{item.label}</ActionMenu.AccordionTrigger>
           <ActionMenu.AccordionContent>
             {item.items?.map((item) => renderActionMenuItem(item, callback))}
           </ActionMenu.AccordionContent>
