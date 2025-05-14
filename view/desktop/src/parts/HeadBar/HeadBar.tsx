@@ -119,7 +119,7 @@ export const HeadBar = () => {
         >
           {/* Main content container with proper layout */}
           <div
-            className={cn("grid w-full", {
+            className={cn("grid w-full gap-1", {
               "grid-cols-[minmax(1px,673px)_1fr_1fr]": selectedWorkspace,
               "grid-cols-[1fr_1fr]": !selectedWorkspace,
             })}
