@@ -76,7 +76,7 @@ const SelectContent = forwardRef<
         position={position}
         sideOffset={sideOffset}
         ref={forwardedRef}
-        className={cn(`z-50 rounded-lg border px-3 py-1.5 shadow-lg`, className)}
+        className={cn(`z-50 rounded-lg border px-1.5 py-1.5 shadow-lg`, className)}
       >
         {children}
       </SelectPrimitive.Content>
@@ -123,7 +123,7 @@ const SelectSeparator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, forwardedRef) => {
-  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn(className)} />;
+  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn("my-0.5 h-px w-full", className)} />;
 });
 
 const Select = {

@@ -13,6 +13,8 @@ const selectTriggerStyles = cva(`
 
     border border-(--moss-select-border-outlined) 
 
+    data-[state=open]:border-(--moss-primary)
+
     text-(--moss-select-text-outlined)
 
     data-[invalid]:border-(--moss-error)
@@ -86,7 +88,9 @@ const Separator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, forwardedRef) => {
-  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn(className)} />;
+  return (
+    <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn("bg-(--moss-border-color)", className)} />
+  );
 });
 
 const SelectOutlined = {

@@ -1,5 +1,3 @@
-import { ActionMenu } from "@/components";
-import ButtonPrimary from "@/components/ButtonPrimary";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
@@ -20,20 +18,6 @@ export const WelcomePage = () => {
           <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
         </div>
 
-        <div>
-          <ActionMenu.Root>
-            <ActionMenu.Trigger>
-              <ButtonPrimary>Open</ButtonPrimary>
-            </ActionMenu.Trigger>
-
-            <ActionMenu.Content>
-              <ActionMenu.Item>1</ActionMenu.Item>
-              <ActionMenu.Item>2</ActionMenu.Item>
-              <ActionMenu.Item>3</ActionMenu.Item>
-              <ActionMenu.Item>4</ActionMenu.Item>
-            </ActionMenu.Content>
-          </ActionMenu.Root>
-        </div>
         <div className="flex flex-col gap-7.5">
           <div className="grid grid-cols-2">
             <FirstColumn />
