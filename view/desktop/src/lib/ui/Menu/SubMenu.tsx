@@ -58,7 +58,7 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
         {...triggerItemProps}
         ref={forwardedRef}
         className={cn(
-          "flex items-center gap-1.5 rounded py-0.5 pr-2 pl-[7px]",
+          "flex items-center gap-3 rounded py-0.5 pr-3 pl-4",
           {
             "cursor-not-allowed opacity-50": props.disabled,
             "cursor-pointer hover:outline-hidden": !props.disabled,

@@ -62,7 +62,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
         aria-expanded={context.open}
         {...triggerProps}
         ref={forwardedRef}
-        className={cn("flex cursor-pointer items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]", className)}
+        className={cn("flex cursor-pointer items-center gap-3 rounded py-0.5 pr-3 pl-4", className)}
         onClick={(e) => {
           e.stopPropagation();
           context.onOpenChange(!context.open);
