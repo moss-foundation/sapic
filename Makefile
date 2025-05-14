@@ -117,6 +117,9 @@ gen-icons:
 define gen_bindings
 .PHONY: gen-$(1)-bindings
 gen-$(1)-bindings:
+	@echo "Removing old $(1) models"
+	@cd $($(2)) && @rm bindings -rf
+
 	@echo "Generating $(1) models..."
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsResolver ../../$($(2))
