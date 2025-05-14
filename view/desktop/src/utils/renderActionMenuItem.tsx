@@ -41,7 +41,7 @@ export const renderActionMenuItem = (item: MenuItemProps, callback?: (id: string
           alignWithIcons={item.alignWithIcons || false}
           onSelect={() => callback?.(item.id)}
         >
-          <span>{item.label}</span>
+          {item.label}
         </ActionMenu.Item>
       );
 
