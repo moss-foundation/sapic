@@ -19,7 +19,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    storage::segments::ROOT_COLLECTION_SEGKEY,
+    storage::segments::COLLECTION_SEGKEY,
     workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
@@ -80,7 +80,7 @@ impl<R: TauriRuntime> Workspace<R> {
             // it would signal that the collection being created is located outside the
             // workspace folder.
 
-            let key = ROOT_COLLECTION_SEGKEY.join(&encoded_name);
+            let key = COLLECTION_SEGKEY.join(&encoded_name);
             let value = AnyValue::serialize(&CollectionEntity {
                 order: None,
                 external_abs_path: None,

@@ -1,13 +1,56 @@
 pub mod entities;
-pub mod workbench_store;
 
-mod storage_impl;
-use std::sync::Arc;
+mod tables;
 
-pub use storage_impl::*;
+use async_trait::async_trait;
+use moss_db::{
+    DatabaseClient, ReDbClient, Transaction, common::DatabaseError, primitives::AnyValue,
+};
+use std::{path::PathBuf, sync::Arc};
+use tables::ITEM_STORE;
 
-use crate::storage::Transactional;
+use crate::{
+    common::item_store::{ItemStore, store_impl::ItemStoreImpl},
+    primitives::segkey::SegKeyBuf,
+    storage::Transactional,
+};
 
-pub trait GlobalStorage: Transactional + Send + Sync {
-    fn workspaces_store(&self) -> Arc<dyn WorkbenchStore>;
+use super::GlobalStorage;
+
+const GLOBAL_STATE_DB_NAME: &str = "state.db";
+
+pub struct GlobalStorageImpl {
+    db_client: ReDbClient,
+    item_store: Arc<dyn ItemStore<SegKeyBuf, AnyValue>>,
+}
+
+impl GlobalStorageImpl {
+    pub fn new(path: &PathBuf) -> Result<Self, DatabaseError> {
+        let db_client =
+            ReDbClient::new(path.join(GLOBAL_STATE_DB_NAME))?.with_table(&ITEM_STORE)?;
+
+        let item_store = Arc::new(ItemStoreImpl::new(db_client.clone(), ITEM_STORE));
+
+        Ok(Self {
+            db_client,
+            item_store,
+        })
+    }
+}
+
+#[async_trait]
+impl Transactional for GlobalStorageImpl {
+    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+        self.db_client.begin_write()
+    }
+
+    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+        self.db_client.begin_read()
+    }
+}
+
+impl GlobalStorage for GlobalStorageImpl {
+    fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
+        self.item_store.clone()
+    }
 }

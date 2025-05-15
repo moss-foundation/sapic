@@ -16,7 +16,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionEntryInput, UpdateCollectionEntryOutput},
-    storage::segments::ROOT_COLLECTION_SEGKEY,
+    storage::segments::COLLECTION_SEGKEY,
     workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
@@ -106,8 +106,8 @@ impl<R: TauriRuntime> Workspace<R> {
 
         {
             let item_store = self.workspace_storage.item_store();
-            let old_key = ROOT_COLLECTION_SEGKEY.join(&old_encoded_name);
-            let new_key = ROOT_COLLECTION_SEGKEY.join(&new_encoded_name);
+            let old_key = COLLECTION_SEGKEY.join(&old_encoded_name);
+            let new_key = COLLECTION_SEGKEY.join(&new_encoded_name);
 
             RekeyItem::rekey(item_store.as_ref(), old_key, new_key)?;
         }

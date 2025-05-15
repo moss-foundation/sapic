@@ -5,11 +5,11 @@ use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
 use moss_storage::{
+    WorkspaceStorage,
     primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
     workspace_storage::{
-        WorkspaceStorage, WorkspaceStorageImpl,
-        entities::collection_store_entities::CollectionEntity,
+        WorkspaceStorageImpl, entities::collection_store_entities::CollectionEntity,
     },
 };
 use std::{
@@ -21,7 +21,7 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 
-use crate::storage::segments::ROOT_COLLECTION_SEGKEY;
+use crate::storage::segments::COLLECTION_SEGKEY;
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -122,8 +122,8 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: restore environments cache from the database
-
-                for entry in self.fs.read_dir(&abs_path).await?.next_entry().await? {
+                let mut read_dir = self.fs.read_dir(&abs_path).await?;
+                while let Some(entry) = read_dir.next_entry().await? {
                     if entry.file_type().await?.is_dir() {
                         continue;
                     }
@@ -181,7 +181,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 )?
                 .into_iter()
                 .filter_map(|(k, v)| {
-                    let path = k.after(&ROOT_COLLECTION_SEGKEY);
+                    let path = k.after(&COLLECTION_SEGKEY);
                     if let Some(path) = path {
                         Some((path, v))
                     } else {

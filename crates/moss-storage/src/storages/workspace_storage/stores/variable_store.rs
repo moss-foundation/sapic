@@ -1,14 +1,11 @@
 use anyhow::Result;
-use moss_db::{DatabaseError, ReDbClient, bincode_table::BincodeTable};
+use moss_db::{DatabaseError, ReDbClient};
 use std::collections::HashMap;
 
-use super::{
-    VariableKey, VariableStore, VariableStoreTable,
-    entities::variable_store_entities::VariableEntity,
+use crate::workspace_storage::{
+    TABLE_VARIABLES, VariableKey, VariableStore, entities::variable_store_entities::VariableEntity,
+    tables::VariableStoreTable,
 };
-
-#[rustfmt::skip]
-pub(in crate::workspace_storage) const TABLE_VARIABLES: BincodeTable<VariableKey, VariableEntity> = BincodeTable::new("variables");
 
 pub struct VariableStoreImpl {
     #[allow(dead_code)] // TODO: remove this, when we have a use for it

@@ -9,7 +9,7 @@ use serde::de::DeserializeOwned;
 use tauri::Runtime as TauriRuntime;
 
 use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
-use crate::storage::segments::{EDITOR_PART_SEGKEY, PANEL_PART_SEGKEY, SIDEBAR_PART_SEGKEY};
+use crate::storage::segments::{PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY};
 use crate::{models::operations::DescribeStateOutput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -40,7 +40,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let editor_result = TransactionalGetItem::get_item(
             item_store.as_ref(),
             &mut txn,
-            EDITOR_PART_SEGKEY.to_segkey_buf(),
+            PART_EDITOR_SEGKEY.to_segkey_buf(),
         );
         let editor = to_option(
             editor_result,
@@ -52,7 +52,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let sidebar_result = TransactionalGetItem::get_item(
             item_store.as_ref(),
             &mut txn,
-            SIDEBAR_PART_SEGKEY.to_segkey_buf(),
+            PART_SIDEBAR_SEGKEY.to_segkey_buf(),
         );
         let sidebar = to_option(
             sidebar_result,
@@ -64,7 +64,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let panel_result = TransactionalGetItem::get_item(
             item_store.as_ref(),
             &mut txn,
-            PANEL_PART_SEGKEY.to_segkey_buf(),
+            PART_PANEL_SEGKEY.to_segkey_buf(),
         );
         let panel = to_option(
             panel_result,

@@ -8,7 +8,7 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
-    storage::segments::ROOT_COLLECTION_SEGKEY,
+    storage::segments::COLLECTION_SEGKEY,
     workspace::Workspace,
 };
 
@@ -46,7 +46,7 @@ impl<R: TauriRuntime> Workspace<R> {
         }
 
         {
-            let key = ROOT_COLLECTION_SEGKEY.join(&collection_entry.name);
+            let key = COLLECTION_SEGKEY.join(&collection_entry.name);
             RemoveItem::remove(self.workspace_storage.item_store().as_ref(), key)?;
         }
 

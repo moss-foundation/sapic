@@ -10,7 +10,7 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::UpdateStateInput,
-    storage::segments::{EDITOR_PART_SEGKEY, PANEL_PART_SEGKEY, SIDEBAR_PART_SEGKEY},
+    storage::segments::{PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY},
     workspace::Workspace,
 };
 
@@ -23,7 +23,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 let value = AnyValue::serialize(&EditorPartStateEntity::from(editor_part_state))?;
                 PutItem::put(
                     item_store.as_ref(),
-                    EDITOR_PART_SEGKEY.to_segkey_buf(),
+                    PART_EDITOR_SEGKEY.to_segkey_buf(),
                     value,
                 )?;
             }
@@ -31,7 +31,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 let value = AnyValue::serialize(&SidebarPartStateEntity::from(sidebar_part_state))?;
                 PutItem::put(
                     item_store.as_ref(),
-                    SIDEBAR_PART_SEGKEY.to_segkey_buf(),
+                    PART_SIDEBAR_SEGKEY.to_segkey_buf(),
                     value,
                 )?;
             }
@@ -39,7 +39,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 let value = AnyValue::serialize(&PanelPartStateEntity::from(panel_part_state))?;
                 PutItem::put(
                     item_store.as_ref(),
-                    PANEL_PART_SEGKEY.to_segkey_buf(),
+                    PART_PANEL_SEGKEY.to_segkey_buf(),
                     value,
                 )?;
             }

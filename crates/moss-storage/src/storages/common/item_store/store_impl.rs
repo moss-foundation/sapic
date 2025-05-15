@@ -1,7 +1,4 @@
-use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient, Transaction,
-    primitives::{AnyKey, AnyValue},
-};
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
 
 use crate::{primitives::segkey::SegKeyBuf, storage::operations::*};
 

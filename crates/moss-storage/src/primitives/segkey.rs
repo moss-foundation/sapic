@@ -1,3 +1,4 @@
+use anyhow::Result;
 use redb::{Key, TypeName, Value};
 use smallvec::SmallVec;
 use std::ops::{Deref, DerefMut};
@@ -125,6 +126,10 @@ impl<'a> SegKey<'a> {
 
     pub fn as_bytes(&self) -> &[u8] {
         self.inner
+    }
+
+    pub fn as_str(&self) -> Result<&str> {
+        Ok(std::str::from_utf8(self.inner)?)
     }
 
     pub fn to_segkey_buf(&self) -> SegKeyBuf {
