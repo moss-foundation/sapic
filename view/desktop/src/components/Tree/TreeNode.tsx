@@ -98,7 +98,7 @@ const TreeNodeButton = ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onR
 
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-  const { instruction, isDragging } = useInstructionNode(node, treeId, draggableNodeRef, depth, setPreview);
+  const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, draggableNodeRef, depth, setPreview);
 
   const handleClick = () => {
     if (node.isFolder) {
@@ -145,10 +145,12 @@ const TreeNodeButton = ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onR
           />
 
           <span
-            className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5")}
+            className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
+              "background-(--moss-error-background)": canDrop === false,
+            })}
             style={{ paddingLeft: nodePaddingLeft }}
           >
-            {instruction && (
+            {instruction && canDrop && (
               <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
             )}
             <Icon

@@ -5,6 +5,7 @@ import { cn } from "@/utils";
 
 import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
+import { useDropTargetRootNode } from "./hooks/useDropTargetRootNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
@@ -57,7 +58,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
     isAddingFileNode: isAddingRootFileNode,
@@ -99,7 +99,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
 
-  // useDropTargetNode(node, treeId, dropTargetFolderRef, 0);
+  useDropTargetRootNode(node, treeId, dropTargetFolderRef);
 
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>

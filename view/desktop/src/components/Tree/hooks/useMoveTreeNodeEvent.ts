@@ -29,9 +29,15 @@ const addNodeToTreeWithInstruction = (
   sourceNode: TreeNodeProps,
   instruction: Instruction | undefined
 ): TreeNodeProps => {
-  if (!instruction) return tree;
-
   const treeWithoutSource = removeNodeFromTree(tree, sourceNode.uniqueId);
+
+  if (!instruction) {
+    if (targetNode.isFolder) {
+      return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+    }
+
+    return tree;
+  }
 
   if (instruction.type === "make-child" && targetNode.isFolder) {
     return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
@@ -72,7 +78,7 @@ const addNodeToTreeWithInstruction = (
   return tree;
 };
 
-export const useMoveTreeNode = ({
+export const useMoveTreeNodeEvent = ({
   treeId,
   onNodeAdd,
   onNodeRemove,

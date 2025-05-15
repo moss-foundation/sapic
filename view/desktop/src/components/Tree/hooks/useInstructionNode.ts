@@ -17,6 +17,7 @@ export const useInstructionNode = (
 ) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [canDrop, setCanDrop] = useState<boolean | null>(null);
 
   useEffect(() => {
     const element = dropTargetListRef.current;
@@ -65,17 +66,25 @@ export const useInstructionNode = (
         canDrop({ source }) {
           return source.data.type === "TreeNode";
         },
-        onDrag({ location }) {
+        onDrag({ location, source }) {
           setInstruction(extractInstruction(location.current.dropTargets[0].data));
+
+          const sourceTarget = getActualDropSourceTarget(source);
+          const { dropTarget } = getActualDropTargetWithInstruction(location);
+
+          setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
         onDragLeave() {
           setInstruction(null);
+          setCanDrop(null);
         },
         onDropTargetChange() {
           setInstruction(null);
+          setCanDrop(null);
         },
         onDrop({ location, source }) {
           setInstruction(null);
+          setCanDrop(null);
 
           if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
             return;
@@ -104,5 +113,5 @@ export const useInstructionNode = (
     );
   }, [dropTargetListRef, node, treeId]);
 
-  return { instruction, isDragging };
+  return { instruction, isDragging, canDrop };
 };

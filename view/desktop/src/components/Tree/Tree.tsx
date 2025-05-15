@@ -1,7 +1,7 @@
 import { createContext, useEffect, useId, useState } from "react";
 
-import { useCreateNewCollectionFromTreeNode } from "./hooks/useCreateNewCollectionFromTreeNode.ts";
-import { useMoveTreeNode } from "./hooks/useMoveTreeNode.ts";
+import { useCreateNewCollectionFromTreeNodeEvent } from "./hooks/useCreateNewCollectionFromTreeNodeEvent.ts";
+import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode.tsx";
 import { TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
 import {
@@ -68,7 +68,7 @@ export const Tree = ({
     setTree(prepareCollectionForTree(initialTree, sortBy));
   }, [initialTree]);
 
-  useCreateNewCollectionFromTreeNode({
+  useCreateNewCollectionFromTreeNodeEvent({
     treeId,
     onNodeAdd,
     onNodeRemove,
@@ -78,7 +78,7 @@ export const Tree = ({
     setTree,
   });
 
-  useMoveTreeNode({
+  useMoveTreeNodeEvent({
     treeId,
     onNodeAdd,
     onNodeRemove,

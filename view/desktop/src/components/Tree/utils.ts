@@ -221,7 +221,6 @@ export const getActualDropTargetWithInstruction = (
   dropTarget: DropNodeElementWithInstruction;
   instruction: Instruction | null;
 } => {
-  console.log(location.current.dropTargets[0].data);
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
@@ -232,15 +231,15 @@ export const getActualDropTargetWithInstruction = (
 
 export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {
   if (sourceTarget.node.isFolder === false) {
-    if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-      return false;
-    }
+    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
+    //   return false;
+    // }
   }
 
   if (sourceTarget.node.isFolder) {
-    if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-      return false;
-    }
+    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
+    //   return false;
+    // }
 
     if (hasDirectDescendant(dropTarget.node, node)) {
       return false;

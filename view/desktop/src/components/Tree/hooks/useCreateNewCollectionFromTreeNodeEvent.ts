@@ -14,7 +14,7 @@ interface useCreateNewCollectionFromTreeNodeProps {
   setTree: Dispatch<SetStateAction<TreeNodeProps>>;
 }
 
-export const useCreateNewCollectionFromTreeNode = ({
+export const useCreateNewCollectionFromTreeNodeEvent = ({
   treeId,
   onNodeAdd,
   onNodeRemove,
