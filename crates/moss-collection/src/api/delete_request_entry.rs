@@ -1,9 +1,6 @@
 use crate::collection::Collection;
-use crate::collection::worktree::common::{
-    is_dir, path_ends_with_extension, path_starts_with, validate_entry,
-};
 use crate::models::operations::{DeleteRequestEntryInput, DeleteRequestEntryOutput};
-use anyhow::Context;
+use crate::worktree::common::{is_dir, path_ends_with_extension, path_starts_with, validate_entry};
 use moss_common::api::{OperationError, OperationResult};
 use std::sync::Arc;
 

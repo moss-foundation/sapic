@@ -2,7 +2,7 @@ use validator::ValidationError;
 
 use super::snapshot::EntryRef;
 
-pub(super) const ROOT_PATH: &str = "";
+pub(crate) const ROOT_PATH: &str = "";
 
 pub(crate) type Rule = Box<dyn Fn(&EntryRef) -> Result<(), ValidationError>>;
 

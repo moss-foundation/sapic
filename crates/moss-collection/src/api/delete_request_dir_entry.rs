@@ -1,14 +1,11 @@
-use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
 use std::sync::Arc;
 
+use crate::worktree::common::{
+    is_dir, path_not_ends_with_extension, path_starts_with, validate_entry,
+};
 use crate::{
-    collection::{
-        Collection,
-        worktree::common::{
-            is_dir, path_not_ends_with_extension, path_starts_with, validate_entry,
-        },
-    },
+    collection::Collection,
     models::operations::{DeleteRequestDirEntryInput, DeleteRequestDirEntryOutput},
 };
 
