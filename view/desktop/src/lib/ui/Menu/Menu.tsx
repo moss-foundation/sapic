@@ -9,6 +9,7 @@ import { Primitive } from "@radix-ui/react-primitive";
 import { useCallbackRef } from "@radix-ui/react-use-callback-ref";
 
 import { Icon, type Icons } from "../Icon";
+import { menuContentStyles, menuItemStyles } from "./styles";
 import { composeRefs } from "./utils/compose-refs";
 
 type Direction = "ltr" | "rtl";
@@ -214,7 +215,7 @@ const Content = forwardRef<ContentElement, ContentProps>(
         {...contentProps}
         align={align}
         sideOffset={sideOffset}
-        className={cn("z-50 rounded-lg px-1 py-1.5 shadow-lg", className)}
+        className={cn(menuContentStyles(), className)}
         ref={forwardedRef}
       />
     );
@@ -243,14 +244,7 @@ const Item = forwardRef<ItemElement, ItemProps>(
       <MenuPrimitive.Item
         {...props}
         ref={forwardedRef}
-        className={cn(
-          "flex items-center gap-2.5 rounded py-0.5 pr-3 pl-4",
-          {
-            "cursor-not-allowed grayscale-100": props.disabled,
-            "cursor-pointer hover:outline-hidden": !props.disabled,
-          },
-          className
-        )}
+        className={cn(menuItemStyles({ disabled: props.disabled }), className)}
       >
         {icon && <Icon icon={icon} className={cn("shrink-0", iconClassName)} />}
         {alignWithIcons && <div className="size-4 shrink-0 opacity-0" />}

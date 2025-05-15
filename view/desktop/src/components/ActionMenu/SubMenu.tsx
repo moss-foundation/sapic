@@ -3,15 +3,13 @@ import { forwardRef } from "react";
 import { Menu } from "@/lib/ui";
 import { cn } from "@/utils";
 
+import { actionMenuContentStyles, actionMenuStyles } from "./styles";
+
 const Sub = Menu.Sub;
 
 const SubTrigger = forwardRef<HTMLDivElement, Menu.SubTriggerProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.SubTrigger
-      ref={ref}
-      className={cn("hover:background-(--moss-secondary-background-hover)", className)}
-      {...props}
-    >
+    <Menu.SubTrigger ref={ref} className={cn(actionMenuStyles(), className)} {...props}>
       {children}
     </Menu.SubTrigger>
   );
@@ -19,11 +17,7 @@ const SubTrigger = forwardRef<HTMLDivElement, Menu.SubTriggerProps>(({ children,
 
 const SubContent = forwardRef<HTMLDivElement, Menu.SubContentProps>(({ children, className, ...props }, ref) => {
   return (
-    <Menu.SubContent
-      ref={ref}
-      className={cn("background-(--moss-primary-background) w-60 border border-(--moss-border-color)", className)}
-      {...props}
-    >
+    <Menu.SubContent ref={ref} className={cn(actionMenuContentStyles(), className)} {...props}>
       {children}
     </Menu.SubContent>
   );

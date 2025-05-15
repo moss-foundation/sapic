@@ -10,7 +10,7 @@ function setRef<T>(ref: PossibleRef<T>, value: T) {
   if (typeof ref === "function") {
     return ref(value);
   } else if (ref !== null && ref !== undefined) {
-    ref.current = value;
+    (ref as React.MutableRefObject<T>).current = value;
   }
 }
 
@@ -37,8 +37,8 @@ function composeRefs<T>(...refs: PossibleRef<T>[]): React.RefCallback<T> {
       return () => {
         for (let i = 0; i < cleanups.length; i++) {
           const cleanup = cleanups[i];
-          if (typeof cleanup == "function") {
-            cleanup();
+          if (typeof cleanup === "function") {
+            (cleanup as () => void)();
           } else {
             setRef(refs[i], null);
           }
