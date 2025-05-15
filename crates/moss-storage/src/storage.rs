@@ -1,3 +1,5 @@
+pub mod operations;
+
 use async_trait::async_trait;
 use moss_db::{DatabaseResult, Transaction};
 use std::{future::Future, path::Path, pin::Pin};

@@ -7,7 +7,7 @@ use moss_common::{
 use moss_db::primitives::AnyValue;
 use moss_fs::utils::encode_name;
 use moss_storage::{
-    common::item_store::PutItem,
+    storage::operations::PutItem,
     workspace_storage::entities::collection_store_entities::CollectionEntity,
 };
 use std::{
@@ -19,7 +19,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    storage::segments::COLLECTION_SEGKEY,
+    storage::segments::ROOT_COLLECTION_SEGKEY,
     workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
@@ -80,7 +80,7 @@ impl<R: TauriRuntime> Workspace<R> {
             // it would signal that the collection being created is located outside the
             // workspace folder.
 
-            let key = COLLECTION_SEGKEY.join(&encoded_name);
+            let key = ROOT_COLLECTION_SEGKEY.join(&encoded_name);
             let value = AnyValue::serialize(&CollectionEntity {
                 order: None,
                 external_abs_path: None,

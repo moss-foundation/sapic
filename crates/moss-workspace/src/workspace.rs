@@ -5,8 +5,8 @@ use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
 use moss_storage::{
-    common::item_store::ListByPrefix,
     primitives::segkey::SegmentExt,
+    storage::operations::ListByPrefix,
     workspace_storage::{
         WorkspaceStorage, WorkspaceStorageImpl,
         entities::collection_store_entities::CollectionEntity,
@@ -21,7 +21,7 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 
-use crate::storage::segments::COLLECTION_SEGKEY;
+use crate::storage::segments::ROOT_COLLECTION_SEGKEY;
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -70,11 +70,11 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
-    activity_indicator: ActivityIndicator<R>,
-    next_collection_entry_id: Arc<AtomicUsize>,
-    next_collection_id: Arc<AtomicUsize>,
-    next_variable_id: Arc<AtomicUsize>,
-    next_environment_id: Arc<AtomicUsize>,
+    pub(super) activity_indicator: ActivityIndicator<R>,
+    pub(super) next_collection_entry_id: Arc<AtomicUsize>,
+    pub(super) next_collection_id: Arc<AtomicUsize>,
+    pub(super) next_variable_id: Arc<AtomicUsize>,
+    pub(super) next_environment_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -181,7 +181,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 )?
                 .into_iter()
                 .filter_map(|(k, v)| {
-                    let path = k.after(&COLLECTION_SEGKEY);
+                    let path = k.after(&ROOT_COLLECTION_SEGKEY);
                     if let Some(path) = path {
                         Some((path, v))
                     } else {

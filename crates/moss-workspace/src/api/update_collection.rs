@@ -10,11 +10,13 @@ use moss_common::{
     models::primitives::Identifier,
 };
 use moss_fs::{RenameOptions, utils::encode_name};
+use moss_storage::storage::operations::RekeyItem;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::{UpdateCollectionEntryInput, UpdateCollectionEntryOutput},
+    storage::segments::ROOT_COLLECTION_SEGKEY,
     workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
 };
 
@@ -34,7 +36,7 @@ impl<R: TauriRuntime> Workspace<R> {
             self.rename_collection(&input.id, new_name).await?;
         }
 
-        let collection_entry = collections
+        let _collection_entry = collections
             .read()
             .await
             .get(&input.id)
@@ -64,10 +66,13 @@ impl<R: TauriRuntime> Workspace<R> {
             return Ok(());
         }
 
+        let old_encoded_name = collection_entry.name.to_owned();
         let new_encoded_name = encode_name(&new_name);
+
         let path = PathBuf::from(&COLLECTIONS_DIR).join(&new_encoded_name);
         let old_abs_path: Arc<Path> = collection_entry.path().clone().into();
         let new_abs_path: Arc<Path> = self.absolutize(path).into();
+
         if new_abs_path.exists() {
             return Err(OperationError::AlreadyExists {
                 name: new_encoded_name,
@@ -100,14 +105,11 @@ impl<R: TauriRuntime> Workspace<R> {
         )?;
 
         {
-            let collection_store = self.workspace_storage.collection_store();
-            let mut txn = self.workspace_storage.begin_write().await?;
-            collection_store.rekey_collection(
-                &mut txn,
-                old_abs_path.to_owned().to_path_buf(), // FIXME: change to Arc<Path> in the store
-                new_abs_path.to_owned().to_path_buf(), // FIXME: change to Arc<Path> in the store
-            )?;
-            txn.commit()?;
+            let item_store = self.workspace_storage.item_store();
+            let old_key = ROOT_COLLECTION_SEGKEY.join(&old_encoded_name);
+            let new_key = ROOT_COLLECTION_SEGKEY.join(&new_encoded_name);
+
+            RekeyItem::rekey(item_store.as_ref(), old_key, new_key)?;
         }
 
         {

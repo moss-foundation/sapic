@@ -1,11 +1,11 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
-use moss_testutils::random_name::{random_string, random_workspace_name};
+use moss_testutils::random_name::random_workspace_name;
+use moss_workspace::Workspace;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
-use moss_workspace::workspace::Workspace;
 use std::collections::HashMap;
 use std::fs;
 use std::future::Future;

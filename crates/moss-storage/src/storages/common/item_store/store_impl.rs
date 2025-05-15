@@ -3,12 +3,9 @@ use moss_db::{
     primitives::{AnyKey, AnyValue},
 };
 
-use crate::primitives::segkey::SegKeyBuf;
+use crate::{primitives::segkey::SegKeyBuf, storage::operations::*};
 
-use super::{
-    GetItem, ItemStore, ItemStoreTable, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
-    TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-};
+use super::{ItemStore, ItemStoreTable};
 
 pub struct ItemStoreImpl {
     client: ReDbClient,
@@ -115,5 +112,31 @@ impl ListByPrefix for ItemStoreImpl {
         txn.commit()?;
 
         Ok(result)
+    }
+}
+
+impl TransactionalRekeyItem for ItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn rekey(
+        &self,
+        txn: &mut Transaction,
+        old_key: Self::Key,
+        new_key: Self::Key,
+    ) -> DatabaseResult<()> {
+        self.table.rekey(txn, old_key, new_key)
+    }
+}
+
+impl RekeyItem for ItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn rekey(&self, old_key: Self::Key, new_key: Self::Key) -> DatabaseResult<()> {
+        let mut txn = self.client.begin_write()?;
+        self.table.rekey(&mut txn, old_key, new_key)?;
+        txn.commit()?;
+        Ok(())
     }
 }
