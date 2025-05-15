@@ -1,12 +1,10 @@
+use crate::worktree::{
+    ChangesDiffSet, Worktree,
+    common::{is_dir, path_not_ends_with_extension, path_starts_with, validate_entry},
+    snapshot::EntryRef,
+};
 use crate::{
-    collection::{
-        Collection,
-        worktree::{
-            ChangesDiffSet, Worktree,
-            common::{is_dir, path_not_ends_with_extension, path_starts_with, validate_entry},
-            snapshot::EntryRef,
-        },
-    },
+    collection::Collection,
     models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
 };
 use moss_common::api::{OperationError, OperationResult};

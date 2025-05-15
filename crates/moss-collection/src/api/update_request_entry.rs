@@ -1,13 +1,11 @@
-use crate::collection::worktree::common::path_ends_with_extension;
-use crate::collection::{
-    Collection,
-    worktree::{
-        ChangesDiffSet, Worktree,
-        common::{is_dir, path_starts_with, validate_entry},
-        snapshot::EntryRef,
-    },
-};
+use crate::collection::Collection;
 use crate::models::operations::{UpdateRequestEntryInput, UpdateRequestEntryOutput};
+use crate::worktree::common::path_ends_with_extension;
+use crate::worktree::{
+    ChangesDiffSet, Worktree,
+    common::{is_dir, path_starts_with, validate_entry},
+    snapshot::EntryRef,
+};
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use std::sync::Arc;

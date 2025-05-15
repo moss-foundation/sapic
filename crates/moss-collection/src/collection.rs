@@ -1,7 +1,4 @@
-pub mod api;
-mod utils;
-pub mod worktree;
-
+use crate::worktree::Worktree;
 use anyhow::{Context, Result};
 use moss_fs::{FileSystem, RenameOptions};
 use moss_storage::CollectionStorage;
@@ -10,7 +7,6 @@ use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::OnceCell;
-use worktree::Worktree;
 
 #[derive(Clone, Debug)]
 pub struct CollectionCache {
@@ -22,7 +18,7 @@ pub struct Collection {
     fs: Arc<dyn FileSystem>,
     worktree: OnceCell<Arc<Worktree>>,
     abs_path: PathBuf,
-    collection_storage: Arc<dyn CollectionStorage>,
+    pub(crate) collection_storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
 }
 
