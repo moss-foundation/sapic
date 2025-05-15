@@ -6,6 +6,7 @@ import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
 import { ScopedProps, useMenuScope } from "./Menu";
+import { menuContentStyles, menuItemStyles } from "./styles";
 
 /* -------------------------------------------------------------------------------------------------
  * Sub
@@ -57,14 +58,7 @@ const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
       <MenuPrimitive.SubTrigger
         {...triggerItemProps}
         ref={forwardedRef}
-        className={cn(
-          "flex items-center gap-2.5 rounded py-0.5 pr-3 pl-4",
-          {
-            "cursor-not-allowed opacity-50": props.disabled,
-            "cursor-pointer hover:outline-hidden": !props.disabled,
-          },
-          props.className
-        )}
+        className={cn(menuItemStyles({ disabled: props.disabled }), props.className)}
       >
         {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
         {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
@@ -93,7 +87,7 @@ const SubContent = forwardRef<SubContentElement, SubContentProps>(
         {...subContentProps}
         ref={forwardedRef}
         style={{ ...props.style }}
-        className={cn("z-50 min-w-36 rounded-lg px-1 py-1.5 shadow-lg", props.className)}
+        className={cn(menuContentStyles(), props.className)}
       />
     );
   }
