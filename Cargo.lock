@@ -3098,6 +3098,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_id"
+version = "0.1.0"
+dependencies = [
+ "moss_common",
+]
+
+[[package]]
 name = "moss_keyring"
 version = "0.1.0"
 dependencies = [

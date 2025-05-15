@@ -23,9 +23,9 @@ members = [
     "crates/moss-workbench",
     "crates/moss-storage",
     "crates/moss-activity-indicator",
-
+    "crates/moss-id",
     "tools/xtask",
-    "view/desktop/bin", 
+    "view/desktop/bin",
 ]
 
 [workspace.dependencies]
@@ -51,6 +51,7 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
+moss_id = { path = "crates/moss-id" }
 
 async-stream = "0.3.6"
 notify = "8.0"
