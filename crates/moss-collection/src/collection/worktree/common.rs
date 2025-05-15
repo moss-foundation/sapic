@@ -15,9 +15,10 @@ pub(crate) fn is_dir() -> Rule {
     })
 }
 
-pub(crate) fn path_ends_with(value: &'static str) -> Rule {
+pub(crate) fn path_ends_with_extension(value: &'static str) -> Rule {
     Box::new(move |entry: &EntryRef| {
-        if !entry.path.ends_with(value) {
+        let extension = entry.path.extension();
+        if extension.unwrap_or_default() != value {
             return Err(ValidationError::new(
                 "Entry path does not end with expected value",
             ));
@@ -26,9 +27,10 @@ pub(crate) fn path_ends_with(value: &'static str) -> Rule {
     })
 }
 
-pub(crate) fn path_not_ends_with(value: &'static str) -> Rule {
+pub(crate) fn path_not_ends_with_extension(value: &'static str) -> Rule {
     Box::new(move |entry: &EntryRef| {
-        if entry.path.ends_with(value) {
+        let extension = entry.path.extension();
+        if extension.unwrap_or_default() == value {
             return Err(ValidationError::new("Entry path ends with forbidden value"));
         }
         Ok(())

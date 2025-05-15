@@ -14,6 +14,8 @@ project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "binding
 project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-common", "index.ts"));
 project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-environment", "index.ts"));
 project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-workspace", "index.ts"));
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-theme", "index.ts"));
+project.addSourceFileAtPathIfExists(join(path, "node_modules", "@repo", "moss-nls", "index.ts"));
 project.resolveSourceFileDependencies();
 project.getSourceFiles().forEach((file) => {
   file.fixMissingImports();

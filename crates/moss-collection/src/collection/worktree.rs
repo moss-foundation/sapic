@@ -1,8 +1,13 @@
 pub mod common;
 pub mod snapshot;
 
+use crate::models::{
+    primitives::EntryId,
+    types::{EntryKind, PathChangeKind},
+};
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
+use moss_common::api::{OperationError, OperationResult};
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use std::{
     collections::HashMap,
@@ -11,11 +16,6 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tokio::sync::{RwLock, mpsc};
-
-use crate::models::{
-    primitives::EntryId,
-    types::{EntryKind, PathChangeKind},
-};
 
 use self::snapshot::{Entry, Snapshot};
 
@@ -103,21 +103,39 @@ impl Worktree {
         path: impl AsRef<Path>,
         is_dir: bool,
         content: Option<Vec<u8>>,
-    ) -> Result<ChangesDiffSet> {
+    ) -> OperationResult<ChangesDiffSet> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
-
         let root_abs_path = self.snapshot.read().await.abs_path().clone();
         let abs_path = self.absolutize(&root_abs_path, &path).await?;
+        if abs_path.exists() {
+            return OperationResult::Err(OperationError::AlreadyExists {
+                name: path
+                    .file_name()
+                    .context("Entry name should not be empty")?
+                    .to_string_lossy()
+                    .to_string(),
+                path: abs_path,
+            });
+        }
         let changes = if is_dir {
-            let first_segment = path.components().next().context("Path is empty")?;
             let lowest_ancestor_path = self.snapshot.read().await.lowest_ancestor_path(&path);
+
+            // Scanning from the highest entry that is newly created
+            // Extract part of the path that's one component more than the lowest ancestor path
+            // Example LAP: \requests, path: \requests\1\1.request => scan: \requests\1
+
+            let new_level = path
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path")
+                .components()
+                .next()
+                .expect("The input path must contain a unique new level");
+            let scan_path = lowest_ancestor_path.join(new_level);
 
             self.fs.create_dir(&abs_path).await?;
 
-            let entries = self
-                .scan(&root_abs_path, lowest_ancestor_path.join(first_segment))
-                .await?;
+            let entries = self.scan(&root_abs_path, scan_path).await?;
             let mut changes = vec![];
 
             {
@@ -133,7 +151,8 @@ impl Worktree {
             self.fs
                 .create_file_with(
                     &abs_path,
-                    String::from_utf8(content.as_deref().unwrap_or(&[]).to_vec())?,
+                    String::from_utf8(content.as_deref().unwrap_or(&[]).to_vec())
+                        .context("Content is not valid utf8 bytes.")?,
                     CreateOptions {
                         overwrite: true,
                         ignore_if_exists: false,
@@ -141,14 +160,20 @@ impl Worktree {
                 )
                 .await?;
 
-            let metadata = tokio::fs::metadata(&abs_path).await?;
+            let metadata = tokio::fs::metadata(&abs_path).await.context(format!(
+                "Unable to get metadata for path {}",
+                abs_path.display()
+            ))?;
             let entry = Arc::new(Entry {
                 id: EntryId::new(&self.next_entry_id),
                 path: Arc::clone(&path),
                 kind: EntryKind::File,
                 unit_type: None,
                 mtime: metadata.modified().ok(),
-                file_id: file_id::get_file_id(&abs_path)?,
+                file_id: file_id::get_file_id(&abs_path).context(format!(
+                    "Unable to get file id for path {}",
+                    abs_path.display()
+                ))?,
             });
 
             {
@@ -171,43 +196,46 @@ impl Worktree {
 
         let mut snapshot_lock = self.snapshot.write().await;
 
-        if abs_path.is_dir() {
-            let mut temp_dir = abs_path.clone();
-            let original_name = temp_dir.file_name().unwrap().to_string_lossy().to_string();
-            let temp_name = format!(".{}.deleted.{}", original_name, std::process::id());
-            temp_dir.set_file_name(temp_name);
+        // Skip fs operation if it's already deleted
+        if abs_path.exists() {
+            if abs_path.is_dir() {
+                let mut temp_dir = abs_path.clone();
+                let original_name = temp_dir.file_name().unwrap().to_string_lossy().to_string();
+                let temp_name = format!("{}.deleted.{}", original_name, std::process::id());
+                temp_dir.set_file_name(temp_name);
 
-            self.fs
-                .rename(
-                    &abs_path,
-                    &temp_dir,
-                    RenameOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
+                self.fs
+                    .rename(
+                        &abs_path,
+                        &temp_dir,
+                        RenameOptions {
+                            overwrite: true,
+                            ignore_if_exists: false,
+                        },
+                    )
+                    .await?;
 
-            tokio::spawn(async move {
-                match tokio::fs::remove_dir_all(&temp_dir).await {
-                    Ok(_) => (),
-                    Err(e) => eprintln!(
-                        "Error removing temporary directory {}: {}",
-                        temp_dir.display(),
-                        e
-                    ),
-                }
-            });
-        } else {
-            self.fs
-                .remove_file(
-                    &abs_path,
-                    RemoveOptions {
-                        recursive: false,
-                        ignore_if_not_exists: false,
-                    },
-                )
-                .await?;
+                tokio::spawn(async move {
+                    match tokio::fs::remove_dir_all(&temp_dir).await {
+                        Ok(_) => (),
+                        Err(e) => eprintln!(
+                            "Error removing temporary directory {}: {}",
+                            temp_dir.display(),
+                            e
+                        ),
+                    }
+                });
+            } else {
+                self.fs
+                    .remove_file(
+                        &abs_path,
+                        RemoveOptions {
+                            recursive: false,
+                            ignore_if_not_exists: false,
+                        },
+                    )
+                    .await?;
+            }
         }
 
         let removed_entries = snapshot_lock.remove_entry(path);
@@ -225,7 +253,7 @@ impl Worktree {
         &self,
         old_path: impl AsRef<Path>,
         new_path: impl AsRef<Path>,
-    ) -> Result<ChangesDiffSet> {
+    ) -> OperationResult<ChangesDiffSet> {
         let old_path = old_path.as_ref();
         let new_path = new_path.as_ref();
         debug_assert!(old_path.is_relative());
@@ -235,6 +263,18 @@ impl Worktree {
         let abs_old_path = self.absolutize(&root_abs_path, &old_path).await?;
         let abs_new_path = self.absolutize(&root_abs_path, &new_path).await?;
 
+        if abs_new_path.exists() {
+            return OperationResult::Err(OperationError::AlreadyExists {
+                name: new_path.file_name().unwrap().to_string_lossy().to_string(),
+                path: abs_new_path,
+            });
+        }
+        if !abs_old_path.exists() {
+            return OperationResult::Err(OperationError::NotFound {
+                name: old_path.file_name().unwrap().to_string_lossy().to_string(),
+                path: abs_old_path,
+            });
+        }
         let mut snapshot_lock = self.snapshot.write().await;
         self.fs
             .rename(
