@@ -1,6 +1,8 @@
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
+import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DropNodeElement, NodeProps, SortTypes, TreeNodeProps } from "./types";
+import { DropNodeElement, DropNodeElementWithInstruction, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
 export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
   if (node.uniqueId === updatedNode.uniqueId) return updatedNode;
@@ -47,14 +49,18 @@ export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabeti
   return nodes;
 };
 
-export const prepareCollectionForTree = (collection: NodeProps, isFirstCollection: boolean = true): TreeNodeProps => {
+export const prepareCollectionForTree = (
+  collection: NodeProps,
+  sortBy: SortTypes = "none",
+  isFirstCollection: boolean = true
+): TreeNodeProps => {
   const id = "TreeNodeUniqueId-" + Math.random().toString(36).substring(2, 15);
 
   return sortNode({
     ...collection,
     uniqueId: id,
     isRoot: isFirstCollection,
-    childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, false)),
+    childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy, false)),
   });
 };
 
@@ -181,6 +187,21 @@ export const getActualDropTarget = (location: DragLocationHistory): DropNodeElem
   return (location.current.dropTargets[0].data.data as DropNodeElement).node.isFolder
     ? (location.current.dropTargets[0].data.data as DropNodeElement)
     : (location.current.dropTargets[1].data.data as DropNodeElement);
+};
+
+export const getActualDropTargetWithInstruction = (
+  location: DragLocationHistory
+): {
+  dropTarget: DropNodeElementWithInstruction;
+  instruction: Instruction | null;
+} => {
+  console.log(location.current.dropTargets[0].data);
+  const instruction = extractInstruction(location.current.dropTargets[0].data);
+
+  return {
+    dropTarget: location.current.dropTargets[0].data.data as unknown as DropNodeElementWithInstruction,
+    instruction,
+  };
 };
 
 export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {

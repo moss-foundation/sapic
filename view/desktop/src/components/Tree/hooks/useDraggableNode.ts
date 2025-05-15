@@ -9,14 +9,13 @@ export const useDraggableNode = (
   draggableNodeRef: React.RefObject<HTMLButtonElement>,
   node: NodeProps,
   treeId: string | number,
-  isRenamingNode: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
   useEffect(() => {
     const element = draggableNodeRef.current;
-    if (!element || isRenamingNode) return;
+    if (!element) return;
 
     return draggable({
       element,
@@ -43,7 +42,7 @@ export const useDraggableNode = (
         });
       },
     });
-  }, [treeId, node, isRenamingNode, draggableNodeRef, setPreview]);
+  }, [treeId, node, draggableNodeRef, setPreview]);
 
   return {
     isDragging,

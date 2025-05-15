@@ -1,3 +1,5 @@
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+
 export type SortTypes = "none" | "order" | "alphabetically";
 
 export interface Collection {
@@ -35,6 +37,7 @@ export interface TreeProps {
   rootOffset?: number;
   nodeOffset?: number;
   searchInput?: string;
+  sortBy?: SortTypes;
   onTreeUpdate?: (tree: NodeProps) => void;
 
   onRootAdd?: (node: TreeNodeProps) => void;
@@ -59,6 +62,7 @@ export interface TreeContextProps {
   rootOffset: number;
   nodeOffset: number;
   searchInput?: string;
+  sortBy?: SortTypes;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   onRootAddCallback?: (node: TreeNodeProps) => void;
@@ -94,6 +98,7 @@ export interface MoveNodeEventDetail {
     node: TreeNodeProps;
     treeId: string;
   };
+  instruction?: Instruction;
 }
 
 export interface CreateNewCollectionFromTreeNodeEvent {
@@ -114,4 +119,10 @@ export interface TreeNodeDropProps {
 export interface DropNodeElement {
   node: TreeNodeProps;
   treeId: string;
+}
+
+export interface DropNodeElementWithInstruction {
+  node: TreeNodeProps;
+  treeId: string;
+  instruction: Instruction;
 }
