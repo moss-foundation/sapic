@@ -14,3 +14,4 @@ thiserror.workspace = true
 validator.workspace = true
 tauri.workspace = true
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+regex.workspace = true

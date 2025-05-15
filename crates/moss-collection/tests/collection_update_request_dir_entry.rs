@@ -1,6 +1,6 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, set_up_test_collection};
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestDirEntryInput,
     UpdateRequestDirEntryInput,
@@ -339,14 +339,14 @@ async fn update_request_dir_entry_with_content() {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join(&request_dir_new_name)
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
             && kind == &PathChangeKind::Updated
     }));
     assert!(changed_paths.into_iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join(&request_dir_new_name)
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
                 .join("get.sapic")
             && kind == &PathChangeKind::Updated
     }));
@@ -448,7 +448,7 @@ async fn update_request_dir_entry_incorrect_entity_type() {
             path.to_path_buf()
                 == PathBuf::from("requests")
                     .join(&request_dir_name)
-                    .join(&format!("{request_name}.request"))
+                    .join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;

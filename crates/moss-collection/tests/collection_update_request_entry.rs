@@ -1,6 +1,6 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, set_up_test_collection};
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use futures::FutureExt;
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestEntryInput,
@@ -32,7 +32,7 @@ async fn update_request_entry_success() {
         .changed_paths
         .into_iter()
         .find(|(path, _id, _kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+            path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -46,8 +46,8 @@ async fn update_request_entry_success() {
 
     let changed_paths = update_result.unwrap().changed_paths;
 
-    let old_request_path = PathBuf::from("requests").join(format!("{request_name}.request"));
-    let new_request_path = PathBuf::from("requests").join(format!("{request_new_name}.request"));
+    let old_request_path = PathBuf::from("requests").join(request_folder_name(&request_name));
+    let new_request_path = PathBuf::from("requests").join(request_folder_name(&request_new_name));
     assert_eq!(changed_paths.len(), 2);
     assert!(changed_paths.into_iter().any(|(path, _id, kind)| {
         path.to_path_buf() == new_request_path && kind == &PathChangeKind::Updated
@@ -80,7 +80,7 @@ async fn update_request_entry_no_change() {
         .changed_paths
         .into_iter()
         .find(|(path, _id, _kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+            path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -112,7 +112,7 @@ async fn update_request_entry_same_name() {
         .changed_paths
         .into_iter()
         .find(|(path, _id, _kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+            path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -195,7 +195,7 @@ async fn update_request_entry_nonexistent() {
         .changed_paths
         .into_iter()
         .find(|(path, _id, _kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+            path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -238,7 +238,7 @@ async fn update_request_entry_fs_deleted() {
             payload: None,
         })
         .await;
-    let request_path = PathBuf::from("requests").join(format!("{request_name}.request"));
+    let request_path = PathBuf::from("requests").join(request_folder_name(&request_name));
 
     let id = create_result
         .unwrap()
@@ -294,7 +294,7 @@ async fn update_request_entry_nested() {
         .changed_paths
         .into_iter()
         .find(|(path, _id, _kind)| {
-            path.to_path_buf() == request_dir_path.join(format!("{request_name}.request"))
+            path.to_path_buf() == request_dir_path.join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -312,13 +312,13 @@ async fn update_request_entry_nested() {
         changed_paths
             .into_iter()
             .any(|(path, _id, kind)| path.to_path_buf()
-                == request_dir_path.join(format!("{request_new_name}.request"))
+                == request_dir_path.join(request_folder_name(&request_new_name))
                 && kind == &PathChangeKind::Updated)
     );
     assert!(changed_paths.into_iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == request_dir_path
-                .join(format!("{request_new_name}.request"))
+                .join(request_folder_name(&request_new_name))
                 .join("get.sapic")
             && kind == &PathChangeKind::Updated
     }));
