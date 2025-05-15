@@ -9,7 +9,6 @@ use crate::{
     },
     models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
 };
-use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::encode_name;
 use std::sync::Arc;
