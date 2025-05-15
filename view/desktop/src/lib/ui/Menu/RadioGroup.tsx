@@ -15,7 +15,9 @@ type RadioGroupProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive
 
 const RadioGroup = forwardRef<RadioGroupElement, RadioGroupProps>(
   (props: ScopedProps<RadioGroupProps>, forwardedRef) => {
-    return <MenuPrimitive.RadioGroup {...props} ref={forwardedRef} />;
+    const { __scopeActionMenu, ...radioGroupProps } = props;
+
+    return <MenuPrimitive.RadioGroup {...radioGroupProps} ref={forwardedRef} />;
   }
 );
 
@@ -30,9 +32,11 @@ type RadioItemProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.
 };
 
 const RadioItem = forwardRef<RadioItemElement, RadioItemProps>((props: ScopedProps<RadioItemProps>, forwardedRef) => {
+  const { __scopeActionMenu, ...radioItemProps } = props;
+
   return (
     <MenuPrimitive.RadioItem
-      {...props}
+      {...radioItemProps}
       ref={forwardedRef}
       className={cn(
         "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",

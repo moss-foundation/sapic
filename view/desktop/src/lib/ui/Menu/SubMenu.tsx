@@ -45,34 +45,37 @@ const Sub: React.FC<ActionMenuSubProps> = (props: ScopedProps<ActionMenuSubProps
 type SubTriggerElement = ElementRef<typeof MenuPrimitive.SubTrigger>;
 type SubTriggerProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubTrigger>> & {
   icon?: Icons;
-  hideIcon?: boolean;
+  iconClassName?: string;
+  alignWithIcons?: boolean;
 };
 
-const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(({ hideIcon = false, ...props }, forwardedRef) => {
-  const { __scopeActionMenu, ...triggerItemProps } = props;
+const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
+  ({ alignWithIcons = false, iconClassName, ...props }, forwardedRef) => {
+    const { __scopeActionMenu, ...triggerItemProps } = props;
 
-  return (
-    <MenuPrimitive.SubTrigger
-      {...triggerItemProps}
-      ref={forwardedRef}
-      className={cn(
-        "flex items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]",
-        {
-          "cursor-not-allowed opacity-50": props.disabled,
-          "cursor-pointer hover:outline-hidden": !props.disabled,
-        },
-        props.className
-      )}
-    >
-      {!hideIcon &&
-        (props.icon ? <Icon icon={props.icon} className="" /> : <Icon icon="RadioIndicator" className="opacity-0" />)}
+    return (
+      <MenuPrimitive.SubTrigger
+        {...triggerItemProps}
+        ref={forwardedRef}
+        className={cn(
+          "flex items-center gap-2.5 rounded py-0.5 pr-3 pl-4",
+          {
+            "cursor-not-allowed opacity-50": props.disabled,
+            "cursor-pointer hover:outline-hidden": !props.disabled,
+          },
+          props.className
+        )}
+      >
+        {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
+        {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
 
-      <span>{props.children}</span>
+        <span className="truncate">{props.children}</span>
 
-      <Icon icon="ChevronRight" className="ml-auto" />
-    </MenuPrimitive.SubTrigger>
-  );
-});
+        <Icon icon="ChevronRight" className="ml-auto" />
+      </MenuPrimitive.SubTrigger>
+    );
+  }
+);
 
 /* -------------------------------------------------------------------------------------------------
  * SubContent
@@ -83,11 +86,12 @@ type SubContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive
 
 const SubContent = forwardRef<SubContentElement, SubContentProps>(
   (props: ScopedProps<SubContentProps>, forwardedRef) => {
+    const { __scopeActionMenu, ...subContentProps } = props;
+
     return (
       <MenuPrimitive.SubContent
-        {...props}
+        {...subContentProps}
         ref={forwardedRef}
-        sideOffset={16}
         style={{ ...props.style }}
         className={cn("z-50 min-w-36 rounded-lg px-1 py-1.5 shadow-lg", props.className)}
       />

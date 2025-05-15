@@ -13,6 +13,7 @@ import {
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import * as iconsNames from "../assets/icons";
 
@@ -79,17 +80,13 @@ const ComponentGallery = () => {
               {/* Context Actions Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Show Context Actions
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {editorContextItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
+                  <ActionMenu.Content>
+                    {editorContextItems.map((item) => renderActionMenuItem(item))}
                   </ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
@@ -97,72 +94,48 @@ const ComponentGallery = () => {
               {/* Generate Menu Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Generate Menu
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {generateItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{generateItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
               {/* Run Configurations Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Configurations
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runConfigItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runConfigItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
               {/* Run Options Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Options
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runOptionsItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runOptionsItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
 
               {/* Run Selector Button */}
               <ActionMenu.Root>
                 <ActionMenu.Trigger asChild>
-                  <button className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Selector
                   </button>
                 </ActionMenu.Trigger>
                 <ActionMenu.Portal>
-                  <ActionMenu.Content align="start">
-                    {runSelectorItems.map((item) => (
-                      <ActionMenu.Item key={item.id} icon={item.icon || undefined}>
-                        {item.label}
-                      </ActionMenu.Item>
-                    ))}
-                  </ActionMenu.Content>
+                  <ActionMenu.Content>{runSelectorItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
                 </ActionMenu.Portal>
               </ActionMenu.Root>
             </div>

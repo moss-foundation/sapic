@@ -62,7 +62,7 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
         aria-expanded={context.open}
         {...triggerProps}
         ref={forwardedRef}
-        className={cn("flex cursor-pointer items-center gap-1.5 rounded py-0.5 pr-5 pl-[7px]", className)}
+        className={cn("flex cursor-pointer items-center gap-2.5 rounded py-0.5 pr-3 pl-4", className)}
         onClick={(e) => {
           e.stopPropagation();
           context.onOpenChange(!context.open);
@@ -75,9 +75,9 @@ const AccordionTrigger = forwardRef<AccordionTriggerElement, AccordionTriggerPro
           }
         }}
       >
-        <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} className="opacity-40" />
+        <Icon icon={context.open ? "ChevronDown" : "ChevronRight"} />
         {children}
-        {props.total && <span className="ml-1">{props.total}</span>}
+        {props.total && <span className="text-(--moss-secondary-text)">{props.total}</span>}
       </div>
     );
   }

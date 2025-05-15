@@ -1,5 +1,5 @@
-import { MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/lib/ui/Icon";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
 
 // 1. Editor context menu items
 export const editorContextItems: MenuItemProps[] = [
@@ -124,7 +124,7 @@ export const editorContextItems: MenuItemProps[] = [
   },
   { id: "separator-8", type: "separator" },
   { id: "compare-clipboard", type: "action", label: "Compare with Clipboard", icon: "Placeholder" },
-  { id: "separator-8", type: "separator" },
+  { id: "separator-9", type: "separator" },
   {
     id: "diagrams",
     type: "submenu",

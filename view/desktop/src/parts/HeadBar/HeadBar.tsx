@@ -24,21 +24,16 @@ import { HeadBarRightItems } from "./HeadBarRightItems";
 import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
-  // TEST: Hardcode OS type for testing
+  // TEST: Hardoce OS type for testing
   const os = type();
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [gitMenuOpen, setGitMenuOpen] = useState(false);
-  const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
-  const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
-  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
 
   // Use the workspace context instead of local state
   const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
 
-  // TEST: Hardcode default user/branch for testing
+  // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [collectionName, setCollectionName] = useState("Sapic Test Collection");
@@ -123,16 +118,18 @@ export const HeadBar = () => {
           data-tauri-drag-region
         >
           {/* Main content container with proper layout */}
-          <div className="flex w-full items-center justify-between" data-tauri-drag-region>
+          <div
+            className={cn("grid w-full gap-1", {
+              "grid-cols-[minmax(1px,673px)_1fr_1fr]": selectedWorkspace,
+              "grid-cols-[1fr_1fr]": !selectedWorkspace,
+            })}
+            data-tauri-drag-region
+          >
             {/*HeadBar Left-side items*/}
             <HeadBarLeftItems
               isLarge={isLarge}
               breakpoint={breakpoint}
-              windowsMenuOpen={windowsMenuOpen}
-              setWindowsMenuOpen={setWindowsMenuOpen}
               handleWindowsMenuAction={handleWindowsMenuAction}
-              workspaceMenuOpen={workspaceMenuOpen}
-              setWorkspaceMenuOpen={setWorkspaceMenuOpen}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
             />
@@ -143,11 +140,7 @@ export const HeadBar = () => {
                 isMedium={isMedium}
                 isXLarge={isXLarge}
                 breakpoint={breakpoint}
-                gitMenuOpen={gitMenuOpen}
-                setGitMenuOpen={setGitMenuOpen}
                 handleGitMenuAction={handleGitMenuAction}
-                collectionActionMenuOpen={collectionActionMenuOpen}
-                setCollectionActionMenuOpen={setCollectionActionMenuOpen}
                 handleCollectionActionMenuAction={handleCollectionActionMenuAction}
                 selectedBranch={selectedBranch}
                 collectionName={collectionName}
@@ -162,8 +155,6 @@ export const HeadBar = () => {
               isMedium={isMedium}
               isLarge={isLarge}
               breakpoint={breakpoint}
-              userMenuOpen={userMenuOpen}
-              setUserMenuOpen={setUserMenuOpen}
               handleUserMenuAction={handleUserMenuAction}
               showDebugPanels={showDebugPanels}
               setShowDebugPanels={setShowDebugPanels}

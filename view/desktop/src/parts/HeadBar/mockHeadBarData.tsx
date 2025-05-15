@@ -1,5 +1,5 @@
-import { type MenuItemProps } from "@/components/ActionMenu/ActionMenu";
 import { type Icons } from "@/lib/ui/Icon";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
 
 // User menu items function that returns appropriate items based on whether a user is selected
 export const userMenuItems: MenuItemProps[] = [

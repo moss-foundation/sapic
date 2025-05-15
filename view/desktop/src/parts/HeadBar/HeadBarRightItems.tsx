@@ -10,8 +10,6 @@ export interface HeadBarRightItemsProps {
   isMedium: boolean;
   isLarge: boolean;
   breakpoint: string;
-  userMenuOpen: boolean;
-  setUserMenuOpen: (open: boolean) => void;
   handleUserMenuAction: (action: string) => void;
   showDebugPanels: boolean;
   setShowDebugPanels: (show: boolean) => void;
@@ -35,9 +33,9 @@ export const HeadBarRightItems = ({
   const { selectedWorkspace } = useWorkspaceContext();
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center place-self-end">
       <ActionMenu.Root>
-        <ActionMenu.Trigger>
+        <ActionMenu.Trigger asChild>
           <IconLabelButton
             leftIcon="UserAvatar"
             leftIconClassName="text-(--moss-primary) size-4.5"
