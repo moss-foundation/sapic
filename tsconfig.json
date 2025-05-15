@@ -38,7 +38,7 @@
       "path": "view/desktop"
     },
     {
-      "path": "tools"
+      "path": "tools/gen-bindings"
     }
   ]
 }

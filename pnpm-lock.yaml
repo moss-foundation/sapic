@@ -308,7 +308,7 @@ importers:
         specifier: ^22.10.1
         version: 22.15.3
 
-  tools:
+  tools/gen-bindings:
     dependencies:
       ts-morph:
         specifier: ^25.0.1

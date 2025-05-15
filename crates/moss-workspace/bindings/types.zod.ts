@@ -2,6 +2,7 @@
 import { z } from "zod";
 
 import { jsonValueSchema, resourceKeySchema } from "@repo/bindings-utils";
+import { identifierSchema } from "./primitives.zod";
 import { type EditorGridNode } from "./types";
 
 export const editorGridLeafDataSchema = z.object({
@@ -48,8 +49,8 @@ export const sidebarPartStateSchema = z.object({
 
 export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
 export const collectionInfoSchema = z.object({
-  key: resourceKeySchema,
-  name: z.string(),
+  id: identifierSchema,
+  displayName: z.string(),
   order: z.number().optional(),
 });
 
@@ -77,4 +78,10 @@ export const environmentInfoSchema = z.object({
   collectionKey: resourceKeySchema.optional(),
   name: z.string(),
   order: z.number().optional(),
+});
+
+export const streamCollectionsEventSchema = z.object({
+  id: identifierSchema,
+  displayName: z.string(),
+  order: z.number().nullable(),
 });
