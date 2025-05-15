@@ -8,7 +8,6 @@ import {
   pathParamItemSchema,
   queryParamItemSchema,
   requestBodySchema,
-  requestNodeInfoSchema,
 } from "./types.zod";
 
 export const createRequestDirEntryInputSchema = z.object({
@@ -49,8 +48,6 @@ export const deleteRequestEntryInputSchema = z.object({
 export const deleteRequestEntryOutputSchema = z.object({
   changedPaths: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });
-
-export const listRequestsOutputSchema = z.array(requestNodeInfoSchema);
 
 export const updateRequestDirEntryInputSchema = z.object({
   id: entryIdSchema,
