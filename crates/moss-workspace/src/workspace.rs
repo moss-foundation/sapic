@@ -199,6 +199,11 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
+                    // TODO: A self-healing mechanism needs to be implemented here.
+                    // Collections that are found in the database but do not actually exist
+                    // in the file system should be collected and deleted from the database in
+                    // a parallel thread.
+
                     let abs_path: Arc<Path> =
                         if let Some(external_abs_path) = value.external_abs_path {
                             external_abs_path.into()
@@ -208,6 +213,10 @@ impl<R: TauriRuntime> Workspace<R> {
                                 .join(encoded_name)
                                 .into()
                         };
+                    if !abs_path.exists() {
+                        // TODO: logging
+                        continue;
+                    }
 
                     let (display_name, encoded_name) = match abs_path.file_name() {
                         Some(name) => {
@@ -221,11 +230,6 @@ impl<R: TauriRuntime> Workspace<R> {
                             continue;
                         }
                     };
-
-                    // TODO: A self-healing mechanism needs to be implemented here.
-                    // Collections that are found in the database but do not actually exist
-                    // in the file system should be collected and deleted from the database in
-                    // a parallel thread.
 
                     let id = Identifier::new(&self.next_collection_id);
                     let collection = Collection::new(

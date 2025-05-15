@@ -115,26 +115,28 @@ impl<R: TauriRuntime> Workbench<R> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
-                let abs_path = self.absolutize(WORKSPACES_DIR);
-                if !abs_path.exists() {
-                    return Ok(RwLock::new(HashMap::new()));
-                }
-
                 let mut workspaces = HashMap::new();
+
+                let dir_abs_path = self.absolutize(WORKSPACES_DIR);
+                if !dir_abs_path.exists() {
+                    return Ok(RwLock::new(workspaces));
+                }
 
                 let restored_items = ListByPrefix::list_by_prefix(
                     self.global_storage.item_store().as_ref(),
                     WORKSPACE_SEGKEY.as_str().expect("invalid utf-8"),
                 )?;
-                let mut restored_entities = HashMap::with_capacity(restored_items.len());
-                for (segkey, value) in restored_items.into_iter().filter_map(|(k, v)| {
+                let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
                     let path = k.after(&WORKSPACE_SEGKEY);
                     if let Some(path) = path {
                         Some((path, v))
                     } else {
                         None
                     }
-                }) {
+                });
+
+                let mut restored_entities = HashMap::with_capacity(restored_items.len());
+                for (segkey, value) in filtered_restored_items {
                     let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
                         Ok(name) => name,
                         Err(_) => {
@@ -147,7 +149,7 @@ impl<R: TauriRuntime> Workbench<R> {
                     restored_entities.insert(encoded_name, value);
                 }
 
-                let mut read_dir = self.fs.read_dir(&abs_path).await?;
+                let mut read_dir = self.fs.read_dir(&dir_abs_path).await?;
                 while let Some(entry) = read_dir.next_entry().await? {
                     if !entry.file_type().await?.is_dir() {
                         continue;

@@ -8,7 +8,6 @@ use async_trait::async_trait;
 use entities::variable_store_entities::VariableEntity;
 use moss_db::{
     DatabaseClient, ReDbClient,
-    bincode_table::BincodeTable,
     common::{DatabaseError, Transaction},
     primitives::AnyValue,
 };
