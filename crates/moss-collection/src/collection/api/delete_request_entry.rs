@@ -1,22 +1,17 @@
-use anyhow::Context as _;
+use crate::collection::Collection;
+use crate::collection::worktree::common::{
+    is_dir, path_ends_with_extension, path_starts_with, validate_entry,
+};
+use crate::models::operations::{DeleteRequestEntryInput, DeleteRequestEntryOutput};
+use anyhow::Context;
 use moss_common::api::{OperationError, OperationResult};
 use std::sync::Arc;
 
-use crate::{
-    collection::{
-        Collection,
-        worktree::common::{
-            is_dir, path_not_ends_with_extension, path_starts_with, validate_entry,
-        },
-    },
-    models::operations::{DeleteRequestDirEntryInput, DeleteRequestDirEntryOutput},
-};
-
 impl Collection {
-    pub async fn delete_request_dir_entry(
+    pub async fn delete_request_entry(
         &self,
-        input: DeleteRequestDirEntryInput,
-    ) -> OperationResult<DeleteRequestDirEntryOutput> {
+        input: DeleteRequestEntryInput,
+    ) -> OperationResult<DeleteRequestEntryOutput> {
         let worktree = self.worktree().await?;
 
         let entry = {
@@ -34,7 +29,7 @@ impl Collection {
             &entry,
             &[
                 is_dir(),
-                path_not_ends_with_extension("request"),
+                path_ends_with_extension("request"),
                 path_starts_with("requests"),
             ],
         )?;
@@ -43,6 +38,6 @@ impl Collection {
 
         // TODO: update the state database
 
-        Ok(DeleteRequestDirEntryOutput { changed_paths })
+        Ok(DeleteRequestEntryOutput { changed_paths })
     }
 }
