@@ -3015,6 +3015,7 @@ dependencies = [
  "slotmap",
  "tauri",
  "thiserror 2.0.12",
+ "tokio",
  "ts-rs",
  "validator",
 ]
@@ -3095,13 +3096,6 @@ dependencies = [
  "ssh2",
  "url",
  "webbrowser",
-]
-
-[[package]]
-name = "moss_id"
-version = "0.1.0"
-dependencies = [
- "moss_common",
 ]
 
 [[package]]
