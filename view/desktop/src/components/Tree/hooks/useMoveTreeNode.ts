@@ -1,7 +1,16 @@
 import { Dispatch, SetStateAction, useEffect } from "react";
 
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
+
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "../types";
-import { addNodeToFolder, hasDescendant, removeNodeFromTree, removeUniqueIdFromTree } from "../utils";
+import {
+  addNodeChildrenWithInstruction,
+  addNodeToFolder,
+  findParentNodeByChildUniqueId,
+  hasDescendant,
+  removeNodeFromTree,
+  removeUniqueIdFromTree,
+} from "../utils";
 
 interface useMoveTreeNodeProps {
   treeId: TreeProps["id"];
@@ -13,6 +22,55 @@ interface useMoveTreeNodeProps {
 
   setTree: Dispatch<SetStateAction<TreeNodeProps>>;
 }
+
+const addNodeToTreeWithInstruction = (
+  tree: TreeNodeProps,
+  targetNode: TreeNodeProps,
+  sourceNode: TreeNodeProps,
+  instruction: Instruction | undefined
+): TreeNodeProps => {
+  if (!instruction) return tree;
+
+  const treeWithoutSource = removeNodeFromTree(tree, sourceNode.uniqueId);
+
+  if (instruction.type === "make-child" && targetNode.isFolder) {
+    return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+  }
+
+  const targetParentNode = findParentNodeByChildUniqueId(treeWithoutSource, targetNode.uniqueId);
+  if (!targetParentNode) return treeWithoutSource;
+
+  const indexOfTargetNode = targetParentNode.childNodes.findIndex((child) => child.uniqueId === targetNode.uniqueId);
+  if (indexOfTargetNode === -1) return treeWithoutSource;
+
+  if (instruction.type === "reorder-above") {
+    return addNodeChildrenWithInstruction(
+      treeWithoutSource,
+      targetParentNode.uniqueId,
+      [
+        ...targetParentNode.childNodes.slice(0, indexOfTargetNode),
+        sourceNode,
+        ...targetParentNode.childNodes.slice(indexOfTargetNode),
+      ],
+      instruction
+    );
+  }
+
+  if (instruction.type === "reorder-below") {
+    return addNodeChildrenWithInstruction(
+      treeWithoutSource,
+      targetParentNode.uniqueId,
+      [
+        ...targetParentNode.childNodes.slice(0, indexOfTargetNode + 1),
+        sourceNode,
+        ...targetParentNode.childNodes.slice(indexOfTargetNode + 1),
+      ],
+      instruction
+    );
+  }
+
+  return tree;
+};
 
 export const useMoveTreeNode = ({
   treeId,
@@ -27,26 +85,20 @@ export const useMoveTreeNode = ({
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target, instruction } = event.detail;
 
-      console.log("handleMoveTreeNode", {
-        source,
-        target,
-        instruction,
-      });
+      if (source.node.uniqueId === target.node.uniqueId) return;
 
       if (source.treeId === target.treeId && source.treeId === treeId) {
-        if (hasDescendant(source.node, target.node) || source.node.uniqueId === target.node.uniqueId) {
+        if (hasDescendant(source.node, target.node)) {
           return;
         }
+
         setTree((prevTree) => {
-          const treeWithoutSource = removeNodeFromTree(prevTree, source.node.uniqueId);
-          const updatedTree = addNodeToFolder(treeWithoutSource, target.node.uniqueId, source.node);
-          onTreeUpdate?.(removeUniqueIdFromTree(updatedTree));
-          return updatedTree;
+          return addNodeToTreeWithInstruction(prevTree, target.node, source.node, instruction);
         });
       } else {
         if (target.treeId === treeId) {
           setTree((prevTree) => {
-            const updatedTree = addNodeToFolder(prevTree, target.node.uniqueId, source.node);
+            const updatedTree = addNodeToTreeWithInstruction(prevTree, target.node, source.node, instruction);
             if (source.node.isRoot) {
               onRootAdd?.(source.node);
             } else {

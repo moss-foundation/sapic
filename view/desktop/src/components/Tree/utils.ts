@@ -5,7 +5,7 @@ import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-dra
 import { DropNodeElement, DropNodeElementWithInstruction, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
 export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
-  if (node.uniqueId === updatedNode.uniqueId) return updatedNode;
+  if (node.uniqueId === updatedNode.uniqueId) return updateNodeOrder(updatedNode);
 
   return {
     ...node,
@@ -14,6 +14,8 @@ export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps):
 };
 
 export const sortNode = (node: TreeNodeProps, sortBy: SortTypes = "alphabetically"): TreeNodeProps => {
+  if (sortBy === "none") return node;
+
   return {
     ...node,
     childNodes: sortNodes(
@@ -56,12 +58,15 @@ export const prepareCollectionForTree = (
 ): TreeNodeProps => {
   const id = "TreeNodeUniqueId-" + Math.random().toString(36).substring(2, 15);
 
-  return sortNode({
-    ...collection,
-    uniqueId: id,
-    isRoot: isFirstCollection,
-    childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy, false)),
-  });
+  return sortNode(
+    {
+      ...collection,
+      uniqueId: id,
+      isRoot: isFirstCollection,
+      childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy, false)),
+    },
+    sortBy
+  );
 };
 
 export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
@@ -167,15 +172,36 @@ export const addNodeToFolder = (
   nodeToAdd: TreeNodeProps
 ): TreeNodeProps => {
   if (tree.uniqueId === targetUniqueId) {
-    return {
+    return updateNodeOrder({
       ...tree,
       childNodes: [...tree.childNodes, nodeToAdd],
-    };
+    });
   }
 
   return {
     ...tree,
     childNodes: tree.childNodes.map((child) => addNodeToFolder(child, targetUniqueId, nodeToAdd)),
+  };
+};
+
+export const addNodeChildrenWithInstruction = (
+  tree: TreeNodeProps,
+  targetUniqueId: string,
+  childNodes: TreeNodeProps[],
+  instruction: Instruction
+): TreeNodeProps => {
+  if (tree.uniqueId === targetUniqueId) {
+    return updateNodeOrder({
+      ...tree,
+      childNodes,
+    });
+  }
+
+  return {
+    ...tree,
+    childNodes: tree.childNodes.map((child) =>
+      addNodeChildrenWithInstruction(child, targetUniqueId, childNodes, instruction)
+    ),
   };
 };
 
@@ -303,4 +329,21 @@ export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => 
   }
 
   return true;
+};
+
+export const updateNodeOrder = (node: TreeNodeProps): TreeNodeProps => {
+  return {
+    ...node,
+    childNodes: node.childNodes.map((child, index) => ({
+      ...child,
+      order: index + 1,
+    })),
+  };
+};
+
+export const updateNodesOrder = (nodes: TreeNodeProps[]): TreeNodeProps[] => {
+  return nodes.map((node, index) => ({
+    ...node,
+    order: index + 1,
+  }));
 };

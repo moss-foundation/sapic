@@ -59,7 +59,7 @@ export const useInstructionNode = (
             indentPerLevel: 1,
             currentLevel: depth,
             mode: "standard",
-            block: [],
+            block: node.isFolder ? [] : ["make-child"],
           });
         },
         canDrop({ source }) {
