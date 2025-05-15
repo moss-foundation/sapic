@@ -54,7 +54,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let collection = Collection::new(
             abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
             self.fs.clone(),
-            self.indexer_handle.clone(),
             self.next_collection_entry_id.clone(),
         )?;
 

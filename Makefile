@@ -50,6 +50,9 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 .DEFAULT_GOAL := run-desktop
 
 # ---- Directory Paths ----
+# Tool directories
+GEN_BINDINGS_DIR := tools/gen-bindings
+
 # Application directories
 DESKTOP_DIR := view/desktop
 XTASK_DIR := tools/xtask
@@ -114,18 +117,21 @@ gen-icons:
 define gen_bindings
 .PHONY: gen-$(1)-bindings
 gen-$(1)-bindings:
+	@echo "Removing old $(1) models"
+	@cd $($(2)) && @rm bindings -rf
+
 	@echo "Generating $(1) models..."
 	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
-	@cd tools && $(PNPM) run importsResolver ../$($(2))
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsResolver ../../$($(2))
 
 	@echo "Generating $(1) zod schemas..."
-	@cd tools && $(PNPM) run zodGenerator ../$($(2))
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run zodGenerator ../../$($(2))
 
 	@echo "Updating exports in index.ts..."
 	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_exports_injector.py
 
 	@echo "Formatting generated files"
-	@cd tools && $(PNPM) run importsConsolidator ../$($(2))
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsConsolidator ../../$($(2))
 	@cd $($(2)) && $(PNPM) format
 	@echo "$(1) bindings generated successfully"
 endef

@@ -1,11 +1,5 @@
-use file_id::FileId;
-use moss_common::leased_slotmap::ResourceKey;
 use serde::{Deserialize, Serialize};
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-    time::SystemTime,
-};
+use std::path::PathBuf;
 use ts_rs::TS;
 
 use super::primitives::EntryId;
@@ -143,50 +137,6 @@ pub enum RawBodyType {
     Xml(String),
 }
 
-#[derive(Debug, PartialEq, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum RequestNodeInfo {
-    Request {
-        key: ResourceKey,
-        name: String,
-        // This field will be encoded if the input relative path contains special characters
-        path: PathBuf,
-        order: Option<usize>,
-        protocol: RequestProtocol,
-    },
-    Group {
-        key: ResourceKey,
-        name: String,
-        // This field will be encoded if the input relative path contains special characters
-        path: PathBuf,
-        order: Option<usize>,
-    },
-}
-
-impl RequestNodeInfo {
-    pub fn name(&self) -> &str {
-        match self {
-            RequestNodeInfo::Request { name, .. } => name,
-            RequestNodeInfo::Group { name, .. } => name,
-        }
-    }
-
-    pub fn path(&self) -> &PathBuf {
-        match self {
-            RequestNodeInfo::Request { path, .. } => path,
-            RequestNodeInfo::Group { path, .. } => path,
-        }
-    }
-
-    pub fn order(&self) -> &Option<usize> {
-        match self {
-            RequestNodeInfo::Request { order, .. } => order,
-            RequestNodeInfo::Group { order, .. } => order,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -227,7 +177,7 @@ pub enum UnitType {
     Component,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum PathChangeKind {

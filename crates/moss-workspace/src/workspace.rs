@@ -1,9 +1,6 @@
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
-use moss_collection::{
-    collection::Collection,
-    indexer::{self, IndexerHandle},
-};
+use moss_collection::collection::Collection;
 use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
@@ -22,7 +19,7 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock, mpsc};
+use tokio::sync::{OnceCell, RwLock};
 
 use crate::storage::segments::COLLECTION_SEGKEY;
 
@@ -73,12 +70,11 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
-    pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) indexer_handle: IndexerHandle,
-    pub(super) next_collection_entry_id: Arc<AtomicUsize>,
-    pub(super) next_collection_id: Arc<AtomicUsize>,
-    pub(super) next_variable_id: Arc<AtomicUsize>,
-    pub(super) next_environment_id: Arc<AtomicUsize>,
+    activity_indicator: ActivityIndicator<R>,
+    next_collection_entry_id: Arc<AtomicUsize>,
+    next_collection_id: Arc<AtomicUsize>,
+    next_variable_id: Arc<AtomicUsize>,
+    next_environment_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -91,17 +87,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let state_db_manager = WorkspaceStorageImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
-        let (tx, rx) = mpsc::unbounded_channel();
-        let indexer_handle = IndexerHandle::new(tx);
-        tauri::async_runtime::spawn({
-            let fs_clone = Arc::clone(&fs);
-            let activity_indicator_clone = activity_indicator.clone();
-
-            async move {
-                indexer::run(activity_indicator_clone, fs_clone, rx).await;
-            }
-        });
-
         Ok(Self {
             app_handle,
             abs_path: path,
@@ -109,7 +94,6 @@ impl<R: TauriRuntime> Workspace<R> {
             workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
-            indexer_handle,
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
             next_collection_id: Arc::new(AtomicUsize::new(0)),
@@ -247,7 +231,6 @@ impl<R: TauriRuntime> Workspace<R> {
                     let collection = Collection::new(
                         abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
                         self.fs.clone(),
-                        self.indexer_handle.clone(),
                         self.next_collection_entry_id.clone(),
                     )?;
                     collections.insert(

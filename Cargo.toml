@@ -23,9 +23,8 @@ members = [
     "crates/moss-workbench",
     "crates/moss-storage",
     "crates/moss-activity-indicator",
-
     "tools/xtask",
-    "view/desktop/bin", 
+    "view/desktop/bin",
 ]
 
 [workspace.dependencies]

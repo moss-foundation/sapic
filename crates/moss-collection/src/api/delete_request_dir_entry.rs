@@ -1,12 +1,11 @@
-use anyhow::Context as _;
-use moss_common::api::OperationResult;
+use moss_common::api::{OperationError, OperationResult};
 use std::sync::Arc;
 
+use crate::worktree::common::{
+    is_dir, path_not_ends_with_extension, path_starts_with, validate_entry,
+};
 use crate::{
-    collection::{
-        Collection,
-        worktree::common::{is_dir, path_not_ends_with, path_starts_with, validate_entry},
-    },
+    collection::Collection,
     models::operations::{DeleteRequestDirEntryInput, DeleteRequestDirEntryOutput},
 };
 
@@ -21,8 +20,10 @@ impl Collection {
             let snapshot_lock = worktree.read().await;
             let entry = snapshot_lock
                 .entry_by_id(input.id)
-                .context("Entry not found")?; // TODO: replace with OperationError::NotFound
-
+                .ok_or(OperationError::NotFound {
+                    name: input.id.to_string(),
+                    path: Default::default(),
+                })?;
             Arc::clone(&entry)
         };
 
@@ -30,17 +31,15 @@ impl Collection {
             &entry,
             &[
                 is_dir(),
-                path_not_ends_with(".request"),
+                path_not_ends_with_extension("request"),
                 path_starts_with("requests"),
             ],
         )?;
 
-        let changes = worktree.remove_entry(&entry.path).await?;
+        let changed_paths = worktree.remove_entry(&entry.path).await?;
 
         // TODO: update the state database
 
-        Ok(DeleteRequestDirEntryOutput {
-            changed_paths: changes,
-        })
+        Ok(DeleteRequestDirEntryOutput { changed_paths })
     }
 }
