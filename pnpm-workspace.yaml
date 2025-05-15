@@ -2,5 +2,5 @@ packages:
   - "crates/*"
   - "view/*"
   - "packages/*"
-  - "tools/gen-bindings"
+  - "tools/*"
   - "view/desktop/src/lib/*"
