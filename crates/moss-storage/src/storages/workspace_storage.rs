@@ -23,7 +23,7 @@ use crate::{
 
 use super::WorkspaceStorage;
 
-const WORKSPACE_STATE_DB_NAME: &str = "state.db";
+const DB_NAME: &str = "state.db";
 
 // <environment_name>:<variable_name>
 pub type VariableKey = String;
@@ -39,7 +39,7 @@ pub struct WorkspaceStorageImpl {
 
 impl WorkspaceStorageImpl {
     pub fn new(path: &Path) -> Result<Self> {
-        let db_client = ReDbClient::new(path.join(WORKSPACE_STATE_DB_NAME))?
+        let db_client = ReDbClient::new(path.join(DB_NAME))?
             .with_table(&ITEM_STORE)?
             .with_table(&TABLE_VARIABLES)?;
 

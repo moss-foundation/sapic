@@ -27,7 +27,7 @@ use super::{
     state_store::StateStoreImpl,
 };
 
-const COLLECTION_STATE_DB_NAME: &str = "state.db";
+const DB_NAME: &str = "state.db";
 
 pub(crate) type RequestStoreTable<'a> = BincodeTable<'a, String, RequestNodeEntity>;
 pub trait RequestStore: Send + Sync + 'static {
@@ -66,8 +66,7 @@ struct ResettableStorageCell {
 
 impl ResettableStorageCell {
     pub fn new(path: &Path) -> Result<Self> {
-        let db_client =
-            ReDbClient::new(path.join(COLLECTION_STATE_DB_NAME))?.with_table(&TABLE_REQUESTS)?;
+        let db_client = ReDbClient::new(path.join(DB_NAME))?.with_table(&TABLE_REQUESTS)?;
 
         let request_store = Arc::new(RequestStoreImpl::new(db_client.clone()));
         let state_store = Arc::new(StateStoreImpl::new(db_client.clone()));

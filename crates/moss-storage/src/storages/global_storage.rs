@@ -17,7 +17,7 @@ use crate::{
 
 use super::GlobalStorage;
 
-const GLOBAL_STATE_DB_NAME: &str = "state.db";
+const DB_NAME: &str = "state.db";
 
 pub struct GlobalStorageImpl {
     db_client: ReDbClient,
@@ -26,8 +26,7 @@ pub struct GlobalStorageImpl {
 
 impl GlobalStorageImpl {
     pub fn new(path: &PathBuf) -> Result<Self, DatabaseError> {
-        let db_client =
-            ReDbClient::new(path.join(GLOBAL_STATE_DB_NAME))?.with_table(&ITEM_STORE)?;
+        let db_client = ReDbClient::new(path.join(DB_NAME))?.with_table(&ITEM_STORE)?;
 
         let item_store = Arc::new(ItemStoreImpl::new(db_client.clone(), ITEM_STORE));
 
