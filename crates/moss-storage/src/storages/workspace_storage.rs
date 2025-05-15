@@ -16,7 +16,7 @@ use stores::variable_store::VariableStoreImpl;
 use tables::{ITEM_STORE, TABLE_VARIABLES};
 
 use crate::{
-    common::item_store::{ItemStore, store_impl::ItemStoreImpl},
+    common::item_store::{ItemStore, ItemStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::Transactional,
 };

@@ -10,7 +10,7 @@ use std::{path::PathBuf, sync::Arc};
 use tables::ITEM_STORE;
 
 use crate::{
-    common::item_store::{ItemStore, store_impl::ItemStoreImpl},
+    common::item_store::{ItemStore, ItemStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::Transactional,
 };
