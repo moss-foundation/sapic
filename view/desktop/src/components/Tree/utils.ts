@@ -221,7 +221,6 @@ export const getActualDropTargetWithInstruction = (
   dropTarget: DropNodeElementWithInstruction;
   instruction: Instruction | null;
 } => {
-  console.log(location.current.dropTargets[0].data);
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
