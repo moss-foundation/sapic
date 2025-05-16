@@ -75,6 +75,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           instruction={instruction}
           isFolder={node.isFolder}
           depth={depth}
+          isLastChild={isLastChild}
         />
       )}
       {isRenamingNode ? (
@@ -99,6 +100,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           canDrop={canDrop}
           instruction={instruction}
           preview={preview}
+          isLastChild={isLastChild}
         />
       )}
 
@@ -130,9 +132,25 @@ interface TreeNodeButtonProps {
   canDrop: boolean | null;
   instruction: Instruction | null;
   preview: HTMLElement | null;
+  isLastChild: boolean;
 }
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
-  ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onRename, isDragging, canDrop, instruction, preview }, ref) => {
+  (
+    {
+      node,
+      onNodeUpdate,
+      depth,
+      onAddFile,
+      onAddFolder,
+      onRename,
+      isDragging,
+      canDrop,
+      instruction,
+      preview,
+      isLastChild,
+    },
+    ref
+  ) => {
     const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback, paddingRight } =
       useContext(TreeContext);
 
@@ -196,6 +214,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   instruction={instruction}
                   isFolder={node.isFolder}
                   depth={depth}
+                  isLastChild={isLastChild}
                 />
               )}
               <Icon

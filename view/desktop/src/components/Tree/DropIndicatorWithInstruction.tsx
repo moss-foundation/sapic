@@ -9,6 +9,7 @@ interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   paddingRight?: number;
   isFolder?: boolean;
   depth?: number;
+  isLastChild?: boolean;
 }
 
 export const DropIndicatorWithInstruction = ({
@@ -18,6 +19,7 @@ export const DropIndicatorWithInstruction = ({
   paddingRight = 0,
   isFolder = false,
   depth = 0,
+  isLastChild = false,
   ...props
 }: DropIndicatorProps) => {
   if (!instruction) return null;
@@ -26,7 +28,7 @@ export const DropIndicatorWithInstruction = ({
 
   const reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
 
-  const leftOffset = depth === 1 ? 0 : !isFolder || instruction.type === "reorder-above" ? 16 : 0;
+  const leftOffset = depth === 1 ? 0 : !isFolder || instruction.type === "reorder-above" ? 16 : isLastChild ? 0 : 16;
   const left = paddingLeft + leftOffset;
 
   let styles;
