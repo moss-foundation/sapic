@@ -54,7 +54,7 @@ export const useDraggableRootNode = (
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TreeNodeRoot";
+          return source.data.type === "TreeRootNode";
         },
         getIsSticky() {
           return true;
