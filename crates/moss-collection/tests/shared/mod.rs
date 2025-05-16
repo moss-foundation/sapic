@@ -1,7 +1,7 @@
 use moss_collection::collection::Collection;
-use moss_common::models::primitives::SanitizedName;
+use moss_common::sanitized::SanitizedName;
 use moss_fs::RealFileSystem;
-use moss_fs::utils::{encode_name, encode_path};
+use moss_fs::utils::encode_path;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;

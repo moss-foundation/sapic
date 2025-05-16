@@ -3011,6 +3011,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_db",
+ "moss_testutils",
  "regex",
  "serde",
  "slotmap",

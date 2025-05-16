@@ -8,7 +8,7 @@ use crate::{
     models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
 };
 use moss_common::api::{OperationError, OperationResult};
-use moss_common::models::primitives::SanitizedName;
+use moss_common::sanitized::SanitizedName;
 use std::sync::Arc;
 use validator::Validate;
 

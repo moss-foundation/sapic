@@ -7,7 +7,7 @@ use moss_collection::models::operations::{
 };
 use moss_collection::models::types::PathChangeKind;
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::SanitizedName;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
@@ -259,7 +259,7 @@ async fn update_request_dir_entry_special_chars() {
 
     for char in FOLDERNAME_SPECIAL_CHARS {
         let new_name = format!("{char}{}", request_dir_name);
-        let encoded_name = encode_name(&new_name);
+        let sanitized_name = SanitizedName::new(&new_name);
         let update_result = collection
             .update_request_dir_entry(UpdateRequestDirEntryInput {
                 id: dir_id.clone(),
@@ -271,14 +271,14 @@ async fn update_request_dir_entry_special_chars() {
 
         assert_eq!(changed_paths.len(), 1);
         assert!(changed_paths.into_iter().any(|(path, id, kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(&encoded_name)
+            path.to_path_buf() == PathBuf::from("requests").join(&sanitized_name)
                 && id == &dir_id
                 && kind == &PathChangeKind::Updated
         }));
         assert!(
             collection_path
                 .join("requests")
-                .join(&encoded_name)
+                .join(&sanitized_name)
                 .exists()
         );
     }
