@@ -17,11 +17,25 @@ import { TestCollectionIcon } from "./TestCollectionIcon";
 import { TreeNodeComponentProps, TreeNodeProps } from "./types";
 import { hasDescendantWithSearchInput } from "./utils";
 
+const shouldRenderTreeNode = (
+  node: TreeNodeProps,
+  searchInput: string | undefined,
+  isAddingFileNode: boolean,
+  isAddingFolderNode: boolean
+) => {
+  if (isAddingFileNode || isAddingFolderNode) return true;
+
+  if (searchInput) return true;
+
+  if (node.isFolder && node.isExpanded) return true;
+
+  return false;
+};
+
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
   const { searchInput, onNodeAddCallback, onNodeRenameCallback } = useContext(TreeContext);
 
-  const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
+  const dropTargetFolderRef = useRef<HTMLLIElement>(null);
 
   const {
     isAddingFileNode,
@@ -37,11 +51,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     onNodeUpdate
   );
 
-  const shouldRenderChildNodes =
-    !!searchInput || isAddingFileNode || isAddingFolderNode || (!searchInput && node.isFolder && node.isExpanded);
+  const shouldRenderChildNodes = shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
 
   return (
-    <li ref={dropTargetListRef}>
+    <li ref={dropTargetFolderRef}>
       {isRenamingNode ? (
         <TreeNodeRenameForm
           node={node}
@@ -74,14 +87,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         />
       )}
 
-      {shouldRenderChildNodes && (
-        <TreeNodeChildren
-          node={node}
-          onNodeUpdate={onNodeUpdate}
-          depth={depth}
-          dropTargetFolderRef={dropTargetFolderRef}
-        />
-      )}
+      {shouldRenderChildNodes && <TreeNodeChildren node={node} onNodeUpdate={onNodeUpdate} depth={depth} />}
     </li>
   );
 };
@@ -90,11 +96,8 @@ const TreeNodeButton = ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onR
   const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback } = useContext(TreeContext);
 
   const draggableNodeRef = useRef<HTMLButtonElement>(null);
-  // const { instruction } = useDropTargetNode(node, treeId, draggableNodeRef, depth);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-
-  // const { isDragging } = useDraggableNode(draggableNodeRef, node, treeId, setPreview);
 
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -271,14 +274,14 @@ const TreeNodeAddForm = ({
   );
 };
 
-const TreeNodeChildren = ({ node, onNodeUpdate, depth, dropTargetFolderRef }) => {
+const TreeNodeChildren = ({ node, onNodeUpdate, depth }) => {
   const { searchInput } = useContext(TreeContext);
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
 
   return (
-    <div className="contents" ref={dropTargetFolderRef}>
+    <div className="contents">
       <ul className="h-full">
         {filteredChildNodes.map((childNode) => (
           <TreeNode
