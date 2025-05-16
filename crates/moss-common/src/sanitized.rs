@@ -1,8 +1,9 @@
+use anyhow::Result;
 use regex::Regex;
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 use std::fmt::{Display, Formatter};
-use std::path::{Component, Path, PathBuf};
-use std::sync::LazyLock;
+use std::path::Path;
+use std::sync::{LazyLock};
 
 /// Regex to match forbidden characters in a directory/file name
 static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap());
@@ -17,7 +18,7 @@ fn encode(original: &str) -> String {
 }
 
 /// Function to decode an encoded directory/file name back to its original form
-fn decode(encoded: &str) -> anyhow::Result<String, std::num::ParseIntError> {
+fn decode(encoded: &str) -> Result<String, std::num::ParseIntError> {
     let mut result = String::new();
     let mut chars = encoded.chars().peekable();
 
@@ -35,38 +36,45 @@ fn decode(encoded: &str) -> anyhow::Result<String, std::num::ParseIntError> {
     Ok(result)
 }
 
-pub struct SanitizedName(String);
+pub struct SanitizedName {
+    sanitized: String,
+    original: String,
+}
+
 impl SanitizedName {
-    pub fn new(raw: &str) -> Self {
-        Self(encode(raw))
+    pub fn new(original: &str) -> Self {
+        Self {
+            sanitized: encode(&original),
+            original: original.to_string(),
+        }
     }
 
     pub fn to_original(&self) -> String {
-        decode(&self.0).expect("SanitizedName should be correctly encoded")
+        self.original.clone()
     }
 }
 
 impl AsRef<str> for SanitizedName {
     fn as_ref(&self) -> &str {
-        &self.0
+        &self.sanitized
     }
 }
 
 impl AsRef<OsStr> for SanitizedName {
     fn as_ref(&self) -> &OsStr {
-        self.0.as_ref()
+        self.sanitized.as_ref()
     }
 }
 
 impl AsRef<Path> for SanitizedName {
     fn as_ref(&self) -> &Path {
-        self.0.as_ref()
+        self.sanitized.as_ref()
     }
 }
 
 impl Display for SanitizedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.sanitized)
     }
 }
 
