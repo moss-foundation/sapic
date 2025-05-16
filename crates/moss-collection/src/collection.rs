@@ -59,7 +59,7 @@ impl Collection {
             .await
     }
 
-    pub fn path(&self) -> &PathBuf {
+    pub fn abs_path(&self) -> &PathBuf {
         &self.abs_path
     }
 

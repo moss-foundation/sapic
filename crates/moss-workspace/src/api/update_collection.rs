@@ -70,7 +70,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let new_encoded_name = encode_name(&new_name);
 
         let path = PathBuf::from(&COLLECTIONS_DIR).join(&new_encoded_name);
-        let old_abs_path: Arc<Path> = collection_entry.path().clone().into();
+        let old_abs_path: Arc<Path> = collection_entry.abs_path().clone().into();
         let new_abs_path: Arc<Path> = self.absolutize(path).into();
 
         if new_abs_path.exists() {
