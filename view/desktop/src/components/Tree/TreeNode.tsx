@@ -68,7 +68,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
 
   return (
     <li className="relative">
-      {node.isFolder && instruction !== null && canDrop !== null && (
+      {node.isFolder && instruction !== null && canDrop === true && (
         <DropIndicatorWithInstruction
           paddingLeft={nodePaddingLeft}
           paddingRight={paddingRight}
@@ -188,7 +188,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               })}
               style={{ paddingLeft: nodePaddingLeft }}
             >
-              {!node.isFolder && instruction !== null && canDrop !== null && (
+              {!node.isFolder && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
                   paddingRight={paddingRight}
