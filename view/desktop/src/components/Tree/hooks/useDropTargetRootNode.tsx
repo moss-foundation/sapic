@@ -5,6 +5,14 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { TreeNodeProps } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTarget } from "../utils";
 
+const classesToRemove = [
+  "background-(--moss-success-background)",
+  "background-(--moss-error-background)",
+  "outline-2",
+  "-outline-offset-2",
+  "outline-(--moss-primary)",
+];
+
 export const useDropTargetRootNode = (
   node: TreeNodeProps,
   treeId: string | number,
@@ -28,13 +36,7 @@ export const useDropTargetRootNode = (
           location.current?.dropTargets.length === 0 ||
           location.current.dropTargets[0].data.type !== "TreeRootNode"
         ) {
-          element.classList.remove(
-            "background-(--moss-success-background)",
-            "background-(--moss-error-background)",
-            "outline-2",
-            "-outline-offset-2",
-            "outline-(--moss-primary)"
-          );
+          element.classList.remove(...classesToRemove);
           return;
         }
 
@@ -42,13 +44,7 @@ export const useDropTargetRootNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove(
-            "background-(--moss-success-background)",
-            "background-(--moss-error-background)",
-            "outline-2",
-            "-outline-offset-2",
-            "outline-(--moss-primary)"
-          );
+          element.classList.remove(...classesToRemove);
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
@@ -63,13 +59,7 @@ export const useDropTargetRootNode = (
         }
       },
       onDrop({ location, source }) {
-        element.classList.remove(
-          "background-(--moss-success-background)",
-          "background-(--moss-error-background)",
-          "outline-2",
-          "-outline-offset-2",
-          "outline-(--moss-primary)"
-        );
+        element.classList.remove(...classesToRemove);
 
         if (
           location.current?.dropTargets.length === 0 ||
