@@ -44,6 +44,12 @@ impl From<tauri::Error> for OperationError {
     }
 }
 
+impl From<serde_json::Error> for OperationError {
+    fn from(error: serde_json::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
 
 pub trait OperationResultExt<T> {
