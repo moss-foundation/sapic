@@ -33,7 +33,7 @@ const shouldRenderTreeNode = (
   return false;
 };
 
-export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
+export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
   const { searchInput, onNodeAddCallback, onNodeRenameCallback, treeId, nodeOffset } = useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -53,7 +53,14 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   );
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, depth, setPreview);
+  const { instruction, isDragging, canDrop } = useInstructionNode(
+    node,
+    treeId,
+    triggerRef,
+    depth,
+    isLastChild,
+    setPreview
+  );
 
   const shouldRenderChildNodes = shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
   const nodePaddingLeft = depth * nodeOffset;
@@ -150,7 +157,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     return (
       <ActionMenu.Root modal={false}>
-        <ActionMenu.Trigger openOnRightClick>
+        <ActionMenu.Trigger asChild openOnRightClick>
           <button
             ref={ref}
             onClick={handleClick}
@@ -203,6 +210,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                       id: "-",
                       isRoot: false,
                     }}
+                    isLastChild={false}
                     node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
                     onNodeUpdate={() => {}}
                     depth={0}
@@ -305,13 +313,14 @@ const TreeNodeChildren = ({ node, onNodeUpdate, depth }) => {
   return (
     <div className="contents">
       <ul className="h-full">
-        {filteredChildNodes.map((childNode) => (
+        {filteredChildNodes.map((childNode, index) => (
           <TreeNode
             parentNode={node}
             onNodeUpdate={onNodeUpdate}
             key={childNode.uniqueId}
             node={childNode}
             depth={depth + 1}
+            isLastChild={index === filteredChildNodes.length - 1}
           />
         ))}
       </ul>

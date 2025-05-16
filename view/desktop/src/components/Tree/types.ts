@@ -83,6 +83,7 @@ export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeNodeProps;
   depth: number;
   parentNode: TreeNodeProps;
+  isLastChild: boolean;
 }
 
 export interface NodeEvents {

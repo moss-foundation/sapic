@@ -13,6 +13,7 @@ export const useInstructionNode = (
   treeId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   depth: number,
+  isLastChild: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
@@ -54,14 +55,25 @@ export const useInstructionNode = (
         getData: ({ input, element }) => {
           const data = { type: "TreeNode", data: { treeId, node } };
 
+          const block: Instruction["type"][] = [];
+
+          if (node.isFolder) {
+            block.push("reorder-below");
+          } else {
+            block.push("make-child");
+
+            if (isLastChild) {
+              block.push("reorder-below");
+            }
+          }
+
           return attachInstruction(data, {
             input,
             element,
             indentPerLevel: 1,
             currentLevel: depth,
             mode: "standard",
-
-            block: node.isFolder ? ["reorder-below"] : ["make-child"],
+            block,
           });
         },
         canDrop({ source }) {
@@ -69,22 +81,17 @@ export const useInstructionNode = (
         },
         onDrag({ location, source }) {
           setInstruction(extractInstruction(location.current.dropTargets[0].data));
+          console.log("instruction", extractInstruction(location.current.dropTargets[0].data)?.type);
 
           const sourceTarget = getActualDropSourceTarget(source);
           const { dropTarget } = getActualDropTargetWithInstruction(location);
 
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
-        // onDropTargetChange: () => {
-        //   console.log("onDropTargetChange");
-        //   setInstruction(null);
-        //   setCanDrop(null);
-        // },
         onDragLeave() {
           setInstruction(null);
           setCanDrop(null);
         },
-
         onDrop({ location, source }) {
           setInstruction(null);
           setCanDrop(null);
