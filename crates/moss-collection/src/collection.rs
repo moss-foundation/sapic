@@ -1,9 +1,7 @@
 use crate::worktree::Worktree;
 use anyhow::{Context, Result};
 use moss_fs::{FileSystem, RenameOptions};
-use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
 use moss_storage::collection_storage::{CollectionStorage, CollectionStorageImpl};
-use std::collections::HashMap;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
