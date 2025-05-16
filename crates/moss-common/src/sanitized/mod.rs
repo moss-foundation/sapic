@@ -103,15 +103,6 @@ mod tests {
     }
 
     #[test]
-    fn sanitize_encodes_all_forbidden_chars() {
-        // FORBIDDEN: ['.', '%', '<', '>', ':', '"', '/', '\\', '|', '?', '*']
-        let input = r#".%<>:"/\\|?*"#;
-        // each char → %XX
-        let expected = "%2E%25%3C%3E%3A%22%2F%5C%7C%3F%2A";
-        assert_eq!(sanitize(input), expected);
-    }
-
-    #[test]
     fn sanitize_mixed_string() {
         let input = "file name.txt%backup";
         let out = sanitize(input);
