@@ -22,47 +22,52 @@ export const DropIndicatorWithInstruction = ({
 }: DropIndicatorProps) => {
   if (!instruction) return null;
 
-  const isReorder = instruction.type === "reorder-above" || instruction.type === "reorder-below";
+  const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px)`;
 
-  const getStylesForReorder = () => ({
-    position: "absolute" as const,
-    height: isReorder ? "2px" : "100%",
-    backgroundColor: isReorder ? "var(--moss-primary)" : "transparent",
-    top: instruction.type === "reorder-above" ? (depth === 1 ? 0 : gap) : undefined,
-    bottom: instruction.type === "reorder-below" ? gap : undefined,
-    width: calculateWidth(),
-    left: calculateLeft(),
-  });
+  const reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
 
-  const calculateWidth = () => {
-    const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px`;
-    if (depth === 1) {
-      return baseWidth + ")";
-    }
-    const offset = 16;
-    return `${baseWidth} - ${offset}px)`;
-  };
+  const leftOffset = depth === 1 ? 0 : !isFolder || instruction.type === "reorder-above" ? 16 : 0;
+  const left = paddingLeft + leftOffset;
 
-  const calculateLeft = () => {
-    if (depth === 1) {
-      return paddingLeft;
-    }
-    const folderOffset = isFolder ? (instruction.type === "reorder-above" ? 16 : 0) : 16;
-    return paddingLeft + folderOffset;
-  };
+  let styles;
 
-  if (instruction.type === "make-child") {
-    return (
-      <div
-        className="absolute h-full outline-2 -outline-offset-2 outline-[var(--moss-primary)]"
-        {...props}
-        style={{
-          width: `calc(100% - ${paddingRight}px - ${paddingLeft}px`,
-          left: calculateLeft(),
-        }}
-      />
-    );
+  switch (instruction.type) {
+    case "make-child":
+      styles = {
+        position: "absolute",
+        height: "100%",
+        width: baseWidth,
+        left,
+        outline: "2px solid var(--moss-primary)",
+        outlineOffset: "-2px",
+      };
+      break;
+
+    case "reorder-above":
+      styles = {
+        position: "absolute",
+        height: "2px",
+        backgroundColor: "var(--moss-primary)",
+        top: depth === 1 ? 0 : gap,
+        width: reorderWidth,
+        left,
+      };
+      break;
+
+    case "reorder-below":
+      styles = {
+        position: "absolute",
+        height: "2px",
+        backgroundColor: "var(--moss-primary)",
+        bottom: gap,
+        width: reorderWidth,
+        left,
+      };
+      break;
+
+    default:
+      return null;
   }
 
-  return <div style={getStylesForReorder()} {...props} />;
+  return <div style={styles} {...props} />;
 };
