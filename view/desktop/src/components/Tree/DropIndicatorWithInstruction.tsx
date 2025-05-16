@@ -3,7 +3,7 @@ import { HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
 
-interface DropIndicatorWithInstructionProps extends HTMLAttributes<HTMLDivElement> {
+interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   instruction: Instruction | null;
   gap?: number;
   paddingLeft?: number;
@@ -20,34 +20,41 @@ export const DropIndicatorWithInstruction = ({
   isFolder = false,
   depth = 0,
   ...props
-}: DropIndicatorWithInstructionProps) => {
-  if (!instruction) {
-    return null;
-  }
+}: DropIndicatorProps) => {
+  if (!instruction) return null;
 
-  const styleCss = {
+  const isReorder = instruction.type === "reorder-above" || instruction.type === "reorder-below";
+
+  const getIndicatorStyles = () => ({
     position: "absolute" as const,
-    height: instruction.type === "reorder-above" || instruction.type === "reorder-below" ? "2px" : "100%",
-    backgroundColor:
-      instruction.type === "reorder-above" || instruction.type === "reorder-below"
-        ? "var(--moss-primary)"
-        : "transparent",
+    height: isReorder ? "2px" : "100%",
+    backgroundColor: isReorder ? "var(--moss-primary)" : "transparent",
     top: instruction.type === "reorder-above" ? (depth === 1 ? 0 : gap) : undefined,
     bottom: instruction.type === "reorder-below" ? gap : undefined,
-    width:
-      depth === 1
-        ? ` calc(100% - ${paddingRight}px - ${paddingLeft}px)`
-        : `calc(100% - ${paddingRight}px - ${paddingLeft}px - ${isFolder ? 0 : 16 * (instruction.type === "reorder-above" ? 2 : 1)}px)`,
-    left: depth === 1 ? paddingLeft : paddingLeft + (isFolder ? (instruction.type === "reorder-above" ? 16 : 0) : 16),
+    width: calculateWidth(),
+    left: calculateLeft(),
+  });
+
+  const calculateWidth = () => {
+    const baseWidth = `calc(100% - ${paddingRight}px - ${paddingLeft}px`;
+    if (depth === 1) {
+      return baseWidth + ")";
+    }
+    const offset = 16;
+    return `${baseWidth} - ${offset}px)`;
   };
 
-  return (
-    <div
-      className={cn({
-        "h-full w-full outline-2 -outline-offset-2 outline-(--moss-primary)": instruction.type === "make-child",
-      })}
-      style={styleCss}
-      {...props}
-    />
-  );
+  const calculateLeft = () => {
+    if (depth === 1) {
+      return paddingLeft;
+    }
+    const folderOffset = isFolder ? (instruction.type === "reorder-above" ? 16 : 0) : 16;
+    return paddingLeft + folderOffset;
+  };
+
+  const classNames = cn({
+    "h-full w-full outline-2 -outline-offset-2 outline-[var(--moss-primary)]": instruction.type === "make-child",
+  });
+
+  return <div className={classNames} style={getIndicatorStyles()} {...props} />;
 };

@@ -61,6 +61,9 @@ export const useInstructionNode = (
             if (!isLastChild && !node.isExpanded) {
               block.push("reorder-below");
             }
+            if (node.isExpanded) {
+              block.push("reorder-below");
+            }
           } else {
             block.push("make-child");
           }
