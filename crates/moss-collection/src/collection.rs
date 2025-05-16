@@ -1,9 +1,8 @@
 use crate::worktree::Worktree;
 use anyhow::{Context, Result};
 use moss_fs::{FileSystem, RenameOptions};
-use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
-use moss_storage::collection_storage::{CollectionStorage, CollectionStorageImpl};
-use std::collections::HashMap;
+use moss_storage::CollectionStorage;
+use moss_storage::collection_storage::CollectionStorageImpl;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
@@ -63,23 +62,24 @@ impl Collection {
         &self.abs_path
     }
 
-    pub async fn reset(&mut self, new_path: Arc<Path>) -> Result<()> {
-        debug_assert!(new_path.is_absolute());
-
-        let old_path = std::mem::replace(&mut self.abs_path, new_path.to_path_buf());
-        let fs_clone = self.fs.clone();
-        let new_path_clone = new_path.clone();
-
-        let after_drop = Box::pin(async move {
-            fs_clone
-                .rename(&old_path, &new_path_clone, RenameOptions::default())
-                .await?;
-
-            Ok(())
-        });
-
-        self.collection_storage.reset(&new_path, after_drop).await?;
-
-        Ok(())
-    }
+    // TODO: Implement reset
+    // pub async fn reset(&mut self, new_path: Arc<Path>) -> Result<()> {
+    //     debug_assert!(new_path.is_absolute());
+    //
+    //     let old_path = std::mem::replace(&mut self.abs_path, new_path.to_path_buf());
+    //     let fs_clone = self.fs.clone();
+    //     let new_path_clone = new_path.clone();
+    //
+    //     let after_drop = Box::pin(async move {
+    //         fs_clone
+    //             .rename(&old_path, &new_path_clone, RenameOptions::default())
+    //             .await?;
+    //
+    //         Ok(())
+    //     });
+    //
+    //     self.collection_storage.reset(&new_path, after_drop).await?;
+    //
+    //     Ok(())
+    // }
 }

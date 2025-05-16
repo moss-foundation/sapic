@@ -1,10 +1,9 @@
-use crate::primitives::segkey::SegKeyBuf;
-use crate::workspace_storage::{
+use crate::collection_storage::{
     TABLE_VARIABLES, VariableStore, entities::variable_store_entities::VariableEntity,
     tables::VariableStoreTable,
 };
-use anyhow::Result;
-use moss_db::{DatabaseError, ReDbClient};
+use crate::primitives::segkey::SegKeyBuf;
+use moss_db::{DatabaseResult, ReDbClient};
 use std::collections::HashMap;
 
 pub struct VariableStoreImpl {
@@ -24,7 +23,7 @@ impl VariableStoreImpl {
 }
 
 impl VariableStore for VariableStoreImpl {
-    fn list_variables(&self) -> Result<HashMap<SegKeyBuf, VariableEntity>, DatabaseError> {
+    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, VariableEntity>> {
         todo!()
     }
 }
