@@ -81,7 +81,7 @@ async fn rename_workspace_empty_name() {
     assert!(update_workspace_result.is_err());
     assert!(matches!(
         update_workspace_result,
-        Err(OperationError::Validation(_))
+        Err(OperationError::InvalidInput(_))
     ));
 
     cleanup().await;

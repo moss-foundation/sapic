@@ -356,7 +356,7 @@ async fn update_request_entry_incorrect_entity_type() {
 
     assert!(matches!(
         update_request_result,
-        OperationResult::Err(OperationError::Validation(..))
+        OperationResult::Err(OperationError::InvalidInput(..))
     ));
     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

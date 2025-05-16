@@ -332,7 +332,7 @@ async fn delete_request_dir_entry_incorrect_entity_type() {
 
     assert!(matches!(
         delete_result,
-        OperationResult::Err(OperationError::Validation(..))
+        OperationResult::Err(OperationError::InvalidInput(..))
     ));
     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

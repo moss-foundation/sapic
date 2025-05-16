@@ -54,7 +54,7 @@ impl Collection {
 
         let mut encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
         let last_segment = encoded_path.file_name().ok_or_else(|| {
-            OperationError::Validation(format!(
+            OperationError::InvalidInput(format!(
                 "Invalid destination path: {}",
                 input.destination.display()
             ))
