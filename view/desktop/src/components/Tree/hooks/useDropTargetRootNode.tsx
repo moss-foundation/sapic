@@ -22,10 +22,10 @@ export const useDropTargetRootNode = (
       canDrop({ source }) {
         return source.data.type === "TreeNode";
       },
-      onDragLeave() {
-        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
-      },
+
       onDropTargetChange({ location, source }) {
+        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+
         if (
           location.current?.dropTargets.length === 0 ||
           location.current.dropTargets[0].data.type !== "TreeRootNode"
@@ -38,7 +38,6 @@ export const useDropTargetRootNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
@@ -48,6 +47,8 @@ export const useDropTargetRootNode = (
         }
       },
       onDrop({ location, source }) {
+        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+
         if (
           location.current?.dropTargets.length === 0 ||
           location.current.dropTargets[0].data.type !== "TreeRootNode"
@@ -59,7 +60,6 @@ export const useDropTargetRootNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
           return;
         }
 
