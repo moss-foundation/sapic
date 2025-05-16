@@ -1,24 +1,24 @@
-use crate::models::primitives::Identifier;
 use std::any::TypeId;
 use std::collections::HashMap;
-use std::sync::Arc;
-use std::sync::atomic::AtomicUsize;
+use std::sync::{Arc, atomic::AtomicUsize};
 use tokio::sync::Mutex;
 
-struct IdRegistry {
-    next_ids: Mutex<HashMap<TypeId, Arc<AtomicUsize>>>,
+use crate::models::primitives::Identifier;
+
+pub struct IdRegistry {
+    inner: Mutex<HashMap<TypeId, Arc<AtomicUsize>>>,
 }
 
 impl IdRegistry {
-    fn new() -> Arc<IdRegistry> {
+    pub fn new() -> Arc<IdRegistry> {
         Arc::new(IdRegistry {
-            next_ids: Mutex::new(HashMap::new()),
+            inner: Mutex::new(HashMap::new()),
         })
     }
 
-    async fn next_id<T: ?Sized + 'static>(&self) -> Identifier {
+    pub async fn next_id<T: ?Sized + 'static>(&self) -> Identifier {
         let type_id = std::any::TypeId::of::<T>();
-        let mut lock = self.next_ids.lock().await;
+        let mut lock = self.inner.lock().await;
         Identifier::new(
             lock.entry(type_id)
                 .or_insert_with(|| Arc::new(AtomicUsize::new(0))),
@@ -31,7 +31,9 @@ mod tests {
     use super::*;
 
     struct TestStruct {
+        #[allow(dead_code)]
         name: String,
+        #[allow(dead_code)]
         value: i32,
     }
 

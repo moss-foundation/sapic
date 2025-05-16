@@ -1,4 +1,5 @@
 use moss_common::api::{OperationError, OperationResult};
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -10,8 +11,6 @@ use crate::worktree::{
     common::{is_dir, path_starts_with, validate_entry},
     snapshot::EntryRef,
 };
-
-use moss_common::sanitized::SanitizedName;
 
 impl Collection {
     pub async fn update_request_entry(

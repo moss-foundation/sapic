@@ -1,5 +1,5 @@
 use moss_common::api::{OperationError, OperationResult};
-use moss_common::sanitized::SanitizedName;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use std::sync::Arc;
 use validator::Validate;
 

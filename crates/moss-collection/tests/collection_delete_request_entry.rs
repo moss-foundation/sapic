@@ -1,6 +1,5 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestEntryInput,
 };
@@ -9,6 +8,8 @@ use moss_common::api::{OperationError, OperationResult};
 use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
 use std::time::Duration;
+
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 
 #[tokio::test]
 async fn delete_request_entry_success() {
