@@ -60,6 +60,7 @@ export const useInstructionNode = (
             indentPerLevel: 1,
             currentLevel: depth,
             mode: "standard",
+
             block: node.isFolder ? ["reorder-below"] : ["make-child"],
           });
         },
@@ -74,14 +75,16 @@ export const useInstructionNode = (
 
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
+        // onDropTargetChange: () => {
+        //   console.log("onDropTargetChange");
+        //   setInstruction(null);
+        //   setCanDrop(null);
+        // },
         onDragLeave() {
           setInstruction(null);
           setCanDrop(null);
         },
-        onDropTargetChange() {
-          setInstruction(null);
-          setCanDrop(null);
-        },
+
         onDrop({ location, source }) {
           setInstruction(null);
           setCanDrop(null);

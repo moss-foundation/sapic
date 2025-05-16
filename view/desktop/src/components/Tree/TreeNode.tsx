@@ -1,9 +1,10 @@
-import { useContext, useRef, useState } from "react";
+import { forwardRef, useContext, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
 
 import { ActionMenu, TreeContext } from "..";
 import { DropIndicatorWithInstruction } from "./DropIndicatorWithInstruction";
@@ -33,9 +34,9 @@ const shouldRenderTreeNode = (
 };
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComponentProps) => {
-  const { searchInput, onNodeAddCallback, onNodeRenameCallback } = useContext(TreeContext);
+  const { searchInput, onNodeAddCallback, onNodeRenameCallback, treeId, nodeOffset } = useContext(TreeContext);
 
-  const dropTargetFolderRef = useRef<HTMLLIElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const {
     isAddingFileNode,
@@ -51,10 +52,17 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
     onNodeUpdate
   );
 
+  const [preview, setPreview] = useState<HTMLElement | null>(null);
+  const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, depth, setPreview);
+
   const shouldRenderChildNodes = shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
+  const nodePaddingLeft = depth * nodeOffset;
 
   return (
-    <li ref={dropTargetFolderRef}>
+    <li className="relative">
+      {node.isFolder && instruction !== null && canDrop !== null && (
+        <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
+      )}
       {isRenamingNode ? (
         <TreeNodeRenameForm
           node={node}
@@ -66,12 +74,17 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
         />
       ) : (
         <TreeNodeButton
+          ref={triggerRef}
           node={node}
           onNodeUpdate={onNodeUpdate}
           depth={depth}
           onAddFile={() => setIsAddingFileNode(true)}
           onAddFolder={() => setIsAddingFolderNode(true)}
           onRename={() => setIsRenamingNode(true)}
+          isDragging={isDragging}
+          canDrop={canDrop}
+          instruction={instruction}
+          preview={preview}
         />
       )}
 
@@ -92,116 +105,125 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
   );
 };
 
-const TreeNodeButton = ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onRename }) => {
-  const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback } = useContext(TreeContext);
+interface TreeNodeButtonProps {
+  node: TreeNodeProps;
+  onNodeUpdate: (node: TreeNodeProps) => void;
+  depth: number;
+  onAddFile: () => void;
+  onAddFolder: () => void;
+  onRename: () => void;
+  isDragging: boolean;
+  canDrop: boolean | null;
+  instruction: Instruction | null;
+  preview: HTMLElement | null;
+}
+const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
+  ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onRename, isDragging, canDrop, instruction, preview }, ref) => {
+    const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback } = useContext(TreeContext);
 
-  const draggableNodeRef = useRef<HTMLButtonElement>(null);
+    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
+    const handleClick = () => {
+      if (node.isFolder) {
+        onNodeUpdate({
+          ...node,
+          isExpanded: !node.isExpanded,
+        });
+      } else {
+        addOrFocusPanel({
+          id: `${node.id}`,
+          params: {
+            treeId,
+            iconType: node.type,
+            workspace: true,
+          },
+          component: "Default",
+        });
+      }
+      onNodeClickCallback?.(node);
+    };
 
-  const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
+    const handleDoubleClick = () => onNodeDoubleClickCallback?.(node);
 
-  const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, draggableNodeRef, depth, setPreview);
+    const nodePaddingLeft = depth * nodeOffset;
+    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
-  const handleClick = () => {
-    if (node.isFolder) {
-      onNodeUpdate({
-        ...node,
-        isExpanded: !node.isExpanded,
-      });
-    } else {
-      addOrFocusPanel({
-        id: `${node.id}`,
-        params: {
-          treeId,
-          iconType: node.type,
-          workspace: true,
-        },
-        component: "Default",
-      });
-    }
-    onNodeClickCallback?.(node);
-  };
-
-  const handleDoubleClick = () => onNodeDoubleClickCallback?.(node);
-
-  const nodePaddingLeft = depth * nodeOffset;
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
-
-  return (
-    <ActionMenu.Root modal={false}>
-      <ActionMenu.Trigger openOnRightClick>
-        <button
-          ref={draggableNodeRef}
-          onClick={handleClick}
-          onDoubleClick={handleDoubleClick}
-          className={cn(
-            "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
-          )}
-        >
-          <span
-            className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
-              "group-hover/treeNode:background-(--moss-secondary-background-hover)":
-                !isDragging && activePanelId !== node.id,
-              "background-(--moss-info-background-hover)": activePanelId === node.id && node.uniqueId !== "DraggedNode",
-            })}
-          />
-
-          <span
-            className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
-              "background-(--moss-error-background)": canDrop === false,
-            })}
-            style={{ paddingLeft: nodePaddingLeft }}
-          >
-            {instruction && canDrop && (
-              <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
+    return (
+      <ActionMenu.Root modal={false}>
+        <ActionMenu.Trigger openOnRightClick>
+          <button
+            ref={ref}
+            onClick={handleClick}
+            onDoubleClick={handleDoubleClick}
+            className={cn(
+              "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
             )}
-            <Icon
-              icon="ChevronRight"
-              className={cn("text-(--moss-icon-primary-text)", {
-                "rotate-90": shouldRenderChildNodes,
-                "opacity-0": !node.isFolder,
+          >
+            <span
+              className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
+                "group-hover/treeNode:background-(--moss-secondary-background-hover)":
+                  !isDragging && activePanelId !== node.id,
+                "background-(--moss-info-background-hover)":
+                  activePanelId === node.id && node.uniqueId !== "DraggedNode",
               })}
             />
-            <TestCollectionIcon type={node.type} />
-            <NodeLabel label={node.id} searchInput={searchInput} />
-            <span className="DragHandle h-full min-h-4 grow" />
-          </span>
 
-          {preview &&
-            createPortal(
-              <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
-                <TreeNode
-                  parentNode={{
-                    uniqueId: "-",
-                    childNodes: [],
-                    type: "",
-                    order: 0,
-                    isFolder: false,
-                    isExpanded: false,
-                    id: "-",
-                    isRoot: false,
-                  }}
-                  node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
-                  onNodeUpdate={() => {}}
-                  depth={0}
-                />
-                <Icon icon="ChevronRight" className={cn("opacity-0")} />
-              </ul>,
-              preview
-            )}
-        </button>
-      </ActionMenu.Trigger>
-      <ActionMenu.Portal>
-        <ActionMenu.Content>
-          {node.isFolder && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
-          {node.isFolder && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
-          <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
-        </ActionMenu.Content>
-      </ActionMenu.Portal>
-    </ActionMenu.Root>
-  );
-};
+            <span
+              className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
+                "background-(--moss-error-background)": canDrop === false,
+              })}
+              style={{ paddingLeft: nodePaddingLeft }}
+            >
+              {!node.isFolder && instruction !== null && canDrop !== null && (
+                <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
+              )}
+              <Icon
+                icon="ChevronRight"
+                className={cn("text-(--moss-icon-primary-text)", {
+                  "rotate-90": shouldRenderChildNodes,
+                  "opacity-0": !node.isFolder,
+                })}
+              />
+              <TestCollectionIcon type={node.type} />
+              <NodeLabel label={node.id} searchInput={searchInput} />
+              <span className="DragHandle h-full min-h-4 grow" />
+            </span>
+
+            {preview &&
+              createPortal(
+                <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
+                  <TreeNode
+                    parentNode={{
+                      uniqueId: "-",
+                      childNodes: [],
+                      type: "",
+                      order: 0,
+                      isFolder: false,
+                      isExpanded: false,
+                      id: "-",
+                      isRoot: false,
+                    }}
+                    node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
+                    onNodeUpdate={() => {}}
+                    depth={0}
+                  />
+                  <Icon icon="ChevronRight" className={cn("opacity-0")} />
+                </ul>,
+                preview
+              )}
+          </button>
+        </ActionMenu.Trigger>
+        <ActionMenu.Portal>
+          <ActionMenu.Content>
+            {node.isFolder && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
+            {node.isFolder && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
+            <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
+          </ActionMenu.Content>
+        </ActionMenu.Portal>
+      </ActionMenu.Root>
+    );
+  }
+);
 
 const TreeNodeRenameForm = ({
   node,
