@@ -65,7 +65,7 @@ pub trait FileSystem: Send + Sync {
     async fn create_file_with(
         &self,
         path: &Path,
-        content: String, // TODO: Change to Vec<u8>
+        content: &[u8],
         options: CreateOptions,
     ) -> Result<()>;
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()>;

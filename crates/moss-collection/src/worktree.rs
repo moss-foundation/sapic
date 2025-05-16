@@ -172,8 +172,7 @@ impl Worktree {
             self.fs
                 .create_file_with(
                     &abs_path,
-                    String::from_utf8(content.as_deref().unwrap_or(&[]).to_vec())
-                        .context("Content is not valid utf8 bytes.")?,
+                    content.as_deref().unwrap_or(&[]),
                     CreateOptions {
                         overwrite: true,
                         ignore_if_exists: false,
