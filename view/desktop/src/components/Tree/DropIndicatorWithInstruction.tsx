@@ -24,7 +24,7 @@ export const DropIndicatorWithInstruction = ({
 
   const isReorder = instruction.type === "reorder-above" || instruction.type === "reorder-below";
 
-  const getIndicatorStyles = () => ({
+  const getStylesForReorder = () => ({
     position: "absolute" as const,
     height: isReorder ? "2px" : "100%",
     backgroundColor: isReorder ? "var(--moss-primary)" : "transparent",
@@ -64,5 +64,5 @@ export const DropIndicatorWithInstruction = ({
     );
   }
 
-  return <div style={getIndicatorStyles()} {...props} />;
+  return <div style={getStylesForReorder()} {...props} />;
 };
