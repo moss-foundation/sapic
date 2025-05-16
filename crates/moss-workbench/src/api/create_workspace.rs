@@ -6,14 +6,16 @@ use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
     models::primitives::Identifier,
 };
+use moss_db::primitives::AnyValue;
 use moss_fs::utils::encode_name;
-use moss_storage::global_storage::entities::WorkspaceInfoEntity;
-use moss_workspace::workspace::Workspace;
+use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
+use moss_workspace::Workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
+    storage::segments::WORKSPACE_SEGKEY,
     workbench::{Workbench, WorkspaceInfoEntry},
 };
 
@@ -34,7 +36,7 @@ impl<R: TauriRuntime> Workbench<R> {
         }
 
         let workspaces = self
-            .known_workspaces()
+            .workspaces()
             .await
             .context("Failed to get known workspaces")
             .map_err_as_internal()?;
@@ -74,15 +76,11 @@ impl<R: TauriRuntime> Workbench<R> {
         match (last_opened_at, input.open_on_creation) {
             (Some(last_opened_at), true) => {
                 self.set_active_workspace(id, new_workspace);
-                let workspace_storage = self.global_storage.workspaces_store();
-                let mut txn = self.global_storage.begin_write().await?;
-                workspace_storage.upsert_workspace(
-                    &mut txn,
-                    encoded_name,
-                    WorkspaceInfoEntity { last_opened_at },
-                )?;
 
-                txn.commit()?;
+                let item_store = self.global_storage.item_store();
+                let segkey = WORKSPACE_SEGKEY.join(encoded_name);
+                let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
+                PutItem::put(item_store.as_ref(), segkey, value)?;
             }
             _ => {}
         }

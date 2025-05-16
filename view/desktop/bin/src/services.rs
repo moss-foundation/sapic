@@ -159,7 +159,7 @@ fn workspace_manager<R: tauri::Runtime>(
     global_storage: Arc<dyn GlobalStorage>,
     app_dir: &PathBuf,
 ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> Workbench<R> + Send + Sync + 'static {
-    let workspaces_dir: Arc<Path> = app_dir.join("workspaces").into();
+    let abs_path: Arc<Path> = app_dir.clone().into();
 
     move |_, app_handle| {
         Workbench::new(
@@ -167,7 +167,7 @@ fn workspace_manager<R: tauri::Runtime>(
             fs,
             global_storage,
             WorkbenchOptions {
-                workspaces_abs_path: workspaces_dir.clone(),
+                abs_path,
                 next_workspace_id: Arc::new(AtomicUsize::new(0)),
             },
         )

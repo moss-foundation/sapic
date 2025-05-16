@@ -3014,6 +3014,7 @@ dependencies = [
  "moss_testutils",
  "regex",
  "serde",
+ "serde_json",
  "slotmap",
  "tauri",
  "thiserror 2.0.12",
@@ -3173,8 +3174,10 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "moss_db",
+ "redb",
  "serde",
  "serde_json",
+ "smallvec",
  "tokio",
 ]
 
@@ -3238,6 +3241,7 @@ dependencies = [
  "moss_activity_indicator",
  "moss_app",
  "moss_common",
+ "moss_db",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
