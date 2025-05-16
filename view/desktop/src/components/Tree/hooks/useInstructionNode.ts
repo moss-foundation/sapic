@@ -63,10 +63,6 @@ export const useInstructionNode = (
             }
           } else {
             block.push("make-child");
-
-            if (isLastChild) {
-              block.push("reorder-below");
-            }
           }
 
           return attachInstruction(data, {
@@ -88,7 +84,7 @@ export const useInstructionNode = (
           setInstruction(extractInstruction(location.current.dropTargets[0].data));
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
-        onDragLeave() {
+        onDropTargetChange() {
           setInstruction(null);
           setCanDrop(null);
         },
