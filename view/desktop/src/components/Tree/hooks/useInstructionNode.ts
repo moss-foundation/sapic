@@ -60,7 +60,7 @@ export const useInstructionNode = (
             indentPerLevel: 1,
             currentLevel: depth,
             mode: "standard",
-            block: node.isFolder ? [] : ["make-child"],
+            block: node.isFolder ? ["reorder-below"] : ["make-child"],
           });
         },
         canDrop({ source }) {
