@@ -3,7 +3,7 @@ use regex::Regex;
 use std::ffi::OsStr;
 use std::fmt::{Display, Formatter};
 use std::path::Path;
-use std::sync::{LazyLock};
+use std::sync::LazyLock;
 
 /// Regex to match forbidden characters in a directory/file name
 static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap());
@@ -49,8 +49,8 @@ impl SanitizedName {
         }
     }
 
-    pub fn to_original(&self) -> String {
-        self.original.clone()
+    pub fn to_original(&self) -> &str {
+        &self.original
     }
 }
 
