@@ -1,6 +1,6 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, set_up_test_collection};
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestEntryInput,
 };
@@ -23,7 +23,7 @@ async fn delete_request_entry_success() {
         })
         .await;
 
-    let request_folder = PathBuf::from("requests").join(format!("{request_name}.request"));
+    let request_folder = PathBuf::from("requests").join(request_folder_name(&request_name));
     // Delete requests/test/{request_name}.request Entry
     let id = create_result
         .unwrap()
@@ -66,7 +66,7 @@ async fn delete_request_entry_nonexistent_key() {
         })
         .await;
 
-    let request_folder = PathBuf::from("requests").join(format!("{request_name}.request"));
+    let request_folder = PathBuf::from("requests").join(request_folder_name(&request_name));
     let id = create_result
         .unwrap()
         .changed_paths
@@ -112,7 +112,7 @@ async fn delete_request_entry_nested() {
 
     let request_folder = PathBuf::from("requests")
         .join("group")
-        .join(format!("{request_name}.request"));
+        .join(request_folder_name(&request_name));
     let id = create_result
         .unwrap()
         .changed_paths
@@ -154,7 +154,7 @@ async fn delete_request_entry_fs_already_deleted() {
         })
         .await;
 
-    let request_folder = PathBuf::from("requests").join(format!("{request_name}.request"));
+    let request_folder = PathBuf::from("requests").join(request_folder_name(&request_name));
     // Delete the entry from the filesystem first
     tokio::fs::remove_dir_all(&collection_path.join(&request_folder))
         .await
