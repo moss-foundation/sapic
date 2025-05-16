@@ -1,6 +1,7 @@
 use moss_collection::collection::Collection;
+use moss_common::sanitized::SanitizedName;
 use moss_fs::RealFileSystem;
-use moss_fs::utils::{encode_name, encode_path};
+use moss_fs::utils::encode_path;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -33,7 +34,8 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
 }
 
 pub fn request_folder_name(request_name: &str) -> String {
-    format!("{}.request", encode_name(request_name))
+    let sanitized_name = SanitizedName::new(request_name);
+    format!("{}.request", &sanitized_name)
 }
 
 /// Generate the encoded relative path of request from the collection folder

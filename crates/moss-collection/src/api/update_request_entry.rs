@@ -1,5 +1,4 @@
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_name;
 use std::sync::Arc;
 use validator::Validate;
 
@@ -11,6 +10,8 @@ use crate::worktree::{
     common::{is_dir, path_starts_with, validate_entry},
     snapshot::EntryRef,
 };
+
+use moss_common::sanitized::SanitizedName;
 
 impl Collection {
     pub async fn update_request_entry(
@@ -42,7 +43,7 @@ impl Collection {
         )?;
 
         let changes = if let Some(new_name) = input.name {
-            self.process_dir_renaming(&worktree, &entry, &encode_name(&new_name))
+            self.process_dir_renaming(&worktree, &entry, &SanitizedName::new(&new_name))
                 .await?
         } else {
             Arc::from((vec![]).into_boxed_slice())
@@ -57,7 +58,7 @@ impl Collection {
         &self,
         worktree: &Arc<Worktree>,
         entry: &EntryRef,
-        new_name: &str,
+        new_name: &SanitizedName,
     ) -> OperationResult<ChangesDiffSet> {
         let mut new_path = entry.path.to_path_buf();
         new_path.set_file_name(format!("{new_name}.request"));

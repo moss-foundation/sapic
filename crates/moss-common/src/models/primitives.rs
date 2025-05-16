@@ -1,4 +1,8 @@
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
+use std::fmt::{Display, Formatter};
+use std::sync::LazyLock;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
 use ts_rs::TS;

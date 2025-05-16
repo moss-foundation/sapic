@@ -1,4 +1,4 @@
-pub const FILENAME_SPECIAL_CHARS: [&str; 10] = [
+pub const FILENAME_SPECIAL_CHARS: [&str; 11] = [
     ".",  // dot
     "/",  // path separator
     "\\", // backslash
@@ -9,11 +9,12 @@ pub const FILENAME_SPECIAL_CHARS: [&str; 10] = [
     "<",  // angle brackets
     ">",  // angle brackets
     "|",  // pipe
+    "%",  // percent
 ];
 
 // We don't allow a slash/backslash in a foldername
 // They will always represent a path separator, not a character to be encoded
-pub const FOLDERNAME_SPECIAL_CHARS: [&str; 8] = [
+pub const FOLDERNAME_SPECIAL_CHARS: [&str; 9] = [
     ".",  // dot
     ":",  // colon
     "*",  // wildcard
@@ -22,4 +23,5 @@ pub const FOLDERNAME_SPECIAL_CHARS: [&str; 8] = [
     "<",  // angle brackets
     ">",  // angle brackets
     "|",  // pipe
+    "%",  // percent
 ];
