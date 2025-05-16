@@ -7,7 +7,7 @@ use crate::models::{
 };
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::OperationError;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use std::{
     collections::HashMap,
@@ -15,11 +15,36 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
+use thiserror::Error;
 use tokio::sync::{RwLock, mpsc};
 
 use self::snapshot::{Entry, Snapshot};
 
 pub(crate) type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
+
+#[derive(Error, Debug)]
+pub enum WorktreeError {
+    #[error("worktree entry already exists: {0}")]
+    AlreadyExists(String),
+
+    #[error("worktree entry is not found: {0}")]
+    NotFound(String),
+
+    #[error("unknown error: {0}")]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<WorktreeError> for OperationError {
+    fn from(error: WorktreeError) -> Self {
+        match error {
+            WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
+            WorktreeError::NotFound(err) => OperationError::NotFound(err),
+            WorktreeError::Unknown(err) => OperationError::Unknown(err),
+        }
+    }
+}
+
+pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
 struct ScanJob {
     abs_path: Arc<Path>,
@@ -103,20 +128,16 @@ impl Worktree {
         path: impl AsRef<Path>,
         is_dir: bool,
         content: Option<Vec<u8>>,
-    ) -> OperationResult<ChangesDiffSet> {
+    ) -> WorktreeResult<ChangesDiffSet> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
+
         let root_abs_path = self.snapshot.read().await.abs_path().clone();
         let abs_path = self.absolutize(&root_abs_path, &path).await?;
         if abs_path.exists() {
-            return OperationResult::Err(OperationError::AlreadyExists {
-                name: path
-                    .file_name()
-                    .context("Entry name should not be empty")?
-                    .to_string_lossy()
-                    .to_string(),
-                path: abs_path,
-            });
+            return Err(WorktreeError::AlreadyExists(
+                root_abs_path.to_string_lossy().to_string(),
+            ));
         }
         let changes = if is_dir {
             let lowest_ancestor_path = self.snapshot.read().await.lowest_ancestor_path(&path);
@@ -151,8 +172,7 @@ impl Worktree {
             self.fs
                 .create_file_with(
                     &abs_path,
-                    String::from_utf8(content.as_deref().unwrap_or(&[]).to_vec())
-                        .context("Content is not valid utf8 bytes.")?,
+                    content.as_deref().unwrap_or(&[]),
                     CreateOptions {
                         overwrite: true,
                         ignore_if_exists: false,
@@ -253,7 +273,7 @@ impl Worktree {
         &self,
         old_path: impl AsRef<Path>,
         new_path: impl AsRef<Path>,
-    ) -> OperationResult<ChangesDiffSet> {
+    ) -> WorktreeResult<ChangesDiffSet> {
         let old_path = old_path.as_ref();
         let new_path = new_path.as_ref();
         debug_assert!(old_path.is_relative());
@@ -264,16 +284,14 @@ impl Worktree {
         let abs_new_path = self.absolutize(&root_abs_path, &new_path).await?;
 
         if abs_new_path.exists() {
-            return OperationResult::Err(OperationError::AlreadyExists {
-                name: new_path.file_name().unwrap().to_string_lossy().to_string(),
-                path: abs_new_path,
-            });
+            return Err(WorktreeError::AlreadyExists(
+                abs_new_path.to_string_lossy().to_string(),
+            ));
         }
         if !abs_old_path.exists() {
-            return OperationResult::Err(OperationError::NotFound {
-                name: old_path.file_name().unwrap().to_string_lossy().to_string(),
-                path: abs_old_path,
-            });
+            return Err(WorktreeError::NotFound(
+                abs_old_path.to_string_lossy().to_string(),
+            ));
         }
         let mut snapshot_lock = self.snapshot.write().await;
         self.fs

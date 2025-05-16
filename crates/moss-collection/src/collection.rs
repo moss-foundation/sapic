@@ -1,9 +1,7 @@
 use crate::worktree::Worktree;
 use anyhow::{Context, Result};
 use moss_fs::{FileSystem, RenameOptions};
-use moss_storage::collection_storage::entities::request_store_entities::RequestNodeEntity;
 use moss_storage::collection_storage::{CollectionStorage, CollectionStorageImpl};
-use std::collections::HashMap;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
@@ -59,7 +57,7 @@ impl Collection {
             .await
     }
 
-    pub fn path(&self) -> &PathBuf {
+    pub fn abs_path(&self) -> &PathBuf {
         &self.abs_path
     }
 

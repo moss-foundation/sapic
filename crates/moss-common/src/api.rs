@@ -1,22 +1,32 @@
-use std::path::PathBuf;
 use thiserror::Error;
 
-// TODO: add PreconditionFailed
 #[derive(Error, Debug)]
 pub enum OperationError {
-    #[error("validation error: {0}")]
-    Validation(String), // TODO: rename InvalidInput
+    /// The operation was rejected because the system is not in a state required
+    /// for the operation's execution. For example, the workspace to be described or
+    /// deleted does not opened yet, etc.
+    #[error("FAILED_PRECONDITION: {0}")]
+    FailedPrecondition(String),
 
-    #[error("{name} not found at {path}")]
-    NotFound { name: String, path: PathBuf }, // TODO: should be just a string
+    /// The operation was rejected because the input was invalid.
+    #[error("INVALID_INPUT: {0}")]
+    InvalidInput(String),
 
-    #[error("{name} already exists at {path}")]
-    AlreadyExists { name: String, path: PathBuf },
+    /// The entity that a client attempted to access (e.g., file or directory) does not exist.
+    #[error("NOT_FOUND: {0}")]
+    NotFound(String),
 
-    #[error("internal error: {0}")]
+    /// The entity that a client attempted to create (e.g., file or directory) already exists.
+    #[error("ALREADY_EXISTS: {0}")]
+    AlreadyExists(String),
+
+    /// This means that some invariants expected by the underlying system have been broken.
+    /// This error code is reserved for serious errors.
+    #[error("INTERNAL: {0}")]
     Internal(String),
 
-    #[error("unknown error: {0}")]
+    /// This error code is reserved for errors that are not covered by the other error codes.
+    #[error("UNKNOWN: {0}")]
     Unknown(#[from] anyhow::Error),
 }
 
@@ -28,13 +38,13 @@ impl From<moss_db::common::DatabaseError> for OperationError {
 
 impl From<validator::ValidationErrors> for OperationError {
     fn from(error: validator::ValidationErrors) -> Self {
-        OperationError::Validation(error.to_string())
+        OperationError::InvalidInput(error.to_string())
     }
 }
 
 impl From<validator::ValidationError> for OperationError {
     fn from(error: validator::ValidationError) -> Self {
-        OperationError::Validation(error.to_string())
+        OperationError::InvalidInput(error.to_string())
     }
 }
 
@@ -64,14 +74,11 @@ impl<T> OperationResultExt<T> for Result<T, anyhow::Error> {
     }
 
     fn map_err_as_not_found(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::NotFound {
-            name: e.to_string(),
-            path: PathBuf::new(),
-        })
+        self.map_err(|e| OperationError::NotFound(e.to_string()))
     }
 
     fn map_err_as_validation(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::Validation(e.to_string()))
+        self.map_err(|e| OperationError::InvalidInput(e.to_string()))
     }
 }
 
@@ -81,14 +88,11 @@ impl<T> OperationResultExt<T> for Result<T, String> {
     }
 
     fn map_err_as_not_found(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::NotFound {
-            name: e,
-            path: PathBuf::new(),
-        })
+        self.map_err(|e| OperationError::NotFound(e))
     }
 
     fn map_err_as_validation(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::Validation(e))
+        self.map_err(|e| OperationError::InvalidInput(e))
     }
 }
 
@@ -98,13 +102,10 @@ impl<T> OperationResultExt<T> for Result<T, &str> {
     }
 
     fn map_err_as_not_found(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::NotFound {
-            name: e.to_string(),
-            path: PathBuf::new(),
-        })
+        self.map_err(|e| OperationError::NotFound(e.to_string()))
     }
 
     fn map_err_as_validation(self) -> OperationResult<T> {
-        self.map_err(|e| OperationError::Validation(e.to_string()))
+        self.map_err(|e| OperationError::InvalidInput(e.to_string()))
     }
 }

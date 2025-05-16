@@ -1,15 +1,16 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestEntryInput, CreateRequestProtocolSpecificPayload,
 };
 use moss_collection::models::types::{HttpMethod, PathChangeKind};
 use moss_common::api::{OperationError, OperationResult};
-use moss_common::sanitized::SanitizedName;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
+
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 
 #[tokio::test]
 async fn create_request_entry_success() {

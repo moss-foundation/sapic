@@ -1,3 +1,8 @@
+use moss_common::api::{OperationError, OperationResult};
+use moss_common::sanitized::sanitized_name::SanitizedName;
+use std::sync::Arc;
+use validator::Validate;
+
 use crate::worktree::{
     ChangesDiffSet, Worktree,
     common::{is_dir, path_not_ends_with_extension, path_starts_with, validate_entry},
@@ -7,10 +12,6 @@ use crate::{
     collection::Collection,
     models::operations::{UpdateRequestDirEntryInput, UpdateRequestDirEntryOutput},
 };
-use moss_common::api::{OperationError, OperationResult};
-use moss_common::sanitized::SanitizedName;
-use std::sync::Arc;
-use validator::Validate;
 
 impl Collection {
     pub async fn update_request_dir_entry(
@@ -24,11 +25,10 @@ impl Collection {
             let snapshot_lock = worktree.read().await;
             let entry = snapshot_lock
                 .entry_by_id(input.id)
-                .ok_or(OperationError::NotFound {
-                    name: input.id.to_string(),
-                    path: Default::default(),
-                })?;
-
+                .ok_or(OperationError::NotFound(format!(
+                    "request directory with id {}",
+                    input.id,
+                )))?;
             Arc::clone(&entry)
         };
 

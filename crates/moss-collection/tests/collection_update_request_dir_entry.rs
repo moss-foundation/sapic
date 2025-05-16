@@ -1,17 +1,18 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestDirEntryInput,
     UpdateRequestDirEntryInput,
 };
 use moss_collection::models::types::PathChangeKind;
 use moss_common::api::{OperationError, OperationResult};
-use moss_common::sanitized::SanitizedName;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
 use std::time::Duration;
+
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 
 #[tokio::test]
 async fn update_request_dir_entry_success() {
@@ -462,7 +463,7 @@ async fn update_request_dir_entry_incorrect_entity_type() {
 
     assert!(matches!(
         update_request_dir_result,
-        OperationResult::Err(OperationError::Validation(..))
+        OperationResult::Err(OperationError::InvalidInput(..))
     ));
     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

@@ -26,7 +26,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        let abs_path: Arc<Path> = collection_entry.path().clone().into();
+        let abs_path: Arc<Path> = collection_entry.abs_path().clone().into();
         if abs_path.exists() {
             self.fs
                 .remove_dir(

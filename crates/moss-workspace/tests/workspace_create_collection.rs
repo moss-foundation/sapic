@@ -48,7 +48,7 @@ async fn create_collection_empty_name() {
 
     assert!(matches!(
         create_collection_result,
-        Err(OperationError::Validation(_))
+        Err(OperationError::InvalidInput(_))
     ));
 
     // Clean up
