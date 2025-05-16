@@ -1,6 +1,5 @@
 import { HTMLAttributes } from "react";
 
-import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
 
 interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
@@ -52,9 +51,18 @@ export const DropIndicatorWithInstruction = ({
     return paddingLeft + folderOffset;
   };
 
-  const classNames = cn({
-    "h-full w-full outline-2 -outline-offset-2 outline-[var(--moss-primary)]": instruction.type === "make-child",
-  });
+  if (instruction.type === "make-child") {
+    return (
+      <div
+        className="absolute h-full outline-2 -outline-offset-2 outline-[var(--moss-primary)]"
+        {...props}
+        style={{
+          width: `calc(100% - ${paddingRight}px - ${paddingLeft}px`,
+          left: calculateLeft(),
+        }}
+      />
+    );
+  }
 
-  return <div className={classNames} style={getIndicatorStyles()} {...props} />;
+  return <div style={getIndicatorStyles()} {...props} />;
 };
