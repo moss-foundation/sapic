@@ -30,8 +30,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     onRootDoubleClickCallback,
   } = useContext(TreeContext);
 
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
-
   const handleExpandAll = () => {
     const newNode = expandAllNodes(node);
     onNodeUpdate({
@@ -100,6 +98,8 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     : node.childNodes;
 
   useDropTargetRootNode(node, treeId, dropTargetFolderRef);
+
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
@@ -174,13 +174,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       {shouldRenderChildNodes && !isRootDragging && (
         <Scrollbar className="h-full w-full">
           <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
-            {filteredChildNodes.map((childNode) => (
+            {filteredChildNodes.map((childNode, index) => (
               <TreeNode
                 parentNode={node}
                 onNodeUpdate={onNodeUpdate}
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={1}
+                isLastChild={index === filteredChildNodes.length - 1}
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (

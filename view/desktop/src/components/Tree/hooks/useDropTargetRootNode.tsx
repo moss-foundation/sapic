@@ -24,13 +24,17 @@ export const useDropTargetRootNode = (
       },
 
       onDropTargetChange({ location, source }) {
-        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
-
         if (
           location.current?.dropTargets.length === 0 ||
           location.current.dropTargets[0].data.type !== "TreeRootNode"
         ) {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+          element.classList.remove(
+            "background-(--moss-success-background)",
+            "background-(--moss-error-background)",
+            "outline-2",
+            "-outline-offset-2",
+            "outline-(--moss-primary)"
+          );
           return;
         }
 
@@ -38,16 +42,34 @@ export const useDropTargetRootNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
+          element.classList.remove(
+            "background-(--moss-success-background)",
+            "background-(--moss-error-background)",
+            "outline-2",
+            "-outline-offset-2",
+            "outline-(--moss-primary)"
+          );
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add("background-(--moss-success-background)");
+          element.classList.add(
+            "background-(--moss-success-background)",
+            "outline-2",
+            "-outline-offset-2",
+            "outline-(--moss-primary)"
+          );
         } else {
           element.classList.add("background-(--moss-error-background)");
         }
       },
       onDrop({ location, source }) {
-        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+        element.classList.remove(
+          "background-(--moss-success-background)",
+          "background-(--moss-error-background)",
+          "outline-2",
+          "-outline-offset-2",
+          "outline-(--moss-primary)"
+        );
 
         if (
           location.current?.dropTargets.length === 0 ||

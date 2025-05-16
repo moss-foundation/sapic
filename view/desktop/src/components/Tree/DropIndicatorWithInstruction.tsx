@@ -1,4 +1,4 @@
-import { CSSProperties, HTMLAttributes } from "react";
+import { HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
@@ -6,13 +6,17 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 interface DropIndicatorWithInstructionProps extends HTMLAttributes<HTMLDivElement> {
   instruction: Instruction | null;
   gap?: number;
-  style?: CSSProperties;
+  paddingLeft?: number;
+  paddingRight?: number;
+  isFolder?: boolean;
 }
 
 export const DropIndicatorWithInstruction = ({
   instruction,
   gap = -1,
-  style,
+  paddingLeft = 0,
+  paddingRight = 0,
+  isFolder = false,
   ...props
 }: DropIndicatorWithInstructionProps) => {
   if (!instruction) {
@@ -20,15 +24,22 @@ export const DropIndicatorWithInstruction = ({
   }
 
   const styleCss = {
+    position: "absolute" as const,
+    height: instruction.type === "reorder-above" || instruction.type === "reorder-below" ? "2px" : "100%",
+    backgroundColor:
+      instruction.type === "reorder-above" || instruction.type === "reorder-below"
+        ? "var(--moss-primary)"
+        : "transparent",
     top: instruction.type === "reorder-above" ? gap : undefined,
     bottom: instruction.type === "reorder-below" ? gap : undefined,
+    width: `calc(100% - ${paddingRight}px - ${paddingLeft}px - ${isFolder ? 0 : 16}px)`,
+    left: paddingLeft + (isFolder ? 0 : 16),
   };
 
   return (
     <div
-      className={cn("absolute", {
-        "h-[2px] w-full bg-blue-500": instruction.type === "reorder-above" || instruction.type === "reorder-below",
-        "h-full w-full outline-2 -outline-offset-2 outline-blue-500": instruction.type === "make-child",
+      className={cn({
+        "h-full w-full outline-2 -outline-offset-2 outline-(--moss-primary)": instruction.type === "make-child",
       })}
       style={styleCss}
       {...props}

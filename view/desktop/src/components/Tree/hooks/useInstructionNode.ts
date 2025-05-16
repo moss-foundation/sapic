@@ -58,7 +58,9 @@ export const useInstructionNode = (
           const block: Instruction["type"][] = [];
 
           if (node.isFolder) {
-            block.push("reorder-below");
+            if (!isLastChild && !node.isExpanded) {
+              block.push("reorder-below");
+            }
           } else {
             block.push("make-child");
 
@@ -80,12 +82,10 @@ export const useInstructionNode = (
           return source.data.type === "TreeNode";
         },
         onDrag({ location, source }) {
-          setInstruction(extractInstruction(location.current.dropTargets[0].data));
-          console.log("instruction", extractInstruction(location.current.dropTargets[0].data)?.type);
-
           const sourceTarget = getActualDropSourceTarget(source);
           const { dropTarget } = getActualDropTargetWithInstruction(location);
 
+          setInstruction(extractInstruction(location.current.dropTargets[0].data));
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
         onDragLeave() {

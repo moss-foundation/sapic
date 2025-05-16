@@ -34,7 +34,8 @@ const shouldRenderTreeNode = (
 };
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { searchInput, onNodeAddCallback, onNodeRenameCallback, treeId, nodeOffset } = useContext(TreeContext);
+  const { searchInput, onNodeAddCallback, onNodeRenameCallback, treeId, nodeOffset, paddingRight } =
+    useContext(TreeContext);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -68,7 +69,12 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   return (
     <li className="relative">
       {node.isFolder && instruction !== null && canDrop !== null && (
-        <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
+        <DropIndicatorWithInstruction
+          paddingLeft={nodePaddingLeft}
+          paddingRight={paddingRight}
+          instruction={instruction}
+          isFolder={node.isFolder}
+        />
       )}
       {isRenamingNode ? (
         <TreeNodeRenameForm
@@ -126,7 +132,8 @@ interface TreeNodeButtonProps {
 }
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   ({ node, onNodeUpdate, depth, onAddFile, onAddFolder, onRename, isDragging, canDrop, instruction, preview }, ref) => {
-    const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback } = useContext(TreeContext);
+    const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback, paddingRight } =
+      useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -182,7 +189,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               style={{ paddingLeft: nodePaddingLeft }}
             >
               {!node.isFolder && instruction !== null && canDrop !== null && (
-                <DropIndicatorWithInstruction style={{ paddingLeft: nodePaddingLeft }} instruction={instruction} />
+                <DropIndicatorWithInstruction
+                  paddingLeft={nodePaddingLeft}
+                  paddingRight={paddingRight}
+                  instruction={instruction}
+                  isFolder={node.isFolder}
+                />
               )}
               <Icon
                 icon="ChevronRight"
