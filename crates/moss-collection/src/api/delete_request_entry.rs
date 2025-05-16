@@ -1,8 +1,9 @@
+use moss_common::api::{OperationError, OperationResult};
+use std::sync::Arc;
+
 use crate::collection::Collection;
 use crate::models::operations::{DeleteRequestEntryInput, DeleteRequestEntryOutput};
 use crate::worktree::common::{is_dir, path_ends_with_extension, path_starts_with, validate_entry};
-use moss_common::api::{OperationError, OperationResult};
-use std::sync::Arc;
 
 impl Collection {
     pub async fn delete_request_entry(
@@ -15,10 +16,10 @@ impl Collection {
             let snapshot_lock = worktree.read().await;
             let entry = snapshot_lock
                 .entry_by_id(input.id)
-                .ok_or(OperationError::NotFound {
-                    name: input.id.to_string(),
-                    path: Default::default(),
-                })?;
+                .ok_or(OperationError::NotFound(format!(
+                    "request entry with id {}",
+                    input.id,
+                )))?;
             Arc::clone(&entry)
         };
 

@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use async_stream::stream;
-use futures::{stream::BoxStream, StreamExt};
+use futures::{StreamExt, stream::BoxStream};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{
     io,
@@ -63,7 +63,7 @@ impl FileSystem for RealFileSystem {
     async fn create_file_with(
         &self,
         path: &Path,
-        content: String,
+        content: &[u8],
         options: CreateOptions,
     ) -> Result<()> {
         let mut open_options = tokio::fs::OpenOptions::new();
@@ -75,7 +75,7 @@ impl FileSystem for RealFileSystem {
         }
 
         let mut file = open_options.open(path).await?;
-        file.write_all(content.as_bytes()).await?;
+        file.write_all(content).await?;
         Ok(())
     }
 

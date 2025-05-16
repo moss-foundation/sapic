@@ -21,17 +21,19 @@ impl<R: TauriRuntime> Workbench<R> {
             if let Some(workspace) = self.workspace_by_name(&input.name).await? {
                 workspace
             } else {
-                return Err(OperationError::NotFound {
-                    name: input.name.clone(),
-                    path: self.absolutize(&input.name),
-                });
+                return Err(OperationError::NotFound(format!(
+                    "workspace with name {}",
+                    input.name
+                )));
             };
 
         if !target_workspace_entry.abs_path.exists() {
-            return Err(OperationError::NotFound {
-                name: target_workspace_entry.name.clone(),
-                path: target_workspace_entry.abs_path.to_path_buf(),
-            });
+            return Err(OperationError::NotFound(
+                target_workspace_entry
+                    .abs_path
+                    .to_string_lossy()
+                    .to_string(),
+            ));
         }
 
         // Check if the workspace is already active

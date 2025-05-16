@@ -29,10 +29,9 @@ impl<R: TauriRuntime> Workbench<R> {
         let encoded_name = encode_name(&input.name);
         let abs_path: Arc<Path> = self.absolutize(&encoded_name).into();
         if abs_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.name.clone(),
-                path: abs_path.to_path_buf(),
-            });
+            return Err(OperationError::AlreadyExists(
+                abs_path.to_string_lossy().to_string(),
+            ));
         }
 
         let workspaces = self

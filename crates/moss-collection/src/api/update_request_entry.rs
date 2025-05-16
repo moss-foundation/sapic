@@ -1,3 +1,8 @@
+use moss_common::api::{OperationError, OperationResult};
+use moss_common::sanitized::sanitized_name::SanitizedName;
+use std::sync::Arc;
+use validator::Validate;
+
 use crate::collection::Collection;
 use crate::models::operations::{UpdateRequestEntryInput, UpdateRequestEntryOutput};
 use crate::worktree::common::path_ends_with_extension;
@@ -6,11 +11,6 @@ use crate::worktree::{
     common::{is_dir, path_starts_with, validate_entry},
     snapshot::EntryRef,
 };
-use moss_common::api::{OperationError, OperationResult};
-
-use moss_common::sanitized::SanitizedName;
-use std::sync::Arc;
-use validator::Validate;
 
 impl Collection {
     pub async fn update_request_entry(
@@ -24,10 +24,10 @@ impl Collection {
             let snapshot_lock = worktree.read().await;
             let entry = snapshot_lock
                 .entry_by_id(input.id)
-                .ok_or(OperationError::NotFound {
-                    name: input.id.to_string(),
-                    path: Default::default(),
-                })?;
+                .ok_or(OperationError::NotFound(format!(
+                    "request entry with id {}",
+                    input.id,
+                )))?;
 
             Arc::clone(&entry)
         };

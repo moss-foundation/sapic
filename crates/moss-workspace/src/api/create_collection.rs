@@ -35,10 +35,9 @@ impl<R: TauriRuntime> Workspace<R> {
         let abs_path: Arc<Path> = self.abs_path().join(path).into();
 
         if abs_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: input.name,
-                path: abs_path.to_path_buf(),
-            });
+            return Err(OperationError::AlreadyExists(
+                abs_path.to_string_lossy().to_string(),
+            ));
         }
 
         let collections = self

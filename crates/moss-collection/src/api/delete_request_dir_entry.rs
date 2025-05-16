@@ -20,10 +20,10 @@ impl Collection {
             let snapshot_lock = worktree.read().await;
             let entry = snapshot_lock
                 .entry_by_id(input.id)
-                .ok_or(OperationError::NotFound {
-                    name: input.id.to_string(),
-                    path: Default::default(),
-                })?;
+                .ok_or(OperationError::NotFound(format!(
+                    "request directory with id {}",
+                    input.id,
+                )))?;
             Arc::clone(&entry)
         };
 

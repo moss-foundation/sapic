@@ -1,5 +1,5 @@
 use moss_collection::collection::Collection;
-use moss_common::sanitized::SanitizedName;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_fs::RealFileSystem;
 use moss_fs::utils::encode_path;
 use moss_testutils::random_name::{random_collection_name, random_string};

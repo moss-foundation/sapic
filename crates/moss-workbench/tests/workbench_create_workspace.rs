@@ -57,7 +57,7 @@ async fn create_workspace_empty_name() {
 
     assert!(matches!(
         create_workspace_result,
-        Err(OperationError::Validation(_))
+        Err(OperationError::InvalidInput(_))
     ));
 
     // Clean up
@@ -91,9 +91,8 @@ async fn create_workspace_already_exists() {
         .await;
 
     match create_workspace_result {
-        Err(OperationError::AlreadyExists { name, path }) => {
-            assert_eq!(name, workspace_name);
-            assert_eq!(path, expected_path);
+        Err(OperationError::AlreadyExists(path)) => {
+            assert_eq!(path, expected_path.to_string_lossy().to_string());
         }
         _ => panic!("Expected AlreadyExists error"),
     }

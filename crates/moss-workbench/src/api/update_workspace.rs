@@ -21,10 +21,10 @@ impl<R: TauriRuntime> Workbench<R> {
             .read()
             .await
             .get(&input.id)
-            .ok_or(OperationError::NotFound {
-                name: input.id.to_string(),
-                path: self.absolutize(&input.id.to_string()),
-            })?
+            .ok_or(OperationError::NotFound(format!(
+                "workspace with id {}",
+                input.id
+            )))?
             .clone();
 
         if let Some(new_name) = input.name {
@@ -47,10 +47,9 @@ impl<R: TauriRuntime> Workbench<R> {
         let new_encoded_name = encode_name(&new_name);
         let new_abs_path: Arc<Path> = self.absolutize(&new_encoded_name).into();
         if new_abs_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: new_encoded_name,
-                path: new_abs_path.to_path_buf(),
-            });
+            return Err(OperationError::AlreadyExists(
+                new_abs_path.to_string_lossy().to_string(),
+            ));
         }
 
         // An opened workspace db will prevent its parent folder from being renamed

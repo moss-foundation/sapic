@@ -1,4 +1,4 @@
-use moss_common::{leased_slotmap::ResourceKey, models::primitives::Identifier};
+use moss_common::models::primitives::Identifier;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -13,26 +13,6 @@ use validator::Validate;
 use crate::models::types::{
     CollectionInfo, EditorPartState, EnvironmentInfo, PanelPartState, SidebarPartState,
 };
-
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListCollectionsOutput(pub Vec<CollectionInfo>);
-
-impl Deref for ListCollectionsOutput {
-    type Target = Vec<CollectionInfo>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-#[serde(rename_all = "camelCase")]
-pub struct ListCollectionRequestsInput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
-}
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -109,8 +89,8 @@ pub struct DescribeWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -119,22 +99,6 @@ pub struct DescribeEnvironmentInput {
 pub struct DescribeEnvironmentOutput {
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenCollectionInput {
-    pub path: PathBuf,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenCollectionOutput {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
-    pub path: PathBuf,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
