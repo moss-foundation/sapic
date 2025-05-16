@@ -25,8 +25,6 @@ export const DropIndicatorWithInstruction = ({
     return null;
   }
 
-  console.log(depth);
-
   const styleCss = {
     position: "absolute" as const,
     height: instruction.type === "reorder-above" || instruction.type === "reorder-below" ? "2px" : "100%",
