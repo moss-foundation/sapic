@@ -9,6 +9,7 @@ interface DropIndicatorWithInstructionProps extends HTMLAttributes<HTMLDivElemen
   paddingLeft?: number;
   paddingRight?: number;
   isFolder?: boolean;
+  depth?: number;
 }
 
 export const DropIndicatorWithInstruction = ({
@@ -17,11 +18,14 @@ export const DropIndicatorWithInstruction = ({
   paddingLeft = 0,
   paddingRight = 0,
   isFolder = false,
+  depth = 0,
   ...props
 }: DropIndicatorWithInstructionProps) => {
   if (!instruction) {
     return null;
   }
+
+  console.log(depth);
 
   const styleCss = {
     position: "absolute" as const,
@@ -30,10 +34,13 @@ export const DropIndicatorWithInstruction = ({
       instruction.type === "reorder-above" || instruction.type === "reorder-below"
         ? "var(--moss-primary)"
         : "transparent",
-    top: instruction.type === "reorder-above" ? gap : undefined,
+    top: instruction.type === "reorder-above" ? (depth === 1 ? 0 : gap) : undefined,
     bottom: instruction.type === "reorder-below" ? gap : undefined,
-    width: `calc(100% - ${paddingRight}px - ${paddingLeft}px - ${isFolder ? 0 : 16}px)`,
-    left: paddingLeft + (isFolder ? 0 : 16),
+    width:
+      depth === 1
+        ? ` calc(100% - ${paddingRight}px - ${paddingLeft}px)`
+        : `calc(100% - ${paddingRight}px - ${paddingLeft}px - ${isFolder ? 0 : 16 * (instruction.type === "reorder-above" ? 2 : 1)}px)`,
+    left: depth === 1 ? paddingLeft : paddingLeft + (isFolder ? (instruction.type === "reorder-above" ? 16 : 0) : 16),
   };
 
   return (

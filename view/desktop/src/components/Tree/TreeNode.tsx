@@ -1,4 +1,4 @@
-import { forwardRef, useContext, useRef, useState } from "react";
+import { forwardRef, useContext, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { Icon } from "@/lib/ui";
@@ -66,6 +66,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   const shouldRenderChildNodes = shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
   const nodePaddingLeft = depth * nodeOffset;
 
+  useEffect(() => {
+    console.log(instruction?.type, isDragging, canDrop);
+  }, [instruction, isDragging, canDrop]);
+
   return (
     <li className="relative">
       {node.isFolder && instruction !== null && canDrop === true && (
@@ -74,6 +78,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           paddingRight={paddingRight}
           instruction={instruction}
           isFolder={node.isFolder}
+          depth={depth}
         />
       )}
       {isRenamingNode ? (
@@ -194,6 +199,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   paddingRight={paddingRight}
                   instruction={instruction}
                   isFolder={node.isFolder}
+                  depth={depth}
                 />
               )}
               <Icon

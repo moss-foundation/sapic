@@ -81,7 +81,8 @@ export const useInstructionNode = (
           const sourceTarget = getActualDropSourceTarget(source);
           const { dropTarget } = getActualDropTargetWithInstruction(location);
 
-          setInstruction(extractInstruction(location.current.dropTargets[0].data));
+          const instruction = extractInstruction(location.current.dropTargets[0].data);
+          setInstruction(instruction);
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
         onDropTargetChange() {
