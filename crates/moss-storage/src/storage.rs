@@ -96,7 +96,7 @@ mod tests {
         table: BincodeTable<'static, SegKeyBuf, AnyValue>,
     }
     impl Table1 {
-        pub fn new() -> Self {
+        pub const fn new() -> Self {
             Self {
                 table: BincodeTable::new("table1"),
             }
@@ -107,6 +107,8 @@ mod tests {
             &self.table
         }
     }
+
+    const TABLE1: Table1 = Table1::new();
 
     struct TestStore {
         handle: Arc<dyn Storage>,
