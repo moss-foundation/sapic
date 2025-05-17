@@ -1,4 +1,4 @@
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 
 export type SortTypes = "none" | "order" | "alphabetically";
 

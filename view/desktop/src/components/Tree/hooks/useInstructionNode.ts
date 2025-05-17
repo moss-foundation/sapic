@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useState } from "react";
 
-import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
@@ -12,7 +12,6 @@ export const useInstructionNode = (
   node: TreeNodeProps,
   treeId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
-  depth: number,
   isLastChild: boolean,
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>
 ) => {
@@ -55,40 +54,43 @@ export const useInstructionNode = (
         getData: ({ input, element }) => {
           const data = { type: "TreeNode", data: { treeId, node } };
 
-          const block: Instruction["type"][] = [];
+          const isReorderBeforeAvailable = true;
+          let isReorderAfterAvailable = true;
+          let isCombineAvailable = true;
 
           if (node.isFolder) {
             if (!isLastChild && !node.isExpanded) {
-              block.push("reorder-below");
+              isReorderAfterAvailable = false;
             }
             if (node.isExpanded) {
-              block.push("reorder-below");
+              isReorderAfterAvailable = false;
             }
           } else {
-            block.push("make-child");
+            isCombineAvailable = false;
 
             if (!isLastChild) {
-              block.push("reorder-below");
+              isReorderAfterAvailable = false;
             }
           }
 
           return attachInstruction(data, {
             input,
             element,
-            indentPerLevel: 1,
-            currentLevel: depth,
-            mode: "standard",
-            block,
+            operations: {
+              "reorder-before": isReorderBeforeAvailable ? "available" : "not-available",
+              "reorder-after": isReorderAfterAvailable ? "available" : "not-available",
+              combine: isCombineAvailable ? "available" : "not-available",
+            },
           });
         },
         canDrop({ source }) {
           return source.data.type === "TreeNode";
         },
-        onDrag({ location, source }) {
+        onDrag({ location, source, self }) {
           const sourceTarget = getActualDropSourceTarget(source);
-          const { dropTarget } = getActualDropTargetWithInstruction(location);
+          const { dropTarget } = getActualDropTargetWithInstruction(location, self);
 
-          const instruction = extractInstruction(location.current.dropTargets[0].data);
+          const instruction: Instruction | null = extractInstruction(self.data);
           setInstruction(instruction);
           setCanDrop(canDropNode(sourceTarget, dropTarget, node));
         },
@@ -96,7 +98,7 @@ export const useInstructionNode = (
           setInstruction(null);
           setCanDrop(null);
         },
-        onDrop({ location, source }) {
+        onDrop({ location, source, self }) {
           setInstruction(null);
           setCanDrop(null);
 
@@ -105,7 +107,7 @@ export const useInstructionNode = (
           }
 
           const sourceTarget = getActualDropSourceTarget(source);
-          const { dropTarget, instruction } = getActualDropTargetWithInstruction(location);
+          const { dropTarget, instruction } = getActualDropTargetWithInstruction(location, self);
 
           if (dropTarget?.node.uniqueId !== node.uniqueId) {
             return;
@@ -125,7 +127,7 @@ export const useInstructionNode = (
         },
       })
     );
-  }, [dropTargetListRef, node, treeId]);
+  }, [dropTargetListRef, isLastChild, node, setPreview, treeId]);
 
   return { instruction, isDragging, canDrop };
 };

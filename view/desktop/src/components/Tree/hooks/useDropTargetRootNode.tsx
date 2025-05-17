@@ -5,13 +5,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { TreeNodeProps } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTarget } from "../utils";
 
-const classesToRemove = [
-  "background-(--moss-success-background)",
-  "background-(--moss-error-background)",
-  "outline-2",
-  "-outline-offset-2",
-  "outline-(--moss-primary)",
-];
+const classesToRemove = ["background-(--moss-success-background)", "background-(--moss-error-background)"];
 
 export const useDropTargetRootNode = (
   node: TreeNodeProps,
@@ -48,12 +42,7 @@ export const useDropTargetRootNode = (
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
-          element.classList.add(
-            "background-(--moss-success-background)",
-            "outline-2",
-            "-outline-offset-2",
-            "outline-(--moss-primary)"
-          );
+          element.classList.add("background-(--moss-success-background)");
         } else {
           element.classList.add("background-(--moss-error-background)");
         }

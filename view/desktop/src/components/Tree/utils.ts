@@ -1,6 +1,9 @@
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
-import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { extractInstruction, type Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import {
+  DragLocationHistory,
+  DropTargetRecord,
+  ElementDragPayload,
+} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 import { DropNodeElement, DropNodeElementWithInstruction, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
@@ -216,12 +219,13 @@ export const getActualDropTarget = (location: DragLocationHistory): DropNodeElem
 };
 
 export const getActualDropTargetWithInstruction = (
-  location: DragLocationHistory
+  location: DragLocationHistory,
+  self: DropTargetRecord
 ): {
   dropTarget: DropNodeElementWithInstruction;
   instruction: Instruction | null;
 } => {
-  const instruction = extractInstruction(location.current.dropTargets[0].data);
+  const instruction = extractInstruction(self.data);
 
   return {
     dropTarget: location.current.dropTargets[0].data.data as unknown as DropNodeElementWithInstruction,

@@ -1,6 +1,6 @@
 import { HTMLAttributes } from "react";
 
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 interface DropIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   instruction: Instruction | null;
@@ -28,22 +28,23 @@ export const DropIndicatorWithInstruction = ({
 
   const reorderWidth = depth === 1 ? baseWidth : `calc(${baseWidth} - 16px)`;
 
-  const leftOffset = depth === 1 ? 0 : !isFolder || instruction.type === "reorder-above" ? 16 : isLastChild ? 0 : 16;
+  const leftOffset =
+    depth === 1 ? 0 : !isFolder || instruction.operation === "reorder-before" ? 16 : isLastChild ? 0 : 16;
   const left = paddingLeft + leftOffset;
 
   let styles;
 
-  switch (instruction.type) {
-    case "make-child":
+  switch (instruction.operation) {
+    case "combine":
       styles = {
         position: "absolute",
         height: "100%",
         width: "100%",
-        backgroundColor: "var(--moss-info-background)",
+        backgroundColor: "var(--moss-success-background)",
       };
       break;
 
-    case "reorder-above":
+    case "reorder-before":
       styles = {
         position: "absolute",
         height: "2px",
@@ -54,7 +55,7 @@ export const DropIndicatorWithInstruction = ({
       };
       break;
 
-    case "reorder-below":
+    case "reorder-after":
       styles = {
         position: "absolute",
         height: "2px",

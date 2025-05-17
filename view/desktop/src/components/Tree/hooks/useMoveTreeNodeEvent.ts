@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect } from "react";
 
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "../types";
 import {
@@ -39,7 +39,7 @@ const addNodeToTreeWithInstruction = (
     return tree;
   }
 
-  if (instruction.type === "make-child" && targetNode.isFolder) {
+  if (instruction.operation === "combine" && targetNode.isFolder) {
     return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
   }
 
@@ -49,7 +49,7 @@ const addNodeToTreeWithInstruction = (
   const indexOfTargetNode = targetParentNode.childNodes.findIndex((child) => child.uniqueId === targetNode.uniqueId);
   if (indexOfTargetNode === -1) return treeWithoutSource;
 
-  if (instruction.type === "reorder-above") {
+  if (instruction.operation === "reorder-before") {
     return addNodeChildrenWithInstruction(
       treeWithoutSource,
       targetParentNode.uniqueId,
@@ -62,7 +62,7 @@ const addNodeToTreeWithInstruction = (
     );
   }
 
-  if (instruction.type === "reorder-below") {
+  if (instruction.operation === "reorder-after") {
     return addNodeChildrenWithInstruction(
       treeWithoutSource,
       targetParentNode.uniqueId,

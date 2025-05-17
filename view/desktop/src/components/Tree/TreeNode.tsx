@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/tree-item";
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { ActionMenu, TreeContext } from "..";
 import { DropIndicatorWithInstruction } from "./DropIndicatorWithInstruction";
@@ -54,14 +54,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   );
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging, canDrop } = useInstructionNode(
-    node,
-    treeId,
-    triggerRef,
-    depth,
-    isLastChild,
-    setPreview
-  );
+  const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
 
   const shouldRenderChildNodes = shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
   const nodePaddingLeft = depth * nodeOffset;
