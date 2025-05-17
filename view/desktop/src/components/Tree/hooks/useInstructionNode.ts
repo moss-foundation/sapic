@@ -66,6 +66,10 @@ export const useInstructionNode = (
             }
           } else {
             block.push("make-child");
+
+            if (!isLastChild) {
+              block.push("reorder-below");
+            }
           }
 
           return attachInstruction(data, {
