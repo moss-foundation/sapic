@@ -4,7 +4,6 @@ use serde::de::DeserializeOwned;
 use std::borrow::Borrow;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
-use std::str::FromStr;
 
 use crate::Table;
 use crate::common::{DatabaseError, Transaction};

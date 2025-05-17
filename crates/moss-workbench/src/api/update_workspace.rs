@@ -1,12 +1,14 @@
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_fs::{RenameOptions, utils::encode_name};
-use moss_workspace::workspace::Workspace;
+use moss_storage::storage::operations::RekeyItem;
+use moss_workspace::Workspace;
 use std::{path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     models::operations::UpdateWorkspaceInput,
+    storage::segments::WORKSPACE_SEGKEY,
     workbench::{Workbench, WorkspaceInfoEntry},
 };
 
@@ -14,15 +16,15 @@ impl<R: TauriRuntime> Workbench<R> {
     pub async fn update_workspace(&self, input: UpdateWorkspaceInput) -> OperationResult<()> {
         input.validate()?;
 
-        let workspaces = self.known_workspaces().await?;
+        let workspaces = self.workspaces().await?;
         let workspace_info_entry = workspaces
             .read()
             .await
             .get(&input.id)
-            .ok_or(OperationError::NotFound {
-                name: input.id.to_string(),
-                path: self.absolutize(&input.id.to_string()),
-            })?
+            .ok_or(OperationError::NotFound(format!(
+                "workspace with id {}",
+                input.id
+            )))?
             .clone();
 
         if let Some(new_name) = input.name {
@@ -45,10 +47,9 @@ impl<R: TauriRuntime> Workbench<R> {
         let new_encoded_name = encode_name(&new_name);
         let new_abs_path: Arc<Path> = self.absolutize(&new_encoded_name).into();
         if new_abs_path.exists() {
-            return Err(OperationError::AlreadyExists {
-                name: new_encoded_name,
-                path: new_abs_path.to_path_buf(),
-            });
+            return Err(OperationError::AlreadyExists(
+                new_abs_path.to_string_lossy().to_string(),
+            ));
         }
 
         // An opened workspace db will prevent its parent folder from being renamed
@@ -95,19 +96,14 @@ impl<R: TauriRuntime> Workbench<R> {
         }
 
         {
-            let mut txn = self.global_storage.begin_write().await?;
-            self.global_storage.workspaces_store().rekey_workspace(
-                &mut txn,
-                workspace_info.name.clone(),
-                new_encoded_name.clone(),
-            )?;
-            txn.commit()?;
+            let item_store = self.global_storage.item_store();
+            let old_segkey = WORKSPACE_SEGKEY.join(workspace_info.name.clone());
+            let new_segkey = WORKSPACE_SEGKEY.join(new_encoded_name.clone());
+            RekeyItem::rekey(item_store.as_ref(), old_segkey, new_segkey)?;
         }
 
-        dbg!(&new_name);
-
         {
-            let mut workspaces_lock = self.known_workspaces().await?.write().await;
+            let mut workspaces_lock = self.workspaces().await?.write().await;
             workspaces_lock.insert(
                 workspace_info.id,
                 Arc::new(WorkspaceInfoEntry {

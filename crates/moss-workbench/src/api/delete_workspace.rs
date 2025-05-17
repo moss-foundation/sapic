@@ -1,13 +1,17 @@
 use anyhow::Context as _;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_fs::RemoveOptions;
+use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;
 
-use crate::{models::operations::DeleteWorkspaceInput, workbench::Workbench};
+use crate::{
+    models::operations::DeleteWorkspaceInput, storage::segments::WORKSPACE_SEGKEY,
+    workbench::Workbench,
+};
 
 impl<R: TauriRuntime> Workbench<R> {
     pub async fn delete_workspace(&self, input: &DeleteWorkspaceInput) -> OperationResult<()> {
-        let workspaces = self.known_workspaces().await?;
+        let workspaces = self.workspaces().await?;
 
         let workspace_entry = workspaces
             .read()
@@ -18,10 +22,9 @@ impl<R: TauriRuntime> Workbench<R> {
             .map_err_as_not_found()?;
 
         if !workspace_entry.abs_path.exists() {
-            return Err(OperationError::NotFound {
-                name: workspace_entry.name.clone(),
-                path: workspace_entry.abs_path.to_path_buf(),
-            });
+            return Err(OperationError::NotFound(
+                workspace_entry.abs_path.to_string_lossy().to_string(),
+            ));
         }
 
         self.fs
@@ -35,10 +38,9 @@ impl<R: TauriRuntime> Workbench<R> {
             .await?;
 
         {
-            let workspace_storage = self.global_storage.workspaces_store();
-            let mut txn = self.global_storage.begin_write().await?;
-            workspace_storage.delete_workspace(&mut txn, workspace_entry.name.to_owned())?;
-            txn.commit()?;
+            let item_store = self.global_storage.item_store();
+            let segkey = WORKSPACE_SEGKEY.join(workspace_entry.name.to_owned());
+            RemoveItem::remove(item_store.as_ref(), segkey)?;
         }
 
         {

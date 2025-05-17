@@ -130,7 +130,7 @@ impl Environment {
             let environment_file = EnvironmentFile::default();
             fs.create_file_with(
                 &abs_path,
-                serde_json::to_string(&environment_file)?,
+                serde_json::to_string(&environment_file)?.as_bytes(),
                 CreateOptions {
                     overwrite: false,
                     ignore_if_exists: true,

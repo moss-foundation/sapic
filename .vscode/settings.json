@@ -56,6 +56,7 @@
   ],
   "cSpell.words": [
     "activegroup",
+    "desanitize",
     "Dockview",
     "dodgerblue",
     "hiddenpanel",
@@ -63,6 +64,7 @@
     "paneview",
     "rgba",
     "sapic",
+    "segkey",
     "tabslist",
     "tauri",
     "visiblepanel",

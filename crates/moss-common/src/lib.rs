@@ -1,3 +1,4 @@
 pub mod api;
-pub mod leased_slotmap;
+pub mod id_registry;
 pub mod models;
+pub mod sanitized;

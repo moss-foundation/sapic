@@ -7,7 +7,6 @@ import type {
   PathParamItem,
   QueryParamItem,
   RequestBody,
-  RequestNodeInfo,
 } from "./types";
 
 export type CreateRequestDirEntryInput = { destination: string };
@@ -44,8 +43,6 @@ export type DeleteRequestDirEntryOutput = { changedPaths: Array<[string, EntryId
 export type DeleteRequestEntryInput = { id: EntryId };
 
 export type DeleteRequestEntryOutput = { changedPaths: Array<[string, EntryId, PathChangeKind]> };
-
-export type ListRequestsOutput = Array<RequestNodeInfo>;
 
 export type StreamEntriesByPrefixesInput = Array<string>;
 

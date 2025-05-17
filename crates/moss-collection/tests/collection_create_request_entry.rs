@@ -1,15 +1,16 @@
 mod shared;
 
-use crate::shared::set_up_test_collection;
 use moss_collection::models::operations::{
     CreateRequestEntryInput, CreateRequestProtocolSpecificPayload,
 };
 use moss_collection::models::types::{HttpMethod, PathChangeKind};
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::{random_request_dir_name, random_request_name};
+use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
+
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 
 #[tokio::test]
 async fn create_request_entry_success() {
@@ -36,13 +37,13 @@ async fn create_request_entry_success() {
         path.to_path_buf() == PathBuf::from("requests") && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+        path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
             && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
                 .join("get.sapic")
             && kind == &PathChangeKind::Created
     }));
@@ -82,13 +83,13 @@ async fn create_request_entry_with_payload() {
         path.to_path_buf() == PathBuf::from("requests") && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name}.request"))
+        path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name))
             && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
                 .join("post.sapic")
             && kind == &PathChangeKind::Created
     }));
@@ -154,13 +155,13 @@ async fn create_request_entry_multiple_same_level() {
 
     assert_eq!(changed_paths.len(), 2);
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == PathBuf::from("requests").join(format!("{request_name2}.request"))
+        path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&request_name2))
             && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
-                .join(format!("{request_name2}.request"))
+                .join(request_folder_name(&request_name2))
                 .join("get.sapic")
             && kind == &PathChangeKind::Created
     }));
@@ -195,14 +196,14 @@ async fn create_request_entry_nested() {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join("group")
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
             && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join("group")
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
                 .join("get.sapic")
     }));
 
@@ -246,14 +247,14 @@ async fn create_request_entry_multiple_nested() {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join("group")
-                .join(format!("{request_name2}.request"))
+                .join(request_folder_name(&request_name2))
             && kind == &PathChangeKind::Created
     }));
     assert!(changed_paths.iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join("group")
-                .join(format!("{request_name2}.request"))
+                .join(request_folder_name(&request_name2))
                 .join("get.sapic")
             && kind == &PathChangeKind::Created
     }));
@@ -283,14 +284,13 @@ async fn create_request_entry_special_chars_in_name() {
         let changed_paths = create_result.unwrap().changed_paths;
 
         assert!(changed_paths.iter().any(|(path, _id, kind)| {
-            path.to_path_buf()
-                == PathBuf::from("requests").join(format!("{}.request", encode_name(&name)))
+            path.to_path_buf() == PathBuf::from("requests").join(request_folder_name(&name))
                 && kind == &PathChangeKind::Created
         }));
         assert!(changed_paths.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == PathBuf::from("requests")
-                    .join(format!("{}.request", encode_name(&name)))
+                    .join(request_folder_name(&name))
                     .join("get.sapic")
                 && kind == &PathChangeKind::Created
         }));
@@ -317,17 +317,18 @@ async fn create_request_entry_special_chars_in_path() {
             .await;
         let changed_paths = create_result.unwrap().changed_paths;
 
+        let sanitized_name = SanitizedName::new(&name);
         assert!(changed_paths.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == PathBuf::from("requests")
-                    .join(encode_name(&name))
+                    .join(&sanitized_name)
                     .join("request.request")
                 && kind == &PathChangeKind::Created
         }));
         assert!(changed_paths.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == PathBuf::from("requests")
-                    .join(encode_name(&name))
+                    .join(&sanitized_name)
                     .join("request.request")
                     .join("get.sapic")
                 && kind == &PathChangeKind::Created

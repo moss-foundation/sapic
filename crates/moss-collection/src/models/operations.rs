@@ -1,4 +1,3 @@
-use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
@@ -10,9 +9,7 @@ use validator::{Validate, ValidationError};
 use super::types::PathChangeKind;
 use crate::models::{
     primitives::EntryId,
-    types::{
-        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
-    },
+    types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
 };
 
 /// All the path and file names passed in the input should be unencoded.
@@ -231,7 +228,7 @@ mod tests {
         let path = PathBuf::new();
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ));
     }
 
@@ -240,7 +237,7 @@ mod tests {
         let path = PathBuf::from("requests");
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ));
     }
 
@@ -249,7 +246,7 @@ mod tests {
         let path = PathBuf::from("non-requests").join("1");
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ));
     }
 
@@ -258,13 +255,13 @@ mod tests {
         let path = PathBuf::from("requests\\1\\..");
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ));
 
         let path = PathBuf::from("requests\\1//");
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ));
     }
 
@@ -273,7 +270,7 @@ mod tests {
         let path = PathBuf::from("requests").join("1.request");
         assert!(matches!(
             validate_request_destination(&path),
-            Err(ValidationError)
+            Err(ValidationError { .. })
         ))
     }
 }

@@ -8,7 +8,7 @@ use crate::{
 
 impl<R: TauriRuntime> Workbench<R> {
     pub async fn list_workspaces(&self) -> OperationResult<ListWorkspacesOutput> {
-        let workspaces = self.known_workspaces().await?;
+        let workspaces = self.workspaces().await?;
         let workspaces_lock = workspaces.read().await;
 
         Ok(ListWorkspacesOutput(
