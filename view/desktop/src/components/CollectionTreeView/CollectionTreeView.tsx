@@ -190,7 +190,7 @@ const CollectionCreationZone = () => {
         }
       )}
     >
-      <div className="test-stripes flex flex-col items-center justify-center gap-3 p-8 text-center">
+      <div className="stripes flex flex-col items-center justify-center gap-3 p-8 text-center">
         <Icon icon="AddCircleActive" className={cn("size-5 rounded-full text-(--moss-primary)")} />
         <span>Drag & drop selected items here to create a new collection</span>
       </div>
