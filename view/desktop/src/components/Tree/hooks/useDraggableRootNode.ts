@@ -24,7 +24,7 @@ export const useDraggableRootNode = (
       draggable({
         element,
         getInitialData: () => ({
-          type: "TreeNodeRoot",
+          type: "TreeRootNode",
           data: {
             node,
             treeId,
@@ -54,7 +54,7 @@ export const useDraggableRootNode = (
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TreeNodeRoot";
+          return source.data.type === "TreeRootNode";
         },
         getIsSticky() {
           return true;
@@ -64,6 +64,7 @@ export const useDraggableRootNode = (
           setClosestEdge(closestEdge);
         },
         onDrag({ self }) {
+          console.log(1);
           const closestEdge = extractClosestEdge(self.data);
 
           setClosestEdge((current) => {

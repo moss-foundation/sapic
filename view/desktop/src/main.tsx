@@ -11,10 +11,10 @@ import "./assets/index.css";
 
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
 import GeneralProvider from "./app/Provider";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
@@ -34,12 +34,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-if (import.meta.env.MODE === "development") {
-  const script = document.createElement("script");
-  script.src = "http://localhost:8097";
-  document.head.appendChild(script);
-}
 
 const App = lazy(() => import("@/app")); // lazy load the main App component
 const rootElement = document.getElementById("root") as HTMLElement; // cache the root element reference

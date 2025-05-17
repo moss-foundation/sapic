@@ -5,32 +5,32 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { TreeNodeProps } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTarget } from "../utils";
 
-export const useDropTargetNode = (
+const classesToRemove = ["background-(--moss-success-background)", "background-(--moss-error-background)"];
+
+export const useDropTargetRootNode = (
   node: TreeNodeProps,
   treeId: string | number,
-  dropTargetListRef: RefObject<HTMLLIElement>,
-  dropTargetFolderRef: RefObject<HTMLDivElement>
+  dropTargetListRef: RefObject<HTMLDivElement>
 ) => {
   useEffect(() => {
-    const element = dropTargetListRef.current || dropTargetFolderRef.current;
+    const element = dropTargetListRef.current;
     if (!element) return;
 
     return dropTargetForElements({
       element,
-      getData: () => ({
-        type: "TreeNode",
-        data: { treeId, node },
-      }),
+      getData: () => {
+        return { type: "TreeRootNode", data: { treeId, node } };
+      },
       canDrop({ source }) {
         return source.data.type === "TreeNode";
       },
 
-      onDragLeave() {
-        element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
-      },
       onDropTargetChange({ location, source }) {
-        if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+        if (
+          location.current?.dropTargets.length === 0 ||
+          location.current.dropTargets[0].data.type !== "TreeRootNode"
+        ) {
+          element.classList.remove(...classesToRemove);
           return;
         }
 
@@ -38,7 +38,7 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (!dropTarget || !sourceTarget || dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
+          element.classList.remove(...classesToRemove);
           return;
         }
         if (canDropNode(sourceTarget, dropTarget, node)) {
@@ -48,8 +48,12 @@ export const useDropTargetNode = (
         }
       },
       onDrop({ location, source }) {
-        console.log("onDrop");
-        if (location.current?.dropTargets.length === 0 || location.current.dropTargets[0].data.type !== "TreeNode") {
+        element.classList.remove(...classesToRemove);
+
+        if (
+          location.current?.dropTargets.length === 0 ||
+          location.current.dropTargets[0].data.type !== "TreeRootNode"
+        ) {
           return;
         }
 
@@ -57,7 +61,6 @@ export const useDropTargetNode = (
         const dropTarget = getActualDropTarget(location);
 
         if (dropTarget?.node.uniqueId !== node.uniqueId) {
-          element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
           return;
         }
 
@@ -75,5 +78,5 @@ export const useDropTargetNode = (
         element.classList.remove("background-(--moss-success-background)", "background-(--moss-error-background)");
       },
     });
-  }, [dropTargetFolderRef, dropTargetListRef, node, treeId]);
+  }, [dropTargetListRef, node, treeId]);
 };

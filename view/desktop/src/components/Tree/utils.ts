@@ -1,9 +1,14 @@
-import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { extractInstruction, type Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import {
+  DragLocationHistory,
+  DropTargetRecord,
+  ElementDragPayload,
+} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DropNodeElement, NodeProps, SortTypes, TreeNodeProps } from "./types";
+import { DropNodeElement, DropNodeElementWithInstruction, NodeProps, SortTypes, TreeNodeProps } from "./types";
 
 export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
-  if (node.uniqueId === updatedNode.uniqueId) return updatedNode;
+  if (node.uniqueId === updatedNode.uniqueId) return updateNodeOrder(updatedNode);
 
   return {
     ...node,
@@ -12,6 +17,8 @@ export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps):
 };
 
 export const sortNode = (node: TreeNodeProps, sortBy: SortTypes = "alphabetically"): TreeNodeProps => {
+  if (sortBy === "none") return node;
+
   return {
     ...node,
     childNodes: sortNodes(
@@ -47,15 +54,22 @@ export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabeti
   return nodes;
 };
 
-export const prepareCollectionForTree = (collection: NodeProps, isFirstCollection: boolean = true): TreeNodeProps => {
+export const prepareCollectionForTree = (
+  collection: NodeProps,
+  sortBy: SortTypes = "none",
+  isFirstCollection: boolean = true
+): TreeNodeProps => {
   const id = "TreeNodeUniqueId-" + Math.random().toString(36).substring(2, 15);
 
-  return sortNode({
-    ...collection,
-    uniqueId: id,
-    isRoot: isFirstCollection,
-    childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, false)),
-  });
+  return sortNode(
+    {
+      ...collection,
+      uniqueId: id,
+      isRoot: isFirstCollection,
+      childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy, false)),
+    },
+    sortBy
+  );
 };
 
 export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
@@ -161,15 +175,36 @@ export const addNodeToFolder = (
   nodeToAdd: TreeNodeProps
 ): TreeNodeProps => {
   if (tree.uniqueId === targetUniqueId) {
-    return {
+    return updateNodeOrder({
       ...tree,
       childNodes: [...tree.childNodes, nodeToAdd],
-    };
+    });
   }
 
   return {
     ...tree,
     childNodes: tree.childNodes.map((child) => addNodeToFolder(child, targetUniqueId, nodeToAdd)),
+  };
+};
+
+export const addNodeChildrenWithInstruction = (
+  tree: TreeNodeProps,
+  targetUniqueId: string,
+  childNodes: TreeNodeProps[],
+  instruction: Instruction
+): TreeNodeProps => {
+  if (tree.uniqueId === targetUniqueId) {
+    return updateNodeOrder({
+      ...tree,
+      childNodes,
+    });
+  }
+
+  return {
+    ...tree,
+    childNodes: tree.childNodes.map((child) =>
+      addNodeChildrenWithInstruction(child, targetUniqueId, childNodes, instruction)
+    ),
   };
 };
 
@@ -183,17 +218,87 @@ export const getActualDropTarget = (location: DragLocationHistory): DropNodeElem
     : (location.current.dropTargets[1].data.data as DropNodeElement);
 };
 
+export const getActualDropTargetWithInstruction = (
+  location: DragLocationHistory,
+  self: DropTargetRecord
+): {
+  dropTarget: DropNodeElementWithInstruction;
+  instruction: Instruction | null;
+} => {
+  const instruction = extractInstruction(self.data);
+
+  return {
+    dropTarget: location.current.dropTargets[0].data.data as unknown as DropNodeElementWithInstruction,
+    instruction,
+  };
+};
+
+export const addNodeToTreeWithInstruction = (
+  tree: TreeNodeProps,
+  targetNode: TreeNodeProps,
+  sourceNode: TreeNodeProps,
+  instruction: Instruction | undefined
+): TreeNodeProps => {
+  const treeWithoutSource = removeNodeFromTree(tree, sourceNode.uniqueId);
+
+  if (!instruction) {
+    if (targetNode.isFolder) {
+      return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+    }
+
+    return tree;
+  }
+
+  if (instruction.operation === "combine" && targetNode.isFolder) {
+    return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+  }
+
+  const targetParentNode = findParentNodeByChildUniqueId(treeWithoutSource, targetNode.uniqueId);
+  if (!targetParentNode) return treeWithoutSource;
+
+  const indexOfTargetNode = targetParentNode.childNodes.findIndex((child) => child.uniqueId === targetNode.uniqueId);
+  if (indexOfTargetNode === -1) return treeWithoutSource;
+
+  if (instruction.operation === "reorder-before") {
+    return addNodeChildrenWithInstruction(
+      treeWithoutSource,
+      targetParentNode.uniqueId,
+      [
+        ...targetParentNode.childNodes.slice(0, indexOfTargetNode),
+        sourceNode,
+        ...targetParentNode.childNodes.slice(indexOfTargetNode),
+      ],
+      instruction
+    );
+  }
+
+  if (instruction.operation === "reorder-after") {
+    return addNodeChildrenWithInstruction(
+      treeWithoutSource,
+      targetParentNode.uniqueId,
+      [
+        ...targetParentNode.childNodes.slice(0, indexOfTargetNode + 1),
+        sourceNode,
+        ...targetParentNode.childNodes.slice(indexOfTargetNode + 1),
+      ],
+      instruction
+    );
+  }
+
+  return tree;
+};
+
 export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {
   if (sourceTarget.node.isFolder === false) {
-    if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-      return false;
-    }
+    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
+    //   return false;
+    // }
   }
 
   if (sourceTarget.node.isFolder) {
-    if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
-      return false;
-    }
+    // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
+    //   return false;
+    // }
 
     if (hasDirectDescendant(dropTarget.node, node)) {
       return false;
@@ -282,4 +387,21 @@ export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => 
   }
 
   return true;
+};
+
+export const updateNodeOrder = (node: TreeNodeProps): TreeNodeProps => {
+  return {
+    ...node,
+    childNodes: node.childNodes.map((child, index) => ({
+      ...child,
+      order: index + 1,
+    })),
+  };
+};
+
+export const updateNodesOrder = (nodes: TreeNodeProps[]): TreeNodeProps[] => {
+  return nodes.map((node, index) => ({
+    ...node,
+    order: index + 1,
+  }));
 };

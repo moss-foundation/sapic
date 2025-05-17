@@ -36,7 +36,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
   // In compact mode, use ActionMenu
   return (
     <ActionMenu.Root>
-      <ActionMenu.Trigger>
+      <ActionMenu.Trigger asChild>
         <ActionButton
           icon="MoreHorizontal"
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"

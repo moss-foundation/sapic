@@ -31,7 +31,7 @@ export const CollectionTreeView = () => {
         data: {},
       }),
       canDrop({ source }) {
-        return ["TreeNode", "TreeNodeRoot"].includes(source.data.type as string);
+        return ["TreeNode", "TreeRootNode"].includes(source.data.type as string);
       },
       onDragStart({ source }) {
         if (source.data.type === "TreeNode") setShowCollectionCreationZone(true);

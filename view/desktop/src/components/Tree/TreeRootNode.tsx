@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 
 import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
-import { useDropTargetNode } from "./hooks/useDropTargetNode";
+import { useDropTargetRootNode } from "./hooks/useDropTargetRootNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
@@ -29,8 +29,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     onRootClickCallback,
     onRootDoubleClickCallback,
   } = useContext(TreeContext);
-
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   const handleExpandAll = () => {
     const newNode = expandAllNodes(node);
@@ -58,7 +56,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
     isAddingFileNode: isAddingRootFileNode,
@@ -99,7 +96,10 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
+
+  useDropTargetRootNode(node, treeId, dropTargetFolderRef);
+
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
@@ -174,13 +174,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       {shouldRenderChildNodes && !isRootDragging && (
         <Scrollbar className="h-full w-full">
           <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
-            {filteredChildNodes.map((childNode) => (
+            {filteredChildNodes.map((childNode, index) => (
               <TreeNode
                 parentNode={node}
                 onNodeUpdate={onNodeUpdate}
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={1}
+                isLastChild={index === filteredChildNodes.length - 1}
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (
