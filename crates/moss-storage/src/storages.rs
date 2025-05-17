@@ -7,10 +7,11 @@ use async_trait::async_trait;
 use moss_db::primitives::AnyValue;
 use std::sync::Arc;
 
-use crate::storage::ResettableStorage;
 use crate::{
-    collection_storage::VariableStore as CollectionVariableStore, common::item_store::ItemStore,
-    primitives::segkey::SegKeyBuf, storage::Transactional,
+    collection_storage::VariableStore as CollectionVariableStore,
+    common::item_store::ItemStore,
+    primitives::segkey::SegKeyBuf,
+    storage::{ResettableStorage, Transactional},
     workspace_storage::VariableStore as WorkspaceVariableStore,
 };
 

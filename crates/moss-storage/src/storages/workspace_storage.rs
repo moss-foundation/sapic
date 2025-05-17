@@ -5,11 +5,8 @@ mod tables;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use entities::variable_store_entities::VariableEntity;
 use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient,
-    common::{DatabaseError, Transaction},
-    primitives::AnyValue,
+    DatabaseClient, DatabaseResult, ReDbClient, common::Transaction, primitives::AnyValue,
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
 use stores::variable_store::VariableStoreImpl;
@@ -26,7 +23,7 @@ const DB_NAME: &str = "state.db";
 
 // <environment_name>:<variable_name>
 pub trait VariableStore: Send + Sync {
-    fn list_variables(&self) -> Result<HashMap<SegKeyBuf, VariableEntity>, DatabaseError>;
+    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
 }
 
 pub struct WorkspaceStorageImpl {

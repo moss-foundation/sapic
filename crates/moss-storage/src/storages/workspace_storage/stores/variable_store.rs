@@ -1,12 +1,9 @@
-use anyhow::Result;
-use moss_db::{DatabaseError, ReDbClient};
+use moss_db::primitives::AnyValue;
+use moss_db::{DatabaseResult, ReDbClient};
 use std::collections::HashMap;
 
 use crate::primitives::segkey::SegKeyBuf;
-use crate::workspace_storage::{
-    TABLE_VARIABLES, VariableStore, entities::variable_store_entities::VariableEntity,
-    tables::VariableStoreTable,
-};
+use crate::workspace_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
 
 pub struct VariableStoreImpl {
     #[allow(dead_code)] // TODO: remove this, when we have a use for it
@@ -25,7 +22,7 @@ impl VariableStoreImpl {
 }
 
 impl VariableStore for VariableStoreImpl {
-    fn list_variables(&self) -> Result<HashMap<SegKeyBuf, VariableEntity>, DatabaseError> {
+    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
         todo!()
     }
 }

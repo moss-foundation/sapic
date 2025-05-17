@@ -5,7 +5,6 @@ mod tables;
 use anyhow::Result;
 use arc_swap::ArcSwap;
 use async_trait::async_trait;
-use entities::variable_store_entities::VariableEntity;
 use moss_db::primitives::AnyValue;
 use moss_db::{ClientState, DatabaseClient, DatabaseResult, ReDbClient, Transaction};
 use std::collections::HashMap;
@@ -28,7 +27,7 @@ const DB_NAME: &str = "state.db";
 
 // <environment_name>:<variable_name>
 pub trait VariableStore: Send + Sync {
-    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, VariableEntity>>;
+    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
 }
 
 pub struct CollectionResettableCell {
