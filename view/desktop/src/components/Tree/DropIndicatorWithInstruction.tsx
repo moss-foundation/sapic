@@ -38,10 +38,8 @@ export const DropIndicatorWithInstruction = ({
       styles = {
         position: "absolute",
         height: "100%",
-        width: baseWidth,
-        left,
-        outline: "2px solid var(--moss-primary)",
-        outlineOffset: "-2px",
+        width: "100%",
+        backgroundColor: "var(--moss-info-background)",
       };
       break;
 
