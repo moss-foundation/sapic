@@ -3174,6 +3174,7 @@ dependencies = [
  "arc-swap",
  "async-trait",
  "moss_db",
+ "moss_testutils",
  "redb",
  "serde",
  "serde_json",
