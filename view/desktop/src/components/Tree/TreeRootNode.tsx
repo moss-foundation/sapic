@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef } from "react";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ActionButton, DropdownMenu, DropIndicator, TreeContext } from "..";
+import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -155,18 +155,18 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger asChild>
               <ActionButton icon="MoreHorizontal" />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className="z-30">
-                <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
-                <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
-                <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+            </ActionMenu.Trigger>
+            <ActionMenu.Portal>
+              <ActionMenu.Content className="z-30" align="center">
+                <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
+              </ActionMenu.Content>
+            </ActionMenu.Portal>
+          </ActionMenu.Root>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>

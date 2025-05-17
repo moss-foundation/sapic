@@ -125,6 +125,8 @@
 
   --moss-not-selected-item-color: var(--moss-gray-7);
 
+  --moss-shortcut-text: var(--moss-gray-7);
+
   /* Resizable */
   --focus-border: var(--moss-primary);
   --separator-border: var(--moss-border-color);
@@ -262,8 +264,8 @@
   --moss-select-text-outlined: var(--moss-gray-1);
   --moss-select-hover-bg: var(--moss-gray-13);
 
-  --moss-select-bg-outlined-selected: var(--moss-blue-11);
-  --moss-select-text-outlined-selected: var(--moss-gray-7);
+  --moss-select-item-bg-outlined-hover: var(--moss-gray-12);
+  --moss-select-item-bg-outlined-selected: var(--moss-blue-11);
 
   /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);

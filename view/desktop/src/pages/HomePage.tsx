@@ -1,7 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { ActionMenu, MenuItemProps } from "@/components/ActionMenu/ActionMenu";
+import { ActionMenu } from "@/components";
+import SelectOutlined from "@/components/SelectOutlined";
 import {
   editorContextItems,
   generateItems,
@@ -12,6 +13,7 @@ import {
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import * as iconsNames from "../assets/icons";
 
@@ -37,12 +39,6 @@ const ComponentGallery = () => {
   const [data, setData] = React.useState<number | null>(null);
 
   // Action Menu States
-  const [contextMenuOpen, setContextMenuOpen] = React.useState(false);
-  const [generateMenuOpen, setGenerateMenuOpen] = React.useState(false);
-  const [runConfigMenuOpen, setRunConfigMenuOpen] = React.useState(false);
-  const [runOptionsMenuOpen, setRunOptionsMenuOpen] = React.useState(false);
-  const [runSelectorMenuOpen, setRunSelectorMenuOpen] = React.useState(false);
-  const [themeMenuOpen, setThemeMenuOpen] = React.useState(false);
   const [selectedTheme, setSelectedTheme] = React.useState("light");
 
   React.useEffect(() => {
@@ -53,16 +49,12 @@ const ComponentGallery = () => {
     fetchData();
   }, []);
 
-  const handleItemSelect = (item: MenuItemProps) => {
-    console.log(`Selected: ${item.id}`);
+  const handleItemSelect = (value: string) => {
+    console.log(`Selected: ${value}`);
 
     // Handle theme selection
-    if (item.type === "radio" && item.value) {
-      setSelectedTheme(item.value);
-    }
+    setSelectedTheme(value);
   };
-
-  console.log(Object.keys(iconsNames));
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
@@ -86,89 +78,66 @@ const ComponentGallery = () => {
             <h3 className="mb-4 text-xl font-medium text-gray-700 dark:text-gray-200">Standard Menu Triggers</h3>
             <div className="flex flex-wrap gap-4">
               {/* Context Actions Button */}
-              <ActionMenu
-                items={editorContextItems}
-                open={contextMenuOpen}
-                onOpenChange={setContextMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setContextMenuOpen(true)}
-                  >
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Show Context Actions
                   </button>
-                }
-              />
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content>
+                    {editorContextItems.map((item) => renderActionMenuItem(item))}
+                  </ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Generate Menu Button */}
-              <ActionMenu
-                items={generateItems}
-                open={generateMenuOpen}
-                onOpenChange={setGenerateMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setGenerateMenuOpen(true)}
-                  >
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Generate Menu
                   </button>
-                }
-              />
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content>{generateItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Configurations Button */}
-              <ActionMenu
-                items={runConfigItems}
-                open={runConfigMenuOpen}
-                onOpenChange={setRunConfigMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunConfigMenuOpen(true)}
-                  >
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Configurations
                   </button>
-                }
-              />
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content>{runConfigItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Options Button */}
-              <ActionMenu
-                items={runOptionsItems}
-                open={runOptionsMenuOpen}
-                onOpenChange={setRunOptionsMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunOptionsMenuOpen(true)}
-                  >
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Options
                   </button>
-                }
-              />
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content>{runOptionsItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
 
               {/* Run Selector Button */}
-              <ActionMenu
-                items={runSelectorItems}
-                open={runSelectorMenuOpen}
-                onOpenChange={setRunSelectorMenuOpen}
-                onSelect={handleItemSelect}
-                align="start"
-                trigger={
-                  <button
-                    className="w-fit rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    onClick={() => setRunSelectorMenuOpen(true)}
-                  >
+              <ActionMenu.Root>
+                <ActionMenu.Trigger asChild>
+                  <button className="w-fit cursor-pointer rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800 shadow transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                     Run Selector
                   </button>
-                }
-              />
+                </ActionMenu.Trigger>
+                <ActionMenu.Portal>
+                  <ActionMenu.Content>{runSelectorItems.map((item) => renderActionMenuItem(item))}</ActionMenu.Content>
+                </ActionMenu.Portal>
+              </ActionMenu.Root>
             </div>
           </div>
 
@@ -178,15 +147,23 @@ const ComponentGallery = () => {
             <div className="flex items-center gap-3 rounded-md bg-gray-100 p-4 dark:bg-gray-800/50">
               <span className="font-medium text-gray-700 dark:text-gray-300">Theme:</span>
               <div className="w-56">
-                <ActionMenu
-                  type="dropdown"
-                  items={themeItems}
-                  open={themeMenuOpen}
-                  onOpenChange={setThemeMenuOpen}
-                  onSelect={handleItemSelect}
-                  selectedValue={selectedTheme}
-                  placeholder="Select theme"
-                />
+                <SelectOutlined.Root value={selectedTheme} onValueChange={handleItemSelect}>
+                  <SelectOutlined.Trigger />
+
+                  <SelectOutlined.Content>
+                    {themeItems.map((item) => {
+                      if (item.type === "separator") {
+                        return <SelectOutlined.Separator key={item.id} />;
+                      }
+
+                      return (
+                        <SelectOutlined.Item key={item.id} value={item.value!}>
+                          {item.label}
+                        </SelectOutlined.Item>
+                      );
+                    })}
+                  </SelectOutlined.Content>
+                </SelectOutlined.Root>
               </div>
             </div>
           </div>

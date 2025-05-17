@@ -5,7 +5,7 @@ import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-import { ContextMenu, TreeContext } from "..";
+import { ActionMenu, TreeContext } from "..";
 import { useDraggableNode } from "./hooks/useDraggableNode";
 import { useDropTargetNode } from "./hooks/useDropTargetNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -96,8 +96,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
           </span>
         </div>
       ) : (
-        <ContextMenu.Root modal={false}>
-          <ContextMenu.Trigger>
+        <ActionMenu.Root modal={false}>
+          <ActionMenu.Trigger openOnRightClick>
             <div>
               <button
                 ref={draggableNodeRef}
@@ -170,16 +170,18 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode }: TreeNodeComp
                   )}
               </button>
             </div>
-          </ContextMenu.Trigger>
+          </ActionMenu.Trigger>
 
-          <ContextMenu.Portal>
-            <ContextMenu.Content>
-              {node.isFolder && <ContextMenu.Item label="Add File" onClick={() => setIsAddingFileNode(true)} />}
-              {node.isFolder && <ContextMenu.Item label="Add Folder" onClick={() => setIsAddingFolderNode(true)} />}
-              <ContextMenu.Item label="Edit" onClick={() => setIsRenamingNode(true)} />
-            </ContextMenu.Content>
-          </ContextMenu.Portal>
-        </ContextMenu.Root>
+          <ActionMenu.Portal>
+            <ActionMenu.Content>
+              {node.isFolder && <ActionMenu.Item onClick={() => setIsAddingFileNode(true)}>Add File</ActionMenu.Item>}
+              {node.isFolder && (
+                <ActionMenu.Item onClick={() => setIsAddingFolderNode(true)}>Add Folder</ActionMenu.Item>
+              )}
+              <ActionMenu.Item onClick={() => setIsRenamingNode(true)}>Edit</ActionMenu.Item>
+            </ActionMenu.Content>
+          </ActionMenu.Portal>
+        </ActionMenu.Root>
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (

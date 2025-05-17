@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-import { ActionButton } from "@/components";
-import ActionMenu from "@/components/ActionMenu/ActionMenu";
-import { type Icons } from "@/lib/ui/Icon";
+import { ActionButton, ActionMenu } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
 import PanelToggleButtons from "./PanelToggleButtons";
@@ -37,72 +35,54 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
 
   // In compact mode, use ActionMenu
   return (
-    <ActionMenu
-      items={[
-        {
-          id: "notifications",
-          type: "action" as const,
-          label: "Notifications",
-          icon: "Bell" as Icons,
-        },
-        ...(sideBarPosition === "left"
-          ? [
-              {
-                id: "toggleLeftSidebar",
-                type: "action" as const,
-                label: sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar",
-                icon: (sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft") as Icons,
-              },
-              {
-                id: "toggleBottomPanel",
-                type: "action" as const,
-                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom") as Icons,
-              },
-            ]
-          : [
-              {
-                id: "toggleBottomPanel",
-                type: "action" as const,
-                label: bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel",
-                icon: (bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom") as Icons,
-              },
-              {
-                id: "toggleRightSidebar",
-                type: "action" as const,
-                label: sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar",
-                icon: (sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight") as Icons,
-              },
-            ]),
-        {
-          id: "settings",
-          type: "action" as const,
-          label: "Settings",
-          icon: "Settings" as Icons,
-        },
-      ]}
-      trigger={
+    <ActionMenu.Root>
+      <ActionMenu.Trigger>
         <ActionButton
           icon="MoreHorizontal"
           iconClassName="text-(--moss-headBar-icon-primary-text) size-4.5"
           title="More actions"
         />
-      }
-      open={isMenuOpen}
-      onOpenChange={setIsMenuOpen}
-      onSelect={(item) => {
-        if (item.id === "notifications") {
-          // Handle notifications
-        }
-        if (item.id === "toggleLeftSidebar" || item.id === "toggleRightSidebar") {
-          sideBar.setVisible(!sideBar.visible);
-        }
-        if (item.id === "toggleBottomPanel") {
-          bottomPane.setVisible(!bottomPane.visible);
-        }
-        if (item.id === "settings") openPanel("Settings");
-      }}
-    />
+      </ActionMenu.Trigger>
+      <ActionMenu.Content>
+        <ActionMenu.Item onClick={() => {}} icon="Bell">
+          Notifications
+        </ActionMenu.Item>
+        {sideBarPosition === "left" ? (
+          <>
+            <ActionMenu.Item
+              onClick={() => sideBar.setVisible(!sideBar.visible)}
+              icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+            >
+              {sideBar.visible ? "Hide Left Sidebar" : "Show Left Sidebar"}
+            </ActionMenu.Item>
+            <ActionMenu.Item
+              onClick={() => bottomPane.setVisible(!bottomPane.visible)}
+              icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+            >
+              {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
+            </ActionMenu.Item>
+          </>
+        ) : (
+          <>
+            <ActionMenu.Item
+              onClick={() => bottomPane.setVisible(!bottomPane.visible)}
+              icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+            >
+              {bottomPane.visible ? "Hide Bottom Panel" : "Show Bottom Panel"}
+            </ActionMenu.Item>
+            <ActionMenu.Item
+              onClick={() => sideBar.setVisible(!sideBar.visible)}
+              icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+            >
+              {sideBar.visible ? "Hide Right Sidebar" : "Show Right Sidebar"}
+            </ActionMenu.Item>
+          </>
+        )}
+        <ActionMenu.Item onClick={() => openPanel("Settings")} icon="Settings">
+          Settings
+        </ActionMenu.Item>
+      </ActionMenu.Content>
+    </ActionMenu.Root>
   );
 };
 

@@ -7,11 +7,13 @@ import { cn } from "@/utils";
 
 //prettier-ignore
 const selectTriggerStyles = cva(`
-    flex w-56 justify-between
+    flex w-56 justify-between 
 
     outline-(--moss-primary)
 
     border border-(--moss-select-border-outlined) 
+
+    data-[state=open]:border-(--moss-primary)
 
     text-(--moss-select-text-outlined)
 
@@ -46,14 +48,16 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
         disabled={disabled}
         className={cn(selectTriggerStyles({ size }), className)}
       >
-        <SelectPrimitive.Value placeholder={placeholder} />
+        <span className="truncate">
+          <SelectPrimitive.Value placeholder={placeholder} />
+        </span>
         <Icon icon="ChevronDown" />
       </SelectPrimitive.Trigger>
     );
   }
 );
 
-const selectContentStyles = cva(`border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
+const selectContentStyles = cva(`w-56 border-(--moss-select-border-outlined) bg-(--moss-select-bg-outlined)`);
 
 const Content = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,
@@ -67,14 +71,14 @@ const Content = forwardRef<
 });
 
 const selectItemStyles = cva(
-  `text-(--moss-select-text-outlined) data-[highlighted]:bg-(--moss-select-bg-outlined-selected)`
+  `leading-5 text-(--moss-select-item-text-outlined) data-[highlighted]:bg-(--moss-select-item-bg-outlined-hover) data-[state=checked]:bg-(--moss-select-item-bg-outlined-selected)`
 );
 
 const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsWithoutRef<typeof SelectPrimitive.Item>>(
   ({ className, children, ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Item {...props} ref={forwardedRef} className={cn(selectItemStyles(), className)}>
-        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+        {children}
       </SelectPrimitive.Item>
     );
   }
@@ -84,7 +88,9 @@ const Separator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, forwardedRef) => {
-  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn(className)} />;
+  return (
+    <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn("bg-(--moss-border-color)", className)} />
+  );
 });
 
 const SelectOutlined = {
