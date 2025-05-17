@@ -9,8 +9,9 @@ import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
-import { getActualDropSourceTarget } from "./Tree/utils";
+import { CreateNewCollectionFromTreeNodeEvent } from "../Tree/types";
+import { getActualDropSourceTarget } from "../Tree/utils";
+import "./CollectionTreeView.css";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
@@ -189,7 +190,7 @@ const CollectionCreationZone = () => {
         }
       )}
     >
-      <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+      <div className="test-stripes flex flex-col items-center justify-center gap-3 p-8 text-center">
         <Icon icon="AddCircleActive" className={cn("size-5 rounded-full text-(--moss-primary)")} />
         <span>Drag & drop selected items here to create a new collection</span>
       </div>
