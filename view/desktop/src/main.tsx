@@ -35,12 +35,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// if (import.meta.env.MODE === "development") {
-//   const script = document.createElement("script");
-//   script.src = "http://localhost:8097";
-//   document.head.appendChild(script);
-// }
-
 const App = lazy(() => import("@/app")); // lazy load the main App component
 const rootElement = document.getElementById("root") as HTMLElement; // cache the root element reference
 
