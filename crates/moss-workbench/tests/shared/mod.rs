@@ -3,7 +3,7 @@ use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workbench::workbench::{self, Workbench};
-use moss_workspace::workspace::Workspace;
+use moss_workspace::Workspace;
 use std::fs;
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -54,7 +54,7 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
         fs,
         global_storage,
         workbench::Options {
-            workspaces_abs_path: workspaces_abs_path.clone(),
+            abs_path: workspaces_abs_path.clone(),
             next_workspace_id: Arc::new(AtomicUsize::new(0)),
         },
     );

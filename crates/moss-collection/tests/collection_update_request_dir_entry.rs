@@ -1,17 +1,18 @@
 mod shared;
 
-use crate::shared::{random_request_dir_name, set_up_test_collection};
 use moss_collection::models::operations::{
     CreateRequestDirEntryInput, CreateRequestEntryInput, DeleteRequestDirEntryInput,
     UpdateRequestDirEntryInput,
 };
 use moss_collection::models::types::PathChangeKind;
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::PathBuf;
 use std::time::Duration;
+
+use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
 
 #[tokio::test]
 async fn update_request_dir_entry_success() {
@@ -259,7 +260,7 @@ async fn update_request_dir_entry_special_chars() {
 
     for char in FOLDERNAME_SPECIAL_CHARS {
         let new_name = format!("{char}{}", request_dir_name);
-        let encoded_name = encode_name(&new_name);
+        let sanitized_name = SanitizedName::new(&new_name);
         let update_result = collection
             .update_request_dir_entry(UpdateRequestDirEntryInput {
                 id: dir_id.clone(),
@@ -271,14 +272,14 @@ async fn update_request_dir_entry_special_chars() {
 
         assert_eq!(changed_paths.len(), 1);
         assert!(changed_paths.into_iter().any(|(path, id, kind)| {
-            path.to_path_buf() == PathBuf::from("requests").join(&encoded_name)
+            path.to_path_buf() == PathBuf::from("requests").join(&sanitized_name)
                 && id == &dir_id
                 && kind == &PathChangeKind::Updated
         }));
         assert!(
             collection_path
                 .join("requests")
-                .join(&encoded_name)
+                .join(&sanitized_name)
                 .exists()
         );
     }
@@ -339,14 +340,14 @@ async fn update_request_dir_entry_with_content() {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join(&request_dir_new_name)
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
             && kind == &PathChangeKind::Updated
     }));
     assert!(changed_paths.into_iter().any(|(path, _id, kind)| {
         path.to_path_buf()
             == PathBuf::from("requests")
                 .join(&request_dir_new_name)
-                .join(format!("{request_name}.request"))
+                .join(request_folder_name(&request_name))
                 .join("get.sapic")
             && kind == &PathChangeKind::Updated
     }));
@@ -448,7 +449,7 @@ async fn update_request_dir_entry_incorrect_entity_type() {
             path.to_path_buf()
                 == PathBuf::from("requests")
                     .join(&request_dir_name)
-                    .join(&format!("{request_name}.request"))
+                    .join(request_folder_name(&request_name))
         })
         .unwrap()
         .1;
@@ -462,7 +463,7 @@ async fn update_request_dir_entry_incorrect_entity_type() {
 
     assert!(matches!(
         update_request_dir_result,
-        OperationResult::Err(OperationError::Validation(..))
+        OperationResult::Err(OperationError::InvalidInput(..))
     ));
     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

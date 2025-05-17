@@ -1,12 +1,12 @@
 pub mod bincode_table;
 pub mod common;
 pub mod encrypted_bincode_table;
-
+pub mod primitives;
 pub use common::*;
 
 use anyhow::Result;
 use redb::{Database, Key, TableDefinition};
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
 

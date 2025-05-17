@@ -1,15 +1,17 @@
-pub mod api;
-
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
-use moss_collection::{
-    collection::Collection,
-    indexer::{self, IndexerHandle},
-};
-use moss_common::{leased_slotmap::LeasedSlotMap, models::primitives::Identifier};
+use moss_collection::collection::Collection;
+use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::{FileSystem, utils::decode_name};
-use moss_storage::{WorkspaceStorage, workspace_storage::WorkspaceStorageImpl};
+use moss_storage::{
+    WorkspaceStorage,
+    primitives::segkey::SegmentExt,
+    storage::operations::ListByPrefix,
+    workspace_storage::{
+        WorkspaceStorageImpl, entities::collection_store_entities::CollectionEntity,
+    },
+};
 use std::{
     collections::HashMap,
     ops::Deref,
@@ -17,13 +19,12 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock, mpsc};
+use tokio::sync::{OnceCell, RwLock};
+
+use crate::storage::segments::COLLECTION_SEGKEY;
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
-
-// type EnvironmentSlot = (Environment, EnvironmentCache);
-// type EnvironmentMap = LeasedSlotMap<ResourceKey, EnvironmentSlot>;
 
 pub struct CollectionEntry {
     pub id: Identifier,
@@ -62,19 +63,18 @@ type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentEntry>>;
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
-    app_handle: AppHandle<R>,
-    abs_path: Arc<Path>,
-    fs: Arc<dyn FileSystem>,
-    workspace_storage: Arc<dyn WorkspaceStorage>,
-    collections: OnceCell<RwLock<CollectionMap>>,
-    environments: OnceCell<RwLock<EnvironmentMap>>,
+    pub(super) app_handle: AppHandle<R>,
+    pub(super) abs_path: Arc<Path>,
+    pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) workspace_storage: Arc<dyn WorkspaceStorage>,
+    pub(super) collections: OnceCell<RwLock<CollectionMap>>,
+    pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
-    activity_indicator: ActivityIndicator<R>,
-    indexer_handle: IndexerHandle,
-    next_collection_entry_id: Arc<AtomicUsize>,
-    next_collection_id: Arc<AtomicUsize>,
-    next_variable_id: Arc<AtomicUsize>,
-    next_environment_id: Arc<AtomicUsize>,
+    pub(super) activity_indicator: ActivityIndicator<R>,
+    pub(super) next_collection_entry_id: Arc<AtomicUsize>,
+    pub(super) next_collection_id: Arc<AtomicUsize>,
+    pub(super) next_variable_id: Arc<AtomicUsize>,
+    pub(super) next_environment_id: Arc<AtomicUsize>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -87,17 +87,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let state_db_manager = WorkspaceStorageImpl::new(&path)
             .context("Failed to open the workspace state database")?;
 
-        let (tx, rx) = mpsc::unbounded_channel();
-        let indexer_handle = IndexerHandle::new(tx);
-        tauri::async_runtime::spawn({
-            let fs_clone = Arc::clone(&fs);
-            let activity_indicator_clone = activity_indicator.clone();
-
-            async move {
-                indexer::run(activity_indicator_clone, fs_clone, rx).await;
-            }
-        });
-
         Ok(Self {
             app_handle,
             abs_path: path,
@@ -105,7 +94,6 @@ impl<R: TauriRuntime> Workspace<R> {
             workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
-            indexer_handle,
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
             next_collection_id: Arc::new(AtomicUsize::new(0)),
@@ -134,8 +122,8 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: restore environments cache from the database
-
-                for entry in self.fs.read_dir(&abs_path).await?.next_entry().await? {
+                let mut read_dir = self.fs.read_dir(&abs_path).await?;
+                while let Some(entry) = read_dir.next_entry().await? {
                     if entry.file_type().await?.is_dir() {
                         continue;
                     }
@@ -186,22 +174,27 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: Support external collections with absolute path
-                for (path, collection_data) in self
-                    .workspace_storage
-                    .collection_store()
-                    .list_collection()?
-                {
-                    debug_assert!(path.is_relative());
 
-                    let (display_name, encoded_name) = match path.file_name() {
-                        Some(name) => {
-                            let name = name.to_string_lossy().to_string();
-
-                            (decode_name(&name)?, name)
-                        }
-                        None => {
+                let collection_items = ListByPrefix::list_by_prefix(
+                    self.workspace_storage.item_store().as_ref(),
+                    COLLECTIONS_DIR,
+                )?
+                .into_iter()
+                .filter_map(|(k, v)| {
+                    let path = k.after(&COLLECTION_SEGKEY);
+                    if let Some(path) = path {
+                        Some((path, v))
+                    } else {
+                        None
+                    }
+                });
+                for (segkey, any_value) in collection_items.into_iter() {
+                    let value: CollectionEntity = any_value.deserialize()?;
+                    let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
+                        Ok(name) => name,
+                        Err(_) => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", path);
+                            println!("failed to get the collection {:?} name", segkey);
                             continue;
                         }
                     };
@@ -211,12 +204,37 @@ impl<R: TauriRuntime> Workspace<R> {
                     // in the file system should be collected and deleted from the database in
                     // a parallel thread.
 
+                    let abs_path: Arc<Path> =
+                        if let Some(external_abs_path) = value.external_abs_path {
+                            external_abs_path.into()
+                        } else {
+                            self.abs_path
+                                .join(COLLECTIONS_DIR)
+                                .join(encoded_name)
+                                .into()
+                        };
+                    if !abs_path.exists() {
+                        // TODO: logging
+                        continue;
+                    }
+
+                    let (display_name, encoded_name) = match abs_path.file_name() {
+                        Some(name) => {
+                            let name = name.to_string_lossy().to_string();
+
+                            (decode_name(&name)?, name)
+                        }
+                        None => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} name", segkey);
+                            continue;
+                        }
+                    };
+
                     let id = Identifier::new(&self.next_collection_id);
-                    let abs_path: Arc<Path> = self.abs_path.join(path).into();
                     let collection = Collection::new(
                         abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
                         self.fs.clone(),
-                        self.indexer_handle.clone(),
                         self.next_collection_entry_id.clone(),
                     )?;
                     collections.insert(
@@ -225,7 +243,7 @@ impl<R: TauriRuntime> Workspace<R> {
                             id,
                             name: encoded_name,
                             display_name,
-                            order: collection_data.order,
+                            order: value.order,
                             inner: collection,
                         }
                         .into(),
