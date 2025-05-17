@@ -69,3 +69,17 @@ impl WorkspaceStorage for WorkspaceStorageImpl {
         self.item_store.clone()
     }
 }
+
+// struct WorkspaceStorageImpl {
+//     inner: Storage,
+// }
+
+// impl WorkspaceStorage for WorkspaceStorageImpl {
+//     fn variable_store(&self) -> Arc<dyn VariableStore> {
+//         self.inner.table(TypeId::of::<VariableTable>())
+//     }
+
+//     fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
+//         self.inner.table(TypeId::of::<ItemTable>())
+//     }
+// }

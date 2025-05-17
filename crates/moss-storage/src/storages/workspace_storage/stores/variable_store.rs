@@ -5,6 +5,12 @@ use std::collections::HashMap;
 use crate::primitives::segkey::SegKeyBuf;
 use crate::workspace_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
 
+// pub struct VariableTable { // -> BincodeTable<SegKeyBuf, AnyValue>
+//     definition: TableDefinition<SegKeyBuf, AnyValue>,
+//     name: String,
+//     metadata: TableMetadata,
+// }
+
 pub struct VariableStoreImpl {
     #[allow(dead_code)] // TODO: remove this, when we have a use for it
     client: ReDbClient,
