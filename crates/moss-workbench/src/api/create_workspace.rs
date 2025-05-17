@@ -1,5 +1,3 @@
-use std::{path::Path, sync::Arc};
-
 use anyhow::Context as _;
 use chrono::Utc;
 use moss_common::{
@@ -10,9 +8,11 @@ use moss_db::primitives::AnyValue;
 use moss_fs::utils::encode_name;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
+use std::{path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
+use crate::workbench::WORKSPACES_DIR;
 use crate::{
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     storage::segments::WORKSPACE_SEGKEY,
@@ -27,7 +27,8 @@ impl<R: TauriRuntime> Workbench<R> {
         input.validate()?;
 
         let encoded_name = encode_name(&input.name);
-        let abs_path: Arc<Path> = self.absolutize(&encoded_name).into();
+        let workspace_path = Path::new(WORKSPACES_DIR).join(&encoded_name);
+        let abs_path: Arc<Path> = self.absolutize(&workspace_path).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
                 abs_path.to_string_lossy().to_string(),

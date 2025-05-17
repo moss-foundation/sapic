@@ -2,8 +2,8 @@ use moss_db::primitives::AnyValue;
 use moss_db::{DatabaseResult, ReDbClient};
 use std::collections::HashMap;
 
+use crate::collection_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
 use crate::primitives::segkey::SegKeyBuf;
-use crate::workspace_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
 
 pub struct VariableStoreImpl {
     #[allow(dead_code)] // TODO: remove this, when we have a use for it

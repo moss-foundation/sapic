@@ -5,10 +5,12 @@ use tauri::ipc::Channel;
 use tokio_stream::StreamExt;
 use tokio_stream::StreamMap;
 
-use crate::models::types::EntryInfo;
 use crate::{
     collection::Collection,
-    models::{events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput},
+    models::{
+        events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput,
+        types::EntryInfo,
+    },
 };
 
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
@@ -19,8 +21,10 @@ impl Collection {
         channel: Channel<StreamEntriesByPrefixesEvent>,
         input: StreamEntriesByPrefixesInput,
     ) -> OperationResult<()> {
-        let state_store = self.collection_storage.state_store().await;
-        let worktree_entries_state = state_store.list_worktree_entries()?;
+        // TODO: Integrate collection storage
+        // let unit_store = self.collection_storage.unit_store();
+        //
+        // let worktree_entries_state = unit_store.list_worktree_entries()?;
 
         let worktree = self.worktree().await?;
         let snapshot_lock = worktree.snapshot().await.read().await;
@@ -35,14 +39,14 @@ impl Collection {
         for prefix in input.0 {
             let s = tokio_stream::iter(snapshot_lock.iter_entries_by_prefix(&prefix).map(
                 |(&id, entry)| {
-                    let restored_entry_state = worktree_entries_state
-                        .iter()
-                        .find(|e| e.path == entry.path.as_ref());
-
+                    // let restored_entry_state = worktree_entries_state
+                    //     .iter()
+                    //     .find(|e| e.path == entry.path.as_ref());
+                    // TODO: Get order from collection storage
                     EntryInfo {
                         id,
                         path: entry.path.to_path_buf(),
-                        order: restored_entry_state.map(|e| e.order),
+                        order: None,
                     }
                 },
             ));

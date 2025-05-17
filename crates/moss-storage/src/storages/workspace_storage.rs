@@ -5,30 +5,25 @@ mod tables;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use entities::variable_store_entities::VariableEntity;
 use moss_db::{
-    DatabaseClient, ReDbClient,
-    common::{DatabaseError, Transaction},
-    primitives::AnyValue,
+    DatabaseClient, DatabaseResult, ReDbClient, common::Transaction, primitives::AnyValue,
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
 use stores::variable_store::VariableStoreImpl;
 use tables::{ITEM_STORE, TABLE_VARIABLES};
 
 use crate::{
+    WorkspaceStorage,
     common::item_store::{ItemStore, ItemStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::Transactional,
 };
 
-use super::WorkspaceStorage;
-
 const DB_NAME: &str = "state.db";
 
 // <environment_name>:<variable_name>
-pub type VariableKey = String;
 pub trait VariableStore: Send + Sync {
-    fn list_variables(&self) -> Result<HashMap<VariableKey, VariableEntity>, DatabaseError>;
+    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
 }
 
 pub struct WorkspaceStorageImpl {
@@ -56,11 +51,11 @@ impl WorkspaceStorageImpl {
 
 #[async_trait]
 impl Transactional for WorkspaceStorageImpl {
-    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
+    async fn begin_write(&self) -> DatabaseResult<Transaction> {
         self.db_client.begin_write()
     }
 
-    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
+    async fn begin_read(&self) -> DatabaseResult<Transaction> {
         self.db_client.begin_read()
     }
 }
