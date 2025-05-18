@@ -72,7 +72,7 @@ export const HeadBarLeftItems = ({
       </ActionMenu.Root>
 
       {selectedWorkspace && (
-        <button className="flex h-[24px] cursor-pointer items-center gap-1 rounded px-1 text-[var(--moss-icon-primary-text)] hover:bg-[var(--moss-icon-primary-background-hover)]">
+        <button className="flex h-[24px] cursor-pointer items-center gap-1 rounded px-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
           <Icon icon="Key" className="size-4.5 text-(--moss-headBar-icon-primary-text)" />
           <span className="text-md">Vault</span>
         </button>
