@@ -6,10 +6,7 @@ use std::{
 };
 use sweep_bptree::BPlusTreeMap;
 
-use crate::models::{
-    primitives::EntryId,
-    types::{EntryKind, UnitType},
-};
+use crate::models::{primitives::EntryId, types::EntryKind};
 
 use super::ROOT_PATH;
 
@@ -18,7 +15,6 @@ pub struct Entry {
     pub id: EntryId,
     pub path: Arc<Path>,
     pub kind: EntryKind,
-    pub unit_type: Option<UnitType>,
     pub mtime: Option<SystemTime>,
     pub file_id: FileId,
 }
@@ -31,13 +27,13 @@ impl Entry {
 
 pub type EntryRef = Arc<Entry>;
 
-pub struct Snapshot {
+pub struct PhysicalSnapshot {
     abs_path: Arc<Path>,
     entries_by_id: BPlusTreeMap<EntryId, EntryRef>,
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
-impl Clone for Snapshot {
+impl Clone for PhysicalSnapshot {
     fn clone(&self) -> Self {
         let entries_by_id =
             BPlusTreeMap::from_iter(self.entries_by_id.iter().map(|(&k, v)| (k, v.clone())));
@@ -56,7 +52,7 @@ impl Clone for Snapshot {
     }
 }
 
-impl Snapshot {
+impl PhysicalSnapshot {
     pub fn new(abs_path: Arc<Path>) -> Self {
         Self {
             abs_path,
@@ -184,7 +180,6 @@ mod tests {
             id: EntryId::new(&Arc::new(AtomicUsize::new(id))),
             path: Arc::from(PathBuf::from(path)),
             kind,
-            unit_type: None,
             mtime: None,
             file_id: FileId::new_inode(0, 0),
         }
@@ -192,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_remove_file() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
         let entry = create_test_entry(1, "test.txt", EntryKind::File);
         let entry_ref = Arc::new(entry.clone());
 
@@ -211,7 +206,7 @@ mod tests {
 
     #[test]
     fn test_remove_nonexistent_file() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
         let removed = snapshot.remove_entry("nonexistent.txt");
         assert_eq!(snapshot.count_files(), 0);
 
@@ -221,7 +216,7 @@ mod tests {
 
     #[test]
     fn test_remove_directory_with_files() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create a directory and some files inside it
         let dir_entry = create_test_entry(1, "test_dir", EntryKind::Dir);
@@ -264,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_remove_nested_directory() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create a nested directory structure
         let dir1_entry = create_test_entry(1, "dir1", EntryKind::Dir);
@@ -307,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_remove_partial_path() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create entries with similar prefixes
         let dir1_entry = create_test_entry(1, "test", EntryKind::Dir);
@@ -337,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_exact_match() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create some entries
         let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
@@ -355,7 +350,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_direct_ancestor() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create some entries, but not the leaf
         let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
@@ -371,7 +366,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_multiple_ancestors() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create some entries
         let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
@@ -385,7 +380,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_no_ancestors() {
-        let snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Test path with no ancestors in the snapshot
         let result = snapshot.lowest_ancestor_path("non/existent/path");
@@ -394,7 +389,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_empty_snapshot() {
-        let snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Test any path with empty snapshot
         let result = snapshot.lowest_ancestor_path("dir1/file.txt");
@@ -403,7 +398,7 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_root_level_file() {
-        let mut snapshot = Snapshot::new(Arc::from(PathBuf::from("/root")));
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create a root-level file
         let file_entry = create_test_entry(1, "file.txt", EntryKind::File);

@@ -9,7 +9,7 @@ use crate::worktree::common::path_ends_with_extension;
 use crate::worktree::{
     ChangesDiffSet, Worktree,
     common::{is_dir, path_starts_with, validate_entry},
-    snapshot::EntryRef,
+    physical_snapshot::EntryRef,
 };
 
 impl Collection {

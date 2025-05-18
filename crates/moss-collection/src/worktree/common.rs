@@ -1,6 +1,6 @@
 use validator::ValidationError;
 
-use super::snapshot::EntryRef;
+use super::physical_snapshot::EntryRef;
 
 pub(crate) const ROOT_PATH: &str = "";
 

@@ -1,10 +1,8 @@
 pub mod common;
-pub mod snapshot;
 
-use crate::models::{
-    primitives::EntryId,
-    types::{EntryKind, PathChangeKind},
-};
+pub mod physical_snapshot;
+pub mod virtual_snapshot;
+
 use anyhow::{Context, Result};
 use common::ROOT_PATH;
 use moss_common::api::OperationError;
@@ -17,8 +15,14 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::{RwLock, mpsc};
+use virtual_snapshot::VirtualSnapshot;
 
-use self::snapshot::{Entry, Snapshot};
+use crate::models::{
+    primitives::EntryId,
+    types::{EntryKind, PathChangeKind},
+};
+
+use self::physical_snapshot::{Entry, PhysicalSnapshot};
 
 pub(crate) type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
 
@@ -52,17 +56,22 @@ struct ScanJob {
     scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
+pub enum Snapshot {
+    Physical(PhysicalSnapshot),
+    Virtual(VirtualSnapshot),
+}
+
 pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     next_entry_id: Arc<AtomicUsize>,
-    snapshot: Arc<RwLock<Snapshot>>,
+    physical_snapshot: Arc<RwLock<PhysicalSnapshot>>,
 }
 
 impl Deref for Worktree {
-    type Target = Arc<RwLock<Snapshot>>;
+    type Target = Arc<RwLock<PhysicalSnapshot>>;
 
     fn deref(&self) -> &Self::Target {
-        &self.snapshot
+        &self.physical_snapshot
     }
 }
 
@@ -74,16 +83,16 @@ impl Worktree {
     ) -> Self {
         debug_assert!(abs_path.is_absolute());
 
-        let initial_snapshot = Snapshot::new(abs_path);
+        let initial_snapshot = PhysicalSnapshot::new(abs_path);
         Self {
             fs,
             next_entry_id,
-            snapshot: Arc::new(RwLock::new(initial_snapshot.clone())),
+            physical_snapshot: Arc::new(RwLock::new(initial_snapshot.clone())),
         }
     }
 
-    pub async fn snapshot(&self) -> &Arc<RwLock<Snapshot>> {
-        &self.snapshot
+    pub async fn snapshot(&self) -> &Arc<RwLock<PhysicalSnapshot>> {
+        &self.physical_snapshot
     }
 
     pub async fn absolutize(&self, root_abs_path: &Path, path: &Path) -> Result<PathBuf> {
@@ -132,7 +141,7 @@ impl Worktree {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
 
-        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
         let abs_path = self.absolutize(&root_abs_path, &path).await?;
         if abs_path.exists() {
             return Err(WorktreeError::AlreadyExists(
@@ -140,7 +149,11 @@ impl Worktree {
             ));
         }
         let changes = if is_dir {
-            let lowest_ancestor_path = self.snapshot.read().await.lowest_ancestor_path(&path);
+            let lowest_ancestor_path = self
+                .physical_snapshot
+                .read()
+                .await
+                .lowest_ancestor_path(&path);
 
             // Scanning from the highest entry that is newly created
             // Extract part of the path that's one component more than the lowest ancestor path
@@ -160,7 +173,7 @@ impl Worktree {
             let mut changes = vec![];
 
             {
-                let mut snapshot_lock = self.snapshot.write().await;
+                let mut snapshot_lock = self.physical_snapshot.write().await;
                 for e in entries.into_iter().map(Arc::new) {
                     changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
                     snapshot_lock.create_entry(e);
@@ -188,7 +201,6 @@ impl Worktree {
                 id: EntryId::new(&self.next_entry_id),
                 path: Arc::clone(&path),
                 kind: EntryKind::File,
-                unit_type: None,
                 mtime: metadata.modified().ok(),
                 file_id: file_id::get_file_id(&abs_path).context(format!(
                     "Unable to get file id for path {}",
@@ -197,7 +209,7 @@ impl Worktree {
             });
 
             {
-                let mut snapshot_lock = self.snapshot.write().await;
+                let mut snapshot_lock = self.physical_snapshot.write().await;
                 snapshot_lock.create_entry(Arc::clone(&entry));
             }
 
@@ -211,10 +223,10 @@ impl Worktree {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
         let abs_path = self.absolutize(&root_abs_path, &path).await?;
 
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.physical_snapshot.write().await;
 
         // Skip fs operation if it's already deleted
         if abs_path.exists() {
@@ -279,7 +291,7 @@ impl Worktree {
         debug_assert!(old_path.is_relative());
         debug_assert!(new_path.is_relative());
 
-        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
         let abs_old_path = self.absolutize(&root_abs_path, &old_path).await?;
         let abs_new_path = self.absolutize(&root_abs_path, &new_path).await?;
 
@@ -293,7 +305,7 @@ impl Worktree {
                 abs_old_path.to_string_lossy().to_string(),
             ));
         }
-        let mut snapshot_lock = self.snapshot.write().await;
+        let mut snapshot_lock = self.physical_snapshot.write().await;
         self.fs
             .rename(
                 &abs_old_path,
@@ -331,10 +343,10 @@ impl Worktree {
     }
 
     pub async fn initial_scan(&self) -> Result<()> {
-        let root_abs_path = self.snapshot.read().await.abs_path().clone();
+        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
         let entries = self.scan(&root_abs_path, ROOT_PATH).await?;
         {
-            let mut snapshot_lock = self.snapshot.write().await;
+            let mut snapshot_lock = self.physical_snapshot.write().await;
             for entry in entries {
                 snapshot_lock.create_entry(entry.into());
             }
@@ -401,7 +413,6 @@ impl Worktree {
                         id: EntryId::new(&next_entry_id),
                         path: child_path.clone(),
                         kind: entry_kind,
-                        unit_type: None,
                         mtime: child_metadata.modified().ok(),
                         file_id,
                     };
@@ -442,7 +453,6 @@ impl Worktree {
             } else {
                 EntryKind::File
             },
-            unit_type: None,
             mtime: metadata.modified().ok(),
             file_id,
         };
@@ -485,7 +495,7 @@ mod tests {
         let worktree = Worktree::new(fs, abs_path, Arc::new(AtomicUsize::new(0)));
         worktree.initial_scan().await.unwrap();
 
-        let snapshot = worktree.snapshot.read().await;
+        let snapshot = worktree.physical_snapshot.read().await;
 
         for (_, entry) in snapshot.iter_entries_by_prefix("") {
             println!("{}", entry.path.to_path_buf().display());

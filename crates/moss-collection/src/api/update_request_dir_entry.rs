@@ -6,7 +6,7 @@ use validator::Validate;
 use crate::worktree::{
     ChangesDiffSet, Worktree,
     common::{is_dir, path_not_ends_with_extension, path_starts_with, validate_entry},
-    snapshot::EntryRef,
+    physical_snapshot::EntryRef,
 };
 use crate::{
     collection::Collection,
