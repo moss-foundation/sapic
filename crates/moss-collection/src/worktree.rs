@@ -1,33 +1,30 @@
-pub mod common;
-
 pub mod physical_snapshot;
+pub mod physical_worktree;
+pub mod util;
 pub mod virtual_snapshot;
+pub mod virtual_worktree;
 
-use anyhow::{Context, Result};
-use common::ROOT_PATH;
 use moss_common::api::OperationError;
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use moss_fs::FileSystem;
+use physical_worktree::PhysicalWorktree;
 use std::{
-    collections::HashMap,
-    ops::Deref,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 use thiserror::Error;
-use tokio::sync::{RwLock, mpsc};
-use virtual_snapshot::VirtualSnapshot;
+use util::names::{dir_name_from_classification, file_name_from_protocol};
+use virtual_snapshot::Classification;
+use virtual_worktree::VirtualWorktree;
 
-use crate::models::{
-    primitives::EntryId,
-    types::{EntryKind, PathChangeKind},
-};
+use crate::models::primitives::ChangesDiffSet;
 
-use self::physical_snapshot::{Entry, PhysicalSnapshot};
-
-pub(crate) type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
+pub(crate) const ROOT_PATH: &str = "";
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
+    #[error("invalid input: {0}")]
+    InvalidInput(String),
+
     #[error("worktree entry already exists: {0}")]
     AlreadyExists(String),
 
@@ -41,6 +38,7 @@ pub enum WorktreeError {
 impl From<WorktreeError> for OperationError {
     fn from(error: WorktreeError) -> Self {
         match error {
+            WorktreeError::InvalidInput(err) => OperationError::InvalidInput(err),
             WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
             WorktreeError::NotFound(err) => OperationError::NotFound(err),
             WorktreeError::Unknown(err) => OperationError::Unknown(err),
@@ -50,455 +48,261 @@ impl From<WorktreeError> for OperationError {
 
 pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
-struct ScanJob {
-    abs_path: Arc<Path>,
-    path: Arc<Path>,
-    scan_queue: mpsc::UnboundedSender<ScanJob>,
-}
-
-pub enum Snapshot {
-    Physical(PhysicalSnapshot),
-    Virtual(VirtualSnapshot),
+pub struct WorktreeDiff {
+    pub physical_changes: ChangesDiffSet,
+    pub virtual_changes: ChangesDiffSet,
 }
 
 pub struct Worktree {
-    fs: Arc<dyn FileSystem>,
-    next_entry_id: Arc<AtomicUsize>,
-    physical_snapshot: Arc<RwLock<PhysicalSnapshot>>,
-}
-
-impl Deref for Worktree {
-    type Target = Arc<RwLock<PhysicalSnapshot>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.physical_snapshot
-    }
+    pwt: PhysicalWorktree,
+    vwt: VirtualWorktree,
 }
 
 impl Worktree {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         abs_path: Arc<Path>,
-        next_entry_id: Arc<AtomicUsize>,
+        next_entry_id: Arc<AtomicUsize>, // TODO: replace with IdRegistry
     ) -> Self {
         debug_assert!(abs_path.is_absolute());
 
-        let initial_snapshot = PhysicalSnapshot::new(abs_path);
+        let next_virtual_entry_id = Arc::new(AtomicUsize::new(0)); // TODO: replace with IdRegistry
         Self {
-            fs,
-            next_entry_id,
-            physical_snapshot: Arc::new(RwLock::new(initial_snapshot.clone())),
+            pwt: PhysicalWorktree::new(fs, abs_path, next_entry_id),
+            vwt: VirtualWorktree::new(next_virtual_entry_id),
         }
-    }
-
-    pub async fn snapshot(&self) -> &Arc<RwLock<PhysicalSnapshot>> {
-        &self.physical_snapshot
-    }
-
-    pub async fn absolutize(&self, root_abs_path: &Path, path: &Path) -> Result<PathBuf> {
-        debug_assert!(path.is_relative());
-
-        if path
-            .components()
-            .any(|c| c == std::path::Component::ParentDir)
-        {
-            return Err(anyhow::anyhow!(
-                "Path cannot contain '..' components: {}",
-                path.display()
-            ));
-        }
-
-        if path.file_name().is_some() {
-            Ok(root_abs_path.join(path))
-        } else {
-            Ok(root_abs_path.to_path_buf())
-        }
-    }
-
-    pub async fn relativize(&self, root_abs_path: &Path, abs_path: &Path) -> Result<PathBuf> {
-        debug_assert!(abs_path.is_absolute());
-
-        if !abs_path.starts_with(root_abs_path) {
-            return Err(anyhow::anyhow!(
-                "Path {} is outside of the worktree root {}",
-                abs_path.display(),
-                root_abs_path.display()
-            ));
-        }
-
-        Ok(abs_path
-            .strip_prefix(root_abs_path)
-            .map(|p| p.to_path_buf())
-            .unwrap_or_else(|_| PathBuf::from(ROOT_PATH)))
     }
 
     pub async fn create_entry(
-        &self,
-        path: impl AsRef<Path>,
+        &mut self,
+        destination: PathBuf,
+        order: Option<usize>,
+        protocol: Option<String>,
+        specification: Option<Vec<u8>>,
+        classification: Classification,
         is_dir: bool,
-        content: Option<Vec<u8>>,
-    ) -> WorktreeResult<ChangesDiffSet> {
-        let path: Arc<Path> = path.as_ref().into();
-        debug_assert!(path.is_relative());
-
-        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
-        let abs_path = self.absolutize(&root_abs_path, &path).await?;
-        if abs_path.exists() {
-            return Err(WorktreeError::AlreadyExists(
-                root_abs_path.to_string_lossy().to_string(),
-            ));
-        }
-        let changes = if is_dir {
-            let lowest_ancestor_path = self
-                .physical_snapshot
-                .read()
+    ) -> WorktreeResult<WorktreeDiff> {
+        if is_dir {
+            self.create_dir(destination, order, classification, specification)
                 .await
-                .lowest_ancestor_path(&path);
-
-            // Scanning from the highest entry that is newly created
-            // Extract part of the path that's one component more than the lowest ancestor path
-            // Example LAP: \requests, path: \requests\1\1.request => scan: \requests\1
-
-            let new_level = path
-                .strip_prefix(&lowest_ancestor_path)
-                .expect("Lowest ancestor path must be a prefix of path")
-                .components()
-                .next()
-                .expect("The input path must contain a unique new level");
-            let scan_path = lowest_ancestor_path.join(new_level);
-
-            self.fs.create_dir(&abs_path).await?;
-
-            let entries = self.scan(&root_abs_path, scan_path).await?;
-            let mut changes = vec![];
-
-            {
-                let mut snapshot_lock = self.physical_snapshot.write().await;
-                for e in entries.into_iter().map(Arc::new) {
-                    changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
-                    snapshot_lock.create_entry(e);
-                }
-            }
-
-            changes
         } else {
-            self.fs
-                .create_file_with(
-                    &abs_path,
-                    content.as_deref().unwrap_or(&[]),
-                    CreateOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
-
-            let metadata = tokio::fs::metadata(&abs_path).await.context(format!(
-                "Unable to get metadata for path {}",
-                abs_path.display()
-            ))?;
-            let entry = Arc::new(Entry {
-                id: EntryId::new(&self.next_entry_id),
-                path: Arc::clone(&path),
-                kind: EntryKind::File,
-                mtime: metadata.modified().ok(),
-                file_id: file_id::get_file_id(&abs_path).context(format!(
-                    "Unable to get file id for path {}",
-                    abs_path.display()
-                ))?,
-            });
-
-            {
-                let mut snapshot_lock = self.physical_snapshot.write().await;
-                snapshot_lock.create_entry(Arc::clone(&entry));
-            }
-
-            vec![(path.into(), entry.id, PathChangeKind::Created)]
-        };
-
-        Ok(ChangesDiffSet::from(changes))
+            self.create_item(destination, classification, specification, order, protocol)
+                .await
+        }
     }
 
-    pub async fn remove_entry(&self, path: impl AsRef<Path>) -> Result<ChangesDiffSet> {
-        let path = path.as_ref();
-        debug_assert!(path.is_relative());
+    async fn create_dir(
+        &mut self,
+        destination: PathBuf,
+        order: Option<usize>,
+        classification: Classification,
+        specification: Option<Vec<u8>>,
+    ) -> WorktreeResult<WorktreeDiff> {
+        let mut physical_changes = vec![];
+        let mut virtual_changes = vec![];
 
-        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
-        let abs_path = self.absolutize(&root_abs_path, &path).await?;
+        let (parent, name) = split_last_segment(&destination)
+            .ok_or_else(|| {
+                WorktreeError::InvalidInput(format!(
+                    "Invalid destination path: {}",
+                    destination.display()
+                ))
+            })
+            .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
 
-        let mut snapshot_lock = self.physical_snapshot.write().await;
-
-        // Skip fs operation if it's already deleted
-        if abs_path.exists() {
-            if abs_path.is_dir() {
-                let mut temp_dir = abs_path.clone();
-                let original_name = temp_dir.file_name().unwrap().to_string_lossy().to_string();
-                let temp_name = format!("{}.deleted.{}", original_name, std::process::id());
-                temp_dir.set_file_name(temp_name);
-
-                self.fs
-                    .rename(
-                        &abs_path,
-                        &temp_dir,
-                        RenameOptions {
-                            overwrite: true,
-                            ignore_if_exists: false,
-                        },
-                    )
-                    .await?;
-
-                tokio::spawn(async move {
-                    match tokio::fs::remove_dir_all(&temp_dir).await {
-                        Ok(_) => (),
-                        Err(e) => eprintln!(
-                            "Error removing temporary directory {}: {}",
-                            temp_dir.display(),
-                            e
-                        ),
-                    }
-                });
-            } else {
-                self.fs
-                    .remove_file(
-                        &abs_path,
-                        RemoveOptions {
-                            recursive: false,
-                            ignore_if_not_exists: false,
-                        },
-                    )
-                    .await?;
-            }
-        }
-
-        let removed_entries = snapshot_lock.remove_entry(path);
-        drop(snapshot_lock);
-
-        let changes = removed_entries
-            .into_iter()
-            .map(|entry| (entry.path.clone(), entry.id, PathChangeKind::Removed))
-            .collect::<Vec<_>>();
-
-        Ok(ChangesDiffSet::from(changes))
-    }
-
-    pub async fn rename_entry(
-        &self,
-        old_path: impl AsRef<Path>,
-        new_path: impl AsRef<Path>,
-    ) -> WorktreeResult<ChangesDiffSet> {
-        let old_path = old_path.as_ref();
-        let new_path = new_path.as_ref();
-        debug_assert!(old_path.is_relative());
-        debug_assert!(new_path.is_relative());
-
-        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
-        let abs_old_path = self.absolutize(&root_abs_path, &old_path).await?;
-        let abs_new_path = self.absolutize(&root_abs_path, &new_path).await?;
-
-        if abs_new_path.exists() {
-            return Err(WorktreeError::AlreadyExists(
-                abs_new_path.to_string_lossy().to_string(),
-            ));
-        }
-        if !abs_old_path.exists() {
-            return Err(WorktreeError::NotFound(
-                abs_old_path.to_string_lossy().to_string(),
-            ));
-        }
-        let mut snapshot_lock = self.physical_snapshot.write().await;
-        self.fs
-            .rename(
-                &abs_old_path,
-                &abs_new_path,
-                RenameOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
-
-        let mut changes = Vec::new();
-        let mut removed_entries_by_file_id = snapshot_lock
-            .remove_entry(old_path)
-            .into_iter()
-            .map(|e| (e.file_id, e))
-            .collect::<HashMap<_, _>>();
-
-        let changed_entries = self.scan(&root_abs_path, new_path).await?;
-
-        for entry in changed_entries {
-            let (entry, change) =
-                if let Some(removed_entry) = removed_entries_by_file_id.remove(&entry.file_id) {
-                    let entry = reuse_id(&removed_entry, entry);
-                    (Arc::new(entry), PathChangeKind::Updated)
-                } else {
-                    (Arc::new(entry), PathChangeKind::Created)
-                };
-
-            changes.push((entry.path.clone(), entry.id, change));
-            snapshot_lock.create_entry(entry);
-        }
-
-        Ok(ChangesDiffSet::from(changes))
-    }
-
-    pub async fn initial_scan(&self) -> Result<()> {
-        let root_abs_path = self.physical_snapshot.read().await.abs_path().clone();
-        let entries = self.scan(&root_abs_path, ROOT_PATH).await?;
         {
-            let mut snapshot_lock = self.physical_snapshot.write().await;
-            for entry in entries {
-                snapshot_lock.create_entry(entry.into());
+            let encoded_path = {
+                let encoded_name = moss_fs::utils::encode_name(&name);
+                let encoded_path = moss_fs::utils::encode_path(&parent, None)?;
+
+                encoded_path.join(encoded_name)
+            };
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&encoded_path, true, None)
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
+            if let Some(content) = specification {
+                let file_path = "folder.sapic".to_string();
+                let path = encoded_path.join(file_path);
+
+                physical_changes.extend(
+                    self.pwt
+                        .create_entry(&path, false, Some(content))
+                        .await?
+                        .into_iter()
+                        .cloned(),
+                );
             }
         }
 
-        Ok(())
-    }
-
-    pub async fn scan(&self, root_abs_path: &Path, path: impl AsRef<Path>) -> Result<Vec<Entry>> {
-        let path: Arc<Path> = path.as_ref().into();
-        debug_assert!(path.is_relative());
-
-        let abs_path: Arc<Path> = self.absolutize(&root_abs_path, &path).await?.into();
-        let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
-
-        let initial_job = ScanJob {
-            abs_path: Arc::clone(&abs_path),
-            path: Arc::clone(&path),
-            scan_queue: scan_job_tx.clone(),
-        };
-        scan_job_tx.send(initial_job).unwrap();
-
-        drop(scan_job_tx);
-
-        let mut handles = Vec::new();
-        while let Some(job) = scan_job_rx.recv().await {
-            let fs_clone = self.fs.clone();
-            let next_entry_id = self.next_entry_id.clone();
-
-            let handle = tokio::spawn(async move {
-                let mut new_entries = vec![];
-                let mut new_jobs: Vec<ScanJob> = Vec::new();
-
-                let mut read_dir = fs_clone.read_dir(&job.abs_path).await.unwrap();
-
-                let mut child_paths = Vec::new();
-                while let Some(dir_entry) = read_dir.next_entry().await.unwrap_or(None) {
-                    child_paths.push(dir_entry);
-                }
-
-                for child_entry in child_paths {
-                    let child_abs_path: Arc<Path> = child_entry.path().into();
-                    let child_name = child_abs_path.file_name().unwrap();
-                    let child_path: Arc<Path> = job.path.join(child_name).into();
-
-                    let child_metadata = match tokio::fs::metadata(&child_abs_path).await {
-                        Ok(metadata) => metadata,
-                        Err(_) => continue, // Skip if we can't get the metadata // TODO: handle errors?
-                    };
-
-                    let is_dir = child_metadata.is_dir();
-                    let entry_kind = if is_dir {
-                        EntryKind::Dir
-                    } else {
-                        EntryKind::File
-                    };
-
-                    let file_id = match file_id::get_file_id(&child_abs_path) {
-                        Ok(id) => id,
-                        Err(_) => continue, // Skip if we can't get the file ID // TODO: handle errors?
-                    };
-
-                    let child_entry = Entry {
-                        id: EntryId::new(&next_entry_id),
-                        path: child_path.clone(),
-                        kind: entry_kind,
-                        mtime: child_metadata.modified().ok(),
-                        file_id,
-                    };
-
-                    if is_dir {
-                        new_jobs.push(ScanJob {
-                            abs_path: child_abs_path,
-                            path: child_path,
-                            scan_queue: job.scan_queue.clone(),
-                        });
-                    }
-
-                    new_entries.push(child_entry);
-                }
-
-                for new_job in new_jobs.into_iter() {
-                    job.scan_queue.send(new_job).unwrap(); // TODO: handle errors?
-                }
-
-                new_entries
-            });
-
-            handles.push(handle);
+        {
+            virtual_changes.extend(
+                self.vwt
+                    .create_entry(destination, order, classification.clone(), true)?
+                    .into_iter()
+                    .cloned(),
+            );
         }
 
-        let metadata = tokio::fs::metadata(&abs_path)
-            .await
-            .expect("Failed to get scan job abs path metadata");
-        let file_id =
-            file_id::get_file_id(&abs_path).expect("Failed to get scan job abs path file id");
+        Ok(WorktreeDiff {
+            physical_changes: ChangesDiffSet::from(physical_changes),
+            virtual_changes: ChangesDiffSet::from(virtual_changes),
+        })
+    }
 
-        let next_entry_id = self.next_entry_id.clone();
-        let entry = Entry {
-            id: EntryId::new(&next_entry_id),
-            path,
-            kind: if metadata.is_dir() {
-                EntryKind::Dir
-            } else {
-                EntryKind::File
-            },
-            mtime: metadata.modified().ok(),
-            file_id,
+    async fn create_item(
+        &mut self,
+        destination: PathBuf,
+        classification: Classification,
+        specification: Option<Vec<u8>>,
+        order: Option<usize>,
+        protocol: Option<String>,
+    ) -> WorktreeResult<WorktreeDiff> {
+        let mut physical_changes = vec![];
+        let mut virtual_changes = vec![];
+
+        let (parent, name) = split_last_segment(&destination)
+            .ok_or_else(|| {
+                WorktreeError::InvalidInput(format!(
+                    "Invalid destination path: {}",
+                    destination.display()
+                ))
+            })
+            .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
+
+        let encoded_path = {
+            let encoded_name = moss_fs::utils::encode_name(&name);
+            let encoded_path = moss_fs::utils::encode_path(&parent, None)?;
+
+            encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
         };
+        physical_changes.extend(
+            self.pwt
+                .create_entry(&encoded_path, true, None)
+                .await?
+                .into_iter()
+                .cloned(),
+        );
 
-        Ok(std::iter::once(entry)
-            .chain(
-                futures::future::join_all(handles)
-                    .await
-                    .into_iter()
-                    .collect::<Result<Vec<_>, _>>()?
-                    .into_iter()
-                    .flatten(),
-            )
-            .collect())
+        let protocol = protocol.unwrap_or_else(|| "get".to_string());
+        let file_name = file_name_from_protocol(&protocol);
+        let file_path = encoded_path.join(file_name);
+        physical_changes.extend(
+            self.pwt
+                .create_entry(&file_path, false, specification)
+                .await?
+                .into_iter()
+                .cloned(),
+        );
+
+        virtual_changes.extend(
+            self.vwt
+                .create_entry(parent, None, classification.clone(), true)?
+                .into_iter()
+                .cloned(),
+        );
+        virtual_changes.extend(
+            self.vwt
+                .create_entry(destination, order, classification, false)?
+                .into_iter()
+                .cloned(),
+        );
+
+        Ok(WorktreeDiff {
+            physical_changes: ChangesDiffSet::from(physical_changes),
+            virtual_changes: ChangesDiffSet::from(virtual_changes),
+        })
     }
 }
 
-fn reuse_id(old_entry: &Entry, mut new_entry: Entry) -> Entry {
-    new_entry.id = old_entry.id;
-    new_entry
+/// Splits the given path into its parent directory (if any) and the last segment.
+///
+/// Returns:
+/// - `None` if the input path is empty or contains no segments.
+/// - `Some((parent, segment))` where:
+///     - `parent` is:
+///         - `Some(PathBuf)` if the path has a non-empty parent,
+///         - `None` if the path consists of a single segment.
+///     - `segment` is the last path component as a `String`.
+fn split_last_segment(path: &Path) -> Option<(Option<PathBuf>, String)> {
+    if path.as_os_str().is_empty() {
+        return None;
+    }
+
+    // Collect normalized components (ignores redundant separators)
+    let mut comps: Vec<Component> = path.components().collect();
+    if comps.is_empty() {
+        return None;
+    }
+
+    let last_comp = comps.pop().unwrap();
+
+    // Determine the string for the last segment
+    let last_os = match last_comp {
+        Component::Normal(os) => os,
+        Component::RootDir => std::ffi::OsStr::new("/"),
+        Component::Prefix(pref) => pref.as_os_str(),
+        _ => return None, // ignore CurDir, ParentDir, etc.
+    };
+    let last = last_os.to_string_lossy().into_owned();
+
+    // Build the parent PathBuf if there are remaining components
+    let parent = if comps.is_empty() {
+        None
+    } else {
+        let mut parent_pb = PathBuf::new();
+        for comp in comps {
+            parent_pb.push(comp.as_os_str());
+        }
+        Some(parent_pb)
+    };
+
+    Some((parent, last))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
-    use moss_fs::RealFileSystem;
-
     use super::*;
+    use std::path::{Path, PathBuf};
 
-    #[tokio::test]
-    async fn test_scan() {
-        let fs = Arc::new(RealFileSystem::new());
-        let abs_path = Arc::from(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("tests")
-                .join("TestCollection"),
+    #[test]
+    fn test_split_last_segment_with_parent() {
+        // Splitting a normal absolute path returns the parent directory and last segment
+        let path = Path::new("/test/foo/bar");
+        let result = split_last_segment(path);
+        assert_eq!(
+            result,
+            Some((Some(PathBuf::from("/test/foo")), "bar".to_string()))
         );
+    }
 
-        let worktree = Worktree::new(fs, abs_path, Arc::new(AtomicUsize::new(0)));
-        worktree.initial_scan().await.unwrap();
+    #[test]
+    fn test_split_last_segment_with_trailing_slash() {
+        // A path ending with a slash should still return the correct parent and segment
+        let path = Path::new("/test/foo/bar/");
+        let result = split_last_segment(path);
+        assert_eq!(
+            result,
+            Some((Some(PathBuf::from("/test/foo")), "bar".to_string()))
+        );
+    }
 
-        let snapshot = worktree.physical_snapshot.read().await;
+    #[test]
+    fn test_split_last_segment_single_segment() {
+        // A single-segment relative path returns None for parent and the segment itself
+        let path = Path::new("bar");
+        let result = split_last_segment(path);
+        assert_eq!(result, Some((None, "bar".to_string())));
+    }
 
-        for (_, entry) in snapshot.iter_entries_by_prefix("") {
-            println!("{}", entry.path.to_path_buf().display());
-        }
+    #[test]
+    fn test_split_last_segment_empty_path() {
+        // An empty path should return None
+        let path = Path::new("");
+        let result = split_last_segment(path);
+        assert_eq!(result, None);
     }
 }

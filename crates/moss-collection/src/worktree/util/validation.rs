@@ -1,13 +1,12 @@
+use std::sync::Arc;
 use validator::ValidationError;
 
-use super::physical_snapshot::EntryRef;
+use crate::worktree::physical_snapshot::PhysicalEntry;
 
-pub(crate) const ROOT_PATH: &str = "";
-
-pub(crate) type Rule = Box<dyn Fn(&EntryRef) -> Result<(), ValidationError>>;
+pub(crate) type Rule = Box<dyn Fn(&Arc<PhysicalEntry>) -> Result<(), ValidationError>>;
 
 pub(crate) fn is_dir() -> Rule {
-    Box::new(move |entry: &EntryRef| {
+    Box::new(move |entry: &Arc<PhysicalEntry>| {
         if !entry.is_dir() {
             return Err(ValidationError::new("Entry is not a directory"));
         }
@@ -16,7 +15,7 @@ pub(crate) fn is_dir() -> Rule {
 }
 
 pub(crate) fn path_ends_with_extension(value: &'static str) -> Rule {
-    Box::new(move |entry: &EntryRef| {
+    Box::new(move |entry: &Arc<PhysicalEntry>| {
         let extension = entry.path.extension();
         if extension.unwrap_or_default() != value {
             return Err(ValidationError::new(
@@ -28,7 +27,7 @@ pub(crate) fn path_ends_with_extension(value: &'static str) -> Rule {
 }
 
 pub(crate) fn path_not_ends_with_extension(value: &'static str) -> Rule {
-    Box::new(move |entry: &EntryRef| {
+    Box::new(move |entry: &Arc<PhysicalEntry>| {
         let extension = entry.path.extension();
         if extension.unwrap_or_default() == value {
             return Err(ValidationError::new("Entry path ends with forbidden value"));
@@ -38,7 +37,7 @@ pub(crate) fn path_not_ends_with_extension(value: &'static str) -> Rule {
 }
 
 pub(crate) fn path_starts_with(value: &'static str) -> Rule {
-    Box::new(move |entry: &EntryRef| {
+    Box::new(move |entry: &Arc<PhysicalEntry>| {
         if !entry.path.starts_with(value) {
             return Err(ValidationError::new(
                 "Entry path starts with forbidden value",
@@ -48,7 +47,10 @@ pub(crate) fn path_starts_with(value: &'static str) -> Rule {
     })
 }
 
-pub(crate) fn validate_entry(entry: &EntryRef, rules: &[Rule]) -> Result<(), ValidationError> {
+pub(crate) fn validate_entry(
+    entry: &Arc<PhysicalEntry>,
+    rules: &[Rule],
+) -> Result<(), ValidationError> {
     if rules.is_empty() {
         return Ok(());
     }

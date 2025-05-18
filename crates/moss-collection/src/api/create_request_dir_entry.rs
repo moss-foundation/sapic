@@ -11,15 +11,17 @@ impl Collection {
         &self,
         input: CreateRequestDirEntryInput,
     ) -> OperationResult<CreateRequestDirEntryOutput> {
-        input.validate()?;
+        // input.validate()?;
 
-        let worktree = self.worktree().await?;
+        // let worktree = self.worktree().await?;
 
-        let encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
-        let changes = worktree.create_entry(&encoded_path, true, None).await?;
+        // let encoded_path = moss_fs::utils::encode_path(&input.destination, None)?;
+        // let changes = worktree.create_entry(&encoded_path, true, None).await?;
 
-        Ok(CreateRequestDirEntryOutput {
-            changed_paths: changes,
-        })
+        // Ok(CreateRequestDirEntryOutput {
+        //     changed_paths: changes,
+        // })
+
+        todo!()
     }
 }

@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
+use std::path::Path;
+use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering::SeqCst;
 use ts_rs::TS;
+
+use super::types::PathChangeKind;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, TS)]
 #[serde(transparent)]
@@ -23,3 +27,5 @@ impl std::fmt::Display for EntryId {
         write!(f, "{}", self.0)
     }
 }
+
+pub type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;

@@ -1,7 +1,7 @@
 use moss_common::api::{OperationError, OperationResult};
 use std::sync::Arc;
 
-use crate::worktree::common::{
+use crate::worktree::util::validation::{
     is_dir, path_not_ends_with_extension, path_starts_with, validate_entry,
 };
 use crate::{
@@ -14,32 +14,34 @@ impl Collection {
         &self,
         input: DeleteRequestDirEntryInput,
     ) -> OperationResult<DeleteRequestDirEntryOutput> {
-        let worktree = self.worktree().await?;
+        // let worktree = self.worktree().await?;
 
-        let entry = {
-            let snapshot_lock = worktree.read().await;
-            let entry = snapshot_lock
-                .entry_by_id(input.id)
-                .ok_or(OperationError::NotFound(format!(
-                    "request directory with id {}",
-                    input.id,
-                )))?;
-            Arc::clone(&entry)
-        };
+        // let entry = {
+        //     let snapshot_lock = worktree.read().await;
+        //     let entry = snapshot_lock
+        //         .entry_by_id(input.id)
+        //         .ok_or(OperationError::NotFound(format!(
+        //             "request directory with id {}",
+        //             input.id,
+        //         )))?;
+        //     Arc::clone(&entry)
+        // };
 
-        validate_entry(
-            &entry,
-            &[
-                is_dir(),
-                path_not_ends_with_extension("request"),
-                path_starts_with("requests"),
-            ],
-        )?;
+        // validate_entry(
+        //     &entry,
+        //     &[
+        //         is_dir(),
+        //         path_not_ends_with_extension("request"),
+        //         path_starts_with("requests"),
+        //     ],
+        // )?;
 
-        let changed_paths = worktree.remove_entry(&entry.path).await?;
+        // let changed_paths = worktree.remove_entry(&entry.path).await?;
 
-        // TODO: update the state database
+        // // TODO: update the state database
 
-        Ok(DeleteRequestDirEntryOutput { changed_paths })
+        // Ok(DeleteRequestDirEntryOutput { changed_paths })
+
+        todo!()
     }
 }

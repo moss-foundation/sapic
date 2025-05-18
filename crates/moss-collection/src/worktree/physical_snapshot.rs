@@ -1,4 +1,5 @@
 use file_id::FileId;
+use moss_common::models::primitives::Identifier;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -10,8 +11,10 @@ use crate::models::{primitives::EntryId, types::EntryKind};
 
 use super::ROOT_PATH;
 
+pub struct PhysicalEntryId(Identifier);
+
 #[derive(Debug, Clone)]
-pub struct Entry {
+pub struct PhysicalEntry {
     pub id: EntryId,
     pub path: Arc<Path>,
     pub kind: EntryKind,
@@ -19,17 +22,15 @@ pub struct Entry {
     pub file_id: FileId,
 }
 
-impl Entry {
+impl PhysicalEntry {
     pub fn is_dir(&self) -> bool {
         matches!(self.kind, EntryKind::Dir)
     }
 }
 
-pub type EntryRef = Arc<Entry>;
-
 pub struct PhysicalSnapshot {
     abs_path: Arc<Path>,
-    entries_by_id: BPlusTreeMap<EntryId, EntryRef>,
+    entries_by_id: BPlusTreeMap<EntryId, Arc<PhysicalEntry>>,
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
@@ -65,7 +66,7 @@ impl PhysicalSnapshot {
         &self.abs_path
     }
 
-    pub fn create_entry(&mut self, entry: EntryRef) {
+    pub fn create_entry(&mut self, entry: Arc<PhysicalEntry>) {
         self.entries_by_path.insert(entry.path.clone(), entry.id);
         self.entries_by_id.insert(entry.id, entry);
     }
@@ -79,7 +80,7 @@ impl PhysicalSnapshot {
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
         prefix: &'a str,
-    ) -> impl Iterator<Item = (&'a EntryId, &'a EntryRef)> + 'a {
+    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<PhysicalEntry>)> + 'a {
         self.entries_by_path
             .iter()
             .skip_while(move |(p, _)| !p.starts_with(prefix))
@@ -87,7 +88,7 @@ impl PhysicalSnapshot {
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
     }
 
-    pub fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<EntryRef> {
+    pub fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Arc<PhysicalEntry>> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
@@ -95,7 +96,7 @@ impl PhysicalSnapshot {
         self.entries_by_id.get(entry_id).cloned()
     }
 
-    pub fn entry_by_id(&self, id: EntryId) -> Option<&EntryRef> {
+    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<PhysicalEntry>> {
         self.entries_by_id.get(&id)
     }
 
@@ -116,7 +117,7 @@ impl PhysicalSnapshot {
     /// - If the path points to a directory, the directory and all its contents (files and subdirectories)
     ///   are removed recursively.
     /// - Only exact path matches are considered; similar prefixes are not affected.
-    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> Vec<EntryRef> {
+    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> Vec<Arc<PhysicalEntry>> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
@@ -134,7 +135,7 @@ impl PhysicalSnapshot {
             let entries_to_remove = self
                 .iter_entries_by_prefix(&prefix)
                 .map(|(id, entry)| (*id, entry.clone()))
-                .collect::<Vec<(EntryId, EntryRef)>>();
+                .collect::<Vec<(EntryId, Arc<PhysicalEntry>)>>();
 
             for (entry_id, entry) in entries_to_remove {
                 self.entries_by_path.remove(&entry.path);
@@ -175,8 +176,8 @@ mod tests {
     use super::*;
     use std::{path::PathBuf, sync::atomic::AtomicUsize};
 
-    fn create_test_entry(id: usize, path: &str, kind: EntryKind) -> Entry {
-        Entry {
+    fn create_test_entry(id: usize, path: &str, kind: EntryKind) -> PhysicalEntry {
+        PhysicalEntry {
             id: EntryId::new(&Arc::new(AtomicUsize::new(id))),
             path: Arc::from(PathBuf::from(path)),
             kind,
