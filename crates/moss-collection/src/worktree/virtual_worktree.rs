@@ -5,12 +5,12 @@ use std::{
 
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
-    types::PathChangeKind,
+    types::{Classification, PathChangeKind},
 };
 
 use super::{
     WorktreeResult,
-    virtual_snapshot::{Classification, VirtualEntry, VirtualSnapshot},
+    virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
 
 pub struct VirtualWorktree {

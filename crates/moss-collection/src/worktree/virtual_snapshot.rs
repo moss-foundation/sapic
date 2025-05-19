@@ -6,29 +6,11 @@ use moss_common::sanitized::sanitized_name::SanitizedName;
 use sweep_bptree::BPlusTreeMap;
 
 use crate::models::primitives::EntryId;
+use crate::models::types::Classification;
 
 use super::ROOT_PATH;
 
 pub struct VirtualEntryId(Identifier);
-
-#[derive(Debug, Clone)]
-pub enum Classification {
-    Request,
-    Endpoint,
-    Component,
-    Schema,
-}
-
-impl Classification {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Classification::Request => "request",
-            Classification::Endpoint => "endpoint",
-            Classification::Component => "component",
-            Classification::Schema => "schema",
-        }
-    }
-}
 
 pub struct Case {
     id: EntryId,

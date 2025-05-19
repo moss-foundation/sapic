@@ -1,26 +1,9 @@
-use std::path::PathBuf;
-
 use moss_common::api::OperationResult;
-use serde_json::Value as JsonValue;
 
 use crate::{
-    collection::Collection, models::primitives::ChangesDiffSet,
-    worktree::virtual_snapshot::Classification,
+    collection::Collection,
+    models::operations::{CreateEntryInput, CreateEntryOutput},
 };
-
-pub struct CreateEntryInput {
-    pub destination: PathBuf,
-    pub classification: Classification,
-    pub specification: Option<JsonValue>,
-    pub protocol: Option<String>,
-    pub order: Option<usize>,
-    pub is_dir: bool,
-}
-
-pub struct CreateEntryOutput {
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
-}
 
 impl Collection {
     pub async fn create_entry(

@@ -205,3 +205,24 @@ pub struct EntryInfo {
     pub path: PathBuf,
     pub order: Option<usize>,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum Classification {
+    Request,
+    Endpoint,
+    Component,
+    Schema,
+}
+
+impl Classification {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Classification::Request => "request",
+            Classification::Endpoint => "endpoint",
+            Classification::Component => "component",
+            Classification::Schema => "schema",
+        }
+    }
+}

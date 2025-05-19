@@ -1,4 +1,4 @@
-use crate::worktree::virtual_snapshot::Classification;
+use crate::models::types::Classification;
 
 pub fn file_name_from_protocol(protocol: &str) -> String {
     format!("{}.sapic", protocol)

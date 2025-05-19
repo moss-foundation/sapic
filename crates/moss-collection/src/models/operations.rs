@@ -1,4 +1,5 @@
 use serde::Serialize;
+use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -6,7 +7,10 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use super::types::PathChangeKind;
+use super::{
+    primitives::ChangesDiffSet,
+    types::{Classification, PathChangeKind},
+};
 use crate::models::{
     primitives::EntryId,
     types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
@@ -15,6 +19,27 @@ use crate::models::{
 /// All the path and file names passed in the input should be unencoded.
 /// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
 /// The frontend should simply use the name and path used in the user's original input
+///
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateEntryInput {
+    pub destination: PathBuf,
+    pub classification: Classification,
+    pub specification: Option<JsonValue>,
+    pub protocol: Option<String>,
+    pub order: Option<usize>,
+    pub is_dir: bool,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CreateEntryOutput {
+    pub physical_changes: ChangesDiffSet,
+    pub virtual_changes: ChangesDiffSet,
+}
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

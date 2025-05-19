@@ -13,10 +13,9 @@ use std::{
 };
 use thiserror::Error;
 use util::names::{dir_name_from_classification, file_name_from_protocol};
-use virtual_snapshot::Classification;
 use virtual_worktree::VirtualWorktree;
 
-use crate::models::primitives::ChangesDiffSet;
+use crate::models::{primitives::ChangesDiffSet, types::Classification};
 
 pub(crate) const ROOT_PATH: &str = "";
 
@@ -82,25 +81,6 @@ impl Worktree {
         classification: Classification,
         is_dir: bool,
     ) -> WorktreeResult<WorktreeDiff> {
-        if is_dir {
-            self.create_dir(destination, order, classification, specification)
-                .await
-        } else {
-            self.create_item(destination, classification, specification, order, protocol)
-                .await
-        }
-    }
-
-    async fn create_dir(
-        &mut self,
-        destination: PathBuf,
-        order: Option<usize>,
-        classification: Classification,
-        specification: Option<Vec<u8>>,
-    ) -> WorktreeResult<WorktreeDiff> {
-        let mut physical_changes = vec![];
-        let mut virtual_changes = vec![];
-
         let (parent, name) = split_last_segment(&destination)
             .ok_or_else(|| {
                 WorktreeError::InvalidInput(format!(
@@ -109,6 +89,26 @@ impl Worktree {
                 ))
             })
             .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
+
+        if is_dir {
+            self.create_dir(parent, name, order, classification, specification)
+                .await
+        } else {
+            self.create_item(parent, name, classification, specification, order, protocol)
+                .await
+        }
+    }
+
+    async fn create_dir(
+        &mut self,
+        parent: PathBuf,
+        name: String,
+        order: Option<usize>,
+        classification: Classification,
+        specification: Option<Vec<u8>>,
+    ) -> WorktreeResult<WorktreeDiff> {
+        let mut physical_changes = vec![];
+        let mut virtual_changes = vec![];
 
         {
             let encoded_path = {
@@ -141,7 +141,7 @@ impl Worktree {
         {
             virtual_changes.extend(
                 self.vwt
-                    .create_entry(destination, order, classification.clone(), true)?
+                    .create_entry(parent.join(name), order, classification.clone(), true)?
                     .into_iter()
                     .cloned(),
             );
@@ -155,7 +155,8 @@ impl Worktree {
 
     async fn create_item(
         &mut self,
-        destination: PathBuf,
+        parent: PathBuf,
+        name: String,
         classification: Classification,
         specification: Option<Vec<u8>>,
         order: Option<usize>,
@@ -163,15 +164,6 @@ impl Worktree {
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
-
-        let (parent, name) = split_last_segment(&destination)
-            .ok_or_else(|| {
-                WorktreeError::InvalidInput(format!(
-                    "Invalid destination path: {}",
-                    destination.display()
-                ))
-            })
-            .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
 
         let encoded_path = {
             let encoded_name = moss_fs::utils::encode_name(&name);
@@ -200,13 +192,13 @@ impl Worktree {
 
         virtual_changes.extend(
             self.vwt
-                .create_entry(parent, None, classification.clone(), true)?
+                .create_entry(&parent, None, classification.clone(), true)?
                 .into_iter()
                 .cloned(),
         );
         virtual_changes.extend(
             self.vwt
-                .create_entry(destination, order, classification, false)?
+                .create_entry(parent.join(name), order, classification, false)?
                 .into_iter()
                 .cloned(),
         );
