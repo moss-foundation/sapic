@@ -45,8 +45,6 @@ impl Transactional for NewStorageHandle {
 #[async_trait]
 impl Dump for NewStorageHandle {
     async fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
-        // FIXME: Error propagation seems to make pipelining very tricky
-
         let read_txn = self.begin_read().await?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
@@ -73,6 +71,7 @@ mod tests {
     use moss_db::bincode_table::BincodeTable;
     use moss_db::primitives::AnyValue;
     use moss_testutils::random_name::random_string;
+    use serde::{Deserialize, Serialize};
 
     struct Table1 {
         table: BincodeTable<'static, SegKeyBuf, AnyValue>,
@@ -90,7 +89,24 @@ mod tests {
         }
     }
 
+    struct Table2 {
+        table: BincodeTable<'static, SegKeyBuf, AnyValue>,
+    }
+    impl Table2 {
+        pub const fn new() -> Self {
+            Self {
+                table: BincodeTable::new("table1"),
+            }
+        }
+    }
+    impl Table for Table2 {
+        fn definition(&self) -> &BincodeTable<SegKeyBuf, AnyValue> {
+            &self.table
+        }
+    }
+
     const TABLE1: Table1 = Table1::new();
+    const TABLE2: Table2 = Table2::new();
 
     struct TestStore {
         handle: Arc<dyn NewStorage>,
@@ -99,11 +115,16 @@ mod tests {
     impl TestStore {
         pub fn new(path: &Path) -> Self {
             Self {
-                handle: Arc::new(NewStorageHandle::new(path, vec![Arc::new(TABLE1)]).unwrap()),
+                handle: Arc::new(
+                    NewStorageHandle::new(path, vec![Arc::new(TABLE1), Arc::new(TABLE2)]).unwrap(),
+                ),
             }
         }
         pub async fn table1(&self) -> DatabaseResult<Arc<dyn Table>> {
             self.handle.table(&TypeId::of::<Table1>()).await
+        }
+        pub async fn table2(&self) -> DatabaseResult<Arc<dyn Table>> {
+            self.handle.table(&TypeId::of::<Table2>()).await
         }
     }
     #[async_trait]
@@ -123,10 +144,20 @@ mod tests {
         }
     }
 
+    #[derive(Serialize, Deserialize, PartialEq)]
+    struct TestData {
+        string: String,
+        number: i32,
+        boolean: bool,
+    }
+
     #[tokio::test]
-    async fn test_storage() {
-        let store = TestStore::new(&Path::new("tests").join(format!("{}.db", random_string(10))));
+    async fn test_storage_basic() {
+        let path = Path::new("tests").join(format!("{}.db", random_string(10)));
+
+        let store = TestStore::new(&path);
         let table1 = store.table1().await.unwrap();
+        let table2 = store.table2().await.unwrap();
 
         let mut write_txn = store.begin_write().await.unwrap();
 
@@ -134,13 +165,50 @@ mod tests {
             .definition()
             .insert(
                 &mut write_txn,
-                SegKey::new("table1").join("key1"),
-                &AnyValue::new(serde_json::to_vec("value1").unwrap()),
+                SegKey::new("table1").join("string"),
+                &AnyValue::new(serde_json::to_vec("string").unwrap()),
+            )
+            .unwrap();
+
+        table1
+            .definition()
+            .insert(
+                &mut write_txn,
+                SegKey::new("table1").join("number"),
+                &AnyValue::new(serde_json::to_vec(&42).unwrap()),
+            )
+            .unwrap();
+
+        let data = TestData {
+            string: "String".to_string(),
+            number: 42,
+            boolean: true,
+        };
+
+        table2
+            .definition()
+            .insert(
+                &mut write_txn,
+                SegKey::new("table2").join("testdata"),
+                &AnyValue::new(serde_json::to_vec(&data).unwrap()),
             )
             .unwrap();
 
         write_txn.commit().unwrap();
 
-        dbg!(store.dump().await.unwrap());
+        let dumped = store.dump().await.unwrap();
+
+        assert_eq!(dumped.len(), 3);
+        assert_eq!(
+            dumped["table1:string"],
+            JsonValue::String("string".to_string())
+        );
+        assert_eq!(dumped["table1:number"], JsonValue::Number(42.into()));
+        assert_eq!(
+            dumped["table2:testdata"],
+            serde_json::to_value(&data).unwrap()
+        );
+
+        tokio::fs::remove_file(&path).await.unwrap();
     }
 }
