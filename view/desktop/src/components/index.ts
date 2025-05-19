@@ -18,7 +18,10 @@ export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
-export * from "./ViewContainer";
 
 export * as ContextMenu from "./ContextMenu";
 export * as DropdownMenu from "./DropdownMenu";
+
+export * from "./Workbench";
+export * from "./EmptyWorkspace";
+export * from "./Workspace";
