@@ -12,7 +12,6 @@ impl Collection {
         input: CreateEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
-        // TODO: validate input
 
         // TODO: validate specification
 

@@ -124,18 +124,15 @@ impl Worktree {
                     .into_iter()
                     .cloned(),
             );
-            if let Some(content) = specification {
-                let file_path = "folder.sapic".to_string();
-                let path = encoded_path.join(file_path);
 
-                physical_changes.extend(
-                    self.pwt
-                        .create_entry(&path, false, Some(content))
-                        .await?
-                        .into_iter()
-                        .cloned(),
-                );
-            }
+            let specfile_path = encoded_path.join("folder.sapic");
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&specfile_path, false, specification)
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
         }
 
         {

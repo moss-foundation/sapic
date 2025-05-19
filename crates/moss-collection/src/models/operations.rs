@@ -24,7 +24,10 @@ use crate::models::{
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
+// TODO: Validate that destination matches with classification
+// #[validate(schema(function = "validate_category", skip_on_field_errors = false))]
 pub struct CreateEntryInput {
+    // TODO: Validate against all possible classification
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
