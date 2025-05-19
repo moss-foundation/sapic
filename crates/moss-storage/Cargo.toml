@@ -17,4 +17,4 @@ redb.workspace = true
 
 [dev-dependencies]
 moss_testutils.workspace = true
-tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }
+tokio = { workspace = true, features = ["fs", "time", "rt", "rt-multi-thread", "macros"] }
