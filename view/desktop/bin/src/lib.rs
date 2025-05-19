@@ -71,6 +71,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::create_workspace,
             commands::list_workspaces,
             commands::delete_workspace,
+            commands::describe_workbench_state,
         ])
         .on_window_event(|window, event| match event {
             // #[cfg(target_os = "macos")]
