@@ -1,13 +1,15 @@
 use moss_collection::collection::Collection;
-use moss_collection::indexer::{self, IndexerHandle};
+use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_fs::RealFileSystem;
-use moss_fs::utils::{encode_name, encode_path};
-use moss_testutils::random_name::random_collection_name;
-use moss_workbench::activity_indicator::ActivityIndicator;
+use moss_fs::utils::encode_path;
+use moss_testutils::random_name::{random_collection_name, random_string};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
-use tokio::sync::mpsc;
+
+pub fn random_request_dir_name() -> String {
+    format!("Test_{}_Dir", random_string(10))
+}
 
 pub fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -25,33 +27,15 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     // Create collection/requests to prevent indexation error
     // std::fs::create_dir_all(collection_path.join("requests")).unwrap();
 
-    let mock_app = tauri::test::mock_app();
-    let app_handle = mock_app.handle().clone();
-
-    let (job_sender, job_receiver) = mpsc::unbounded_channel();
-    let activity_indicator = ActivityIndicator::new(app_handle);
-    let indexer_handle = IndexerHandle::new(job_sender);
-
-    {
-        tauri::async_runtime::spawn({
-            let fs_clone = Arc::clone(&fs);
-            let activity_indicator_clone = activity_indicator.clone();
-
-            async move {
-                indexer::run(activity_indicator_clone, fs_clone, job_receiver).await;
-            }
-        });
-    }
-
     let next_entry_id = Arc::new(AtomicUsize::new(0));
-    let collection =
-        Collection::new(collection_path.clone(), fs, indexer_handle, next_entry_id).unwrap();
+    let collection = Collection::new(collection_path.clone(), fs, next_entry_id).unwrap();
 
     (collection_path, collection)
 }
 
 pub fn request_folder_name(request_name: &str) -> String {
-    format!("{}.request", encode_name(request_name))
+    let sanitized_name = SanitizedName::new(request_name);
+    format!("{}.request", &sanitized_name)
 }
 
 /// Generate the encoded relative path of request from the collection folder

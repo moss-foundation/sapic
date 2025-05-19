@@ -19,7 +19,7 @@ export const WelcomePage = () => {
         </div>
 
         <div className="flex flex-col gap-7.5">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-[minmax(0px,1fr)_1fr]">
             <FirstColumn />
             <SecondColumn />
           </div>

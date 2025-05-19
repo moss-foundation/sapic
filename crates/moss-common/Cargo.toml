@@ -13,3 +13,9 @@ ts-rs.workspace = true
 thiserror.workspace = true
 validator.workspace = true
 tauri.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+regex.workspace = true
+
+[dev-dependencies]
+moss_testutils.workspace = true

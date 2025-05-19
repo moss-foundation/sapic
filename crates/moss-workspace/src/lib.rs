@@ -1,5 +1,6 @@
+pub mod api;
 pub mod models;
-pub mod workspace;
-pub mod workspace_manager;
+pub mod storage;
 
-mod layout_service;
+mod workspace;
+pub use workspace::*;

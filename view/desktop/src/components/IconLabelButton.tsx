@@ -31,8 +31,17 @@ interface LabelProps {
   onRename: (newName: string) => void;
 }
 
-const buttonStyles =
-  "group flex h-[22px] cursor-pointer items-center rounded p-[3px] text-[var(--moss-icon-primary-text)] hover:bg-[var(--moss-icon-primary-background-hover)] disabled:cursor-default disabled:opacity-50";
+const buttonStyles = `
+  group
+  flex items-center
+  h-[22px] min-w-0  
+  cursor-pointer rounded p-[3px]
+  text-[var(--moss-icon-primary-text)] 
+  hover:bg-[var(--moss-icon-primary-background-hover)] 
+  disabled:cursor-default 
+  disabled:opacity-50
+  truncate
+`;
 
 const ButtonLabel: React.FC<LabelProps> = ({
   title,
@@ -87,10 +96,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
     return (
       <span
         ref={spanRef}
-        className={cn(
-          "text-md overflow-hidden text-ellipsis whitespace-nowrap text-[var(--moss-not-selected-item-color)]",
-          placeholderClassName
-        )}
+        className={cn("text-md truncate text-[var(--moss-not-selected-item-color)]", placeholderClassName)}
         onDoubleClick={editable ? onStartEdit : undefined}
       >
         {placeholder}
@@ -101,10 +107,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
   return (
     <span
       ref={spanRef}
-      className={cn(
-        "text-md overflow-hidden text-ellipsis whitespace-nowrap text-[var(--moss-primary-text)] opacity-100",
-        className
-      )}
+      className={cn("text-md truncate text-left text-[var(--moss-primary-text)]", className)}
       onDoubleClick={editable ? onStartEdit : undefined}
     >
       {title}
@@ -181,7 +184,10 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
           }
         }}
       >
-        <div ref={labelContainerRef} className={compact ? "flex items-center gap-0.5" : "flex items-center gap-1 px-1"}>
+        <div
+          ref={labelContainerRef}
+          className={compact ? "flex items-center gap-0.5" : "flex items-center gap-1 truncate px-1"}
+        >
           {leftIcon && <Icon icon={leftIcon} className={cn("size-4", leftIconClassName)} />}
           {!compact && (
             <ButtonLabel

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ActionButton, ContextMenu, DropdownMenu } from "@/components";
+import { ActionButton, ActionMenu } from "@/components";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -17,7 +17,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <ActionButton icon="CollapseAll" onClick={collapseAll} />
         {/* <ActionButton icon="Import" /> */}
         {/* <ActionButton icon="MoreHorizontal" /> */}
-        <ExampleContextMenu />
+        <ExampleContextMenuRadix />
         <ExampleDropdownMenu />
       </div>
     </div>
@@ -31,79 +31,91 @@ const ExampleDropdownMenu = () => {
   const [radioValue, setRadioValue] = useState("option1");
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild>
         <ActionButton icon="MoreHorizontal" />
-      </DropdownMenu.Trigger>
+      </ActionMenu.Trigger>
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content>
-          <DropdownMenu.Item label="Item 1" onSelect={() => console.log("Item 1 selected")} />
-          <DropdownMenu.Item label="Item 2" onSelect={() => console.log("Item 2 selected")} />
+      <ActionMenu.Portal>
+        <ActionMenu.Content align="center">
+          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
 
-          <DropdownMenu.Separator />
+          <ActionMenu.Separator />
 
-          <DropdownMenu.CheckboxItem label="Check me" checked={isChecked} onCheckedChange={setIsChecked} />
+          <ActionMenu.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
+            Check me
+          </ActionMenu.CheckboxItem>
 
-          <DropdownMenu.Separator />
+          <ActionMenu.Separator />
 
-          <DropdownMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
-            <DropdownMenu.RadioItem checked={radioValue === "option1"} value="option1" label="Option 1" />
-            <DropdownMenu.RadioItem checked={radioValue === "option2"} value="option2" label="Option 2" />
-          </DropdownMenu.RadioGroup>
+          <ActionMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
+            <ActionMenu.RadioItem checked={radioValue === "option1"} value="option1">
+              Option 1
+            </ActionMenu.RadioItem>
+            <ActionMenu.RadioItem checked={radioValue === "option2"} value="option2">
+              Option 2
+            </ActionMenu.RadioItem>
+          </ActionMenu.RadioGroup>
 
-          <DropdownMenu.Separator />
+          <ActionMenu.Separator />
 
-          <DropdownMenu.Sub>
-            <DropdownMenu.SubTrigger label="Submenu" />
-            <DropdownMenu.SubContent>
-              <DropdownMenu.Item hideIcon label="Sub Item 1" onSelect={() => console.log("Sub Item 1 selected")} />
-              <DropdownMenu.Item hideIcon label="Sub Item 2" onSelect={() => console.log("Sub Item 2 selected")} />
-            </DropdownMenu.SubContent>
-          </DropdownMenu.Sub>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+          <ActionMenu.Sub>
+            <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
+            <ActionMenu.SubContent>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 1 selected")}>Sub Item 1</ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 2 selected")}>Sub Item 2</ActionMenu.Item>
+            </ActionMenu.SubContent>
+          </ActionMenu.Sub>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
   );
 };
 
-const ExampleContextMenu = () => {
+const ExampleContextMenuRadix = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [radioValue, setRadioValue] = useState("option1");
 
   return (
-    <ContextMenu.Root>
-      <ContextMenu.Trigger asChild>
+    <ActionMenu.Root>
+      <ActionMenu.Trigger asChild openOnRightClick>
         <ActionButton icon="Import" />
-      </ContextMenu.Trigger>
+      </ActionMenu.Trigger>
 
-      <ContextMenu.Portal>
-        <ContextMenu.Content>
-          <ContextMenu.Item label="Item 1" onSelect={() => console.log("Item 1 selected")} />
-          <ContextMenu.Item label="Item 2" onSelect={() => console.log("Item 2 selected")} />
+      <ActionMenu.Portal>
+        <ActionMenu.Content>
+          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
 
-          <ContextMenu.Separator />
+          <ActionMenu.Separator />
 
-          <ContextMenu.CheckboxItem label="Check me" checked={isChecked} onCheckedChange={setIsChecked} />
+          <ActionMenu.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
+            Check me
+          </ActionMenu.CheckboxItem>
 
-          <ContextMenu.Separator />
+          <ActionMenu.Separator />
 
-          <ContextMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
-            <ContextMenu.RadioItem checked={radioValue === "option1"} value="option1" label="Option 1" />
-            <ContextMenu.RadioItem checked={radioValue === "option2"} value="option2" label="Option 2" />
-          </ContextMenu.RadioGroup>
+          <ActionMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
+            <ActionMenu.RadioItem checked={radioValue === "option1"} value="option1">
+              Option 1
+            </ActionMenu.RadioItem>
+            <ActionMenu.RadioItem checked={radioValue === "option2"} value="option2">
+              Option 2
+            </ActionMenu.RadioItem>
+          </ActionMenu.RadioGroup>
 
-          <ContextMenu.Separator />
+          <ActionMenu.Separator />
 
-          <ContextMenu.Sub>
-            <ContextMenu.SubTrigger label="Submenu" />
-            <ContextMenu.SubContent>
-              <ContextMenu.Item hideIcon label="Sub Item 1" onSelect={() => console.log("Sub Item 1 selected")} />
-              <ContextMenu.Item hideIcon label="Sub Item 2" onSelect={() => console.log("Sub Item 2 selected")} />
-            </ContextMenu.SubContent>
-          </ContextMenu.Sub>
-        </ContextMenu.Content>
-      </ContextMenu.Portal>
-    </ContextMenu.Root>
+          <ActionMenu.Sub>
+            <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
+            <ActionMenu.SubContent>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 1 selected")}>Sub Item 1</ActionMenu.Item>
+              <ActionMenu.Item onSelect={() => console.log("Sub Item 2 selected")}>Sub Item 2</ActionMenu.Item>
+            </ActionMenu.SubContent>
+          </ActionMenu.Sub>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
   );
 };

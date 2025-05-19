@@ -1,8 +1,8 @@
 import React from "react";
 
-import { ActionButton, Divider, IconLabelButton } from "@/components";
-import ActionMenu from "@/components/ActionMenu/ActionMenu";
+import { ActionButton, ActionMenu, Divider, IconLabelButton } from "@/components";
 import { cn } from "@/utils";
+import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import { collectionActionMenuItems } from "./HeadBarData";
 import { getGitBranchMenuItems } from "./mockHeadBarData";
@@ -11,11 +11,7 @@ export interface HeadBarCenterItemsProps {
   isMedium: boolean;
   isXLarge: boolean;
   breakpoint: string;
-  gitMenuOpen: boolean;
-  setGitMenuOpen: (open: boolean) => void;
   handleGitMenuAction: (action: string) => void;
-  collectionActionMenuOpen: boolean;
-  setCollectionActionMenuOpen: (open: boolean) => void;
   handleCollectionActionMenuAction: (action: string) => void;
   selectedBranch: string | null;
   collectionName: string;
@@ -27,11 +23,7 @@ export interface HeadBarCenterItemsProps {
 export const HeadBarCenterItems = ({
   isMedium,
   isXLarge,
-  gitMenuOpen,
-  setGitMenuOpen,
   handleGitMenuAction,
-  collectionActionMenuOpen,
-  setCollectionActionMenuOpen,
   handleCollectionActionMenuAction,
   selectedBranch,
   collectionName,
@@ -43,7 +35,7 @@ export const HeadBarCenterItems = ({
     <div
       className={cn(
         "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
-        isXLarge ? "" : os === "macos" ? "relative" : "absolute left-1/2 -translate-x-1/2 transform"
+        isXLarge ? "" : os === "macos" ? "relative" : ""
       )}
       data-tauri-drag-region
     >
@@ -66,9 +58,8 @@ export const HeadBarCenterItems = ({
         customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
         title="Reload"
       />
-      <ActionMenu
-        items={collectionActionMenuItems}
-        trigger={
+      <ActionMenu.Root>
+        <ActionMenu.Trigger asChild>
           <ActionButton
             icon="MoreHorizontal"
             iconClassName="text-(--moss-headBar-icon-primary-text)"
@@ -76,17 +67,16 @@ export const HeadBarCenterItems = ({
             className="mr-[-4px]"
             title="Collection Actions"
           />
-        }
-        open={collectionActionMenuOpen}
-        onOpenChange={setCollectionActionMenuOpen}
-        onSelect={(item) => {
-          handleCollectionActionMenuAction(item.id);
-        }}
-      />
+        </ActionMenu.Trigger>
+        <ActionMenu.Portal>
+          <ActionMenu.Content>
+            {collectionActionMenuItems.map((item) => renderActionMenuItem(item, handleCollectionActionMenuAction))}
+          </ActionMenu.Content>
+        </ActionMenu.Portal>
+      </ActionMenu.Root>
       <Divider />
-      <ActionMenu
-        items={getGitBranchMenuItems(selectedBranch)}
-        trigger={
+      <ActionMenu.Root>
+        <ActionMenu.Trigger asChild>
           <IconLabelButton
             leftIcon="VCS"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
@@ -96,13 +86,13 @@ export const HeadBarCenterItems = ({
             placeholder="No branch selected"
             showPlaceholder={!selectedBranch}
           />
-        }
-        open={gitMenuOpen}
-        onOpenChange={setGitMenuOpen}
-        onSelect={(item) => {
-          handleGitMenuAction(item.id);
-        }}
-      />
+        </ActionMenu.Trigger>
+        <ActionMenu.Portal>
+          <ActionMenu.Content>
+            {getGitBranchMenuItems(selectedBranch).map((item) => renderActionMenuItem(item, handleGitMenuAction))}
+          </ActionMenu.Content>
+        </ActionMenu.Portal>
+      </ActionMenu.Root>
     </div>
   );
 };

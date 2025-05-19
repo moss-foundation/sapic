@@ -32,10 +32,13 @@
       "path": "crates/moss-workbench"
     },
     {
+      "path": "crates/moss-activity-indicator"
+    },
+    {
       "path": "view/desktop"
     },
     {
-      "path": "tools"
+      "path": "tools/gen-bindings"
     }
   ]
 }

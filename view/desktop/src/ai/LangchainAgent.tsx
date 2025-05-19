@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { ChatOllama } from "@langchain/ollama";
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/moss-workspace";
+
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { tool } from "@langchain/core/tools";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { ChatOllama } from "@langchain/ollama";
+import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/moss-workbench";
 
 async function setupAgent() {
   // Running a test model locally using Ollama

@@ -59,8 +59,8 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
               <SelectOutlined.Trigger placeholder="Select workspace" />
               <SelectOutlined.Content>
                 {workspaces?.map((workspace) => (
-                  <SelectOutlined.Item value={workspace.name} key={workspace.name}>
-                    {workspace.name}
+                  <SelectOutlined.Item value={workspace.displayName} key={workspace.displayName}>
+                    {workspace.displayName}
                   </SelectOutlined.Item>
                 ))}
               </SelectOutlined.Content>

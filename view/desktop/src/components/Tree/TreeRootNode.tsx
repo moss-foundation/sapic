@@ -3,9 +3,9 @@ import { useContext, useEffect, useRef } from "react";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ActionButton, DropdownMenu, DropIndicator, TreeContext } from "..";
+import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
-import { useDropTargetNode } from "./hooks/useDropTargetNode";
+import { useDropTargetRootNode } from "./hooks/useDropTargetRootNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
@@ -29,8 +29,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     onRootClickCallback,
     onRootDoubleClickCallback,
   } = useContext(TreeContext);
-
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   const handleExpandAll = () => {
     const newNode = expandAllNodes(node);
@@ -58,7 +56,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
     isAddingFileNode: isAddingRootFileNode,
@@ -99,7 +96,10 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
+
+  useDropTargetRootNode(node, treeId, dropTargetFolderRef);
+
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
@@ -155,18 +155,18 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger asChild>
               <ActionButton icon="MoreHorizontal" />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className="z-30">
-                <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
-                <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
-                <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+            </ActionMenu.Trigger>
+            <ActionMenu.Portal>
+              <ActionMenu.Content className="z-30" align="center">
+                <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
+              </ActionMenu.Content>
+            </ActionMenu.Portal>
+          </ActionMenu.Root>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>
@@ -174,13 +174,14 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       {shouldRenderChildNodes && !isRootDragging && (
         <Scrollbar className="h-full w-full">
           <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
-            {filteredChildNodes.map((childNode) => (
+            {filteredChildNodes.map((childNode, index) => (
               <TreeNode
                 parentNode={node}
                 onNodeUpdate={onNodeUpdate}
                 key={childNode.uniqueId}
                 node={childNode}
                 depth={1}
+                isLastChild={index === filteredChildNodes.length - 1}
               />
             ))}
             {(isAddingRootFileNode || isAddingRootFolderNode) && (

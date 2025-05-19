@@ -18,7 +18,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
-use window::{create_window, CreateWindowInput};
+use window::{CreateWindowInput, create_window};
 
 use crate::constants::*;
 use crate::plugins::*;
@@ -71,7 +71,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::create_workspace,
             commands::list_workspaces,
             commands::delete_workspace,
-            commands::example_index_collection_command,
+            commands::describe_workbench_state,
         ])
         .on_window_event(|window, event| match event {
             // #[cfg(target_os = "macos")]

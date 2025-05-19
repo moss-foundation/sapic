@@ -2,33 +2,40 @@ mod editor;
 
 pub use editor::*;
 
-use moss_common::leased_slotmap::ResourceKey;
+use moss_common::models::primitives::Identifier;
 use moss_storage::workspace_storage::entities::state_store_entities::{
     PanelPartStateEntity, SidebarPartStateEntity,
 };
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 
 pub type EnvironmentName = String;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "types.ts")]
-pub struct WorkspaceInfo {
-    pub path: PathBuf,
-    pub name: String,
-    #[ts(optional)]
-    pub last_opened_at: Option<i64>,
+pub enum WorkspaceMode {
+    #[serde(rename = "DESIGN_FIRST")]
+    DesignFirst,
+
+    #[serde(rename = "REQUEST_FIRST")]
+    RequestFirst,
+}
+
+impl Default for WorkspaceMode {
+    fn default() -> Self {
+        Self::RequestFirst
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
-    pub name: String,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    pub display_name: String,
+
     #[ts(optional)]
     pub order: Option<usize>,
 }
@@ -37,10 +44,10 @@ pub struct CollectionInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    #[ts(type = "ResourceKey")]
-    pub key: ResourceKey,
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
     #[ts(optional)]
-    pub collection_key: Option<ResourceKey>,
+    pub collection_id: Option<Identifier>,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,

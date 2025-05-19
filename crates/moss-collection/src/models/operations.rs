@@ -1,4 +1,3 @@
-use moss_common::leased_slotmap::ResourceKey;
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
@@ -10,9 +9,7 @@ use validator::{Validate, ValidationError};
 use super::types::PathChangeKind;
 use crate::models::{
     primitives::EntryId,
-    types::{
-        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestNodeInfo,
-    },
+    types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
 };
 
 /// All the path and file names passed in the input should be unencoded.
@@ -30,98 +27,6 @@ pub enum CreateRequestProtocolSpecificPayload {
         headers: Vec<HeaderParamItem>,
         body: Option<RequestBody>,
     },
-}
-
-// TODO: remove this
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequestInput {
-    #[validate(length(min = 1))]
-    pub name: String,
-    #[ts(optional)]
-    pub relative_path: Option<PathBuf>,
-    #[ts(optional)]
-    pub url: Option<String>,
-    #[ts(optional)]
-    pub payload: Option<CreateRequestProtocolSpecificPayload>,
-}
-
-// TODO: remove this
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateRequestOutput {
-    pub key: ResourceKey,
-}
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestInput {
-    pub key: ResourceKey,
-    #[validate(length(min = 1))]
-    pub new_name: String,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestInput {
-    pub key: ResourceKey,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListRequestsOutput(pub Vec<RequestNodeInfo>);
-
-#[derive(Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestGroupInput {
-    #[validate(custom(function = "validate_path"))]
-    pub path: PathBuf, // TODO: spec payload
-}
-
-// TODO: More sophisticated path validation
-// Right now, we will encode each part of the path in the input
-// This will prevent special characters from causing confusion
-
-fn validate_path(path: &Path) -> Result<(), ValidationError> {
-    // Check the path ends with a non-empty folder name
-    if path.file_name().unwrap_or_default().is_empty() {
-        Err(ValidationError::new(""))
-    } else {
-        Ok(())
-    }
-}
-
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestGroupOutput {
-    pub key: ResourceKey,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestGroupInput {
-    pub key: ResourceKey,
-}
-
-#[derive(Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestGroupInput {
-    pub key: ResourceKey,
-    #[validate(length(min = 1))]
-    pub new_name: String,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct RenameRequestGroupOutput {
-    pub key: ResourceKey,
-    pub affected_items: Vec<ResourceKey>,
 }
 
 // Create Request Entry
@@ -162,6 +67,37 @@ pub struct CreateRequestDirEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
+// Delete Request Entry
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
+// Delete Request Directory Entry
+
+#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteRequestDirEntryOutput {
+    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
+}
+
 // Update Request Directory Entry
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -184,19 +120,25 @@ pub struct UpdateRequestDirEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
-// Delete Request Directory Entry
+// Update Request Entry
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryInput {
+pub struct UpdateRequestEntryInput {
     pub id: EntryId,
+
+    /// A new name for the request, if provided,
+    /// the request will be renamed to this name.
+    #[ts(optional)]
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryOutput {
+pub struct UpdateRequestEntryOutput {
     pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
@@ -212,6 +154,9 @@ pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
 /// - First segment must be 'requests'
 /// - Path must not contain invalid characters
 /// - Path must have at least one component after 'requests'
+/// - Last segment cannot end with forbidden extension, e.g. ".request"
+
+const RESERVED_EXTENSIONS: [&str; 1] = ["request"];
 fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
     if destination.is_absolute() {
         return Err(ValidationError::new("Destination path cannot be absolute"));
@@ -253,5 +198,79 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
         return Err(ValidationError::new("Path contains invalid sequences"));
     }
 
+    let extension = destination
+        .extension()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+    // Check for forbidden extensions
+    if RESERVED_EXTENSIONS.contains(&extension.as_ref()) {
+        return Err(ValidationError::new(
+            "Filename contains forbidden extension",
+        ));
+    }
+
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn validate_request_destination_correct() {
+        let path = Path::new("requests").join("1");
+        assert!(validate_request_destination(&path).is_ok());
+    }
+
+    // TODO: Test validate absolute path in a cross platform manner
+    #[test]
+    fn validate_request_destination_empty() {
+        let path = PathBuf::new();
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_no_components_after_requests() {
+        let path = PathBuf::from("requests");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_first_component_not_requests() {
+        let path = PathBuf::from("non-requests").join("1");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_invalid_path_characters() {
+        let path = PathBuf::from("requests\\1\\..");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ));
+
+        let path = PathBuf::from("requests\\1//");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ));
+    }
+
+    #[test]
+    fn validate_request_destination_forbidden_extension() {
+        let path = PathBuf::from("requests").join("1.request");
+        assert!(matches!(
+            validate_request_destination(&path),
+            Err(ValidationError { .. })
+        ))
+    }
 }

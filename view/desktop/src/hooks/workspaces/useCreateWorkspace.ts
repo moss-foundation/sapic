@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { CreateWorkspaceInput, CreateWorkspaceOutput } from "@repo/moss-workspace";
+import { CreateWorkspaceInput, CreateWorkspaceOutput } from "@repo/moss-workbench";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
