@@ -32,7 +32,7 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
 
     (collection_path, collection)
 }
-
+/// Generate the encoded request folder name
 pub fn request_folder_name(request_name: &str) -> String {
     let sanitized_name = SanitizedName::new(request_name);
     format!("{}.request", &sanitized_name)

@@ -1,4 +1,5 @@
 use moss_common::api::OperationResult;
+use validator::Validate;
 
 use crate::{
     collection::Collection,
@@ -10,6 +11,7 @@ impl Collection {
         &self,
         input: CreateEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
+        input.validate()?;
         // TODO: validate input
 
         // TODO: validate specification
@@ -30,7 +32,7 @@ impl Collection {
                 input.protocol,
                 content,
                 input.classification,
-                true,
+                input.is_dir,
             )
             .await?;
 

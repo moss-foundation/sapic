@@ -20,6 +20,7 @@ pub struct Case {
 
 pub enum VirtualEntry {
     Item {
+        // FIXME: Should we store info like request protocol here?
         id: EntryId,
         order: Option<usize>,
         class: Classification,

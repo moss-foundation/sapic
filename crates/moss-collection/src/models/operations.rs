@@ -25,9 +25,11 @@ use crate::models::{
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryInput {
+    #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
     pub specification: Option<JsonValue>,
+    // TODO: use RequestProtocol?
     pub protocol: Option<String>,
     pub order: Option<usize>,
     pub is_dir: bool,
