@@ -52,7 +52,7 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
       onClick={visible ? handleClick : undefined}
     >
       <div className="relative h-full w-full">
-        <div className="background-(--moss-primary) absolute -top-[8px] left-0 rounded-sm p-px">
+        <div className="background-(--moss-primary) absolute -top-[8px] right-0 rounded-sm p-px">
           <DividerButtonIcon />
         </div>
       </div>
