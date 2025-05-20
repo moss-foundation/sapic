@@ -6,7 +6,9 @@ pub mod virtual_worktree;
 
 use moss_common::api::OperationError;
 use moss_fs::FileSystem;
+use moss_fs::utils::encode_name;
 use physical_worktree::PhysicalWorktree;
+use serde_json::Value as JsonValue;
 use std::{
     path::{Component, Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
@@ -17,6 +19,7 @@ use virtual_worktree::VirtualWorktree;
 
 use crate::models::primitives::EntryId;
 use crate::models::{primitives::ChangesDiffSet, types::Classification};
+use crate::worktree::virtual_snapshot::VirtualEntry;
 
 pub(crate) const ROOT_PATH: &str = "";
 
@@ -53,6 +56,15 @@ pub struct WorktreeDiff {
     pub virtual_changes: ChangesDiffSet,
 }
 
+impl Default for WorktreeDiff {
+    fn default() -> Self {
+        Self {
+            physical_changes: Arc::new([]),
+            virtual_changes: Arc::new([]),
+        }
+    }
+}
+
 pub struct Worktree {
     pwt: PhysicalWorktree,
     vwt: VirtualWorktree,
@@ -84,10 +96,9 @@ impl Worktree {
     ) -> WorktreeResult<WorktreeDiff> {
         // Check if an entry with the same virtual path already exists
         if self.vwt.entry_by_path(&destination).is_some() {
-            return WorktreeResult::Err(WorktreeError::AlreadyExists(format!(
-                "An entry with the virtual path {} already exists",
-                destination.display()
-            )));
+            return WorktreeResult::Err(WorktreeError::AlreadyExists(
+                destination.to_string_lossy().to_string(),
+            ));
         }
 
         let (parent, name) = split_last_segment(&destination)
@@ -234,6 +245,79 @@ impl Worktree {
 
         let physical_changes = self.pwt.remove_entry(&physical_path).await?;
         let virtual_changes = self.vwt.remove_entry(virtual_path)?;
+
+        Ok(WorktreeDiff {
+            physical_changes,
+            virtual_changes,
+        })
+    }
+
+    pub async fn update_entry_by_virtual_id(
+        &mut self,
+        id: EntryId,
+        name: Option<String>,
+        classification: Option<Classification>,
+        specification: Option<JsonValue>,
+        protocol: Option<String>,
+        order: Option<usize>,
+    ) -> WorktreeResult<WorktreeDiff> {
+        if let Some(new_name) = name {
+            self.rename_entry_by_virtual_id(id, &new_name).await
+        } else {
+            Ok(WorktreeDiff::default())
+        }
+        // TODO: Handle updating of other fields
+    }
+
+    async fn rename_entry_by_virtual_id(
+        &mut self,
+        id: EntryId,
+        new_name: &str,
+    ) -> WorktreeResult<WorktreeDiff> {
+        // Find the physical and virtual path from the virtual ID
+        let virtual_entry = Arc::unwrap_or_clone(
+            self.vwt
+                .entry_by_id(id)
+                .ok_or(WorktreeError::NotFound(format!(
+                    "Virtual ID {} is not found",
+                    id.to_usize()
+                )))?
+                .clone(),
+        );
+
+        let old_physical_path = virtual_entry.physical_path()?;
+        let old_virtual_path = virtual_entry.path();
+        let new_virtual_path = old_virtual_path
+            .parent()
+            .expect("Virtual path should have a parent")
+            .join(&new_name);
+        if old_virtual_path.to_path_buf() == new_virtual_path {
+            return Ok(WorktreeDiff::default());
+        }
+        if self.vwt.entry_by_path(&new_virtual_path).is_some() {
+            return Err(WorktreeError::AlreadyExists(
+                new_virtual_path.to_string_lossy().to_string(),
+            ));
+        }
+        let virtual_changes = self
+            .vwt
+            .rename_entry(&old_virtual_path, &new_virtual_path)?;
+
+        let parent = old_physical_path
+            .parent()
+            .expect("Physical path should have a parent");
+
+        let new_filename = match virtual_entry {
+            VirtualEntry::Item { class, .. } => {
+                dir_name_from_classification(&encode_name(&new_name), &class)
+            }
+            VirtualEntry::Dir { .. } => encode_name(&new_name),
+        };
+        let new_physical_path = parent.join(&new_filename);
+        let physical_changes = self
+            .pwt
+            .rename_entry(&old_physical_path, &new_physical_path)
+            .await?;
 
         Ok(WorktreeDiff {
             physical_changes,

@@ -15,6 +15,7 @@ use super::{
 
 pub struct VirtualWorktree {
     next_entry_id: Arc<AtomicUsize>,
+    // FIXME: Do we need a lock here?
     snapshot: VirtualSnapshot,
 }
 
@@ -128,5 +129,18 @@ impl VirtualWorktree {
             .collect::<Vec<_>>();
 
         Ok(ChangesDiffSet::from(changes))
+    }
+
+    pub fn rename_entry(
+        &mut self,
+        old_path: impl AsRef<Path>,
+        new_path: impl AsRef<Path>,
+    ) -> WorktreeResult<ChangesDiffSet> {
+        let old_path = old_path.as_ref();
+        let new_path = new_path.as_ref();
+        debug_assert!(old_path.is_relative());
+        debug_assert!(new_path.is_relative());
+
+        self.snapshot.rename_entry(old_path, new_path)
     }
 }

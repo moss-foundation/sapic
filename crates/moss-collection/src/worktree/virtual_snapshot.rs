@@ -1,23 +1,26 @@
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
 use moss_common::sanitized::sanitized_name::SanitizedName;
-use sweep_bptree::BPlusTreeMap;
 use moss_fs::utils::{encode_name, encode_path};
-use crate::models::primitives::EntryId;
-use crate::models::types::Classification;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use sweep_bptree::BPlusTreeMap;
 
-use super::{split_last_segment, ROOT_PATH};
+use crate::models::primitives::{ChangesDiffSet, EntryId};
+use crate::models::types::{Classification, PathChangeKind};
+
+use super::{ROOT_PATH, WorktreeError, WorktreeResult, split_last_segment};
 
 pub struct VirtualEntryId(Identifier);
 
+#[derive(Clone)]
 pub struct Case {
     id: EntryId,
     name: SanitizedName,
     order: Option<usize>,
 }
 
+#[derive(Clone)]
 pub enum VirtualEntry {
     Item {
         // FIXME: Should we store info like request protocol here?
@@ -61,10 +64,8 @@ impl VirtualEntry {
                     // TODO: replace with proper error
                     Err(anyhow!("Invalid virtual path"))
                 }
-            },
-            VirtualEntry::Dir {path, .. } => {
-                Ok(encode_path(path, None)?)
-            },
+            }
+            VirtualEntry::Dir { path, .. } => Ok(encode_path(path, None)?),
         }
     }
 }
@@ -108,12 +109,12 @@ impl VirtualSnapshot {
     // TODO: Try to generalize the delete methods in both the Virtual and Physical snapshots.
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
-        prefix: &'a str,
+        prefix: &'a Path,
     ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
+        let prefix = prefix.to_path_buf();
         self.entries_by_path
             .iter()
-            .skip_while(move |(p, _)| !p.to_string_lossy().starts_with(prefix))
-            .take_while(move |(p, _)| p.to_string_lossy().starts_with(prefix))
+            .filter(move |(path, _id)| path.starts_with(&prefix))
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
     }
 
@@ -130,9 +131,8 @@ impl VirtualSnapshot {
         let mut removed_entries = Vec::new();
 
         if is_dir {
-            let prefix = path.to_string_lossy();
             let entries_to_remove = self
-                .iter_entries_by_prefix(&prefix)
+                .iter_entries_by_prefix(path.as_ref())
                 .map(|(id, entry)| (*id, entry.clone()))
                 .collect::<Vec<(EntryId, Arc<VirtualEntry>)>>();
 
@@ -158,6 +158,81 @@ impl VirtualSnapshot {
         }
 
         removed_entries
+    }
+
+    /// Rename the entry and update the paths of all entries that descends from it
+    pub fn rename_entry(
+        &mut self,
+        old_path: impl AsRef<Path>,
+        new_path: impl AsRef<Path>,
+    ) -> WorktreeResult<ChangesDiffSet> {
+        let mut changes = vec![];
+        let old_path = old_path.as_ref();
+        let new_path = new_path.as_ref();
+
+        if self.entries_by_path.get(new_path).is_some() {
+            return Err(WorktreeError::AlreadyExists(
+                new_path.to_string_lossy().to_string(),
+            ));
+        }
+        if self.entries_by_path.get(old_path).is_none() {
+            return Err(WorktreeError::NotFound(
+                old_path.to_string_lossy().to_string(),
+            ));
+        }
+
+        // Find the entry id of all entries that need updating
+        let ids = self
+            .iter_entries_by_prefix(old_path)
+            .map(|(id, entry)| id.clone())
+            .collect::<Vec<_>>();
+
+        for id in ids {
+            let entry = Arc::unwrap_or_clone(self.entries_by_id.remove(&id).unwrap());
+            let old_entry_path = entry.path().clone();
+            self.entries_by_path.remove(&old_entry_path).unwrap();
+
+            // Strip the old prefix and attach the new prefix
+            let new_entry_path = if old_entry_path.to_path_buf() == old_path {
+                // Prevent appending trailing slashes
+                new_path.to_path_buf()
+            } else {
+                new_path.join(
+                    old_entry_path
+                        .strip_prefix(old_path)
+                        .expect("Old entry path has the given prefix"),
+                )
+            };
+
+            let new_entry = match entry {
+                VirtualEntry::Item {
+                    id,
+                    order,
+                    class,
+                    cases,
+                    ..
+                } => VirtualEntry::Item {
+                    path: Arc::from(new_entry_path.as_path()),
+                    id,
+                    order,
+                    class,
+                    cases,
+                },
+                VirtualEntry::Dir {
+                    id, order, class, ..
+                } => VirtualEntry::Dir {
+                    path: Arc::from(new_entry_path.as_path()),
+                    id,
+                    order,
+                    class,
+                },
+            };
+            self.entries_by_path
+                .insert(Arc::from(new_entry_path.clone()), id);
+            self.entries_by_id.insert(id, Arc::new(new_entry));
+            changes.push((Arc::from(new_entry_path), id, PathChangeKind::Updated));
+        }
+        Ok(ChangesDiffSet::from(changes))
     }
 
     pub fn lowest_ancestor_path(&self, path: impl AsRef<Path>) -> Arc<Path> {

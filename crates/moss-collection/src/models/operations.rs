@@ -61,6 +61,26 @@ pub struct DeleteEntryOutput {
     pub virtual_changes: ChangesDiffSet,
 }
 
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEntryInput {
+    pub id: EntryId,
+    pub name: Option<String>,
+    pub classification: Option<Classification>,
+    pub specification: Option<JsonValue>,
+    // TODO: use RequestProtocol?
+    pub protocol: Option<String>,
+    pub order: Option<usize>,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateEntryOutput {
+    pub physical_changes: ChangesDiffSet,
+    pub virtual_changes: ChangesDiffSet,
+}
 // ------------Old API----------------
 
 #[derive(Clone, Debug, Serialize, TS)]
