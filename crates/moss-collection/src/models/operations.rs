@@ -19,8 +19,6 @@ use crate::models::{
 /// All the path and file names passed in the input should be unencoded.
 /// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
 /// The frontend should simply use the name and path used in the user's original input
-///
-
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -81,7 +79,6 @@ pub struct UpdateEntryOutput {
     pub physical_changes: ChangesDiffSet,
     pub virtual_changes: ChangesDiffSet,
 }
-// ------------Old API----------------
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -94,119 +91,6 @@ pub enum CreateRequestProtocolSpecificPayload {
         headers: Vec<HeaderParamItem>,
         body: Option<RequestBody>,
     },
-}
-
-// Create Request Entry
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestEntryInput {
-    #[validate(custom(function = "validate_request_destination"))]
-    pub destination: PathBuf,
-    #[ts(optional)]
-    pub url: Option<String>,
-    #[ts(optional)]
-    pub payload: Option<CreateRequestProtocolSpecificPayload>,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
-}
-
-// Create Request Directory Entry
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestDirEntryInput {
-    #[validate(custom(function = "validate_request_destination"))]
-    pub destination: PathBuf,
-}
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateRequestDirEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
-}
-
-// Delete Request Entry
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestEntryInput {
-    pub id: EntryId,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
-}
-
-// Delete Request Directory Entry
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryInput {
-    pub id: EntryId,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteRequestDirEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
-}
-
-// Update Request Directory Entry
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateRequestDirEntryInput {
-    pub id: EntryId,
-
-    /// A new name for the directory, if provided,
-    /// the directory will be renamed to this name.
-    #[ts(optional)]
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateRequestDirEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
-}
-
-// Update Request Entry
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateRequestEntryInput {
-    pub id: EntryId,
-
-    /// A new name for the request, if provided,
-    /// the request will be renamed to this name.
-    #[ts(optional)]
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateRequestEntryOutput {
-    pub changed_paths: Arc<[(Arc<Path>, EntryId, PathChangeKind)]>,
 }
 
 // Stream Entries By Prefixes
