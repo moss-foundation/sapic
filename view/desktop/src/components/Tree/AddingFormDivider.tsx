@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 
-import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils/cn";
 
 interface AddingFormDividerProps {
@@ -54,9 +53,22 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
     >
       <div className="relative h-full w-full">
         <div className="background-(--moss-primary) absolute -top-[8px] left-0 rounded-sm p-px">
-          <Icon icon="Add" />
+          <DividerButtonIcon />
         </div>
       </div>
     </button>
+  );
+};
+
+const DividerButtonIcon = () => {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        fill="white"
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M7.5 1C7.77614 1 8 1.22386 8 1.5V7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H8V13.5C8 13.7761 7.77614 14 7.5 14C7.22386 14 7 13.7761 7 13.5V8H1.5C1.22386 8 1 7.77614 1 7.5C1 7.22386 1.22386 7 1.5 7H7V1.5C7 1.22386 7.22386 1 7.5 1Z"
+      />
+    </svg>
   );
 };
