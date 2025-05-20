@@ -1,16 +1,10 @@
 use serde::Serialize;
 use serde_json::Value as JsonValue;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use super::{
-    primitives::ChangesDiffSet,
-    types::{Classification, PathChangeKind},
-};
+use super::{primitives::ChangesDiffSet, types::Classification};
 use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::EntryId,
@@ -30,6 +24,8 @@ pub struct CreateEntryInput {
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
+
+    #[ts(optional, type = "JsonValue")]
     pub specification: Option<JsonValue>,
     pub protocol: Option<RequestProtocol>,
     pub order: Option<usize>,
@@ -66,6 +62,8 @@ pub struct UpdateEntryInput {
     pub id: EntryId,
     pub name: Option<String>,
     pub classification: Option<Classification>,
+
+    #[ts(optional, type = "JsonValue")]
     pub specification: Option<JsonValue>,
     pub protocol: Option<RequestProtocol>,
     pub order: Option<usize>,
