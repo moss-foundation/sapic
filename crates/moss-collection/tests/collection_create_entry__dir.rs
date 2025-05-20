@@ -1,4 +1,3 @@
-use crate::shared::{random_request_dir_name, set_up_test_collection};
 use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
@@ -10,13 +9,15 @@ use serde_json::json;
 use std::fs::read_to_string;
 use std::path::Path;
 
+use crate::shared::{random_dir_name, set_up_test_collection};
+
 mod shared;
 
 #[tokio::test]
 async fn create_entry_dir_default_spec() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
 
     let create_result = collection
         .create_entry(CreateEntryInput {
@@ -81,7 +82,7 @@ async fn create_entry_dir_default_spec() {
 async fn create_entry_dir_with_spec_content() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
 
     let create_result = collection
         .create_entry(CreateEntryInput {
@@ -146,7 +147,7 @@ async fn create_entry_dir_with_spec_content() {
 #[tokio::test]
 async fn create_entry_dir_already_exists() {
     let (collection_path, collection) = set_up_test_collection().await;
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
 
     let input = CreateEntryInput {
         destination: Path::new("requests").join(&dir_name),
@@ -172,7 +173,7 @@ async fn create_entry_dir_already_exists() {
 #[tokio::test]
 async fn create_entry_dir_implicitly_created() {
     let (collection_path, collection) = set_up_test_collection().await;
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
     let request_name = random_request_name();
 
     // Create an entry at requests\\{dir_name}\\{request_name}
@@ -450,7 +451,7 @@ async fn create_entry_dir_multiple_different_level() {
 async fn create_entry_dir_special_chars_in_name() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
     let dir_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", dir_name))
@@ -500,6 +501,8 @@ async fn create_entry_dir_special_chars_in_name() {
             .join("requests")
             .join(encode_name(&name))
             .join("folder.sapic");
+
+        assert!(specfile_path.exists());
     }
 }
 
@@ -507,7 +510,7 @@ async fn create_entry_dir_special_chars_in_name() {
 async fn create_entry_dir_special_chars_in_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
-    let dir_name = random_request_dir_name();
+    let dir_name = random_dir_name();
     let dir_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", dir_name))
@@ -570,5 +573,48 @@ async fn create_entry_dir_special_chars_in_path() {
             .join(encode_name(&name))
             .join("group")
             .join("folder.sapic");
+
+        assert!(specfile_path.exists());
     }
+}
+
+#[tokio::test]
+async fn create_entry_dir_same_name_as_another_entry() {
+    // Create two entries with the same name, one normal and one dir
+    // This will result in two identical virtual paths, so it should raise an error
+
+    let (collection_path, collection) = set_up_test_collection().await;
+    let destination = Path::new("requests").join("identical");
+
+    let _ = collection
+        .create_entry(CreateEntryInput {
+            destination: destination.clone(),
+            classification: Classification::Request,
+            specification: None,
+            protocol: None,
+            order: None,
+            is_dir: false,
+        })
+        .await;
+
+    let create_result = collection
+        .create_entry(CreateEntryInput {
+            destination: destination.clone(),
+            classification: Classification::Request,
+            specification: None,
+            protocol: None,
+            order: None,
+            is_dir: true,
+        })
+        .await;
+
+    assert!(matches!(
+        create_result,
+        Err(OperationError::AlreadyExists(..))
+    ));
+
+    // Check that physical entry is not created incorrectly
+    assert!(!collection_path.join("requests").join("identical").exists());
+
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

@@ -15,6 +15,7 @@ use thiserror::Error;
 use util::names::{dir_name_from_classification, file_name_from_protocol};
 use virtual_worktree::VirtualWorktree;
 
+use crate::models::primitives::EntryId;
 use crate::models::{primitives::ChangesDiffSet, types::Classification};
 
 pub(crate) const ROOT_PATH: &str = "";
@@ -81,6 +82,14 @@ impl Worktree {
         classification: Classification,
         is_dir: bool,
     ) -> WorktreeResult<WorktreeDiff> {
+        // Check if an entry with the same virtual path already exists
+        if self.vwt.entry_by_path(&destination).is_some() {
+            return WorktreeResult::Err(WorktreeError::AlreadyExists(format!(
+                "An entry with the virtual path {} already exists",
+                destination.display()
+            )));
+        }
+
         let (parent, name) = split_last_segment(&destination)
             .ok_or_else(|| {
                 WorktreeError::InvalidInput(format!(
@@ -203,6 +212,32 @@ impl Worktree {
         Ok(WorktreeDiff {
             physical_changes: ChangesDiffSet::from(physical_changes),
             virtual_changes: ChangesDiffSet::from(virtual_changes),
+        })
+    }
+
+    pub async fn delete_entry_by_virtual_id(
+        &mut self,
+        id: EntryId,
+    ) -> WorktreeResult<WorktreeDiff> {
+        // Find the physical and virtual path from the virtual ID
+        let virtual_entry = self
+            .vwt
+            .entry_by_id(id)
+            .ok_or(WorktreeError::NotFound(format!(
+                "Virtual ID {} is not found",
+                id.to_usize()
+            )))?
+            .clone();
+
+        let physical_path = virtual_entry.physical_path()?;
+        let virtual_path = virtual_entry.path();
+
+        let physical_changes = self.pwt.remove_entry(&physical_path).await?;
+        let virtual_changes = self.vwt.remove_entry(virtual_path)?;
+
+        Ok(WorktreeDiff {
+            physical_changes,
+            virtual_changes,
         })
     }
 }

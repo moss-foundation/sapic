@@ -49,6 +49,23 @@ pub struct CreateEntryOutput {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
+pub struct DeleteEntryInput {
+    pub id: EntryId,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteEntryOutput {
+    pub physical_changes: ChangesDiffSet,
+    pub virtual_changes: ChangesDiffSet,
+}
+
+// ------------Old API----------------
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
 pub enum CreateRequestProtocolSpecificPayload {
     Http {
         method: HttpMethod,

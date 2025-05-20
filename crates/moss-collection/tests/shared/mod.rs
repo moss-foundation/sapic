@@ -1,4 +1,5 @@
 use moss_collection::collection::Collection;
+use moss_collection::models::primitives::{ChangesDiffSet, EntryId};
 use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_fs::RealFileSystem;
 use moss_fs::utils::encode_path;
@@ -7,11 +8,11 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 
-pub fn random_request_dir_name() -> String {
+pub fn random_dir_name() -> String {
     format!("Test_{}_Dir", random_string(10))
 }
 
-pub fn random_collection_path() -> PathBuf {
+fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
@@ -52,4 +53,12 @@ pub fn request_relative_path(name: &str, relative: Option<&Path>) -> PathBuf {
 /// Generate the encoded relative path of request group from the collection folder
 pub fn request_group_relative_path(path: &Path) -> PathBuf {
     PathBuf::from("requests").join(encode_path(path, None).unwrap())
+}
+
+/// Find the entry id by path
+pub fn find_id_by_path(changes_diff_set: &ChangesDiffSet, path: &Path) -> Option<EntryId> {
+    changes_diff_set
+        .iter()
+        .find(|(entry_path, _id, _kind)| entry_path.as_ref() == path)
+        .map(|item| item.1.clone())
 }

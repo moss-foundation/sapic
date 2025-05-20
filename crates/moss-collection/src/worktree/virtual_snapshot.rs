@@ -1,14 +1,14 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-
+use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
 use moss_common::sanitized::sanitized_name::SanitizedName;
 use sweep_bptree::BPlusTreeMap;
-
+use moss_fs::utils::{encode_name, encode_path};
 use crate::models::primitives::EntryId;
 use crate::models::types::Classification;
 
-use super::ROOT_PATH;
+use super::{split_last_segment, ROOT_PATH};
 
 pub struct VirtualEntryId(Identifier);
 
@@ -47,6 +47,24 @@ impl VirtualEntry {
         match self {
             VirtualEntry::Item { path, .. } => path,
             VirtualEntry::Dir { path, .. } => path,
+        }
+    }
+
+    pub fn physical_path(&self) -> anyhow::Result<PathBuf> {
+        match self {
+            VirtualEntry::Item { path, class, .. } => {
+                if let Some((parent, name)) = split_last_segment(path) {
+                    let encoded_parent = encode_path(&parent.unwrap_or_default(), None)?;
+                    let encoded_name = format!("{}.{}", encode_name(&name), class.as_str());
+                    Ok(encoded_parent.join(encoded_name))
+                } else {
+                    // TODO: replace with proper error
+                    Err(anyhow!("Invalid virtual path"))
+                }
+            },
+            VirtualEntry::Dir {path, .. } => {
+                Ok(encode_path(path, None)?)
+            },
         }
     }
 }

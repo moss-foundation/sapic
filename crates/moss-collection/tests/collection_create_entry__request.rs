@@ -9,7 +9,7 @@ use serde_json::json;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 
-use crate::shared::{random_request_dir_name, request_folder_name, set_up_test_collection};
+use crate::shared::{random_dir_name, request_folder_name, set_up_test_collection};
 
 mod shared;
 
@@ -469,7 +469,7 @@ async fn create_entry_request_special_chars_in_path() {
     let (collection_path, collection) = set_up_test_collection().await;
 
     let request_name = "1";
-    let request_dir_name = random_request_dir_name();
+    let request_dir_name = random_dir_name();
     let request_dir_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{}{s}", request_dir_name))
@@ -539,4 +539,50 @@ async fn create_entry_request_special_chars_in_path() {
     }
 
     tokio::fs::remove_dir_all(collection_path).await.unwrap();
+}
+
+#[tokio::test]
+async fn create_entry_request_same_name_as_another_dir() {
+    // Create two entries with the same name, one normal and one dir
+    // This will result in two identical virtual paths, so it should raise an error
+
+    let (collection_path, collection) = set_up_test_collection().await;
+    let destination = Path::new("requests").join("identical");
+
+    let _ = collection
+        .create_entry(CreateEntryInput {
+            destination: destination.clone(),
+            classification: Classification::Request,
+            specification: None,
+            protocol: None,
+            order: None,
+            is_dir: true,
+        })
+        .await;
+
+    let create_result = collection
+        .create_entry(CreateEntryInput {
+            destination: destination.clone(),
+            classification: Classification::Request,
+            specification: None,
+            protocol: None,
+            order: None,
+            is_dir: false,
+        })
+        .await;
+
+    assert!(matches!(
+        create_result,
+        Err(OperationError::AlreadyExists(..))
+    ));
+
+    // Check that physical entry is not created incorrectly
+    assert!(
+        !collection_path
+            .join("requests")
+            .join("identical.request")
+            .exists()
+    );
+
+    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }

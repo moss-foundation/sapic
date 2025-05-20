@@ -26,6 +26,14 @@ impl VirtualWorktree {
         }
     }
 
+    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<VirtualEntry>> {
+        self.snapshot.entry_by_id(id)
+    }
+
+    pub fn entry_by_path(&self, path: &Path) -> Option<Arc<VirtualEntry>> {
+        self.snapshot.entry_by_path(path)
+    }
+
     pub fn create_entry(
         &mut self,
         destination: impl AsRef<Path>,
@@ -106,5 +114,19 @@ impl VirtualWorktree {
                 PathChangeKind::Created,
             )]))
         }
+    }
+
+    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> WorktreeResult<ChangesDiffSet> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let removed_entries = self.snapshot.remove_entry(path);
+
+        let changes = removed_entries
+            .into_iter()
+            .map(|entry| (entry.path().clone(), entry.id(), PathChangeKind::Removed))
+            .collect::<Vec<_>>();
+
+        Ok(ChangesDiffSet::from(changes))
     }
 }

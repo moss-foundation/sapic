@@ -7,3 +7,4 @@ pub mod update_request_dir_entry;
 pub mod update_request_entry;
 
 pub mod create_entry;
+pub mod delete_entry;
