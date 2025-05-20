@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef } from "react";
 
-import { Icon, Scrollbar } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
@@ -172,35 +172,33 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       </div>
 
       {shouldRenderChildNodes && !isRootDragging && (
-        <Scrollbar className="h-full w-full">
-          <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
-            {filteredChildNodes.map((childNode, index) => (
-              <TreeNode
-                parentNode={node}
-                onNodeUpdate={onNodeUpdate}
-                key={childNode.uniqueId}
-                node={childNode}
-                depth={1}
-                isLastChild={index === filteredChildNodes.length - 1}
+        <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
+          {filteredChildNodes.map((childNode, index) => (
+            <TreeNode
+              parentNode={node}
+              onNodeUpdate={onNodeUpdate}
+              key={childNode.uniqueId}
+              node={childNode}
+              depth={1}
+              isLastChild={index === filteredChildNodes.length - 1}
+            />
+          ))}
+          {(isAddingRootFileNode || isAddingRootFolderNode) && (
+            <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
+              <TestCollectionIcon type={node.type} className="opacity-0" />
+              <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
+              <NodeAddForm
+                isFolder={isAddingRootFolderNode}
+                restrictedNames={node.childNodes.map((childNode) => childNode.id)}
+                onSubmit={(newNode) => {
+                  handleAddFormRootSubmit(newNode);
+                  onRootAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
+                }}
+                onCancel={handleAddFormRootCancel}
               />
-            ))}
-            {(isAddingRootFileNode || isAddingRootFolderNode) && (
-              <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-                <TestCollectionIcon type={node.type} className="opacity-0" />
-                <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
-                <NodeAddForm
-                  isFolder={isAddingRootFolderNode}
-                  restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-                  onSubmit={(newNode) => {
-                    handleAddFormRootSubmit(newNode);
-                    onRootAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
-                  }}
-                  onCancel={handleAddFormRootCancel}
-                />
-              </div>
-            )}
-          </ul>
-        </Scrollbar>
+            </div>
+          )}
+        </ul>
       )}
     </div>
   );

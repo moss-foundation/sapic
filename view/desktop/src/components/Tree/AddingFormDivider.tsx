@@ -54,7 +54,7 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
     >
       <div className="relative h-full w-full">
         <div className="background-(--moss-primary) absolute -top-[8px] left-0 rounded-sm p-px">
-          <Icon icon="Add" className="fill-white!" />
+          <Icon icon="Add" />
         </div>
       </div>
     </button>
