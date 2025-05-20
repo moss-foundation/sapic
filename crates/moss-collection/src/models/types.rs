@@ -147,6 +147,17 @@ pub enum HttpMethod {
     Delete,
 }
 
+impl HttpMethod {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            HttpMethod::Post => "post",
+            HttpMethod::Get => "get",
+            HttpMethod::Put => "put",
+            HttpMethod::Delete => "del",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -157,6 +168,12 @@ pub enum RequestProtocol {
     Grpc,
 }
 
+impl Default for RequestProtocol {
+    fn default() -> Self {
+        Self::Http(HttpMethod::Get)
+    }
+}
+
 impl RequestProtocol {
     pub fn is_http(&self) -> bool {
         match self {
@@ -164,17 +181,19 @@ impl RequestProtocol {
             _ => false,
         }
     }
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum UnitType {
-    Endpoint,
-    Request,
-    Case,
-    Schema,
-    Component,
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RequestProtocol::Http(method) => method.as_str(),
+            RequestProtocol::WebSocket => "websocket",
+            RequestProtocol::GraphQL => "graphql",
+            RequestProtocol::Grpc => "grpc",
+        }
+    }
+
+    pub fn to_filename(&self) -> String {
+        format!("{}.sapic", self.as_str())
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
@@ -202,7 +221,11 @@ pub enum EntryKind {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
     pub id: EntryId,
+    pub name: String,
     pub path: PathBuf,
+    pub is_dir: bool,
+    pub classification: Classification,
+    pub protocol: Option<RequestProtocol>,
     pub order: Option<usize>,
 }
 

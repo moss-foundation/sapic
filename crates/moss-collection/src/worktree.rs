@@ -14,10 +14,11 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use thiserror::Error;
-use util::names::{dir_name_from_classification, file_name_from_protocol};
+use util::names::dir_name_from_classification;
 use virtual_worktree::VirtualWorktree;
 
 use crate::models::primitives::EntryId;
+use crate::models::types::RequestProtocol;
 use crate::models::{primitives::ChangesDiffSet, types::Classification};
 use crate::worktree::virtual_snapshot::VirtualEntry;
 
@@ -89,7 +90,7 @@ impl Worktree {
         &mut self,
         destination: PathBuf,
         order: Option<usize>,
-        protocol: Option<String>,
+        protocol: Option<RequestProtocol>,
         specification: Option<Vec<u8>>,
         classification: Classification,
         is_dir: bool,
@@ -177,7 +178,7 @@ impl Worktree {
         classification: Classification,
         specification: Option<Vec<u8>>,
         order: Option<usize>,
-        protocol: Option<String>,
+        protocol: Option<RequestProtocol>,
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
@@ -196,8 +197,8 @@ impl Worktree {
                 .cloned(),
         );
 
-        let protocol = protocol.unwrap_or_else(|| "get".to_string());
-        let file_name = file_name_from_protocol(&protocol);
+        let protocol = protocol.unwrap_or_default();
+        let file_name = protocol.to_filename();
         let file_path = encoded_path.join(file_name);
         physical_changes.extend(
             self.pwt
@@ -258,7 +259,7 @@ impl Worktree {
         name: Option<String>,
         classification: Option<Classification>,
         specification: Option<JsonValue>,
-        protocol: Option<String>,
+        protocol: Option<RequestProtocol>,
         order: Option<usize>,
     ) -> WorktreeResult<WorktreeDiff> {
         if let Some(new_name) = name {

@@ -1,5 +1,5 @@
 use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
-use moss_collection::models::types::{Classification, PathChangeKind};
+use moss_collection::models::types::{Classification, HttpMethod, PathChangeKind, RequestProtocol};
 use moss_common::api::OperationError;
 use moss_fs::utils::encode_name;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
@@ -86,7 +86,7 @@ async fn create_entry_request_with_spec_content() {
             destination: PathBuf::from("requests").join(&request_name),
             classification: Classification::Request,
             specification: Some(json!(42)),
-            protocol: Some("post".to_string()),
+            protocol: Some(RequestProtocol::Http(HttpMethod::Post)),
             order: None,
             is_dir: false,
         })

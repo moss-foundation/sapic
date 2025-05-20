@@ -11,6 +11,7 @@ use super::{
     primitives::ChangesDiffSet,
     types::{Classification, PathChangeKind},
 };
+use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::EntryId,
     types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
@@ -30,8 +31,7 @@ pub struct CreateEntryInput {
     pub destination: PathBuf,
     pub classification: Classification,
     pub specification: Option<JsonValue>,
-    // TODO: use RequestProtocol?
-    pub protocol: Option<String>,
+    pub protocol: Option<RequestProtocol>,
     pub order: Option<usize>,
     pub is_dir: bool,
 }
@@ -67,8 +67,7 @@ pub struct UpdateEntryInput {
     pub name: Option<String>,
     pub classification: Option<Classification>,
     pub specification: Option<JsonValue>,
-    // TODO: use RequestProtocol?
-    pub protocol: Option<String>,
+    pub protocol: Option<RequestProtocol>,
     pub order: Option<usize>,
 }
 
