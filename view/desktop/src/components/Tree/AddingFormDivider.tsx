@@ -41,8 +41,8 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
         "background-(--moss-primary) absolute z-100 h-[2px] cursor-pointer transition-opacity duration-100",
         {
           "opacity-0": !visible,
-          "top-0": position === "top",
-          "bottom-0": position === "bottom",
+          "-top-[1px] z-20": position === "top",
+          "-bottom-[1px] z-30": position === "bottom",
         }
       )}
       style={{
@@ -62,12 +62,13 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
 
 const DividerButtonIcon = () => {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+      <path fill="#fff" fill-opacity=".01" d="M0 0h24v24H0z" />
       <path
         fill="white"
         fill-rule="evenodd"
+        d="M13 11V7.00195c0-.26521-.1054-.51957-.2929-.7071-.1876-.18754-.4419-.2929-.7071-.2929-.2653 0-.5196.10536-.7072.2929-.1875.18753-.2928.44189-.2928.7071V11H7.00195c-.26521 0-.51957.1053-.7071.2928-.18754.1876-.2929.4419-.2929.7072 0 .2652.10536.5195.2929.7071.18753.1875.44189.2929.7071.2929H11v3.998c0 .2652.1053.5195.2928.7071.1876.1875.4419.2929.7072.2929.2652 0 .5195-.1054.7071-.2929.1875-.1876.2929-.4419.2929-.7071V13h3.998c.2652 0 .5195-.1054.7071-.2929.1875-.1876.2929-.4419.2929-.7071 0-.2653-.1054-.5196-.2929-.7072-.1876-.1875-.4419-.2928-.7071-.2928H13Z"
         clip-rule="evenodd"
-        d="M7.5 1C7.77614 1 8 1.22386 8 1.5V7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H8V13.5C8 13.7761 7.77614 14 7.5 14C7.22386 14 7 13.7761 7 13.5V8H1.5C1.22386 8 1 7.77614 1 7.5C1 7.22386 1.22386 7 1.5 7H7V1.5C7 1.22386 7.22386 1 7.5 1Z"
       />
     </svg>
   );
