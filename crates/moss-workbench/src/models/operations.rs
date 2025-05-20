@@ -1,4 +1,3 @@
-use moss_common::models::primitives::Identifier;
 use moss_workspace::models::types::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use std::{ops::Deref, path::Path, sync::Arc};
@@ -36,7 +35,6 @@ pub struct OpenWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    // #[ts(type = "Identifier")]
     pub id: Uuid,
 
     #[serde(skip)]
@@ -69,7 +67,6 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    // #[ts(type = "Identifier")]
     pub id: Uuid,
 
     #[serde(skip)]
@@ -83,7 +80,6 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    // #[ts(type = "Identifier")]
     pub id: Uuid,
 }
 
@@ -91,7 +87,6 @@ pub struct DeleteWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    // #[ts(type = "Identifier")]
     pub id: Uuid,
 
     #[serde(skip)]
@@ -123,7 +118,6 @@ pub struct DescribeWorkbenchStateOutput {
     pub active_workspace_id: Option<Uuid>,
 
     #[ts(optional)]
-    // #[ts(type = "Uuid")]
     pub prev_workspace_id: Option<Uuid>,
 
     #[serde(skip)]
