@@ -1,11 +1,6 @@
 import { OverlayScrollbarsComponent, OverlayScrollbarsComponentProps } from "overlayscrollbars-react";
 
-interface ScrollbarProps extends OverlayScrollbarsComponentProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
-const defaultProps: OverlayScrollbarsComponentProps = {
+const defaultOptions: OverlayScrollbarsComponentProps = {
   options: {
     scrollbars: {
       autoHide: "move",
@@ -14,9 +9,14 @@ const defaultProps: OverlayScrollbarsComponentProps = {
   defer: true,
 };
 
-export const Scrollbar = ({ children, className, ...props }: ScrollbarProps) => {
+export const Scrollbar = ({ children, options, ...props }: OverlayScrollbarsComponentProps) => {
+  const combinedOptions = {
+    ...defaultOptions.options,
+    ...options,
+  };
+
   return (
-    <OverlayScrollbarsComponent className={className} {...defaultProps} {...props}>
+    <OverlayScrollbarsComponent options={combinedOptions} defer={defaultOptions.defer} {...props}>
       {children}
     </OverlayScrollbarsComponent>
   );
