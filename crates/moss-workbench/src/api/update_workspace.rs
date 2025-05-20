@@ -77,7 +77,7 @@ impl<R: TauriRuntime> Workbench<R> {
 
             self.set_active_workspace(
                 workspace_info.id,
-                Workspace::new(
+                Workspace::create(
                     self.app_handle.clone(),
                     Arc::clone(&new_abs_path),
                     Arc::clone(&self.fs),

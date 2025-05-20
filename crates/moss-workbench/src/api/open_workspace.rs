@@ -48,7 +48,7 @@ impl<R: TauriRuntime> Workbench<R> {
             });
         }
 
-        let workspace = Workspace::new(
+        let workspace = Workspace::create(
             self.app_handle.clone(),
             Arc::clone(&target_workspace_entry.abs_path),
             Arc::clone(&self.fs),

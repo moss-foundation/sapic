@@ -81,7 +81,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>) {
     fs::create_dir_all(&workspace_abs_path).unwrap();
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace = Workspace::new(
+    let workspace = Workspace::create(
         app_handle.clone(),
         workspace_abs_path.clone(),
         fs,

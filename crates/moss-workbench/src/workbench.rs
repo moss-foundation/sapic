@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::service::prelude::AppService;
@@ -17,6 +17,7 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
+use uuid::Uuid;
 
 use crate::storage::segments::WORKSPACE_SEGKEY;
 
@@ -26,16 +27,15 @@ pub const WORKSPACES_DIR: &str = "workspaces";
 pub struct WorkspaceInfoEntry {
     pub id: Identifier,
     pub name: String,
-    pub display_name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
 pub(crate) type WorkspaceInfoEntryRef = Arc<WorkspaceInfoEntry>;
-type WorkspaceMap = HashMap<Identifier, WorkspaceInfoEntryRef>;
+type WorkspaceMap = HashMap<Uuid, WorkspaceInfoEntryRef>;
 
 pub struct ActiveWorkspace<R: TauriRuntime> {
-    pub id: Identifier,
+    pub id: Uuid,
     pub inner: Workspace<R>,
 }
 
@@ -115,7 +115,7 @@ impl<R: TauriRuntime> Workbench<R> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
-                let mut workspaces = HashMap::new();
+                let mut workspaces: WorkspaceMap = HashMap::new();
 
                 let dir_abs_path = self.absolutize(WORKSPACES_DIR);
                 if !dir_abs_path.exists() {
@@ -155,26 +155,27 @@ impl<R: TauriRuntime> Workbench<R> {
                         continue;
                     }
 
-                    let encoded_name = entry.file_name().to_string_lossy().to_string();
-                    let display_name = moss_fs::utils::decode_name(&encoded_name)?;
+                    let id_str = entry.file_name().to_string_lossy().to_string();
+                    let id =
+                        Uuid::parse_str(&id_str).context("failed to parse the workspace id")?;
 
-                    let path = PathBuf::from(WORKSPACES_DIR).join(&encoded_name);
+                    // let display_name = moss_fs::utils::decode_name(&encoded_name)?;
+
+                    let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
                     let abs_path: Arc<Path> = self.absolutize(path).into();
 
-                    let restored_entity = match restored_entities
-                        .remove(&encoded_name)
-                        .map_or(Ok(None), |v| {
+                    let restored_entity =
+                        match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
                             v.deserialize::<WorkspaceInfoEntity>().map(Some)
                         }) {
-                        Ok(value) => value,
-                        Err(_err) => {
-                            // TODO: logging
-                            println!("failed to get the workspace {:?} info", encoded_name);
-                            continue;
-                        }
-                    };
+                            Ok(value) => value,
+                            Err(_err) => {
+                                // TODO: logging
+                                println!("failed to get the workspace {:?} info", id_str);
+                                continue;
+                            }
+                        };
 
-                    let id = Identifier::new(&self.options.next_workspace_id);
                     workspaces.insert(
                         id,
                         WorkspaceInfoEntry {

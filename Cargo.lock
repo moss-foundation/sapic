@@ -3250,6 +3250,7 @@ dependencies = [
  "tauri",
  "tokio",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
@@ -3274,6 +3275,7 @@ dependencies = [
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "toml",
  "ts-rs",
  "validator",
 ]
@@ -6238,6 +6240,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "ts-rs-macros",
+ "uuid",
 ]
 
 [[package]]

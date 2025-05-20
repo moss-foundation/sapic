@@ -3,7 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
-use moss_fs::{FileSystem, utils::decode_name};
+use moss_fs::{CreateOptions, FileSystem, utils::decode_name};
 use moss_storage::{
     WorkspaceStorage,
     primitives::segkey::SegmentExt,
@@ -21,7 +21,10 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 
-use crate::storage::segments::COLLECTION_SEGKEY;
+use crate::{
+    manifest::{MANIFEST_FILE_NAME, Manifest},
+    storage::segments::COLLECTION_SEGKEY,
+};
 
 pub const COLLECTIONS_DIR: &str = "collections";
 pub const ENVIRONMENTS_DIR: &str = "environments";
@@ -75,21 +78,26 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) next_collection_id: Arc<AtomicUsize>,
     pub(super) next_variable_id: Arc<AtomicUsize>,
     pub(super) next_environment_id: Arc<AtomicUsize>,
+
+    #[allow(dead_code)]
+    pub(super) manifest: Manifest,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub fn new(
+    pub async fn open(
         app_handle: AppHandle<R>,
-        path: Arc<Path>,
+        abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        let state_db_manager = WorkspaceStorageImpl::new(&path)
+        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
             .context("Failed to open the workspace state database")?;
+
+        let manifest = read_manifest(&fs, &abs_path).await?;
 
         Ok(Self {
             app_handle,
-            abs_path: path,
+            abs_path,
             fs,
             workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
@@ -99,7 +107,51 @@ impl<R: TauriRuntime> Workspace<R> {
             next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
+            manifest,
         })
+    }
+
+    pub async fn create(
+        name: String,
+        app_handle: AppHandle<R>,
+        abs_path: Arc<Path>,
+        fs: Arc<dyn FileSystem>,
+        activity_indicator: ActivityIndicator<R>,
+    ) -> Result<Self> {
+        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to open the workspace state database")?;
+
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+        let manifest = Manifest::new(name);
+        let content = toml::to_string_pretty(&manifest)?;
+        fs.create_file_with(
+            &manifest_path,
+            content.as_bytes(),
+            CreateOptions {
+                overwrite: true,
+                ignore_if_exists: false,
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            app_handle,
+            abs_path,
+            fs,
+            workspace_storage: Arc::new(state_db_manager),
+            collections: OnceCell::new(),
+            environments: OnceCell::new(),
+            activity_indicator,
+            next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
+            next_collection_id: Arc::new(AtomicUsize::new(0)),
+            next_variable_id: Arc::new(AtomicUsize::new(0)),
+            next_environment_id: Arc::new(AtomicUsize::new(0)),
+            manifest,
+        })
+    }
+
+    pub async fn open_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
+        Ok(read_manifest(fs, abs_path).await?)
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
@@ -268,4 +320,19 @@ impl<R: TauriRuntime> Workspace<R> {
         // Ok(txn.commit()?)
         todo!()
     }
+}
+
+async fn read_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
+    let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+    let mut reader = fs
+        .open_file(&manifest_path)
+        .await
+        .context("Failed to open existing workspace manifest file")?;
+
+    let mut buf = String::new();
+    reader
+        .read_to_string(&mut buf)
+        .context("Failed to read workspace manifest file")?;
+
+    Ok(toml::from_str(&buf)?)
 }

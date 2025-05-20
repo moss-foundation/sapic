@@ -16,28 +16,29 @@ use tauri::test::MockRuntime;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub fn random_workspace_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
-}
-
 pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
-    let fs = Arc::new(RealFileSystem::new());
-    let workspace_path: Arc<Path> = random_workspace_path().into();
+    let name = random_workspace_name();
+    let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("workspaces")
+        .join(&name)
+        .into();
     fs::create_dir_all(&workspace_path).unwrap();
+
+    let fs = Arc::new(RealFileSystem::new());
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace = Workspace::new(
+    let workspace = Workspace::create(
+        name,
         app_handle.clone(),
         workspace_path.clone(),
         fs,
         activity_indicator,
     )
+    .await
     .unwrap();
 
     let path = workspace_path.to_path_buf();

@@ -10,6 +10,7 @@ use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::opera
 use moss_workspace::Workspace;
 use std::{path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::workbench::WORKSPACES_DIR;
@@ -26,8 +27,8 @@ impl<R: TauriRuntime> Workbench<R> {
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
-        let encoded_name = encode_name(&input.name);
-        let workspace_path = Path::new(WORKSPACES_DIR).join(&encoded_name);
+        let id = Uuid::new_v4();
+        let workspace_path = Path::new(WORKSPACES_DIR).join(id.to_string());
         let abs_path: Arc<Path> = self.absolutize(&workspace_path).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
@@ -47,12 +48,14 @@ impl<R: TauriRuntime> Workbench<R> {
             .context("Failed to create workspace")
             .map_err_as_internal()?;
 
-        let new_workspace = Workspace::new(
+        let new_workspace = Workspace::create(
+            input.name.clone(),
             self.app_handle.clone(),
             Arc::clone(&abs_path),
             Arc::clone(&self.fs),
             self.activity_indicator.clone(),
-        )?;
+        )
+        .await?;
 
         let last_opened_at = if input.open_on_creation {
             Some(Utc::now().timestamp())
@@ -65,8 +68,7 @@ impl<R: TauriRuntime> Workbench<R> {
             id,
             WorkspaceInfoEntry {
                 id,
-                name: encoded_name.to_owned(),
-                display_name: input.name.to_owned(),
+                name: input.name.to_owned(),
                 last_opened_at,
                 abs_path: Arc::clone(&abs_path),
             }
@@ -78,7 +80,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 self.set_active_workspace(id, new_workspace);
 
                 let item_store = self.global_storage.item_store();
-                let segkey = WORKSPACE_SEGKEY.join(encoded_name);
+                let segkey = WORKSPACE_SEGKEY.join(id.to_string());
                 let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
                 PutItem::put(item_store.as_ref(), segkey, value)?;
             }
