@@ -159,7 +159,7 @@ impl Worktree {
         {
             virtual_changes.extend(
                 self.vwt
-                    .create_entry(parent.join(name), order, classification.clone(), true)?
+                    .create_entry(parent.join(name), order, classification.clone(), None, true)?
                     .into_iter()
                     .cloned(),
             );
@@ -197,6 +197,7 @@ impl Worktree {
                 .cloned(),
         );
 
+        // TODO: Handling protocol for non-request entities?
         let protocol = protocol.unwrap_or_default();
         let file_name = protocol.to_filename();
         let file_path = encoded_path.join(file_name);
@@ -210,13 +211,25 @@ impl Worktree {
 
         virtual_changes.extend(
             self.vwt
-                .create_entry(&parent, None, classification.clone(), true)?
+                .create_entry(
+                    &parent,
+                    None,
+                    classification.clone(),
+                    Some(protocol.clone()),
+                    true,
+                )?
                 .into_iter()
                 .cloned(),
         );
         virtual_changes.extend(
             self.vwt
-                .create_entry(parent.join(name), order, classification, false)?
+                .create_entry(
+                    parent.join(name),
+                    order,
+                    classification,
+                    Some(protocol),
+                    false,
+                )?
                 .into_iter()
                 .cloned(),
         );
@@ -324,6 +337,13 @@ impl Worktree {
             physical_changes,
             virtual_changes,
         })
+    }
+
+    pub fn iter_entries_by_prefix<'a>(
+        &'a self,
+        prefix: PathBuf,
+    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
+        self.vwt.iter_entries_by_prefix(prefix)
     }
 }
 

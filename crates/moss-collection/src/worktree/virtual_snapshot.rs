@@ -7,7 +7,7 @@ use std::sync::Arc;
 use sweep_bptree::BPlusTreeMap;
 
 use crate::models::primitives::{ChangesDiffSet, EntryId};
-use crate::models::types::{Classification, PathChangeKind};
+use crate::models::types::{Classification, PathChangeKind, RequestProtocol};
 
 use super::{ROOT_PATH, WorktreeError, WorktreeResult, split_last_segment};
 
@@ -27,6 +27,7 @@ pub enum VirtualEntry {
         id: EntryId,
         order: Option<usize>,
         class: Classification,
+        protocol: Option<RequestProtocol>,
         path: Arc<Path>,
         cases: Vec<Case>,
     },
@@ -53,6 +54,27 @@ impl VirtualEntry {
         }
     }
 
+    pub fn classification(&self) -> Classification {
+        match self {
+            VirtualEntry::Item { class, .. } => class.clone(),
+            VirtualEntry::Dir { class, .. } => class.clone(),
+        }
+    }
+
+    pub fn order(&self) -> Option<usize> {
+        match self {
+            VirtualEntry::Item { order, .. } => *order,
+            VirtualEntry::Dir { order, .. } => *order,
+        }
+    }
+
+    pub fn protocol(&self) -> Option<RequestProtocol> {
+        match self {
+            VirtualEntry::Item { protocol, .. } => protocol.clone(),
+            VirtualEntry::Dir { .. } => None,
+        }
+    }
+
     pub fn physical_path(&self) -> anyhow::Result<PathBuf> {
         match self {
             VirtualEntry::Item { path, class, .. } => {
@@ -67,6 +89,10 @@ impl VirtualEntry {
             }
             VirtualEntry::Dir { path, .. } => Ok(encode_path(path, None)?),
         }
+    }
+
+    pub fn is_dir(&self) -> bool {
+        matches!(self, VirtualEntry::Dir { .. })
     }
 }
 
@@ -109,7 +135,7 @@ impl VirtualSnapshot {
     // TODO: Try to generalize the delete methods in both the Virtual and Physical snapshots.
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
-        prefix: &'a Path,
+        prefix: PathBuf,
     ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
         let prefix = prefix.to_path_buf();
         self.entries_by_path
@@ -132,7 +158,7 @@ impl VirtualSnapshot {
 
         if is_dir {
             let entries_to_remove = self
-                .iter_entries_by_prefix(path.as_ref())
+                .iter_entries_by_prefix(path.to_path_buf())
                 .map(|(id, entry)| (*id, entry.clone()))
                 .collect::<Vec<(EntryId, Arc<VirtualEntry>)>>();
 
@@ -183,7 +209,7 @@ impl VirtualSnapshot {
 
         // Find the entry id of all entries that need updating
         let ids = self
-            .iter_entries_by_prefix(old_path)
+            .iter_entries_by_prefix(old_path.to_path_buf())
             .map(|(id, entry)| id.clone())
             .collect::<Vec<_>>();
 
@@ -210,6 +236,7 @@ impl VirtualSnapshot {
                     order,
                     class,
                     cases,
+                    protocol,
                     ..
                 } => VirtualEntry::Item {
                     path: Arc::from(new_entry_path.as_path()),
@@ -217,6 +244,7 @@ impl VirtualSnapshot {
                     order,
                     class,
                     cases,
+                    protocol,
                 },
                 VirtualEntry::Dir {
                     id, order, class, ..

@@ -1,16 +1,16 @@
-use std::{
-    path::Path,
-    sync::{Arc, atomic::AtomicUsize},
+use super::{
+    WorktreeResult,
+    virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
-
+use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
     types::{Classification, PathChangeKind},
 };
-
-use super::{
-    WorktreeResult,
-    virtual_snapshot::{VirtualEntry, VirtualSnapshot},
+use std::path::PathBuf;
+use std::{
+    path::Path,
+    sync::{Arc, atomic::AtomicUsize},
 };
 
 pub struct VirtualWorktree {
@@ -40,6 +40,7 @@ impl VirtualWorktree {
         destination: impl AsRef<Path>,
         order: Option<usize>,
         class: Classification,
+        protocol: Option<RequestProtocol>,
         is_dir: bool,
     ) -> WorktreeResult<ChangesDiffSet> {
         if is_dir {
@@ -105,6 +106,7 @@ impl VirtualWorktree {
                 class,
                 path: path.clone(),
                 cases: vec![],
+                protocol,
             };
 
             self.snapshot.create_entry(Arc::new(entry));
@@ -142,5 +144,12 @@ impl VirtualWorktree {
         debug_assert!(new_path.is_relative());
 
         self.snapshot.rename_entry(old_path, new_path)
+    }
+
+    pub fn iter_entries_by_prefix<'a>(
+        &'a self,
+        prefix: PathBuf,
+    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
+        self.snapshot.iter_entries_by_prefix(prefix)
     }
 }
