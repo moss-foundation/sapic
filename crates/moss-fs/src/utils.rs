@@ -143,4 +143,28 @@ mod tests {
         let path = PathBuf::from("pre.fix/colle*ction");
         dbg!(&encode_path(&path, Some(Path::new("pre.fix"))));
     }
+
+    #[test]
+    fn test_encode_path() {
+        let path1 = PathBuf::from("1/1");
+        let path2 = PathBuf::from("1\\1");
+        let path3 = PathBuf::from("1//1");
+        let path4 = PathBuf::from("1\\\\1");
+        let path5 = PathBuf::from("1/1/");
+        let path6 = PathBuf::from("1\\1\\");
+
+        println!(
+            "{}",
+            encode_path(&path1, None)
+                .unwrap()
+                .to_string_lossy()
+                .to_string()
+        );
+        dbg!(&encode_path(&path1, None).unwrap());
+        dbg!(&encode_path(&path2, None).unwrap());
+        dbg!(&encode_path(&path3, None).unwrap());
+        dbg!(&encode_path(&path4, None).unwrap());
+        dbg!(&encode_path(&path5, None).unwrap());
+        dbg!(&encode_path(&path6, None).unwrap());
+    }
 }
