@@ -12,6 +12,15 @@ const config: Config = {
       fontSize: fontSize,
       fontFamily: typography,
       screens: breakpoints,
+      keyframes: {
+        "move-stripes": {
+          "from": { backgroundPosition: "0 0" },
+          "to": { backgroundPosition: "20px 0" },
+        },
+      },
+      animation: {
+        "stripes": "move-stripes 1s linear infinite",
+      },
     },
   },
   darkMode: ["class", '[data-theme="dark"]'],
