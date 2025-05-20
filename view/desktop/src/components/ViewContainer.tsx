@@ -7,7 +7,7 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
 import ButtonPrimary from "./ButtonPrimary";
-import CollectionTreeView from "./CollectionTreeView/CollectionTreeView";
+import CollectionTreeView from "./CollectionTreeView";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 
