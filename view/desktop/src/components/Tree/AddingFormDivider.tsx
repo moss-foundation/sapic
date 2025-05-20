@@ -17,7 +17,7 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
     timeoutIdRef.current = setTimeout(() => {
       setVisible(true);
       timeoutIdRef.current = null;
-    }, 1000);
+    }, 600);
   };
 
   const handleMouseLeave = () => {
