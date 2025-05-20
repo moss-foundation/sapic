@@ -9,7 +9,6 @@ use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::Arc;
-use std::sync::atomic::AtomicUsize;
 use tauri::test::MockRuntime;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
@@ -19,14 +18,6 @@ pub fn random_app_dir_path() -> PathBuf {
         .join("tests")
         .join("data")
         .join(random_string(10))
-}
-
-pub fn random_workspace_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
 }
 
 pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime>, CleanupFn) {
@@ -55,7 +46,6 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
         global_storage,
         workbench::Options {
             abs_path: workspaces_abs_path.clone(),
-            next_workspace_id: Arc::new(AtomicUsize::new(0)),
         },
     );
 
@@ -70,23 +60,4 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
     });
 
     (workspaces_abs_path, workspace_manager, cleanup_fn)
-}
-
-pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>) {
-    let mock_app = tauri::test::mock_app();
-    let app_handle = mock_app.handle().clone();
-
-    let fs = Arc::new(RealFileSystem::new());
-    let workspace_abs_path: Arc<Path> = random_workspace_path().into();
-    fs::create_dir_all(&workspace_abs_path).unwrap();
-
-    let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace = Workspace::create(
-        app_handle.clone(),
-        workspace_abs_path.clone(),
-        fs,
-        activity_indicator,
-    )
-    .unwrap();
-    (workspace_abs_path, workspace)
 }

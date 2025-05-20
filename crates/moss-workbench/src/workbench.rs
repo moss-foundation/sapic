@@ -24,15 +24,14 @@ use crate::storage::segments::WORKSPACE_SEGKEY;
 pub const WORKSPACES_DIR: &str = "workspaces";
 
 #[derive(Debug, Clone)]
-pub struct WorkspaceInfoEntry {
-    pub id: Identifier,
+pub struct WorkspaceDescriptor {
+    pub id: Uuid,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
-pub(crate) type WorkspaceInfoEntryRef = Arc<WorkspaceInfoEntry>;
-type WorkspaceMap = HashMap<Uuid, WorkspaceInfoEntryRef>;
+type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
 pub struct ActiveWorkspace<R: TauriRuntime> {
     pub id: Uuid,
@@ -51,7 +50,6 @@ impl<R: TauriRuntime> Deref for ActiveWorkspace<R> {
 pub struct Options {
     // The absolute path of the app directory
     pub abs_path: Arc<Path>,
-    pub next_workspace_id: Arc<AtomicUsize>,
 }
 
 pub struct Workbench<R: TauriRuntime> {
@@ -88,7 +86,7 @@ impl<R: TauriRuntime> Workbench<R> {
         self.active_workspace.load_full()
     }
 
-    pub(super) fn set_active_workspace(&self, id: Identifier, workspace: Workspace<R>) {
+    pub(super) fn set_active_workspace(&self, id: Uuid, workspace: Workspace<R>) {
         self.active_workspace.store(Some(Arc::new(ActiveWorkspace {
             id,
             inner: workspace,
@@ -98,7 +96,7 @@ impl<R: TauriRuntime> Workbench<R> {
     pub(super) async fn workspace_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<WorkspaceInfoEntryRef>> {
+    ) -> Result<Option<Arc<WorkspaceDescriptor>>> {
         let workspaces = self.workspaces().await?;
         let workspaces_lock = workspaces.read().await;
 
@@ -159,10 +157,11 @@ impl<R: TauriRuntime> Workbench<R> {
                     let id =
                         Uuid::parse_str(&id_str).context("failed to parse the workspace id")?;
 
-                    // let display_name = moss_fs::utils::decode_name(&encoded_name)?;
-
+                    // TODO: can we use just use  entry.path()?
                     let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
                     let abs_path: Arc<Path> = self.absolutize(path).into();
+
+                    let manifest = Workspace::<R>::open_manifest(&self.fs, &abs_path).await?;
 
                     let restored_entity =
                         match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
@@ -178,10 +177,9 @@ impl<R: TauriRuntime> Workbench<R> {
 
                     workspaces.insert(
                         id,
-                        WorkspaceInfoEntry {
+                        WorkspaceDescriptor {
                             id,
-                            name: encoded_name,
-                            display_name,
+                            name: manifest.name,
                             abs_path,
                             last_opened_at: restored_entity.map(|v| v.last_opened_at),
                         }

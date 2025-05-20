@@ -17,7 +17,7 @@ use crate::workbench::WORKSPACES_DIR;
 use crate::{
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     storage::segments::WORKSPACE_SEGKEY,
-    workbench::{Workbench, WorkspaceInfoEntry},
+    workbench::{Workbench, WorkspaceDescriptor},
 };
 
 impl<R: TauriRuntime> Workbench<R> {
@@ -63,10 +63,9 @@ impl<R: TauriRuntime> Workbench<R> {
             None
         };
 
-        let id = Identifier::new(&self.options.next_workspace_id);
         workspaces.write().await.insert(
             id,
-            WorkspaceInfoEntry {
+            WorkspaceDescriptor {
                 id,
                 name: input.name.to_owned(),
                 last_opened_at,

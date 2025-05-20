@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub(crate) const MANIFEST_FILE_NAME: &str = "workspace.toml";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Manifest {
     pub name: String,
 }

@@ -1,23 +1,17 @@
 mod shared;
 
-use moss_common::{api::OperationError, models::primitives::Identifier};
-use moss_fs::utils::encode_name;
-use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
+use moss_common::api::OperationError;
+use moss_testutils::random_name::random_workspace_name;
 use moss_workbench::models::operations::{CreateWorkspaceInput, UpdateWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
-use std::{
-    path::Path,
-    sync::{Arc, atomic::AtomicUsize},
-};
 
 use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn rename_workspace_success() {
-    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let old_path: Arc<Path> = workspaces_path.join(&old_workspace_name).into();
     let create_workspace_output = workspace_manager
         .create_workspace(&CreateWorkspaceInput {
             name: old_workspace_name.clone(),
@@ -31,20 +25,15 @@ async fn rename_workspace_success() {
     let new_workspace_name = random_workspace_name();
     let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
-            id,
             name: Some(new_workspace_name.clone()),
         })
         .await;
     assert!(update_workspace_result.is_ok());
 
-    // Check filesystem rename
-    let expected_path: Arc<Path> = workspaces_path.join(&new_workspace_name).into();
-    assert!(expected_path.exists());
-    assert!(!old_path.exists());
-
     // Check updating active workspace
     let active_workspace = workspace_manager.active_workspace().unwrap();
     assert_eq!(active_workspace.id, id);
+    assert_eq!(active_workspace.manifest().await.name, new_workspace_name);
 
     // Check updating known_workspaces
     let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
@@ -60,7 +49,7 @@ async fn rename_workspace_empty_name() {
     let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
-    let create_workspace_output = workspace_manager
+    workspace_manager
         .create_workspace(&CreateWorkspaceInput {
             name: old_workspace_name.clone(),
             mode: WorkspaceMode::default(),
@@ -68,12 +57,10 @@ async fn rename_workspace_empty_name() {
         })
         .await
         .unwrap();
-    let id = create_workspace_output.id;
 
     let new_workspace_name = "";
     let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
-            id,
             name: Some(new_workspace_name.to_string()),
         })
         .await;
@@ -105,7 +92,6 @@ async fn rename_workspace_unchanged() {
     // Rename to same name
     let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
-            id,
             name: Some(workspace_name.clone()),
         })
         .await;
@@ -127,60 +113,12 @@ async fn rename_workspace_unchanged() {
 }
 
 #[tokio::test]
-async fn rename_workspace_already_exists() {
+async fn rename_workspace_not_opened() {
     let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
-
-    let existing_workspace_name = random_workspace_name();
-
-    // Create an existing workspace
-    workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: existing_workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: false,
-        })
-        .await
-        .unwrap();
-
-    let new_workspace_name = random_workspace_name();
-    // Create a workspace to test renaming
-    let create_workspace_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: new_workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
-        .await
-        .unwrap();
-    let id = create_workspace_output.id;
-
-    // Try renaming the new workspace to an existing workspace name
-    let update_workspace_result = workspace_manager
-        .update_workspace(UpdateWorkspaceInput {
-            id,
-            name: Some(existing_workspace_name.clone()),
-        })
-        .await;
-    assert!(update_workspace_result.is_err());
-    assert!(matches!(
-        update_workspace_result,
-        Err(OperationError::AlreadyExists { .. })
-    ));
-
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn rename_workspace_nonexistent_id() {
-    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
-
-    // Create a non-existent ID
-    let id = Identifier::new(&std::sync::Arc::new(AtomicUsize::new(1000)));
 
     // Try renaming a workspace with a non-existent ID
     let update_workspace_result = workspace_manager
         .update_workspace(UpdateWorkspaceInput {
-            id,
             name: Some(random_workspace_name()),
         })
         .await;
@@ -188,54 +126,8 @@ async fn rename_workspace_nonexistent_id() {
     assert!(update_workspace_result.is_err());
     assert!(matches!(
         update_workspace_result,
-        Err(OperationError::NotFound { .. })
+        Err(OperationError::FailedPrecondition { .. })
     ));
-
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn rename_workspace_special_chars() {
-    let (workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
-
-    let workspace_name = random_workspace_name();
-    let create_workspace_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
-        .await
-        .unwrap();
-    let id = create_workspace_output.id;
-
-    for char in FILENAME_SPECIAL_CHARS {
-        let new_workspace_name = format!("{workspace_name}{char}");
-        let update_workspace_result = workspace_manager
-            .update_workspace(UpdateWorkspaceInput {
-                id,
-                name: Some(new_workspace_name.clone()),
-            })
-            .await;
-
-        assert!(update_workspace_result.is_ok());
-
-        // Check folder was renamed
-        let expected_path: Arc<Path> = workspaces_path
-            .join(&encode_name(&new_workspace_name))
-            .into();
-        assert!(expected_path.exists());
-
-        // Check updating active workspace
-        let active_workspace = workspace_manager.active_workspace().unwrap();
-        assert_eq!(active_workspace.id, id);
-
-        // Checking updating known_workspaces
-        let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
-        assert_eq!(list_workspaces_output.len(), 1);
-        assert_eq!(list_workspaces_output[0].id, id);
-        assert_eq!(list_workspaces_output[0].display_name, new_workspace_name);
-    }
 
     cleanup().await;
 }

@@ -3,6 +3,7 @@ use moss_workspace::models::types::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use std::{ops::Deref, path::Path, sync::Arc};
 use ts_rs::TS;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::types::WorkspaceInfo;
@@ -35,8 +36,8 @@ pub struct OpenWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    // #[ts(type = "Identifier")]
+    pub id: Uuid,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -68,8 +69,8 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    // #[ts(type = "Identifier")]
+    pub id: Uuid,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -82,16 +83,16 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    // #[ts(type = "Identifier")]
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    // #[ts(type = "Identifier")]
+    pub id: Uuid,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -104,9 +105,6 @@ pub struct DeleteWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateWorkspaceInput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
-
     /// A new name for the workspace, if provided,
     /// the workspace will be renamed to this name.
     #[ts(optional)]
@@ -122,11 +120,11 @@ pub struct UpdateWorkspaceInput {
 pub struct DescribeWorkbenchStateOutput {
     #[serde(skip)]
     #[ts(skip)]
-    pub active_workspace_id: Option<Identifier>,
+    pub active_workspace_id: Option<Uuid>,
 
     #[ts(optional)]
-    #[ts(type = "Identifier")]
-    pub prev_workspace_id: Option<Identifier>,
+    // #[ts(type = "Uuid")]
+    pub prev_workspace_id: Option<Uuid>,
 
     #[serde(skip)]
     #[ts(skip)]

@@ -80,7 +80,7 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) next_environment_id: Arc<AtomicUsize>,
 
     #[allow(dead_code)]
-    pub(super) manifest: Manifest,
+    pub(super) manifest: RwLock<Manifest>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -107,7 +107,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
-            manifest,
+            manifest: RwLock::new(manifest),
         })
     }
 
@@ -146,12 +146,41 @@ impl<R: TauriRuntime> Workspace<R> {
             next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
-            manifest,
+            manifest: RwLock::new(manifest),
         })
+    }
+
+    pub async fn rename(&self, name: String) -> Result<()> {
+        let mut manifest = self.manifest.write().await;
+        let updated_manifest = {
+            let mut current_clone = manifest.clone();
+            current_clone.name = name;
+
+            current_clone
+        };
+
+        self.fs
+            .create_file_with(
+                &self.abs_path.join(MANIFEST_FILE_NAME),
+                toml::to_string_pretty(&updated_manifest)?.as_bytes(),
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        *manifest = updated_manifest;
+
+        Ok(())
     }
 
     pub async fn open_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
         Ok(read_manifest(fs, abs_path).await?)
+    }
+
+    pub async fn manifest(&self) -> Manifest {
+        self.manifest.read().await.clone()
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
@@ -324,6 +353,8 @@ impl<R: TauriRuntime> Workspace<R> {
 
 async fn read_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
     let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+    dbg!(&manifest_path);
+
     let mut reader = fs
         .open_file(&manifest_path)
         .await

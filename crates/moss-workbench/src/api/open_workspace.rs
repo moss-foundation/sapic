@@ -9,7 +9,7 @@ use tauri::Runtime as TauriRuntime;
 use crate::{
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
     storage::segments::WORKSPACE_SEGKEY,
-    workbench::{Workbench, WorkspaceInfoEntry},
+    workbench::{Workbench, WorkspaceDescriptor},
 };
 
 impl<R: TauriRuntime> Workbench<R> {
@@ -48,20 +48,20 @@ impl<R: TauriRuntime> Workbench<R> {
             });
         }
 
-        let workspace = Workspace::create(
+        let workspace = Workspace::open(
             self.app_handle.clone(),
             Arc::clone(&target_workspace_entry.abs_path),
             Arc::clone(&self.fs),
             self.activity_indicator.clone(),
-        )?;
+        )
+        .await?;
 
         let last_opened_at = Utc::now().timestamp();
 
         {
-            let updated_workspace_entry = WorkspaceInfoEntry {
+            let updated_workspace_entry = WorkspaceDescriptor {
                 id: target_workspace_entry.id,
                 name: target_workspace_entry.name.to_owned(),
-                display_name: target_workspace_entry.display_name.to_owned(),
                 abs_path: Arc::clone(&target_workspace_entry.abs_path),
                 last_opened_at: Some(last_opened_at),
             };
