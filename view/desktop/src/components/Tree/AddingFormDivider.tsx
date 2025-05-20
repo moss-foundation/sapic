@@ -37,8 +37,15 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
     <button
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={cn(
-        "background-(--moss-primary) absolute z-100 h-[2px] cursor-pointer transition-opacity duration-100",
+      //prettier-ignore
+      className={cn(`
+          background-(--moss-primary) 
+          absolute z-100 h-[2px] cursor-pointer 
+          transition-opacity duration-100
+
+          before:h-[3px] before:w-full before:content-[''] before:absolute before:left-0 before:-top-[3px]
+          after:h-[3px] after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-[3px]
+         `,
         {
           "opacity-0": !visible,
           "-top-[1px] z-20": position === "top",
