@@ -86,6 +86,10 @@ impl Worktree {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.vwt.is_empty()
+    }
+
     pub async fn create_entry(
         &mut self,
         destination: PathBuf,

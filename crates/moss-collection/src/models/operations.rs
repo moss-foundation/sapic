@@ -11,9 +11,6 @@ use crate::models::{
     types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
 };
 
-/// All the path and file names passed in the input should be unencoded.
-/// For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
-/// The frontend should simply use the name and path used in the user's original input
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -36,6 +33,8 @@ pub struct CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
+    #[serde(skip)]
+    #[ts(skip)]
     pub physical_changes: ChangesDiffSet,
     pub virtual_changes: ChangesDiffSet,
 }
@@ -51,6 +50,8 @@ pub struct DeleteEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryOutput {
+    #[serde(skip)]
+    #[ts(skip)]
     pub physical_changes: ChangesDiffSet,
     pub virtual_changes: ChangesDiffSet,
 }
@@ -73,6 +74,8 @@ pub struct UpdateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEntryOutput {
+    #[serde(skip)]
+    #[ts(skip)]
     pub physical_changes: ChangesDiffSet,
     pub virtual_changes: ChangesDiffSet,
 }

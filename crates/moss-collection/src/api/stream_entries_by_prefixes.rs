@@ -29,36 +29,37 @@ impl Collection {
         // let worktree_entries_state = unit_store.list_worktree_entries()?;
 
         let worktree = self.worktree().await?;
-        let read_lock = worktree.read().await;
-        //
-        // if snapshot_lock.count_files() == 0 {
-        //     // We need to send a final empty event to signal the end of the stream.
-        //     let _ = channel.send(StreamEntriesByPrefixesEvent(vec![]));
-        //     return Ok(());
-        // }
+        let worktree_lock = worktree.read().await;
+
+        if worktree_lock.is_empty() {
+            // We need to send a final empty event to signal the end of the stream.
+            let _ = channel.send(StreamEntriesByPrefixesEvent(vec![]));
+            return Ok(());
+        }
 
         let mut streams = StreamMap::new();
         for prefix in input.0 {
             let normalized_prefix = encode_path(Path::new(prefix), None)?;
-            let s = tokio_stream::iter(read_lock.iter_entries_by_prefix(normalized_prefix).map(
-                |(&id, entry)| {
-                    // TODO: Get order from collection storage
-                    EntryInfo {
-                        id,
-                        name: entry
-                            .path()
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            .to_string(),
-                        path: entry.path().to_path_buf(),
-                        is_dir: entry.is_dir(),
-                        classification: entry.classification(),
-                        protocol: entry.protocol(),
-                        order: entry.order(),
-                    }
-                },
-            ));
+            let s =
+                tokio_stream::iter(worktree_lock.iter_entries_by_prefix(normalized_prefix).map(
+                    |(&id, entry)| {
+                        // TODO: Get order from collection storage
+                        EntryInfo {
+                            id,
+                            name: entry
+                                .path()
+                                .file_name()
+                                .unwrap_or_default()
+                                .to_string_lossy()
+                                .to_string(),
+                            path: entry.path().to_path_buf(),
+                            is_dir: entry.is_dir(),
+                            classification: entry.classification(),
+                            protocol: entry.protocol(),
+                            order: entry.order(),
+                        }
+                    },
+                ));
             streams.insert(prefix, s);
         }
 

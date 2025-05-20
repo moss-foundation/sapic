@@ -24,7 +24,6 @@ export const createEntryInputSchema = z.object({
 });
 
 export const createEntryOutputSchema = z.object({
-  physicalChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
   virtualChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });
 
@@ -43,7 +42,6 @@ export const deleteEntryInputSchema = z.object({
 });
 
 export const deleteEntryOutputSchema = z.object({
-  physicalChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
   virtualChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });
 
@@ -57,6 +55,5 @@ export const updateEntryInputSchema = z.object({
 });
 
 export const updateEntryOutputSchema = z.object({
-  physicalChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
   virtualChanges: z.array(z.tuple([z.string(), entryIdSchema, pathChangeKindSchema])),
 });

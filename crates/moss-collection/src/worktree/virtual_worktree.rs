@@ -15,7 +15,6 @@ use std::{
 
 pub struct VirtualWorktree {
     next_entry_id: Arc<AtomicUsize>,
-    // FIXME: Do we need a lock here?
     snapshot: VirtualSnapshot,
 }
 
@@ -33,6 +32,10 @@ impl VirtualWorktree {
 
     pub fn entry_by_path(&self, path: &Path) -> Option<Arc<VirtualEntry>> {
         self.snapshot.entry_by_path(path)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.snapshot.is_empty()
     }
 
     pub fn create_entry(
@@ -121,7 +124,6 @@ impl VirtualWorktree {
 
     pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> WorktreeResult<ChangesDiffSet> {
         let path = path.as_ref();
-        debug_assert!(path.is_relative());
 
         let removed_entries = self.snapshot.remove_entry(path);
 
@@ -140,8 +142,6 @@ impl VirtualWorktree {
     ) -> WorktreeResult<ChangesDiffSet> {
         let old_path = old_path.as_ref();
         let new_path = new_path.as_ref();
-        debug_assert!(old_path.is_relative());
-        debug_assert!(new_path.is_relative());
 
         self.snapshot.rename_entry(old_path, new_path)
     }

@@ -12,11 +12,6 @@ import type {
   RequestProtocol,
 } from "./types";
 
-/**
- * All the path and file names passed in the input should be unencoded.
- * For example, a name of "workspace.name" will be encoded as "workspace%2Ename"
- * The frontend should simply use the name and path used in the user's original input
- */
 export type CreateEntryInput = {
   destination: string;
   classification: Classification;
@@ -26,10 +21,7 @@ export type CreateEntryInput = {
   isDir: boolean;
 };
 
-export type CreateEntryOutput = {
-  physicalChanges: Array<[string, EntryId, PathChangeKind]>;
-  virtualChanges: Array<[string, EntryId, PathChangeKind]>;
-};
+export type CreateEntryOutput = { virtualChanges: Array<[string, EntryId, PathChangeKind]> };
 
 export type CreateRequestProtocolSpecificPayload = {
   "http": {
@@ -43,10 +35,7 @@ export type CreateRequestProtocolSpecificPayload = {
 
 export type DeleteEntryInput = { id: EntryId };
 
-export type DeleteEntryOutput = {
-  physicalChanges: Array<[string, EntryId, PathChangeKind]>;
-  virtualChanges: Array<[string, EntryId, PathChangeKind]>;
-};
+export type DeleteEntryOutput = { virtualChanges: Array<[string, EntryId, PathChangeKind]> };
 
 export type StreamEntriesByPrefixesInput = Array<string>;
 
@@ -59,7 +48,4 @@ export type UpdateEntryInput = {
   order: number | null;
 };
 
-export type UpdateEntryOutput = {
-  physicalChanges: Array<[string, EntryId, PathChangeKind]>;
-  virtualChanges: Array<[string, EntryId, PathChangeKind]>;
-};
+export type UpdateEntryOutput = { virtualChanges: Array<[string, EntryId, PathChangeKind]> };

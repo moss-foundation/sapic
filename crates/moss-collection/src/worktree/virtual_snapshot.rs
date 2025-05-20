@@ -109,6 +109,9 @@ impl VirtualSnapshot {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.entries_by_id.is_empty()
+    }
     pub fn exists(&self, path: impl AsRef<Path>) -> bool {
         self.entry_by_path(path).is_some()
     }
