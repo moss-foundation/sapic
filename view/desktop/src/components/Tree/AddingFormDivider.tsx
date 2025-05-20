@@ -43,8 +43,8 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
           absolute z-100 h-[2px] cursor-pointer 
           transition-opacity duration-100
 
-          before:h-[3px] before:w-full before:content-[''] before:absolute before:left-0 before:-top-[3px]
-          after:h-[3px] after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-[3px]
+          before:h-[5px] before:w-full before:content-[''] before:absolute before:left-0 before:-top-[5px]
+          after:h-[5px] after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-[5px]
          `,
         {
           "opacity-0": !visible,
