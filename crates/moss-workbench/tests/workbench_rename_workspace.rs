@@ -1,7 +1,6 @@
 mod shared;
 
-use moss_common::{api::OperationError, models::primitives::Identifier};
-use moss_fs::utils::encode_name;
+use moss_common::{api::OperationError, models::primitives::Identifier, sanitized::sanitize};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workbench::models::operations::{CreateWorkspaceInput, UpdateWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
@@ -221,9 +220,7 @@ async fn rename_workspace_special_chars() {
         assert!(update_workspace_result.is_ok());
 
         // Check folder was renamed
-        let expected_path: Arc<Path> = workspaces_path
-            .join(&encode_name(&new_workspace_name))
-            .into();
+        let expected_path: Arc<Path> = workspaces_path.join(&sanitize(&new_workspace_name)).into();
         assert!(expected_path.exists());
 
         // Check updating active workspace

@@ -1,7 +1,6 @@
 mod shared;
 
-use moss_common::api::OperationError;
-use moss_fs::utils::encode_name;
+use moss_common::{api::OperationError, sanitized::sanitize};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workbench::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceMode;
@@ -23,6 +22,7 @@ async fn create_workspace_success() {
         })
         .await;
     assert!(create_workspace_result.is_ok());
+
     assert!(expected_path.exists());
 
     let create_workspace_output = create_workspace_result.unwrap();
@@ -115,7 +115,7 @@ async fn create_workspace_special_chars() {
     };
 
     for name in workspace_name_list {
-        let encoded_name = encode_name(&name);
+        let encoded_name = sanitize(&name);
         let expected_path: Arc<Path> = workspaces_path.join(&encoded_name).into();
         let create_workspace_output = workspace_manager
             .create_workspace(&CreateWorkspaceInput {

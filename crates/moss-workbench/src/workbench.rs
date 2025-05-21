@@ -2,7 +2,7 @@ use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::service::prelude::AppService;
-use moss_common::models::primitives::Identifier;
+use moss_common::{models::primitives::Identifier, sanitized::desanitize};
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -156,7 +156,7 @@ impl<R: TauriRuntime> Workbench<R> {
                     }
 
                     let encoded_name = entry.file_name().to_string_lossy().to_string();
-                    let display_name = moss_fs::utils::decode_name(&encoded_name)?;
+                    let display_name = desanitize(&encoded_name);
 
                     let path = PathBuf::from(WORKSPACES_DIR).join(&encoded_name);
                     let abs_path: Arc<Path> = self.absolutize(path).into();

@@ -8,8 +8,9 @@ use moss_collection::collection::Collection;
 use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
     models::primitives::Identifier,
+    sanitized::sanitize,
 };
-use moss_fs::{RenameOptions, utils::encode_name};
+use moss_fs::RenameOptions;
 use moss_storage::storage::operations::RekeyItem;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -67,7 +68,7 @@ impl<R: TauriRuntime> Workspace<R> {
         }
 
         let old_encoded_name = collection_entry.name.to_owned();
-        let new_encoded_name = encode_name(&new_name);
+        let new_encoded_name = sanitize(&new_name);
 
         let path = PathBuf::from(&COLLECTIONS_DIR).join(&new_encoded_name);
         let old_abs_path: Arc<Path> = collection_entry.abs_path().clone().into();

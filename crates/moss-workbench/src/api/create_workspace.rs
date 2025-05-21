@@ -3,9 +3,9 @@ use chrono::Utc;
 use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
     models::primitives::Identifier,
+    sanitized::sanitize,
 };
 use moss_db::primitives::AnyValue;
-use moss_fs::utils::encode_name;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
 use std::{path::Path, sync::Arc};
@@ -26,7 +26,7 @@ impl<R: TauriRuntime> Workbench<R> {
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
-        let encoded_name = encode_name(&input.name);
+        let encoded_name = sanitize(&input.name);
         let workspace_path = Path::new(WORKSPACES_DIR).join(&encoded_name);
         let abs_path: Arc<Path> = self.absolutize(&workspace_path).into();
         if abs_path.exists() {
