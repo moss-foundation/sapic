@@ -1,7 +1,7 @@
 use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::sanitize;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use serde_json::Value as JsonValue;
@@ -482,13 +482,13 @@ async fn create_entry_dir_special_chars_in_name() {
         } = create_result.unwrap();
 
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
-            path.to_path_buf() == Path::new("requests").join(encode_name(&name))
+            path.to_path_buf() == Path::new("requests").join(sanitize(&name))
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == Path::new("requests")
-                    .join(encode_name(&name))
+                    .join(sanitize(&name))
                     .join("folder.sapic")
                 && kind == &PathChangeKind::Created
         }));
@@ -499,7 +499,7 @@ async fn create_entry_dir_special_chars_in_name() {
         }));
         let specfile_path = collection_path
             .join("requests")
-            .join(encode_name(&name))
+            .join(sanitize(&name))
             .join("folder.sapic");
 
         assert!(specfile_path.exists());
@@ -543,17 +543,17 @@ async fn create_entry_dir_special_chars_in_path() {
         } = create_result.unwrap();
 
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
-            path.to_path_buf() == Path::new("requests").join(encode_name(&name))
+            path.to_path_buf() == Path::new("requests").join(sanitize(&name))
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
-            path.to_path_buf() == Path::new("requests").join(encode_name(&name)).join("group")
+            path.to_path_buf() == Path::new("requests").join(sanitize(&name)).join("group")
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == Path::new("requests")
-                    .join(encode_name(&name))
+                    .join(sanitize(&name))
                     .join("group")
                     .join("folder.sapic")
                 && kind == &PathChangeKind::Created
@@ -570,7 +570,7 @@ async fn create_entry_dir_special_chars_in_path() {
 
         let specfile_path = collection_path
             .join("requests")
-            .join(encode_name(&name))
+            .join(sanitize(&name))
             .join("group")
             .join("folder.sapic");
 

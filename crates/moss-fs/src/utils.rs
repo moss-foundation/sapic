@@ -1,112 +1,39 @@
 use anyhow::Result;
-use regex::Regex;
+use moss_common::sanitized;
 use std::path::{Component, Path, PathBuf};
-use std::sync::{Arc, LazyLock};
-
-/// Regex to match forbidden characters in a directory/file name
-static FORBIDDEN_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"[.%<>:"/\\|?*]"#).unwrap());
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NormalizedPathBuf(Arc<PathBuf>);
-
-impl NormalizedPathBuf {
-    pub fn join(&self, other: &Self) -> Self {
-        Self(Arc::new(self.0.join(other.0.as_ref())))
-    }
-
-    pub fn to_string(&self) -> String {
-        self.0.to_string_lossy().to_string()
-    }
-
-    pub fn to_path_buf(&self) -> PathBuf {
-        self.0.as_ref().into()
-    }
-}
-
-impl std::fmt::Display for NormalizedPathBuf {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
-    }
-}
-
-impl TryFrom<String> for NormalizedPathBuf {
-    type Error = anyhow::Error;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        let path = PathBuf::from(value);
-
-        Self::try_from(path)
-    }
-}
-
-impl TryFrom<PathBuf> for NormalizedPathBuf {
-    type Error = anyhow::Error;
-
-    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        // Encode only the normal components of the path.
-        let encoded: PathBuf = path
-            .components()
-            .filter_map(|comp| {
-                if let Component::Normal(name) = comp {
-                    Some(encode_name(&name.to_string_lossy()))
-                } else {
-                    // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
-                    None
-                }
-            })
-            .collect();
-
-        Ok(Self(Arc::new(encoded)))
-    }
-}
-
-/// Function to encode forbidden characters and '%' in a directory/file name
-pub fn encode_name(name: &str) -> String {
-    FORBIDDEN_RE
-        .replace_all(name, |caps: &regex::Captures| {
-            // Replace each forbidden character with its hex representation (e.g., ':' -> %3A)
-            format!("%{:02X}", caps[0].chars().next().unwrap() as u32)
-        })
-        .to_string()
-}
-
-/// Function to decode an encoded directory/file name back to its original form
-pub fn decode_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
-    let mut result = String::new();
-    let mut chars = encoded.chars().peekable();
-
-    while let Some(ch) = chars.next() {
-        if ch == '%' {
-            // Read the next two characters as a hex code
-            let hex: String = chars.by_ref().take(2).collect();
-            let value = u8::from_str_radix(&hex, 16)?;
-            result.push(value as char);
-        } else {
-            result.push(ch);
-        }
-    }
-
-    Ok(result)
-}
 
 /// Doing a basic normalization using Path::components()
 /// All path separators will be normalized, and special components ignored
 pub fn normalize_path(path: &Path) -> PathBuf {
-    path.components()
+    // On Windows, backlashes might not be properly parsed as separators
+    // So first we convert the path to string and replace backslashes with forward slashes
+    let path_str = path.to_string_lossy().replace('\\', "/");
+    let path = Path::new(&path_str);
+
+    let components: Vec<_> = path
+        .components()
         .filter_map(|comp| {
-            if let Component::Normal(name) = comp {
-                Some(name)
-            } else {
-                // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
-                None
+            match comp {
+                Component::Normal(name) => Some(name),
+                _ => None, // Filter out special components (ParentDir, Prefix, RootDir, CurDir)
             }
         })
-        .collect()
+        .collect();
+
+    if components.is_empty() {
+        return PathBuf::new();
+    }
+
+    let mut result = PathBuf::new();
+    for component in components {
+        result.push(component);
+    }
+
+    result
 }
 
-// FIXME: This process may need some refinement
 /// Normalize the path and encode the segments after the prefix
-pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
+pub fn sanitize_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
     // Determine the relative part of the path to be encoded.
     let relative_path = match prefix {
         Some(prefix) => path.strip_prefix(prefix)?,
@@ -118,7 +45,7 @@ pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
     // Encode the parts after the prefix
     let encoded: PathBuf = normalized
         .iter()
-        .map(|os_str| encode_name(&os_str.to_string_lossy()))
+        .map(|os_str| sanitized::sanitize(&os_str.to_string_lossy()))
         .collect();
 
     // If a prefix was provided, join it back with the encoded path.
@@ -130,28 +57,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_encode_name() {
-        let invalid_names = vec![
-            "workspace.name",  // Contains dot
-            "workspace/name",  // Contains path separator
-            "workspace\\name", // Contains backslash
-            "workspace:name",  // Contains colon
-            "workspace*name",  // Contains wildcard
-            "workspace?name",  // Contains question mark
-            "workspace\"name", // Contains quotes
-            "workspace<name",  // Contains angle brackets
-            "workspace>name",  // Contains angle brackets
-            "workspace|name",  // Contains pipe
-        ];
-        invalid_names.into_iter().for_each(|name| {
-            dbg!(encode_name(name));
-        })
-    }
-
-    #[test]
     fn test_special_chars() {
         let path = PathBuf::from("pre.fix/colle*ction");
-        dbg!(&encode_path(&path, Some(Path::new("pre.fix"))));
+        dbg!(&sanitize_path(&path, Some(Path::new("pre.fix"))));
     }
 
     #[test]
@@ -168,7 +76,11 @@ mod tests {
         ];
 
         for path in irregular_paths {
-            assert_eq!(normalize_path(path), canonical);
+            let normalized = normalize_path(path);
+            assert_eq!(
+                normalized.components().collect::<Vec<_>>(),
+                canonical.components().collect::<Vec<_>>()
+            );
         }
     }
 }

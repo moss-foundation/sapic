@@ -3,7 +3,7 @@ use moss_collection::models::operations::{
 };
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::sanitize;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::Path;
@@ -603,7 +603,7 @@ async fn update_entry_rename_dir_special_chars() {
         // Virtual
         // requests\\{encoded_new_name}
         let old_dir_path = Path::new("requests").join(&dir_name);
-        let new_dir_path = Path::new("requests").join(encode_name(&new_dir_name));
+        let new_dir_path = Path::new("requests").join(sanitize(&new_dir_name));
 
         assert_eq!(physical_changes.len(), 2);
         assert!(physical_changes.iter().any(|(path, _id, kind)| {

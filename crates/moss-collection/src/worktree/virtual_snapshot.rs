@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
-use moss_common::sanitized::sanitized_name::SanitizedName;
-use moss_fs::utils::{encode_name, encode_path};
+use moss_common::sanitized::{sanitize, sanitized_name::SanitizedName};
+use moss_fs::utils::sanitize_path;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use sweep_bptree::BPlusTreeMap;
@@ -79,15 +79,15 @@ impl VirtualEntry {
         match self {
             VirtualEntry::Item { path, class, .. } => {
                 if let Some((parent, name)) = split_last_segment(path) {
-                    let encoded_parent = encode_path(&parent.unwrap_or_default(), None)?;
-                    let encoded_name = format!("{}.{}", encode_name(&name), class.as_str());
+                    let encoded_parent = sanitize_path(&parent.unwrap_or_default(), None)?;
+                    let encoded_name = format!("{}.{}", sanitize(&name), class.as_str());
                     Ok(encoded_parent.join(encoded_name))
                 } else {
                     // TODO: replace with proper error
                     Err(anyhow!("Invalid virtual path"))
                 }
             }
-            VirtualEntry::Dir { path, .. } => Ok(encode_path(path, None)?),
+            VirtualEntry::Dir { path, .. } => Ok(sanitize_path(path, None)?),
         }
     }
 
@@ -213,7 +213,7 @@ impl VirtualSnapshot {
         // Find the entry id of all entries that need updating
         let ids = self
             .iter_entries_by_prefix(old_path.to_path_buf())
-            .map(|(id, entry)| id.clone())
+            .map(|(id, _)| id.clone())
             .collect::<Vec<_>>();
 
         for id in ids {

@@ -1,7 +1,7 @@
 use moss_collection::models::operations::{CreateEntryInput, DeleteEntryInput, DeleteEntryOutput};
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_path;
+use moss_fs::utils::sanitize_path;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use std::path::Path;
@@ -349,7 +349,7 @@ async fn delete_entry_dir_special_chars() {
 
     for name in dir_name_list {
         let destination = Path::new("requests").join(&name);
-        let dir_path = encode_path(&destination, None).unwrap();
+        let dir_path = sanitize_path(&destination, None).unwrap();
         let create_result = collection
             .create_entry(CreateEntryInput {
                 destination: destination.clone(),

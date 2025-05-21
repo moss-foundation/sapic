@@ -4,9 +4,8 @@ pub mod util;
 pub mod virtual_snapshot;
 pub mod virtual_worktree;
 
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, sanitized};
 use moss_fs::FileSystem;
-use moss_fs::utils::encode_name;
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
 use std::{
@@ -137,8 +136,8 @@ impl Worktree {
 
         {
             let encoded_path = {
-                let encoded_name = moss_fs::utils::encode_name(&name);
-                let encoded_path = moss_fs::utils::encode_path(&parent, None)?;
+                let encoded_name = sanitized::sanitize(&name);
+                let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
 
                 encoded_path.join(encoded_name)
             };
@@ -188,8 +187,8 @@ impl Worktree {
         let mut virtual_changes = vec![];
 
         let encoded_path = {
-            let encoded_name = moss_fs::utils::encode_name(&name);
-            let encoded_path = moss_fs::utils::encode_path(&parent, None)?;
+            let encoded_name = sanitized::sanitize(&name);
+            let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
 
             encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
         };
@@ -327,9 +326,9 @@ impl Worktree {
 
         let new_filename = match virtual_entry {
             VirtualEntry::Item { class, .. } => {
-                dir_name_from_classification(&encode_name(&new_name), &class)
+                dir_name_from_classification(&sanitized::sanitize(&new_name), &class)
             }
-            VirtualEntry::Dir { .. } => encode_name(&new_name),
+            VirtualEntry::Dir { .. } => sanitized::sanitize(&new_name),
         };
         let new_physical_path = parent.join(&new_filename);
         let physical_changes = self

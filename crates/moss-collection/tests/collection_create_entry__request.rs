@@ -1,7 +1,7 @@
 use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
 use moss_collection::models::types::{Classification, HttpMethod, PathChangeKind, RequestProtocol};
 use moss_common::api::OperationError;
-use moss_fs::utils::encode_name;
+use moss_common::sanitized::sanitize;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
 use serde_json::Value as JsonValue;
@@ -502,20 +502,20 @@ async fn create_entry_request_special_chars_in_path() {
         } = create_result.unwrap();
 
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
-            path.to_path_buf() == Path::new("requests").join(encode_name(&dir_name))
+            path.to_path_buf() == Path::new("requests").join(sanitize(&dir_name))
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == Path::new("requests")
-                    .join(encode_name(&dir_name))
+                    .join(sanitize(&dir_name))
                     .join(request_folder_name(&request_name))
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf()
                 == Path::new("requests")
-                    .join(encode_name(&dir_name))
+                    .join(sanitize(&dir_name))
                     .join(request_folder_name(&request_name))
                     .join("get.sapic")
                 && kind == &PathChangeKind::Created
@@ -532,7 +532,7 @@ async fn create_entry_request_special_chars_in_path() {
 
         let specfile_path = collection_path
             .join("requests")
-            .join(encode_name(&dir_name))
+            .join(sanitize(&dir_name))
             .join(request_folder_name(&request_name))
             .join("get.sapic");
         assert!(specfile_path.exists());
