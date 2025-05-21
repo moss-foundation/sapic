@@ -6,11 +6,7 @@ pub use real::*;
 
 use anyhow::Result;
 use futures::stream::BoxStream;
-use std::{
-    io,
-    path::{Path, PathBuf},
-    time::Duration,
-};
+use std::{io, path::Path, time::Duration};
 use tokio::fs::ReadDir;
 
 // TODO: Rename to RemoveParams

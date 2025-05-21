@@ -1,5 +1,8 @@
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-use moss_fs::{RenameOptions, utils::encode_name};
+use moss_common::{
+    api::{OperationError, OperationResult, OperationResultExt},
+    sanitized::sanitize,
+};
+use moss_fs::RenameOptions;
 use moss_storage::storage::operations::RekeyItem;
 use moss_workspace::Workspace;
 use std::{path::Path, sync::Arc};
@@ -44,7 +47,7 @@ impl<R: TauriRuntime> Workbench<R> {
             return Ok(());
         }
 
-        let new_encoded_name = encode_name(&new_name);
+        let new_encoded_name = sanitize(&new_name);
         let new_abs_path: Arc<Path> = self.absolutize(&new_encoded_name).into();
         if new_abs_path.exists() {
             return Err(OperationError::AlreadyExists(
