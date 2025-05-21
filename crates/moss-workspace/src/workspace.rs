@@ -3,7 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_common::{models::primitives::Identifier, sanitized::desanitize};
 use moss_environment::environment::Environment;
-use moss_fs::{CreateOptions, FileSystem, utils::decode_name};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
     WorkspaceStorage,
     primitives::segkey::SegmentExt,
