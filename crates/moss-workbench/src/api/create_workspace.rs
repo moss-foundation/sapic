@@ -3,9 +3,9 @@ use chrono::Utc;
 use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
     models::primitives::Identifier,
+    sanitized::sanitize,
 };
 use moss_db::primitives::AnyValue;
-use moss_fs::utils::encode_name;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
 use std::{path::Path, sync::Arc};
@@ -28,8 +28,8 @@ impl<R: TauriRuntime> Workbench<R> {
         input.validate()?;
 
         let id = Uuid::new_v4();
-        let workspace_path = Path::new(WORKSPACES_DIR).join(id.to_string());
-        let abs_path: Arc<Path> = self.absolutize(&workspace_path).into();
+        let id_str = id.to_string();
+        let abs_path: Arc<Path> = self.absolutize(&id_str).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
                 abs_path.to_string_lossy().to_string(),
@@ -79,7 +79,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 self.set_active_workspace(id, new_workspace);
 
                 let item_store = self.global_storage.item_store();
-                let segkey = WORKSPACE_SEGKEY.join(id.to_string());
+                let segkey = WORKSPACE_SEGKEY.join(id_str);
                 let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
                 PutItem::put(item_store.as_ref(), segkey, value)?;
             }

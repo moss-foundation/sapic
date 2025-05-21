@@ -1,4 +1,3 @@
-use crate::worktree::Worktree;
 use anyhow::{Context, Result};
 use moss_fs::{FileSystem, RenameOptions};
 use moss_storage::CollectionStorage;
@@ -6,17 +5,13 @@ use moss_storage::collection_storage::CollectionStorageImpl;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::OnceCell;
+use tokio::sync::{OnceCell, RwLock};
 
-#[derive(Clone, Debug)]
-pub struct CollectionCache {
-    pub name: String,
-    pub order: Option<usize>,
-}
+use crate::worktree::Worktree;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Arc<Worktree>>,
+    worktree: OnceCell<Arc<RwLock<Worktree>>>,
     abs_path: PathBuf,
     pub(crate) collection_storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
@@ -44,7 +39,7 @@ impl Collection {
         })
     }
 
-    pub async fn worktree(&self) -> Result<&Arc<Worktree>> {
+    pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
         self.worktree
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(
@@ -53,7 +48,7 @@ impl Collection {
                     self.next_entry_id.clone(),
                 );
 
-                Ok(Arc::new(worktree))
+                Ok(Arc::new(RwLock::new(worktree)))
             })
             .await
     }

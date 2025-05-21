@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
-use moss_common::models::primitives::Identifier;
+use moss_common::{models::primitives::Identifier, sanitized::desanitize};
 use moss_environment::environment::Environment;
 use moss_fs::{CreateOptions, FileSystem, utils::decode_name};
 use moss_storage::{
@@ -215,7 +215,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         .unwrap()
                         .to_string_lossy()
                         .to_string();
-                    let decoded_name = decode_name(&name)?;
+                    let decoded_name = desanitize(&name);
 
                     let environment = Environment::new(
                         entry_abs_path,
@@ -303,7 +303,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         Some(name) => {
                             let name = name.to_string_lossy().to_string();
 
-                            (decode_name(&name)?, name)
+                            (desanitize(&name), name)
                         }
                         None => {
                             // TODO: logging

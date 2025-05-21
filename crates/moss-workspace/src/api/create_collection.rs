@@ -3,9 +3,9 @@ use moss_collection::collection::Collection;
 use moss_common::{
     api::{OperationError, OperationResult},
     models::primitives::Identifier,
+    sanitized::sanitize,
 };
 use moss_db::primitives::AnyValue;
-use moss_fs::utils::encode_name;
 use moss_storage::{
     storage::operations::PutItem,
     workspace_storage::entities::collection_store_entities::CollectionEntity,
@@ -30,7 +30,7 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
-        let encoded_name = encode_name(&input.name);
+        let encoded_name = sanitize(&input.name);
         let path = PathBuf::from(COLLECTIONS_DIR).join(&encoded_name);
         let abs_path: Arc<Path> = self.abs_path().join(path).into();
 

@@ -3063,6 +3063,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "futures",
+ "moss_common",
  "notify",
  "regex",
  "tokio",
