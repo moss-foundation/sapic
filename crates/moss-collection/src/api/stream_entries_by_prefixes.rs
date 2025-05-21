@@ -6,8 +6,8 @@ use crate::{
     },
 };
 use futures::pin_mut;
-use moss_common::api::{OperationError, OperationResult};
-use moss_fs::utils::encode_path;
+use moss_common::api::OperationResult;
+use moss_fs::utils::normalize_path;
 use std::path::Path;
 use std::{time::Duration, vec};
 use tauri::ipc::Channel;
@@ -39,7 +39,7 @@ impl Collection {
 
         let mut streams = StreamMap::new();
         for prefix in input.0 {
-            let normalized_prefix = encode_path(Path::new(prefix), None)?;
+            let normalized_prefix = normalize_path(Path::new(prefix));
             let s =
                 tokio_stream::iter(worktree_lock.iter_entries_by_prefix(normalized_prefix).map(
                     |(&id, entry)| {

@@ -89,8 +89,23 @@ pub fn decode_name(encoded: &str) -> Result<String, std::num::ParseIntError> {
     Ok(result)
 }
 
+/// Doing a basic normalization using Path::components()
+/// All path separators will be normalized, and special components ignored
+pub fn normalize_path(path: &Path) -> PathBuf {
+    path.components()
+        .filter_map(|comp| {
+            if let Component::Normal(name) = comp {
+                Some(name)
+            } else {
+                // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
+                None
+            }
+        })
+        .collect()
+}
+
 // FIXME: This process may need some refinement
-/// Doing a basic normalization using Path::components() and encode the segments after the prefix
+/// Normalize the path and encode the segments after the prefix
 pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
     // Determine the relative part of the path to be encoded.
     let relative_path = match prefix {
@@ -98,21 +113,16 @@ pub fn encode_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
         None => path,
     };
 
-    // Encode only the normal components of the path.
-    let encoded: PathBuf = relative_path
-        .components()
-        .filter_map(|comp| {
-            if let Component::Normal(name) = comp {
-                Some(encode_name(&name.to_string_lossy()))
-            } else {
-                // Special components are ignored (ParentDir, Prefix, RootDir, CurDir)
-                None
-            }
-        })
+    let normalized = normalize_path(&relative_path);
+
+    // Encode the parts after the prefix
+    let encoded: PathBuf = normalized
+        .iter()
+        .map(|os_str| encode_name(&os_str.to_string_lossy()))
         .collect();
 
     // If a prefix was provided, join it back with the encoded path.
-    Ok(prefix.map(|p| p.join(&encoded)).unwrap_or(encoded))
+    Ok(prefix.map(|p| normalize_path(p)).unwrap_or(encoded))
 }
 
 #[cfg(test)]
@@ -145,26 +155,20 @@ mod tests {
     }
 
     #[test]
-    fn test_encode_path() {
-        let path1 = PathBuf::from("1/1");
-        let path2 = PathBuf::from("1\\1");
-        let path3 = PathBuf::from("1//1");
-        let path4 = PathBuf::from("1\\\\1");
-        let path5 = PathBuf::from("1/1/");
-        let path6 = PathBuf::from("1\\1\\");
+    fn test_normalize_path() {
+        let canonical = Path::new("1").join("1");
 
-        println!(
-            "{}",
-            encode_path(&path1, None)
-                .unwrap()
-                .to_string_lossy()
-                .to_string()
-        );
-        dbg!(&encode_path(&path1, None).unwrap());
-        dbg!(&encode_path(&path2, None).unwrap());
-        dbg!(&encode_path(&path3, None).unwrap());
-        dbg!(&encode_path(&path4, None).unwrap());
-        dbg!(&encode_path(&path5, None).unwrap());
-        dbg!(&encode_path(&path6, None).unwrap());
+        let irregular_paths = vec![
+            Path::new("1/1"),
+            Path::new("1//1"),
+            Path::new("1/1/"),
+            Path::new("1\\1"),
+            Path::new("1\\\\1"),
+            Path::new("1\\1\\"),
+        ];
+
+        for path in irregular_paths {
+            assert_eq!(normalize_path(path), canonical);
+        }
     }
 }
