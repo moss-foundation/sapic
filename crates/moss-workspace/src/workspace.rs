@@ -3,7 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_common::{models::primitives::Identifier, sanitized::desanitize};
 use moss_environment::environment::Environment;
-use moss_fs::{CreateOptions, FileSystem};
+use moss_fs::FileSystem;
 use moss_storage::{
     WorkspaceStorage,
     primitives::segkey::SegmentExt,
@@ -22,7 +22,7 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::{
-    manifest::{MANIFEST_FILE_NAME, Manifest},
+    manifest::{Manifest, WorkspaceManifestModel, WorkspaceManifestModelDiff},
     storage::segments::COLLECTION_SEGKEY,
 };
 
@@ -80,20 +80,20 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) next_environment_id: Arc<AtomicUsize>,
 
     #[allow(dead_code)]
-    pub(super) manifest: RwLock<Manifest>,
+    pub(super) manifest: Manifest<WorkspaceManifestModel>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn open(
+    pub async fn load(
         app_handle: AppHandle<R>,
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
         let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to open the workspace state database")?;
+            .context("Failed to load the workspace state database")?;
 
-        let manifest = read_manifest(&fs, &abs_path).await?;
+        let manifest = Manifest::load(fs.clone(), abs_path.clone()).await?;
 
         Ok(Self {
             app_handle,
@@ -107,7 +107,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
-            manifest: RwLock::new(manifest),
+            manifest,
         })
     }
 
@@ -121,16 +121,10 @@ impl<R: TauriRuntime> Workspace<R> {
         let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
             .context("Failed to open the workspace state database")?;
 
-        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
-        let manifest = Manifest::new(name);
-        let content = toml::to_string_pretty(&manifest)?;
-        fs.create_file_with(
-            &manifest_path,
-            content.as_bytes(),
-            CreateOptions {
-                overwrite: true,
-                ignore_if_exists: false,
-            },
+        let manifest = Manifest::new(
+            fs.clone(),
+            abs_path.clone(),
+            WorkspaceManifestModel { name },
         )
         .await?;
 
@@ -146,41 +140,28 @@ impl<R: TauriRuntime> Workspace<R> {
             next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
-            manifest: RwLock::new(manifest),
+            manifest,
         })
     }
 
     pub async fn rename(&self, name: String) -> Result<()> {
-        let mut manifest = self.manifest.write().await;
-        let updated_manifest = {
-            let mut current_clone = manifest.clone();
-            current_clone.name = name;
-
-            current_clone
-        };
-
-        self.fs
-            .create_file_with(
-                &self.abs_path.join(MANIFEST_FILE_NAME),
-                toml::to_string_pretty(&updated_manifest)?.as_bytes(),
-                CreateOptions {
-                    overwrite: true,
-                    ignore_if_exists: false,
-                },
-            )
+        self.manifest
+            .modify(WorkspaceManifestModelDiff { name: Some(name) })
             .await?;
-
-        *manifest = updated_manifest;
 
         Ok(())
     }
 
-    pub async fn open_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
-        Ok(read_manifest(fs, abs_path).await?)
+    pub async fn load_manifest(
+        fs: &Arc<dyn FileSystem>,
+        abs_path: &Arc<Path>,
+    ) -> Result<WorkspaceManifestModel> {
+        let manifest = Manifest::load(fs.clone(), abs_path.clone()).await?;
+        Ok(manifest.model().await)
     }
 
-    pub async fn manifest(&self) -> Manifest {
-        self.manifest.read().await.clone()
+    pub async fn manifest(&self) -> WorkspaceManifestModel {
+        self.manifest.model().await
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
@@ -349,21 +330,4 @@ impl<R: TauriRuntime> Workspace<R> {
         // Ok(txn.commit()?)
         todo!()
     }
-}
-
-async fn read_manifest(fs: &Arc<dyn FileSystem>, abs_path: &Arc<Path>) -> Result<Manifest> {
-    let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
-    dbg!(&manifest_path);
-
-    let mut reader = fs
-        .open_file(&manifest_path)
-        .await
-        .context("Failed to open existing workspace manifest file")?;
-
-    let mut buf = String::new();
-    reader
-        .read_to_string(&mut buf)
-        .context("Failed to read workspace manifest file")?;
-
-    Ok(toml::from_str(&buf)?)
 }

@@ -8,7 +8,10 @@ use moss_common::{
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tauri::Runtime as TauriRuntime;
 use uuid::Uuid;
 use validator::Validate;
@@ -29,7 +32,8 @@ impl<R: TauriRuntime> Workbench<R> {
 
         let id = Uuid::new_v4();
         let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.absolutize(&id_str).into();
+        let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
+        let abs_path: Arc<Path> = self.absolutize(&path).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
                 abs_path.to_string_lossy().to_string(),

@@ -161,7 +161,7 @@ impl<R: TauriRuntime> Workbench<R> {
                     let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
                     let abs_path: Arc<Path> = self.absolutize(path).into();
 
-                    let manifest = Workspace::<R>::open_manifest(&self.fs, &abs_path).await?;
+                    let manifest = Workspace::<R>::load_manifest(&self.fs, &abs_path).await?;
 
                     let restored_entity =
                         match restored_entities.remove(&id_str).map_or(Ok(None), |v| {

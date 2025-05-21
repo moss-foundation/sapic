@@ -26,7 +26,7 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
 
     let fs = Arc::new(RealFileSystem::new());
 
-    let random_abs_app_path: PathBuf = random_app_dir_path();
+    let random_abs_app_path: Arc<Path> = random_app_dir_path().into();
     let workspaces_abs_path: Arc<Path> = random_abs_app_path.join("workspaces").into();
     let globals_abs_path = random_abs_app_path.join("globals");
 
@@ -45,7 +45,7 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
         fs,
         global_storage,
         workbench::Options {
-            abs_path: workspaces_abs_path.clone(),
+            abs_path: random_abs_app_path.clone(),
         },
     );
 
