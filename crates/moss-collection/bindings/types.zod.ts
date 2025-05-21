@@ -94,8 +94,8 @@ export const entryInfoSchema = z.object({
   path: z.string(),
   isDir: z.boolean(),
   classification: classificationSchema,
-  protocol: requestProtocolSchema.nullable(),
-  order: z.number().nullable(),
+  protocol: requestProtocolSchema.optional(),
+  order: z.number().optional(),
 });
 
 export const headerParamItemSchema = z.object({

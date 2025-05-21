@@ -10,8 +10,8 @@ export type EntryInfo = {
   path: string;
   isDir: boolean;
   classification: Classification;
-  protocol: RequestProtocol | null;
-  order: number | null;
+  protocol?: RequestProtocol;
+  order?: number;
 };
 
 export type EntryKind = "unit" | "unloadedDir" | "dir" | "file";

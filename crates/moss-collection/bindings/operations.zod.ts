@@ -18,8 +18,8 @@ export const createEntryInputSchema = z.object({
   destination: z.string(),
   classification: classificationSchema,
   specification: jsonValueSchema.optional(),
-  protocol: requestProtocolSchema.nullable(),
-  order: z.number().nullable(),
+  protocol: requestProtocolSchema.optional(),
+  order: z.number().optional(),
   isDir: z.boolean(),
 });
 
@@ -33,7 +33,7 @@ export const createRequestProtocolSpecificPayloadSchema = z.object({
     query_params: z.array(queryParamItemSchema),
     path_params: z.array(pathParamItemSchema),
     headers: z.array(headerParamItemSchema),
-    body: requestBodySchema.nullable(),
+    body: requestBodySchema.optional(),
   }),
 });
 
@@ -47,11 +47,11 @@ export const deleteEntryOutputSchema = z.object({
 
 export const updateEntryInputSchema = z.object({
   id: entryIdSchema,
-  name: z.string().nullable(),
-  classification: classificationSchema.nullable(),
+  name: z.string().optional(),
+  classification: classificationSchema.optional(),
   specification: jsonValueSchema.optional(),
-  protocol: requestProtocolSchema.nullable(),
-  order: z.number().nullable(),
+  protocol: requestProtocolSchema.optional(),
+  order: z.number().optional(),
 });
 
 export const updateEntryOutputSchema = z.object({

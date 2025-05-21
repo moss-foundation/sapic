@@ -21,10 +21,11 @@ pub struct CreateEntryInput {
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
-
     #[ts(optional, type = "JsonValue")]
     pub specification: Option<JsonValue>,
+    #[ts(optional)]
     pub protocol: Option<RequestProtocol>,
+    #[ts(optional)]
     pub order: Option<usize>,
     pub is_dir: bool,
 }
@@ -61,12 +62,15 @@ pub struct DeleteEntryOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEntryInput {
     pub id: EntryId,
+    #[ts(optional)]
     pub name: Option<String>,
+    #[ts(optional)]
     pub classification: Option<Classification>,
-
     #[ts(optional, type = "JsonValue")]
     pub specification: Option<JsonValue>,
+    #[ts(optional)]
     pub protocol: Option<RequestProtocol>,
+    #[ts(optional)]
     pub order: Option<usize>,
 }
 
@@ -89,6 +93,7 @@ pub enum CreateRequestProtocolSpecificPayload {
         query_params: Vec<QueryParamItem>,
         path_params: Vec<PathParamItem>,
         headers: Vec<HeaderParamItem>,
+        #[ts(optional)]
         body: Option<RequestBody>,
     },
 }

@@ -225,7 +225,9 @@ pub struct EntryInfo {
     pub path: PathBuf,
     pub is_dir: bool,
     pub classification: Classification,
+    #[ts(optional)]
     pub protocol: Option<RequestProtocol>,
+    #[ts(optional)]
     pub order: Option<usize>,
 }
 

@@ -16,8 +16,8 @@ export type CreateEntryInput = {
   destination: string;
   classification: Classification;
   specification?: JsonValue;
-  protocol: RequestProtocol | null;
-  order: number | null;
+  protocol?: RequestProtocol;
+  order?: number;
   isDir: boolean;
 };
 
@@ -29,7 +29,7 @@ export type CreateRequestProtocolSpecificPayload = {
     query_params: Array<QueryParamItem>;
     path_params: Array<PathParamItem>;
     headers: Array<HeaderParamItem>;
-    body: RequestBody | null;
+    body?: RequestBody;
   };
 };
 
@@ -41,11 +41,11 @@ export type StreamEntriesByPrefixesInput = Array<string>;
 
 export type UpdateEntryInput = {
   id: EntryId;
-  name: string | null;
-  classification: Classification | null;
+  name?: string;
+  classification?: Classification;
   specification?: JsonValue;
-  protocol: RequestProtocol | null;
-  order: number | null;
+  protocol?: RequestProtocol;
+  order?: number;
 };
 
 export type UpdateEntryOutput = { virtualChanges: Array<[string, EntryId, PathChangeKind]> };
