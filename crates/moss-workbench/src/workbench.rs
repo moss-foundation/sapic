@@ -18,9 +18,7 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
-use crate::storage::segments::WORKSPACE_SEGKEY;
-
-pub const WORKSPACES_DIR: &str = "workspaces";
+use crate::{dirs::WORKSPACES_DIR, storage::segments::WORKSPACE_SEGKEY};
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {

@@ -6,13 +6,13 @@ use moss_testutils::random_name::random_request_name;
 use std::path::Path;
 use std::time::Duration;
 
-use crate::shared::{find_id_by_path, request_folder_name, set_up_test_collection};
+use crate::shared::{create_test_collection, find_id_by_path, request_folder_name};
 
 mod shared;
 
 #[tokio::test]
 async fn delete_entry_request_success() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
 
@@ -72,7 +72,7 @@ async fn delete_entry_request_success() {
 
 #[tokio::test]
 async fn delete_entry_request_nonexistent_key() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let destination = Path::new("requests").join(&request_name);
@@ -108,7 +108,7 @@ async fn delete_entry_request_nonexistent_key() {
 
 #[tokio::test]
 async fn delete_entry_request_nested() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let destination = Path::new("requests").join("group").join(&request_name);
@@ -164,7 +164,7 @@ async fn delete_entry_request_nested() {
 
 #[tokio::test]
 async fn delete_entry_request_fs_already_deleted() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
@@ -221,7 +221,7 @@ async fn delete_entry_request_fs_already_deleted() {
 
 #[tokio::test]
 async fn delete_entry_request_special_chars() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let request_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{s}{}", random_request_name()))

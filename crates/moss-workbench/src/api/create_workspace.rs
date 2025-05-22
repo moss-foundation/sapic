@@ -12,8 +12,8 @@ use tauri::Runtime as TauriRuntime;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::workbench::WORKSPACES_DIR;
 use crate::{
+    dirs,
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     storage::segments::WORKSPACE_SEGKEY,
     workbench::{Workbench, WorkspaceDescriptor},
