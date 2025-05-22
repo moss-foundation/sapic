@@ -38,7 +38,7 @@
           },
           {
             "id": "Plugin",
-            "order": 2,
+            "order": 3,
             "type": "folder",
             "isFolder": true,
             "isExpanded": false,
@@ -66,7 +66,7 @@
           },
           {
             "id": "Delete User",
-            "order": 3,
+            "order": 4,
             "type": "hdr",
             "isFolder": false,
             "isExpanded": false,

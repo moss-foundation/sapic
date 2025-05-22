@@ -7,12 +7,14 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { ActionMenu, TreeContext } from "..";
+import { AddingFormDivider } from "./AddingFormDivider";
 import { DropIndicatorWithInstruction } from "./DropIndicatorWithInstruction";
+import { useAddNodeWithDivider } from "./hooks/useAddNodeWithDivider";
 import { useInstructionNode } from "./hooks/useInstructionNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
-import NodeLabel from "./NodeLabel";
+import { NodeLabel } from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TestCollectionIcon } from "./TestCollectionIcon";
 import { TreeNodeComponentProps, TreeNodeProps } from "./types";
@@ -48,6 +50,20 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
 
+  const {
+    isAddingDividerNode: isAddingDividerNodeAbove,
+    setIsAddingDividerNode: setIsAddingDividerNodeAbove,
+    handleAddDividerFormSubmit: handleAddDividerFormSubmitAbove,
+    handleAddDividerFormCancel: handleAddDividerFormCancelAbove,
+  } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order - 1);
+
+  const {
+    isAddingDividerNode: isAddingDividerNodeBelow,
+    setIsAddingDividerNode: setIsAddingDividerNodeBelow,
+    handleAddDividerFormSubmit: handleAddDividerFormSubmitBelow,
+    handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
+  } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
+
   const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
     node,
     onNodeUpdate
@@ -81,20 +97,62 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <TreeNodeButton
-          ref={triggerRef}
-          node={node}
-          onNodeUpdate={onNodeUpdate}
-          depth={depth}
-          onAddFile={() => setIsAddingFileNode(true)}
-          onAddFolder={() => setIsAddingFolderNode(true)}
-          onRename={() => setIsRenamingNode(true)}
-          isDragging={isDragging}
-          canDrop={canDrop}
-          instruction={instruction}
-          preview={preview}
-          isLastChild={isLastChild}
-        />
+        <>
+          <AddingFormDivider
+            paddingLeft={nodePaddingLeft}
+            paddingRight={paddingRight}
+            position="top"
+            onClick={() => setIsAddingDividerNodeAbove(true)}
+          />
+
+          {isAddingDividerNodeAbove && (
+            <TreeNodeAddForm
+              node={node}
+              depth={depth - 1}
+              isAddingFileNode={true}
+              isAddingFolderNode={false}
+              onNodeAddCallback={onNodeAddCallback}
+              handleAddFormSubmit={handleAddDividerFormSubmitAbove}
+              handleAddFormCancel={handleAddDividerFormCancelAbove}
+            />
+          )}
+
+          <TreeNodeButton
+            ref={triggerRef}
+            node={node}
+            onNodeUpdate={onNodeUpdate}
+            depth={depth}
+            onAddFile={() => setIsAddingFileNode(true)}
+            onAddFolder={() => setIsAddingFolderNode(true)}
+            onRename={() => setIsRenamingNode(true)}
+            isDragging={isDragging}
+            canDrop={canDrop}
+            instruction={instruction}
+            preview={preview}
+            isLastChild={isLastChild}
+          />
+
+          {isAddingDividerNodeBelow && (
+            <TreeNodeAddForm
+              node={node}
+              depth={depth - 1}
+              isAddingFileNode={true}
+              isAddingFolderNode={false}
+              onNodeAddCallback={onNodeAddCallback}
+              handleAddFormSubmit={handleAddDividerFormSubmitBelow}
+              handleAddFormCancel={handleAddDividerFormCancelBelow}
+            />
+          )}
+
+          {isLastChild && (
+            <AddingFormDivider
+              paddingLeft={nodePaddingLeft}
+              paddingRight={paddingRight}
+              position="bottom"
+              onClick={() => setIsAddingDividerNodeBelow(true)}
+            />
+          )}
+        </>
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (
@@ -127,6 +185,7 @@ interface TreeNodeButtonProps {
   preview: HTMLElement | null;
   isLastChild: boolean;
 }
+
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
   (
     {
@@ -181,9 +240,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             ref={ref}
             onClick={handleClick}
             onDoubleClick={handleDoubleClick}
-            className={cn(
-              "group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center dark:hover:text-black"
-            )}
+            className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
           >
             <span
               className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
@@ -193,7 +250,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   activePanelId === node.id && node.uniqueId !== "DraggedNode",
               })}
             />
-
             <span
               className={cn("relative z-10 flex h-full w-full items-center gap-1 py-0.5", {
                 "background-(--moss-error-background)": canDrop === false,
@@ -210,6 +266,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
+
               <Icon
                 icon="ChevronRight"
                 className={cn("text-(--moss-icon-primary-text)", {
@@ -221,7 +278,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <NodeLabel label={node.id} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
-
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
@@ -258,43 +314,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     );
   }
 );
-
-const TreeNodeRenameForm = ({
-  node,
-  depth,
-  parentNode,
-  onNodeRenameCallback,
-  handleRenamingFormSubmit,
-  handleRenamingFormCancel,
-}) => {
-  const { nodeOffset, searchInput } = useContext(TreeContext);
-  const nodePaddingLeft = depth * nodeOffset;
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
-
-  return (
-    <div className="w-full min-w-0">
-      <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
-        <Icon
-          icon="ChevronRight"
-          className={cn("text-(--moss-icon-primary-text)", {
-            "rotate-90": shouldRenderChildNodes,
-            "opacity-0": !node.isFolder,
-          })}
-        />
-        <TestCollectionIcon type={node.type} />
-        <NodeRenamingForm
-          onSubmit={(newName) => {
-            handleRenamingFormSubmit(newName);
-            onNodeRenameCallback?.({ ...node, id: newName });
-          }}
-          onCancel={handleRenamingFormCancel}
-          restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
-          currentName={node.id}
-        />
-      </span>
-    </div>
-  );
-};
 
 const TreeNodeAddForm = ({
   node,
@@ -350,6 +369,43 @@ const TreeNodeChildren = ({ node, onNodeUpdate, depth }) => {
           />
         ))}
       </ul>
+    </div>
+  );
+};
+
+const TreeNodeRenameForm = ({
+  node,
+  depth,
+  parentNode,
+  onNodeRenameCallback,
+  handleRenamingFormSubmit,
+  handleRenamingFormCancel,
+}) => {
+  const { nodeOffset, searchInput } = useContext(TreeContext);
+  const nodePaddingLeft = depth * nodeOffset;
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
+
+  return (
+    <div className="w-full min-w-0">
+      <span className="flex w-full items-center gap-1 py-0.5" style={{ paddingLeft: nodePaddingLeft }}>
+        <Icon
+          icon="ChevronRight"
+          className={cn("text-(--moss-icon-primary-text)", {
+            "rotate-90": shouldRenderChildNodes,
+            "opacity-0": !node.isFolder,
+          })}
+        />
+        <TestCollectionIcon type={node.type} />
+        <NodeRenamingForm
+          onSubmit={(newName) => {
+            handleRenamingFormSubmit(newName);
+            onNodeRenameCallback?.({ ...node, id: newName });
+          }}
+          onCancel={handleRenamingFormCancel}
+          restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
+          currentName={node.id}
+        />
+      </span>
     </div>
   );
 };
