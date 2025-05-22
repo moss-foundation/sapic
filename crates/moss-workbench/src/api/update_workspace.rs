@@ -1,5 +1,6 @@
 use anyhow::Context;
 use moss_common::api::{OperationResult, OperationResultExt};
+use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -33,7 +34,11 @@ impl<R: TauriRuntime> Workbench<R> {
                 None
             }
         }) {
-            workspace.rename(new_name.clone()).await?;
+            workspace
+                .modify(workspace::ModifyParams {
+                    name: Some(new_name.clone()),
+                })
+                .await?;
             descriptor.name = new_name;
         }
 

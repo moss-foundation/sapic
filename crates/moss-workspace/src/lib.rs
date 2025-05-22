@@ -3,8 +3,8 @@ pub mod manifest;
 pub mod models;
 pub mod storage;
 
-mod workspace;
-pub use workspace::*;
+pub mod workspace;
+pub use workspace::Workspace;
 
 mod defaults {
     pub(crate) const DEFAULT_WORKSPACE_NAME: &str = "New Workspace";

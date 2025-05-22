@@ -5,6 +5,8 @@ pub mod manifest;
 pub mod models;
 pub mod worktree;
 
+pub use collection::Collection;
+
 mod defaults {
     pub(crate) const DEFAULT_COLLECTION_NAME: &str = "New Collection";
 }

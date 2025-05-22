@@ -56,7 +56,6 @@ where
         let abs_path: Arc<Path> = abs_path.as_ref().into();
         debug_assert!(abs_path.is_absolute());
 
-        dbg!(&abs_path);
         let mut reader = fs
             .open_file(&abs_path)
             .await

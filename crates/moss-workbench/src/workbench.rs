@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::service::prelude::AppService;
@@ -18,7 +18,7 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
-use crate::{dirs::WORKSPACES_DIR, storage::segments::WORKSPACE_SEGKEY};
+use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {
@@ -112,7 +112,7 @@ impl<R: TauriRuntime> Workbench<R> {
             .get_or_try_init(|| async move {
                 let mut workspaces: WorkspaceMap = HashMap::new();
 
-                let dir_abs_path = self.absolutize(WORKSPACES_DIR);
+                let dir_abs_path = self.absolutize(dirs::WORKSPACES_DIR);
                 if !dir_abs_path.exists() {
                     return Ok(RwLock::new(workspaces));
                 }
@@ -160,11 +160,7 @@ impl<R: TauriRuntime> Workbench<R> {
                         }
                     };
 
-                    // TODO: can we use just use  entry.path()?
-                    let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
-                    let abs_path: Arc<Path> = self.absolutize(path).into();
-
-                    let manifest = Workspace::<R>::load_manifest(&self.fs, &abs_path).await?;
+                    let summary = Workspace::<R>::summary(&self.fs, &entry.path()).await?;
 
                     let restored_entity =
                         match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
@@ -182,8 +178,8 @@ impl<R: TauriRuntime> Workbench<R> {
                         id,
                         WorkspaceDescriptor {
                             id,
-                            name: manifest.name,
-                            abs_path,
+                            name: summary.manifest.name,
+                            abs_path: entry.path().into(),
                             last_opened_at: restored_entity.map(|v| v.last_opened_at),
                         }
                         .into(),

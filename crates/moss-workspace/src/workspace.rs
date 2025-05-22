@@ -64,6 +64,10 @@ impl Deref for EnvironmentItem {
 type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
 type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
 
+pub struct WorkspaceSummary {
+    pub manifest: ManifestModel,
+}
+
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     pub(super) app_handle: AppHandle<R>,
@@ -76,7 +80,6 @@ pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
     pub(super) next_collection_entry_id: Arc<AtomicUsize>,
-    pub(super) next_collection_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     pub(super) next_variable_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
@@ -87,6 +90,10 @@ pub struct Workspace<R: TauriRuntime> {
 }
 
 pub struct CreateParams {
+    pub name: Option<String>,
+}
+
+pub struct ModifyParams {
     pub name: Option<String>,
 }
 
@@ -112,7 +119,6 @@ impl<R: TauriRuntime> Workspace<R> {
             environments: OnceCell::new(),
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
-            next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
@@ -150,27 +156,29 @@ impl<R: TauriRuntime> Workspace<R> {
             environments: OnceCell::new(),
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
-            next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
         })
     }
 
-    pub async fn rename(&self, name: String) -> Result<()> {
-        self.manifest
-            .edit(ManifestModelDiff { name: Some(name) })
-            .await?;
+    pub async fn modify(&self, params: ModifyParams) -> Result<()> {
+        if params.name.is_some() {
+            self.manifest
+                .edit(ManifestModelDiff {
+                    name: params.name.to_owned(),
+                })
+                .await?;
+        }
 
         Ok(())
     }
 
-    pub async fn load_manifest(
-        fs: &Arc<dyn FileSystem>,
-        abs_path: &Arc<Path>,
-    ) -> Result<ManifestModel> {
+    pub async fn summary(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
         let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
-        Ok(manifest.model().await)
+        Ok(WorkspaceSummary {
+            manifest: manifest.model().await,
+        })
     }
 
     pub async fn manifest(&self) -> ManifestModel {
@@ -329,17 +337,5 @@ impl<R: TauriRuntime> Workspace<R> {
             .await?;
 
         Ok(result)
-    }
-}
-
-impl<R: TauriRuntime> Workspace<R> {
-    #[cfg(test)]
-    pub fn truncate(&self) -> Result<()> {
-        // let collection_store = self.workspace_storage.collection_store();
-
-        // let (mut txn, table) = collection_store.begin_write()?;
-        // table.truncate(&mut txn)?;
-        // Ok(txn.commit()?)
-        todo!()
     }
 }

@@ -5,7 +5,7 @@ use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
-use moss_workspace::{CreateParams, Workspace};
+use moss_workspace::{Workspace, workspace::CreateParams};
 use std::collections::HashMap;
 use std::fs;
 use std::future::Future;
