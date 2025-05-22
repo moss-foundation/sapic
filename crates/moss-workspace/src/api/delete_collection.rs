@@ -25,7 +25,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let id_str = input.id.to_string();
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
-        let abs_path: Arc<Path> = self.abs_path().join(path).into();
+        let abs_path: Arc<Path> = self.absolutize(path).into();
 
         if abs_path.exists() {
             self.fs

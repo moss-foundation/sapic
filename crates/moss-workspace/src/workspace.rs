@@ -45,7 +45,7 @@ impl Deref for CollectionItem {
     }
 }
 
-pub struct EnvironmentEntry {
+pub struct EnvironmentItem {
     pub id: Identifier,
     pub name: String,
     pub display_name: String,
@@ -53,7 +53,7 @@ pub struct EnvironmentEntry {
     pub inner: Environment,
 }
 
-impl Deref for EnvironmentEntry {
+impl Deref for EnvironmentItem {
     type Target = Environment;
 
     fn deref(&self) -> &Self::Target {
@@ -62,7 +62,7 @@ impl Deref for EnvironmentEntry {
 }
 
 type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
-type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentEntry>>;
+type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
@@ -223,7 +223,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     .await?;
 
                     let id = Identifier::new(&self.next_environment_id);
-                    let entry = EnvironmentEntry {
+                    let entry = EnvironmentItem {
                         id,
                         name,
                         display_name: decoded_name,

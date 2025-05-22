@@ -1,4 +1,3 @@
-use moss_common::models::primitives::Identifier;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
 use std::{path::Path, sync::Arc};

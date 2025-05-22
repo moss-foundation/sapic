@@ -10,7 +10,7 @@ mod defaults {
     pub(crate) const DEFAULT_WORKSPACE_NAME: &str = "New Workspace";
 }
 
-mod dirs {
-    pub(crate) const COLLECTIONS_DIR: &str = "collections";
-    pub(crate) const ENVIRONMENTS_DIR: &str = "environments";
+pub mod dirs {
+    pub const COLLECTIONS_DIR: &str = "collections";
+    pub const ENVIRONMENTS_DIR: &str = "environments";
 }

@@ -1,9 +1,6 @@
 use anyhow::Context as _;
 use moss_collection::collection::{self, Collection};
-use moss_common::{
-    api::{OperationError, OperationResult},
-    models::primitives::Identifier,
-};
+use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::PutItem,
@@ -36,7 +33,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let id_str = id.to_string();
 
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
-        let abs_path: Arc<Path> = self.abs_path().join(path).into();
+        let abs_path: Arc<Path> = self.absolutize(path).into();
 
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
