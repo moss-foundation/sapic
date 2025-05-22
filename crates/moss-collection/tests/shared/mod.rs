@@ -6,6 +6,7 @@ use moss_text::sanitized::sanitized_name::SanitizedName;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
+use uuid::Uuid;
 
 #[allow(dead_code)]
 pub fn random_dir_name() -> String {
@@ -16,7 +17,7 @@ fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
-        .join(random_collection_name())
+        .join(Uuid::new_v4().to_string())
 }
 
 pub async fn create_test_collection() -> (PathBuf, Collection) {
@@ -24,9 +25,6 @@ pub async fn create_test_collection() -> (PathBuf, Collection) {
     let collection_path = random_collection_path();
 
     std::fs::create_dir_all(collection_path.clone()).unwrap();
-
-    // Create collection/requests to prevent indexation error
-    // std::fs::create_dir_all(collection_path.join("requests")).unwrap();
 
     let next_entry_id = Arc::new(AtomicUsize::new(0));
     let collection = Collection::create(

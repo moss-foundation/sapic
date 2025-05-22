@@ -32,6 +32,7 @@ sweep-bptree.workspace = true
 file-id.workspace = true
 tokio-stream.workspace = true
 toml_edit.workspace = true
+uuid = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
