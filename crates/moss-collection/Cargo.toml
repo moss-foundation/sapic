@@ -9,7 +9,8 @@ moss_db.workspace = true
 moss_activity_indicator.workspace = true
 moss_common.workspace = true
 moss_storage.workspace = true
-
+moss_text.workspace = true
+moss_file.workspace = true
 
 anyhow.workspace = true
 kdl.workspace = true
@@ -30,6 +31,8 @@ notify.workspace = true
 sweep-bptree.workspace = true
 file-id.workspace = true
 tokio-stream.workspace = true
+toml_edit.workspace = true
+uuid = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

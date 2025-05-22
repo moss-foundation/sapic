@@ -1,6 +1,6 @@
 mod shared;
 
-use crate::shared::set_up_test_collection;
+use crate::shared::create_test_collection;
 use moss_collection::models::operations::CreateEntryInput;
 use moss_collection::models::types::Classification;
 use moss_collection::models::{
@@ -11,7 +11,7 @@ use std::path::Path;
 use tauri::ipc::InvokeResponseBody;
 #[tokio::test]
 async fn stream_entries_by_prefixes() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (_collection_path, collection) = create_test_collection().await;
 
     collection
         .create_entry(CreateEntryInput {

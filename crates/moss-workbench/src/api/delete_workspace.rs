@@ -22,6 +22,7 @@ impl<R: TauriRuntime> Workbench<R> {
             .map_err_as_not_found()?;
 
         if !workspace_entry.abs_path.exists() {
+            // TODO: if a path is not found, we also need to remove the workspace from the database and clean up other caches
             return Err(OperationError::NotFound(
                 workspace_entry.abs_path.to_string_lossy().to_string(),
             ));
@@ -39,7 +40,7 @@ impl<R: TauriRuntime> Workbench<R> {
 
         {
             let item_store = self.global_storage.item_store();
-            let segkey = WORKSPACE_SEGKEY.join(workspace_entry.name.to_owned());
+            let segkey = WORKSPACE_SEGKEY.join(input.id.to_string());
             RemoveItem::remove(item_store.as_ref(), segkey)?;
         }
 

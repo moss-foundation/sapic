@@ -10,15 +10,18 @@ async fn delete_collection_success() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let id = workspace
+    let create_collection_output = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
+            order: None,
         })
         .await
-        .unwrap()
-        .id;
+        .unwrap();
+
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput { id })
+        .delete_collection(DeleteCollectionInput {
+            id: create_collection_output.id,
+        })
         .await;
     assert!(delete_collection_result.is_ok());
 
@@ -37,6 +40,7 @@ async fn delete_collection_nonexistent_id() {
     let id = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
+            order: None,
         })
         .await
         .unwrap()
@@ -65,6 +69,7 @@ async fn delete_collection_fs_already_deleted() {
     let create_collection_output = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
+            order: None,
         })
         .await
         .unwrap();

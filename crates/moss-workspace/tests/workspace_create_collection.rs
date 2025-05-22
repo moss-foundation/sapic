@@ -14,6 +14,7 @@ async fn create_collection_success() {
     let create_collection_result = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
+            order: None,
         })
         .await;
 
@@ -23,10 +24,6 @@ async fn create_collection_success() {
     let collections = workspace.collections().await.unwrap().read().await;
 
     assert_eq!(collections.len(), 1);
-    assert_eq!(
-        collections[&create_collection_output.id].display_name,
-        collection_name
-    );
 
     // Verify the directory was created
     assert!(create_collection_output.abs_path.exists());
@@ -43,39 +40,13 @@ async fn create_collection_empty_name() {
     let create_collection_result = workspace
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
+            order: None,
         })
         .await;
 
     assert!(matches!(
         create_collection_result,
         Err(OperationError::InvalidInput(_))
-    ));
-
-    // Clean up
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn create_collection_already_exists() {
-    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
-
-    let collection_name = random_collection_name();
-    workspace
-        .create_collection(CreateCollectionInput {
-            name: collection_name.clone(),
-        })
-        .await
-        .unwrap();
-
-    let create_collection_result = workspace
-        .create_collection(CreateCollectionInput {
-            name: collection_name.clone(),
-        })
-        .await;
-
-    assert!(matches!(
-        create_collection_result,
-        Err(OperationError::AlreadyExists { .. })
     ));
 
     // Clean up
@@ -95,6 +66,7 @@ async fn create_collection_special_chars() {
         let create_collection_result = workspace
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
+                order: None,
             })
             .await;
         assert!(create_collection_result.is_ok());
@@ -103,10 +75,6 @@ async fn create_collection_special_chars() {
         let collections = workspace.collections().await.unwrap().read().await;
 
         assert!(collections.contains_key(&create_collection_output.id));
-        assert_eq!(
-            collections[&create_collection_output.id].display_name,
-            collection_name
-        );
 
         // Verify the directory was created
         assert!(create_collection_output.abs_path.exists());

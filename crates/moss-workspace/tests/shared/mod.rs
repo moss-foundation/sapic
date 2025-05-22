@@ -1,11 +1,11 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::Workspace;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
+use moss_workspace::{Workspace, workspace::CreateParams};
 use std::collections::HashMap;
 use std::fs;
 use std::future::Future;
@@ -13,31 +13,34 @@ use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::Arc;
 use tauri::test::MockRuntime;
+use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
-
-pub fn random_workspace_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests")
-        .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
-}
 
 pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
-    let fs = Arc::new(RealFileSystem::new());
-    let workspace_path: Arc<Path> = random_workspace_path().into();
+    let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("data")
+        .join("workspaces")
+        .join(Uuid::new_v4().to_string())
+        .into();
     fs::create_dir_all(&workspace_path).unwrap();
+
+    let fs = Arc::new(RealFileSystem::new());
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace = Workspace::new(
+    let workspace = Workspace::create(
         app_handle.clone(),
-        workspace_path.clone(),
+        &workspace_path,
         fs,
         activity_indicator,
+        CreateParams {
+            name: Some(random_workspace_name()),
+        },
     )
+    .await
     .unwrap();
 
     let path = workspace_path.to_path_buf();
@@ -53,6 +56,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
     (workspace_path, workspace, cleanup_fn)
 }
 
+#[allow(dead_code)]
 pub fn create_simple_editor_state() -> EditorPartState {
     // Create a simple grid with one leaf
     let leaf_data = EditorGridLeafData {

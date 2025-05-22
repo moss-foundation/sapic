@@ -66,6 +66,7 @@ pub trait OperationResultExt<T> {
     fn map_err_as_internal(self) -> OperationResult<T>;
     fn map_err_as_not_found(self) -> OperationResult<T>;
     fn map_err_as_validation(self) -> OperationResult<T>;
+    fn map_err_as_failed_precondition(self) -> OperationResult<T>;
 }
 
 impl<T> OperationResultExt<T> for Result<T, anyhow::Error> {
@@ -79,6 +80,10 @@ impl<T> OperationResultExt<T> for Result<T, anyhow::Error> {
 
     fn map_err_as_validation(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::InvalidInput(e.to_string()))
+    }
+
+    fn map_err_as_failed_precondition(self) -> OperationResult<T> {
+        self.map_err(|e| OperationError::FailedPrecondition(e.to_string()))
     }
 }
 
@@ -94,6 +99,10 @@ impl<T> OperationResultExt<T> for Result<T, String> {
     fn map_err_as_validation(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::InvalidInput(e))
     }
+
+    fn map_err_as_failed_precondition(self) -> OperationResult<T> {
+        self.map_err(|e| OperationError::FailedPrecondition(e))
+    }
 }
 
 impl<T> OperationResultExt<T> for Result<T, &str> {
@@ -107,5 +116,9 @@ impl<T> OperationResultExt<T> for Result<T, &str> {
 
     fn map_err_as_validation(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::InvalidInput(e.to_string()))
+    }
+
+    fn map_err_as_failed_precondition(self) -> OperationResult<T> {
+        self.map_err(|e| OperationError::FailedPrecondition(e.to_string()))
     }
 }

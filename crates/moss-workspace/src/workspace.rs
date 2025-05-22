@@ -1,17 +1,19 @@
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
-use moss_common::{models::primitives::Identifier, sanitized::desanitize};
+use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
+use moss_file::toml::EditableToml;
 use moss_fs::FileSystem;
 use moss_storage::{
     WorkspaceStorage,
     primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
     workspace_storage::{
-        WorkspaceStorageImpl, entities::collection_store_entities::CollectionEntity,
+        WorkspaceStorageImpl, entities::collection_store_entities::CollectionCacheEntity,
     },
 };
+use moss_text::sanitized::desanitize;
 use std::{
     collections::HashMap,
     ops::Deref,
@@ -20,21 +22,22 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
+use uuid::Uuid;
 
-use crate::storage::segments::COLLECTION_SEGKEY;
+use crate::{
+    defaults, dirs,
+    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    storage::segments::COLLECTION_SEGKEY,
+};
 
-pub const COLLECTIONS_DIR: &str = "collections";
-pub const ENVIRONMENTS_DIR: &str = "environments";
-
-pub struct CollectionEntry {
-    pub id: Identifier,
+pub struct CollectionItem {
+    pub id: Uuid,
     pub name: String,
-    pub display_name: String,
     pub order: Option<usize>,
     pub inner: Collection,
 }
 
-impl Deref for CollectionEntry {
+impl Deref for CollectionItem {
     type Target = Collection;
 
     fn deref(&self) -> &Self::Target {
@@ -42,7 +45,7 @@ impl Deref for CollectionEntry {
     }
 }
 
-pub struct EnvironmentEntry {
+pub struct EnvironmentItem {
     pub id: Identifier,
     pub name: String,
     pub display_name: String,
@@ -50,7 +53,7 @@ pub struct EnvironmentEntry {
     pub inner: Environment,
 }
 
-impl Deref for EnvironmentEntry {
+impl Deref for EnvironmentItem {
     type Target = Environment;
 
     fn deref(&self) -> &Self::Target {
@@ -58,8 +61,12 @@ impl Deref for EnvironmentEntry {
     }
 }
 
-type CollectionMap = HashMap<Identifier, Arc<CollectionEntry>>;
-type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentEntry>>;
+type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
+type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
+
+pub struct WorkspaceSummary {
+    pub manifest: ManifestModel,
+}
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
@@ -68,38 +75,114 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) workspace_storage: Arc<dyn WorkspaceStorage>,
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
+    #[allow(dead_code)]
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
     pub(super) next_collection_entry_id: Arc<AtomicUsize>,
-    pub(super) next_collection_id: Arc<AtomicUsize>,
+    #[allow(dead_code)]
     pub(super) next_variable_id: Arc<AtomicUsize>,
+    #[allow(dead_code)]
     pub(super) next_environment_id: Arc<AtomicUsize>,
+
+    #[allow(dead_code)]
+    pub(super) manifest: EditableToml<ManifestModel>,
+}
+
+pub struct CreateParams {
+    pub name: Option<String>,
+}
+
+pub struct ModifyParams {
+    pub name: Option<String>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub fn new(
+    pub async fn load(
         app_handle: AppHandle<R>,
-        path: Arc<Path>,
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        let state_db_manager = WorkspaceStorageImpl::new(&path)
-            .context("Failed to open the workspace state database")?;
+        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to load the workspace state database")?;
+
+        let abs_path: Arc<Path> = abs_path.to_owned().into();
+        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
 
         Ok(Self {
             app_handle,
-            abs_path: path,
+            abs_path,
             fs,
             workspace_storage: Arc::new(state_db_manager),
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
             next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
-            next_collection_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
+            manifest,
         })
+    }
+
+    pub async fn create(
+        app_handle: AppHandle<R>,
+        abs_path: &Path,
+        fs: Arc<dyn FileSystem>,
+        activity_indicator: ActivityIndicator<R>,
+        params: CreateParams,
+    ) -> Result<Self> {
+        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to open the workspace state database")?;
+
+        let abs_path: Arc<Path> = abs_path.to_owned().into();
+        let manifest = EditableToml::new(
+            fs.clone(),
+            abs_path.join(MANIFEST_FILE_NAME),
+            ManifestModel {
+                name: params
+                    .name
+                    .unwrap_or(defaults::DEFAULT_WORKSPACE_NAME.to_string()),
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            app_handle,
+            abs_path,
+            fs,
+            workspace_storage: Arc::new(state_db_manager),
+            collections: OnceCell::new(),
+            environments: OnceCell::new(),
+            activity_indicator,
+            next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
+            next_variable_id: Arc::new(AtomicUsize::new(0)),
+            next_environment_id: Arc::new(AtomicUsize::new(0)),
+            manifest,
+        })
+    }
+
+    pub async fn modify(&self, params: ModifyParams) -> Result<()> {
+        if params.name.is_some() {
+            self.manifest
+                .edit(ManifestModelDiff {
+                    name: params.name.to_owned(),
+                })
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn summary(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
+        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+        Ok(WorkspaceSummary {
+            manifest: manifest.model().await,
+        })
+    }
+
+    pub async fn manifest(&self) -> ManifestModel {
+        self.manifest.model().await
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
@@ -110,13 +193,14 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
+    #[allow(dead_code)]
     async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
         let result = self
             .environments
             .get_or_try_init(|| async move {
                 let mut environments = HashMap::new();
 
-                let abs_path = self.abs_path.join(ENVIRONMENTS_DIR);
+                let abs_path = self.abs_path.join(dirs::ENVIRONMENTS_DIR);
                 if !abs_path.exists() {
                     return Ok(RwLock::new(environments));
                 }
@@ -145,7 +229,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     .await?;
 
                     let id = Identifier::new(&self.next_environment_id);
-                    let entry = EnvironmentEntry {
+                    let entry = EnvironmentItem {
                         id,
                         name,
                         display_name: decoded_name,
@@ -167,20 +251,19 @@ impl<R: TauriRuntime> Workspace<R> {
         let result = self
             .collections
             .get_or_try_init(|| async move {
+                let dir_abs_path = self.abs_path.join(dirs::COLLECTIONS_DIR);
                 let mut collections = HashMap::new();
 
-                if !self.abs_path.join(COLLECTIONS_DIR).exists() {
+                if !dir_abs_path.exists() {
                     return Ok(RwLock::new(collections));
                 }
 
-                // TODO: Support external collections with absolute path
-
-                let collection_items = ListByPrefix::list_by_prefix(
+                let restored_items = ListByPrefix::list_by_prefix(
                     self.workspace_storage.item_store().as_ref(),
-                    COLLECTIONS_DIR,
-                )?
-                .into_iter()
-                .filter_map(|(k, v)| {
+                    COLLECTION_SEGKEY.as_str().expect("invalid utf-8"),
+                )?;
+
+                let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
                     let path = k.after(&COLLECTION_SEGKEY);
                     if let Some(path) = path {
                         Some((path, v))
@@ -188,65 +271,64 @@ impl<R: TauriRuntime> Workspace<R> {
                         None
                     }
                 });
-                for (segkey, any_value) in collection_items.into_iter() {
-                    let value: CollectionEntity = any_value.deserialize()?;
-                    let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
-                        Ok(name) => name,
+
+                let mut restored_entities = HashMap::with_capacity(restored_items.len());
+                for (segkey, value) in filtered_restored_items {
+                    let id_str = match String::from_utf8(segkey.as_bytes().to_owned()) {
+                        Ok(id) => id,
                         Err(_) => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", segkey);
+                            println!("failed to get the workspace {:?} name", segkey);
                             continue;
                         }
                     };
 
-                    // TODO: A self-healing mechanism needs to be implemented here.
-                    // Collections that are found in the database but do not actually exist
-                    // in the file system should be collected and deleted from the database in
-                    // a parallel thread.
+                    restored_entities.insert(id_str, value);
+                }
 
-                    let abs_path: Arc<Path> =
-                        if let Some(external_abs_path) = value.external_abs_path {
-                            external_abs_path.into()
-                        } else {
-                            self.abs_path
-                                .join(COLLECTIONS_DIR)
-                                .join(encoded_name)
-                                .into()
-                        };
-                    if !abs_path.exists() {
-                        // TODO: logging
+                let mut read_dir = self.fs.read_dir(&dir_abs_path).await?;
+                while let Some(entry) = read_dir.next_entry().await? {
+                    if !entry.file_type().await?.is_dir() {
                         continue;
                     }
 
-                    let (display_name, encoded_name) = match abs_path.file_name() {
-                        Some(name) => {
-                            let name = name.to_string_lossy().to_string();
-
-                            (desanitize(&name), name)
-                        }
-                        None => {
+                    let id_str = entry.file_name().to_string_lossy().to_string();
+                    let id = match Uuid::parse_str(&id_str) {
+                        Ok(id) => id,
+                        Err(_) => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} name", segkey);
+                            println!("failed to get the collection {:?} name", id_str);
                             continue;
                         }
                     };
 
-                    let id = Identifier::new(&self.next_collection_id);
-                    let collection = Collection::new(
-                        abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
+                    let cache = match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
+                        v.deserialize::<CollectionCacheEntity>().map(Some)
+                    }) {
+                        Ok(value) => value,
+                        Err(_err) => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} info", id_str);
+                            continue;
+                        }
+                    };
+
+                    let collection = Collection::load(
+                        &entry.path(),
                         self.fs.clone(),
                         self.next_collection_entry_id.clone(),
-                    )?;
+                    )
+                    .await?;
+                    let manifest = collection.manifest().await;
+
                     collections.insert(
                         id,
-                        CollectionEntry {
+                        Arc::new(RwLock::new(CollectionItem {
                             id,
-                            name: encoded_name,
-                            display_name,
-                            order: value.order,
+                            name: manifest.name,
+                            order: cache.map(|v| v.order).flatten(),
                             inner: collection,
-                        }
-                        .into(),
+                        })),
                     );
                 }
 
@@ -255,17 +337,5 @@ impl<R: TauriRuntime> Workspace<R> {
             .await?;
 
         Ok(result)
-    }
-}
-
-impl<R: TauriRuntime> Workspace<R> {
-    #[cfg(test)]
-    pub fn truncate(&self) -> Result<()> {
-        // let collection_store = self.workspace_storage.collection_store();
-
-        // let (mut txn, table) = collection_store.begin_write()?;
-        // table.truncate(&mut txn)?;
-        // Ok(txn.commit()?)
-        todo!()
     }
 }

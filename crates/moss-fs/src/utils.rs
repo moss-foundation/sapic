@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_common::sanitized;
+use moss_text::sanitized;
 use std::path::{Component, Path, PathBuf};
 
 /// Doing a basic normalization using Path::components()
