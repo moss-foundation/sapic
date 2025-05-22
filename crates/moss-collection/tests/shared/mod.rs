@@ -1,9 +1,8 @@
 use moss_collection::collection::Collection;
 use moss_collection::models::primitives::{ChangesDiffSet, EntryId};
-use moss_common::sanitized::sanitized_name::SanitizedName;
 use moss_fs::RealFileSystem;
-use moss_fs::utils::sanitize_path;
 use moss_testutils::random_name::{random_collection_name, random_string};
+use moss_text::sanitized::sanitized_name::SanitizedName;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;

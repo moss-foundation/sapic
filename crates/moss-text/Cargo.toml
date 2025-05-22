@@ -8,3 +8,6 @@ publish = false
 arcstr = { workspace = true, features = ["serde"] }
 bstr.workspace = true
 serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+moss_testutils.workspace = true

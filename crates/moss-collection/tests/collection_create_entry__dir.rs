@@ -1,9 +1,9 @@
 use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_common::sanitized::sanitize;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
+use moss_text::sanitized::sanitize;
 use serde_json::Value as JsonValue;
 use serde_json::json;
 use std::fs::read_to_string;

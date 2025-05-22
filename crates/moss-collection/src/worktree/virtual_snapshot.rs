@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
-use moss_common::sanitized::{sanitize, sanitized_name::SanitizedName};
 use moss_fs::utils::sanitize_path;
+use moss_text::sanitized::{sanitize, sanitized_name::SanitizedName};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use sweep_bptree::BPlusTreeMap;

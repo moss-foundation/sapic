@@ -3,13 +3,13 @@ use moss_collection::collection::Collection;
 use moss_common::{
     api::{OperationError, OperationResult},
     models::primitives::Identifier,
-    sanitized::sanitize,
 };
 use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::PutItem,
     workspace_storage::entities::collection_store_entities::CollectionEntity,
 };
+use moss_text::sanitized::sanitize;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,

@@ -8,10 +8,10 @@ use moss_collection::collection::Collection;
 use moss_common::{
     api::{OperationError, OperationResult, OperationResultExt},
     models::primitives::Identifier,
-    sanitized::sanitize,
 };
 use moss_fs::RenameOptions;
 use moss_storage::storage::operations::RekeyItem;
+use moss_text::sanitized::sanitize;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 

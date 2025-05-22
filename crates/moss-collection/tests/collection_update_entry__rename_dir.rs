@@ -3,9 +3,9 @@ use moss_collection::models::operations::{
 };
 use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_common::sanitized::sanitize;
 use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
 use moss_testutils::random_name::random_request_name;
+use moss_text::sanitized::sanitize;
 use std::path::Path;
 use std::time::Duration;
 

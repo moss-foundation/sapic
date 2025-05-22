@@ -1,6 +1,5 @@
 use anyhow::Context;
 use moss_common::api::{OperationResult, OperationResultExt};
-use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 

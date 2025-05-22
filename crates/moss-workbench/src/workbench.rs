@@ -2,7 +2,6 @@ use anyhow::{Context, Result};
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::service::prelude::AppService;
-use moss_common::{models::primitives::Identifier, sanitized::desanitize};
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -13,7 +12,7 @@ use std::{
     collections::HashMap,
     ops::Deref,
     path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};

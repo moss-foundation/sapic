@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
-use moss_common::{models::primitives::Identifier, sanitized::desanitize};
+use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_fs::FileSystem;
 use moss_storage::{
@@ -12,6 +12,7 @@ use moss_storage::{
         WorkspaceStorageImpl, entities::collection_store_entities::CollectionEntity,
     },
 };
+use moss_text::sanitized::desanitize;
 use std::{
     collections::HashMap,
     ops::Deref,

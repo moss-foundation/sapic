@@ -1,10 +1,6 @@
 use anyhow::Context as _;
 use chrono::Utc;
-use moss_common::{
-    api::{OperationError, OperationResult, OperationResultExt},
-    models::primitives::Identifier,
-    sanitized::sanitize,
-};
+use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;

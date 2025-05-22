@@ -4,8 +4,9 @@ pub mod util;
 pub mod virtual_snapshot;
 pub mod virtual_worktree;
 
-use moss_common::{api::OperationError, sanitized};
+use moss_common::api::OperationError;
 use moss_fs::FileSystem;
+use moss_text::sanitized;
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
 use std::{

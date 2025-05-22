@@ -11,6 +11,7 @@ moss_fs.workspace = true
 moss_storage.workspace = true
 moss_activity_indicator.workspace = true
 moss_db.workspace = true
+moss_text.workspace = true
 
 tokio.workspace = true
 anyhow.workspace = true

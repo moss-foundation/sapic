@@ -2991,6 +2991,7 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "notify",
  "scraper",
  "serde",
@@ -3011,8 +3012,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_db",
- "moss_testutils",
- "regex",
  "serde",
  "serde_json",
  "slotmap",
@@ -3064,6 +3063,7 @@ dependencies = [
  "async-trait",
  "futures",
  "moss_common",
+ "moss_text",
  "notify",
  "regex",
  "tokio",
@@ -3205,6 +3205,7 @@ version = "0.1.0"
 dependencies = [
  "arcstr",
  "bstr",
+ "moss_testutils",
  "serde",
 ]
 
@@ -3246,6 +3247,7 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "moss_workspace",
  "serde",
  "tauri",
@@ -3271,6 +3273,7 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "serde",
  "serde_json",
  "tauri",
