@@ -180,7 +180,7 @@ export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [
     type: "separator",
   },
   {
-    id: "home",
+    id: "kitchensink",
     type: "action",
     label: "Kitchensink",
     alignWithIcons: true,

@@ -7,7 +7,7 @@ import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -185,9 +185,9 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         />
       );
     },
-    Home: () => (
+    KitchenSink: () => (
       <Scrollbar className="h-full">
-        <Home />
+        <KitchenSink />
       </Scrollbar>
     ),
     Settings: () => (

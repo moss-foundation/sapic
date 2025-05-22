@@ -1,5 +1,6 @@
 import { RefObject } from "react";
-import { useWorkspaceContext, extractWorkspaceName } from "@/context/WorkspaceContext";
+
+import { extractWorkspaceName, useWorkspaceContext } from "@/context/WorkspaceContext";
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -139,8 +140,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       openNewWorkspaceModal?.();
     } else if (action === "open-workspace") {
       openOpenWorkspaceModal?.();
-    } else if (action === "home") {
-      openPanel("Home");
+    } else if (action === "kitchensink") {
+      openPanel("KitchenSink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {

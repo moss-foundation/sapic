@@ -17,7 +17,7 @@ import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import * as iconsNames from "../assets/icons";
 
-export const Home = () => {
+export const KitchenSink = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
 
   return (
