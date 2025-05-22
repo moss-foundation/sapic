@@ -29,7 +29,7 @@ async fn delete_collection_success() {
     let collections = workspace.collections().await.unwrap().read().await;
     assert!(collections.is_empty());
 
-    // cleanup().await;
+    cleanup().await;
 }
 
 #[tokio::test]

@@ -50,7 +50,7 @@ impl<R: TauriRuntime> Workbench<R> {
 
         let new_workspace = Workspace::create(
             self.app_handle.clone(),
-            Arc::clone(&abs_path),
+            &abs_path,
             Arc::clone(&self.fs),
             self.activity_indicator.clone(),
             CreateParams {

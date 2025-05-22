@@ -33,7 +33,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
     let workspace = Workspace::create(
         app_handle.clone(),
-        workspace_path.clone(),
+        &workspace_path,
         fs,
         activity_indicator,
         CreateParams {

@@ -93,17 +93,14 @@ pub struct CreateParams {
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn load(
         app_handle: AppHandle<R>,
-        abs_path: Arc<Path>, // &Path
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        if !abs_path.exists() {
-            return Err(anyhow::anyhow!("Workspace does not exist"));
-        }
-
         let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
             .context("Failed to load the workspace state database")?;
 
+        let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
 
         Ok(Self {
@@ -124,7 +121,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
     pub async fn create(
         app_handle: AppHandle<R>,
-        abs_path: Arc<Path>, // &Path
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
         params: CreateParams,
@@ -132,6 +129,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
             .context("Failed to open the workspace state database")?;
 
+        let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest = EditableToml::new(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
