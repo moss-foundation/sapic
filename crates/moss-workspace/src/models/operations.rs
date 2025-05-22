@@ -1,11 +1,7 @@
 use moss_common::models::primitives::Identifier;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
-use std::{
-    ops::Deref,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
 
 use ts_rs::TS;
 use validator::Validate;

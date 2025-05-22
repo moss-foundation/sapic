@@ -68,7 +68,7 @@ async fn delete_entry_dir_success() {
     assert!(
         virtual_changes
             .iter()
-            .any(|(path, _id, kind)| path.to_path_buf() == destination)
+            .any(|(path, _id, _kind)| path.to_path_buf() == destination)
     );
 
     // Wait for spawned deletion task to finish

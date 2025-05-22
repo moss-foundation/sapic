@@ -54,6 +54,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
     (workspace_path, workspace, cleanup_fn)
 }
 
+#[allow(dead_code)]
 pub fn create_simple_editor_state() -> EditorPartState {
     // Create a simple grid with one leaf
     let leaf_data = EditorGridLeafData {

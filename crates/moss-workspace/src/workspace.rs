@@ -72,12 +72,15 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) workspace_storage: Arc<dyn WorkspaceStorage>,
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
+    #[allow(dead_code)]
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
     pub(super) next_collection_entry_id: Arc<AtomicUsize>,
     pub(super) next_collection_id: Arc<AtomicUsize>,
+    #[allow(dead_code)]
     pub(super) next_variable_id: Arc<AtomicUsize>,
+    #[allow(dead_code)]
     pub(super) next_environment_id: Arc<AtomicUsize>,
 
     #[allow(dead_code)]
@@ -173,6 +176,7 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
+    #[allow(dead_code)]
     async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
         let result = self
             .environments

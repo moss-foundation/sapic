@@ -1,10 +1,7 @@
-use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
-use moss_testutils::random_name::{random_string, random_workspace_name};
+use moss_testutils::random_name::random_string;
 use moss_workbench::workbench::{self, Workbench};
-use moss_workspace::Workspace;
-use std::fs;
 use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;

@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 
+#[allow(dead_code)]
 pub fn random_dir_name() -> String {
     format!("Test_{}_Dir", random_string(10))
 }
@@ -32,12 +33,15 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
 
     (collection_path, collection)
 }
+
+#[allow(dead_code)]
 /// Generate the encoded request folder name
 pub fn request_folder_name(request_name: &str) -> String {
     let sanitized_name = SanitizedName::new(request_name);
     format!("{}.request", &sanitized_name)
 }
 
+#[allow(dead_code)]
 /// Find the entry id by path
 pub fn find_id_by_path(changes_diff_set: &ChangesDiffSet, path: &Path) -> Option<EntryId> {
     changes_diff_set
