@@ -9,13 +9,13 @@ use serde_json::json;
 use std::fs::read_to_string;
 use std::path::Path;
 
-use crate::shared::{random_dir_name, set_up_test_collection};
+use crate::shared::{create_test_collection, random_dir_name};
 
 mod shared;
 
 #[tokio::test]
 async fn create_entry_dir_default_spec() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
 
@@ -80,7 +80,7 @@ async fn create_entry_dir_default_spec() {
 
 #[tokio::test]
 async fn create_entry_dir_with_spec_content() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
 
@@ -146,7 +146,7 @@ async fn create_entry_dir_with_spec_content() {
 
 #[tokio::test]
 async fn create_entry_dir_already_exists() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let dir_name = random_dir_name();
 
     let input = CreateEntryInput {
@@ -172,7 +172,7 @@ async fn create_entry_dir_already_exists() {
 
 #[tokio::test]
 async fn create_entry_dir_implicitly_created() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let dir_name = random_dir_name();
     let request_name = random_request_name();
 
@@ -212,7 +212,7 @@ async fn create_entry_dir_implicitly_created() {
 
 #[tokio::test]
 async fn create_entry_dir_multiple_same_level() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let dir_name1 = "1";
     let dir_name2 = "2";
 
@@ -286,7 +286,7 @@ async fn create_entry_dir_multiple_same_level() {
 
 #[tokio::test]
 async fn create_entry_dir_nested() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let outer_name = "outer";
     let inner_name = "inner";
 
@@ -363,7 +363,7 @@ async fn create_entry_dir_nested() {
 
 #[tokio::test]
 async fn create_entry_dir_multiple_different_level() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     // requests\\1
     // requests\\group\\2
 
@@ -449,7 +449,7 @@ async fn create_entry_dir_multiple_different_level() {
 
 #[tokio::test]
 async fn create_entry_dir_special_chars_in_name() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
     let dir_name_list = FOLDERNAME_SPECIAL_CHARS
@@ -508,7 +508,7 @@ async fn create_entry_dir_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_entry_dir_special_chars_in_path() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
     let dir_name_list = FOLDERNAME_SPECIAL_CHARS
@@ -583,7 +583,7 @@ async fn create_entry_dir_same_name_as_another_entry() {
     // Create two entries with the same name, one normal and one dir
     // This will result in two identical virtual paths, so it should raise an error
 
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
     let destination = Path::new("requests").join("identical");
 
     let _ = collection

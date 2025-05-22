@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_collection::collection::Collection;
+use moss_collection::collection::{self, Collection};
 use moss_common::{
     api::{OperationError, OperationResult},
     models::primitives::Identifier,
@@ -7,20 +7,22 @@ use moss_common::{
 use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::PutItem,
-    workspace_storage::entities::collection_store_entities::CollectionEntity,
+    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
 };
-use moss_text::sanitized::sanitize;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::Runtime as TauriRuntime;
+use tokio::sync::RwLock;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
+    dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
     storage::segments::COLLECTION_SEGKEY,
-    workspace::{COLLECTIONS_DIR, CollectionEntry, Workspace},
+    workspace::{CollectionItem, Workspace},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -30,8 +32,10 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
-        let encoded_name = sanitize(&input.name);
-        let path = PathBuf::from(COLLECTIONS_DIR).join(&encoded_name);
+        let id = Uuid::new_v4();
+        let id_str = id.to_string();
+
+        let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
         let abs_path: Arc<Path> = self.abs_path().join(path).into();
 
         if abs_path.exists() {
@@ -50,37 +54,34 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to create the collection directory")?;
 
-        let collection = Collection::new(
-            abs_path.to_path_buf(), // FIXME: change to Arc<Path> in Collection::new
+        let name = input.name.to_owned();
+        let collection = Collection::create(
+            &abs_path,
             self.fs.clone(),
             self.next_collection_entry_id.clone(),
-        )?;
+            collection::CreateParams {
+                name: Some(name.clone()),
+            },
+        )
+        .await
+        .map_err(|e| OperationError::Internal(e.to_string()))?;
 
-        let id = Identifier::new(&self.next_collection_id);
         {
             let mut collections_lock = collections.write().await;
             collections_lock.insert(
                 id,
-                CollectionEntry {
+                Arc::new(RwLock::new(CollectionItem {
                     id,
-                    name: encoded_name.to_owned(),
-                    display_name: input.name.to_owned(),
+                    name,
                     order: None,
                     inner: collection,
-                }
-                .into(),
+                })),
             );
         }
 
         {
-            // NOTE:
-            // This is still an open question. Here’s what I’m thinking:
-            // It makes sense to add an `is_external` field to the `Input` structure,
-            // it would signal that the collection being created is located outside the
-            // workspace folder.
-
-            let key = COLLECTION_SEGKEY.join(&encoded_name);
-            let value = AnyValue::serialize(&CollectionEntity {
+            let key = COLLECTION_SEGKEY.join(&id_str);
+            let value = AnyValue::serialize(&CollectionCacheEntity {
                 order: None,
                 external_abs_path: None,
             })?;

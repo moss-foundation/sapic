@@ -153,8 +153,14 @@ impl<R: TauriRuntime> Workbench<R> {
                     }
 
                     let id_str = entry.file_name().to_string_lossy().to_string();
-                    let id =
-                        Uuid::parse_str(&id_str).context("failed to parse the workspace id")?;
+                    let id = match Uuid::parse_str(&id_str) {
+                        Ok(id) => id,
+                        Err(_) => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} name", id_str);
+                            continue;
+                        }
+                    };
 
                     // TODO: can we use just use  entry.path()?
                     let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);

@@ -3,7 +3,7 @@ use chrono::Utc;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
-use moss_workspace::Workspace;
+use moss_workspace::{CreateParams, Workspace};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -28,7 +28,7 @@ impl<R: TauriRuntime> Workbench<R> {
 
         let id = Uuid::new_v4();
         let id_str = id.to_string();
-        let path = PathBuf::from(WORKSPACES_DIR).join(&id_str);
+        let path = PathBuf::from(dirs::WORKSPACES_DIR).join(&id_str);
         let abs_path: Arc<Path> = self.absolutize(&path).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
@@ -49,11 +49,13 @@ impl<R: TauriRuntime> Workbench<R> {
             .map_err_as_internal()?;
 
         let new_workspace = Workspace::create(
-            input.name.clone(),
             self.app_handle.clone(),
             Arc::clone(&abs_path),
             Arc::clone(&self.fs),
             self.activity_indicator.clone(),
+            CreateParams {
+                name: Some(input.name.clone()),
+            },
         )
         .await?;
 

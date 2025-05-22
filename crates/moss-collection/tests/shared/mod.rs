@@ -1,4 +1,4 @@
-use moss_collection::collection::Collection;
+use moss_collection::collection::{Collection, CreateParams};
 use moss_collection::models::primitives::{ChangesDiffSet, EntryId};
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
@@ -19,7 +19,7 @@ fn random_collection_path() -> PathBuf {
         .join(random_collection_name())
 }
 
-pub async fn set_up_test_collection() -> (PathBuf, Collection) {
+pub async fn create_test_collection() -> (PathBuf, Collection) {
     let fs = Arc::new(RealFileSystem::new());
     let collection_path = random_collection_path();
 
@@ -29,7 +29,16 @@ pub async fn set_up_test_collection() -> (PathBuf, Collection) {
     // std::fs::create_dir_all(collection_path.join("requests")).unwrap();
 
     let next_entry_id = Arc::new(AtomicUsize::new(0));
-    let collection = Collection::new(collection_path.clone(), fs, next_entry_id).unwrap();
+    let collection = Collection::create(
+        &collection_path,
+        fs,
+        next_entry_id,
+        CreateParams {
+            name: Some(random_collection_name()),
+        },
+    )
+    .await
+    .unwrap();
 
     (collection_path, collection)
 }

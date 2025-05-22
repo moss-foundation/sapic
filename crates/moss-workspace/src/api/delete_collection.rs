@@ -1,12 +1,16 @@
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use anyhow::Context as _;
-use moss_common::api::{OperationResult, OperationResultExt};
+use moss_common::api::OperationResult;
 use moss_fs::RemoveOptions;
 use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
+    dirs,
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
     storage::segments::COLLECTION_SEGKEY,
     workspace::Workspace,
@@ -18,15 +22,11 @@ impl<R: TauriRuntime> Workspace<R> {
         input: DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let collections = self.collections().await?;
-        let collection_entry = collections
-            .read()
-            .await
-            .get(&input.id)
-            .context("Collection not found")
-            .map_err_as_not_found()?
-            .clone();
 
-        let abs_path: Arc<Path> = collection_entry.abs_path().clone().into();
+        let id_str = input.id.to_string();
+        let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
+        let abs_path: Arc<Path> = self.abs_path().join(path).into();
+
         if abs_path.exists() {
             self.fs
                 .remove_dir(
@@ -40,18 +40,24 @@ impl<R: TauriRuntime> Workspace<R> {
                 .context("Failed to delete collection from file system")?;
         }
 
-        {
+        let removed_id = {
             let mut collections_lock = collections.write().await;
-            collections_lock.remove(&input.id);
-        }
+            if let Some(v) = collections_lock.remove(&input.id) {
+                let lock = v.read().await;
+                let id = lock.id;
+                Some(id)
+            } else {
+                None
+            }
+        };
 
         {
-            let key = COLLECTION_SEGKEY.join(&collection_entry.name);
+            let key = COLLECTION_SEGKEY.join(&id_str);
             RemoveItem::remove(self.workspace_storage.item_store().as_ref(), key)?;
         }
 
         Ok(DeleteCollectionOutput {
-            id: collection_entry.id,
+            id: removed_id.unwrap_or(uuid::Uuid::nil()),
             abs_path,
         })
     }

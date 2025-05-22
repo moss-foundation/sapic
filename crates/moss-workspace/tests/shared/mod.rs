@@ -1,11 +1,11 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::Workspace;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
+use moss_workspace::{CreateParams, Workspace};
 use std::collections::HashMap;
 use std::fs;
 use std::future::Future;
@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::Arc;
 use tauri::test::MockRuntime;
+use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -20,23 +21,24 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
-    let name = random_workspace_name();
     let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
         .join("workspaces")
-        .join(&name)
+        .join(Uuid::new_v4().to_string())
         .into();
     fs::create_dir_all(&workspace_path).unwrap();
 
     let fs = Arc::new(RealFileSystem::new());
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
     let workspace = Workspace::create(
-        name,
         app_handle.clone(),
         workspace_path.clone(),
         fs,
         activity_indicator,
+        CreateParams {
+            name: Some(random_workspace_name()),
+        },
     )
     .await
     .unwrap();

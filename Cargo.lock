@@ -2988,6 +2988,7 @@ dependencies = [
  "moss_activity_indicator",
  "moss_common",
  "moss_db",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
@@ -3001,6 +3002,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
+ "toml_edit 0.22.26",
  "ts-rs",
  "validator",
  "xml-rs",
@@ -3052,6 +3054,18 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "ts-rs",
+]
+
+[[package]]
+name = "moss_file"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_fs",
+ "serde",
+ "tokio",
+ "toml",
+ "toml_edit 0.22.26",
 ]
 
 [[package]]
@@ -3270,6 +3284,7 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_environment",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
@@ -3279,9 +3294,9 @@ dependencies = [
  "tauri",
  "thiserror 2.0.12",
  "tokio",
- "toml",
  "toml_edit 0.22.26",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
