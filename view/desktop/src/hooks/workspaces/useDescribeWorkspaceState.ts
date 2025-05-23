@@ -2,28 +2,24 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
-import { mapEditorPartStateToSerializedDockview } from "../appState/utils";
+export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeWorkspaceState";
 
-export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeLayoutPartsState";
+const describeWorkspaceStateFn = async (workspaceId: string | null): Promise<DescribeStateOutput | null> => {
+  if (!workspaceId) return null;
 
-export const describeWorkspaceState = async () => {
-  const res = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state");
+  const result = await invokeTauriIpc<DescribeStateOutput>("describe_workspace_state", { workspaceId });
 
-  if (res.status !== "ok") {
-    console.warn("Failed to describe layout parts state", res);
-    return null;
+  if (result.status === "error") {
+    throw new Error(String(result.error));
   }
 
-  return {
-    editor: res.data?.editor ? mapEditorPartStateToSerializedDockview(res.data.editor) : undefined,
-    sidebar: res.data?.sidebar,
-    panel: res.data?.panel,
-  };
+  return result.data;
 };
 
-export const useDescribeWorkspaceState = () => {
-  return useQuery({
-    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
-    queryFn: describeWorkspaceState,
+export const useDescribeWorkspaceState = (workspaceId: string | null) => {
+  return useQuery<DescribeStateOutput | null, Error>({
+    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, workspaceId],
+    queryFn: () => describeWorkspaceStateFn(workspaceId),
+    enabled: !!workspaceId,
   });
 };

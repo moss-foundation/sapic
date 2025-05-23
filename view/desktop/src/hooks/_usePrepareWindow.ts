@@ -12,7 +12,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
 
   const { initialize } = useAppResizableLayoutStore();
-  const { isFetched, data: layout } = useDescribeWorkspaceState();
+  const { isFetched, data: layout } = useDescribeWorkspaceState(null); //FIXME: remove null
 
   useEffect(() => {
     if (isFetched) setIsPreparing(false);

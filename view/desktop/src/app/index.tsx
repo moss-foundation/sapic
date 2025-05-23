@@ -1,19 +1,20 @@
-import { AppLayout, RootLayout } from "@/components";
+import { ReactNode } from "react";
 import { PageLoader } from "@/components/PageLoader";
-import { usePrepareWindow } from "@/hooks/usePrepareWindow";
+import Provider from "./Provider";
+import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 
-const App = () => {
-  const { isPreparing } = usePrepareWindow();
+interface AppProps {
+  children?: ReactNode;
+}
 
-  if (isPreparing) {
+const App = ({ children }: AppProps) => {
+  const { isLoading } = useDescribeAppState();
+
+  if (isLoading) {
     return <PageLoader />;
   }
 
-  return (
-    <RootLayout>
-      <AppLayout />
-    </RootLayout>
-  );
+  return <Provider>{children}</Provider>;
 };
 
 export default App;

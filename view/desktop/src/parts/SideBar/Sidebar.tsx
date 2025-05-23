@@ -1,11 +1,14 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
-import { ViewContainer } from "@/components/ViewContainer";
+import { Workspace } from "@/components/Workspace";
+import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
+import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useDescribeAppState } from "@/hooks";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -34,6 +37,8 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
+  const { selectedWorkspace } = useWorkspaceContext();
+  const { data: appState } = useDescribeAppState();
 
   const lastActiveGroupRef = useRef<string | null>(null);
 
@@ -50,12 +55,18 @@ export const Sidebar = () => {
   const activeGroupId = activeItem?.id || "empty";
   const activeGroupTitle = activeItem?.title || "Launchpad";
 
+  // Determine if a workspace is open
+  const hasWorkspace = !!appState?.lastWorkspace || !!selectedWorkspace;
+
+  // Content based on workspace status
+  const sidebarContent = hasWorkspace ? <Workspace groupId={activeGroupId} /> : <EmptyWorkspace inSidebar={true} />;
+
   if (position === "top") {
     return (
       <BaseSidebar>
         <ActivityBar />
         <SidebarHeader title={activeGroupTitle} />
-        <ViewContainer groupId={activeGroupId} />
+        {sidebarContent}
       </BaseSidebar>
     );
   }
@@ -64,7 +75,7 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <SidebarHeader title={activeGroupTitle} />
-        <ViewContainer groupId={activeGroupId} />
+        {sidebarContent}
         <ActivityBar />
       </BaseSidebar>
     );
@@ -73,7 +84,7 @@ export const Sidebar = () => {
   return (
     <BaseSidebar>
       <SidebarHeader title={activeGroupTitle} />
-      <ViewContainer groupId={activeGroupId} />
+      {sidebarContent}
     </BaseSidebar>
   );
 };

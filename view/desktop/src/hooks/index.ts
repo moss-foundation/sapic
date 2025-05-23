@@ -1,6 +1,6 @@
 export * from "./mockData";
 export * from "./useModal";
-export * from "./usePrepareWindow";
+export * from "./_usePrepareWindow";
 
 export * from "./appState/useDescribeAppState";
 export * from "./appState/useUpdateEditorPartState";
@@ -19,6 +19,9 @@ export * from "./viewGroups/useGetViewGroup";
 export * from "./workspaces/useCreateWorkspace";
 export * from "./workspaces/useDescribeWorkspaceState";
 export * from "./workspaces/useGetWorkspaces";
+export * from "./workspaces/useListWorkspaces";
 export * from "./workspaces/useOpenWorkspace";
+
+export * from "./collections/useListCollections";
 
 export * from "./useResponsive";
