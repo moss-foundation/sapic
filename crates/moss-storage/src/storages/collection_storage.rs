@@ -17,7 +17,7 @@ use crate::storage::{SegBinTable, Storage, StoreTypeId, Transactional};
 pub mod stores;
 
 const DB_NAME: &str = "state.db";
-pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
+pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("variables");
 pub const TABLE_UNITS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("units");
 
 pub struct CollectionStorageImpl {
