@@ -59,9 +59,12 @@ mod tests {
 
         let dumped = storage.dump().unwrap();
 
-        assert_eq!(dumped.len(), 3);
-        assert_eq!(dumped["1"], JsonValue::String("1".to_string()));
-        assert_eq!(dumped["2"], JsonValue::Number(2.into()));
-        assert_eq!(dumped["3"], serde_json::to_value(&test_data).unwrap());
+        // Each store has one entry
+        assert_eq!(dumped.len(), 2);
+
+        let items_dump = dumped.get("table:items").unwrap();
+        assert_eq!(items_dump["1"], JsonValue::String("1".to_string()));
+        assert_eq!(items_dump["2"], JsonValue::Number(2.into()));
+        assert_eq!(items_dump["3"], serde_json::to_value(&test_data).unwrap());
     }
 }
