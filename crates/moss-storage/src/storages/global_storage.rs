@@ -1,7 +1,8 @@
 use moss_db::bincode_table::BincodeTable;
 use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction};
-use serde_json::Value as JsonValue;
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction};
+use redb::TableHandle;
+use serde_json::{Value as JsonValue, json};
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::path::Path;
@@ -44,11 +45,16 @@ impl Storage for GlobalStorageImpl {
         let read_txn = self.client.begin_read()?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
+            let name = table.table_definition().name().to_string();
+            let mut table_entries = HashMap::new();
             for (k, v) in table.scan(&read_txn)? {
-                result.insert(k.to_string(), serde_json::from_slice(v.as_bytes())?);
+                table_entries.insert(
+                    k.to_string(),
+                    serde_json::from_slice::<JsonValue>(v.as_bytes())?,
+                );
             }
+            result.insert(format!("table:{}", name), json!(table_entries));
         }
-
         Ok(result)
     }
 }
