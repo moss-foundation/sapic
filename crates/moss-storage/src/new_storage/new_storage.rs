@@ -6,9 +6,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::new_storage::{Dump, NewStorage};
+use crate::new_storage::{Dump, NewStorage, NewTransactional};
 use crate::primitives::segkey::SegKeyBuf;
-use crate::storage::{Storage, Transactional, table::Table};
+use crate::storage::table::Table;
 
 pub struct NewStorageHandle {
     client: ReDbClient,
@@ -31,21 +31,19 @@ impl NewStorageHandle {
     }
 }
 
-#[async_trait]
-impl Transactional for NewStorageHandle {
-    async fn begin_write(&self) -> DatabaseResult<Transaction> {
+impl NewTransactional for NewStorageHandle {
+    fn begin_write(&self) -> DatabaseResult<Transaction> {
         self.client.begin_write()
     }
 
-    async fn begin_read(&self) -> DatabaseResult<Transaction> {
+    fn begin_read(&self) -> DatabaseResult<Transaction> {
         self.client.begin_read()
     }
 }
 
-#[async_trait]
 impl Dump for NewStorageHandle {
-    async fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
-        let read_txn = self.begin_read().await?;
+    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.begin_read()?;
         let mut result = HashMap::new();
         for table in self.tables.values() {
             for (k, v) in table.definition().scan(&read_txn)? {
@@ -59,7 +57,7 @@ impl Dump for NewStorageHandle {
 
 #[async_trait]
 impl NewStorage for NewStorageHandle {
-    async fn table(&self, id: &TypeId) -> DatabaseResult<Arc<dyn Table>> {
+    fn table(&self, id: &TypeId) -> DatabaseResult<Arc<dyn Table>> {
         Ok(self.tables.get(id).unwrap().clone())
     }
 }
@@ -120,27 +118,27 @@ mod tests {
                 ),
             }
         }
-        pub async fn table1(&self) -> DatabaseResult<Arc<dyn Table>> {
-            self.handle.table(&TypeId::of::<Table1>()).await
+        pub fn table1(&self) -> DatabaseResult<Arc<dyn Table>> {
+            self.handle.table(&TypeId::of::<Table1>())
         }
-        pub async fn table2(&self) -> DatabaseResult<Arc<dyn Table>> {
-            self.handle.table(&TypeId::of::<Table2>()).await
+        pub fn table2(&self) -> DatabaseResult<Arc<dyn Table>> {
+            self.handle.table(&TypeId::of::<Table2>())
         }
     }
-    #[async_trait]
-    impl Transactional for TestStore {
-        async fn begin_write(&self) -> DatabaseResult<Transaction> {
-            self.handle.begin_write().await
+
+    impl NewTransactional for TestStore {
+        fn begin_write(&self) -> DatabaseResult<Transaction> {
+            self.handle.begin_write()
         }
 
-        async fn begin_read(&self) -> DatabaseResult<Transaction> {
-            self.handle.begin_read().await
+        fn begin_read(&self) -> DatabaseResult<Transaction> {
+            self.handle.begin_read()
         }
     }
-    #[async_trait]
+
     impl Dump for TestStore {
-        async fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
-            self.handle.dump().await
+        fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
+            self.handle.dump()
         }
     }
 
@@ -156,10 +154,10 @@ mod tests {
         let path = Path::new("tests").join(format!("{}.db", random_string(10)));
 
         let store = TestStore::new(&path);
-        let table1 = store.table1().await.unwrap();
-        let table2 = store.table2().await.unwrap();
+        let table1 = store.table1().unwrap();
+        let table2 = store.table2().unwrap();
 
-        let mut write_txn = store.begin_write().await.unwrap();
+        let mut write_txn = store.begin_write().unwrap();
 
         table1
             .definition()
@@ -196,7 +194,7 @@ mod tests {
 
         write_txn.commit().unwrap();
 
-        let dumped = store.dump().await.unwrap();
+        let dumped = store.dump().unwrap();
 
         assert_eq!(dumped.len(), 3);
         assert_eq!(

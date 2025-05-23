@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use moss_db::DatabaseResult;
+use moss_db::{DatabaseResult, Transaction};
 use serde_json::Value as JsonValue;
 use std::any::TypeId;
 use std::collections::HashMap;
@@ -12,12 +12,15 @@ use crate::storage::table::Table;
 
 mod new_storage;
 
-#[async_trait]
-pub trait Dump {
-    async fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>>;
+pub trait NewTransactional {
+    fn begin_write(&self) -> DatabaseResult<Transaction>;
+    fn begin_read(&self) -> DatabaseResult<Transaction>;
 }
 
-#[async_trait]
-pub trait NewStorage: Transactional + Dump + Send + Sync {
-    async fn table(&self, id: &TypeId) -> DatabaseResult<Arc<dyn Table>>;
+pub trait Dump {
+    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>>;
+}
+
+pub trait NewStorage: NewTransactional + Dump + Send + Sync {
+    fn table(&self, id: &TypeId) -> DatabaseResult<Arc<dyn Table>>;
 }
