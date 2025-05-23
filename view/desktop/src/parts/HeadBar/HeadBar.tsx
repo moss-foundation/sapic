@@ -1,24 +1,25 @@
-import { cn } from "@/utils";
-import { type } from "@tauri-apps/plugin-os";
-import { useState, useRef } from "react";
-import { useResponsive } from "@/hooks/useResponsive";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
-import { useModal } from "@/hooks/useModal";
+import { useRef, useState } from "react";
+
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useModal } from "@/hooks/useModal";
+import { useResponsive } from "@/hooks/useResponsive";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { cn } from "@/utils";
+import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
 import {
-  useUserMenuActions,
-  useGitMenuActions,
-  useWindowsMenuActions,
-  useCollectionActions,
-  useWorkspaceActions,
   HeadBarActionProps,
+  useCollectionActions,
+  useGitMenuActions,
+  useUserMenuActions,
+  useWindowsMenuActions,
+  useWorkspaceActions,
 } from "./HeadBarActions";
-import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarCenterItems } from "./HeadBarCenterItems";
+import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarRightItems } from "./HeadBarRightItems";
 import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
@@ -28,11 +29,6 @@ export const HeadBar = () => {
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [gitMenuOpen, setGitMenuOpen] = useState(false);
-  const [windowsMenuOpen, setWindowsMenuOpen] = useState(false);
-  const [collectionActionMenuOpen, setCollectionActionMenuOpen] = useState(false);
-  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
 
   // Use the workspace context instead of local state
   const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
@@ -122,16 +118,18 @@ export const HeadBar = () => {
           data-tauri-drag-region
         >
           {/* Main content container with proper layout */}
-          <div className="flex w-full items-center justify-between" data-tauri-drag-region>
+          <div
+            className={cn("grid w-full gap-1", {
+              "grid-cols-[minmax(1px,673px)_1fr_1fr]": selectedWorkspace,
+              "grid-cols-[1fr_1fr]": !selectedWorkspace,
+            })}
+            data-tauri-drag-region
+          >
             {/*HeadBar Left-side items*/}
             <HeadBarLeftItems
               isLarge={isLarge}
               breakpoint={breakpoint}
-              windowsMenuOpen={windowsMenuOpen}
-              setWindowsMenuOpen={setWindowsMenuOpen}
               handleWindowsMenuAction={handleWindowsMenuAction}
-              workspaceMenuOpen={workspaceMenuOpen}
-              setWorkspaceMenuOpen={setWorkspaceMenuOpen}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
             />
@@ -142,11 +140,7 @@ export const HeadBar = () => {
                 isMedium={isMedium}
                 isXLarge={isXLarge}
                 breakpoint={breakpoint}
-                gitMenuOpen={gitMenuOpen}
-                setGitMenuOpen={setGitMenuOpen}
                 handleGitMenuAction={handleGitMenuAction}
-                collectionActionMenuOpen={collectionActionMenuOpen}
-                setCollectionActionMenuOpen={setCollectionActionMenuOpen}
                 handleCollectionActionMenuAction={handleCollectionActionMenuAction}
                 selectedBranch={selectedBranch}
                 collectionName={collectionName}
@@ -161,8 +155,6 @@ export const HeadBar = () => {
               isMedium={isMedium}
               isLarge={isLarge}
               breakpoint={breakpoint}
-              userMenuOpen={userMenuOpen}
-              setUserMenuOpen={setUserMenuOpen}
               handleUserMenuAction={handleUserMenuAction}
               showDebugPanels={showDebugPanels}
               setShowDebugPanels={setShowDebugPanels}

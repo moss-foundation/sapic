@@ -1,50 +1,111 @@
-use crate::worktree::Worktree;
 use anyhow::{Context, Result};
-use moss_fs::{FileSystem, RenameOptions};
+use moss_file::toml::EditableToml;
+use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
 use std::path::Path;
 use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
-use tokio::sync::OnceCell;
 
-#[derive(Clone, Debug)]
-pub struct CollectionCache {
-    pub name: String,
-    pub order: Option<usize>,
-}
+use tokio::sync::{OnceCell, RwLock};
+
+use crate::defaults;
+use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
+use crate::worktree::Worktree;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Arc<Worktree>>,
+    worktree: OnceCell<Arc<RwLock<Worktree>>>,
     abs_path: PathBuf,
-    pub(crate) collection_storage: Arc<dyn CollectionStorage>,
+    storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
+    manifest: EditableToml<ManifestModel>,
+}
+
+pub struct CreateParams {
+    pub name: Option<String>,
+}
+
+pub struct ModifyParams {
+    pub name: Option<String>,
 }
 
 impl Collection {
-    pub fn new(
-        path: PathBuf,
+    pub async fn load(
+        abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         next_entry_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
-        debug_assert!(path.is_absolute());
+        debug_assert!(abs_path.is_absolute());
 
-        let state_db_manager_impl = CollectionStorageImpl::new(&path).context(format!(
+        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+
+        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
             "Failed to open the collection {} state database",
-            path.display()
+            abs_path.display()
         ))?;
 
         Ok(Self {
-            fs: Arc::clone(&fs),
-            abs_path: path,
+            fs,
+            abs_path: abs_path.to_owned().into(),
             worktree: OnceCell::new(),
-            collection_storage: Arc::new(state_db_manager_impl),
+            storage: Arc::new(storage),
             next_entry_id,
+            manifest,
         })
     }
 
-    pub async fn worktree(&self) -> Result<&Arc<Worktree>> {
+    pub async fn create(
+        abs_path: &Path,
+        fs: Arc<dyn FileSystem>,
+        next_entry_id: Arc<AtomicUsize>,
+        params: CreateParams,
+    ) -> Result<Self> {
+        debug_assert!(abs_path.is_absolute());
+
+        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
+            "Failed to open the collection {} state database",
+            abs_path.display()
+        ))?;
+
+        let manifest = EditableToml::new(
+            fs.clone(),
+            abs_path.join(MANIFEST_FILE_NAME),
+            ManifestModel {
+                name: params
+                    .name
+                    .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            fs: Arc::clone(&fs),
+            abs_path: abs_path.to_owned().into(),
+            worktree: OnceCell::new(),
+            storage: Arc::new(storage),
+            next_entry_id,
+            manifest,
+        })
+    }
+
+    pub async fn modify(&self, params: ModifyParams) -> Result<()> {
+        if params.name.is_some() {
+            self.manifest
+                .edit(ManifestModelDiff {
+                    name: params.name.to_owned(),
+                })
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn manifest(&self) -> ManifestModel {
+        self.manifest.model().await
+    }
+
+    pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
         self.worktree
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(
@@ -53,7 +114,7 @@ impl Collection {
                     self.next_entry_id.clone(),
                 );
 
-                Ok(Arc::new(worktree))
+                Ok(Arc::new(RwLock::new(worktree)))
             })
             .await
     }
@@ -62,23 +123,7 @@ impl Collection {
         &self.abs_path
     }
 
-    pub async fn reset(&mut self, new_path: Arc<Path>) -> Result<()> {
-        debug_assert!(new_path.is_absolute());
-
-        let old_path = std::mem::replace(&mut self.abs_path, new_path.to_path_buf());
-        let fs_clone = self.fs.clone();
-        let new_path_clone = new_path.clone();
-
-        let after_drop = Box::pin(async move {
-            fs_clone
-                .rename(&old_path, &new_path_clone, RenameOptions::default())
-                .await?;
-
-            Ok(())
-        });
-
-        self.collection_storage.reset(&new_path, after_drop).await?;
-
-        Ok(())
+    pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
+        &self.storage
     }
 }

@@ -23,8 +23,10 @@ members = [
     "crates/moss-workbench",
     "crates/moss-storage",
     "crates/moss-activity-indicator",
+    "crates/moss-file",
+
     "tools/xtask",
-    "view/desktop/bin",
+    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
@@ -50,7 +52,7 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
-
+moss_file = { path = "crates/moss-file" }
 async-stream = "0.3.6"
 notify = "8.0"
 redb = "2.5.0"
@@ -107,3 +109,5 @@ regex = { version = "1.11.1", default-features = false, features = [] }
 sweep-bptree = "0.4.1"
 file-id = "0.2.2"
 smallvec = "1.15.0"
+toml = "0.8"
+toml_edit = "0.22"

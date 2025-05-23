@@ -2,7 +2,6 @@ use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::service::prelude::AppService;
-use moss_common::models::primitives::Identifier;
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -13,29 +12,26 @@ use std::{
     collections::HashMap,
     ops::Deref,
     path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock};
+use uuid::Uuid;
 
-use crate::storage::segments::WORKSPACE_SEGKEY;
-
-pub const WORKSPACES_DIR: &str = "workspaces";
+use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
 
 #[derive(Debug, Clone)]
-pub struct WorkspaceInfoEntry {
-    pub id: Identifier,
+pub struct WorkspaceDescriptor {
+    pub id: Uuid,
     pub name: String,
-    pub display_name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
-pub(crate) type WorkspaceInfoEntryRef = Arc<WorkspaceInfoEntry>;
-type WorkspaceMap = HashMap<Identifier, WorkspaceInfoEntryRef>;
+type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
 pub struct ActiveWorkspace<R: TauriRuntime> {
-    pub id: Identifier,
+    pub id: Uuid,
     pub inner: Workspace<R>,
 }
 
@@ -51,7 +47,6 @@ impl<R: TauriRuntime> Deref for ActiveWorkspace<R> {
 pub struct Options {
     // The absolute path of the app directory
     pub abs_path: Arc<Path>,
-    pub next_workspace_id: Arc<AtomicUsize>,
 }
 
 pub struct Workbench<R: TauriRuntime> {
@@ -88,7 +83,7 @@ impl<R: TauriRuntime> Workbench<R> {
         self.active_workspace.load_full()
     }
 
-    pub(super) fn set_active_workspace(&self, id: Identifier, workspace: Workspace<R>) {
+    pub(super) fn set_active_workspace(&self, id: Uuid, workspace: Workspace<R>) {
         self.active_workspace.store(Some(Arc::new(ActiveWorkspace {
             id,
             inner: workspace,
@@ -98,7 +93,7 @@ impl<R: TauriRuntime> Workbench<R> {
     pub(super) async fn workspace_by_name(
         &self,
         name: &str,
-    ) -> Result<Option<WorkspaceInfoEntryRef>> {
+    ) -> Result<Option<Arc<WorkspaceDescriptor>>> {
         let workspaces = self.workspaces().await?;
         let workspaces_lock = workspaces.read().await;
 
@@ -115,9 +110,9 @@ impl<R: TauriRuntime> Workbench<R> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
-                let mut workspaces = HashMap::new();
+                let mut workspaces: WorkspaceMap = HashMap::new();
 
-                let dir_abs_path = self.absolutize(WORKSPACES_DIR);
+                let dir_abs_path = self.absolutize(dirs::WORKSPACES_DIR);
                 if !dir_abs_path.exists() {
                     return Ok(RwLock::new(workspaces));
                 }
@@ -155,33 +150,36 @@ impl<R: TauriRuntime> Workbench<R> {
                         continue;
                     }
 
-                    let encoded_name = entry.file_name().to_string_lossy().to_string();
-                    let display_name = moss_fs::utils::decode_name(&encoded_name)?;
-
-                    let path = PathBuf::from(WORKSPACES_DIR).join(&encoded_name);
-                    let abs_path: Arc<Path> = self.absolutize(path).into();
-
-                    let restored_entity = match restored_entities
-                        .remove(&encoded_name)
-                        .map_or(Ok(None), |v| {
-                            v.deserialize::<WorkspaceInfoEntity>().map(Some)
-                        }) {
-                        Ok(value) => value,
-                        Err(_err) => {
+                    let id_str = entry.file_name().to_string_lossy().to_string();
+                    let id = match Uuid::parse_str(&id_str) {
+                        Ok(id) => id,
+                        Err(_) => {
                             // TODO: logging
-                            println!("failed to get the workspace {:?} info", encoded_name);
+                            println!("failed to get the collection {:?} name", id_str);
                             continue;
                         }
                     };
 
-                    let id = Identifier::new(&self.options.next_workspace_id);
+                    let summary = Workspace::<R>::summary(&self.fs, &entry.path()).await?;
+
+                    let restored_entity =
+                        match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
+                            v.deserialize::<WorkspaceInfoEntity>().map(Some)
+                        }) {
+                            Ok(value) => value,
+                            Err(_err) => {
+                                // TODO: logging
+                                println!("failed to get the workspace {:?} info", id_str);
+                                continue;
+                            }
+                        };
+
                     workspaces.insert(
                         id,
-                        WorkspaceInfoEntry {
+                        WorkspaceDescriptor {
                             id,
-                            name: encoded_name,
-                            display_name,
-                            abs_path,
+                            name: summary.manifest.name,
+                            abs_path: entry.path().into(),
                             last_opened_at: restored_entity.map(|v| v.last_opened_at),
                         }
                         .into(),

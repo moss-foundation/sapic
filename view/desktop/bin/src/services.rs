@@ -166,10 +166,7 @@ fn workspace_manager<R: tauri::Runtime>(
             app_handle.clone(),
             fs,
             global_storage,
-            WorkbenchOptions {
-                abs_path,
-                next_workspace_id: Arc::new(AtomicUsize::new(0)),
-            },
+            WorkbenchOptions { abs_path },
         )
     }
 }

@@ -2988,9 +2988,11 @@ dependencies = [
  "moss_activity_indicator",
  "moss_common",
  "moss_db",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "notify",
  "scraper",
  "serde",
@@ -3000,7 +3002,9 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
+ "toml_edit 0.22.26",
  "ts-rs",
+ "uuid",
  "validator",
  "xml-rs",
 ]
@@ -3011,8 +3015,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_db",
- "moss_testutils",
- "regex",
  "serde",
  "serde_json",
  "slotmap",
@@ -3056,6 +3058,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_file"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_fs",
+ "serde",
+ "tokio",
+ "toml",
+ "toml_edit 0.22.26",
+]
+
+[[package]]
 name = "moss_fs"
 version = "0.1.0"
 dependencies = [
@@ -3063,6 +3077,8 @@ dependencies = [
  "async-stream",
  "async-trait",
  "futures",
+ "moss_common",
+ "moss_text",
  "notify",
  "regex",
  "tokio",
@@ -3205,6 +3221,7 @@ version = "0.1.0"
 dependencies = [
  "arcstr",
  "bstr",
+ "moss_testutils",
  "serde",
 ]
 
@@ -3246,11 +3263,13 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "moss_workspace",
  "serde",
  "tauri",
  "tokio",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
@@ -3267,15 +3286,19 @@ dependencies = [
  "moss_common",
  "moss_db",
  "moss_environment",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "serde",
  "serde_json",
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "toml_edit 0.22.26",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
@@ -6239,6 +6262,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "ts-rs-macros",
+ "uuid",
 ]
 
 [[package]]

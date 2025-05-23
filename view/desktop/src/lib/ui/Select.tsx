@@ -65,15 +65,18 @@ const SelectTrigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, Sel
 const SelectContent = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, ...props }, forwardedRef) => {
+>(({ className, align = "start", position = "popper", sideOffset = 6, children, ...props }, forwardedRef) => {
   const { variant: contextVariant } = useContext(SelectContext);
 
   return (
     <SelectContext.Provider value={{ variant: contextVariant }}>
       <SelectPrimitive.Content
         {...props}
+        align={align}
+        position={position}
+        sideOffset={sideOffset}
         ref={forwardedRef}
-        className={cn(`z-50 rounded-lg border px-3 py-1.5 shadow-lg`, className)}
+        className={cn(`z-50 rounded-lg border px-1.5 py-1.5 shadow-lg`, className)}
       >
         {children}
       </SelectPrimitive.Content>
@@ -95,7 +98,7 @@ const SelectItemIndicator = forwardRef<
 ));
 
 const selectItemStyles = cva(
-  `relative flex items-center gap-1.5 rounded py-1 pr-5 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
+  `relative flex min-w-0 items-center gap-1.5 rounded py-0.5 pr-2 pl-[7px] outline-none select-none data-[disabled]:cursor-not-allowed data-[disabled]:grayscale-100 data-[highlighted]:cursor-pointer`
 );
 
 const SelectItem = forwardRef<
@@ -103,8 +106,10 @@ const SelectItem = forwardRef<
   ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, forwardedRef) => {
   return (
-    <SelectPrimitive.Item {...props} ref={forwardedRef} className={cn(selectItemStyles(), className)}>
-      {children}
+    <SelectPrimitive.Item ref={forwardedRef} className={cn(selectItemStyles(), className)} {...props}>
+      <span className="min-w-0 truncate">
+        <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      </span>
     </SelectPrimitive.Item>
   );
 });
@@ -120,7 +125,7 @@ const SelectSeparator = forwardRef<
   ElementRef<typeof SelectPrimitive.Separator>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, forwardedRef) => {
-  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn(className)} />;
+  return <SelectPrimitive.Separator {...props} ref={forwardedRef} className={cn("my-0.5 h-px w-full", className)} />;
 });
 
 const Select = {

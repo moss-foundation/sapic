@@ -1,47 +1,71 @@
-import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
+import React, { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
 
 import { cn } from "@/utils";
 import * as MenuPrimitive from "@radix-ui/react-menu";
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
-import Icon, { Icons } from "../Icon";
-import { ScopedProps } from "./types";
+import { Icon, type Icons } from "../Icon";
+import { ScopedProps, useMenuScope } from "./Menu";
+import { menuContentStyles, menuItemStyles } from "./styles";
+
+/* -------------------------------------------------------------------------------------------------
+ * Sub
+ * -----------------------------------------------------------------------------------------------*/
+
+const SUB_NAME = "ActionMenuSub";
+
+interface ActionMenuSubProps {
+  children?: React.ReactNode;
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?(open: boolean): void;
+}
+
+const Sub: React.FC<ActionMenuSubProps> = (props: ScopedProps<ActionMenuSubProps>) => {
+  const { __scopeActionMenu, children, onOpenChange, open: openProp, defaultOpen = false } = props;
+  const menuScope = useMenuScope(__scopeActionMenu);
+
+  const [open, setOpen] = useControllableState({
+    prop: openProp,
+    defaultProp: defaultOpen,
+    onChange: onOpenChange,
+    caller: SUB_NAME,
+  });
+
+  return (
+    <MenuPrimitive.Sub {...menuScope} open={open} onOpenChange={setOpen}>
+      {children}
+    </MenuPrimitive.Sub>
+  );
+};
 
 /* -------------------------------------------------------------------------------------------------
  * SubTrigger
  * -----------------------------------------------------------------------------------------------*/
 
-export type SubTriggerElement = ElementRef<typeof MenuPrimitive.SubTrigger>;
-export type SubTriggerProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubTrigger>> & {
-  label: string;
+type SubTriggerElement = ElementRef<typeof MenuPrimitive.SubTrigger>;
+type SubTriggerProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubTrigger>> & {
   icon?: Icons;
-  hideIcon?: boolean;
+  iconClassName?: string;
+  alignWithIcons?: boolean;
 };
 
-export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
-  ({ hideIcon = false, ...props }, forwardedRef) => {
+const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
+  ({ alignWithIcons = false, iconClassName, ...props }, forwardedRef) => {
+    const { __scopeActionMenu, ...triggerItemProps } = props;
+
     return (
       <MenuPrimitive.SubTrigger
-        {...props}
+        {...triggerItemProps}
         ref={forwardedRef}
-        className={cn(
-          "flex items-center gap-1.5 rounded px-2 py-1",
-          {
-            "cursor-not-allowed opacity-50": props.disabled,
-            "cursor-pointer hover:outline-hidden": !props.disabled,
-          },
-          props.className
-        )}
+        className={cn(menuItemStyles({ disabled: props.disabled }), props.className)}
       >
-        {!hideIcon &&
-          (props.icon ? (
-            <Icon icon={props.icon} className="opacity-40" />
-          ) : (
-            <Icon icon="RadioIndicator" className="opacity-0" />
-          ))}
+        {props.icon && <Icon icon={props.icon} className={cn("shrink-0", iconClassName)} />}
+        {alignWithIcons && <div className={cn("size-4 shrink-0 opacity-0", iconClassName)} />}
 
-        <span>{props.label}</span>
+        <span className="truncate">{props.children}</span>
 
-        <Icon icon="ChevronRight" className="ml-auto opacity-40" />
+        <Icon icon="ChevronRight" className="ml-auto" />
       </MenuPrimitive.SubTrigger>
     );
   }
@@ -51,19 +75,24 @@ export const SubTrigger = forwardRef<SubTriggerElement, SubTriggerProps>(
  * SubContent
  * -----------------------------------------------------------------------------------------------*/
 
-export type SubContentElement = ElementRef<typeof MenuPrimitive.Content>;
-export type SubContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubContent>>;
+type SubContentElement = ElementRef<typeof MenuPrimitive.Content>;
+type SubContentProps = ScopedProps<ComponentPropsWithoutRef<typeof MenuPrimitive.SubContent>>;
 
-export const SubContent = forwardRef<SubContentElement, SubContentProps>(
+const SubContent = forwardRef<SubContentElement, SubContentProps>(
   (props: ScopedProps<SubContentProps>, forwardedRef) => {
+    const { __scopeActionMenu, ...subContentProps } = props;
+
     return (
       <MenuPrimitive.SubContent
-        {...props}
+        {...subContentProps}
         ref={forwardedRef}
-        sideOffset={16}
         style={{ ...props.style }}
-        className={cn("z-50 min-w-36 rounded-lg px-1 py-1.5 shadow-lg", props.className)}
+        className={cn(menuContentStyles(), props.className)}
       />
     );
   }
 );
+
+export { Sub, SubContent, SubTrigger };
+
+export type { ActionMenuSubProps, SubContentProps, SubTriggerProps };

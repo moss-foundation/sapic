@@ -11,15 +11,17 @@ moss_fs.workspace = true
 moss_storage.workspace = true
 moss_activity_indicator.workspace = true
 moss_db.workspace = true
+moss_text.workspace = true
 
 tokio.workspace = true
 anyhow.workspace = true
 tauri.workspace = true
 serde = { workspace = true, features = ["derive"] }
-ts-rs.workspace = true
+ts-rs = { workspace = true, features = ["uuid-impl"] }
 arc-swap.workspace = true
 validator.workspace = true
 chrono.workspace = true
+uuid = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

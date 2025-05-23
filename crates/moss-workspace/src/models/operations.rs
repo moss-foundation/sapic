@@ -1,11 +1,7 @@
-use moss_common::models::primitives::Identifier;
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
-use std::{
-    ops::Deref,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
+use uuid::Uuid;
 
 use ts_rs::TS;
 use validator::Validate;
@@ -20,14 +16,16 @@ use crate::models::types::{
 pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
+
+    #[ts(optional)]
+    pub order: Option<usize>,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: Uuid,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -38,8 +36,7 @@ pub struct CreateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionEntryInput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: Uuid,
 
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
@@ -49,28 +46,21 @@ pub struct UpdateCollectionEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionEntryOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionOutput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: Uuid,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -89,8 +79,7 @@ pub struct DescribeWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, TS)]

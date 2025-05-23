@@ -58,7 +58,7 @@ impl<R: TauriRuntime> ActivityIndicator<R> {
         activity_id: &'a str,
         title: String,
         detail: Option<String>,
-    ) -> Result<ActivityHandle<R>> {
+    ) -> Result<ActivityHandle<'a, R>> {
         self.app_handle.emit(
             ACTIVITY_INDICATOR_CHANNEL,
             ActivityEvent::Start {

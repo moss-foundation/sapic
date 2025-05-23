@@ -1,11 +1,11 @@
 import { useContext, useEffect, useRef } from "react";
 
-import { Icon, Scrollbar } from "@/lib/ui";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ActionButton, DropdownMenu, DropIndicator, TreeContext } from "..";
+import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
-import { useDropTargetNode } from "./hooks/useDropTargetNode";
+import { useDropTargetRootNode } from "./hooks/useDropTargetRootNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import { NodeAddForm } from "./NodeAddForm";
@@ -29,8 +29,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     onRootClickCallback,
     onRootDoubleClickCallback,
   } = useContext(TreeContext);
-
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   const handleExpandAll = () => {
     const newNode = expandAllNodes(node);
@@ -58,7 +56,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetFolderRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
 
   const {
     isAddingFileNode: isAddingRootFileNode,
@@ -99,7 +96,10 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-  useDropTargetNode(node, treeId, dropTargetListRef, dropTargetFolderRef);
+
+  useDropTargetRootNode(node, treeId, dropTargetFolderRef);
+
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
 
   return (
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
@@ -155,51 +155,50 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
+          <ActionMenu.Root>
+            <ActionMenu.Trigger asChild>
               <ActionButton icon="MoreHorizontal" />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className="z-30">
-                <DropdownMenu.Item label="Add File" onClick={() => setIsAddingRootFileNode(true)} />
-                <DropdownMenu.Item label="Add Folder" onClick={() => setIsAddingRootFolderNode(true)} />
-                <DropdownMenu.Item label="Rename..." onClick={() => setIsRenamingRootNode(true)} />
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+            </ActionMenu.Trigger>
+            <ActionMenu.Portal>
+              <ActionMenu.Content className="z-30" align="center">
+                <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+                <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
+              </ActionMenu.Content>
+            </ActionMenu.Portal>
+          </ActionMenu.Root>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>
 
       {shouldRenderChildNodes && !isRootDragging && (
-        <Scrollbar className="h-full w-full">
-          <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
-            {filteredChildNodes.map((childNode) => (
-              <TreeNode
-                parentNode={node}
-                onNodeUpdate={onNodeUpdate}
-                key={childNode.uniqueId}
-                node={childNode}
-                depth={1}
+        <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>
+          {filteredChildNodes.map((childNode, index) => (
+            <TreeNode
+              parentNode={node}
+              onNodeUpdate={onNodeUpdate}
+              key={childNode.uniqueId}
+              node={childNode}
+              depth={1}
+              isLastChild={index === filteredChildNodes.length - 1}
+            />
+          ))}
+          {(isAddingRootFileNode || isAddingRootFolderNode) && (
+            <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
+              <TestCollectionIcon type={node.type} className="opacity-0" />
+              <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
+              <NodeAddForm
+                isFolder={isAddingRootFolderNode}
+                restrictedNames={node.childNodes.map((childNode) => childNode.id)}
+                onSubmit={(newNode) => {
+                  handleAddFormRootSubmit(newNode);
+                  onRootAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
+                }}
+                onCancel={handleAddFormRootCancel}
               />
-            ))}
-            {(isAddingRootFileNode || isAddingRootFolderNode) && (
-              <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-                <TestCollectionIcon type={node.type} className="opacity-0" />
-                <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
-                <NodeAddForm
-                  isFolder={isAddingRootFolderNode}
-                  restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-                  onSubmit={(newNode) => {
-                    handleAddFormRootSubmit(newNode);
-                    onRootAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
-                  }}
-                  onCancel={handleAddFormRootCancel}
-                />
-              </div>
-            )}
-          </ul>
-        </Scrollbar>
+            </div>
+          )}
+        </ul>
       )}
     </div>
   );
