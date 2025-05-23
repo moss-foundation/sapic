@@ -20,3 +20,48 @@ pub trait Storage {
 
 pub type StoreTypeId = TypeId;
 pub type SegBinTable = BincodeTable<'static, SegKeyBuf, AnyValue>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::WorkspaceStorage;
+    use crate::primitives::segkey::SegKey;
+    use crate::storage::operations::{GetItem, PutItem};
+    use crate::workspace_storage::WorkspaceStorageImpl;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    struct TestData {
+        message: String,
+        number: i32,
+    }
+
+    #[test]
+    pub fn test_dump() {
+        let storage = WorkspaceStorageImpl::new("tests").unwrap();
+        let store = storage.item_store();
+
+        let test_data = TestData {
+            message: "Test".to_string(),
+            number: 3,
+        };
+        let key1 = SegKey::new("1").to_segkey_buf();
+        let key2 = SegKey::new("2").to_segkey_buf();
+        let key3 = SegKey::new("3").to_segkey_buf();
+
+        let value1 = AnyValue::serialize(&"1".to_string()).unwrap();
+        let value2 = AnyValue::serialize(&2).unwrap();
+        let value3 = AnyValue::serialize(&test_data).unwrap();
+
+        PutItem::put(store.as_ref(), key1, value1.clone()).unwrap();
+        PutItem::put(store.as_ref(), key2, value2.clone()).unwrap();
+        PutItem::put(store.as_ref(), key3, value3.clone()).unwrap();
+
+        let dumped = storage.dump().unwrap();
+
+        assert_eq!(dumped.len(), 3);
+        assert_eq!(dumped["1"], JsonValue::String("1".to_string()));
+        assert_eq!(dumped["2"], JsonValue::Number(2.into()));
+        assert_eq!(dumped["3"], serde_json::to_value(&test_data).unwrap());
+    }
+}

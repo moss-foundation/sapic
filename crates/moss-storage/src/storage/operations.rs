@@ -22,7 +22,7 @@ pub trait GetItem: Send + Sync {
     type Key;
     type Entity;
 
-    fn get_item(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait ListByPrefix: Send + Sync {

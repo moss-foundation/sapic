@@ -50,7 +50,8 @@ impl PutItem for WorkspaceItemStoreImpl {
 
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
         let mut write_txn = self.client.begin_write()?;
-        self.table.insert(&mut write_txn, key, &entity)
+        self.table.insert(&mut write_txn, key, &entity)?;
+        write_txn.commit()
     }
 }
 
@@ -72,7 +73,7 @@ impl GetItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get_item(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
+    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let read_txn = self.client.begin_read()?;
         self.table.read(&read_txn, key)
     }
@@ -93,7 +94,9 @@ impl RemoveItem for WorkspaceItemStoreImpl {
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut write_txn = self.client.begin_write()?;
-        self.table.remove(&mut write_txn, key)
+        let value = self.table.remove(&mut write_txn, key)?;
+        write_txn.commit()?;
+        Ok(value)
     }
 }
 

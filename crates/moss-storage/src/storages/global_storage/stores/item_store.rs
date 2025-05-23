@@ -50,7 +50,8 @@ impl PutItem for GlobalItemStoreImpl {
 
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
         let mut txn = self.client.begin_write()?;
-        self.table.insert(&mut txn, key, &entity)
+        self.table.insert(&mut txn, key, &entity)?;
+        txn.commit()
     }
 }
 
@@ -73,7 +74,9 @@ impl RemoveItem for GlobalItemStoreImpl {
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut txn = self.client.begin_read()?;
-        self.table.remove(&mut txn, key)
+        let value = self.table.remove(&mut txn, key)?;
+        txn.commit()?;
+        Ok(value)
     }
 }
 
