@@ -73,11 +73,13 @@ mod tests {
 
     struct Table1 {
         table: BincodeTable<'static, SegKeyBuf, AnyValue>,
+        name: &'static str,
     }
     impl Table1 {
         pub const fn new() -> Self {
             Self {
                 table: BincodeTable::new("table1"),
+                name: "table1",
             }
         }
     }
@@ -85,21 +87,31 @@ mod tests {
         fn definition(&self) -> &BincodeTable<SegKeyBuf, AnyValue> {
             &self.table
         }
+
+        fn name(&self) -> &'static str {
+            &self.name
+        }
     }
 
     struct Table2 {
         table: BincodeTable<'static, SegKeyBuf, AnyValue>,
+        name: &'static str,
     }
     impl Table2 {
         pub const fn new() -> Self {
             Self {
                 table: BincodeTable::new("table1"),
+                name: "table2",
             }
         }
     }
     impl Table for Table2 {
         fn definition(&self) -> &BincodeTable<SegKeyBuf, AnyValue> {
             &self.table
+        }
+
+        fn name(&self) -> &'static str {
+            &self.name
         }
     }
 
@@ -194,6 +206,34 @@ mod tests {
 
         write_txn.commit().unwrap();
 
+        // Test reading the values from the storage
+        let read_txn = store.begin_read().unwrap();
+
+        let value1: JsonValue = table1
+            .definition()
+            .read(&read_txn, SegKey::new("table1").join("string"))
+            .unwrap()
+            .deserialize()
+            .unwrap();
+        assert_eq!(value1, JsonValue::String("string".to_string()));
+
+        let value2: JsonValue = table1
+            .definition()
+            .read(&read_txn, SegKey::new("table1").join("number"))
+            .unwrap()
+            .deserialize()
+            .unwrap();
+        assert_eq!(value2, JsonValue::Number(42.into()));
+
+        let value3: JsonValue = table2
+            .definition()
+            .read(&read_txn, SegKey::new("table2").join("testdata"))
+            .unwrap()
+            .deserialize()
+            .unwrap();
+        assert_eq!(value3, serde_json::to_value(&data).unwrap());
+
+        // Test dumping the entries from the storage
         let dumped = store.dump().unwrap();
 
         assert_eq!(dumped.len(), 3);

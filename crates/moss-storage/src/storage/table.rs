@@ -11,8 +11,7 @@ pub trait Table: Send + Sync {
     {
         TypeId::of::<Self>()
     }
-    // fn name(&self) -> &str;
-    // fn metadata(&self) -> TableMetadata;
+    fn name(&self) -> &'static str;
 }
 
 pub struct TableMetadata {}
