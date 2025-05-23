@@ -34,7 +34,7 @@ impl<R: TauriRuntime> Workspace<R> {
             }
         }
 
-        let mut txn = self.workspace_storage.begin_read().await?;
+        let mut txn = self.workspace_storage.begin_read()?;
 
         // Get editor state
         let editor_result = TransactionalGetItem::get_item(

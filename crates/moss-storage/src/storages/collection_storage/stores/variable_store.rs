@@ -1,28 +1,19 @@
-use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseResult, ReDbClient};
-use std::collections::HashMap;
+use moss_db::ReDbClient;
+use std::sync::Arc;
 
-use crate::collection_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
-use crate::primitives::segkey::SegKeyBuf;
+use crate::storage::SegBinTable;
+use crate::storages::collection_storage::stores::CollectionVariableStore;
 
-pub struct VariableStoreImpl {
-    #[allow(dead_code)] // TODO: remove this, when we have a use for it
+pub struct CollectionVariableStoreImpl {
+    #[allow(dead_code)]
     client: ReDbClient,
-    #[allow(dead_code)] // TODO: remove this, when we have a use for it
-    table: VariableStoreTable<'static>,
+    #[allow(dead_code)]
+    table: Arc<SegBinTable>,
 }
 
-impl VariableStoreImpl {
-    pub fn new(client: ReDbClient) -> Self {
-        Self {
-            client,
-            table: TABLE_VARIABLES,
-        }
+impl CollectionVariableStoreImpl {
+    pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
+        Self { client, table }
     }
 }
-
-impl VariableStore for VariableStoreImpl {
-    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
-        todo!()
-    }
-}
+impl CollectionVariableStore for CollectionVariableStoreImpl {}

@@ -1,9 +1,7 @@
 use anyhow::Result;
 use moss_common::models::primitives::Identifier;
 use moss_fs::{CreateOptions, FileSystem, RenameOptions};
-use moss_storage::workspace_storage::{
-    VariableStore, entities::variable_store_entities::VariableEntity,
-};
+use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -104,7 +102,7 @@ pub struct Environment {
     abs_path: Arc<Path>,
     variables: RwLock<VariableMap>,
     next_variable_id: Arc<AtomicUsize>,
-    variable_store: Arc<dyn VariableStore>,
+    variable_store: Arc<dyn WorkspaceVariableStore>,
 }
 
 impl std::fmt::Debug for Environment {
@@ -120,7 +118,7 @@ impl Environment {
     pub async fn new(
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        environment_store: Arc<dyn VariableStore>,
+        environment_store: Arc<dyn WorkspaceVariableStore>,
         next_variable_id: Arc<AtomicUsize>,
     ) -> Result<Self> {
         debug_assert!(abs_path.is_file());
@@ -152,7 +150,8 @@ impl Environment {
         let reader = fs.open_file(&abs_path).await?;
         let environment_file: EnvironmentFile = serde_json::from_reader(reader)?;
 
-        let _variables_cache = environment_store.list_variables()?;
+        // TODO: integrate db
+        // let _variables_cache = environment_store.list_variables()?;
 
         let mut variables = HashMap::new();
         for (name, value) in environment_file.values {

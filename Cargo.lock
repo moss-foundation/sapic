@@ -3187,14 +3187,11 @@ name = "moss_storage"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "arc-swap",
- "async-trait",
  "moss_db",
  "redb",
  "serde",
  "serde_json",
  "smallvec",
- "tokio",
 ]
 
 [[package]]
