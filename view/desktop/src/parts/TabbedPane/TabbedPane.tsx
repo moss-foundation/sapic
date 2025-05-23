@@ -26,7 +26,6 @@ import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
 import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
 import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
-import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
@@ -62,13 +61,11 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   const [showLogs, setShowLogs] = React.useState(false);
   const [debug, setDebug] = React.useState(false);
 
-  const { logLines, addLogLine, setLogLines } = useDockviewLogger();
-
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useTabbedPaneEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
-  useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
+  const { canDrop, isDragging } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
@@ -243,11 +240,12 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
+                  disableDnd={isDragging && !canDrop}
                 />
               </div>
             </DebugContext.Provider>
           </Scrollbar>
-          {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
+          {showLogs && <LogsPanel />}
         </div>
       </div>
     </Scrollbar>

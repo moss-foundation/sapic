@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { Icons } from "@/components";
+import { Icons } from "@/lib/ui/Icon";
 
 export interface ActivityBarItem {
   id: string;
