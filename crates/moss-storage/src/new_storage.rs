@@ -10,7 +10,6 @@ use std::sync::Arc;
 use crate::storage::Transactional;
 use crate::storage::table::Table;
 
-mod new_resettable_storage;
 mod new_storage;
 
 #[async_trait]
@@ -22,15 +21,3 @@ pub trait Dump {
 pub trait NewStorage: Transactional + Dump + Send + Sync {
     async fn table(&self, id: &TypeId) -> DatabaseResult<Arc<dyn Table>>;
 }
-
-#[async_trait]
-pub trait NewReset {
-    async fn reset(
-        &self,
-        path: &Path,
-        after_drop: Pin<Box<dyn Future<Output = anyhow::Result<()>> + Send>>, // TODO: change to DatabaseResult
-    ) -> anyhow::Result<()>; // TODO: change to DatabaseResult
-}
-
-#[async_trait]
-pub trait NewResettableStorage: NewStorage + NewReset {}
