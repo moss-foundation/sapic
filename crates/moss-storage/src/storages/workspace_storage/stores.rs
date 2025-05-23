@@ -17,8 +17,8 @@ pub trait WorkspaceItemStore:
     + TransactionalPutItem<Key = SegKeyBuf, Entity = AnyValue>
     + GetItem<Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalGetItem<Key = SegKeyBuf, Entity = AnyValue>
-    + RemoveItem<Key = SegKeyBuf>
-    + TransactionalRemoveItem<Key = SegKeyBuf>
+    + RemoveItem<Key = SegKeyBuf, Entity = AnyValue>
+    + TransactionalRemoveItem<Key = SegKeyBuf, Entity = AnyValue>
     + Send
     + Sync
 {

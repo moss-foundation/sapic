@@ -69,20 +69,20 @@ impl TransactionalPutItem for GlobalItemStoreImpl {
 }
 impl RemoveItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<()> {
+    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut txn = self.client.begin_read()?;
-        self.table.remove(&mut txn, key)?;
-        Ok(())
+        self.table.remove(&mut txn, key)
     }
 }
 
 impl TransactionalRemoveItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<()> {
-        self.table.remove(txn, key)?;
-        Ok(())
+    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        self.table.remove(txn, key)
     }
 }
 

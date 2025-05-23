@@ -40,7 +40,7 @@ impl TransactionalListByPrefix for WorkspaceItemStoreImpl {
         txn: &Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        todo!()
+        self.table.scan_by_prefix(txn, prefix)
     }
 }
 
@@ -89,20 +89,20 @@ impl TransactionalGetItem for WorkspaceItemStoreImpl {
 
 impl RemoveItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<()> {
+    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut write_txn = self.client.begin_write()?;
-        self.table.remove(&mut write_txn, key)?;
-        Ok(())
+        self.table.remove(&mut write_txn, key)
     }
 }
 
 impl TransactionalRemoveItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
+    type Entity = AnyValue;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<()> {
-        self.table.remove(txn, key)?;
-        Ok(())
+    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        self.table.remove(txn, key)
     }
 }
 

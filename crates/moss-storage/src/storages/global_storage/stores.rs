@@ -13,8 +13,8 @@ pub trait GlobalItemStore:
     + TransactionalListByPrefix<Key = SegKeyBuf, Entity = AnyValue>
     + PutItem<Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalPutItem<Key = SegKeyBuf, Entity = AnyValue>
-    + RemoveItem<Key = SegKeyBuf>
-    + TransactionalRemoveItem<Key = SegKeyBuf>
+    + RemoveItem<Key = SegKeyBuf, Entity = AnyValue>
+    + TransactionalRemoveItem<Key = SegKeyBuf, Entity = AnyValue>
     + Send
     + Sync
 {

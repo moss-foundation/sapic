@@ -46,8 +46,9 @@ pub trait TransactionalPutItem: Send + Sync {
 
 pub trait TransactionalRemoveItem: Send + Sync {
     type Key;
+    type Entity;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<()>;
+    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait PutItem: Send + Sync {
@@ -57,11 +58,11 @@ pub trait PutItem: Send + Sync {
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()>;
 }
 
-// TODO: Should remove return the value?
 pub trait RemoveItem: Send + Sync {
     type Key;
+    type Entity;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<()>;
+    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait TransactionalRekeyItem: Send + Sync {
