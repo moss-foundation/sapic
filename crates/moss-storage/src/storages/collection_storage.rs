@@ -14,6 +14,7 @@ use crate::collection_storage::stores::{CollectionUnitStore, CollectionVariableS
 use crate::primitives::segkey::SegKeyBuf;
 use crate::storage::{SegBinTable, Storage, StoreTypeId, Transactional};
 
+pub mod entities;
 pub mod stores;
 
 const DB_NAME: &str = "state.db";
