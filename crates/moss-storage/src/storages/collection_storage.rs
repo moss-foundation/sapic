@@ -1,6 +1,6 @@
 use moss_db::bincode_table::BincodeTable;
 use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction};
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction};
 use serde_json::Value as JsonValue;
 use std::any::TypeId;
 use std::collections::HashMap;

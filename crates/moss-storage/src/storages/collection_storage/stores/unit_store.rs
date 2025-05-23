@@ -5,7 +5,9 @@ use crate::storage::SegBinTable;
 use crate::storages::collection_storage::stores::CollectionUnitStore;
 
 pub struct CollectionUnitStoreImpl {
+    #[allow(dead_code)]
     client: ReDbClient,
+    #[allow(dead_code)]
     table: Arc<SegBinTable>,
 }
 

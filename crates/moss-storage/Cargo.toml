@@ -9,12 +9,5 @@ moss_db.workspace = true
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-async-trait.workspace = true
-arc-swap.workspace = true
-tokio = { workspace = true, features = ["rt"] }
 smallvec.workspace = true
 redb.workspace = true
-
-[dev-dependencies]
-moss_testutils.workspace = true
-tokio = { workspace = true, features = ["fs", "time", "rt", "rt-multi-thread", "macros"] }

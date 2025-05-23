@@ -1,9 +1,8 @@
 pub mod operations;
-pub mod store;
 
 use moss_db::bincode_table::BincodeTable;
 use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseClient, DatabaseResult, Transaction};
+use moss_db::{DatabaseResult, Transaction};
 use serde_json::Value as JsonValue;
 use std::{any::TypeId, collections::HashMap};
 
