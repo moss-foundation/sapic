@@ -2,16 +2,17 @@ use moss_db::ReDbClient;
 use std::sync::Arc;
 
 use crate::storage::SegBinTable;
-use crate::storages::collection_storage::stores::CollectionVariableStore;
+use crate::storages::collection_storage::stores::CollectionUnitStore;
 
-pub struct CollectionVariableStoreImpl {
+pub struct CollectionUnitStoreImpl {
     client: ReDbClient,
     table: Arc<SegBinTable>,
 }
 
-impl CollectionVariableStoreImpl {
+impl CollectionUnitStoreImpl {
     pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
         Self { client, table }
     }
 }
-impl CollectionVariableStore for CollectionVariableStoreImpl {}
+
+impl CollectionUnitStore for CollectionUnitStoreImpl {}

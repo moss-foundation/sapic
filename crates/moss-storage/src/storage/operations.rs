@@ -57,6 +57,7 @@ pub trait PutItem: Send + Sync {
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()>;
 }
 
+// TODO: Should remove return the value?
 pub trait RemoveItem: Send + Sync {
     type Key;
 

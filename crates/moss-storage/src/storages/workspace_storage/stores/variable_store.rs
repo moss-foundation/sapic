@@ -1,34 +1,18 @@
-use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseResult, ReDbClient};
-use std::collections::HashMap;
+use crate::storage::SegBinTable;
+use crate::workspace_storage::stores::WorkspaceVariableStore;
 
-use crate::primitives::segkey::SegKeyBuf;
-use crate::workspace_storage::{TABLE_VARIABLES, VariableStore, tables::VariableStoreTable};
+use moss_db::ReDbClient;
+use std::sync::Arc;
 
-// pub struct VariableTable { // -> BincodeTable<SegKeyBuf, AnyValue>
-//     definition: TableDefinition<SegKeyBuf, AnyValue>,
-//     name: String,
-//     metadata: TableMetadata,
-// }
-
-pub struct VariableStoreImpl {
-    #[allow(dead_code)] // TODO: remove this, when we have a use for it
+pub struct WorkspaceVariableStoreImpl {
     client: ReDbClient,
-    #[allow(dead_code)] // TODO: remove this, when we have a use for it
-    table: VariableStoreTable<'static>,
+    table: Arc<SegBinTable>,
 }
 
-impl VariableStoreImpl {
-    pub fn new(client: ReDbClient) -> Self {
-        Self {
-            client,
-            table: TABLE_VARIABLES,
-        }
+impl WorkspaceVariableStoreImpl {
+    pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
+        Self { client, table }
     }
 }
 
-impl VariableStore for VariableStoreImpl {
-    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
-        todo!()
-    }
-}
+impl WorkspaceVariableStore for WorkspaceVariableStoreImpl {}
