@@ -6,7 +6,7 @@ use moss_workbench::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 
-use crate::shared::setup_test_workspace_manager;
+use crate::shared::{ITEMS_KEY, setup_test_workspace_manager, workspace_key};
 
 #[tokio::test]
 async fn create_workspace_success() {
@@ -39,6 +39,12 @@ async fn create_workspace_success() {
     assert_eq!(list_workspaces[0].id, create_output.id);
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
+    // Check database
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.get(workspace_key(create_output.id)).is_some());
+
     cleanup().await;
 }
 
@@ -63,6 +69,12 @@ async fn create_workspace_empty_name() {
     let list_workspaces = workspace_manager.list_workspaces().await.unwrap();
     assert!(list_workspaces.is_empty());
     assert!(workspace_manager.active_workspace().is_none());
+
+    // Check database
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.as_object().unwrap().is_empty());
 
     cleanup().await;
 }
@@ -130,6 +142,14 @@ async fn create_workspace_same_name() {
         .unwrap();
     assert_eq!(listed_second.display_name, workspace_name);
 
+    // Check only second workspace has entry in the databased since it's been opened
+    // Check database
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.get(workspace_key(second_output.id)).is_some());
+    assert!(items_dump.get(workspace_key(first_output.id)).is_none());
+
     cleanup().await;
 }
 
@@ -174,6 +194,12 @@ async fn create_workspace_special_chars() {
         assert_eq!(matching_workspace.display_name, name);
     }
 
+    // Check database
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert_eq!(items_dump.as_object().unwrap().len(), created_count);
+
     cleanup().await;
 }
 
@@ -204,5 +230,10 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].id, create_output.id);
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
+    // Check that a database entry is not created
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.as_object().unwrap().is_empty());
     cleanup().await;
 }

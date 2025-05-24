@@ -7,6 +7,9 @@ use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use std::sync::Arc;
 use tauri::test::MockRuntime;
+use uuid::Uuid;
+
+pub const ITEMS_KEY: &'static str = "table:items";
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -57,4 +60,8 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
     });
 
     (workspaces_abs_path, workspace_manager, cleanup_fn)
+}
+
+pub fn workspace_key(id: Uuid) -> String {
+    format!("workspace:{id}")
 }

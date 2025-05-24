@@ -6,7 +6,7 @@ use moss_workbench::models::operations::{CreateWorkspaceInput, DeleteWorkspaceIn
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 
-use crate::shared::setup_test_workspace_manager;
+use crate::shared::{ITEMS_KEY, setup_test_workspace_manager};
 
 #[tokio::test]
 async fn delete_workspace_success() {
@@ -39,6 +39,13 @@ async fn delete_workspace_success() {
     // Check updating known_workspaces
     let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
     assert!(list_workspaces_output.is_empty());
+
+    // Check updating database
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+
+    assert!(items_dump.as_object().unwrap().is_empty());
 
     cleanup().await;
 }

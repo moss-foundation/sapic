@@ -73,7 +73,7 @@ impl RemoveItem for GlobalItemStoreImpl {
     type Entity = AnyValue;
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let mut txn = self.client.begin_read()?;
+        let mut txn = self.client.begin_write()?;
         let value = self.table.remove(&mut txn, key)?;
         txn.commit()?;
         Ok(value)

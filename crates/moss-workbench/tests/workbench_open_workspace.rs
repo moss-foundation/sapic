@@ -5,7 +5,7 @@ use moss_testutils::random_name::random_workspace_name;
 use moss_workbench::models::operations::{CreateWorkspaceInput, OpenWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
 
-use crate::shared::setup_test_workspace_manager;
+use crate::shared::{ITEMS_KEY, setup_test_workspace_manager, workspace_key};
 
 #[tokio::test]
 async fn open_workspace_success() {
@@ -48,6 +48,13 @@ async fn open_workspace_success() {
     assert_eq!(active_workspace.id, first_output.id);
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
+    // Check database creating first workspace entry
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+
+    assert!(items_dump.get(workspace_key(first_output.id)).is_some());
+
     cleanup().await;
 }
 
@@ -64,6 +71,12 @@ async fn open_workspace_not_found() {
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
     assert!(workspace_manager.active_workspace().is_none());
+
+    // Check database not creating any entry
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.as_object().unwrap().is_empty());
 
     cleanup().await;
 }
@@ -131,6 +144,12 @@ async fn open_workspace_directory_deleted() {
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
     assert!(workspace_manager.active_workspace().is_none());
+
+    // Check database not creating any entry
+    let global_storage = workspace_manager.global_storage();
+    let dumped = global_storage.dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.as_object().unwrap().is_empty());
 
     cleanup().await;
 }
