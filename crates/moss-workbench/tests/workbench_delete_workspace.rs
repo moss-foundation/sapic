@@ -41,7 +41,7 @@ async fn delete_workspace_success() {
     assert!(list_workspaces_output.is_empty());
 
     // Check updating database
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
 

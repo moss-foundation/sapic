@@ -1,10 +1,11 @@
 mod shared;
 
 use moss_common::api::OperationError;
+use moss_storage::workspace_storage::entities::collection_store_entities::CollectionCacheEntity;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 
-use crate::shared::setup_test_workspace;
+use crate::shared::{ITEMS_KEY, collection_key, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -28,6 +29,22 @@ async fn create_collection_success() {
     // Verify the directory was created
     assert!(create_collection_output.abs_path.exists());
 
+    // Verify the db entry was created
+    let id = create_collection_output.id;
+    let dumped = workspace._storage().dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert_eq!(items_dump.as_object().unwrap().len(), 1);
+
+    let value = items_dump[collection_key(id)].clone();
+    let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+    assert_eq!(
+        entity,
+        CollectionCacheEntity {
+            order: None,
+            external_abs_path: None
+        }
+    );
+
     // Clean up
     cleanup().await;
 }
@@ -48,6 +65,11 @@ async fn create_collection_empty_name() {
         create_collection_result,
         Err(OperationError::InvalidInput(_))
     ));
+
+    // Check that the database is empty
+    let dumped = workspace._storage().dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert!(items_dump.as_object().unwrap().is_empty());
 
     // Clean up
     cleanup().await;
@@ -78,7 +100,66 @@ async fn create_collection_special_chars() {
 
         // Verify the directory was created
         assert!(create_collection_output.abs_path.exists());
+
+        // Verify the db entry was created
+        let id = create_collection_output.id;
+        let dumped = workspace._storage().dump().unwrap();
+        let items_dump = dumped[ITEMS_KEY].clone();
+        let value = items_dump[collection_key(id)].clone();
+        let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+        assert_eq!(
+            entity,
+            CollectionCacheEntity {
+                order: None,
+                external_abs_path: None
+            }
+        );
     }
+
+    // Clean up
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_collection_with_order() {
+    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
+
+    let collection_name = random_collection_name();
+    let create_collection_result = workspace
+        .create_collection(CreateCollectionInput {
+            name: collection_name.clone(),
+            order: Some(42),
+        })
+        .await;
+
+    assert!(create_collection_result.is_ok());
+
+    let create_collection_output = create_collection_result.unwrap();
+    let collections = workspace.collections().await.unwrap().read().await;
+
+    assert_eq!(collections.len(), 1);
+    // Verify the order is correctly stored
+    let order = collections.iter().next().unwrap().1.read().await.order;
+    assert_eq!(order, Some(42));
+
+    // Verify the directory was created
+    assert!(create_collection_output.abs_path.exists());
+
+    // Verify the db entry was created
+    let id = create_collection_output.id;
+    let dumped = workspace._storage().dump().unwrap();
+    let items_dump = dumped[ITEMS_KEY].clone();
+    assert_eq!(items_dump.as_object().unwrap().len(), 1);
+
+    let value = items_dump[collection_key(id)].clone();
+    let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+    assert_eq!(
+        entity,
+        CollectionCacheEntity {
+            order: Some(42),
+            external_abs_path: None
+        }
+    );
 
     // Clean up
     cleanup().await;

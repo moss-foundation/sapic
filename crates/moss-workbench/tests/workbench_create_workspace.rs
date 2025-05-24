@@ -40,7 +40,7 @@ async fn create_workspace_success() {
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
     // Check database
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.get(workspace_key(create_output.id)).is_some());
@@ -71,7 +71,7 @@ async fn create_workspace_empty_name() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.as_object().unwrap().is_empty());
@@ -144,7 +144,7 @@ async fn create_workspace_same_name() {
 
     // Check only second workspace has entry in the databased since it's been opened
     // Check database
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.get(workspace_key(second_output.id)).is_some());
@@ -195,7 +195,7 @@ async fn create_workspace_special_chars() {
     }
 
     // Check database
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert_eq!(items_dump.as_object().unwrap().len(), created_count);
@@ -231,7 +231,7 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
     // Check that a database entry is not created
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.as_object().unwrap().is_empty());

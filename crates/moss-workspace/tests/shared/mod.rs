@@ -15,6 +15,7 @@ use std::sync::Arc;
 use tauri::test::MockRuntime;
 use uuid::Uuid;
 
+pub const ITEMS_KEY: &'static str = "table:items";
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
 pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
@@ -118,4 +119,8 @@ pub fn create_simple_editor_state() -> EditorPartState {
         panels,
         active_group: Some("group1".to_string()),
     }
+}
+
+pub fn collection_key(id: Uuid) -> String {
+    format!("collection:{id}")
 }

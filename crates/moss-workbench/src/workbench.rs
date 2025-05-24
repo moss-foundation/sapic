@@ -196,7 +196,7 @@ impl<R: TauriRuntime> Workbench<R> {
     }
 
     // TODO: Feature flag for test utils
-    pub fn global_storage(&self) -> Arc<dyn GlobalStorage> {
+    pub fn _global_storage(&self) -> Arc<dyn GlobalStorage> {
         self.global_storage.clone()
     }
 }

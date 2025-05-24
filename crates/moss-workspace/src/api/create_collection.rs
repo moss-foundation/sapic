@@ -52,6 +52,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to create the collection directory")?;
 
         let name = input.name.to_owned();
+        let order = input.order.to_owned();
         let collection = Collection::create(
             &abs_path,
             self.fs.clone(),
@@ -70,7 +71,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 Arc::new(RwLock::new(CollectionItem {
                     id,
                     name,
-                    order: None,
+                    order: order.clone(),
                     inner: collection,
                 })),
             );
@@ -79,7 +80,7 @@ impl<R: TauriRuntime> Workspace<R> {
         {
             let key = COLLECTION_SEGKEY.join(&id_str);
             let value = AnyValue::serialize(&CollectionCacheEntity {
-                order: None,
+                order: order.clone(),
                 external_abs_path: None,
             })?;
             PutItem::put(self.workspace_storage.item_store().as_ref(), key, value)?;

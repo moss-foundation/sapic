@@ -49,7 +49,7 @@ async fn open_workspace_success() {
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
     // Check database creating first workspace entry
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
 
@@ -73,7 +73,7 @@ async fn open_workspace_not_found() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.as_object().unwrap().is_empty());
@@ -146,7 +146,7 @@ async fn open_workspace_directory_deleted() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let global_storage = workspace_manager.global_storage();
+    let global_storage = workspace_manager._global_storage();
     let dumped = global_storage.dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
     assert!(items_dump.as_object().unwrap().is_empty());
