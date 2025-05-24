@@ -1,6 +1,9 @@
 use moss_environment::models::types::VariableInfo;
 use serde::{Deserialize, Serialize};
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use uuid::Uuid;
 
 use ts_rs::TS;
@@ -19,6 +22,9 @@ pub struct CreateCollectionInput {
 
     #[ts(optional)]
     pub order: Option<usize>,
+
+    #[ts(optional)]
+    pub external_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, TS)]
