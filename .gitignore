@@ -64,3 +64,5 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 # this cannot be moved to the desktop folder because it makes tailwind ignore the icons
 # Icons
 view/desktop/src/assets/icons/
+/crates/moss-logging/logs
+/crates/moss-workspace/tests/data
