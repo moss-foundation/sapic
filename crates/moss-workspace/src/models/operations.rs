@@ -19,6 +19,9 @@ pub struct CreateCollectionInput {
 
     #[ts(optional)]
     pub order: Option<usize>,
+
+    #[ts(optional)]
+    pub external_path: Option<String>,
 }
 
 #[derive(Debug, Serialize, TS)]

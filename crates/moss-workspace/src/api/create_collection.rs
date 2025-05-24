@@ -32,6 +32,10 @@ impl<R: TauriRuntime> Workspace<R> {
         let id = Uuid::new_v4();
         let id_str = id.to_string();
 
+        // if let Some(external_path) = input.external_path {
+
+        // }
+
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
         let abs_path: Arc<Path> = self.absolutize(path).into();
 

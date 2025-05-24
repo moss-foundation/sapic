@@ -5,11 +5,102 @@ use std::{path::Path, str::FromStr, sync::Arc};
 use tokio::sync::RwLock;
 use toml_edit::DocumentMut;
 
+pub struct FileHandle<T>
+where
+    T: Clone + Serialize + DeserializeOwned,
+{
+    fs: Arc<dyn FileSystem>,
+    abs_path: Arc<Path>,
+    model: RwLock<T>,
+}
+
+impl<T> FileHandle<T>
+where
+    T: Clone + Serialize + DeserializeOwned,
+{
+    pub async fn new(
+        fs: Arc<dyn FileSystem>,
+        abs_path: impl AsRef<Path>,
+        model: T,
+    ) -> Result<Self> {
+        let abs_path: Arc<Path> = abs_path.as_ref().into();
+        debug_assert!(abs_path.is_absolute());
+
+        let s = toml::to_string(&model)?;
+
+        fs.create_file_with(
+            &abs_path,
+            &s.as_bytes(),
+            moss_fs::CreateOptions {
+                overwrite: true,
+                ignore_if_exists: true,
+            },
+        )
+        .await?;
+
+        Ok(Self {
+            fs,
+            abs_path,
+            model: RwLock::new(model),
+        })
+    }
+
+    pub async fn load(fs: Arc<dyn FileSystem>, abs_path: impl AsRef<Path>) -> Result<Self> {
+        let abs_path: Arc<Path> = abs_path.as_ref().into();
+        debug_assert!(abs_path.is_absolute());
+
+        let mut reader = fs
+            .open_file(&abs_path)
+            .await
+            .context("Failed to open file")?;
+
+        let mut buf = String::new();
+        reader
+            .read_to_string(&mut buf)
+            .context("Failed to read file")?;
+
+        let model: T = toml::from_str(&buf)?;
+
+        Ok(Self {
+            fs,
+            abs_path,
+            model: RwLock::new(model),
+        })
+    }
+
+    pub async fn model(&self) -> T {
+        self.model.read().await.clone()
+    }
+
+    pub fn path(&self) -> &Arc<Path> {
+        &self.abs_path
+    }
+
+    pub async fn edit(&self, f: impl FnOnce(&mut T) -> Result<()>) -> Result<()> {
+        let mut model = self.model.write().await;
+        f(&mut *model)?;
+
+        let s = toml::to_string(&*model)?;
+        self.fs
+            .create_file_with(
+                &self.abs_path,
+                &s.as_bytes(),
+                moss_fs::CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: true,
+                },
+            )
+            .await?;
+
+        Ok(())
+    }
+}
+
 pub trait TomlEditor {
     fn edit(&self, doc: &mut DocumentMut) -> Result<()>;
 }
 
-pub struct EditableToml<T>
+pub struct EditableFileHandle<T>
 where
     T: Clone + Serialize + DeserializeOwned,
 {
@@ -19,7 +110,7 @@ where
     model: RwLock<T>,
 }
 
-impl<T> EditableToml<T>
+impl<T> EditableFileHandle<T>
 where
     T: Clone + Serialize + DeserializeOwned,
 {
@@ -110,5 +201,9 @@ where
 
     pub async fn model(&self) -> T {
         self.model.read().await.clone()
+    }
+
+    pub fn path(&self) -> &Arc<Path> {
+        &self.abs_path
     }
 }

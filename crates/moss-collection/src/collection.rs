@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use moss_file::toml::EditableToml;
+use moss_file::toml::EditableFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
@@ -19,7 +19,7 @@ pub struct Collection {
     abs_path: PathBuf,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
-    manifest: EditableToml<ManifestModel>,
+    manifest: EditableFileHandle<ManifestModel>,
 }
 
 pub struct CreateParams {
@@ -38,7 +38,7 @@ impl Collection {
     ) -> Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
-        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+        let manifest = EditableFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
 
         let storage = CollectionStorageImpl::new(&abs_path).context(format!(
             "Failed to open the collection {} state database",
@@ -68,7 +68,7 @@ impl Collection {
             abs_path.display()
         ))?;
 
-        let manifest = EditableToml::new(
+        let manifest = EditableFileHandle::new(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
