@@ -152,7 +152,7 @@ where
 
         fs.create_file_with(
             &abs_path,
-            &s.as_bytes(), // Write the initial string form, not doc.to_string() yet
+            &s.as_bytes(),
             moss_fs::CreateOptions {
                 overwrite: true,
                 ignore_if_exists: true,
