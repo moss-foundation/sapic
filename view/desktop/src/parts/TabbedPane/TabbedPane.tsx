@@ -236,7 +236,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   defaultTabComponent={headerComponents.default}
                   rightHeaderActionsComponent={PanelToolbar}
                   leftHeaderActionsComponent={AddPanelButton}
-                  watermarkComponent={watermark ? Watermark : undefined}
+                  watermarkComponent={Watermark}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}

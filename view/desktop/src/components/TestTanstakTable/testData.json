@@ -1,0 +1,56 @@
+[
+  {
+    "key": "1",
+    "value": "asd",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "100",
+    "local_value": 14,
+    "properties": { "disabled": false }
+  },
+  {
+    "key": "2",
+    "value": "zxc",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "2125",
+    "local_value": 22,
+    "properties": { "disabled": false }
+  },
+  {
+    "key": "3",
+    "value": "фывфыв",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "31",
+    "local_value": 33,
+    "properties": { "disabled": false }
+  },
+  {
+    "key": "4",
+    "value": "йцкйцк",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "4",
+    "local_value": 4,
+    "properties": { "disabled": false }
+  },
+  {
+    "key": "5",
+    "value": "512312412",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "588",
+    "local_value": 55,
+    "properties": { "disabled": false }
+  },
+  {
+    "key": "6",
+    "value": "wrb4365n687j",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "62",
+    "local_value": 61,
+    "properties": { "disabled": false }
+  }
+]
