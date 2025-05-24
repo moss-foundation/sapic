@@ -32,10 +32,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let id = Uuid::new_v4();
         let id_str = id.to_string();
 
-        // if let Some(external_path) = input.external_path {
-
-        // }
-
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
         let abs_path: Arc<Path> = self.absolutize(path).into();
 
@@ -57,11 +53,12 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let name = input.name.to_owned();
         let collection = Collection::create(
-            &abs_path,
             self.fs.clone(),
             self.next_collection_entry_id.clone(),
             collection::CreateParams {
                 name: Some(name.clone()),
+                internal_abs_path: &abs_path,
+                external_abs_path: input.external_path.as_deref(),
             },
         )
         .await

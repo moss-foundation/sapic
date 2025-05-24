@@ -73,7 +73,7 @@ async fn test_file_handle_new_and_load() -> Result<()> {
         value: 1,
     };
 
-    let handle = FileHandle::new(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
+    let handle = FileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
     assert_eq!(handle.model().await, initial_data);
     assert_eq!(handle.path().as_ref(), &file_path);
 
@@ -97,7 +97,7 @@ async fn test_file_handle_edit() -> Result<()> {
         name: "initial".to_string(),
         value: 10,
     };
-    let handle = FileHandle::new(Arc::clone(&fs_arc), &file_path, initial_data).await?;
+    let handle = FileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
 
     let new_name = "edited".to_string();
     let new_value = 20;
@@ -134,7 +134,7 @@ async fn test_editable_file_handle_new_and_load() -> Result<()> {
     };
 
     let handle =
-        EditableFileHandle::new(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
+        EditableFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
     assert_eq!(handle.model().await, initial_data);
     assert_eq!(handle.path().as_ref(), &file_path);
 
@@ -158,7 +158,7 @@ async fn test_editable_file_handle_edit() -> Result<()> {
         value: 202,
     };
 
-    let handle = EditableFileHandle::new(Arc::clone(&fs_arc), &file_path, initial_data).await?;
+    let handle = EditableFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
 
     let editor = MockTomlEditor {
         new_name: "efh_edited".to_string(),

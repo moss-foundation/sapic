@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use moss_file::toml::EditableFileHandle;
+use moss_file::toml;
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
@@ -9,6 +9,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::config::{CONFIG_FILE_NAME, ConfigModel};
 use crate::defaults;
 use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
 use crate::worktree::Worktree;
@@ -16,14 +17,17 @@ use crate::worktree::Worktree;
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     worktree: OnceCell<Arc<RwLock<Worktree>>>,
-    abs_path: PathBuf,
+    abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
-    manifest: EditableFileHandle<ManifestModel>,
+    manifest: toml::EditableFileHandle<ManifestModel>,
+    config: toml::FileHandle<ConfigModel>,
 }
 
-pub struct CreateParams {
+pub struct CreateParams<'a> {
     pub name: Option<String>,
+    pub internal_abs_path: &'a Path,
+    pub external_abs_path: Option<&'a Path>,
 }
 
 pub struct ModifyParams {
@@ -38,12 +42,15 @@ impl Collection {
     ) -> Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
-        let manifest = EditableFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
-
         let storage = CollectionStorageImpl::new(&abs_path).context(format!(
             "Failed to open the collection {} state database",
             abs_path.display()
         ))?;
+
+        let manifest =
+            toml::EditableFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+
+        let config = toml::FileHandle::load(fs.clone(), abs_path.join(CONFIG_FILE_NAME)).await?;
 
         Ok(Self {
             fs,
@@ -52,25 +59,31 @@ impl Collection {
             storage: Arc::new(storage),
             next_entry_id,
             manifest,
+            config,
         })
     }
 
-    pub async fn create(
-        abs_path: &Path,
+    pub async fn create<'a>(
         fs: Arc<dyn FileSystem>,
         next_entry_id: Arc<AtomicUsize>,
-        params: CreateParams,
+        params: CreateParams<'a>,
     ) -> Result<Self> {
-        debug_assert!(abs_path.is_absolute());
+        debug_assert!(params.internal_abs_path.is_absolute());
 
-        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
+        let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
             "Failed to open the collection {} state database",
-            abs_path.display()
+            params.internal_abs_path.display()
         ))?;
 
-        let manifest = EditableFileHandle::new(
+        let manifest_abs_path = if let Some(external_abs_path) = params.external_abs_path {
+            external_abs_path.join(MANIFEST_FILE_NAME)
+        } else {
+            params.internal_abs_path.join(MANIFEST_FILE_NAME)
+        };
+
+        let manifest = toml::EditableFileHandle::create(
             fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            manifest_abs_path,
             ManifestModel {
                 name: params
                     .name
@@ -79,13 +92,23 @@ impl Collection {
         )
         .await?;
 
+        let config = toml::FileHandle::create(
+            fs.clone(),
+            params.internal_abs_path.join(CONFIG_FILE_NAME),
+            ConfigModel {
+                external_path: params.external_abs_path.map(|p| p.to_owned().into()),
+            },
+        )
+        .await?;
+
         Ok(Self {
             fs: Arc::clone(&fs),
-            abs_path: abs_path.to_owned().into(),
+            abs_path: params.internal_abs_path.to_owned().into(),
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
             next_entry_id,
             manifest,
+            config,
         })
     }
 
@@ -119,7 +142,7 @@ impl Collection {
             .await
     }
 
-    pub fn abs_path(&self) -> &PathBuf {
+    pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
 

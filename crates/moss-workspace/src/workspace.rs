@@ -137,7 +137,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to open the workspace state database")?;
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
-        let manifest = EditableFileHandle::new(
+        let manifest = EditableFileHandle::create(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
