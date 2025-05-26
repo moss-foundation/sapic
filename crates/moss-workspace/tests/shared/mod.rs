@@ -1,10 +1,12 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
+use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
 };
+use moss_workspace::storage::segments::COLLECTION_SEGKEY;
 use moss_workspace::{Workspace, workspace::CreateParams};
 use std::collections::HashMap;
 use std::fs;
@@ -118,4 +120,8 @@ pub fn create_simple_editor_state() -> EditorPartState {
         panels,
         active_group: Some("group1".to_string()),
     }
+}
+
+pub fn collection_key(id: Uuid) -> SegKeyBuf {
+    COLLECTION_SEGKEY.join(id.to_string())
 }

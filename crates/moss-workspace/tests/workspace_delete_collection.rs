@@ -1,5 +1,6 @@
 mod shared;
 
+use moss_storage::storage::operations::ListByPrefix;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
 
@@ -19,16 +20,20 @@ async fn delete_collection_success() {
         .await
         .unwrap();
 
+    let id = create_collection_output.id;
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput {
-            id: create_collection_output.id,
-        })
+        .delete_collection(DeleteCollectionInput { id })
         .await;
     assert!(delete_collection_result.is_ok());
 
     // Check updating collections
     let collections = workspace.collections().await.unwrap().read().await;
     assert!(collections.is_empty());
+
+    // Check updating database
+    let item_store = workspace.__storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "collection").unwrap();
+    assert!(list_result.is_empty());
 
     cleanup().await;
 }
@@ -93,6 +98,8 @@ async fn delete_collection_fs_already_deleted() {
     // Check collections are updated
     let collections = workspace.collections().await.unwrap().read().await;
     assert!(collections.is_empty());
+
+    // TODO: Check database after implementing self-healing mechanism?
 
     cleanup().await;
 }

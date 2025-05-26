@@ -194,4 +194,9 @@ impl<R: TauriRuntime> Workbench<R> {
     pub(super) fn absolutize(&self, path: impl AsRef<Path>) -> PathBuf {
         self.options.abs_path.join(path)
     }
+
+    // Test only utility, not feature-flagged for easier CI setup
+    pub fn __storage(&self) -> Arc<dyn GlobalStorage> {
+        self.global_storage.clone()
+    }
 }

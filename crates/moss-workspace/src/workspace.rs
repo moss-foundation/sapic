@@ -340,4 +340,9 @@ impl<R: TauriRuntime> Workspace<R> {
 
         Ok(result)
     }
+
+    // Test only utility, not feature-flagged for easier CI setup
+    pub fn __storage(&self) -> Arc<dyn WorkspaceStorage> {
+        self.workspace_storage.clone()
+    }
 }

@@ -6,8 +6,8 @@ use crate::global_storage::stores::GlobalItemStore;
 use crate::primitives::segkey::SegKeyBuf;
 use crate::storage::SegBinTable;
 use crate::storage::operations::{
-    ListByPrefix, PutItem, RemoveItem, TransactionalListByPrefix, TransactionalPutItem,
-    TransactionalRemoveItem,
+    GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem, TransactionalListByPrefix,
+    TransactionalPutItem, TransactionalRemoveItem,
 };
 
 pub struct GlobalItemStoreImpl {
@@ -73,7 +73,7 @@ impl RemoveItem for GlobalItemStoreImpl {
     type Entity = AnyValue;
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
-        let mut txn = self.client.begin_read()?;
+        let mut txn = self.client.begin_write()?;
         let value = self.table.remove(&mut txn, key)?;
         txn.commit()?;
         Ok(value)
@@ -86,6 +86,25 @@ impl TransactionalRemoveItem for GlobalItemStoreImpl {
 
     fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.remove(txn, key)
+    }
+}
+
+impl GetItem for GlobalItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        let read_txn = self.client.begin_read()?;
+        self.table.read(&read_txn, key)
+    }
+}
+
+impl TransactionalGetItem for GlobalItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
+        self.table.read(&txn, key)
     }
 }
 

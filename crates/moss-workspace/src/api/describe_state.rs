@@ -37,7 +37,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let mut txn = self.workspace_storage.begin_read()?;
 
         // Get editor state
-        let editor_result = TransactionalGetItem::get_item(
+        let editor_result = TransactionalGetItem::get(
             item_store.as_ref(),
             &mut txn,
             PART_EDITOR_SEGKEY.to_segkey_buf(),
@@ -49,7 +49,7 @@ impl<R: TauriRuntime> Workspace<R> {
         )?;
 
         // Get sidebar state
-        let sidebar_result = TransactionalGetItem::get_item(
+        let sidebar_result = TransactionalGetItem::get(
             item_store.as_ref(),
             &mut txn,
             PART_SIDEBAR_SEGKEY.to_segkey_buf(),
@@ -61,7 +61,7 @@ impl<R: TauriRuntime> Workspace<R> {
         )?;
 
         // Get panel state
-        let panel_result = TransactionalGetItem::get_item(
+        let panel_result = TransactionalGetItem::get(
             item_store.as_ref(),
             &mut txn,
             PART_PANEL_SEGKEY.to_segkey_buf(),
