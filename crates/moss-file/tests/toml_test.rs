@@ -1,5 +1,6 @@
 use anyhow::Result;
-use moss_file::toml::{EditableInPlaceFileHandle, FileHandle, TomlEditor};
+use moss_file::common::FileHandle;
+use moss_file::toml::{EditableInPlaceFileHandle, InPlaceEditor};
 use moss_fs::{FileSystem, RealFileSystem};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -50,7 +51,7 @@ struct MockTomlEditor {
     new_value: i32,
 }
 
-impl TomlEditor for MockTomlEditor {
+impl InPlaceEditor for MockTomlEditor {
     fn edit(&self, doc: &mut DocumentMut) -> Result<()> {
         doc["name"] = value(self.new_name.clone());
         doc["value"] = value(self.new_value as i64);
@@ -73,7 +74,15 @@ async fn test_file_handle_new_and_load() -> Result<()> {
         value: 1,
     };
 
-    let handle = FileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
+    let handle = FileHandle::create(
+        Arc::clone(&fs_arc),
+        &file_path,
+        initial_data.clone(),
+        |data| {
+            toml::to_string(data).map_err(|e| anyhow::anyhow!("Failed to serialize data: {}", e))
+        },
+    )
+    .await?;
     assert_eq!(handle.model().await, initial_data);
     assert_eq!(handle.path().as_ref(), &file_path);
 
@@ -81,7 +90,10 @@ async fn test_file_handle_new_and_load() -> Result<()> {
     let loaded_data_direct: TestData = toml::from_str(&content)?;
     assert_eq!(loaded_data_direct, initial_data);
 
-    let loaded_handle = FileHandle::<TestData>::load(fs_arc, &file_path).await?;
+    let loaded_handle = FileHandle::<TestData>::load(fs_arc, &file_path, |content| {
+        toml::from_str(&content).map_err(|e| anyhow::anyhow!("Failed to deserialize data: {}", e))
+    })
+    .await?;
     assert_eq!(loaded_handle.model().await, initial_data);
 
     Ok(())
@@ -97,17 +109,31 @@ async fn test_file_handle_edit() -> Result<()> {
         name: "initial".to_string(),
         value: 10,
     };
-    let handle = FileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
+    let handle = FileHandle::create(
+        Arc::clone(&fs_arc),
+        &file_path,
+        initial_data.clone(),
+        |data| {
+            toml::to_string(data).map_err(|e| anyhow::anyhow!("Failed to serialize data: {}", e))
+        },
+    )
+    .await?;
 
     let new_name = "edited".to_string();
     let new_value = 20;
 
     handle
-        .edit(|data| {
-            data.name = new_name.clone();
-            data.value = new_value;
-            Ok(())
-        })
+        .edit(
+            |data| {
+                data.name = new_name.clone();
+                data.value = new_value;
+                Ok(())
+            },
+            |data| {
+                toml::to_string(data)
+                    .map_err(|e| anyhow::anyhow!("Failed to serialize data: {}", e))
+            },
+        )
         .await?;
 
     let expected_data = TestData {
@@ -116,7 +142,10 @@ async fn test_file_handle_edit() -> Result<()> {
     };
     assert_eq!(handle.model().await, expected_data);
 
-    let loaded_handle = FileHandle::<TestData>::load(fs_arc, &file_path).await?;
+    let loaded_handle = FileHandle::<TestData>::load(fs_arc, &file_path, |content| {
+        toml::from_str(&content).map_err(|e| anyhow::anyhow!("Failed to deserialize data: {}", e))
+    })
+    .await?;
     assert_eq!(loaded_handle.model().await, expected_data);
 
     Ok(())
@@ -134,7 +163,8 @@ async fn test_editable_file_handle_new_and_load() -> Result<()> {
     };
 
     let handle =
-        EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
+        EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone())
+            .await?;
     assert_eq!(handle.model().await, initial_data);
     assert_eq!(handle.path().as_ref(), &file_path);
 
@@ -158,7 +188,8 @@ async fn test_editable_file_handle_edit() -> Result<()> {
         value: 202,
     };
 
-    let handle = EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
+    let handle =
+        EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
 
     let editor = MockTomlEditor {
         new_name: "efh_edited".to_string(),

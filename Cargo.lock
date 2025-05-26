@@ -3047,6 +3047,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_common",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "rand 0.9.1",
@@ -3055,6 +3056,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "ts-rs",
+ "uuid",
 ]
 
 [[package]]
@@ -3064,6 +3066,7 @@ dependencies = [
  "anyhow",
  "moss_fs",
  "serde",
+ "serde_json",
  "tokio",
  "toml",
  "toml_edit 0.22.26",

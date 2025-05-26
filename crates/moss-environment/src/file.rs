@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use super::types::{VariableKind, VariableName, VariableValue};
+use super::models::types::{VariableKind, VariableName, VariableValue};
 
 #[derive(Debug)]
-pub struct EnvironmentFileVariableUpdate {
+pub struct VariableUpdate {
     pub kind: Option<VariableKind>,
     pub value: Option<VariableValue>,
     pub desc: Option<String>,
@@ -13,14 +14,14 @@ pub struct EnvironmentFileVariableUpdate {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EnvironmentFileVariable {
+pub struct Variable {
     pub kind: Option<VariableKind>,
     pub value: Option<VariableValue>,
     pub desc: Option<String>,
 }
 
-impl EnvironmentFileVariable {
-    pub fn update(&mut self, update: EnvironmentFileVariableUpdate) {
+impl Variable {
+    pub fn update(&mut self, update: VariableUpdate) {
         if let Some(kind) = update.kind {
             self.kind = Some(kind);
         }
@@ -33,7 +34,17 @@ impl EnvironmentFileVariable {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, Default)]
-pub struct EnvironmentFile {
-    pub values: HashMap<VariableName, EnvironmentFileVariable>,
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct FileModel {
+    pub id: Uuid,
+    pub values: HashMap<VariableName, Variable>,
+}
+
+impl FileModel {
+    pub fn new() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            values: HashMap::new(),
+        }
+    }
 }

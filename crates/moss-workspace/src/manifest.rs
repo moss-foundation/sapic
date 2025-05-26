@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_file::toml::TomlEditor;
+use moss_file::toml::InPlaceEditor;
 use serde::{Deserialize, Serialize};
 use toml_edit::DocumentMut;
 
@@ -17,7 +17,7 @@ pub struct ManifestModelDiff {
     pub name: Option<String>,
 }
 
-impl TomlEditor for ManifestModelDiff {
+impl InPlaceEditor for ManifestModelDiff {
     fn edit(&self, doc: &mut DocumentMut) -> Result<()> {
         if let Some(name) = &self.name {
             doc["name"] = name.into();

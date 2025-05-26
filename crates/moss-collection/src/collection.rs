@@ -1,9 +1,11 @@
 use anyhow::{Context, Result};
-use moss_file::toml;
+use moss_common::models::primitives::Identifier;
+use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
 use std::{
+    collections::HashMap,
     path::Path,
     sync::{Arc, atomic::AtomicUsize},
 };
@@ -15,14 +17,25 @@ use crate::defaults;
 use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
 use crate::worktree::Worktree;
 
+pub struct EnvironmentItem {
+    pub id: Identifier,
+    pub name: String,
+    pub order: Option<usize>,
+    // pub inner: Environment,
+}
+
+type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
+
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     worktree: OnceCell<Arc<RwLock<Worktree>>>,
     abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
+    #[allow(dead_code)]
+    environments: OnceCell<RwLock<EnvironmentMap>>,
     manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
-    config: toml::FileHandle<ConfigModel>,
+    config: TomlFileHandle<ConfigModel>,
 }
 
 pub struct CreateParams<'a> {
@@ -52,7 +65,9 @@ impl Collection {
             toml::EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME))
                 .await?;
 
-        let config = toml::FileHandle::load(fs.clone(), abs_path.join(CONFIG_FILE_NAME)).await?;
+        let config = TomlFileHandle::load(fs.clone(), &abs_path.join(CONFIG_FILE_NAME)).await?;
+
+        // TODO: Load environments
 
         Ok(Self {
             fs,
@@ -60,6 +75,7 @@ impl Collection {
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
             next_entry_id,
+            environments: OnceCell::new(),
             manifest,
             config,
         })
@@ -94,14 +110,16 @@ impl Collection {
         )
         .await?;
 
-        let config = toml::FileHandle::create(
+        let config = TomlFileHandle::create(
             fs.clone(),
-            params.internal_abs_path.join(CONFIG_FILE_NAME),
+            &params.internal_abs_path.join(CONFIG_FILE_NAME),
             ConfigModel {
                 external_path: params.external_abs_path.map(|p| p.to_owned().into()),
             },
         )
         .await?;
+
+        // TODO: Load environments
 
         Ok(Self {
             fs: Arc::clone(&fs),
@@ -109,6 +127,7 @@ impl Collection {
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
             next_entry_id,
+            environments: OnceCell::new(),
             manifest,
             config,
         })
@@ -152,5 +171,17 @@ impl Collection {
 
     pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
         &self.storage
+    }
+
+    pub async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
+        let result = self
+            .environments
+            .get_or_try_init(|| async move {
+                let environments = RwLock::new(HashMap::new());
+                Ok::<_, anyhow::Error>(environments)
+            })
+            .await?;
+
+        Ok(result)
     }
 }
