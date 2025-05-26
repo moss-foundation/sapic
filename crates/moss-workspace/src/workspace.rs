@@ -10,7 +10,7 @@ use moss_storage::{
     primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
     workspace_storage::{
-        WorkspaceStorageImpl, entities::collection_store_entities::CollectionCacheEntity,
+        WorkspaceStorageImpl, entities::item_store_entities::CollectionCacheEntity,
     },
 };
 use moss_text::sanitized::desanitize;

@@ -4,7 +4,7 @@ use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::PutItem,
-    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
+    workspace_storage::entities::item_store_entities::CollectionCacheEntity,
 };
 use std::{
     path::{Path, PathBuf},

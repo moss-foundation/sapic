@@ -3,7 +3,7 @@ mod editor;
 pub use editor::*;
 
 use moss_common::models::primitives::Identifier;
-use moss_storage::workspace_storage::entities::state_store_entities::{
+use moss_storage::workspace_storage::entities::item_store_entities::{
     PanelPartStateEntity, SidebarPartStateEntity,
 };
 use serde::{Deserialize, Serialize};

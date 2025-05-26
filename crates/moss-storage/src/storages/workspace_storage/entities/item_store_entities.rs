@@ -1,6 +1,17 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::path::PathBuf;
+
+// ------------------------------------------------------------
+// Collection Cache
+// ------------------------------------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct CollectionCacheEntity {
+    pub order: Option<usize>,
+    pub external_abs_path: Option<PathBuf>,
+}
 
 // ------------------------------------------------------------
 // Sidebar Part State
