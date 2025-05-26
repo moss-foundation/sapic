@@ -6,7 +6,7 @@ use moss_storage::workspace_storage::entities::collection_store_entities::Collec
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 
-use crate::shared::{ITEMS_KEY, collection_key, setup_test_workspace};
+use crate::shared::{collection_key, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {

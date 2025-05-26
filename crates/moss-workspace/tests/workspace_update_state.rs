@@ -9,7 +9,7 @@ use moss_workspace::models::operations::UpdateStateInput;
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
 
-use crate::shared::{ITEMS_KEY, setup_test_workspace};
+use crate::shared::setup_test_workspace;
 
 const PART_EDITOR_KEY: SegKey = SegKey::new("part:editor");
 const PART_PANEL_KEY: SegKey = SegKey::new("part:panel");
@@ -199,9 +199,6 @@ async fn update_state_multiple_updates() {
         updated_sidebar_state
     );
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
-
-    let dumped = workspace.__storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
 
     let item_store = workspace.__storage().item_store();
     let editor_entity: EditorPartStateEntity =
