@@ -1,5 +1,6 @@
 mod shared;
 
+use moss_storage::storage::operations::ListByPrefix;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
 
@@ -29,9 +30,9 @@ async fn delete_collection_success() {
     assert!(collections.is_empty());
 
     // Check updating database
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert_eq!(items_dump.as_object().unwrap().len(), 0);
+    let item_store = workspace.__storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "collection").unwrap();
+    assert!(list_result.is_empty());
 
     cleanup().await;
 }

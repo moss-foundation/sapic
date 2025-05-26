@@ -83,7 +83,7 @@ impl TransactionalGetItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
-    fn get_item(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
+    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.read(txn, key)
     }
 }

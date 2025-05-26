@@ -1,6 +1,7 @@
 mod shared;
 
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_storage::workspace_storage::entities::collection_store_entities::CollectionCacheEntity;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
@@ -31,12 +32,12 @@ async fn create_collection_success() {
 
     // Verify the db entry was created
     let id = create_collection_output.id;
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert_eq!(items_dump.as_object().unwrap().len(), 1);
 
-    let value = items_dump[collection_key(id)].clone();
-    let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+    let item_store = workspace.__storage().item_store();
+    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
+        .unwrap()
+        .deserialize()
+        .unwrap();
     assert_eq!(
         entity,
         CollectionCacheEntity {
@@ -67,9 +68,9 @@ async fn create_collection_empty_name() {
     ));
 
     // Check that the database is empty
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.as_object().unwrap().is_empty());
+    let item_store = workspace.__storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "collection").unwrap();
+    assert!(list_result.is_empty());
 
     // Clean up
     cleanup().await;
@@ -103,10 +104,11 @@ async fn create_collection_special_chars() {
 
         // Verify the db entry was created
         let id = create_collection_output.id;
-        let dumped = workspace._storage().dump().unwrap();
-        let items_dump = dumped[ITEMS_KEY].clone();
-        let value = items_dump[collection_key(id)].clone();
-        let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+        let item_store = workspace.__storage().item_store();
+        let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
+            .unwrap()
+            .deserialize()
+            .unwrap();
         assert_eq!(
             entity,
             CollectionCacheEntity {
@@ -147,12 +149,11 @@ async fn create_collection_with_order() {
 
     // Verify the db entry was created
     let id = create_collection_output.id;
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert_eq!(items_dump.as_object().unwrap().len(), 1);
-
-    let value = items_dump[collection_key(id)].clone();
-    let entity: CollectionCacheEntity = serde_json::from_value(value).unwrap();
+    let item_store = workspace.__storage().item_store();
+    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
+        .unwrap()
+        .deserialize()
+        .unwrap();
     assert_eq!(
         entity,
         CollectionCacheEntity {

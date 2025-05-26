@@ -1,12 +1,12 @@
 mod shared;
 
+use crate::shared::{setup_test_workspace_manager, workspace_key};
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workbench::models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
-
-use crate::shared::{ITEMS_KEY, setup_test_workspace_manager};
 
 #[tokio::test]
 async fn delete_workspace_success() {
@@ -40,12 +40,9 @@ async fn delete_workspace_success() {
     let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
     assert!(list_workspaces_output.is_empty());
 
-    // Check updating database
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-
-    assert!(items_dump.as_object().unwrap().is_empty());
+    // Check removing entry from the database
+    let item_store = workspace_manager.__global_storage().item_store();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(id)).is_err());
 
     cleanup().await;
 }

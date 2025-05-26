@@ -195,8 +195,8 @@ impl<R: TauriRuntime> Workbench<R> {
         self.options.abs_path.join(path)
     }
 
-    // TODO: Feature flag for test utils
-    pub fn _global_storage(&self) -> Arc<dyn GlobalStorage> {
+    // Test only utility, not feature-flagged for easier CI setup
+    pub fn __global_storage(&self) -> Arc<dyn GlobalStorage> {
         self.global_storage.clone()
     }
 }

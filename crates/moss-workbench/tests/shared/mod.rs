@@ -1,5 +1,6 @@
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
+use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
 use moss_testutils::random_name::random_string;
 use moss_workbench::workbench::{self, Workbench};
 use std::future::Future;
@@ -8,8 +9,6 @@ use std::pin::Pin;
 use std::sync::Arc;
 use tauri::test::MockRuntime;
 use uuid::Uuid;
-
-pub const ITEMS_KEY: &'static str = "table:items";
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -62,6 +61,8 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
     (workspaces_abs_path, workspace_manager, cleanup_fn)
 }
 
-pub fn workspace_key(id: Uuid) -> String {
-    format!("workspace:{id}")
+const WORKSPACE_SEGKEY: SegKey = SegKey::new("workspace");
+
+pub fn workspace_key(id: Uuid) -> SegKeyBuf {
+    WORKSPACE_SEGKEY.join(id.to_string())
 }

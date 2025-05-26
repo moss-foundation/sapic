@@ -4,7 +4,7 @@ pub trait TransactionalGetItem: Send + Sync {
     type Key;
     type Entity;
 
-    fn get_item(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait TransactionalListByPrefix: Send + Sync {

@@ -1,12 +1,12 @@
 mod shared;
 
+use crate::shared::{setup_test_workspace_manager, workspace_key};
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workbench::models::operations::CreateWorkspaceInput;
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
-
-use crate::shared::{ITEMS_KEY, setup_test_workspace_manager, workspace_key};
 
 #[tokio::test]
 async fn create_workspace_success() {
@@ -27,23 +27,23 @@ async fn create_workspace_success() {
 
     assert!(expected_path.exists());
 
+    let id = create_output.id;
+
     // Check active workspace
     let active_workspace = workspace_manager.active_workspace().unwrap();
-    assert_eq!(active_workspace.id, create_output.id);
+    assert_eq!(active_workspace.id, id);
     assert_eq!(active_workspace.abs_path(), &expected_path);
     assert_eq!(active_workspace.manifest().await.name, workspace_name);
 
     // Check known_workspaces
     let list_workspaces = workspace_manager.list_workspaces().await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
-    assert_eq!(list_workspaces[0].id, create_output.id);
+    assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
     // Check database
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.get(workspace_key(create_output.id)).is_some());
+    let item_store = workspace_manager.__global_storage().item_store();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(id)).is_ok());
 
     cleanup().await;
 }
@@ -71,10 +71,9 @@ async fn create_workspace_empty_name() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.as_object().unwrap().is_empty());
+    let item_store = workspace_manager.__global_storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
+    assert_eq!(list_result.len(), 0);
 
     cleanup().await;
 }
@@ -143,12 +142,11 @@ async fn create_workspace_same_name() {
     assert_eq!(listed_second.display_name, workspace_name);
 
     // Check only second workspace has entry in the databased since it's been opened
-    // Check database
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.get(workspace_key(second_output.id)).is_some());
-    assert!(items_dump.get(workspace_key(first_output.id)).is_none());
+
+    let global_storage = workspace_manager.__global_storage();
+    let item_store = workspace_manager.__global_storage().item_store();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).is_ok());
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_err());
 
     cleanup().await;
 }
@@ -192,13 +190,10 @@ async fn create_workspace_special_chars() {
             .find(|w| w.id == create_output.id)
             .unwrap();
         assert_eq!(matching_workspace.display_name, name);
+        // Check database
+        let item_store = workspace_manager.__global_storage().item_store();
+        assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_ok());
     }
-
-    // Check database
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert_eq!(items_dump.as_object().unwrap().len(), created_count);
 
     cleanup().await;
 }
@@ -230,10 +225,8 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].id, create_output.id);
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
-    // Check that a database entry is not created
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.as_object().unwrap().is_empty());
+    // Check that a database entry is not created for unopened workspace
+    let item_store = workspace_manager.__global_storage().item_store();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_err());
     cleanup().await;
 }

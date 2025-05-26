@@ -1,5 +1,7 @@
 mod shared;
 
+use moss_storage::primitives::segkey::SegKey;
+use moss_storage::storage::operations::GetItem;
 use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
@@ -9,9 +11,9 @@ use shared::create_simple_editor_state;
 
 use crate::shared::{ITEMS_KEY, setup_test_workspace};
 
-const PART_EDITOR_KEY: &'static str = "part:editor";
-const PART_PANEL_KEY: &'static str = "part:panel";
-const PART_SIDEBAR_KEY: &'static str = "part:sidebar";
+const PART_EDITOR_KEY: SegKey = SegKey::new("part:editor");
+const PART_PANEL_KEY: SegKey = SegKey::new("part:panel");
+const PART_SIDEBAR_KEY: SegKey = SegKey::new("part:sidebar");
 
 #[tokio::test]
 async fn update_state_editor_part() {
@@ -33,11 +35,12 @@ async fn update_state_editor_part() {
     assert_eq!(describe_state_output.editor.unwrap(), editor_state);
 
     // Verify the database is updated
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    let value = items_dump[PART_EDITOR_KEY].clone();
-    let entity: EditorPartStateEntity = serde_json::from_value(value).unwrap();
-
+    let item_store = workspace.__storage().item_store();
+    let entity: EditorPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_EDITOR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(entity, editor_state.into());
 
     // Clean up
@@ -67,11 +70,12 @@ async fn update_state_sidebar_part() {
     assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
 
     // Verify the database is updated
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    let value = items_dump[PART_SIDEBAR_KEY].clone();
-    let entity: SidebarPartStateEntity = serde_json::from_value(value).unwrap();
-
+    let item_store = workspace.__storage().item_store();
+    let entity: SidebarPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_SIDEBAR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(entity, sidebar_state.into());
 
     // Clean up
@@ -99,11 +103,12 @@ async fn update_state_panel_part() {
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
     // Verify the database is updated
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    let value = items_dump[PART_PANEL_KEY].clone();
-    let entity: PanelPartStateEntity = serde_json::from_value(value).unwrap();
-
+    let item_store = workspace.__storage().item_store();
+    let entity: PanelPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_PANEL_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(entity, panel_state.into());
 
     // Clean up
@@ -151,19 +156,26 @@ async fn update_state_multiple_updates() {
     assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-
-    let editor_value = items_dump[PART_EDITOR_KEY].clone();
-    let editor_entity: EditorPartStateEntity = serde_json::from_value(editor_value).unwrap();
+    let item_store = workspace.__storage().item_store();
+    let editor_entity: EditorPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_EDITOR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(editor_entity, editor_state.clone().into());
 
-    let sidebar_value = items_dump[PART_SIDEBAR_KEY].clone();
-    let sidebar_entity: SidebarPartStateEntity = serde_json::from_value(sidebar_value).unwrap();
+    let sidebar_entity: SidebarPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_SIDEBAR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(sidebar_entity, sidebar_state.clone().into());
 
-    let panel_value = items_dump[PART_PANEL_KEY].clone();
-    let panel_entity: PanelPartStateEntity = serde_json::from_value(panel_value).unwrap();
+    let panel_entity: PanelPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_PANEL_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(panel_entity, panel_state.clone().into());
 
     // Update individual states
@@ -188,19 +200,29 @@ async fn update_state_multiple_updates() {
     );
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
-    let dumped = workspace._storage().dump().unwrap();
+    let dumped = workspace.__storage().dump().unwrap();
     let items_dump = dumped[ITEMS_KEY].clone();
 
-    let editor_value = items_dump[PART_EDITOR_KEY].clone();
-    let editor_entity: EditorPartStateEntity = serde_json::from_value(editor_value).unwrap();
+    let item_store = workspace.__storage().item_store();
+    let editor_entity: EditorPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_EDITOR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(editor_entity, editor_state.clone().into());
 
-    let sidebar_value = items_dump[PART_SIDEBAR_KEY].clone();
-    let sidebar_entity: SidebarPartStateEntity = serde_json::from_value(sidebar_value).unwrap();
+    let sidebar_entity: SidebarPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_SIDEBAR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(sidebar_entity, updated_sidebar_state.clone().into());
 
-    let panel_value = items_dump[PART_PANEL_KEY].clone();
-    let panel_entity: PanelPartStateEntity = serde_json::from_value(panel_value).unwrap();
+    let panel_entity: PanelPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_PANEL_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(panel_entity, panel_state.clone().into());
 
     // Clean up
@@ -245,10 +267,12 @@ async fn update_state_overwrite_existing() {
     );
 
     // Verify database was updated
-    let dumped = workspace._storage().dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    let sidebar_value = items_dump[PART_SIDEBAR_KEY].clone();
-    let sidebar_entity: SidebarPartStateEntity = serde_json::from_value(sidebar_value).unwrap();
+    let item_store = workspace.__storage().item_store();
+    let sidebar_entity: SidebarPartStateEntity =
+        GetItem::get(item_store.as_ref(), PART_SIDEBAR_KEY.to_segkey_buf())
+            .unwrap()
+            .deserialize()
+            .unwrap();
     assert_eq!(sidebar_entity, updated_sidebar_state.clone().into());
 
     // Clean up

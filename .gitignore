@@ -66,3 +66,4 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 view/desktop/src/assets/icons/
 /crates/moss-logging/logs
 /crates/moss-workspace/tests/data
+/crates/moss-workbench/tests/data

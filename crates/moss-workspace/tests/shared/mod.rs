@@ -1,5 +1,6 @@
 use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
+use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
@@ -121,6 +122,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
     }
 }
 
-pub fn collection_key(id: Uuid) -> String {
-    format!("collection:{id}")
+const COLLECTION_SEGKEY: SegKey = SegKey::new("collection");
+pub fn collection_key(id: Uuid) -> SegKeyBuf {
+    COLLECTION_SEGKEY.join(id.to_string())
 }

@@ -1,11 +1,12 @@
 mod shared;
 
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workbench::models::operations::{CreateWorkspaceInput, OpenWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
 
-use crate::shared::{ITEMS_KEY, setup_test_workspace_manager, workspace_key};
+use crate::shared::{setup_test_workspace_manager, workspace_key};
 
 #[tokio::test]
 async fn open_workspace_success() {
@@ -49,11 +50,8 @@ async fn open_workspace_success() {
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
     // Check database creating first workspace entry
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-
-    assert!(items_dump.get(workspace_key(first_output.id)).is_some());
+    let item_store = workspace_manager.__global_storage().item_store();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_ok());
 
     cleanup().await;
 }
@@ -73,12 +71,9 @@ async fn open_workspace_not_found() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.as_object().unwrap().is_empty());
-
-    cleanup().await;
+    let item_store = workspace_manager.__global_storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
+    assert!(list_result.is_empty());
 }
 
 #[tokio::test]
@@ -146,10 +141,9 @@ async fn open_workspace_directory_deleted() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let global_storage = workspace_manager._global_storage();
-    let dumped = global_storage.dump().unwrap();
-    let items_dump = dumped[ITEMS_KEY].clone();
-    assert!(items_dump.as_object().unwrap().is_empty());
+    let item_store = workspace_manager.__global_storage().item_store();
+    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
+    assert!(list_result.is_empty());
 
     cleanup().await;
 }
