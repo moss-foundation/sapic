@@ -110,7 +110,7 @@ where
 
 /// A trait for types that can modify a `toml_edit::DocumentMut`.
 ///
-/// This trait is used by `EditableFileHandle` to allow for fine-grained modifications
+/// This trait is used by `EditableInPlaceFileHandle` to allow for fine-grained modifications
 /// to a TOML document while preserving comments and formatting.
 pub trait TomlEditor {
     /// Modifies the given `toml_edit::DocumentMut` in place.
@@ -119,13 +119,13 @@ pub trait TomlEditor {
 
 /// A handle to a TOML file that allows for edits preserving formatting and comments.
 ///
-/// `EditableFileHandle` extends the functionality of `FileHandle` by maintaining
+/// `EditableInPlaceFileHandle` extends the functionality of `FileHandle` by maintaining
 /// both a deserialized Rust struct (`model` of type `T`) and a `toml_edit::DocumentMut`
 /// (`doc`). This allows modifications to be made directly to the `DocumentMut` via
 /// the `TomlEditor` trait, preserving the original TOML structure, including comments
 /// and whitespace. After an edit, the `doc` is written to disk, and the `model` is
 /// updated by re-parsing the `doc`.
-pub struct EditableFileHandle<T>
+pub struct EditableInPlaceFileHandle<T>
 where
     T: Clone + Serialize + DeserializeOwned,
 {
@@ -135,7 +135,7 @@ where
     model: RwLock<T>,
 }
 
-impl<T> EditableFileHandle<T>
+impl<T> EditableInPlaceFileHandle<T>
 where
     T: Clone + Serialize + DeserializeOwned,
 {

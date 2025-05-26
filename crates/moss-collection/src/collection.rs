@@ -21,7 +21,7 @@ pub struct Collection {
     abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
-    manifest: toml::EditableFileHandle<ManifestModel>,
+    manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
     config: toml::FileHandle<ConfigModel>,
 }
 
@@ -49,7 +49,8 @@ impl Collection {
         ))?;
 
         let manifest =
-            toml::EditableFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+            toml::EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME))
+                .await?;
 
         let config = toml::FileHandle::load(fs.clone(), abs_path.join(CONFIG_FILE_NAME)).await?;
 
@@ -82,7 +83,7 @@ impl Collection {
             params.internal_abs_path.join(MANIFEST_FILE_NAME)
         };
 
-        let manifest = toml::EditableFileHandle::create(
+        let manifest = toml::EditableInPlaceFileHandle::create(
             fs.clone(),
             manifest_abs_path,
             ManifestModel {
@@ -130,13 +131,15 @@ impl Collection {
     }
 
     pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
+        let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
+            external_abs_path
+        } else {
+            self.abs_path.clone()
+        };
+
         self.worktree
             .get_or_try_init(|| async move {
-                let worktree = Worktree::new(
-                    self.fs.clone(),
-                    Arc::from(self.abs_path.clone()),
-                    self.next_entry_id.clone(),
-                );
+                let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
 
                 Ok(Arc::new(RwLock::new(worktree)))
             })

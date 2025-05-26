@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_file::toml::{EditableFileHandle, FileHandle, TomlEditor};
+use moss_file::toml::{EditableInPlaceFileHandle, FileHandle, TomlEditor};
 use moss_fs::{FileSystem, RealFileSystem};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -134,7 +134,7 @@ async fn test_editable_file_handle_new_and_load() -> Result<()> {
     };
 
     let handle =
-        EditableFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
+        EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data.clone()).await?;
     assert_eq!(handle.model().await, initial_data);
     assert_eq!(handle.path().as_ref(), &file_path);
 
@@ -142,7 +142,7 @@ async fn test_editable_file_handle_new_and_load() -> Result<()> {
     let loaded_data_direct: TestData = toml::from_str(&content)?;
     assert_eq!(loaded_data_direct, initial_data);
 
-    let loaded_handle = EditableFileHandle::<TestData>::load(fs_arc, &file_path).await?;
+    let loaded_handle = EditableInPlaceFileHandle::<TestData>::load(fs_arc, &file_path).await?;
     assert_eq!(loaded_handle.model().await, initial_data);
 
     Ok(())
@@ -158,7 +158,7 @@ async fn test_editable_file_handle_edit() -> Result<()> {
         value: 202,
     };
 
-    let handle = EditableFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
+    let handle = EditableInPlaceFileHandle::create(Arc::clone(&fs_arc), &file_path, initial_data).await?;
 
     let editor = MockTomlEditor {
         new_name: "efh_edited".to_string(),
@@ -172,7 +172,7 @@ async fn test_editable_file_handle_edit() -> Result<()> {
     };
     assert_eq!(handle.model().await, expected_data);
 
-    let loaded_handle = EditableFileHandle::<TestData>::load(fs_arc, &file_path).await?;
+    let loaded_handle = EditableInPlaceFileHandle::<TestData>::load(fs_arc, &file_path).await?;
     assert_eq!(loaded_handle.model().await, expected_data);
 
     Ok(())
