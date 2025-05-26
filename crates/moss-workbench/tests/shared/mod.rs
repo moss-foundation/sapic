@@ -1,7 +1,8 @@
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
-use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
+use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_string;
+use moss_workbench::storage::segments::WORKSPACE_SEGKEY;
 use moss_workbench::workbench::{self, Workbench};
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -60,8 +61,6 @@ pub async fn setup_test_workspace_manager() -> (Arc<Path>, Workbench<MockRuntime
 
     (workspaces_abs_path, workspace_manager, cleanup_fn)
 }
-
-const WORKSPACE_SEGKEY: SegKey = SegKey::new("workspace");
 
 pub fn workspace_key(id: Uuid) -> SegKeyBuf {
     WORKSPACE_SEGKEY.join(id.to_string())

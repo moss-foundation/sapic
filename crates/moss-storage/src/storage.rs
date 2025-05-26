@@ -14,7 +14,6 @@ pub trait Transactional {
 }
 
 pub trait Storage {
-    // TODO: How to organize the output from different tables?
     fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>>;
 }
 

@@ -42,7 +42,7 @@ async fn create_workspace_success() {
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
     // Check database
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(id)).is_ok());
 
     cleanup().await;
@@ -71,7 +71,7 @@ async fn create_workspace_empty_name() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
     assert_eq!(list_result.len(), 0);
 
@@ -143,8 +143,8 @@ async fn create_workspace_same_name() {
 
     // Check only second workspace has entry in the databased since it's been opened
 
-    let global_storage = workspace_manager.__global_storage();
-    let item_store = workspace_manager.__global_storage().item_store();
+    let global_storage = workspace_manager.__storage();
+    let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).is_ok());
     assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_err());
 
@@ -191,7 +191,7 @@ async fn create_workspace_special_chars() {
             .unwrap();
         assert_eq!(matching_workspace.display_name, name);
         // Check database
-        let item_store = workspace_manager.__global_storage().item_store();
+        let item_store = workspace_manager.__storage().item_store();
         assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_ok());
     }
 
@@ -226,7 +226,7 @@ async fn create_workspace_not_open_on_creation() {
     assert_eq!(list_workspaces[0].display_name, workspace_name);
 
     // Check that a database entry is not created for unopened workspace
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_err());
     cleanup().await;
 }

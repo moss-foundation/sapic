@@ -41,7 +41,7 @@ async fn delete_workspace_success() {
     assert!(list_workspaces_output.is_empty());
 
     // Check removing entry from the database
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(id)).is_err());
 
     cleanup().await;

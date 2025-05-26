@@ -50,7 +50,7 @@ async fn open_workspace_success() {
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
     // Check database creating first workspace entry
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_ok());
 
     cleanup().await;
@@ -71,7 +71,7 @@ async fn open_workspace_not_found() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
     assert!(list_result.is_empty());
 }
@@ -141,7 +141,7 @@ async fn open_workspace_directory_deleted() {
     assert!(workspace_manager.active_workspace().is_none());
 
     // Check database not creating any entry
-    let item_store = workspace_manager.__global_storage().item_store();
+    let item_store = workspace_manager.__storage().item_store();
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
     assert!(list_result.is_empty());
 
