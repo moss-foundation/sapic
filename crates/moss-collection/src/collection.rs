@@ -3,9 +3,10 @@ use moss_file::toml;
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
-use std::path::Path;
-use std::sync::atomic::AtomicUsize;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::Path,
+    sync::{Arc, atomic::AtomicUsize},
+};
 
 use tokio::sync::{OnceCell, RwLock};
 

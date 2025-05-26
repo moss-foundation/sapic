@@ -14,7 +14,6 @@ pub trait Transactional {
 }
 
 pub trait Storage {
-    // TODO: How to organize the output from different tables?
     fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>>;
 }
 
@@ -26,7 +25,7 @@ mod tests {
     use super::*;
     use crate::WorkspaceStorage;
     use crate::primitives::segkey::SegKey;
-    use crate::storage::operations::{GetItem, PutItem};
+    use crate::storage::operations::PutItem;
     use crate::workspace_storage::WorkspaceStorageImpl;
     use serde::{Deserialize, Serialize};
 
