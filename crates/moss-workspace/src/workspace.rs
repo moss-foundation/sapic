@@ -3,7 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
-use moss_file::toml::EditableToml;
+use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::{
     WorkspaceStorage,
@@ -86,7 +86,7 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) next_environment_id: Arc<AtomicUsize>,
 
     #[allow(dead_code)]
-    pub(super) manifest: EditableToml<ManifestModel>,
+    pub(super) manifest: EditableInPlaceFileHandle<ManifestModel>,
 }
 
 pub struct CreateParams {
@@ -108,7 +108,8 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to load the workspace state database")?;
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
-        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+        let manifest =
+            EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
 
         Ok(Self {
             app_handle,
@@ -136,7 +137,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to open the workspace state database")?;
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
-        let manifest = EditableToml::new(
+        let manifest = EditableInPlaceFileHandle::create(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
@@ -175,7 +176,8 @@ impl<R: TauriRuntime> Workspace<R> {
     }
 
     pub async fn summary(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
-        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+        let manifest =
+            EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
         Ok(WorkspaceSummary {
             manifest: manifest.model().await,
         })

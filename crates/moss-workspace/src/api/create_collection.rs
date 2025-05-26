@@ -53,11 +53,12 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let name = input.name.to_owned();
         let collection = Collection::create(
-            &abs_path,
             self.fs.clone(),
             self.next_collection_entry_id.clone(),
             collection::CreateParams {
                 name: Some(name.clone()),
+                internal_abs_path: &abs_path,
+                external_abs_path: input.external_path.as_deref(),
             },
         )
         .await

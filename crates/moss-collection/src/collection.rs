@@ -1,14 +1,16 @@
 use anyhow::{Context, Result};
-use moss_file::toml::EditableToml;
+use moss_file::toml;
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
 use moss_storage::collection_storage::CollectionStorageImpl;
-use std::path::Path;
-use std::sync::atomic::AtomicUsize;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::Path,
+    sync::{Arc, atomic::AtomicUsize},
+};
 
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::config::{CONFIG_FILE_NAME, ConfigModel};
 use crate::defaults;
 use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
 use crate::worktree::Worktree;
@@ -16,14 +18,17 @@ use crate::worktree::Worktree;
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
     worktree: OnceCell<Arc<RwLock<Worktree>>>,
-    abs_path: PathBuf,
+    abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
-    manifest: EditableToml<ManifestModel>,
+    manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
+    config: toml::FileHandle<ConfigModel>,
 }
 
-pub struct CreateParams {
+pub struct CreateParams<'a> {
     pub name: Option<String>,
+    pub internal_abs_path: &'a Path,
+    pub external_abs_path: Option<&'a Path>,
 }
 
 pub struct ModifyParams {
@@ -38,12 +43,16 @@ impl Collection {
     ) -> Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
-        let manifest = EditableToml::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
-
         let storage = CollectionStorageImpl::new(&abs_path).context(format!(
             "Failed to open the collection {} state database",
             abs_path.display()
         ))?;
+
+        let manifest =
+            toml::EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME))
+                .await?;
+
+        let config = toml::FileHandle::load(fs.clone(), abs_path.join(CONFIG_FILE_NAME)).await?;
 
         Ok(Self {
             fs,
@@ -52,25 +61,31 @@ impl Collection {
             storage: Arc::new(storage),
             next_entry_id,
             manifest,
+            config,
         })
     }
 
-    pub async fn create(
-        abs_path: &Path,
+    pub async fn create<'a>(
         fs: Arc<dyn FileSystem>,
         next_entry_id: Arc<AtomicUsize>,
-        params: CreateParams,
+        params: CreateParams<'a>,
     ) -> Result<Self> {
-        debug_assert!(abs_path.is_absolute());
+        debug_assert!(params.internal_abs_path.is_absolute());
 
-        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
+        let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
             "Failed to open the collection {} state database",
-            abs_path.display()
+            params.internal_abs_path.display()
         ))?;
 
-        let manifest = EditableToml::new(
+        let manifest_abs_path = if let Some(external_abs_path) = params.external_abs_path {
+            external_abs_path.join(MANIFEST_FILE_NAME)
+        } else {
+            params.internal_abs_path.join(MANIFEST_FILE_NAME)
+        };
+
+        let manifest = toml::EditableInPlaceFileHandle::create(
             fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            manifest_abs_path,
             ManifestModel {
                 name: params
                     .name
@@ -79,13 +94,23 @@ impl Collection {
         )
         .await?;
 
+        let config = toml::FileHandle::create(
+            fs.clone(),
+            params.internal_abs_path.join(CONFIG_FILE_NAME),
+            ConfigModel {
+                external_path: params.external_abs_path.map(|p| p.to_owned().into()),
+            },
+        )
+        .await?;
+
         Ok(Self {
             fs: Arc::clone(&fs),
-            abs_path: abs_path.to_owned().into(),
+            abs_path: params.internal_abs_path.to_owned().into(),
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
             next_entry_id,
             manifest,
+            config,
         })
     }
 
@@ -106,20 +131,22 @@ impl Collection {
     }
 
     pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
+        let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
+            external_abs_path
+        } else {
+            self.abs_path.clone()
+        };
+
         self.worktree
             .get_or_try_init(|| async move {
-                let worktree = Worktree::new(
-                    self.fs.clone(),
-                    Arc::from(self.abs_path.clone()),
-                    self.next_entry_id.clone(),
-                );
+                let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
 
                 Ok(Arc::new(RwLock::new(worktree)))
             })
             .await
     }
 
-    pub fn abs_path(&self) -> &PathBuf {
+    pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
 

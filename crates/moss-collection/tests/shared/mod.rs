@@ -22,23 +22,24 @@ fn random_collection_path() -> PathBuf {
 
 pub async fn create_test_collection() -> (PathBuf, Collection) {
     let fs = Arc::new(RealFileSystem::new());
-    let collection_path = random_collection_path();
+    let internal_abs_path = random_collection_path();
 
-    std::fs::create_dir_all(collection_path.clone()).unwrap();
+    std::fs::create_dir_all(internal_abs_path.clone()).unwrap();
 
     let next_entry_id = Arc::new(AtomicUsize::new(0));
     let collection = Collection::create(
-        &collection_path,
         fs,
         next_entry_id,
         CreateParams {
             name: Some(random_collection_name()),
+            external_abs_path: None,
+            internal_abs_path: &internal_abs_path,
         },
     )
     .await
     .unwrap();
 
-    (collection_path, collection)
+    (internal_abs_path, collection)
 }
 
 #[allow(dead_code)]

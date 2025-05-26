@@ -15,6 +15,7 @@ async fn create_collection_success() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await;
 
@@ -41,6 +42,7 @@ async fn create_collection_empty_name() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await;
 
@@ -67,6 +69,7 @@ async fn create_collection_special_chars() {
             .create_collection(CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
+                external_path: None,
             })
             .await;
         assert!(create_collection_result.is_ok());

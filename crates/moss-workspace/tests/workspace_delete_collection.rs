@@ -14,6 +14,7 @@ async fn delete_collection_success() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap();
@@ -41,6 +42,7 @@ async fn delete_collection_nonexistent_id() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap()
@@ -70,6 +72,7 @@ async fn delete_collection_fs_already_deleted() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap();

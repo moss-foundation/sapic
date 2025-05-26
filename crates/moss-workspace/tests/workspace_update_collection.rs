@@ -15,6 +15,7 @@ async fn rename_collection_success() {
         .create_collection(CreateCollectionInput {
             name: old_collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap();
@@ -41,6 +42,7 @@ async fn rename_collection_empty_name() {
         .create_collection(CreateCollectionInput {
             name: old_collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap();
@@ -70,6 +72,7 @@ async fn rename_collection_unchanged() {
         .create_collection(CreateCollectionInput {
             name: old_collection_name.clone(),
             order: None,
+            external_path: None,
         })
         .await
         .unwrap();
