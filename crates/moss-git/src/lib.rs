@@ -2,7 +2,6 @@
 // e.g. branching, merging, conflict resolution
 use anyhow::Result;
 use git2::RemoteCallbacks;
-use std::sync::Arc;
 
 pub mod repo;
 

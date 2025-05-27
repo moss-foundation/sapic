@@ -102,28 +102,27 @@ jobs:
         package:
           # - moss_git
           # - moss_git_hosting_provider
-          # - moss_tauri
-          # - moss_text
+          - moss_tauri
+          - moss_text
           # - moss_collection
-          # - moss_app
+          - moss_app
           - moss_db
-          # - moss_fs
-          # - moss_keyring
+          - moss_fs
+          - moss_keyring
           # - moss_vault
-          # - moss_theme
-          # - moss_state
-          # - moss_nls
-          # - moss_logging
-          # - moss_session
+          - moss_theme
+          - moss_state
+          - moss_nls
+          - moss_logging
+          - moss_session
           - moss_workspace
-          # - moss_environment
-          # - moss_testutils
-          # - moss_common
+          - moss_environment
+          - moss_testutils
+          - moss_common
           - moss_workbench
-          # - moss_storage
-          # - moss_activity_indicator
-          # - moss_file
-          # - xtask
+          - moss_storage
+          - moss_activity_indicator
+          - moss_file
           # - desktop
     steps:
       - name: Harden the runner (Audit all outbound calls)
