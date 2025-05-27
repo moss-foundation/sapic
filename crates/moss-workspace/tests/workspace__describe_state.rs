@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_workspace::models::operations::UpdateStateInput;
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};

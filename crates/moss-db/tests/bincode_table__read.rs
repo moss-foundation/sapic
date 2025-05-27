@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_db::DatabaseClient;
 use moss_db::common::DatabaseError;

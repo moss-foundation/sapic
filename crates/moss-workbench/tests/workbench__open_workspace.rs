@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
@@ -74,6 +74,8 @@ async fn open_workspace_not_found() {
     let item_store = workspace_manager.__storage().item_store();
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "workspace").unwrap();
     assert!(list_result.is_empty());
+
+    cleanup().await;
 }
 
 #[tokio::test]
