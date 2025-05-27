@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""
+Rust Warnings Checker Script
+
+This script checks for Rust compiler warnings in a specific crate or entire workspace.
+It uses `cargo check` with JSON output format to parse and analyze warnings.
+
+Features:
+- Check specific crate with -p/--package option
+- Check entire workspace (default behavior)
+- Exclude specific crates from workspace check with --exclude option
+- Exit with error code 1 if any warnings are found
+- Remove duplicate warning messages
+- Clean output formatting
+
+Usage Examples:
+    # Check entire workspace
+    python warnings_check.py
+    
+    # Check specific package
+    python warnings_check.py -p moss_db
+    
+    # Check workspace excluding specific packages
+    python warnings_check.py --exclude test-crate --exclude example-crate
+    
+    # Show help
+    python warnings_check.py --help
+
+Exit Codes:
+    0 - No warnings found
+    1 - One or more warnings found
+
+Output:
+    - Warnings are printed to stderr for better integration with CI/CD
+    - Each unique warning is listed with bullet points
+    - Duplicate warnings are automatically deduplicated
+"""
+
+import subprocess
+import json
+import sys
+import re
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description="Check Rust warnings for a specific crate or entire workspace")
+    parser.add_argument(
+        "-p", "--package", 
+        help="Package to check (if not specified, checks entire workspace)"
+    )
+    parser.add_argument(
+        "--exclude", 
+        action="append",
+        help="Packages to exclude from workspace check (can be used multiple times)"
+    )
+    args = parser.parse_args()
+
+    # Build cargo check command
+    cmd = ["cargo", "check", "--message-format=json"]
+    
+    if args.package:
+        cmd.extend(["-p", args.package])
+        print(f"Checking package: {args.package}")
+    else:
+        print("Checking entire workspace")
+        if args.exclude:
+            for exclude_pkg in args.exclude:
+                cmd.extend(["--exclude", exclude_pkg])
+            print(f"Excluding packages: {', '.join(args.exclude)}")
+    
+    cmd.append("--all-targets")
+
+    # Run cargo check in JSON mode
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    # Parse output line by line
+    warnings = []
+    for line in proc.stdout.splitlines():
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if obj.get("message", {}).get("level") == "warning":
+            msg = obj["message"]["message"]
+            # Remove suffix like " (1 duplicate)"
+            msg = re.sub(r" \(\d+ duplicate\)$", "", msg)
+            warnings.append(msg)
+
+    unique_warnings = set(warnings)
+    count = len(unique_warnings)
+
+    if count > 0:
+        print(f"Found {count} warning{'s' if count > 1 else ''}:", file=sys.stderr)
+        for w in sorted(unique_warnings):
+            print(f"  - {w}", file=sys.stderr)
+        return 1
+    else:
+        print("No warnings found.")
+        return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

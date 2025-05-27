@@ -134,6 +134,7 @@ async fn create_collection_with_order() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: Some(42),
+            external_path: None,
         })
         .await;
 
