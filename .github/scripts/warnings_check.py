@@ -64,6 +64,7 @@ def main():
     else:
         print("Checking entire workspace")
         if args.exclude:
+            cmd.append("--workspace")
             for exclude_pkg in args.exclude:
                 cmd.extend(["--exclude", exclude_pkg])
             print(f"Excluding packages: {', '.join(args.exclude)}")
