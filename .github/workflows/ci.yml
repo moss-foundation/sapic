@@ -96,6 +96,35 @@ jobs:
     if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          # - moss_git
+          # - moss_git_hosting_provider
+          # - moss_tauri
+          # - moss_text
+          # - moss_collection
+          # - moss_app
+          - moss_db
+          # - moss_fs
+          # - moss_keyring
+          # - moss_vault
+          # - moss_theme
+          # - moss_state
+          # - moss_nls
+          # - moss_logging
+          # - moss_session
+          - moss_workspace
+          # - moss_environment
+          # - moss_testutils
+          # - moss_common
+          - moss_workbench
+          # - moss_storage
+          # - moss_activity_indicator
+          # - moss_file
+          # - xtask
+          # - desktop
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -121,34 +150,10 @@ jobs:
         uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
       - name: Clean cargo cache for warnings check
-        run: cargo clean -p moss_db
+        run: cargo clean -p ${{ matrix.package }}
 
-      - name: Check Rust Warnings
-        run: |
-          python3 .github/scripts/warnings_check.py \
-            --exclude moss_git \
-            --exclude moss_git_hosting_provider \
-            --exclude moss_tauri \
-            --exclude moss_text \
-            --exclude moss_collection \
-            --exclude moss_app \
-            --exclude moss_fs \
-            --exclude moss_keyring \
-            --exclude moss_vault \
-            --exclude moss_theme \
-            --exclude moss_state \
-            --exclude moss_nls \
-            --exclude moss_logging \
-            --exclude moss_session \
-            --exclude moss_environment \
-            --exclude moss_testutils \
-            --exclude moss_common \
-            --exclude moss_workbench \
-            --exclude moss_storage \
-            --exclude moss_activity_indicator \
-            --exclude moss_file \
-            --exclude desktop \
-            --exclude xtask
+      - name: Check Rust Warnings - ${{ matrix.package }}
+        run: python3 .github/scripts/warnings_check.py -p ${{ matrix.package }}
 
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
