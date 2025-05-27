@@ -8,9 +8,6 @@ use std::path::PathBuf;
 use std::string::ToString;
 use std::sync::LazyLock;
 
-// const TEST_PASSWORD_3: &[u8] = "password_2".as_bytes();
-const TEST_PASSWORD_4: &[u8] = "password_2".as_bytes();
-
 pub const TEST_PASSWORD_1: &[u8] = "password_1".as_bytes();
 pub const TEST_PASSWORD_2: &[u8] = "password_2".as_bytes();
 pub const TEST_AAD_1: &[u8] = "aad_1".as_bytes();
