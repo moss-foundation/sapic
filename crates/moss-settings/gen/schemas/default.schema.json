@@ -1,6 +1,25 @@
 {
   "type": "object",
   "properties": {
+    "workbench.colorTheme": {
+      "level": 2,
+      "enumItemProperties": [
+        {
+          "order": 1,
+          "description": "The light color theme to use.",
+          "mode": "light",
+          "displayName": "Light Default"
+        },
+        {
+          "order": 2,
+          "description": "The dark color theme to use.",
+          "mode": "dark",
+          "displayName": "Dark Default"
+        }
+      ],
+      "description": "The color theme to use.",
+      "enum": ["light", "dark"]
+    },
     "window.defaultWidth": {
       "level": 1,
       "description": "The width of the application window in pixels.",

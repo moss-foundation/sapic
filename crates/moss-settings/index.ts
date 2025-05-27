@@ -19,6 +19,27 @@ const schema = (obj: Record<string, z.ZodSchema>): string => {
       writeFileSync(
         `./gen/schemas/default.schema.json`,
         schema({
+          "workbench.colorTheme": z
+            .enum(["light", "dark"])
+            .describe("The color theme to use.")
+            .optional()
+            .meta({
+              level: Level.User,
+              enumItemProperties: [
+                {
+                  order: 1,
+                  description: "The light color theme to use.",
+                  mode: "light",
+                  displayName: "Light Default",
+                },
+                {
+                  order: 2,
+                  description: "The dark color theme to use.",
+                  mode: "dark",
+                  displayName: "Dark Default",
+                },
+              ],
+            }),
           "window.defaultWidth": z
             .number()
             .min(800)
