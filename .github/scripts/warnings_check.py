@@ -12,6 +12,7 @@ Features:
 - Exit with error code 1 if any warnings are found
 - Remove duplicate warning messages
 - Clean output formatting with location information
+- Filter warnings by package when using -p option
 
 Usage Examples:
     # Check entire workspace
@@ -95,6 +96,7 @@ def main():
             # Extract location information
             spans = obj["message"].get("spans", [])
             location_info = ""
+            file_name = ""
             if spans:
                 primary_span = next((span for span in spans if span.get("is_primary", False)), spans[0])
                 file_name = primary_span.get("file_name", "unknown")
@@ -105,6 +107,13 @@ def main():
                     location_info = f" [{file_name}:{line_start}]"
                 else:
                     location_info = f" [{file_name}:{line_start}-{line_end}]"
+            
+            # Filter warnings by package if -p option is used
+            if args.package:
+                # Convert package name from underscore to dash for directory matching
+                package_dir = args.package.replace("_", "-")
+                if file_name and f"crates/{package_dir}/" not in file_name:
+                    continue  # Skip warnings not from the specified package
             
             warning_with_location = f"{msg}{location_info}"
             warnings.append(warning_with_location)
