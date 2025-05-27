@@ -26,7 +26,7 @@ interface ToggleGroupItemProps {
 const toggleItemStyles = cn(
   "group text-md flex h-[24px] cursor-pointer items-center justify-center px-3",
   "text-[var(--moss-not-selected-item-color)]",
-  "border-[1.5px] border-[var(--moss-headBar-primary-background)] data-[state=on]:text-[var(--moss-primary-text)]",
+  "data-[state=on]:text-[var(--moss-primary-text)]",
   "focus-visible:outline-none",
   "disabled:cursor-default disabled:opacity-50"
 );
