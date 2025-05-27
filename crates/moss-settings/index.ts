@@ -47,7 +47,7 @@ const schema = (obj: Record<string, z.ZodSchema>): string => {
       ),
     ]);
   } catch (err) {
-    console.error("Error generating themes:", err);
+    console.error("Error generating schema:", err);
     process.exit(1);
   }
 })();
