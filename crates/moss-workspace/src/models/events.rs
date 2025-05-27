@@ -15,8 +15,8 @@ pub struct StreamCollectionsEvent {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
-pub struct ListEnvironmentsEvent {
-    pub id: Identifier,
+pub struct StreamEnvironmentsEvent {
+    pub id: Uuid,
 
     /// The id of the collection that the environment belongs to.
     /// If the environment is global, this will be `None`.

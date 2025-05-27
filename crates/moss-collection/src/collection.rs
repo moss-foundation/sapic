@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use moss_common::models::primitives::Identifier;
+use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
 use moss_storage::CollectionStorage;
@@ -9,6 +10,7 @@ use std::{
     path::Path,
     sync::{Arc, atomic::AtomicUsize},
 };
+use uuid::Uuid;
 
 use tokio::sync::{OnceCell, RwLock};
 
@@ -18,13 +20,12 @@ use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
 use crate::worktree::Worktree;
 
 pub struct EnvironmentItem {
-    pub id: Identifier,
+    pub id: Uuid,
     pub name: String,
-    pub order: Option<usize>,
-    // pub inner: Environment,
+    pub inner: Environment,
 }
 
-type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,

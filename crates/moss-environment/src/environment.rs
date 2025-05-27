@@ -39,22 +39,20 @@ use crate::{
 // }
 
 #[derive(Debug, Clone)]
-pub struct VariableParams {
+pub struct VariableItemParams {
     pub disabled: bool,
 }
 
 #[derive(Debug, Clone)]
-pub struct Variable {
+pub struct VariableItem {
     pub id: Identifier,
     pub kind: Option<VariableKind>,
     pub global_value: Option<VariableValue>,
-    pub local_value: Option<VariableValue>,
     pub desc: Option<String>,
-    pub order: Option<usize>,
-    pub params: VariableParams,
+    pub params: VariableItemParams,
 }
 
-type VariableMap = HashMap<VariableName, Variable>;
+type VariableMap = HashMap<VariableName, VariableItem>;
 
 pub struct Environment {
     #[allow(dead_code)]
@@ -114,21 +112,16 @@ impl Environment {
             ));
         }
 
-        // TODO: integrate db
-        // let _variables_cache = environment_store.list_variables()?;
-
         let mut variables = HashMap::new();
         for (name, value) in file_handle.model().await.values {
             variables.insert(
                 name,
-                Variable {
+                VariableItem {
                     id: Identifier::new(&next_variable_id),
                     kind: value.kind,
                     global_value: value.value,
-                    local_value: None, // TODO: restore this value from cache
                     desc: value.desc,
-                    order: None, // TODO: restore this value from cache
-                    params: VariableParams {
+                    params: VariableItemParams {
                         disabled: true, // TODO: restore this value from cache
                     },
                 },

@@ -1,7 +1,7 @@
 use crate::{
     collection::Collection,
     models::{
-        events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput,
+        events::StreamWorktreeEntriesEvent, operations::StreamWorktreeEntriesInput,
         types::EntryInfo,
     },
 };
@@ -10,7 +10,7 @@ use moss_common::api::OperationResult;
 use moss_fs::utils::normalize_path;
 use std::path::Path;
 use std::{time::Duration, vec};
-use tauri::ipc::Channel;
+use tauri::ipc::Channel as TauriChannel;
 use tokio_stream::StreamExt;
 use tokio_stream::StreamMap;
 
@@ -18,10 +18,10 @@ const POLL_INTERVAL: Duration = Duration::from_millis(100);
 const MAX_CHUNK_SIZE: usize = 100;
 
 impl Collection {
-    pub async fn stream_entries_by_prefixes(
+    pub async fn stream_worktree_entries(
         &self,
-        channel: Channel<StreamEntriesByPrefixesEvent>,
-        input: StreamEntriesByPrefixesInput,
+        channel: TauriChannel<StreamWorktreeEntriesEvent>,
+        input: StreamWorktreeEntriesInput,
     ) -> OperationResult<()> {
         // TODO: Integrate collection storage
         // let unit_store = self.collection_storage.unit_store();
@@ -33,12 +33,12 @@ impl Collection {
 
         if worktree_lock.is_empty() {
             // We need to send a final empty event to signal the end of the stream.
-            let _ = channel.send(StreamEntriesByPrefixesEvent(vec![]));
+            let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
             return Ok(());
         }
 
         let mut streams = StreamMap::new();
-        for prefix in input.0 {
+        for prefix in input.prefixes {
             let normalized_prefix = normalize_path(Path::new(prefix));
             let s =
                 tokio_stream::iter(worktree_lock.iter_entries_by_prefix(normalized_prefix).map(
@@ -68,11 +68,11 @@ impl Collection {
         pin_mut!(batched);
 
         while let Some(batch) = batched.next().await {
-            let _ = channel.send(StreamEntriesByPrefixesEvent(batch));
+            let _ = channel.send(StreamWorktreeEntriesEvent(batch));
         }
 
         // We need to send a final empty event to signal the end of the stream.
-        let _ = channel.send(StreamEntriesByPrefixesEvent(vec![]));
+        let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
 
         Ok(())
     }

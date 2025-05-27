@@ -13,7 +13,6 @@ use moss_theme::theme_service::ThemeService;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::marker::PhantomData;
 use std::path::Path;
-use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use tauri::{AppHandle, Manager};

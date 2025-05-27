@@ -25,6 +25,8 @@ async fn rename_collection_success() {
         .update_collection(UpdateCollectionEntryInput {
             id: create_collection_output.id,
             new_name: Some(new_collection_name.clone()),
+            order: None,
+            pinned: None,
         })
         .await;
 
@@ -52,6 +54,8 @@ async fn rename_collection_empty_name() {
         .update_collection(UpdateCollectionEntryInput {
             id: create_collection_output.id,
             new_name: Some(new_collection_name.clone()),
+            order: None,
+            pinned: None,
         })
         .await;
 
@@ -82,6 +86,8 @@ async fn rename_collection_unchanged() {
         .update_collection(UpdateCollectionEntryInput {
             id: create_collection_output.id,
             new_name: Some(new_collection_name),
+            order: None,
+            pinned: None,
         })
         .await;
 
@@ -101,6 +107,8 @@ async fn rename_collection_nonexistent_id() {
         .update_collection(UpdateCollectionEntryInput {
             id: nonexistent_id,
             new_name: Some(random_collection_name()),
+            order: None,
+            pinned: None,
         })
         .await;
 

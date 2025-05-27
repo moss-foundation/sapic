@@ -2,6 +2,7 @@ use moss_common::models::primitives::Identifier;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
+use uuid::Uuid;
 
 use super::primitives::EntryId;
 
@@ -255,6 +256,8 @@ pub struct EntryInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    pub id: Identifier,
+    pub id: Uuid,
     pub name: String,
+    #[ts(optional)]
+    pub order: Option<usize>,
 }
