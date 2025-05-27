@@ -24,9 +24,9 @@ interface ToggleGroupItemProps {
 }
 
 const toggleItemStyles = cn(
-  "group flex h-[24px] px-3 cursor-pointer items-center justify-center text-md",
+  "group text-md flex h-[24px] cursor-pointer items-center justify-center px-3",
   "text-[var(--moss-not-selected-item-color)]",
-  "data-[state=on]:bg-white data-[state=on]:text-[var(--moss-primary-text)] border-[1.5px] border-[var(--moss-headBar-primary-background)]",
+  "border-[1.5px] border-[var(--moss-headBar-primary-background)] data-[state=on]:text-[var(--moss-primary-text)]",
   "focus-visible:outline-none",
   "disabled:cursor-default disabled:opacity-50"
 );
