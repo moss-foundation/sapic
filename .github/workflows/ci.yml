@@ -145,7 +145,8 @@ jobs:
             --exclude moss-storage \
             --exclude moss-activity-indicator \
             --exclude moss-file \
-            --exclude desktop
+            --exclude desktop \
+
             --exclude xtask
             
 
