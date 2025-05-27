@@ -46,6 +46,12 @@ pub struct UpdateCollectionEntryInput {
 
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
+
+    #[ts(optional)]
+    pub order: Option<usize>,
+
+    #[ts(optional)]
+    pub pinned: Option<bool>,
 }
 
 #[derive(Debug, Serialize, TS)]

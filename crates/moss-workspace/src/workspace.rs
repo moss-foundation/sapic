@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
 use moss_common::models::primitives::Identifier;
-use moss_environment::environment::Environment;
+use moss_environment::environment::{self, Environment};
 use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::{
@@ -46,10 +46,9 @@ impl Deref for CollectionItem {
 }
 
 pub struct EnvironmentItem {
-    pub id: Identifier,
+    pub id: Uuid,
     pub name: String,
     pub display_name: String,
-    pub order: Option<usize>,
     pub inner: Environment,
 }
 
@@ -62,7 +61,7 @@ impl Deref for EnvironmentItem {
 }
 
 type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
-type EnvironmentMap = HashMap<Identifier, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
@@ -195,8 +194,7 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
-    #[allow(dead_code)]
-    async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
+    pub async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
         let result = self
             .environments
             .get_or_try_init(|| async move {
@@ -214,7 +212,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         continue;
                     }
 
-                    let entry_abs_path: Arc<Path> = entry.path().into();
+                    let entry_abs_path = entry.path();
                     let name = entry_abs_path
                         .file_name()
                         .unwrap()
@@ -222,20 +220,22 @@ impl<R: TauriRuntime> Workspace<R> {
                         .to_string();
                     let decoded_name = desanitize(&name);
 
-                    let environment = Environment::new(
-                        entry_abs_path,
+                    let environment = Environment::load(
+                        &entry_abs_path,
                         self.fs.clone(),
                         self.workspace_storage.variable_store().clone(),
                         self.next_variable_id.clone(),
+                        environment::LoadParams {
+                            create_if_not_exists: false,
+                        },
                     )
                     .await?;
 
-                    let id = Identifier::new(&self.next_environment_id);
+                    let id = environment.id().await;
                     let entry = EnvironmentItem {
                         id,
                         name,
                         display_name: decoded_name,
-                        order: None,
                         inner: environment,
                     };
 
