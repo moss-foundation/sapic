@@ -121,7 +121,33 @@ jobs:
         uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
       - name: Check Rust Warnings
-        run: python3 .github/scripts/warnings_check.py -p moss_db
+        run: |
+          python3 .github/scripts/warnings_check.py \
+            --exclude moss-git \
+            --exclude moss-git-hosting-provider \
+            --exclude moss-tauri \
+            --exclude moss-text \
+            --exclude moss-collection \
+            --exclude moss-app \
+            --exclude moss-fs \
+            --exclude moss-keyring \
+            --exclude moss-vault \
+            --exclude moss-theme \
+            --exclude moss-state \
+            --exclude moss-nls \
+            --exclude moss-logging \
+            --exclude moss-session \
+            --exclude moss-workspace \
+            --exclude moss-environment \
+            --exclude moss-testutils \
+            --exclude moss-common \
+            --exclude moss-workbench \
+            --exclude moss-storage \
+            --exclude moss-activity-indicator \
+            --exclude moss-file \
+            --exclude desktop
+            --exclude xtask
+            
 
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
