@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "window.defaultWidth": {
+      "level": 1,
+      "description": "The width of the application window in pixels.",
+      "default": 800,
+      "type": "number",
+      "minimum": 800,
+      "maximum": 3840
+    },
+    "window.defaultHeight": {
+      "level": 1,
+      "description": "The height of the application window in pixels.",
+      "default": 600,
+      "type": "number",
+      "minimum": 600,
+      "maximum": 2160
+    }
+  },
+  "required": [],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
