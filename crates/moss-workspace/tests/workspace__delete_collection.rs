@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_storage::storage::operations::ListByPrefix;
 use moss_testutils::random_name::random_collection_name;

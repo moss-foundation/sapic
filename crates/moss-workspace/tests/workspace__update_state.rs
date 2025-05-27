@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_storage::primitives::segkey::SegKey;
 use moss_storage::storage::operations::GetItem;

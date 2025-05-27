@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_collection::collection::Collection;
-use moss_common::models::primitives::Identifier;
 use moss_environment::environment::{self, Environment};
 use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::FileSystem;

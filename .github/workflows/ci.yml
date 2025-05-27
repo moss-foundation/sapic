@@ -140,7 +140,6 @@ jobs:
             --exclude moss_nls \
             --exclude moss_logging \
             --exclude moss_session \
-            --exclude moss_workspace \
             --exclude moss_environment \
             --exclude moss_testutils \
             --exclude moss_common \
