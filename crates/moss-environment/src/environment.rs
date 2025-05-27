@@ -1,6 +1,6 @@
 use anyhow::Result;
 use moss_common::models::primitives::Identifier;
-use moss_file::{common::FileHandle, json::JsonFileHandle};
+use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
 use std::{
