@@ -11,7 +11,7 @@ Features:
 - Exclude specific crates from workspace check with --exclude option
 - Exit with error code 1 if any warnings are found
 - Remove duplicate warning messages
-- Clean output formatting
+- Clean output formatting with location information
 
 Usage Examples:
     # Check entire workspace
@@ -32,7 +32,7 @@ Exit Codes:
 
 Output:
     - Warnings are printed to stderr for better integration with CI/CD
-    - Each unique warning is listed with bullet points
+    - Each unique warning is listed with bullet points and location info
     - Duplicate warnings are automatically deduplicated
 """
 
@@ -90,7 +90,23 @@ def main():
             msg = obj["message"]["message"]
             # Remove suffix like " (1 duplicate)"
             msg = re.sub(r" \(\d+ duplicate\)$", "", msg)
-            warnings.append(msg)
+            
+            # Extract location information
+            spans = obj["message"].get("spans", [])
+            location_info = ""
+            if spans:
+                primary_span = next((span for span in spans if span.get("is_primary", False)), spans[0])
+                file_name = primary_span.get("file_name", "unknown")
+                line_start = primary_span.get("line_start", "?")
+                line_end = primary_span.get("line_end", "?")
+                
+                if line_start == line_end:
+                    location_info = f" [{file_name}:{line_start}]"
+                else:
+                    location_info = f" [{file_name}:{line_start}-{line_end}]"
+            
+            warning_with_location = f"{msg}{location_info}"
+            warnings.append(warning_with_location)
 
     unique_warnings = set(warnings)
     count = len(unique_warnings)
