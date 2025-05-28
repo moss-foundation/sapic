@@ -1,10 +1,12 @@
 pre-commit:
   parallel: true
   jobs:
-    - run: make gen-license
+    - name: "Generate licenses"
+      run: make gen-license
       always_run: true
       stage_fixed: true
 
-    - run: cargo +nightly fmt --all -- --unstable-features
+    - name: "Format Rust code"
+      run: cargo +nightly fmt --all -- --unstable-features
       glob: "*.rs"
       stage_fixed: true
