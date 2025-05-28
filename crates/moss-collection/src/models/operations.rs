@@ -6,10 +6,7 @@ use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
 use crate::models::types::RequestProtocol;
-use crate::models::{
-    primitives::EntryId,
-    types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
-};
+use crate::models::{primitives::EntryId, types::HttpMethod};
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -84,19 +81,19 @@ pub struct UpdateEntryOutput {
     pub virtual_changes: ChangesDiffSet,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub enum CreateRequestProtocolSpecificPayload {
-    Http {
-        method: HttpMethod,
-        query_params: Vec<QueryParamItem>,
-        path_params: Vec<PathParamItem>,
-        headers: Vec<HeaderParamItem>,
-        #[ts(optional)]
-        body: Option<RequestBody>,
-    },
-}
+// #[derive(Clone, Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub enum CreateRequestProtocolSpecificPayload {
+//     Http {
+//         method: HttpMethod,
+//         query_params: Vec<QueryParamItem>,
+//         path_params: Vec<PathParamItem>,
+//         headers: Vec<HeaderParamItem>,
+//         #[ts(optional)]
+//         body: Option<RequestBody>,
+//     },
+// }
 
 // Stream Entries By Prefixes
 

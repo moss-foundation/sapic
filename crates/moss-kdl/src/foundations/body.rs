@@ -1,12 +1,16 @@
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
 use std::collections::HashMap;
-use std::mem;
 use std::path::PathBuf;
 
-use crate::{
-    kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},
-    models::types::{FormDataItem, FormDataValue, RawBodyType, RequestBody, UrlEncodedItem},
-};
+use crate::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX};
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum RawBodyType {
+    Text(String),
+    Json(String),
+    Html(String),
+    Xml(String),
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum RequestBodyBlock {
@@ -16,63 +20,10 @@ pub enum RequestBodyBlock {
     Binary(PathBuf),
 }
 
-#[rustfmt::skip]
-impl From<RequestBody> for RequestBodyBlock {
-    fn from(body: RequestBody) -> Self {
-        match body {
-            RequestBody::Raw(raw_body) => RequestBodyBlock::Raw(RawBodyType::from(raw_body)),
-            RequestBody::Binary(path) => RequestBodyBlock::Binary(PathBuf::from(path)),
-            RequestBody::FormData(form_data) => map_form_data_to_kdl(form_data),
-            RequestBody::UrlEncoded(url_encoded) => map_url_encoded_to_kdl(url_encoded),
-        }
-    }
-}
-
-fn map_form_data_to_kdl(items: Vec<FormDataItem>) -> crate::kdl::body::RequestBodyBlock {
-    let map = items
-        .into_iter()
-        .map(|mut item| {
-            (
-                mem::take(&mut item.key),
-                FormDataBodyItem {
-                    value: match item.value {
-                        FormDataValue::Text(s) => crate::kdl::body::FormDataValue::Text(s),
-                        FormDataValue::File(s) => {
-                            crate::kdl::body::FormDataValue::File(PathBuf::from(s))
-                        }
-                    },
-                    desc: mem::take(&mut item.desc),
-                    order: mem::take(&mut item.order),
-                    disabled: mem::take(&mut item.disabled),
-                    options: FormDataOptions {
-                        propagate: mem::take(&mut item.options.propagate),
-                    },
-                },
-            )
-        })
-        .collect::<HashMap<_, _>>();
-    crate::kdl::body::RequestBodyBlock::FormData(map)
-}
-
-fn map_url_encoded_to_kdl(items: Vec<UrlEncodedItem>) -> crate::kdl::body::RequestBodyBlock {
-    let map = items
-        .into_iter()
-        .map(|mut item| {
-            (
-                mem::take(&mut item.key),
-                UrlEncodedBodyItem {
-                    value: mem::take(&mut item.value),
-                    desc: mem::take(&mut item.desc),
-                    order: mem::take(&mut item.order),
-                    disabled: mem::take(&mut item.disabled),
-                    options: UrlEncodedOptions {
-                        propagate: mem::take(&mut item.options.propagate),
-                    },
-                },
-            )
-        })
-        .collect::<HashMap<_, _>>();
-    crate::kdl::body::RequestBodyBlock::UrlEncoded(map)
+#[derive(Clone, Debug, PartialEq)]
+pub enum FormDataValue {
+    Text(String),
+    File(PathBuf),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -395,3 +346,64 @@ mod tests {
         assert_eq!(node.to_string().trim(), expected.to_string().trim());
     }
 }
+
+// #[rustfmt::skip]
+// impl From<RequestBody> for RequestBodyBlock {
+//     fn from(body: RequestBody) -> Self {
+//         match body {
+//             RequestBody::Raw(raw_body) => RequestBodyBlock::Raw(RawBodyType::from(raw_body)),
+//             RequestBody::Binary(path) => RequestBodyBlock::Binary(PathBuf::from(path)),
+//             RequestBody::FormData(form_data) => map_form_data_to_kdl(form_data),
+//             RequestBody::UrlEncoded(url_encoded) => map_url_encoded_to_kdl(url_encoded),
+//         }
+//     }
+// }
+
+// fn map_form_data_to_kdl(items: Vec<FormDataItem>) -> RequestBodyBlock {
+//     let map = items
+//         .into_iter()
+//         .map(|mut item| {
+//             (
+//                 mem::take(&mut item.key),
+//                 FormDataBodyItem {
+//                     value: match item.value {
+//                         FormDataValue::Text(s) => {
+//                             moss_collection::models::types::FormDataValue::Text(s)
+//                         }
+//                         FormDataValue::File(s) => {
+//                             moss_collection::models::types::FormDataValue::File(PathBuf::from(s))
+//                         }
+//                     },
+//                     desc: mem::take(&mut item.desc),
+//                     order: mem::take(&mut item.order),
+//                     disabled: mem::take(&mut item.disabled),
+//                     options: FormDataOptions {
+//                         propagate: mem::take(&mut item.options.propagate),
+//                     },
+//                 },
+//             )
+//         })
+//         .collect::<HashMap<_, _>>();
+//     moss_kdl::foundations::body::RequestBodyBlock::FormData(map)
+// }
+//
+// fn map_url_encoded_to_kdl(items: Vec<UrlEncodedItem>) -> moss_kdl::foundations::body::RequestBodyBlock {
+//     let map = items
+//         .into_iter()
+//         .map(|mut item| {
+//             (
+//                 mem::take(&mut item.key),
+//                 UrlEncodedBodyItem {
+//                     value: mem::take(&mut item.value),
+//                     desc: mem::take(&mut item.desc),
+//                     order: mem::take(&mut item.order),
+//                     disabled: mem::take(&mut item.disabled),
+//                     options: UrlEncodedOptions {
+//                         propagate: mem::take(&mut item.options.propagate),
+//                     },
+//                 },
+//             )
+//         })
+//         .collect::<HashMap<_, _>>();
+//     moss_kdl::foundations::body::RequestBodyBlock::UrlEncoded(map)
+// }

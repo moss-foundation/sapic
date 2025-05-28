@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 
 pub struct FileHandle<T>
 where
-    T: Clone + Serialize + DeserializeOwned,
+    T: Clone,
 {
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
@@ -15,7 +15,7 @@ where
 
 impl<T> FileHandle<T>
 where
-    T: Clone + Serialize + DeserializeOwned,
+    T: Clone,
 {
     pub async fn create(
         fs: Arc<dyn FileSystem>,

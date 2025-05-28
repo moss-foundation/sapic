@@ -1,10 +1,96 @@
-use crate::kdl::foundations::body::RequestBodyBlock;
-use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
-use crate::models::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody};
+use anyhow::Result;
 use kdl::{KdlDocument, KdlEntry, KdlNode};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Default, PartialEq)]
+use crate::foundations::body::RequestBodyBlock;
+use crate::parse::{HttpRequestParseOptions, http};
+use crate::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
+#[derive(Clone, Debug, Default)]
+pub struct HttpRequestFile {
+    pub url: UrlBlock,
+    pub query_params: HashMap<String, QueryParamBody>,
+    pub path_params: HashMap<String, PathParamBody>,
+    pub headers: HashMap<String, HeaderParamBody>,
+    pub body: Option<RequestBodyBlock>,
+}
+
+impl HttpRequestFile {
+    pub fn new(
+        url: UrlBlock,
+        query_params: HashMap<String, QueryParamBody>,
+        path_params: HashMap<String, PathParamBody>,
+        headers: HashMap<String, HeaderParamBody>,
+        body: Option<RequestBodyBlock>,
+    ) -> Self {
+        Self {
+            url,
+            query_params,
+            path_params,
+            headers,
+            body,
+        }
+    }
+
+    pub fn parse(input: KdlDocument, opts: &HttpRequestParseOptions) -> Result<Self> {
+        http::parse(input, opts)
+    }
+}
+
+impl Into<KdlDocument> for HttpRequestFile {
+    fn into(self) -> KdlDocument {
+        // We need to autoformat the document
+        // But calling it on the document will mess up with raw string
+        // So we have to autoformat each relevant node
+        let mut document = KdlDocument::new();
+        let nodes = document.nodes_mut();
+
+        let mut url_node: KdlNode = self.url.clone().into();
+        url_node.autoformat();
+        nodes.push(url_node);
+
+        let mut query_params_node = KdlNode::new(PARAMS_LIT);
+        query_params_node.push(KdlEntry::new_prop("type", "query"));
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.query_params {
+            let mut param_node = KdlNode::new(name.to_string());
+            param_node.set_children(body.clone().into());
+            children.nodes_mut().push(param_node);
+        }
+        query_params_node.set_children(children);
+        query_params_node.autoformat();
+        nodes.push(query_params_node);
+
+        let mut path_params_node = KdlNode::new(PARAMS_LIT);
+        path_params_node.push(KdlEntry::new_prop("type", "path"));
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.path_params {
+            let mut param_node = KdlNode::new(name.clone());
+            param_node.set_children(body.clone().into());
+            children.nodes_mut().push(param_node);
+        }
+        path_params_node.set_children(children);
+        path_params_node.autoformat();
+        nodes.push(path_params_node);
+
+        let mut headers_node = KdlNode::new(HEADERS_LIT);
+        let mut children = KdlDocument::new();
+        for (name, body) in &self.headers {
+            let mut header_node = KdlNode::new(name.clone());
+            header_node.set_children(body.clone().into());
+            children.nodes_mut().push(header_node);
+        }
+        headers_node.set_children(children);
+        headers_node.autoformat();
+        nodes.push(headers_node);
+
+        if let Some(body) = self.body.clone() {
+            nodes.push(body.into());
+        }
+
+        document
+    }
+}
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct UrlBlock {
     pub raw: Option<String>,
     pub host: Option<String>,
@@ -239,145 +325,5 @@ impl Into<KdlNode> for HeaderParamOptions {
         children.nodes_mut().push(propagate_node);
         node.set_children(children);
         node
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct HttpRequestFile {
-    pub url: UrlBlock,
-    pub query_params: HashMap<String, QueryParamBody>,
-    pub path_params: HashMap<String, PathParamBody>,
-    pub headers: HashMap<String, HeaderParamBody>,
-    pub body: Option<RequestBodyBlock>,
-}
-
-impl HttpRequestFile {
-    pub fn new(
-        url: Option<&str>,
-        query_params: Vec<QueryParamItem>,
-        path_params: Vec<PathParamItem>,
-        headers: Vec<HeaderParamItem>,
-        body: Option<RequestBody>,
-    ) -> Self {
-        let query_params = query_params
-            .into_iter()
-            .map(|item| {
-                (
-                    item.key,
-                    QueryParamBody {
-                        value: item.value,
-                        desc: item.desc,
-                        order: item.order,
-                        disabled: item.disabled,
-                        options: QueryParamOptions {
-                            propagate: item.options.propagate,
-                        },
-                    },
-                )
-            })
-            .collect();
-
-        let path_params = path_params
-            .into_iter()
-            .map(|item| {
-                (
-                    item.key,
-                    PathParamBody {
-                        value: item.value,
-                        desc: item.desc,
-                        order: item.order,
-                        disabled: item.disabled,
-                        options: PathParamOptions {
-                            propagate: item.options.propagate,
-                        },
-                    },
-                )
-            })
-            .collect();
-
-        let headers = headers
-            .into_iter()
-            .map(|item| {
-                (
-                    item.key,
-                    HeaderParamBody {
-                        value: item.value,
-                        desc: item.desc,
-                        order: item.order,
-                        disabled: item.disabled,
-                        options: HeaderParamOptions {
-                            propagate: item.options.propagate,
-                        },
-                    },
-                )
-            })
-            .collect();
-
-        HttpRequestFile {
-            url: url.map(UrlBlock::from).unwrap_or_default(),
-            query_params,
-            path_params,
-            headers,
-            body: body.map(RequestBodyBlock::from),
-        }
-    }
-}
-
-impl ToString for HttpRequestFile {
-    fn to_string(&self) -> String {
-        // FIXME: We need to autoformat the document, but it will mess up with raw string
-        // So we have to autoformat each relevant node
-        // Maybe there's a more elegant solution
-        let mut document = KdlDocument::new();
-        let nodes = document.nodes_mut();
-
-        let mut url_node: KdlNode = self.url.clone().into();
-        url_node.autoformat();
-        nodes.push(url_node);
-
-        let mut query_params_node = KdlNode::new(PARAMS_LIT);
-        query_params_node.push(KdlEntry::new_prop("type", "query"));
-        let mut children = KdlDocument::new();
-        for (name, body) in &self.query_params {
-            let mut param_node = KdlNode::new(name.to_string());
-            param_node.set_children(body.clone().into());
-            children.nodes_mut().push(param_node);
-        }
-        query_params_node.set_children(children);
-        query_params_node.autoformat();
-        nodes.push(query_params_node);
-
-        let mut path_params_node = KdlNode::new(PARAMS_LIT);
-        path_params_node.push(KdlEntry::new_prop("type", "path"));
-        let mut children = KdlDocument::new();
-        for (name, body) in &self.path_params {
-            let mut param_node = KdlNode::new(name.clone());
-            param_node.set_children(body.clone().into());
-            children.nodes_mut().push(param_node);
-        }
-        path_params_node.set_children(children);
-        path_params_node.autoformat();
-        nodes.push(path_params_node);
-
-        let mut headers_node = KdlNode::new(HEADERS_LIT);
-        let mut children = KdlDocument::new();
-        for (name, body) in &self.headers {
-            let mut header_node = KdlNode::new(name.clone());
-            header_node.set_children(body.clone().into());
-            children.nodes_mut().push(header_node);
-        }
-        headers_node.set_children(children);
-        headers_node.autoformat();
-        nodes.push(headers_node);
-
-        if let Some(body) = self.body.clone() {
-            nodes.push(body.into());
-        }
-
-        document
-            .into_iter()
-            .map(|node| node.to_string())
-            .collect::<Vec<String>>()
-            .join("\n")
     }
 }
