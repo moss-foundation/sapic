@@ -35,6 +35,9 @@
       "path": "crates/moss-activity-indicator"
     },
     {
+      "path": "crates/moss-settings"
+    },
+    {
       "path": "view/desktop"
     },
     {

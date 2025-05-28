@@ -3169,6 +3169,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_settings"
+version = "0.1.0"
+
+[[package]]
 name = "moss_state"
 version = "0.1.0"
 dependencies = [
