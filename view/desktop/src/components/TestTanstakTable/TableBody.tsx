@@ -6,8 +6,15 @@ function Body({ children, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
   return <tbody {...props}>{children}</tbody>;
 }
 
-function Row({ children, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr {...props}>{children}</tr>;
+function Row({ children, className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
+  return (
+    <>
+      <tr className={cn("relative", className)} {...props}>
+        {children}
+        <div className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
+      </tr>
+    </>
+  );
 }
 
 function Cell({ children, className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {

@@ -1,89 +1,130 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
-import { ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import { cn } from "@/utils";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
 import * as TableBody from "./TableBody";
 import * as TableHead from "./TableHead";
+import DefaultHeader from "./ui/DefaultHead";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data: initialData }: DataTableProps<TData, TValue>) {
+  const [data, setData] = useState<TData[]>(initialData);
+
   const [rowSelection, setRowSelection] = useState({});
+  const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: setRowSelection,
     getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     enableColumnResizing: true,
     columnResizeMode: "onChange",
+
     state: {
       rowSelection,
+      sorting,
+    },
+    meta: {
+      id: useId(),
     },
   });
 
   return (
-    <Scrollbar className="w-full overflow-hidden rounded border-1 border-[#E0E0E0]">
-      <table className="table-fixed" style={{ width: table.getTotalSize() }}>
-        <TableHead.Head>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <th
-                    key={header.id}
-                    className="relative bg-[#F5F5F5] capitalize"
-                    style={{ width: header.column.getSize() }}
-                  >
-                    <span className="relative cursor-pointer" onClick={header.column.getToggleSortingHandler()}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      {{
-                        asc: " 🔼",
-                        desc: " 🔽",
-                      }[header.column.getIsSorted() as string] ?? null}
-                    </span>
+    <div id={`table-wrapper-test`} className="relative">
+      <Scrollbar
+        className="w-full rounded border-1 border-[#E0E0E0]"
+        style={{
+          overflow: "clip",
+          overflowClipMargin: 8,
+        }}
+      >
+        <table className="table-fixed border-collapse" style={{ width: table.getTotalSize() }}>
+          <TableHead.Head>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <DefaultHeader key={header.id} header={header} />
+                ))}
+              </tr>
+            ))}
+          </TableHead.Head>
+          <TableBody.Body>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row, index) => {
+                const isLastRow = index === table.getRowModel().rows.length - 1;
 
-                    {header.column.getCanResize() && (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-0 -right-[3px] h-full w-[6px] cursor-col-resize bg-blue-600 transition-colors duration-200 select-none"
-                        onMouseDown={header.getResizeHandler()}
-                      />
+                return (
+                  <>
+                    <TableBody.Row key={row.id} data-state={row.getIsSelected() && "selected"}>
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <td
+                            className={cn("border-1 border-l-0 border-[#E0E0E0]")}
+                            style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                            key={cell.id}
+                          >
+                            <span className="flex items-center justify-center truncate">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </span>
+                          </td>
+                        );
+                      })}
+                    </TableBody.Row>
+                    {isLastRow && (
+                      <tr>
+                        {row.getVisibleCells().map((cell) => {
+                          console.log({ cell });
+
+                          if (cell.column.id === "actions" || cell.column.id === "checkbox") {
+                            return (
+                              <td
+                                className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0]")}
+                                style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                                key={cell.id}
+                              />
+                            );
+                          }
+
+                          return (
+                            <td
+                              className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0]")}
+                              style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                              key={cell.id}
+                            >
+                              <input placeholder={cell.column.id} className="w-full" />
+                            </td>
+                          );
+                        })}
+                      </tr>
                     )}
-                  </th>
+                  </>
                 );
-              })}
-            </tr>
-          ))}
-        </TableHead.Head>
-        <TableBody.Body>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableBody.Row key={row.id} data-state={row.getIsSelected() && "selected"}>
-                {row.getVisibleCells().map((cell) => {
-                  return (
-                    <td style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }} key={cell.id}>
-                      <span className="flex items-center justify-center truncate">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </span>
-                    </td>
-                  );
-                })}
+              })
+            ) : (
+              <TableBody.Row>
+                <TableBody.Cell colSpan={columns.length} className="h-24 text-center">
+                  No results.
+                </TableBody.Cell>
               </TableBody.Row>
-            ))
-          ) : (
-            <TableBody.Row>
-              <TableBody.Cell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableBody.Cell>
-            </TableBody.Row>
-          )}
-        </TableBody.Body>
-      </table>
-    </Scrollbar>
+            )}
+          </TableBody.Body>
+        </table>
+      </Scrollbar>
+    </div>
   );
 }
