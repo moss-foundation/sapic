@@ -1,4 +1,3 @@
-use crate::service::StateService;
 use anyhow::Result;
 use moss_tauri::TauriResult;
 use moss_text::ReadOnlyStr;

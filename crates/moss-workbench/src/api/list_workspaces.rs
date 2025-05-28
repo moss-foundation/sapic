@@ -16,7 +16,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 .iter()
                 .map(|(_, entry)| WorkspaceInfo {
                     id: entry.id,
-                    display_name: entry.display_name.clone(),
+                    display_name: entry.name.clone(),
                     last_opened_at: entry.last_opened_at,
                 })
                 .collect(),

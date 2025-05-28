@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 moss_common.workspace = true
 moss_fs.workspace = true
+moss_file.workspace = true
 moss_storage.workspace = true
 
 anyhow.workspace = true
@@ -14,7 +15,7 @@ serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 serde_json.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
-
+uuid = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 rand.workspace = true

@@ -1,71 +1,97 @@
+use moss_db::bincode_table::BincodeTable;
+use moss_db::primitives::AnyValue;
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction};
+use redb::TableHandle;
+use serde_json::{Value as JsonValue, json};
+use std::any::TypeId;
+use std::collections::HashMap;
+use std::path::Path;
+use std::sync::Arc;
+
+use crate::WorkspaceStorage;
+use crate::primitives::segkey::SegKeyBuf;
+use crate::storage::{SegBinTable, Storage, StoreTypeId, Transactional};
+use crate::workspace_storage::stores::item_store::WorkspaceItemStoreImpl;
+use crate::workspace_storage::stores::variable_store::WorkspaceVariableStoreImpl;
+use crate::workspace_storage::stores::{WorkspaceItemStore, WorkspaceVariableStore};
+
 pub mod entities;
 pub mod stores;
 
-mod tables;
-
-use anyhow::Result;
-use async_trait::async_trait;
-use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient, common::Transaction, primitives::AnyValue,
-};
-use std::{collections::HashMap, path::Path, sync::Arc};
-use stores::variable_store::VariableStoreImpl;
-use tables::{ITEM_STORE, TABLE_VARIABLES};
-
-use crate::{
-    WorkspaceStorage,
-    common::item_store::{ItemStore, ItemStoreImpl},
-    primitives::segkey::SegKeyBuf,
-    storage::Transactional,
-};
-
 const DB_NAME: &str = "state.db";
-
-// <environment_name>:<variable_name>
-pub trait VariableStore: Send + Sync {
-    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
-}
+pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("variables");
+pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
 
 pub struct WorkspaceStorageImpl {
-    db_client: ReDbClient,
-    variable_store: Arc<dyn VariableStore>,
-    item_store: Arc<dyn ItemStore<SegKeyBuf, AnyValue>>,
+    client: ReDbClient,
+    tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
 }
 
 impl WorkspaceStorageImpl {
-    pub fn new(path: &Path) -> Result<Self> {
-        let db_client = ReDbClient::new(path.join(DB_NAME))?
-            .with_table(&ITEM_STORE)?
-            .with_table(&TABLE_VARIABLES)?;
+    pub fn new(path: impl AsRef<Path>) -> DatabaseResult<Self> {
+        let mut client = ReDbClient::new(path.as_ref().join(DB_NAME))?;
 
-        let variable_store = Arc::new(VariableStoreImpl::new(db_client.clone()));
-        let item_store = Arc::new(ItemStoreImpl::new(db_client.clone(), ITEM_STORE));
+        let mut tables = HashMap::new();
+        for (type_id, table) in [
+            (TypeId::of::<WorkspaceVariableStoreImpl>(), TABLE_VARIABLES),
+            (TypeId::of::<WorkspaceItemStoreImpl>(), TABLE_ITEMS),
+        ] {
+            client = client.with_table(&table)?;
+            tables.insert(type_id, Arc::new(table));
+        }
 
-        Ok(Self {
-            db_client,
-            variable_store,
-            item_store,
-        })
+        Ok(Self { client, tables })
     }
 }
 
-#[async_trait]
+impl Storage for WorkspaceStorageImpl {
+    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.client.begin_read()?;
+        let mut result = HashMap::new();
+        for table in self.tables.values() {
+            let name = table.table_definition().name().to_string();
+            let mut table_entries = HashMap::new();
+            for (k, v) in table.scan(&read_txn)? {
+                table_entries.insert(
+                    k.to_string(),
+                    serde_json::from_slice::<JsonValue>(v.as_bytes())?,
+                );
+            }
+            result.insert(format!("table:{}", name), json!(table_entries));
+        }
+
+        Ok(result)
+    }
+}
+
 impl Transactional for WorkspaceStorageImpl {
-    async fn begin_write(&self) -> DatabaseResult<Transaction> {
-        self.db_client.begin_write()
+    fn begin_write(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_write()
     }
 
-    async fn begin_read(&self) -> DatabaseResult<Transaction> {
-        self.db_client.begin_read()
+    fn begin_read(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_read()
     }
 }
 
 impl WorkspaceStorage for WorkspaceStorageImpl {
-    fn variable_store(&self) -> Arc<dyn VariableStore> {
-        self.variable_store.clone()
+    fn variable_store(&self) -> Arc<dyn WorkspaceVariableStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<WorkspaceVariableStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(WorkspaceVariableStoreImpl::new(client, table))
     }
 
-    fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
-        self.item_store.clone()
+    fn item_store(&self) -> Arc<dyn WorkspaceItemStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<WorkspaceItemStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(WorkspaceItemStoreImpl::new(client, table))
     }
 }

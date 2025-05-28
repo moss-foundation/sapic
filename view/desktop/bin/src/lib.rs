@@ -72,8 +72,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_workspaces,
             commands::delete_workspace,
             commands::describe_workbench_state,
+            commands::stream_workspace_environments,
         ])
-        .on_window_event(|window, event| match event {
+        .on_window_event(|_window, event| match event {
             // #[cfg(target_os = "macos")]
             // WindowEvent::CloseRequested { api, .. } => {
             //     if window.app_handle().webview_windows().len() == 1 {
@@ -82,7 +83,7 @@ pub async fn run<R: TauriRuntime>() {
             //     }
             // }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
-            WindowEvent::CloseRequested { api, .. } => {}
+            WindowEvent::CloseRequested { .. } => {}
 
             _ => (),
         })

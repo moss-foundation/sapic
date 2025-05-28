@@ -4,7 +4,7 @@ pub trait TransactionalGetItem: Send + Sync {
     type Key;
     type Entity;
 
-    fn get_item(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait TransactionalListByPrefix: Send + Sync {
@@ -13,7 +13,7 @@ pub trait TransactionalListByPrefix: Send + Sync {
 
     fn list_by_prefix(
         &self,
-        txn: &mut Transaction,
+        txn: &Transaction,
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }
@@ -22,7 +22,7 @@ pub trait GetItem: Send + Sync {
     type Key;
     type Entity;
 
-    fn get_item(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
+    fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait ListByPrefix: Send + Sync {
@@ -46,8 +46,9 @@ pub trait TransactionalPutItem: Send + Sync {
 
 pub trait TransactionalRemoveItem: Send + Sync {
     type Key;
+    type Entity;
 
-    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<()>;
+    fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait PutItem: Send + Sync {
@@ -59,8 +60,9 @@ pub trait PutItem: Send + Sync {
 
 pub trait RemoveItem: Send + Sync {
     type Key;
+    type Entity;
 
-    fn remove(&self, key: Self::Key) -> DatabaseResult<()>;
+    fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity>;
 }
 
 pub trait TransactionalRekeyItem: Send + Sync {

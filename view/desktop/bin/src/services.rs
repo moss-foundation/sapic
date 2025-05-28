@@ -13,7 +13,6 @@ use moss_theme::theme_service::ThemeService;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::marker::PhantomData;
 use std::path::Path;
-use std::sync::atomic::AtomicUsize;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 use tauri::{AppHandle, Manager};
@@ -166,10 +165,7 @@ fn workspace_manager<R: tauri::Runtime>(
             app_handle.clone(),
             fs,
             global_storage,
-            WorkbenchOptions {
-                abs_path,
-                next_workspace_id: Arc::new(AtomicUsize::new(0)),
-            },
+            WorkbenchOptions { abs_path },
         )
     }
 }

@@ -2,11 +2,7 @@ use anyhow::{Result, anyhow};
 use async_stream::stream;
 use futures::{StreamExt, stream::BoxStream};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{
-    io,
-    path::{Path, PathBuf},
-    time::Duration,
-};
+use std::{io, path::Path, time::Duration};
 use tokio::{
     fs::ReadDir,
     io::AsyncWriteExt,

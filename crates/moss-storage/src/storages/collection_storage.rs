@@ -1,138 +1,97 @@
-pub mod entities;
-pub mod stores;
-mod tables;
-
-use anyhow::Result;
-use arc_swap::ArcSwap;
-use async_trait::async_trait;
+use moss_db::bincode_table::BincodeTable;
 use moss_db::primitives::AnyValue;
-use moss_db::{ClientState, DatabaseClient, DatabaseResult, ReDbClient, Transaction};
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction};
+use redb::TableHandle;
+use serde_json::{Value as JsonValue, json};
+use std::any::TypeId;
 use std::collections::HashMap;
 use std::path::Path;
-use std::pin::Pin;
 use std::sync::Arc;
-use stores::variable_store::VariableStoreImpl;
-use tables::{TABLE_VARIABLES, UNIT_STORE};
-use tokio::sync::Notify;
 
-use crate::storage::ResettableStorage;
-use crate::{
-    CollectionStorage,
-    common::item_store::{ItemStore, ItemStoreImpl},
-    primitives::segkey::SegKeyBuf,
-    storage::Transactional,
-};
+use crate::CollectionStorage;
+use crate::collection_storage::stores::unit_store::CollectionUnitStoreImpl;
+use crate::collection_storage::stores::variable_store::CollectionVariableStoreImpl;
+use crate::collection_storage::stores::{CollectionUnitStore, CollectionVariableStore};
+use crate::primitives::segkey::SegKeyBuf;
+use crate::storage::{SegBinTable, Storage, StoreTypeId, Transactional};
+
+pub mod entities;
+pub mod stores;
 
 const DB_NAME: &str = "state.db";
-
-// <environment_name>:<variable_name>
-pub trait VariableStore: Send + Sync {
-    fn list_variables(&self) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>>;
-}
-
-pub struct CollectionResettableCell {
-    db_client: ReDbClient,
-    variable_store: Arc<dyn VariableStore>,
-    unit_store: Arc<dyn ItemStore<SegKeyBuf, AnyValue>>,
-}
-
-impl CollectionResettableCell {
-    pub fn new(path: &Path) -> Result<Self> {
-        let db_client = ReDbClient::new(path.join(DB_NAME))?
-            .with_table(&UNIT_STORE)?
-            .with_table(&TABLE_VARIABLES)?;
-
-        let variable_store = Arc::new(VariableStoreImpl::new(db_client.clone()));
-        let unit_store = Arc::new(ItemStoreImpl::new(db_client.clone(), UNIT_STORE));
-
-        Ok(Self {
-            db_client,
-            variable_store,
-            unit_store,
-        })
-    }
-}
+pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("variables");
+pub const TABLE_UNITS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("units");
 
 pub struct CollectionStorageImpl {
-    state: ArcSwap<ClientState<CollectionResettableCell>>,
+    client: ReDbClient,
+    tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
 }
 
 impl CollectionStorageImpl {
-    pub fn new(path: &Path) -> Result<Self> {
-        let cell = CollectionResettableCell::new(path)?;
+    pub fn new(path: impl AsRef<Path>) -> DatabaseResult<Self> {
+        let mut client = ReDbClient::new(path.as_ref().join(DB_NAME))?;
 
-        Ok(Self {
-            state: ArcSwap::new(Arc::new(ClientState::Loaded(cell))),
-        })
+        let mut tables = HashMap::new();
+        for (type_id, table) in [
+            (TypeId::of::<CollectionVariableStoreImpl>(), TABLE_VARIABLES),
+            (TypeId::of::<CollectionUnitStoreImpl>(), TABLE_UNITS),
+        ] {
+            client = client.with_table(&table)?;
+            tables.insert(type_id, Arc::new(table));
+        }
+
+        Ok(Self { client, tables })
     }
 }
 
-#[async_trait]
+impl Storage for CollectionStorageImpl {
+    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.client.begin_read()?;
+        let mut result = HashMap::new();
+        for table in self.tables.values() {
+            let name = table.table_definition().name().to_string();
+            let mut table_entries = HashMap::new();
+            for (k, v) in table.scan(&read_txn)? {
+                table_entries.insert(
+                    k.to_string(),
+                    serde_json::from_slice::<JsonValue>(v.as_bytes())?,
+                );
+            }
+            result.insert(format!("table:{}", name), json!(table_entries));
+        }
+
+        Ok(result)
+    }
+}
+
 impl Transactional for CollectionStorageImpl {
-    async fn begin_write(&self) -> DatabaseResult<Transaction> {
-        loop {
-            match self.state.load().as_ref() {
-                ClientState::Loaded(cell) => return cell.db_client.begin_write(),
-                ClientState::Reloading { notify } => notify.notified().await,
-            }
-        }
+    fn begin_write(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_write()
     }
 
-    async fn begin_read(&self) -> DatabaseResult<Transaction> {
-        loop {
-            match self.state.load().as_ref() {
-                ClientState::Loaded(cell) => return cell.db_client.begin_read(),
-                ClientState::Reloading { notify } => notify.notified().await,
-            }
-        }
+    fn begin_read(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_read()
     }
 }
-#[async_trait]
+
 impl CollectionStorage for CollectionStorageImpl {
-    async fn variable_store(&self) -> Arc<dyn VariableStore> {
-        loop {
-            match self.state.load().as_ref() {
-                ClientState::Loaded(cell) => return cell.variable_store.clone(),
-                ClientState::Reloading { notify } => notify.notified().await,
-            }
-        }
+    fn variable_store(&self) -> Arc<dyn CollectionVariableStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<CollectionVariableStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(CollectionVariableStoreImpl::new(client, table))
     }
 
-    async fn unit_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
-        loop {
-            match self.state.load().as_ref() {
-                ClientState::Loaded(cell) => return cell.unit_store.clone(),
-                ClientState::Reloading { notify } => notify.notified().await,
-            }
-        }
-    }
-}
-
-#[async_trait]
-impl ResettableStorage for CollectionStorageImpl {
-    async fn reset(
-        &self,
-        path: &Path,
-        after_drop: Pin<Box<dyn Future<Output = Result<()>> + Send>>,
-    ) -> Result<()> {
-        let local_notify = Arc::new(Notify::new());
-        let reloading_state = Arc::new(ClientState::Reloading {
-            notify: local_notify.clone(),
-        });
-        let old_state = self.state.swap(reloading_state);
-
-        // Wait for current operations to complete
-        tokio::task::yield_now().await;
-        drop(old_state);
-
-        after_drop.await?;
-
-        let new_cell = CollectionResettableCell::new(path)?;
-        let new_state = Arc::new(ClientState::Loaded(new_cell));
-        self.state.store(new_state);
-
-        // Notify waiting operations
-        local_notify.notify_waiters();
-        Ok(())
+    fn unit_store(&self) -> Arc<dyn CollectionUnitStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<CollectionUnitStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(CollectionUnitStoreImpl::new(client, table))
     }
 }
