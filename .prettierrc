@@ -10,7 +10,6 @@
   "plugins": [
     "@ianvs/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss",
-    "@typespec/prettier-plugin-typespec",
     "prettier-plugin-toml"
   ],
   "tailwindConfig": "packages/config-tailwind/tailwind.config.ts",
@@ -19,6 +18,5 @@
   "importOrderParserPlugins": ["typescript", "jsx", "tsx"],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
-  "quoteProps": "preserve",
-  "overrides": [{ "files": "*.tsp", "options": { "parser": "typespec" } }]
+  "quoteProps": "preserve"
 }
