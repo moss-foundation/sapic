@@ -13,7 +13,7 @@ import {
 
 import * as TableBody from "./TableBody";
 import * as TableHead from "./TableHead";
-import DefaultHeader from "./ui/DefaultHead";
+import DefaultHeader from "./ui/DefaultHeader";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -47,7 +47,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
   return (
     <div id={`table-wrapper-test`} className="relative">
       <Scrollbar
-        className="w-full rounded border-1 border-[#E0E0E0]"
+        className="w-full rounded border border-[#E0E0E0]"
         style={{
           overflow: "clip",
           overflowClipMargin: 8,
@@ -56,7 +56,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
         <table className="table-fixed border-collapse" style={{ width: table.getTotalSize() }}>
           <TableHead.Head>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <tr key={headerGroup.id} className="bg-[#F5F5F5]">
                 {headerGroup.headers.map((header) => (
                   <DefaultHeader key={header.id} header={header} />
                 ))}
@@ -74,13 +74,11 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td
-                            className={cn("border-1 border-l-0 border-[#E0E0E0] px-2 py-px")}
+                            className={cn("border-1 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
                             style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                             key={cell.id}
                           >
-                            <span className="flex items-center justify-center truncate leading-4">
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </span>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         );
                       })}
@@ -106,7 +104,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
                               style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                               key={cell.id}
                             >
-                              <input placeholder={cell.column.id} className="w-full" />
+                              <input placeholder={cell.column.id} className="w-full outline-0" />
                             </td>
                           );
                         })}

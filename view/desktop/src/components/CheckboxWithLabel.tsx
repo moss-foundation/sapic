@@ -16,7 +16,12 @@ const CheckboxWithLabel = ({
 
   return (
     <div className="flex items-center gap-2">
-      <CheckboxPrimitive.Root id={id} className="cursor-pointer" checked={checked} onCheckedChange={onCheckedChange}>
+      <CheckboxPrimitive.Root
+        id={id}
+        className="cursor-pointer rounded-[3px] border-(--moss-checkbox-border)"
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+      >
         <CheckboxPrimitive.Indicator>
           <Icon icon="CheckboxIndicator" />
         </CheckboxPrimitive.Indicator>

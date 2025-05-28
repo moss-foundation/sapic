@@ -1,3 +1,4 @@
+import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { DataTable } from "@/components/TestTanstakTable/DataTable";
 import testData from "@/components/TestTanstakTable/testData.json";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -30,19 +31,17 @@ const columns = [
   columnHelper.display({
     id: "checkbox",
     header: ({ table }) => (
-      <input
-        type="checkbox"
-        checked={table.getIsAllRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
-      />
+      <div className="flex items-center justify-center">
+        <CheckboxWithLabel
+          checked={table.getIsAllRowsSelected()}
+          onCheckedChange={table.getToggleAllRowsSelectedHandler()}
+        />
+      </div>
     ),
     cell: ({ row }) => (
-      <input
-        type="checkbox"
-        className="mx-auto"
-        checked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
-      />
+      <div className="flex items-center justify-center">
+        <CheckboxWithLabel checked={row.getIsSelected()} onCheckedChange={row.getToggleSelectedHandler()} />
+      </div>
     ),
     enableSorting: false,
     enableResizing: false,
@@ -50,23 +49,23 @@ const columns = [
   }),
   columnHelper.accessor("key", {
     header: () => "key",
-    cell: (info) => <p className="truncate">{info.getValue()}</p>,
+    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
   }),
   columnHelper.accessor("value", {
     header: () => "value",
-    cell: (info) => <p className="truncate">{info.getValue()}</p>,
+    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
   }),
   columnHelper.accessor("description", {
     header: () => "description",
-    cell: (info) => <p className="truncate">{info.getValue()}</p>,
+    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
   }),
   columnHelper.accessor("global_value", {
     header: () => "global_value",
-    cell: (info) => <p className="truncate">{info.getValue()}</p>,
+    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
   }),
   columnHelper.accessor("local_value", {
     header: () => "local_value",
-    cell: (info) => <p className="truncate">{info.getValue()}</p>,
+    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
   }),
   columnHelper.display({
     id: "actions",
