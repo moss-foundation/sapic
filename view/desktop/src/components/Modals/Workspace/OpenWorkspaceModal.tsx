@@ -8,11 +8,13 @@ import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
+import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
 
 import { ModalWrapperProps } from "../types";
 
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { data: workspaces } = useGetWorkspaces();
+  const { mutate: openWorkspaceDirect } = useOpenWorkspace();
 
   const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
@@ -22,7 +24,25 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
 
   const handleSubmit = () => {
     if (selectedWorkspace) {
-      openAndSelectWorkspace(selectedWorkspace);
+      console.log("Opening workspace:", selectedWorkspace);
+
+      // Try direct mutation as a workaround
+      try {
+        openWorkspaceDirect(selectedWorkspace, {
+          onSuccess: () => {
+            console.log("Workspace opened successfully:", selectedWorkspace);
+          },
+          onError: (error) => {
+            console.error("Error opening workspace:", error);
+          },
+        });
+
+        // Also try through context
+        openAndSelectWorkspace(selectedWorkspace);
+      } catch (error) {
+        console.error("Exception when opening workspace:", error);
+      }
+
       closeModal();
       reset();
     }
@@ -40,6 +60,8 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
       setOpenAutomatically(true);
     }, 200);
   };
+
+  console.log("Current workspaces:", workspaces);
 
   return (
     <ModalForm
