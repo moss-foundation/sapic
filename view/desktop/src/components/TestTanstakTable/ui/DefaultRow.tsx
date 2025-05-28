@@ -33,12 +33,13 @@ export const DefaultRow = <TData,>({
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   useEffect(() => {
+    const handle = handleRef.current;
     const element = rowRef.current;
-    if (!element || disableDnd) return;
+    if (!element || !handle || disableDnd) return;
 
     return combine(
       draggable({
-        element,
+        element: handle,
         getInitialData: () => ({
           type: "TableRow",
           data: {
@@ -75,11 +76,9 @@ export const DefaultRow = <TData,>({
         canDrop({ source }) {
           return source.data.type === "TableRow";
         },
-        onDrop({ source }) {
-          console.log(source);
+        onDrop({}) {
           setClosestEdge(null);
         },
-
         onDragLeave() {
           setClosestEdge(null);
         },

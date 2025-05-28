@@ -6,6 +6,7 @@ const defaultOptions: OverlayScrollbarsComponentProps = {
       autoHide: "move",
     },
   },
+
   defer: true,
 };
 

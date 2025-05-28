@@ -41,7 +41,9 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
   });
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const tableHeight = tableContainerRef.current?.clientHeight;
   const headers = table.getFlatHeaders();
+
   useLayoutEffect(() => {
     if (!tableContainerRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
@@ -68,7 +70,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="bg-[#F5F5F5]">
                 {headerGroup.headers.map((header) => (
-                  <DefaultHeader key={header.id} header={header} />
+                  <DefaultHeader tableHeight={tableHeight} key={header.id} header={header} />
                 ))}
               </tr>
             ))}
