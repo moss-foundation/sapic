@@ -10,14 +10,19 @@ pre-commit:
     #   glob: "**/*.rs"
     #   stage_fixed: true
 
-    - name: "Format Frontend files"
-      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{js,jsx,ts,tsx,css,md,json}"
+    - name: "Format Typescript/Javascript files"
+      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{ts,js}"
       always_run: true
       stage_fixed: true
 
-    - name: "Format TOML files"
-      run: prettier --plugin=prettier-plugin-toml --write "**/*.toml"
-      glob: "**/*.toml"
+    - name: "Format React files"
+      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{jsx,tsx,css,md,json}"
+      always_run: true
+      stage_fixed: true
+
+    - name: "Format Other files"
+      run: prettier --plugin=prettier-plugin-toml --write "**/*.{toml,md,json}"
+      always_run: true
       stage_fixed: true
 
 
