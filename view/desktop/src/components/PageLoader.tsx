@@ -27,7 +27,7 @@ export const PageLoader = () => {
       <div className="fixed top-0 h-36 w-full" data-tauri-drag-region />
 
       <div className="flex h-full flex-col items-center justify-center gap-5">
-        <Icon icon="Loader" className="size-8 animate-spin" />
+        <div className="size-8 animate-spin rounded-full border-2 border-gray-200 border-t-gray-600"></div>
         <div className="flex flex-col gap-3 text-center">
           <div className="font-black">Did you know</div>
           <div className="text animate-text-slide text-[#6F6F6F]">{tip}</div>
