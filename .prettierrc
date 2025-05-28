@@ -10,7 +10,8 @@
   "plugins": [
     "@ianvs/prettier-plugin-sort-imports",
     "prettier-plugin-tailwindcss",
-    "@typespec/prettier-plugin-typespec"
+    "@typespec/prettier-plugin-typespec",
+    "prettier-plugin-tailwindcss"
   ],
   "tailwindConfig": "packages/config-tailwind/tailwind.config.ts",
   "tailwindFunctions": ["cn", "clsx", "cva"],

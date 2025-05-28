@@ -46,7 +46,7 @@
       "mode": "auto"
     }
   ],
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "files.associations": {
     "*.css": "tailwindcss"
   },

@@ -8,5 +8,10 @@ pre-commit:
 
     - name: "Format Rust code"
       run: cargo +nightly fmt --all -- --unstable-features
-      glob: "*.rs"
+      glob: "**/*.rs"
+      stage_fixed: true
+
+    - name: "Format TypeScript code"
+      run: pnpm exec lint-staged
+      glob: "**/*.{js,jsx,ts,tsx,css,md,json}"
       stage_fixed: true

@@ -3,7 +3,7 @@ use cargo_metadata::Metadata;
 use clap::Parser;
 use toml_edit::{Array, DocumentMut, Item, Table, Value};
 
-static DEFAULT_FEATURES: [&str; 1] = ["edition2024"];
+static DEFAULT_FEATURES: [&str; 0] = [];
 
 #[derive(Parser)]
 pub struct CargoFeaturesCommandArgs {}
@@ -19,6 +19,16 @@ pub async fn run_cargo_features(_args: CargoFeaturesCommandArgs, metadata: Metad
         let manifest_path = &package.manifest_path;
         let content = tokio::fs::read_to_string(&manifest_path).await?;
         let mut doc = content.parse::<DocumentMut>()?;
+
+        // If DEFAULT_FEATURES is empty, remove cargo-features section and any spacing after it
+        if DEFAULT_FEATURES.is_empty() {
+            if doc.get("cargo-features").is_some() {
+                doc.as_table_mut().remove("cargo-features");
+                tokio::fs::write(&manifest_path, doc.to_string()).await?;
+                println!("Removed cargo-features from {}", manifest_path.to_path_buf());
+            }
+            continue;
+        }
 
         // Collect existing cargo-features
         let mut existing: Vec<String> =
@@ -55,9 +65,18 @@ pub async fn run_cargo_features(_args: CargoFeaturesCommandArgs, metadata: Metad
         }
         *doc.as_table_mut() = new_table;
 
-        // Add a blank line after cargo-features
+        // Add a blank line after cargo-features only if there isn't one already
         if let Some(Item::Value(value)) = doc.get_mut("cargo-features") {
-            value.decor_mut().set_suffix("\n");
+            let current_suffix = value.decor().suffix();
+            // Check if suffix exists and contains newline
+            let needs_newline = match current_suffix {
+                Some(suffix_str) => !suffix_str.as_str().unwrap_or("").contains('\n'),
+                None => true,
+            };
+            
+            if needs_newline {
+                value.decor_mut().set_suffix("\n");
+            }
         }
 
         tokio::fs::write(&manifest_path, doc.to_string()).await?;
