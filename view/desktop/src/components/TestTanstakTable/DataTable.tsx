@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
@@ -38,12 +38,6 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
     },
   });
 
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  const getTableSize = () => {
-    return Math.max(table.getCenterTotalSize(), tableContainerRef.current?.clientWidth ?? 0);
-  };
-
   return (
     <Scrollbar
       className="w-full rounded border border-[#E0E0E0]"
@@ -51,7 +45,6 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
         overflow: "clip",
         overflowClipMargin: 8,
       }}
-      ref={tableContainerRef}
     >
       <table className="w-full table-fixed border-collapse" style={{ width: table.getTotalSize() }}>
         <TableHead.Head>
