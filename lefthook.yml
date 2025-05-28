@@ -6,12 +6,17 @@ pre-commit:
       always_run: true
       stage_fixed: true
 
-    - name: "Format Rust code"
+    - name: "Format Rust files"
       run: cargo +nightly fmt --all -- --unstable-features
       glob: "**/*.rs"
       stage_fixed: true
 
-    - name: "Format TypeScript code"
-      run: pnpm exec lint-staged
-      glob: "**/*.{js,jsx,ts,tsx,css,md,json}"
+    - name: "Format Frontend files"
+      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{js,jsx,ts,tsx,css,md,json}"
+      always_run: true
+      stage_fixed: true
+
+    - name: "Format TOML files"
+      run: prettier --plugin=prettier-plugin-toml --write "**/*.toml"
+      glob: "**/*.toml"
       stage_fixed: true
