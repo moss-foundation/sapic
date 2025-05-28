@@ -2,4 +2,5 @@ pre-commit:
   parallel: true
   jobs:
     - run: make gen-license
+      always_run: true
       stage_fixed: true
