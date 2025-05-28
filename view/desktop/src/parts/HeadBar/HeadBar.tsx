@@ -30,11 +30,9 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  // Get workspace from appState
   const { data: appState } = useDescribeAppState();
   const { getNameById } = useWorkspaceMapping();
 
-  // Get workspace name from appState
   const currentWorkspaceId = appState?.lastWorkspace;
   const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
   const selectedWorkspace = currentWorkspaceName;
