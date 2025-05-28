@@ -60,6 +60,7 @@ const columns = [
         value={info.getValue()}
       />
     ),
+    minSize: 60,
   }),
   columnHelper.accessor("value", {
     header: () => "value",
@@ -70,6 +71,7 @@ const columns = [
         value={info.getValue()}
       />
     ),
+    minSize: 100,
   }),
   columnHelper.accessor("description", {
     header: () => "description",
@@ -80,6 +82,10 @@ const columns = [
         value={info.getValue()}
       />
     ),
+    meta: {
+      isGrow: true,
+    },
+    minSize: 100,
   }),
   columnHelper.accessor("global_value", {
     header: () => "global_value",
@@ -90,6 +96,7 @@ const columns = [
         value={info.getValue()}
       />
     ),
+    minSize: 100,
   }),
   columnHelper.accessor("local_value", {
     header: () => "local_value",
@@ -100,12 +107,13 @@ const columns = [
         value={info.getValue()}
       />
     ),
+    minSize: 100,
   }),
   columnHelper.display({
     id: "actions",
     header: ({ table }) => <div>Actions</div>,
     cell: ({ row }) => (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <button>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
