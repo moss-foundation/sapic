@@ -40,7 +40,11 @@ const columns = [
     ),
     cell: ({ row }) => (
       <div className="flex items-center justify-center">
-        <CheckboxWithLabel checked={row.getIsSelected()} onCheckedChange={row.getToggleSelectedHandler()} />
+        <CheckboxWithLabel
+          disabled={!row.getCanSelect()}
+          checked={row.getIsSelected()}
+          onCheckedChange={row.getToggleSelectedHandler()}
+        />
       </div>
     ),
     enableSorting: false,
@@ -49,23 +53,53 @@ const columns = [
   }),
   columnHelper.accessor("key", {
     header: () => "key",
-    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+      />
+    ),
   }),
   columnHelper.accessor("value", {
     header: () => "value",
-    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+      />
+    ),
   }),
   columnHelper.accessor("description", {
     header: () => "description",
-    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+      />
+    ),
   }),
   columnHelper.accessor("global_value", {
     header: () => "global_value",
-    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+      />
+    ),
   }),
   columnHelper.accessor("local_value", {
     header: () => "local_value",
-    cell: (info) => <input className="w-full truncate outline-0" value={info.getValue()} />,
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+      />
+    ),
   }),
   columnHelper.display({
     id: "actions",

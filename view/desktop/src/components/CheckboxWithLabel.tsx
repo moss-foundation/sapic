@@ -7,10 +7,12 @@ const CheckboxWithLabel = ({
   checked,
   onCheckedChange,
   label,
+  disabled,
 }: {
   checked: boolean;
   onCheckedChange: (checked: CheckedState) => void;
   label?: string;
+  disabled?: boolean;
 }) => {
   const id = useId();
 
@@ -21,6 +23,7 @@ const CheckboxWithLabel = ({
         className="cursor-pointer rounded-[3px] border-(--moss-checkbox-border)"
         checked={checked}
         onCheckedChange={onCheckedChange}
+        disabled={disabled}
       >
         <CheckboxPrimitive.Indicator>
           <Icon icon="CheckboxIndicator" />
