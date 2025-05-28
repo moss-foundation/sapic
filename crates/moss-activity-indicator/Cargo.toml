@@ -1,5 +1,3 @@
-cargo-features = ["edition2024"]
-
 [package]
 name = "moss_activity_indicator"
 version = "0.1.0"
@@ -10,5 +8,3 @@ anyhow.workspace = true
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
-
-
