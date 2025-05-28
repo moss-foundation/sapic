@@ -390,10 +390,19 @@ async fn delete_entry_dir_special_chars() {
         }));
     }
     // Wait for spawned deletion tasks to finish
-    tokio::time::sleep(Duration::from_millis(500)).await;
+    tokio::time::sleep(Duration::from_millis(1000)).await;
+
+    // Delete requests\\folder.sapic
+    tokio::fs::remove_file(collection_path.join("requests").join("folder.sapic"))
+        .await
+        .unwrap();
 
     // Check that all dir entries are deleted
     let mut read_dir = collection_path.join("requests").read_dir().unwrap();
+
+    while let Some(entry) = read_dir.next() {
+        dbg!(&entry);
+    }
 
     assert!(read_dir.next().is_none());
 

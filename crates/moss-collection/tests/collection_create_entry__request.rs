@@ -36,6 +36,7 @@ async fn create_entry_request_default_spec() {
 
     // Physical
     // requests
+    // requests\\folder.sapic
     // requests\\{request_name}.request
     // requests.\\{request_name}.request\\get.sapic
 
@@ -43,9 +44,13 @@ async fn create_entry_request_default_spec() {
     // requests
     // requests\\{request_name}
 
-    assert_eq!(physical_changes.len(), 3);
+    assert_eq!(physical_changes.len(), 4);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder.sapic")
+            && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join(request_folder_name(&request_name))
@@ -99,6 +104,7 @@ async fn create_entry_request_with_spec_content() {
 
     // Physical
     // requests
+    // requests\\folder.sapic
     // requests\\{request_name}.request
     // requests.\\{request_name}.request\\post.sapic
 
@@ -106,9 +112,13 @@ async fn create_entry_request_with_spec_content() {
     // requests
     // requests\\{request_name}
 
-    assert_eq!(physical_changes.len(), 3);
+    assert_eq!(physical_changes.len(), 4);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder.sapic")
+            && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join(request_folder_name(&request_name))
@@ -257,7 +267,9 @@ async fn create_entry_request_nested() {
 
     // Physical
     // requests
+    // requests\\folder.sapic
     // requests\\folder
+    // requests\\folder\\folder.sapic
     // requests\\folder\\{request_name}.request
     // requests\\folder\\{request_name}.request\\get.sapic
 
@@ -271,12 +283,20 @@ async fn create_entry_request_nested() {
         virtual_changes,
     } = create_result.unwrap();
 
-    assert_eq!(physical_changes.len(), 4);
+    assert_eq!(physical_changes.len(), 6);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder.sapic")
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join("folder")
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder").join("folder.sapic")
             && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
@@ -349,6 +369,7 @@ async fn create_entry_request_multiple_different_level() {
 
     // Physical
     // requests\\group
+    // requests\\group\\folder.sapic
     // requests\\group\\2.request
     // requests\\group\\2.request\\get.sapic
 
@@ -361,9 +382,13 @@ async fn create_entry_request_multiple_different_level() {
         virtual_changes,
     } = create_result.unwrap();
 
-    assert_eq!(physical_changes.len(), 3);
+    assert_eq!(physical_changes.len(), 4);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join("group")
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("group").join("folder.sapic")
             && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
@@ -489,6 +514,7 @@ async fn create_entry_request_special_chars_in_path() {
 
         // Physical
         // requests\\{encoded_dirname}
+        // requests\\{encoded_dirname}\\folder.sapic
         // requests\\{encoded_dirname}\\1.request
         // requests\\{encoded_dirname}\\1.request\\get.sapic
 
@@ -503,6 +529,13 @@ async fn create_entry_request_special_chars_in_path() {
 
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf() == Path::new("requests").join(sanitize(&dir_name))
+                && kind == &PathChangeKind::Created
+        }));
+        assert!(physical_changes.iter().any(|(path, _id, kind)| {
+            path.to_path_buf()
+                == Path::new("requests")
+                    .join(sanitize(&dir_name))
+                    .join("folder.sapic")
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {

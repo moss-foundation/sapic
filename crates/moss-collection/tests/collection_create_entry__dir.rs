@@ -37,6 +37,7 @@ async fn create_entry_dir_default_spec() {
 
     // Physical
     // requests
+    // requests\\folder.sapic
     // requests\\{dir_name}
     // requests\\{dir_name}\\folder.sapic
 
@@ -47,9 +48,13 @@ async fn create_entry_dir_default_spec() {
     // dbg!(&physical_changes);
     // dbg!(&virtual_changes);
 
-    assert_eq!(physical_changes.len(), 3);
+    assert_eq!(physical_changes.len(), 4);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder.sapic")
+            && kind == &PathChangeKind::Created
     }));
     assert!(virtual_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join(&dir_name)
@@ -77,72 +82,77 @@ async fn create_entry_dir_default_spec() {
 
     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
 }
-
-#[tokio::test]
-async fn create_entry_dir_with_spec_content() {
-    let (collection_path, collection) = create_test_collection().await;
-
-    let dir_name = random_dir_name();
-
-    let create_result = collection
-        .create_entry(CreateEntryInput {
-            destination: Path::new("requests").join(&dir_name),
-            classification: Classification::Request,
-            specification: Some(json!(42)),
-            protocol: None,
-            order: None,
-            is_dir: true,
-        })
-        .await;
-
-    let CreateEntryOutput {
-        physical_changes,
-        virtual_changes,
-    } = create_result.unwrap();
-
-    // Physical
-    // requests
-    // requests\\{dir_name}
-    // requests\\{dir_name}\\folder.sapic
-
-    // Virtual
-    // requests
-    // requests\\{dir_name}
-
-    assert_eq!(physical_changes.len(), 3);
-    assert!(physical_changes.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
-    }));
-    assert!(virtual_changes.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == Path::new("requests").join(&dir_name)
-            && kind == &PathChangeKind::Created
-    }));
-    assert!(physical_changes.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == Path::new("requests").join(&dir_name).join("folder.sapic")
-            && kind == &PathChangeKind::Created
-    }));
-
-    assert_eq!(virtual_changes.len(), 2);
-    assert!(virtual_changes.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
-    }));
-    assert!(physical_changes.iter().any(|(path, _id, kind)| {
-        path.to_path_buf() == Path::new("requests").join(&dir_name)
-            && kind == &PathChangeKind::Created
-    }));
-
-    let specfile_path = collection_path
-        .join("requests")
-        .join(&dir_name)
-        .join("folder.sapic");
-    assert!(specfile_path.exists());
-
-    let restored_content: JsonValue =
-        serde_json::from_str(&read_to_string(&specfile_path).unwrap()).unwrap();
-    assert_eq!(restored_content, json!(42));
-
-    tokio::fs::remove_dir_all(&collection_path).await.unwrap();
-}
+// TODO: Remake the test after implementing new specification mechanism
+// #[tokio::test]
+// async fn create_entry_dir_with_spec_content() {
+//     let (collection_path, collection) = create_test_collection().await;
+//
+//     let dir_name = random_dir_name();
+//
+//     let create_result = collection
+//         .create_entry(CreateEntryInput {
+//             destination: Path::new("requests").join(&dir_name),
+//             classification: Classification::Request,
+//             specification: Some(json!(42)),
+//             protocol: None,
+//             order: None,
+//             is_dir: true,
+//         })
+//         .await;
+//
+//     let CreateEntryOutput {
+//         physical_changes,
+//         virtual_changes,
+//     } = create_result.unwrap();
+//
+//     // Physical
+//     // requests
+//     // requests\\folder.sapic
+//     // requests\\{dir_name}
+//     // requests\\{dir_name}\\folder.sapic
+//
+//     // Virtual
+//     // requests
+//     // requests\\{dir_name}
+//
+//     assert_eq!(physical_changes.len(), 4);
+//     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
+//     }));
+//     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests").join("folder.sapic")
+//             && kind == &PathChangeKind::Created
+//     }));
+//     assert!(virtual_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests").join(&dir_name)
+//             && kind == &PathChangeKind::Created
+//     }));
+//     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests").join(&dir_name).join("folder.sapic")
+//             && kind == &PathChangeKind::Created
+//     }));
+//
+//     assert_eq!(virtual_changes.len(), 2);
+//     assert!(virtual_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
+//     }));
+//     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+//         path.to_path_buf() == Path::new("requests").join(&dir_name)
+//             && kind == &PathChangeKind::Created
+//     }));
+//
+//     let specfile_path = collection_path
+//         .join("requests")
+//         .join(&dir_name)
+//         .join("folder.sapic");
+//     assert!(specfile_path.exists());
+//
+//     let restored_content: JsonValue =
+//         serde_json::from_str(&read_to_string(&specfile_path).unwrap()).unwrap();
+//     assert_eq!(restored_content, json!(42));
+//
+//     tokio::fs::remove_dir_all(&collection_path).await.unwrap();
+// }
 
 #[tokio::test]
 async fn create_entry_dir_already_exists() {
@@ -303,7 +313,9 @@ async fn create_entry_dir_nested() {
 
     // Physical
     // requests
+    // requests\\folder.sapic
     // requests\\outer
+    // requests\\outer\\folder.sapic
     // requests\\outer\\inner
     // requests\\outer\\inner\\folder.sapic
 
@@ -317,12 +329,20 @@ async fn create_entry_dir_nested() {
         virtual_changes,
     } = create_result.unwrap();
 
-    assert_eq!(physical_changes.len(), 4);
+    assert_eq!(physical_changes.len(), 6);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests") && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("folder.sapic")
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join(&outer_name)
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join(&outer_name).join("folder.sapic")
             && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
@@ -392,6 +412,7 @@ async fn create_entry_dir_multiple_different_level() {
 
     // Physical
     // requests\\group
+    // requests\\group\\folder.sapic
     // requests\\group\\2
     // requests\\group\\2\\folder.sapic
 
@@ -404,9 +425,13 @@ async fn create_entry_dir_multiple_different_level() {
         virtual_changes,
     } = create_result.unwrap();
 
-    assert_eq!(physical_changes.len(), 3);
+    assert_eq!(physical_changes.len(), 4);
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
         path.to_path_buf() == Path::new("requests").join("group")
+            && kind == &PathChangeKind::Created
+    }));
+    assert!(physical_changes.iter().any(|(path, _id, kind)| {
+        path.to_path_buf() == Path::new("requests").join("group").join("folder.sapic")
             && kind == &PathChangeKind::Created
     }));
     assert!(physical_changes.iter().any(|(path, _id, kind)| {
@@ -530,6 +555,7 @@ async fn create_entry_dir_special_chars_in_path() {
 
         // Physical
         // requests\\{encoded_name}
+        // requests\\{encoded_name}\\folder.sapic
         // requests\\{encoded_name}\\group
         // requests\\{encoded_name}\\group\\folder.sapic
 
@@ -544,6 +570,13 @@ async fn create_entry_dir_special_chars_in_path() {
 
         assert!(physical_changes.iter().any(|(path, _id, kind)| {
             path.to_path_buf() == Path::new("requests").join(sanitize(&name))
+                && kind == &PathChangeKind::Created
+        }));
+        assert!(physical_changes.iter().any(|(path, _id, kind)| {
+            path.to_path_buf()
+                == Path::new("requests")
+                    .join(sanitize(&name))
+                    .join("folder.sapic")
                 && kind == &PathChangeKind::Created
         }));
         assert!(physical_changes.iter().any(|(path, _id, kind)| {

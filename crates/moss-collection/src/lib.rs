@@ -3,6 +3,7 @@ pub mod collection;
 pub mod config;
 pub mod manifest;
 pub mod models;
+pub mod tokens;
 pub mod worktree;
 
 pub use collection::Collection;

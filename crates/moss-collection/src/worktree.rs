@@ -20,6 +20,7 @@ use virtual_worktree::VirtualWorktree;
 use crate::models::primitives::EntryId;
 use crate::models::types::RequestProtocol;
 use crate::models::{primitives::ChangesDiffSet, types::Classification};
+use crate::tokens::FOLDER_SPEC_FILENAME;
 use crate::worktree::virtual_snapshot::VirtualEntry;
 
 pub(crate) const ROOT_PATH: &str = "";
@@ -142,31 +143,58 @@ impl Worktree {
 
                 encoded_path.join(encoded_name)
             };
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&encoded_path, true, None)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
 
-            let specfile_path = encoded_path.join("folder.sapic");
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&specfile_path, false, specification)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
+            let lowest_ancestor_path = self
+                .pwt
+                .snapshot()
+                .await
+                .read()
+                .await
+                .lowest_ancestor_path(&encoded_path);
+
+            // For each missing level, create both the directory and its spec file
+            let missing_part = encoded_path
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path");
+            let mut current_level = lowest_ancestor_path.to_path_buf();
+
+            for part in missing_part.components() {
+                current_level.push(part);
+                physical_changes.extend(
+                    self.pwt
+                        .create_entry(&current_level, true, None)
+                        .await?
+                        .into_iter()
+                        .cloned(),
+                );
+                physical_changes.extend(
+                    self.pwt
+                        .create_entry(current_level.join(FOLDER_SPEC_FILENAME), false, None)
+                        .await?
+                        .into_iter()
+                        .cloned(),
+                )
+            }
         }
 
         {
-            virtual_changes.extend(
-                self.vwt
-                    .create_entry(parent.join(name), order, classification.clone(), None, true)?
-                    .into_iter()
-                    .cloned(),
-            );
+            let destination = parent.join(name);
+            let lowest_ancestor_path = self.vwt.snapshot().lowest_ancestor_path(&destination);
+            let missing_part = destination
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path");
+            let mut current_level = lowest_ancestor_path.to_path_buf();
+
+            // For each missing level, create a virtual dir entry
+            for part in missing_part.components() {
+                current_level.push(part);
+                virtual_changes.extend(
+                    self.vwt
+                        .create_entry(&current_level, order, classification.clone(), None, true)?
+                        .into_iter()
+                        .cloned(),
+                )
+            }
         }
 
         Ok(WorktreeDiff {
@@ -186,57 +214,104 @@ impl Worktree {
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
-
-        let encoded_path = {
-            let encoded_name = sanitized::sanitize(&name);
-            let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
-
-            encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
-        };
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&encoded_path, true, None)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
-
-        // TODO: Handling protocol for non-request entities?
         let protocol = protocol.unwrap_or_default();
-        let file_name = protocol.to_filename();
-        let file_path = encoded_path.join(file_name);
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&file_path, false, specification)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
+        {
+            let encoded_path = {
+                let encoded_name = sanitized::sanitize(&name);
+                let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
 
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    &parent,
-                    None,
-                    classification.clone(),
-                    Some(protocol.clone()),
-                    true,
-                )?
-                .into_iter()
-                .cloned(),
-        );
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    parent.join(name),
-                    order,
-                    classification,
-                    Some(protocol),
-                    false,
-                )?
-                .into_iter()
-                .cloned(),
-        );
+                encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
+            };
+
+            let lowest_ancestor_path = self
+                .pwt
+                .snapshot()
+                .await
+                .read()
+                .await
+                .lowest_ancestor_path(&encoded_path);
+            // For each missing level before the last one, create both the directory and its spec file
+            let missing_part = encoded_path
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path")
+                .parent();
+
+            if let Some(missing_part) = missing_part {
+                let mut current_level = lowest_ancestor_path.to_path_buf();
+                for part in missing_part.components() {
+                    current_level.push(part);
+                    physical_changes.extend(
+                        self.pwt
+                            .create_entry(&current_level, true, None)
+                            .await?
+                            .into_iter()
+                            .cloned(),
+                    );
+                    physical_changes.extend(
+                        self.pwt
+                            .create_entry(&current_level.join(FOLDER_SPEC_FILENAME), false, None)
+                            .await?
+                            .into_iter()
+                            .cloned(),
+                    );
+                }
+            }
+
+            // Create the target entry folder and its spec file
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&encoded_path, true, None)
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
+            // TODO: Handling protocol for non-request entities?
+
+            let file_name = protocol.clone().to_filename();
+            let file_path = encoded_path.join(file_name);
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&file_path, false, specification)
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
+        }
+
+        {
+            let destination = parent.join(name);
+            let lowest_ancestor_path = self.vwt.snapshot().lowest_ancestor_path(&destination);
+            // For each missing level before the last one, create a virtual dir entry
+            let missing_part = destination
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path")
+                .parent();
+            if let Some(missing_part) = missing_part {
+                let mut current_level = lowest_ancestor_path.to_path_buf();
+                for part in missing_part.components() {
+                    current_level.push(part);
+                    virtual_changes.extend(
+                        self.vwt
+                            .create_entry(
+                                &current_level,
+                                order,
+                                classification.clone(),
+                                None,
+                                true,
+                            )?
+                            .into_iter()
+                            .cloned(),
+                    );
+                }
+            }
+            // Create the virtual entry for the target
+            virtual_changes.extend(
+                self.vwt
+                    .create_entry(&destination, order, classification, Some(protocol), false)?
+                    .into_iter()
+                    .cloned(),
+            );
+        }
 
         Ok(WorktreeDiff {
             physical_changes: ChangesDiffSet::from(physical_changes),

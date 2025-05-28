@@ -111,31 +111,13 @@ impl PhysicalWorktree {
         let abs_path = self.absolutize(&root_abs_path, &path).await?;
         if abs_path.exists() {
             return Err(WorktreeError::AlreadyExists(
-                root_abs_path.to_string_lossy().to_string(),
+                abs_path.to_string_lossy().to_string(),
             ));
         }
         let changes = if is_dir {
-            let lowest_ancestor_path = self
-                .physical_snapshot
-                .read()
-                .await
-                .lowest_ancestor_path(&path);
-
-            // Scanning from the highest entry that is newly created
-            // Extract part of the path that's one component more than the lowest ancestor path
-            // Example LAP: \requests, path: \requests\1\1.request => scan: \requests\1
-
-            let new_level = path
-                .strip_prefix(&lowest_ancestor_path)
-                .expect("Lowest ancestor path must be a prefix of path") // FIXME: handle errors
-                .components()
-                .next()
-                .expect("The input path must contain a unique new level"); // FIXME: handle errors
-            let scan_path = lowest_ancestor_path.join(new_level);
-
             self.fs.create_dir(&abs_path).await?;
 
-            let entries = self.scan(&root_abs_path, scan_path).await?;
+            let entries = self.scan(&root_abs_path, path).await?;
             let mut changes = vec![];
 
             {
@@ -326,8 +308,8 @@ impl PhysicalWorktree {
         root_abs_path: &Path,
         path: impl AsRef<Path>,
     ) -> Result<Vec<PhysicalEntry>> {
+        debug_assert!(path.as_ref().is_relative());
         let path: Arc<Path> = path.as_ref().into();
-        debug_assert!(path.is_relative());
 
         let abs_path: Arc<Path> = self.absolutize(&root_abs_path, &path).await?.into();
         let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
