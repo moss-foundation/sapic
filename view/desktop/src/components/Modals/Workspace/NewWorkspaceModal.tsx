@@ -68,7 +68,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               value={name}
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
-              pattern={'^[^\\/:\\*\\?"><>|]+$'}
+              pattern="^[^/:\\*?|]+$"
               required
             />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
@@ -116,7 +116,9 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
             }}
           />
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined onClick={handleCancel}>Close</ButtonNeutralOutlined>
+            <ButtonNeutralOutlined type="button" onClick={handleCancel}>
+              Close
+            </ButtonNeutralOutlined>
             <ButtonPrimary disabled={name.length === 0} type="submit">
               Create
             </ButtonPrimary>
