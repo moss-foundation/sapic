@@ -74,11 +74,11 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td
-                            className={cn("border-1 border-l-0 border-[#E0E0E0]")}
+                            className={cn("border-1 border-l-0 border-[#E0E0E0] px-2 py-px")}
                             style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                             key={cell.id}
                           >
-                            <span className="flex items-center justify-center truncate">
+                            <span className="flex items-center justify-center truncate leading-4">
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </span>
                           </td>
@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
                           if (cell.column.id === "actions" || cell.column.id === "checkbox") {
                             return (
                               <td
-                                className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0]")}
+                                className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
                                 style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                                 key={cell.id}
                               />
@@ -102,7 +102,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
 
                           return (
                             <td
-                              className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0]")}
+                              className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
                               style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                               key={cell.id}
                             >

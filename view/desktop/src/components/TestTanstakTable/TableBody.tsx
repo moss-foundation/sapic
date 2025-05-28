@@ -19,7 +19,7 @@ function Row({ children, className, ...props }: HTMLAttributes<HTMLTableRowEleme
 
 function Cell({ children, className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
-    <td className={cn("border-1 border-[#E0E0E0] px-2 py-1.5", className)} {...props}>
+    <td className={cn("border-1 border-[#E0E0E0]", className)} {...props}>
       {children}
     </td>
   );
