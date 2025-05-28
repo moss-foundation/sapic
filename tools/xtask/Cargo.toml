@@ -1,3 +1,5 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "xtask"
 version = "0.1.0"
@@ -19,3 +21,4 @@ anyhow.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-appender.workspace = true
+toml_edit.workspace = true

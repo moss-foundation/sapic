@@ -1,9 +1,9 @@
 licenses = ["LICENSE-MIT"]
 
 # Global
-rust_workspace_audit.global_ignore = ["syn", "quote", "proc-macro2", "clap"]
+audit.global_ignore = ["syn", "quote", "proc-macro2", "clap"]
 
-[rust_workspace_audit.crate_ignore]
+[audit.crate_ignore]
 
 desktop = [
     "tauri-plugin-shell",

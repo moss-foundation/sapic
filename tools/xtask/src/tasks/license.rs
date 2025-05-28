@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use futures::future::join_all;
 use tokio::{self};

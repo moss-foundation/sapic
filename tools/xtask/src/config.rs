@@ -1,18 +1,15 @@
 use anyhow::Result;
 use serde::Deserialize;
-use std::collections::HashMap;
-use std::fmt::Debug;
-use std::io;
-use std::path::Path;
+use std::{collections::HashMap, fmt::Debug, io, path::Path};
 
 #[derive(Deserialize, Default)]
 pub struct ConfigFile {
     pub licenses: Vec<String>,
-    pub rust_workspace_audit: RustWorkspaceAuditConfig,
+    pub audit: AuditConfig,
 }
 
 #[derive(Deserialize, Default)]
-pub struct RustWorkspaceAuditConfig {
+pub struct AuditConfig {
     pub global_ignore: Vec<String>,
     pub crate_ignore: HashMap<String, Vec<String>>,
 }
