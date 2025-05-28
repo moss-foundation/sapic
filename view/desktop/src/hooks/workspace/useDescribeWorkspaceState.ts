@@ -14,9 +14,16 @@ const describeWorkspaceStateFn = async (): Promise<DescribeStateOutput> => {
   return result.data;
 };
 
-export const useDescribeWorkspaceState = () => {
+interface UseDescribeWorkspaceStateOptions {
+  enabled?: boolean;
+}
+
+export const useDescribeWorkspaceState = (options: UseDescribeWorkspaceStateOptions = {}) => {
+  const { enabled = true } = options;
+
   return useQuery<DescribeStateOutput, Error>({
     queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
     queryFn: describeWorkspaceStateFn,
+    enabled,
   });
 };

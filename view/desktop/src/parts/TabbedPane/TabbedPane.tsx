@@ -50,7 +50,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   return <ToolBar workspace={isWorkspace} />;
 };
 
-const TabbedPane = ({ theme }: { theme?: string }) => {
+const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
@@ -73,16 +73,28 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { data: layout } = useDescribeWorkspaceState();
+
+  // Only call useDescribeWorkspaceState when we need workspace layout data
+  // Skip it for "welcome" mode since there's no workspace
+  const shouldFetchWorkspaceState = mode === "auto" || mode === "empty";
+  const { data: layout } = useDescribeWorkspaceState({
+    enabled: shouldFetchWorkspaceState,
+  });
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      if (layout?.editor) {
-        event.api?.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
-      } else {
+      if (mode === "welcome") {
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      } else if (mode === "empty") {
+        console.log("Starting with empty TabbedPane for workspace");
+      } else {
+        if (layout?.editor) {
+          event.api?.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+        } else {
+          event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+        }
       }
     } catch (error) {
       console.error("Failed to restore layout:", error);
@@ -92,7 +104,9 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
         panel.api.close();
       }
 
-      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      if (mode === "welcome" || mode === "auto") {
+        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      }
     }
   };
 

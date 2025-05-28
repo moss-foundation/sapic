@@ -6,7 +6,6 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
 
 import { ModalWrapperProps } from "../types";
@@ -18,8 +17,6 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
   const [openAutomatically, setOpenAutomatically] = useState<boolean>(true);
-
-  const { openAndSelectWorkspace } = useWorkspaceContext();
 
   console.log("OpenWorkspaceModal - workspaces:", workspaces);
   console.log("OpenWorkspaceModal - isLoading:", isLoading);
@@ -34,7 +31,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
         workspaces?.map((w) => ({ id: w.id, displayName: w.displayName }))
       );
 
-      // Try direct mutation as a workaround
+      // Open workspace directly
       try {
         openWorkspaceDirect(selectedWorkspace, {
           onSuccess: (data) => {
@@ -46,9 +43,6 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
             console.error("Error details:", error.message);
           },
         });
-
-        // Also try through context
-        openAndSelectWorkspace(selectedWorkspace);
       } catch (error) {
         console.error("Exception when opening workspace:", error);
       }

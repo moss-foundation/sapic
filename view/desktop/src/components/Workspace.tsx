@@ -1,31 +1,34 @@
 import { useEffect } from "react";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useListCollections } from "@/hooks/collection/useListCollections";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { ContentLayout } from "@/layouts/ContentLayout";
 import CollectionTreeView from "./CollectionTreeView";
+import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 interface WorkspaceProps {
   groupId?: string;
+  workspaceName?: string | null;
 }
 
-export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
-  const { selectedWorkspace } = useWorkspaceContext();
-  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
+export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps) => {
+  // Use the provided workspaceName prop - context is no longer needed
+  const effectiveWorkspaceName = workspaceName ?? null;
+
+  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState({});
   const {
     data: collections = [],
     isLoading: isLoadingCollections,
     error: collectionsError,
-  } = useListCollections(selectedWorkspace);
+  } = useListCollections(effectiveWorkspaceName);
   const { data: viewGroup, isLoading: isLoadingViewGroup } = useGetViewGroup(groupId);
 
   useEffect(() => {
-    if (selectedWorkspace) {
+    if (effectiveWorkspaceName) {
       // Update page title when workspace changes
-      document.title = `Sapic - ${selectedWorkspace}`;
+      document.title = `Sapic - ${effectiveWorkspaceName}`;
     }
-  }, [selectedWorkspace]);
+  }, [effectiveWorkspaceName]);
 
   // Show loading state while any critical data is loading
   if (isLoadingWorkspace || isLoadingCollections || isLoadingViewGroup) {
@@ -33,7 +36,7 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
   }
 
   // Handle case where no workspace is selected
-  if (!selectedWorkspace) {
+  if (!effectiveWorkspaceName) {
     return <div className="flex h-full w-full items-center justify-center">No workspace selected</div>;
   }
 
@@ -42,7 +45,7 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading workspace: {selectedWorkspace}</p>
+          <p className="text-red-600">Error loading workspace: {effectiveWorkspaceName}</p>
           <p className="mt-2 text-sm text-gray-500">
             {workspaceError?.message || collectionsError?.message || "Unknown error"}
           </p>
@@ -56,11 +59,16 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="text-center">
-          <p>Workspace "{selectedWorkspace}" not found</p>
+          <p>Workspace "{effectiveWorkspaceName}" not found</p>
           <p className="mt-2 text-sm text-gray-500">The workspace may have been moved or deleted</p>
         </div>
       </div>
     );
+  }
+
+  // Check if this is the main area usage (default groupId) - render TabbedPane
+  if (groupId === "default") {
+    return <TabbedPane theme="dockview-theme-light" mode="empty" />;
   }
 
   // If view group doesn't exist for this groupId, show an error
@@ -68,7 +76,7 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
     return <div className="p-4">No view group found for "{groupId}"</div>;
   }
 
-  // Handle different views based on groupId
+  // Handle different sidebar views based on groupId
   switch (groupId) {
     case "collections.groupId":
       return <CollectionTreeView />;
@@ -93,11 +101,12 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
         </ContentLayout>
       );
 
-    case "default":
+    default:
+      // Default sidebar view - show collections
       return (
         <ContentLayout>
           <div className="p-6">
-            <h1 className="mb-4 text-2xl font-bold">{selectedWorkspace}</h1>
+            <h1 className="mb-4 text-2xl font-bold">{effectiveWorkspaceName}</h1>
 
             {collections.length === 0 ? (
               <div className="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
@@ -118,16 +127,6 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
                 ))}
               </div>
             )}
-          </div>
-        </ContentLayout>
-      );
-
-    default:
-      return (
-        <ContentLayout>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold">Unknown View</h2>
-            <p className="mt-4 text-gray-500">The requested view "{groupId}" is not available</p>
           </div>
         </ContentLayout>
       );

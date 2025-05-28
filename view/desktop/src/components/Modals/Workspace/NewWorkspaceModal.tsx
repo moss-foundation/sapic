@@ -5,14 +5,14 @@ import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
+import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 
 import { ModalWrapperProps } from "../types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { mutate: createWorkspace } = useCreateWorkspace();
-  const { openAndSelectWorkspace } = useWorkspaceContext();
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"REQUEST_FIRST" | "DESIGN_FIRST">("REQUEST_FIRST");
@@ -29,7 +29,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
         {
           onSuccess: () => {
             if (openAutomatically) {
-              openAndSelectWorkspace(name);
+              openWorkspace(name);
             }
           },
         }

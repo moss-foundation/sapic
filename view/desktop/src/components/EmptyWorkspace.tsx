@@ -4,6 +4,7 @@ import ButtonPrimary from "./ButtonPrimary";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
+import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 interface EmptyWorkspaceProps {
   inSidebar?: boolean;
@@ -46,5 +47,12 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
     );
   }
 
-  return null;
+  // Main content area - render TabbedPane with WelcomePage
+  return (
+    <>
+      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      <TabbedPane theme="dockview-theme-light" mode="welcome" />
+    </>
+  );
 };

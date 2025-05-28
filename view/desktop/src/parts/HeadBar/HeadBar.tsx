@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -30,8 +30,14 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  // Use the workspace context instead of local state
-  const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
+  // Get workspace from appState
+  const { data: appState } = useDescribeAppState();
+  const { getNameById } = useWorkspaceMapping();
+
+  // Get workspace name from appState
+  const currentWorkspaceId = appState?.lastWorkspace;
+  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
+  const selectedWorkspace = currentWorkspaceName;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -57,7 +63,6 @@ export const HeadBar = () => {
     openPanel,
     showDebugPanels,
     setShowDebugPanels,
-    setSelectedWorkspace,
     setSelectedUser,
     setSelectedBranch,
     openNewWorkspaceModal,
@@ -132,6 +137,7 @@ export const HeadBar = () => {
               handleWindowsMenuAction={handleWindowsMenuAction}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
+              selectedWorkspace={selectedWorkspace}
             />
 
             {/*HeadBar Center items*/}
@@ -160,6 +166,7 @@ export const HeadBar = () => {
               setShowDebugPanels={setShowDebugPanels}
               openPanel={openPanel}
               os={os}
+              selectedWorkspace={selectedWorkspace}
               selectedUser={selectedUser}
             />
           </div>

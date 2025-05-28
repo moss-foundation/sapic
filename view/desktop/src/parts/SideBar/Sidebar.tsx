@@ -7,8 +7,7 @@ import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
-import { useDescribeAppState } from "@/hooks";
+import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -37,8 +36,8 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
-  const { selectedWorkspace } = useWorkspaceContext();
   const { data: appState } = useDescribeAppState();
+  const { getNameById } = useWorkspaceMapping();
 
   const lastActiveGroupRef = useRef<string | null>(null);
 
@@ -55,11 +54,18 @@ export const Sidebar = () => {
   const activeGroupId = activeItem?.id || "empty";
   const activeGroupTitle = activeItem?.title || "Launchpad";
 
-  // Determine if a workspace is open
-  const hasWorkspace = !!appState?.lastWorkspace || !!selectedWorkspace;
+  // Get workspace name from appState
+  const currentWorkspaceId = appState?.lastWorkspace;
+  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
+  const hasWorkspace = !!currentWorkspaceName;
 
   // Content based on workspace status
-  const sidebarContent = hasWorkspace ? <Workspace groupId={activeGroupId} /> : <EmptyWorkspace inSidebar={true} />;
+  // Pass the workspace name to the Workspace component
+  const sidebarContent = hasWorkspace ? (
+    <Workspace groupId={activeGroupId} workspaceName={currentWorkspaceName} />
+  ) : (
+    <EmptyWorkspace inSidebar={true} />
+  );
 
   if (position === "top") {
     return (

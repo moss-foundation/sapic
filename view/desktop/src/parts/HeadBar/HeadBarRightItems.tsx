@@ -1,5 +1,5 @@
 import { ActionMenu, IconLabelButton } from "@/components";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
@@ -27,10 +27,19 @@ export const HeadBarRightItems = ({
   setShowDebugPanels,
   openPanel,
   os,
+  selectedWorkspace: propSelectedWorkspace,
   selectedUser,
 }: HeadBarRightItemsProps) => {
   const isMac = os === "macos";
-  const { selectedWorkspace } = useWorkspaceContext();
+
+  // Get workspace from appState as backup to prop
+  const { data: appState } = useDescribeAppState();
+  const { getNameById } = useWorkspaceMapping();
+
+  // Get workspace name from prop first, then appState as backup
+  const currentWorkspaceId = appState?.lastWorkspace;
+  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
+  const selectedWorkspace = propSelectedWorkspace || currentWorkspaceName;
 
   return (
     <div className="flex items-center place-self-end">

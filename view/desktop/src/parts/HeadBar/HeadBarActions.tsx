@@ -1,5 +1,10 @@
 import { RefObject } from "react";
-import { useWorkspaceContext, extractWorkspaceName } from "@/context/WorkspaceContext";
+import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+
+// Helper to extract workspace name from prefixed ID
+const extractWorkspaceName = (actionId: string): string => {
+  return actionId.startsWith("workspace:") ? actionId.replace("workspace:", "") : actionId;
+};
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -8,7 +13,6 @@ export interface HeadBarActionProps {
   setCollectionName?: (name: string) => void;
   collectionButtonRef?: RefObject<HTMLButtonElement>;
   setIsRenamingCollection?: (isRenaming: boolean) => void;
-  setSelectedWorkspace?: (workspace: string | null) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
@@ -107,8 +111,8 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { openPanel, setShowDebugPanels, showDebugPanels, openNewWorkspaceModal, openOpenWorkspaceModal } = props;
 
-  // Use the context for opening workspaces
-  const { openAndSelectWorkspace } = useWorkspaceContext();
+  // Use the hook directly instead of context
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
@@ -116,7 +120,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     // Handle opening workspace when the action ID has the workspace: prefix
     if (action.startsWith("workspace:")) {
       const workspaceName = extractWorkspaceName(action);
-      openAndSelectWorkspace(workspaceName);
+      openWorkspace(workspaceName);
       return;
     }
 
