@@ -1,15 +1,14 @@
 pre-commit:
   parallel: true
   jobs:
-    - name: "Generate licenses"
-      run: make gen-license
+    - run: make gen-license
       always_run: true
       stage_fixed: true
 
-    - name: "Format Rust files"
-      run: cargo +nightly fmt --all -- --unstable-features
-      glob: "**/*.rs"
-      stage_fixed: true
+    # - name: "Format Rust files"
+    #   run: cargo +nightly fmt --all -- --unstable-features
+    #   glob: "**/*.rs"
+    #   stage_fixed: true
 
     - name: "Format Frontend files"
       run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{js,jsx,ts,tsx,css,md,json}"
@@ -20,3 +19,5 @@ pre-commit:
       run: prettier --plugin=prettier-plugin-toml --write "**/*.toml"
       glob: "**/*.toml"
       stage_fixed: true
+
+
