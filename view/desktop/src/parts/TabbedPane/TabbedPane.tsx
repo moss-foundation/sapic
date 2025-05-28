@@ -240,7 +240,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
-                  disableDnd={isDragging && !canDrop}
+                  disableDnd={isDragging && canDrop === false}
                 />
               </div>
             </DebugContext.Provider>

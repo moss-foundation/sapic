@@ -9,6 +9,7 @@ import * as TableBody from "./TableBody";
 import * as TableHead from "./TableHead";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
+import { DefaultRow } from "./ui/DefaultRow";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -79,13 +80,14 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
 
                 return (
                   <>
-                    <TableBody.Row key={row.id} data-state={row.getIsSelected() && "selected"}>
+                    <DefaultRow row={row} key={row.id}>
                       {row.getVisibleCells().map((cell) => {
                         return <DefaultCell key={cell.id} cell={cell} />;
                       })}
-                    </TableBody.Row>
+                    </DefaultRow>
+
                     {isLastRow && (
-                      <tr>
+                      <DefaultRow row={row} key={"AddNewRowForm"} disableDnd>
                         {row.getVisibleCells().map((cell) => {
                           if (cell.column.id === "actions" || cell.column.id === "checkbox") {
                             return (
@@ -107,7 +109,7 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
                             </td>
                           );
                         })}
-                      </tr>
+                      </DefaultRow>
                     )}
                   </>
                 );

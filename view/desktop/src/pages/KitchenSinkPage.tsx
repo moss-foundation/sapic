@@ -2,7 +2,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActionMenu } from "@/components";
+import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import SelectOutlined from "@/components/SelectOutlined";
+import { DataTable } from "@/components/TestTanstakTable/DataTable";
 import {
   editorContextItems,
   generateItems,
@@ -14,8 +16,10 @@ import {
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
+import { createColumnHelper } from "@tanstack/react-table";
 
 import * as iconsNames from "../assets/icons";
+import testData from "../components/TestTanstakTable/testData.json";
 
 export const KitchenSink = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -58,6 +62,7 @@ const ComponentGallery = () => {
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
+      <ExampleTable />
       {/* Random Data Display */}
       {data !== null && (
         <div className="rounded-lg bg-blue-50 p-4 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
@@ -208,4 +213,164 @@ const ComponentGallery = () => {
       </section>
     </div>
   );
+};
+
+interface TestData {
+  key: string;
+  value: string;
+  type: string;
+  description: string;
+  global_value: string;
+  local_value: number;
+  properties: {
+    disabled: boolean;
+  };
+}
+
+const columnHelper = createColumnHelper<TestData>();
+const columns = [
+  columnHelper.display({
+    id: "checkbox",
+    header: ({ table }) => (
+      <div className="flex items-center justify-center">
+        <CheckboxWithLabel
+          checked={table.getIsAllRowsSelected()}
+          onCheckedChange={table.getToggleAllRowsSelectedHandler()}
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <CheckboxWithLabel
+          disabled={!row.getCanSelect()}
+          checked={row.getIsSelected()}
+          onCheckedChange={row.getToggleSelectedHandler()}
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableResizing: false,
+    size: 40,
+  }),
+  columnHelper.accessor("key", {
+    header: () => "key",
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+        onChange={() => {}}
+      />
+    ),
+    minSize: 60,
+  }),
+  columnHelper.accessor("value", {
+    header: () => "value",
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+        onChange={() => {}}
+      />
+    ),
+    minSize: 100,
+  }),
+  columnHelper.accessor("description", {
+    header: () => "description",
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+        onChange={() => {}}
+      />
+    ),
+    meta: {
+      isGrow: true,
+    },
+    minSize: 100,
+  }),
+  columnHelper.accessor("global_value", {
+    header: () => "global_value",
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+        onChange={() => {}}
+      />
+    ),
+    minSize: 100,
+  }),
+  columnHelper.accessor("local_value", {
+    header: () => "local_value",
+    cell: (info) => (
+      <input
+        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+        disabled={info.row.original.properties.disabled}
+        value={info.getValue()}
+        onChange={() => {}}
+      />
+    ),
+    minSize: 100,
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: ({}) => <div>Actions</div>,
+    cell: ({}) => (
+      <div className="flex items-center justify-center gap-2">
+        <button>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M5 5.94999C6.14112 5.71836 7 4.70948 7 3.5C7 2.11929 5.88071 1 4.5 1C3.11929 1 2 2.11929 2 3.5C2 4.70948 2.85888 5.71836 4 5.94999L4 14.5C4 14.7761 4.22386 15 4.5 15C4.77614 15 5 14.7761 5 14.5L5 12H8.08535C8.29127 11.4174 8.84689 11 9.5 11H10.5002C10.814 10.5822 11 10.0628 11 9.5V8.94999C12.1411 8.71836 13 7.70948 13 6.5C13 5.11929 11.8807 4 10.5 4C9.11929 4 8 5.11929 8 6.5C8 7.70948 8.85888 8.71836 10 8.94999V9.5C10 10.3284 9.32843 11 8.5 11H5L5 5.94999ZM4.5 5C5.32843 5 6 4.32843 6 3.5C6 2.67157 5.32843 2 4.5 2C3.67157 2 3 2.67157 3 3.5C3 4.32843 3.67157 5 4.5 5ZM10.5 8C11.3284 8 12 7.32843 12 6.5C12 5.67157 11.3284 5 10.5 5C9.67157 5 9 5.67157 9 6.5C9 7.32843 9.67157 8 10.5 8Z"
+              fill="#6C707E"
+            />
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M12.5 9C12.7761 9 13 9.22386 13 9.5V12H15.5C15.7761 12 16 12.2239 16 12.5C16 12.7761 15.7761 13 15.5 13H13V15.5C13 15.7761 12.7761 16 12.5 16C12.2239 16 12 15.7761 12 15.5V13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z"
+              fill="#3574F0"
+            />
+          </svg>
+        </button>
+        <button>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M4.64645 11.8535C4.45118 11.6583 4.45118 11.3417 4.64645 11.1464C4.84171 10.9511 5.15829 10.9511 5.35355 11.1464L7.5 13.2929L7.5 7.2929C7.5 7.01675 7.72386 6.79289 8 6.79289C8.27614 6.79289 8.5 7.01675 8.5 7.2929L8.5 13.2929L10.6464 11.1464C10.8417 10.9511 11.1583 10.9511 11.3536 11.1464C11.5488 11.3417 11.5488 11.6583 11.3536 11.8535L8.35355 14.8536C8.25978 14.9473 8.13261 15 8 15C7.86739 15 7.74021 14.9473 7.64645 14.8536L4.64645 11.8535Z"
+              fill="#717171"
+            />
+            <path
+              d="M6.5 7.29275L3.25218 5.43272C2.91678 5.24063 2.91678 4.75717 3.25218 4.56508L7.50138 2.13156C7.80948 1.95511 8.18808 1.95506 8.49622 2.13145L12.7477 4.56503C13.0833 4.75709 13.0833 5.24071 12.7477 5.43277L9.5 7.29178V8.4442L13.245 6.30051C14.2517 5.72433 14.2517 4.27347 13.245 3.69728L8.99355 1.2637C8.37726 0.910939 7.62006 0.911023 7.00386 1.26393L2.75466 3.69745C1.74845 4.27372 1.74845 5.72408 2.75466 6.30035L6.5 8.44531V7.29275Z"
+              fill="#369650"
+            />
+          </svg>
+        </button>
+        <button>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="16" height="16" fill="white" fillOpacity="0.01" />
+            <path
+              d="M14.5 13H5.99998C5.86742 13 5.74023 12.9473 5.64648 12.8536L1.14648 8.3536C0.951175 8.1583 0.951175 7.84175 1.14648 7.64645L5.64648 3.1464C5.74023 3.05265 5.86742 3 5.99998 3H14.5C14.7761 3 15 3.2239 15 3.5V12.5C15 12.7761 14.7761 13 14.5 13ZM6.20713 12H14V4H6.20713L2.20712 8L6.20713 12Z"
+              fill="#717171"
+            />
+            <path
+              d="M10.2071 8L12.5 5.70705L11.7929 5L9.5 7.29295L7.20715 5L6.5 5.70705L8.79295 8L6.5 10.2929L7.20715 11L8.35357 9.85353L9.5 8.70705L11.7929 11L12.5 10.2929L10.2071 8Z"
+              fill="#DB3B4B"
+            />
+          </svg>
+        </button>
+      </div>
+    ),
+    enableSorting: false,
+    enableResizing: false,
+    size: 90,
+  }),
+];
+
+const ExampleTable = () => {
+  return <DataTable<TestData, string | number> columns={columns} data={testData} />;
 };
