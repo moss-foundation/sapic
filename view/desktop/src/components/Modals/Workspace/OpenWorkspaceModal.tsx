@@ -10,62 +10,44 @@ import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
 
 import { ModalWrapperProps } from "../types";
 
+type WorkspaceMode = "REQUEST_FIRST" | "DESIGN_FIRST";
+
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { data: workspaces, isLoading, error } = useListWorkspaces();
-  const { mutate: openWorkspaceDirect } = useOpenWorkspace();
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
-  const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
-  const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>(undefined);
-  const [openAutomatically, setOpenAutomatically] = useState<boolean>(true);
-
-  console.log("OpenWorkspaceModal - workspaces:", workspaces);
-  console.log("OpenWorkspaceModal - isLoading:", isLoading);
-  console.log("OpenWorkspaceModal - error:", error);
+  const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string>("");
+  const [reopenOnSession, setReopenOnSession] = useState(true);
 
   const handleSubmit = () => {
-    if (selectedWorkspace) {
-      console.log("=== Opening workspace ===");
-      console.log("Selected workspace name:", selectedWorkspace);
-      console.log(
-        "Available workspaces:",
-        workspaces?.map((w) => ({ id: w.id, displayName: w.displayName }))
-      );
+    if (!selectedWorkspace) return;
 
-      // Open workspace directly
-      try {
-        openWorkspaceDirect(selectedWorkspace, {
-          onSuccess: (data) => {
-            console.log("Workspace opened successfully:", selectedWorkspace);
-            console.log("Open workspace response:", data);
-          },
-          onError: (error) => {
-            console.error("Error opening workspace:", error);
-            console.error("Error details:", error.message);
-          },
-        });
-      } catch (error) {
-        console.error("Exception when opening workspace:", error);
-      }
-
-      closeModal();
-      reset();
-    } else {
-      console.log("No workspace selected");
-    }
+    openWorkspace(selectedWorkspace, {
+      onSuccess: () => {
+        closeModal();
+        resetForm();
+      },
+      onError: (error) => {
+        console.error("Failed to open workspace:", error.message);
+      },
+    });
   };
 
   const handleCancel = () => {
     closeModal();
-    reset();
+    resetForm();
   };
 
-  const reset = () => {
+  const resetForm = () => {
     setTimeout(() => {
-      setSelectedWorkspace(undefined);
-      setMode("RequestFirstMode");
-      setOpenAutomatically(true);
+      setSelectedWorkspace("");
+      setMode("REQUEST_FIRST");
+      setReopenOnSession(true);
     }, 200);
   };
+
+  const isSubmitDisabled = !selectedWorkspace || isLoading;
 
   return (
     <ModalForm
@@ -80,12 +62,11 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-x-2 py-1.5">
             <div>Name:</div>
-
             <SelectOutlined.Root onValueChange={setSelectedWorkspace} value={selectedWorkspace}>
               <SelectOutlined.Trigger placeholder="Select workspace" />
               <SelectOutlined.Content>
                 {workspaces?.map((workspace) => (
-                  <SelectOutlined.Item value={workspace.displayName} key={workspace.displayName}>
+                  <SelectOutlined.Item value={workspace.displayName} key={workspace.id}>
                     {workspace.displayName}
                   </SelectOutlined.Item>
                 ))}
@@ -104,21 +85,18 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
             <div className="pl-5">
               <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
-                  value="RequestFirstMode"
-                  checked={mode === "RequestFirstMode"}
-                  onClick={() => setMode("RequestFirstMode")}
+                  value="REQUEST_FIRST"
+                  checked={mode === "REQUEST_FIRST"}
+                  onClick={() => setMode("REQUEST_FIRST")}
                   label="Request-first mode"
-                  description="Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for
-                    planning and generating documentation upfront."
+                  description="Start by designing your API structure (endpoints, schemas, etc.) before writing requests. Ideal for planning and generating documentation upfront."
                 />
-
                 <RadioGroup.ItemWithLabel
-                  value="DesignFirstMode"
-                  checked={mode === "DesignFirstMode"}
-                  onClick={() => setMode("DesignFirstMode")}
+                  value="DESIGN_FIRST"
+                  checked={mode === "DESIGN_FIRST"}
+                  onClick={() => setMode("DESIGN_FIRST")}
                   label="Design-first mode"
-                  description="Begin by writing and testing requests, then define the API structure based on actual usage. Great
-                    for quick prototyping and iterating."
+                  description="Begin by writing and testing requests, then define the API structure based on actual usage. Great for quick prototyping and iterating."
                 />
               </RadioGroup.Root>
             </div>
@@ -129,15 +107,16 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
         <div className="flex items-center justify-between py-0.75">
           <CheckboxWithLabel
             label="Reopen this workspace on next session"
-            checked={openAutomatically}
-            onCheckedChange={(check) => {
-              if (check !== "indeterminate") setOpenAutomatically(check);
+            checked={reopenOnSession}
+            onCheckedChange={(checked) => {
+              if (checked !== "indeterminate") {
+                setReopenOnSession(checked);
+              }
             }}
           />
-
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined onClick={handleCancel}>Close</ButtonNeutralOutlined>
-            <ButtonPrimary disabled={!selectedWorkspace} type="submit">
+            <ButtonNeutralOutlined onClick={handleCancel}>Cancel</ButtonNeutralOutlined>
+            <ButtonPrimary disabled={isSubmitDisabled} type="submit">
               Open
             </ButtonPrimary>
           </div>
