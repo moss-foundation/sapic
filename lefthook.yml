@@ -5,24 +5,24 @@ pre-commit:
       always_run: true
       stage_fixed: true
 
-    # - name: "Format Rust files"
-    #   run: cargo +nightly fmt --all -- --unstable-features
-    #   glob: "**/*.rs"
-    #   stage_fixed: true
+    - name: "Format Rust files"
+      run: cargo +nightly fmt --all -- --unstable-features
+      glob: "**/*.rs"
+      stage_fixed: true
 
     - name: "Format Typescript/Javascript files"
       run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{ts,js}"
-      always_run: true
+      glob: "**/*.{ts,js}"
       stage_fixed: true
 
     - name: "Format React files"
-      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{jsx,tsx,css,md,json}"
-      always_run: true
+      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{jsx,tsx,css}"
+      glob: "**/*.{jsx,tsx,css}"
       stage_fixed: true
 
     - name: "Format Other files"
       run: prettier --plugin=prettier-plugin-toml --write "**/*.{toml,md,json}"
-      always_run: true
+      glob: "**/*.{toml,md,json}"
       stage_fixed: true
 
 
