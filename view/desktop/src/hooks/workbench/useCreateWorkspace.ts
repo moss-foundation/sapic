@@ -2,14 +2,12 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { CreateWorkspaceInput, CreateWorkspaceOutput } from "@repo/moss-workbench";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
+import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
 
 const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> => {
-  const result = await invokeTauriIpc<CreateWorkspaceOutput, CreateWorkspaceInput>("create_workspace", {
-    input,
-  });
+  const result = await invokeTauriIpc<CreateWorkspaceOutput>("create_workspace", input);
 
   if (result.status === "error") {
     throw new Error(String(result.error));
@@ -24,7 +22,7 @@ export const useCreateWorkspace = () => {
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
     },
   });
 };

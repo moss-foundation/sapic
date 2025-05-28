@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
-import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
-import { useListCollections } from "@/hooks/collections/useListCollections";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useListCollections } from "@/hooks/collection/useListCollections";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { ContentLayout } from "@/layouts/ContentLayout";
 import CollectionTreeView from "./CollectionTreeView";
@@ -12,8 +12,12 @@ interface WorkspaceProps {
 
 export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
   const { selectedWorkspace } = useWorkspaceContext();
-  const { data: workspaceState, isLoading: isLoadingWorkspace } = useDescribeWorkspaceState(selectedWorkspace);
-  const { data: collections = [], isLoading: isLoadingCollections } = useListCollections(selectedWorkspace);
+  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
+  const {
+    data: collections = [],
+    isLoading: isLoadingCollections,
+    error: collectionsError,
+  } = useListCollections(selectedWorkspace);
   const { data: viewGroup, isLoading: isLoadingViewGroup } = useGetViewGroup(groupId);
 
   useEffect(() => {
@@ -23,12 +27,40 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
     }
   }, [selectedWorkspace]);
 
+  // Show loading state while any critical data is loading
   if (isLoadingWorkspace || isLoadingCollections || isLoadingViewGroup) {
     return <div className="flex h-full w-full items-center justify-center">Loading workspace...</div>;
   }
 
+  // Handle case where no workspace is selected
+  if (!selectedWorkspace) {
+    return <div className="flex h-full w-full items-center justify-center">No workspace selected</div>;
+  }
+
+  // Handle actual errors loading workspace data
+  if (workspaceError || collectionsError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error loading workspace: {selectedWorkspace}</p>
+          <p className="mt-2 text-sm text-gray-500">
+            {workspaceError?.message || collectionsError?.message || "Unknown error"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle case where workspace data is null (different from error)
   if (!workspaceState) {
-    return <div className="flex h-full w-full items-center justify-center">Error loading workspace</div>;
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-center">
+          <p>Workspace "{selectedWorkspace}" not found</p>
+          <p className="mt-2 text-sm text-gray-500">The workspace may have been moved or deleted</p>
+        </div>
+      </div>
+    );
   }
 
   // If view group doesn't exist for this groupId, show an error
@@ -76,10 +108,10 @@ export const Workspace = ({ groupId = "default" }: WorkspaceProps) => {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {collections.map((collection) => (
                   <div
-                    key={collection.key}
+                    key={collection.id}
                     className="flex flex-col rounded-lg border border-gray-200 p-4 shadow-sm dark:border-gray-800"
                   >
-                    <h3 className="text-lg font-medium">{collection.name}</h3>
+                    <h3 className="text-lg font-medium">{collection.displayName}</h3>
                     <p className="mt-2 flex-grow text-sm text-gray-500">{"No description"}</p>
                     <div className="mt-4 text-sm text-gray-400">{0} items</div>
                   </div>

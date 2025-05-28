@@ -3,13 +3,15 @@ import { OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-workbench";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
-import { USE_GET_WORKSPACE_QUERY_KEY } from "./useGetWorkspaces";
+import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
-const openWorkspaceFn = async (name: string): Promise<OpenWorkspaceOutput> => {
-  const result = await invokeTauriIpc<OpenWorkspaceOutput, OpenWorkspaceInput>("open_workspace", {
-    input: { name },
+const openWorkspaceFn = async (workspaceName: string): Promise<OpenWorkspaceOutput> => {
+  const result = await invokeTauriIpc<OpenWorkspaceOutput>("open_workspace", {
+    input: {
+      name: workspaceName,
+    } as OpenWorkspaceInput,
   });
 
   if (result.status === "error") {
@@ -25,7 +27,7 @@ export const useOpenWorkspace = () => {
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_GET_WORKSPACE_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
     },
   });

@@ -7,13 +7,12 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
-import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
+import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
 
 import { ModalWrapperProps } from "../types";
 
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { data: workspaces } = useGetWorkspaces();
+  const { data: workspaces, isLoading, error } = useListWorkspaces();
   const { mutate: openWorkspaceDirect } = useOpenWorkspace();
 
   const [mode, setMode] = useState<"RequestFirstMode" | "DesignFirstMode">("RequestFirstMode");
@@ -22,18 +21,29 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
 
   const { openAndSelectWorkspace } = useWorkspaceContext();
 
+  console.log("OpenWorkspaceModal - workspaces:", workspaces);
+  console.log("OpenWorkspaceModal - isLoading:", isLoading);
+  console.log("OpenWorkspaceModal - error:", error);
+
   const handleSubmit = () => {
     if (selectedWorkspace) {
-      console.log("Opening workspace:", selectedWorkspace);
+      console.log("=== Opening workspace ===");
+      console.log("Selected workspace name:", selectedWorkspace);
+      console.log(
+        "Available workspaces:",
+        workspaces?.map((w) => ({ id: w.id, displayName: w.displayName }))
+      );
 
       // Try direct mutation as a workaround
       try {
         openWorkspaceDirect(selectedWorkspace, {
-          onSuccess: () => {
+          onSuccess: (data) => {
             console.log("Workspace opened successfully:", selectedWorkspace);
+            console.log("Open workspace response:", data);
           },
           onError: (error) => {
             console.error("Error opening workspace:", error);
+            console.error("Error details:", error.message);
           },
         });
 
@@ -45,6 +55,8 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
 
       closeModal();
       reset();
+    } else {
+      console.log("No workspace selected");
     }
   };
 
@@ -60,8 +72,6 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
       setOpenAutomatically(true);
     }, 200);
   };
-
-  console.log("Current workspaces:", workspaces);
 
   return (
     <ModalForm

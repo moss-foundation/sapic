@@ -16,12 +16,9 @@ export * from "./locales/useSetLocale";
 export * from "./viewGroups/useChangeViewGroups";
 export * from "./viewGroups/useGetViewGroup";
 
-export * from "./workspaces/useCreateWorkspace";
-export * from "./workspaces/useDescribeWorkspaceState";
-export * from "./workspaces/useGetWorkspaces";
-export * from "./workspaces/useListWorkspaces";
-export * from "./workspaces/useOpenWorkspace";
+export * from "./workbench";
+export * from "./workspace";
 
-export * from "./collections/useListCollections";
+export * from "./collection";
 
 export * from "./useResponsive";

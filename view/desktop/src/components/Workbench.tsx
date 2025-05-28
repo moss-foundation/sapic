@@ -1,38 +1,42 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 import { WorkspaceProvider } from "@/context/WorkspaceContext";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import { Workspace } from "@/components/Workspace";
-import { useDescribeWorkbenchState } from "@/hooks/workspaces/useDescribeWorkbenchState";
-import { useDescribeAppState } from "@/hooks";
+import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { AppLayout, RootLayout } from "@/layouts";
 
 export const Workbench = () => {
-  const { data: workbenchState, isLoading: isLoadingWorkbench } = useDescribeWorkbenchState();
   const { data: appState, isLoading: isLoadingAppState } = useDescribeAppState();
-  const [hasWorkspace, setHasWorkspace] = useState<boolean>(false);
+  const { getNameById, workspaces } = useWorkspaceMapping();
   const { api } = useTabbedPaneStore();
 
-  useEffect(() => {
-    if (workbenchState) {
-      setHasWorkspace(!!appState?.lastWorkspace);
-    }
-  }, [workbenchState, appState?.lastWorkspace]);
+  // Convert workspace ID to workspace name for compatibility
+  const currentWorkspaceId = appState?.lastWorkspace;
+  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
+  const hasWorkspace = !!currentWorkspaceName;
 
-  console.log("----------------->hasWorkspace", hasWorkspace);
+  console.log("=== Workbench state ===");
+  console.log("Current workspace ID from appState:", currentWorkspaceId);
+  console.log(
+    "Available workspaces:",
+    workspaces.map((w) => ({ id: w.id, displayName: w.displayName }))
+  );
+  console.log("Mapped workspace name:", currentWorkspaceName);
+  console.log("Has workspace:", hasWorkspace);
 
   // Close welcome page when workspace is detected
   useEffect(() => {
-    if (appState?.lastWorkspace) {
+    if (hasWorkspace) {
       const WelcomePanel = api?.getPanel("WelcomePage");
       if (WelcomePanel) {
         WelcomePanel.api.close();
       }
     }
-  }, [appState?.lastWorkspace, api]);
+  }, [hasWorkspace, api]);
 
-  if (isLoadingWorkbench || isLoadingAppState) {
+  if (isLoadingAppState) {
     return <div>Loading workbench state...</div>;
   }
 
@@ -41,7 +45,7 @@ export const Workbench = () => {
       <RootLayout>
         <AppLayout>
           {hasWorkspace ? (
-            <WorkspaceProvider>
+            <WorkspaceProvider initialWorkspace={currentWorkspaceName}>
               <Workspace />
             </WorkspaceProvider>
           ) : (

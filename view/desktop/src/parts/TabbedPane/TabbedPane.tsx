@@ -5,7 +5,8 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
-import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
+import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -79,7 +80,7 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
 
     try {
       if (layout?.editor) {
-        event.api?.fromJSON(layout.editor);
+        event.api?.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
       } else {
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
       }

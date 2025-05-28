@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
-import { useOpenWorkspace } from "@/hooks/workspaces/useOpenWorkspace";
+import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
 
 import WelcomePageLink from "./WelcomePageLink";
 
 export const WelcomePageRecentWorkspaces = () => {
-  const { data: workspaces } = useGetWorkspaces();
+  const { data: workspaces } = useListWorkspaces();
   const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [showAll, setShowAll] = useState(false);

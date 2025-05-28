@@ -6,7 +6,7 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { useWorkspaceContext } from "@/context/WorkspaceContext";
-import { useCreateWorkspace } from "@/hooks/workspaces/useCreateWorkspace";
+import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
 
 import { ModalWrapperProps } from "../types";
 
