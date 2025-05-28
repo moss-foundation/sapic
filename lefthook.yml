@@ -4,3 +4,7 @@ pre-commit:
     - run: make gen-license
       always_run: true
       stage_fixed: true
+
+    - run: cargo +nightly fmt --all -- --unstable-features
+      glob: "*.rs"
+      stage_fixed: true
