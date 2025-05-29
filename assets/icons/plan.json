@@ -1,221 +1,961 @@
 {
   "Add": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "CvsOnTKwGa",
+      "ONtWefr5rW"
+    ],
+    "dark_ids": [
+      "zQMSPAuJUo",
+      "aZvo8dOkht"
+    ]
   },
   "AddCircle": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "tkkqbRMB0W",
+      "5N4vLa3Mb9"
+    ],
+    "dark_ids": [
+      "wCeBKrdTkw",
+      "fO7izHE8LF"
+    ]
   },
   "AddCircleActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "UHACx2vZoo",
+      "gLwykRLltp"
+    ],
+    "dark_ids": [
+      "4pbCAIspOe",
+      "8RHUlzRZWs"
+    ]
   },
   "Bell": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "TO5fzWii1v",
+      "eKLUkz2zKk"
+    ],
+    "dark_ids": [
+      "5atao4pGPl",
+      "XQctMfNwcp"
+    ]
   },
   "Changes": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "P8uVbd0quN",
+      "jxfxpTto1S",
+      "xeo4JYiiu2",
+      "rldPEPFE46",
+      "eXSMn3y7o2"
+    ],
+    "dark_ids": [
+      "P2JtWmLE8q",
+      "ibNSE7IJ1e",
+      "QCBdCcpgrz",
+      "Mlvlrzlx1m",
+      "SJ35zQ7Umr"
+    ]
   },
   "CheckboxIndicator": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "SDldyhYJPh",
+      "4U6Fb1zpe5",
+      "2CNHGXEMPu"
+    ],
+    "dark_ids": [
+      "LzNT2yy48G",
+      "HkVp0u85gM",
+      "OfU0xgxWmy"
+    ]
   },
   "Checkmark": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "QFIxYZhNTR",
+      "kAmPdk9upB"
+    ],
+    "dark_ids": [
+      "1p4YTp84TG",
+      "2l4n39GBJd"
+    ]
   },
   "ChevronDown": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "4oRFO1B9yz",
+      "HWJX1zqYqp"
+    ],
+    "dark_ids": [
+      "44VKeSzdRx",
+      "usPnlCNMIO"
+    ]
   },
   "ChevronDownHovered": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "r6bzLpQe30",
+      "AIXwTflWxc",
+      "FtERrgAPOm"
+    ],
+    "dark_ids": [
+      "Z30kVc6zfg",
+      "iJxpPDaltL",
+      "HOVlMRVYXH"
+    ]
   },
   "ChevronLeft": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "tw9j03Rrf8",
+      "2UUu0HAjZW"
+    ],
+    "dark_ids": [
+      "ulyamHksQZ",
+      "c5K9lzxw4r"
+    ]
   },
   "ChevronRight": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "NXnxa0uRhU",
+      "eWycXuYPXy"
+    ],
+    "dark_ids": [
+      "3JStizpYi0",
+      "hevtgXcuZq"
+    ]
   },
   "ChevronUp": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "ahVvH8Swd7",
+      "ShhTqByHNw"
+    ],
+    "dark_ids": [
+      "Ln2PiJzMyX",
+      "nR9oyFs2s8"
+    ]
   },
   "Close": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "4YRUXYradA",
+      "zBswD20wcK"
+    ],
+    "dark_ids": [
+      "9rjis8mfhw",
+      "HxbuZj6kxe"
+    ]
   },
   "CloseSmall": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "xryCLWg3Oi",
+      "FcTrnhov6P"
+    ],
+    "dark_ids": [
+      "yvebp5UYKh",
+      "HKiVK0rVA8"
+    ]
   },
   "CloseSmallHovered": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "RUFHiHt42V",
+      "CiJ0or03dP",
+      "gtw3s2VQV1"
+    ],
+    "dark_ids": [
+      "MWaITeriXW",
+      "rFJZyVuBuq",
+      "4VYB5lZ1oD"
+    ]
   },
   "CollapseAll": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "4JgvENScu0",
+      "MVjf3dxi5A",
+      "Kib32Tv79W"
+    ],
+    "dark_ids": [
+      "rdROseYF5Q",
+      "2HGLlNDqhG",
+      "ju7jn6QSQI"
+    ]
   },
   "Console": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "DywRiPE1D3",
+      "uhLqcaY4gL",
+      "8q0Cq4FpST",
+      "AURUxTGHq4"
+    ],
+    "dark_ids": [
+      "qd6EBxgTNE",
+      "Rwa4E9LXK7",
+      "TaECdOd8wB",
+      "d5cj6AGhpS"
+    ]
   },
   "ConsoleActive": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "x4yBYe6SE3",
+      "IndYuuivhD",
+      "CXoOAfwtIG",
+      "h1cwAmdoOe"
+    ],
+    "dark_ids": [
+      "at7fz88DiW",
+      "UB0znKzejb",
+      "MHvttQcyEH",
+      "LMlQP6sos4"
+    ]
   },
   "Cookie": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "Hoov0atbjg",
+      "lLwbB6dLuS"
+    ],
+    "dark_ids": [
+      "KUQhZu60lA",
+      "O6E2P4TevH"
+    ]
   },
   "CookieActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "zF29ZQQJMJ",
+      "BLCp3BoMIJ"
+    ],
+    "dark_ids": [
+      "TqTLco7b7U",
+      "iraDOvwA32"
+    ]
   },
   "Copy": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "UYpf9rtHdW",
+      "FaiBCAAn0M",
+      "MXHVvVb4kN"
+    ],
+    "dark_ids": [
+      "XIHTJdANwU",
+      "wyHHq5UzuE",
+      "PwNNCrUIGG"
+    ]
   },
   "Delete": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "wxi4isjBdg",
+      "CyJKMif3ci"
+    ],
+    "dark_ids": [
+      "vtAX7vOZuy",
+      "lJtwH1uq06"
+    ]
   },
   "Edit": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "ioVYt7JNUY",
+      "sqXrekruOd"
+    ],
+    "dark_ids": [
+      "BHEmVKWMs2",
+      "kXXZ4kLNQ3"
+    ]
   },
   "Env": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "XuvyxsOm5h",
+      "WFu0vM3Dnd",
+      "7cj7FVBcJ5",
+      "FA4k8CkBAB"
+    ],
+    "dark_ids": [
+      "5pj5UsSvEL",
+      "ImQCs5iVPq",
+      "f6tDSzTfho",
+      "XzurIDEk06"
+    ]
   },
   "EnvActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "f3wgzzA9uy",
+      "Gslqn911E6",
+      "X6mNfdZoNw",
+      "cu4DgBNEiJ"
+    ],
+    "dark_ids": [
+      "6FypR3iWD5",
+      "BUtiFEebjA",
+      "zSWH9x7Szk",
+      "wgi4kXghDv"
+    ]
   },
   "Error": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "nbr3dpl35Y",
+      "xyVaqoY04i"
+    ],
+    "dark_ids": [
+      "G6Mwl6Ls0l",
+      "mRAZNPCt5H"
+    ]
   },
   "ExpandAll": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "YJni7cMH3R",
+      "uZ4fRt4AaW",
+      "IOppiVhqOC"
+    ],
+    "dark_ids": [
+      "q1x63f8h5c",
+      "QNkkesOMmV",
+      "LVEJNFjdBf"
+    ]
   },
   "ExternalLink": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "Ph6FmVU7BW",
+      "DLCHdJqfGM"
+    ],
+    "dark_ids": [
+      "oOCA8xqeWw",
+      "lJs5deUfuJ"
+    ]
   },
   "ExternalLinkActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "9axMXvJd95",
+      "fs3sWqDBhk"
+    ],
+    "dark_ids": [
+      "X0QgT4Sx8V",
+      "IvHfezlXYL"
+    ]
   },
   "Failed": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "E0Ahauj96m",
+      "FciZOCaxdc",
+      "nAoK8WO7Ui",
+      "fK1xafSYg6"
+    ],
+    "dark_ids": [
+      "v5cH5M49Ze",
+      "4vSRruk1jc",
+      "IcT82okeqh",
+      "mdEvipUWG9"
+    ]
   },
   "Find": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "YkEFslNLak",
+      "ljUueBdhUN",
+      "TUt4BhKhdg"
+    ],
+    "dark_ids": [
+      "l811BWzmNV",
+      "lQ3JiEPANn",
+      "t1gGuo8vXj"
+    ]
   },
   "Folder": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "mLUSl8FeH7",
+      "VuS85EBv1h"
+    ],
+    "dark_ids": [
+      "7BsBQVo355",
+      "aIKOYB2tGC"
+    ]
   },
   "FolderActive": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "uP6i9gshyz",
+      "8kVXkKPnvb",
+      "KseCKxwLkI"
+    ],
+    "dark_ids": [
+      "nrWAf1zS1R",
+      "PYoeutUOk4"
+    ]
   },
   "GreenCheckmark": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "cCvNNlo2yN",
+      "LfMWAZEgmH"
+    ],
+    "dark_ids": [
+      "dQ7U1EPyGY",
+      "m9HvXqHtPk"
+    ]
   },
   "History": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "8IkvBI4rQY",
+      "inOB7YVQzL",
+      "crffZsnqx3"
+    ],
+    "dark_ids": [
+      "pR8uZoaEkP",
+      "IaQ3InTlaC",
+      "PyDPqNpaBv"
+    ]
   },
   "Import": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "1wTEqjo7uX",
+      "BX4amh9s6h",
+      "A7G1GRhz4j"
+    ],
+    "dark_ids": [
+      "gMCPqtd6XH",
+      "f6ExX1fIBH",
+      "kvw3sZMkVW"
+    ]
   },
   "Info": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "3H3fbTehbM",
+      "dwJW8Cdj7E",
+      "nAlt34vpKt",
+      "95DAz4G34c"
+    ],
+    "dark_ids": [
+      "mJkFr4K8O5",
+      "S81b55Grga",
+      "TMKLU0I3cH",
+      "Ra2quQHf9A"
+    ]
   },
   "Key": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "GErytl7TjV",
+      "3oiZCTUqtS"
+    ],
+    "dark_ids": [
+      "pDy4cZrKjS",
+      "cMakBgxufs"
+    ]
   },
   "Loader": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "gFRktenlfz",
+      "8jc46gj77L",
+      "UqsGLVurzQ",
+      "Huog1QqFHT",
+      "JZMuozo8U2",
+      "QBkK11opo9",
+      "PbFw1AV4HJ",
+      "PKabZB3E4g",
+      "ayRuFLu7hR"
+    ],
+    "dark_ids": [
+      "qIUxiJkUDL",
+      "i2kWgtABjq",
+      "5hzXHHX6BC",
+      "kOkDGFpXaZ",
+      "y9zbaODc4z",
+      "D2zJKfLA3M",
+      "HEViMGFJ3c",
+      "KcEWO1JIgt",
+      "6kxo50LPIE"
+    ]
   },
   "MenuRadioIndicator": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "aoDgpq1RGa",
+      "Cj4eMFvLOe"
+    ],
+    "dark_ids": [
+      "xSCDOSXmXZ",
+      "s85YzoDMfO"
+    ]
   },
   "MoreHorizontal": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "opwjDwtdty",
+      "eVS1hh4Uvc",
+      "6dpVuxoYpT",
+      "AZL97cEzn9"
+    ],
+    "dark_ids": [
+      "DhlChuHYlp",
+      "kVVpp2ow84",
+      "iUtlyWdDCb",
+      "wPbjcjU5Jg"
+    ]
   },
   "MoreVertical": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "QMprXTWLwn",
+      "fijgaTcGXX",
+      "n6JUcAK8yr",
+      "oKDLKYD4qA"
+    ],
+    "dark_ids": [
+      "cAHoNgVJ8H",
+      "EU8PNJ8ovt",
+      "KPc0lyHMAF",
+      "Mly0AJQmU0"
+    ]
   },
   "NewFolder": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "8VypDr8eLy",
+      "8tufmn1Ylu",
+      "lhW0DNzEDf",
+      "g1Y8mgmXPP"
+    ],
+    "dark_ids": [
+      "oz7Jb3Z8fX",
+      "hvDTnKpNiu",
+      "CHlNS0z4ky",
+      "PE6DwztSzK"
+    ]
   },
   "NewWorkspace": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "4xZiLd9elm",
+      "So1XzaRCuW",
+      "Q5NSRUgcET",
+      "OmZMYxutKF"
+    ],
+    "dark_ids": [
+      "AQ8Mi5FFpa",
+      "LaUL6ehTSE",
+      "sZMC7wKRrF",
+      "2jMX1bxikC"
+    ]
   },
   "NewWorkspaceActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "TlqO4sQK9a",
+      "Qe0Jj73Ilj",
+      "IWJtYKB7Ga",
+      "EU0Spv43KI"
+    ],
+    "dark_ids": [
+      "ZAvayiz5GJ",
+      "pkEEjG61T5",
+      "yfLXbgo37U",
+      "jgDIg1ybfv"
+    ]
   },
   "OpenPanelBottom": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "7uZEzTH4OD",
+      "IOazHrXJ6p"
+    ],
+    "dark_ids": [
+      "JEiRnm6kGo",
+      "9i7ck7fbpE"
+    ]
   },
   "OpenPanelBottomFilled": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "5YeYK0t8Wp",
+      "qKnPTI1FIf"
+    ],
+    "dark_ids": [
+      "BbX47FURaF",
+      "VGCrwnxdei"
+    ]
   },
   "OpenPanelLeft": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "zfTNLVyzJz",
+      "bzZgRD29Iv"
+    ],
+    "dark_ids": [
+      "eT5xMI0UZk",
+      "a7t4DPoffc"
+    ]
   },
   "OpenPanelLeftFilled": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "3kEUfnOnet",
+      "0ZX6m62LoU"
+    ],
+    "dark_ids": [
+      "meqFukmKJX",
+      "NbRk3Pr5Su"
+    ]
   },
   "OpenPanelRight": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "NNfurioVVw",
+      "8w8in8y2Ib"
+    ],
+    "dark_ids": [
+      "2pmHYKWeja",
+      "lWhNYPFIEs"
+    ]
   },
   "OpenPanelRightFilled": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "k1AXp6m29X",
+      "ACi3Vs2UlJ"
+    ],
+    "dark_ids": [
+      "NsLp2CBSBb",
+      "JIZuzInTYV"
+    ]
   },
   "OpenWorkspace": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "CNHcl7ukGO",
+      "bNn7thsFFe"
+    ],
+    "dark_ids": [
+      "EpcrJJgbm7",
+      "pNxhHNoZB6"
+    ]
   },
   "OpenWorkspaceActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "leUvjVkU5h",
+      "EOFRIPyIMp"
+    ],
+    "dark_ids": [
+      "vEAmc2EtqO",
+      "wQDP4LFLO0"
+    ]
   },
   "PersistenceRelationship": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "lK9l9n0o5R",
+      "oXJ64cgQG3",
+      "6LcmY0zEOO",
+      "h16AeplslN"
+    ],
+    "dark_ids": [
+      "0YfRh5OisG",
+      "x7xb9Ni4P7",
+      "DKDFe83G5A",
+      "KQVphFPXsg"
+    ]
   },
   "Placeholder": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "tcTxvNJ4re",
+      "kHGQYzLVBP",
+      "tG79Mb08ip"
+    ],
+    "dark_ids": [
+      "y6y1JlwFPj",
+      "lDz0dBGpan",
+      "RCSgcH6LI3"
+    ]
   },
   "RadioIndicator": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "h3ctRjH5eH",
+      "HrIBTNXRNF",
+      "9ZBdel7KcO",
+      "TpU4Eue7nc",
+      "hSje2WrhwK",
+      "TUfuDbxVtX",
+      "RXxNhc2mX7"
+    ],
+    "dark_ids": [
+      "yof3TSjtNn",
+      "xqSstf4q0x",
+      "m58FAtj2DX",
+      "5YXQoyvkjO",
+      "Q8OfzG8fzd",
+      "CnURg1QoX6",
+      "6HxXfE2K2i"
+    ]
   },
   "Refresh": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "A4d7BdZtXk",
+      "hc8ipxPGkS",
+      "xSFALp7GEg",
+      "PzjO4ZUezE",
+      "Lj4mquZ2J6"
+    ],
+    "dark_ids": [
+      "XeWKywAH25",
+      "IZmEPKdfmx",
+      "pCTQN7rSNi",
+      "AzFmvOYUfO",
+      "rQ3dFZ0yar"
+    ]
   },
   "Send": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "s6iyVHskmT",
+      "OmaeNcjpNh",
+      "B252XKvbbq"
+    ],
+    "dark_ids": [
+      "IgiXnikp9g",
+      "2xfzV5dkg1",
+      "Dw6c8Leela"
+    ]
   },
   "Settings": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "GQe4WW3xS3",
+      "EqxGo1m2Dx",
+      "K1HkaJYuDb"
+    ],
+    "dark_ids": [
+      "4BOuGYCr1R",
+      "70KwoSfazl",
+      "NSbPbW9Gka"
+    ]
   },
   "Success": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "KbjQwfKWBa",
+      "1WW71GmCuJ",
+      "5MgMK3UVWm"
+    ],
+    "dark_ids": [
+      "BuqyrODC5Y",
+      "KPA9DgMU5V",
+      "oEsg5ZAdSL"
+    ]
   },
   "ToolBarVariables": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "7T0GhvEDNh",
+      "8eNcEuDAny",
+      "0zyZYMqAuC",
+      "6Ifk7HMZlF",
+      "szfbt2SLd1",
+      "K0znZQraqu"
+    ],
+    "dark_ids": [
+      "Zmc6eUuZk6",
+      "OaAhuNqPMF",
+      "inJxr8GjkZ",
+      "DLfUVonm0I",
+      "QgXjjLsY0R",
+      "qA9fGQEa5B"
+    ]
   },
   "ToolWindowDuplicates": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "ELloB1sabT",
+      "WOQWXRuCay",
+      "ddhyneSRNl",
+      "PKOwLtOE12"
+    ],
+    "dark_ids": [
+      "VtFyaJURLE",
+      "K5laVLgmcm",
+      "vHV3LEAgp5",
+      "QwJDkHxTaR"
+    ]
   },
   "Trash": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "K07F56vfhp",
+      "euBlIjKmwf"
+    ],
+    "dark_ids": [
+      "hjLQkpVSBq",
+      "Q2N1xPZE8n"
+    ]
   },
   "TrashActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "UqCmd1btH8",
+      "cdjh8Rgg88"
+    ],
+    "dark_ids": [
+      "7d4VT7OO8h",
+      "AR6x8BF4ae"
+    ]
   },
   "UnloadedModule": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "aYZ7jrxhRT",
+      "lP0pDy4PoU",
+      "qFplyfxYbL",
+      "dWUQgkLQTu"
+    ],
+    "dark_ids": [
+      "vHFeChfQbj",
+      "24wEcCqeIR",
+      "f97iQnFPkB",
+      "DliyMczMsq"
+    ]
   },
   "UserAvatar": {
-    "identical": false
+    "identical": false,
+    "light_ids": [
+      "KWANh1re75",
+      "D7CqLMglRP",
+      "Z2H2psTGmN"
+    ],
+    "dark_ids": [
+      "7mnIv66eL6",
+      "MKqHsvoSdr",
+      "keB1MmlFhx"
+    ]
   },
   "VCS": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "T1DEaxRNuQ",
+      "LzO74Yh6ML",
+      "YvgxZ3MeV2",
+      "IEjEqCFRbp",
+      "pD7zEgqsCI"
+    ],
+    "dark_ids": [
+      "laWCF6416t",
+      "6OIiuItcZv",
+      "7MdAT0eJHD",
+      "ioNbLMNLNR",
+      "dh01pUJjwQ"
+    ]
   },
   "Warning": {
-    "identical": true
+    "identical": false,
+    "light_ids": [
+      "bITVs8gFyx",
+      "aMA7Ev92yK",
+      "fnaNTDJQrq"
+    ],
+    "dark_ids": [
+      "6HAPiiSlwd",
+      "krbLnVHHSh",
+      "buJazpOxPg",
+      "qkHDP1pUCB"
+    ]
   },
   "WebServer": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "2YBwdjaFib",
+      "3BxV0OjsoZ",
+      "vhoXTzfEAm",
+      "6LMgrlz84N",
+      "r1yUGeAWvI"
+    ],
+    "dark_ids": [
+      "1Lk7x1TtOk",
+      "HyHEmBDjvY",
+      "zWAxumWnyZ",
+      "34pkLB1lLO",
+      "AzPU1Tlloc"
+    ]
   },
   "WebServerActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "O0qzkeoTY6",
+      "ObYKdTkyp0"
+    ],
+    "dark_ids": [
+      "Oed8ZxlWdj",
+      "2YxQ5PU1Yx"
+    ]
   },
   "WindowsMenu": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "egYLy4LiEO",
+      "ROpIkXD3qa",
+      "7BCD1aPpGg",
+      "glxyTATCLm"
+    ],
+    "dark_ids": [
+      "tOdvxBp9DY",
+      "uDk9XUnM3V",
+      "x4mLhJVkto",
+      "jk4t1JAe3U"
+    ]
   },
   "Workspace": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "xLqqTpnrSA",
+      "r6jgaRawVf",
+      "h5A9C3xP4Y",
+      "oX5FTT5T2i"
+    ],
+    "dark_ids": [
+      "5rkWQrNZo9",
+      "JnbFTl6IAo",
+      "tlMtX5cj3T",
+      "ysVBk9PX1L"
+    ]
   },
   "WorkspaceActive": {
-    "identical": true
+    "identical": true,
+    "light_ids": [
+      "e4wAcPTzdJ",
+      "pA3ayYAynG",
+      "F0iERViJaH",
+      "Ih4po2JPCE"
+    ],
+    "dark_ids": [
+      "jy03CN5ZEi",
+      "eIEZ9Z2ksN",
+      "utVtp88UcI",
+      "smHMDse89s"
+    ]
   }
 }

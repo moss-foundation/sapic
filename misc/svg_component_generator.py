@@ -2,8 +2,10 @@ import argparse
 import json
 import logging
 import hashlib
+import random
+import string
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from copy import deepcopy
 import xml.etree.ElementTree as ET
 import tinycss2
@@ -17,21 +19,23 @@ EXCLUDED_VALUES = {"none", "transparent"}
 EXCLUDED_ATTRIBUTES = {"width", "height"}
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 
+PROPS_FIELD = "classnameById"
+
 
 class CustomFormatter(logging.Formatter):
     """
     Formatter for colored logging output
     """
-    grey    = "\x1b[38;21m"
-    yellow  = "\x1b[33;21m"
-    red     = "\x1b[31;21m"
-    bold_red= "\x1b[31;1m"
-    reset   = "\x1b[0m"
-    format  = "[%(asctime)s] %(levelname)s: %(message)s"
+    grey = "\x1b[38;21m"
+    yellow = "\x1b[33;21m"
+    red = "\x1b[31;21m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "[%(asctime)s] %(levelname)s: %(message)s"
 
     FORMATS = {
         logging.DEBUG: grey + format + reset,
-        logging.INFO:  grey + format + reset,
+        logging.INFO: grey + format + reset,
         logging.WARNING: yellow + format + reset,
         logging.ERROR: red + format + reset,
         logging.CRITICAL: bold_red + format + reset
@@ -42,6 +46,7 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt, datefmt="%Y-%m-%d %H:%M:%S")
         return formatter.format(record)
 
+
 def setup_logging(verbose: bool = False) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     handler = logging.StreamHandler()
@@ -50,6 +55,11 @@ def setup_logging(verbose: bool = False) -> None:
     root.setLevel(level)
     root.addHandler(handler)
 
+
+def generate_random_id(length: int) -> str:
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+
 def normalize_color(color: str) -> str:
     """
     Normalize an SVG color into standard lowercase six-digit hexadecimal.
@@ -57,15 +67,16 @@ def normalize_color(color: str) -> str:
     rgb = webcolors.html5_parse_legacy_color(color)
     return webcolors.rgb_to_hex(rgb)
 
+
 def to_camel_case(snake_str):
     return "".join(x.capitalize() for x in snake_str.lower().split("-"))
+
 
 def to_lower_camel_case(snake_str):
     # We capitalize the first letter of each component except the first one
     # with the 'capitalize' method and join them together.
     camel_string = to_camel_case(snake_str)
     return snake_str[0].lower() + camel_string[1:]
-
 
 
 def extract_css_palette(css_path: Path) -> Dict[str, str]:
@@ -82,7 +93,7 @@ def extract_css_palette(css_path: Path) -> Dict[str, str]:
         if rule.type != "qualified-rule":
             continue
         for decl in tinycss2.parse_declaration_list(rule.content):
-            if decl.type == "declaration" and decl.lower_name.startswith("--")\
+            if decl.type == "declaration" and decl.lower_name.startswith("--") \
                     and decl.lower_name.split("-")[-1].isdigit():
                 vals = [tok for tok in decl.value if tok.type == "hash"]
                 if len(vals) == 1:
@@ -124,9 +135,6 @@ def consolidate_svg(
     Consolidate identical-structured light and dark svg into a single tree
     """
     result = deepcopy(light_tree)
-
-    # Ensure namespace registration
-    ET.register_namespace("", SVG_NAMESPACE)
 
     light_elements = list(light_tree.iter())
     dark_elements = list(dark_tree.iter())
@@ -175,8 +183,10 @@ def merge_svg_to_component(
     # Separate rendering for light/dark
     light_el = light_tree.getroot()
     dark_el = dark_tree.getroot()
-    light_el.set('className', 'block dark:hidden')
-    dark_el.set('className', 'hidden dark:block')
+    prev_light_class = light_el.get("className")
+    prev_dark_class = dark_el.get("className")
+    light_el.set('className', prev_light_class + ' block dark:hidden')
+    dark_el.set('className', prev_dark_class + ' hidden dark:block')
 
     light_elements = list(light_tree.iter())
     dark_elements = list(dark_tree.iter())
@@ -219,7 +229,7 @@ def merge_svg_to_component(
         f"\nconst Svg{name}: React.FC<SVGProps<SVGSVGElement>> = props => ("
         f"\n  <div {{...props}}>"
         f"\n    {light_xml}"  # Light theme
-        f"\n    {dark_xml}"   # Dark theme
+        f"\n    {dark_xml}"  # Dark theme
         f"\n  </div>"
         f"\n);"
         f"\nexport default Svg{name};"
@@ -248,6 +258,9 @@ def generate_components(
     """
     Generate React components for each icon in icons_dir based on plan.json.
     """
+    # Ensure namespace registration
+    ET.register_namespace("", SVG_NAMESPACE)
+
     plan_file = icons_dir / 'plan.json'
     if not plan_file.exists():
         logging.error("Plan file not found: %s", plan_file)
@@ -262,6 +275,10 @@ def generate_components(
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    classname_value_pattern = re.compile(
+        r'className="([^"]*\$\{[^"]*?\}[^"]*)"'
+    )
+
     for name, props in plan_data.items():
         svg_path = icons_dir / name
         logging.info("Processing icon '%s'", name)
@@ -275,9 +292,14 @@ def generate_components(
             if attr in dark_tree.getroot().attrib:
                 del dark_tree.getroot().attrib[attr]
 
-        # Reformat the attribute names
+        # Process the attribute names and attach Id and Id based classname
         elems = list(light_tree.iter()) + list(dark_tree.iter())
-        for elem in elems:
+        ids = list(props.get("light_ids", [])) + list(props.get("dark_ids", []))
+        if len(elems) != len(ids):
+            logging.error(f"Invalid plan for icon `{name}`")
+            return
+
+        for (elem, id) in zip(elems, ids):
             for attr in elem.attrib.copy():
                 # Convert kebab-case to camelCase
                 if "-" in attr:
@@ -285,6 +307,14 @@ def generate_components(
                     val = elem.attrib[attr]
                     del elem.attrib[attr]
                     elem.set(camel, val)
+
+            elem.set("id", id)
+            prev_classname = elem.get("className", "")
+            extra_classname = f"${{props.{PROPS_FIELD}.get(\'{id}\')}}"
+            if len(prev_classname) == 0:
+                elem.set("className", extra_classname)
+            else:
+                elem.set("className", " ".join([prev_classname, extra_classname]))
 
         if props.get('identical', False) and compare_svg_structure(light_tree, dark_tree):
             merged = consolidate_svg(svg_path, light_tree, dark_tree, light_palette, dark_palette)
@@ -297,6 +327,8 @@ def generate_components(
             if not component:
                 continue
 
+        # Replace the quotes around className values to JSX template string
+        component = classname_value_pattern.sub(r'className={`\1`}', component)
         (output_dir / f"{name}.tsx").write_text(component)
 
     # Generate index.ts
@@ -309,6 +341,13 @@ def generate_components(
     lock_file = icons_dir / 'plan.lock'
     hash_val = hashlib.md5(''.join(names).encode()).hexdigest()
     lock_file.write_text(hash_val)
+
+
+def generate_element_ids(tree: ET.ElementTree) -> List[str]:
+    ids = []
+    for elem in tree.iter():
+        ids.append(generate_random_id(10))
+    return ids
 
 
 def create_plan(icons_dir: Path, force: bool = False) -> None:
@@ -344,9 +383,11 @@ def create_plan(icons_dir: Path, force: bool = False) -> None:
             continue
 
         light = ET.parse(icons_dir / name / 'light.svg')
+        light_ids = generate_element_ids(light)
         dark = ET.parse(icons_dir / name / 'dark.svg')
+        dark_ids = generate_element_ids(dark)
         identical = compare_svg_structure(light, dark)
-        updated[name] = {'identical': identical}
+        updated[name] = {'identical': identical, 'light_ids': light_ids, 'dark_ids': dark_ids}
         logging.info("Planned icon '%s': identical=%s", name, identical)
 
     plan_path.write_text(json.dumps(updated, indent=2))
