@@ -212,12 +212,14 @@ impl PhysicalSnapshot {
 mod tests {
     use super::*;
     use moss_fs::RealFileSystem;
-    use moss_kdl::foundations::http::{HttpRequestFile, UrlBlock};
-    use moss_kdl::spec_models::SpecificationMetadata;
-    use moss_kdl::spec_models::item_spec::request::RequestContent;
-    use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
-    use std::collections::HashMap;
-    use std::{path::PathBuf, sync::atomic::AtomicUsize};
+    use moss_kdl::{
+        foundations::http::{HttpRequestFile, UrlBlock},
+        spec_models::{
+            SpecificationMetadata,
+            item_spec::{ItemContentByClass, ItemSpecificationModel, request::RequestContent},
+        },
+    };
+    use std::{collections::HashMap, path::PathBuf, sync::atomic::AtomicUsize};
     use uuid::Uuid;
 
     fn create_test_entry(

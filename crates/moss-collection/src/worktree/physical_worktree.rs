@@ -2,10 +2,10 @@ use super::{
     WorktreeResult,
     physical_snapshot::{PhysicalEntryNew, PhysicalSnapshot},
 };
-use crate::models::specification::SpecificationContent;
 use crate::{
     models::{
         primitives::{ChangesDiffSet, EntryId},
+        specification::SpecificationContent,
         types::{EntryKind, PathChangeKind},
     },
     worktree::{ROOT_PATH, WorktreeError},

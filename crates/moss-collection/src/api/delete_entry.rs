@@ -1,5 +1,7 @@
-use crate::collection::Collection;
-use crate::models::operations::{DeleteEntryInput, DeleteEntryOutput};
+use crate::{
+    collection::Collection,
+    models::operations::{DeleteEntryInput, DeleteEntryOutput},
+};
 use moss_common::api::OperationResult;
 
 impl Collection {

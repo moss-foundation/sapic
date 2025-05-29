@@ -1,14 +1,17 @@
 use super::{ROOT_PATH, WorktreeError, WorktreeResult, split_last_segment};
-use crate::models::primitives::ChangesDiffSet;
-use crate::models::types::{Classification, PathChangeKind};
+use crate::models::{
+    primitives::ChangesDiffSet,
+    types::{Classification, PathChangeKind},
+};
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
 use moss_fs::utils::sanitize_path;
-use moss_kdl::spec_models::dir_spec::DirSpecificationModel;
-use moss_kdl::spec_models::item_spec::ItemSpecificationModel;
+use moss_kdl::spec_models::{dir_spec::DirSpecificationModel, item_spec::ItemSpecificationModel};
 use moss_text::sanitized::sanitize;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use sweep_bptree::BPlusTreeMap;
 use uuid::Uuid;
 
