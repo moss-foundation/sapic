@@ -2,16 +2,17 @@ use super::{
     WorktreeError, WorktreeResult,
     virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
-use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
     types::{Classification, PathChangeKind},
 };
+use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
 use std::path::PathBuf;
 use std::{
     path::Path,
     sync::{Arc, atomic::AtomicUsize},
 };
+use uuid::Uuid;
 
 pub struct VirtualWorktree {
     next_entry_id: Arc<AtomicUsize>,
@@ -30,7 +31,7 @@ impl VirtualWorktree {
         &mut self.snapshot
     }
 
-    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<VirtualEntry>> {
+    pub fn entry_by_id(&self, id: Uuid) -> Option<&Arc<VirtualEntry>> {
         self.snapshot.entry_by_id(id)
     }
 
@@ -47,41 +48,51 @@ impl VirtualWorktree {
         destination: impl AsRef<Path>,
         order: Option<usize>,
         class: Classification,
-        protocol: Option<RequestProtocol>,
-        is_dir: bool,
+        model: Arc<WorktreeEntrySpecificationModel>,
     ) -> WorktreeResult<ChangesDiffSet> {
         let path = Arc::from(destination.as_ref());
-        if is_dir {
-            if self.snapshot.exists(&path) {
-                return Err(WorktreeError::AlreadyExists(
-                    path.to_string_lossy().to_string(),
-                ));
+        if self.snapshot.exists(&path) {
+            return Err(WorktreeError::AlreadyExists(
+                path.to_string_lossy().to_string(),
+            ));
+        }
+        let mut created_entries = Vec::new();
+        let id = model.id();
+        match model {
+            WorktreeEntrySpecificationModel::Item(item) => {
+                let id = item.id();
+                let entry = VirtualEntry::Item {
+                    id,
+                    class,
+                    path,
+                    specification: ,
+                };
             }
+            WorktreeEntrySpecificationModel::Dir(dir) => {}
+        }
 
-            let mut created_entries = Vec::new();
-
-            let dir_id = EntryId::new(&self.next_entry_id);
-            let dir_entry = VirtualEntry::Dir {
-                id: dir_id,
-                order,
-                class,
-                path: path.clone(),
-            };
-
-            self.snapshot.create_entry(Arc::new(dir_entry));
-            created_entries.push((path.clone(), dir_id, PathChangeKind::Created));
-
-            Ok(ChangesDiffSet::from(created_entries))
-        } else {
-            let id = EntryId::new(&self.next_entry_id);
-            let entry = VirtualEntry::Item {
-                id,
-                order,
-                class,
-                path: path.clone(),
-                cases: vec![],
-                protocol,
-            };
+        // if is_dir {
+        //     let dir_id = EntryId::new(&self.next_entry_id);
+        //     let dir_entry = VirtualEntry::Dir {
+        //         id: dir_id,
+        //         order,
+        //         class,
+        //         path: path.clone(),
+        //     };
+        //
+        //     self.snapshot.create_entry(Arc::new(dir_entry));
+        //     created_entries.push((path.clone(), dir_id, PathChangeKind::Created));
+        //
+        //     Ok(ChangesDiffSet::from(created_entries))
+        // } else {
+        //     let id = EntryId::new(&self.next_entry_id);
+        //     let entry = VirtualEntry::Item {
+        //         id,
+        //         order,
+        //         class,
+        //         path: path.clone(),
+        //         protocol,
+        //     };
 
             self.snapshot.create_entry(Arc::new(entry));
 

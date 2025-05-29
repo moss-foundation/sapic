@@ -1,13 +1,8 @@
-use anyhow::{Context, Result};
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use std::{
-    collections::HashMap,
-    ops::Deref,
-    path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+use super::{
+    WorktreeResult,
+    physical_snapshot::{PhysicalEntryNew, PhysicalSnapshot},
 };
-use tokio::sync::{RwLock, mpsc};
-
+use crate::models::specification::SpecificationContent;
 use crate::{
     models::{
         primitives::{ChangesDiffSet, EntryId},
@@ -15,11 +10,17 @@ use crate::{
     },
     worktree::{ROOT_PATH, WorktreeError},
 };
-
-use super::{
-    WorktreeResult,
-    physical_snapshot::{PhysicalEntry, PhysicalSnapshot},
+use anyhow::{Context, Result, anyhow};
+use moss_file::kdl::KdlFileHandle;
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
+use std::{
+    collections::HashMap,
+    ops::Deref,
+    path::{Path, PathBuf},
+    sync::{Arc, atomic::AtomicUsize},
 };
+use tokio::sync::{RwLock, mpsc};
 
 struct ScanJob {
     abs_path: Arc<Path>,
@@ -102,7 +103,7 @@ impl PhysicalWorktree {
         &self,
         path: impl AsRef<Path>,
         is_dir: bool,
-        content: Option<Vec<u8>>,
+        model: Option<Arc<WorktreeEntrySpecificationModel>>,
     ) -> WorktreeResult<ChangesDiffSet> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
@@ -123,37 +124,33 @@ impl PhysicalWorktree {
             {
                 let mut snapshot_lock = self.physical_snapshot.write().await;
                 for e in entries.into_iter().map(Arc::new) {
-                    changes.push((Arc::clone(&e.path), e.id, PathChangeKind::Created));
+                    changes.push((Arc::clone(&e.path()), e.id(), PathChangeKind::Created));
                     snapshot_lock.create_entry(e);
                 }
             }
 
             changes
         } else {
-            self.fs
-                .create_file_with(
-                    &abs_path,
-                    content.as_deref().unwrap_or(&[]),
-                    CreateOptions {
-                        overwrite: true,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
+            let model = model.ok_or(anyhow!(
+                "Each physical file entry must have a corresponding WorktreeEntrySpecificationModel"
+            ))?;
+
+            // Create the specfile with a KdlFileHandle
+            let handle = KdlFileHandle::create(self.fs.clone(), &abs_path, model).await?;
+            let file_id =
+                file_id::get_file_id(&abs_path).map_err(|_| anyhow!("Cannot get file_id"))?;
 
             let metadata = tokio::fs::metadata(&abs_path).await.context(format!(
                 "Unable to get metadata for path {}",
                 abs_path.display()
             ))?;
-            let entry = Arc::new(PhysicalEntry {
-                id: EntryId::new(&self.next_entry_id),
-                path: Arc::clone(&path),
-                kind: EntryKind::File,
+
+            let entry = Arc::new(PhysicalEntryNew::File {
+                id: EntryId::new(self.next_entry_id.as_ref()),
+                path: path.clone(),
                 mtime: metadata.modified().ok(),
-                file_id: file_id::get_file_id(&abs_path).context(format!(
-                    "Unable to get file id for path {}",
-                    abs_path.display()
-                ))?,
+                file_id,
+                handle,
             });
 
             {
@@ -161,7 +158,7 @@ impl PhysicalWorktree {
                 snapshot_lock.create_entry(Arc::clone(&entry));
             }
 
-            vec![(path.into(), entry.id, PathChangeKind::Created)]
+            vec![(path.into(), entry.id(), PathChangeKind::Created)]
         };
 
         Ok(ChangesDiffSet::from(changes))
@@ -223,7 +220,7 @@ impl PhysicalWorktree {
 
         let changes = removed_entries
             .into_iter()
-            .map(|entry| (entry.path.clone(), entry.id, PathChangeKind::Removed))
+            .map(|entry| (entry.path().clone(), entry.id(), PathChangeKind::Removed))
             .collect::<Vec<_>>();
 
         Ok(ChangesDiffSet::from(changes))
@@ -269,21 +266,21 @@ impl PhysicalWorktree {
         let mut removed_entries_by_file_id = snapshot_lock
             .remove_entry(old_path)
             .into_iter()
-            .map(|e| (e.file_id, e))
+            .map(|e| (e.file_id(), e))
             .collect::<HashMap<_, _>>();
 
         let changed_entries = self.scan(&root_abs_path, new_path).await?;
 
         for entry in changed_entries {
             let (entry, change) =
-                if let Some(removed_entry) = removed_entries_by_file_id.remove(&entry.file_id) {
+                if let Some(removed_entry) = removed_entries_by_file_id.remove(&entry.file_id()) {
                     let entry = reuse_id(&removed_entry, entry);
                     (Arc::new(entry), PathChangeKind::Updated)
                 } else {
                     (Arc::new(entry), PathChangeKind::Created)
                 };
 
-            changes.push((entry.path.clone(), entry.id, change));
+            changes.push((entry.path().clone(), entry.id(), change));
             snapshot_lock.create_entry(entry);
         }
 
@@ -307,7 +304,7 @@ impl PhysicalWorktree {
         &self,
         root_abs_path: &Path,
         path: impl AsRef<Path>,
-    ) -> Result<Vec<PhysicalEntry>> {
+    ) -> Result<Vec<PhysicalEntryNew>> {
         debug_assert!(path.as_ref().is_relative());
         let path: Arc<Path> = path.as_ref().into();
 
@@ -319,7 +316,7 @@ impl PhysicalWorktree {
             path: Arc::clone(&path),
             scan_queue: scan_job_tx.clone(),
         };
-        scan_job_tx.send(initial_job).unwrap();
+        scan_job_tx.send(initial_job)?;
 
         drop(scan_job_tx);
 
@@ -361,12 +358,32 @@ impl PhysicalWorktree {
                         Err(_) => continue, // Skip if we can't get the file ID // TODO: handle errors?
                     };
 
-                    let child_entry = PhysicalEntry {
-                        id: EntryId::new(&next_entry_id),
-                        path: child_path.clone(),
-                        kind: entry_kind,
-                        mtime: child_metadata.modified().ok(),
-                        file_id,
+                    let child_entry = match entry_kind {
+                        EntryKind::Dir => PhysicalEntryNew::Directory {
+                            id: EntryId::new(next_entry_id.as_ref()),
+                            path: child_path.clone(),
+                            mtime: child_metadata.modified().ok(),
+                            file_id,
+                        },
+                        EntryKind::File => {
+                            PhysicalEntryNew::File {
+                                id: EntryId::new(next_entry_id.as_ref()),
+                                path: child_path.clone(),
+                                mtime: child_metadata.modified().ok(),
+                                file_id,
+                                // FIXME: Is it possible to strip the kdl parsing logic from physical worktree?
+                                handle: KdlFileHandle::load(
+                                    self.fs.clone(),
+                                    child_abs_path.as_ref(),
+                                    |s| {
+                                        WorktreeEntrySpecificationModel::parse(
+                                            child_path.as_ref(),
+                                            s,
+                                        )
+                                    },
+                                ),
+                            }
+                        }
                     };
 
                     if is_dir {
@@ -397,16 +414,23 @@ impl PhysicalWorktree {
             file_id::get_file_id(&abs_path).expect("Failed to get scan job abs path file id");
 
         let next_entry_id = self.next_entry_id.clone();
-        let entry = PhysicalEntry {
-            id: EntryId::new(&next_entry_id),
-            path,
-            kind: if metadata.is_dir() {
-                EntryKind::Dir
-            } else {
-                EntryKind::File
-            },
-            mtime: metadata.modified().ok(),
-            file_id,
+        let entry = if metadata.is_dir() {
+            PhysicalEntryNew::Directory {
+                id: EntryId::new(next_entry_id.as_ref()),
+                path,
+                mtime: metadata.modified().ok(),
+                file_id,
+            }
+        } else {
+            PhysicalEntryNew::File {
+                id: EntryId::new(next_entry_id.as_ref()),
+                path: path.clone(),
+                mtime: metadata.modified().ok(),
+                file_id,
+                handle: KdlFileHandle::load(self.fs.clone(), abs_path.as_ref(), |s| {
+                    WorktreeEntrySpecificationModel::parse(path.as_ref(), s)
+                }),
+            }
         };
 
         Ok(std::iter::once(entry)
@@ -422,8 +446,8 @@ impl PhysicalWorktree {
     }
 }
 
-fn reuse_id(old_entry: &PhysicalEntry, mut new_entry: PhysicalEntry) -> PhysicalEntry {
-    new_entry.id = old_entry.id;
+fn reuse_id(old_entry: &PhysicalEntryNew, mut new_entry: PhysicalEntryNew) -> PhysicalEntryNew {
+    new_entry.set_id(old_entry.id());
     new_entry
 }
 
@@ -450,7 +474,7 @@ mod tests {
         let snapshot = worktree.physical_snapshot.read().await;
 
         for (_, entry) in snapshot.iter_entries_by_prefix("") {
-            println!("{}", entry.path.to_path_buf().display());
+            println!("{}", entry.path().to_path_buf().display());
         }
     }
 }

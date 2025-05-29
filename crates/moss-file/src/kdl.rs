@@ -1,7 +1,6 @@
 use anyhow::{Result, anyhow};
 use kdl::KdlDocument;
 use moss_fs::FileSystem;
-use moss_kdl::spec_file::{SpecificationFile, SpecificationFileType};
 use std::ops::Deref;
 use std::path::Path;
 use std::sync::Arc;
@@ -10,6 +9,7 @@ use crate::common::FileHandle;
 use crate::tokens::{DELETE_SPECFILE, FOLDER_SPECFILE, GET_SPECFILE, POST_SPECFILE, PUT_SPECFILE};
 
 // kdl crate does not follow the serde serialization model
+#[derive(Clone)]
 pub struct KdlFileHandle<T>
 where
     T: Clone + Into<KdlDocument>,
@@ -47,6 +47,7 @@ where
 
     pub async fn create(fs: Arc<dyn FileSystem>, abs_path: &Path, model: T) -> Result<Self> {
         let file = FileHandle::create(fs, abs_path, model, |s| {
+            // Standardized output formatting
             let document: KdlDocument = s.clone().into();
             Ok(document
                 .into_iter()

@@ -1,5 +1,8 @@
+use crate::models::{primitives::EntryId, types::EntryKind};
 use file_id::FileId;
 use moss_common::models::primitives::Identifier;
+use moss_file::kdl::KdlFileHandle;
+use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -7,30 +10,64 @@ use std::{
 };
 use sweep_bptree::BPlusTreeMap;
 
-use crate::models::{primitives::EntryId, types::EntryKind};
-
 use super::ROOT_PATH;
 
+// FIXME: Do we use this?
 pub struct PhysicalEntryId(Identifier);
 
-#[derive(Debug, Clone)]
-pub struct PhysicalEntry {
-    pub id: EntryId,
-    pub path: Arc<Path>,
-    pub kind: EntryKind,
-    pub mtime: Option<SystemTime>,
-    pub file_id: FileId,
+#[derive(Clone)]
+pub enum PhysicalEntryNew {
+    File {
+        id: EntryId,
+        path: Arc<Path>,
+        mtime: Option<SystemTime>,
+        file_id: FileId,
+        // Each .sapic spec file has its corresponding kdl file handle
+        handle: KdlFileHandle<Arc<WorktreeEntrySpecificationModel>>,
+    },
+    Directory {
+        id: EntryId,
+        path: Arc<Path>,
+        mtime: Option<SystemTime>,
+        file_id: FileId,
+    },
 }
 
-impl PhysicalEntry {
+impl PhysicalEntryNew {
     pub fn is_dir(&self) -> bool {
-        matches!(self.kind, EntryKind::Dir)
+        matches!(self, PhysicalEntryNew::Directory { .. })
+    }
+    pub fn path(&self) -> Arc<Path> {
+        match self {
+            PhysicalEntryNew::File { path, .. } => path.clone(),
+            PhysicalEntryNew::Directory { path, .. } => path.clone(),
+        }
+    }
+    pub fn id(&self) -> EntryId {
+        match self {
+            PhysicalEntryNew::File { id, .. } => *id,
+            PhysicalEntryNew::Directory { id, .. } => *id,
+        }
+    }
+
+    pub fn set_id(&mut self, new_id: EntryId) {
+        match self {
+            PhysicalEntryNew::File { id, .. } => *id = new_id,
+            PhysicalEntryNew::Directory { id, .. } => *id = new_id,
+        }
+    }
+
+    pub fn file_id(&self) -> FileId {
+        match self {
+            PhysicalEntryNew::File { file_id, .. } => *file_id,
+            PhysicalEntryNew::Directory { file_id, .. } => *file_id,
+        }
     }
 }
 
 pub struct PhysicalSnapshot {
     abs_path: Arc<Path>,
-    entries_by_id: BPlusTreeMap<EntryId, Arc<PhysicalEntry>>,
+    entries_by_id: BPlusTreeMap<EntryId, Arc<PhysicalEntryNew>>,
     entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
 }
 
@@ -66,9 +103,9 @@ impl PhysicalSnapshot {
         &self.abs_path
     }
 
-    pub fn create_entry(&mut self, entry: Arc<PhysicalEntry>) {
-        self.entries_by_path.insert(entry.path.clone(), entry.id);
-        self.entries_by_id.insert(entry.id, entry);
+    pub fn create_entry(&mut self, entry: Arc<PhysicalEntryNew>) {
+        self.entries_by_path.insert(entry.path(), entry.id());
+        self.entries_by_id.insert(entry.id(), entry);
     }
 
     pub fn count_files(&self) -> usize {
@@ -80,7 +117,7 @@ impl PhysicalSnapshot {
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
         prefix: &'a str,
-    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<PhysicalEntry>)> + 'a {
+    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<PhysicalEntryNew>)> + 'a {
         self.entries_by_path
             .iter()
             .skip_while(move |(p, _)| !p.starts_with(prefix))
@@ -88,7 +125,7 @@ impl PhysicalSnapshot {
             .filter_map(move |(_, id)| self.entries_by_id.get(id).map(|entry| (id, entry)))
     }
 
-    pub fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Arc<PhysicalEntry>> {
+    pub fn entry_by_path(&self, path: impl AsRef<Path>) -> Option<Arc<PhysicalEntryNew>> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
@@ -96,7 +133,7 @@ impl PhysicalSnapshot {
         self.entries_by_id.get(entry_id).cloned()
     }
 
-    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<PhysicalEntry>> {
+    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<PhysicalEntryNew>> {
         self.entries_by_id.get(&id)
     }
 
@@ -117,13 +154,13 @@ impl PhysicalSnapshot {
     /// - If the path points to a directory, the directory and all its contents (files and subdirectories)
     ///   are removed recursively.
     /// - Only exact path matches are considered; similar prefixes are not affected.
-    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> Vec<Arc<PhysicalEntry>> {
+    pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> Vec<Arc<PhysicalEntryNew>> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
         let entry_opt = self.entry_by_path(path);
         let is_dir = if let Some(entry) = &entry_opt {
-            matches!(entry.kind, EntryKind::Dir)
+            entry.is_dir()
         } else {
             return Vec::new();
         };
@@ -135,16 +172,16 @@ impl PhysicalSnapshot {
             let entries_to_remove = self
                 .iter_entries_by_prefix(&prefix)
                 .map(|(id, entry)| (*id, entry.clone()))
-                .collect::<Vec<(EntryId, Arc<PhysicalEntry>)>>();
+                .collect::<Vec<(EntryId, Arc<PhysicalEntryNew>)>>();
 
             for (entry_id, entry) in entries_to_remove {
-                self.entries_by_path.remove(&entry.path);
+                self.entries_by_path.remove(&entry.path());
                 self.entries_by_id.remove(&entry_id);
                 removed_entries.push(entry);
             }
         } else if let Some(entry) = entry_opt {
-            self.entries_by_path.remove(&entry.path);
-            self.entries_by_id.remove(&entry.id);
+            self.entries_by_path.remove(&entry.path());
+            self.entries_by_id.remove(&entry.id());
             removed_entries.push(entry);
         }
 
@@ -161,7 +198,7 @@ impl PhysicalSnapshot {
 
         for ancestor in input_path.ancestors() {
             if let Some(entry_ref) = self.entry_by_path(ancestor) {
-                return entry_ref.path.clone();
+                return entry_ref.path();
             }
         }
 
@@ -174,22 +211,66 @@ impl PhysicalSnapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use moss_fs::RealFileSystem;
+    use moss_kdl::foundations::http::{HttpRequestFile, UrlBlock};
+    use moss_kdl::spec_models::SpecificationMetadata;
+    use moss_kdl::spec_models::item_spec::request::RequestContent;
+    use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
+    use std::collections::HashMap;
     use std::{path::PathBuf, sync::atomic::AtomicUsize};
+    use uuid::Uuid;
 
-    fn create_test_entry(id: usize, path: &str, kind: EntryKind) -> PhysicalEntry {
-        PhysicalEntry {
-            id: EntryId::new(&Arc::new(AtomicUsize::new(id))),
-            path: Arc::from(PathBuf::from(path)),
-            kind,
-            mtime: None,
-            file_id: FileId::new_inode(0, 0),
+    fn create_test_entry(
+        id: usize,
+        abs_path: &Path,
+        entry_path: &str,
+        kind: EntryKind,
+    ) -> PhysicalEntryNew {
+        let id = EntryId::new(&Arc::new(AtomicUsize::new(id)));
+        let path = Arc::from(PathBuf::from(abs_path));
+        let physical_path = abs_path.join(entry_path);
+        let file_id = FileId::new_inode(0, 0);
+        let fs = Arc::new(RealFileSystem::new());
+        match kind {
+            EntryKind::Dir => PhysicalEntryNew::Directory {
+                id,
+                path,
+                mtime: None,
+                file_id,
+            },
+            EntryKind::File => {
+                // Create a sample HTTP request spec file
+                let http_request = HttpRequestFile::new(
+                    UrlBlock::default(),
+                    HashMap::new(),
+                    HashMap::new(),
+                    HashMap::new(),
+                    None,
+                );
+                let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+                let model = WorktreeEntrySpecificationModel::Item(ItemSpecificationModel::new(
+                    metadata,
+                    Some(ItemContentByClass::Request(RequestContent::Http(
+                        http_request,
+                    ))),
+                ));
+                PhysicalEntryNew::File {
+                    id,
+                    path,
+                    mtime: None,
+                    file_id,
+                    // Create a sample
+                    handle: KdlFileHandle::create(fs, &physical_path, model),
+                }
+            }
         }
     }
 
     #[test]
     fn test_remove_file() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
-        let entry = create_test_entry(1, "test.txt", EntryKind::File);
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
+        let entry = create_test_entry(1, &abs_path, "test.txt", EntryKind::File);
         let entry_ref = Arc::new(entry.clone());
 
         snapshot.create_entry(entry_ref.clone());
@@ -201,8 +282,8 @@ mod tests {
 
         // Verify the returned result
         assert_eq!(removed.len(), 1);
-        assert_eq!(removed[0].path.to_string_lossy(), "test.txt");
-        assert_eq!(removed[0].id, entry.id);
+        assert_eq!(removed[0].path().to_string_lossy(), "test.txt");
+        assert_eq!(removed[0].id(), entry.id());
     }
 
     #[test]
@@ -217,12 +298,13 @@ mod tests {
 
     #[test]
     fn test_remove_directory_with_files() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create a directory and some files inside it
-        let dir_entry = create_test_entry(1, "test_dir", EntryKind::Dir);
-        let file1_entry = create_test_entry(2, "test_dir/file1.txt", EntryKind::File);
-        let file2_entry = create_test_entry(3, "test_dir/file2.txt", EntryKind::File);
+        let dir_entry = create_test_entry(1, &abs_path, "test_dir", EntryKind::Dir);
+        let file1_entry = create_test_entry(2, &abs_path, "test_dir/file1.txt", EntryKind::File);
+        let file2_entry = create_test_entry(3, &abs_path, "test_dir/file2.txt", EntryKind::File);
 
         snapshot.create_entry(Arc::new(dir_entry.clone()));
         snapshot.create_entry(Arc::new(file1_entry.clone()));
@@ -245,27 +327,28 @@ mod tests {
         // Check that all removed paths and IDs are present in the result
         let paths: Vec<String> = removed
             .iter()
-            .map(|entry| entry.path.to_string_lossy().to_string())
+            .map(|entry| entry.path().to_string_lossy().to_string())
             .collect();
-        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id).collect();
+        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id()).collect();
 
         assert!(paths.contains(&"test_dir".to_string()));
         assert!(paths.contains(&"test_dir/file1.txt".to_string()));
         assert!(paths.contains(&"test_dir/file2.txt".to_string()));
 
-        assert!(ids.contains(&dir_entry.id));
-        assert!(ids.contains(&file1_entry.id));
-        assert!(ids.contains(&file2_entry.id));
+        assert!(ids.contains(&dir_entry.id()));
+        assert!(ids.contains(&file1_entry.id()));
+        assert!(ids.contains(&file2_entry.id()));
     }
 
     #[test]
     fn test_remove_nested_directory() {
+        let abs_path = PathBuf::from("/root");
         let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
 
         // Create a nested directory structure
-        let dir1_entry = create_test_entry(1, "dir1", EntryKind::Dir);
-        let dir2_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
-        let file_entry = create_test_entry(3, "dir1/dir2/file.txt", EntryKind::File);
+        let dir1_entry = create_test_entry(1, &abs_path, "dir1", EntryKind::Dir);
+        let dir2_entry = create_test_entry(2, &abs_path, "dir1/dir2", EntryKind::Dir);
+        let file_entry = create_test_entry(3, &abs_path, "dir1/dir2/file.txt", EntryKind::File);
 
         snapshot.create_entry(Arc::new(dir1_entry.clone()));
         snapshot.create_entry(Arc::new(dir2_entry.clone()));
@@ -288,27 +371,28 @@ mod tests {
         // Check that all removed paths and IDs are present in the result
         let paths: Vec<String> = removed
             .iter()
-            .map(|entry| entry.path.to_string_lossy().to_string())
+            .map(|entry| entry.path().to_string_lossy().to_string())
             .collect();
-        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id).collect();
+        let ids: Vec<EntryId> = removed.iter().map(|entry| entry.id()).collect();
 
         assert!(paths.contains(&"dir1".to_string()));
         assert!(paths.contains(&"dir1/dir2".to_string()));
         assert!(paths.contains(&"dir1/dir2/file.txt".to_string()));
 
-        assert!(ids.contains(&dir1_entry.id));
-        assert!(ids.contains(&dir2_entry.id));
-        assert!(ids.contains(&file_entry.id));
+        assert!(ids.contains(&dir1_entry.id()));
+        assert!(ids.contains(&dir2_entry.id()));
+        assert!(ids.contains(&file_entry.id()));
     }
 
     #[test]
     fn test_remove_partial_path() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create entries with similar prefixes
-        let dir1_entry = create_test_entry(1, "test", EntryKind::Dir);
-        let dir2_entry = create_test_entry(2, "test_dir", EntryKind::Dir);
-        let file_entry = create_test_entry(3, "test_file.txt", EntryKind::File);
+        let dir1_entry = create_test_entry(1, &abs_path, "test", EntryKind::Dir);
+        let dir2_entry = create_test_entry(2, &abs_path, "test_dir", EntryKind::Dir);
+        let file_entry = create_test_entry(3, &abs_path, "test_file.txt", EntryKind::File);
 
         snapshot.create_entry(Arc::new(dir1_entry.clone()));
         snapshot.create_entry(Arc::new(dir2_entry));
@@ -327,18 +411,19 @@ mod tests {
 
         // Verify the returned result
         assert_eq!(removed.len(), 1);
-        assert_eq!(removed[0].path.to_string_lossy(), "test");
-        assert_eq!(removed[0].id, dir1_entry.id);
+        assert_eq!(removed[0].path().to_string_lossy(), "test");
+        assert_eq!(removed[0].id(), dir1_entry.id());
     }
 
     #[test]
     fn test_lowest_ancestor_path_exact_match() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create some entries
-        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
-        let subdir_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
-        let file_entry = create_test_entry(3, "dir1/dir2/file.txt", EntryKind::File);
+        let dir_entry = create_test_entry(1, &abs_path, "dir1", EntryKind::Dir);
+        let subdir_entry = create_test_entry(2, &abs_path, "dir1/dir2", EntryKind::Dir);
+        let file_entry = create_test_entry(3, &abs_path, "dir1/dir2/file.txt", EntryKind::File);
 
         snapshot.create_entry(Arc::new(dir_entry));
         snapshot.create_entry(Arc::new(subdir_entry));
@@ -351,11 +436,12 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_direct_ancestor() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create some entries, but not the leaf
-        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
-        let subdir_entry = create_test_entry(2, "dir1/dir2", EntryKind::Dir);
+        let dir_entry = create_test_entry(1, &abs_path, "dir1", EntryKind::Dir);
+        let subdir_entry = create_test_entry(2, &abs_path, "dir1/dir2", EntryKind::Dir);
 
         snapshot.create_entry(Arc::new(dir_entry));
         snapshot.create_entry(Arc::new(subdir_entry));
@@ -367,10 +453,11 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_multiple_ancestors() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create some entries
-        let dir_entry = create_test_entry(1, "dir1", EntryKind::Dir);
+        let dir_entry = create_test_entry(1, &abs_path, "dir1", EntryKind::Dir);
 
         snapshot.create_entry(Arc::new(dir_entry));
 
@@ -399,10 +486,11 @@ mod tests {
 
     #[test]
     fn test_lowest_ancestor_path_root_level_file() {
-        let mut snapshot = PhysicalSnapshot::new(Arc::from(PathBuf::from("/root")));
+        let abs_path = PathBuf::from("/root");
+        let mut snapshot = PhysicalSnapshot::new(Arc::from(abs_path.clone()));
 
         // Create a root-level file
-        let file_entry = create_test_entry(1, "file.txt", EntryKind::File);
+        let file_entry = create_test_entry(1, &abs_path, "file.txt", EntryKind::File);
         snapshot.create_entry(Arc::new(file_entry));
 
         // Test a different root-level file

@@ -1,46 +1,37 @@
+use super::{ROOT_PATH, WorktreeError, WorktreeResult, split_last_segment};
+use crate::models::primitives::ChangesDiffSet;
+use crate::models::types::{Classification, PathChangeKind};
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
 use moss_fs::utils::sanitize_path;
-use moss_text::sanitized::{sanitize, sanitized_name::SanitizedName};
+use moss_kdl::spec_models::dir_spec::DirSpecificationModel;
+use moss_kdl::spec_models::item_spec::ItemSpecificationModel;
+use moss_text::sanitized::sanitize;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use sweep_bptree::BPlusTreeMap;
+use uuid::Uuid;
 
-use crate::models::primitives::{ChangesDiffSet, EntryId};
-use crate::models::types::{Classification, PathChangeKind, RequestProtocol};
-
-use super::{ROOT_PATH, WorktreeError, WorktreeResult, split_last_segment};
-
-pub struct VirtualEntryId(Identifier);
-
-#[derive(Clone)]
-pub struct Case {
-    id: EntryId,
-    name: SanitizedName,
-    order: Option<usize>,
-}
+pub struct VirtualEntryId(Identifier); // TODO: UUID
 
 #[derive(Clone)]
 pub enum VirtualEntry {
     Item {
-        // FIXME: Should we store info like request protocol here?
-        id: EntryId,
-        order: Option<usize>,
+        id: Uuid, // TODO: UUID
         class: Classification,
-        protocol: Option<RequestProtocol>,
         path: Arc<Path>,
-        cases: Vec<Case>,
+        specification: Arc<ItemSpecificationModel>,
     },
     Dir {
-        id: EntryId,
-        order: Option<usize>,
+        id: Uuid,
         class: Classification,
         path: Arc<Path>,
+        specification: Arc<DirSpecificationModel>,
     },
 }
 
 impl VirtualEntry {
-    pub fn id(&self) -> EntryId {
+    pub fn id(&self) -> Uuid {
         match self {
             VirtualEntry::Item { id, .. } => *id,
             VirtualEntry::Dir { id, .. } => *id,
@@ -61,19 +52,19 @@ impl VirtualEntry {
         }
     }
 
-    pub fn order(&self) -> Option<usize> {
-        match self {
-            VirtualEntry::Item { order, .. } => *order,
-            VirtualEntry::Dir { order, .. } => *order,
-        }
-    }
-
-    pub fn protocol(&self) -> Option<RequestProtocol> {
-        match self {
-            VirtualEntry::Item { protocol, .. } => protocol.clone(),
-            VirtualEntry::Dir { .. } => None,
-        }
-    }
+    // pub fn order(&self) -> Option<usize> {
+    //     match self {
+    //         VirtualEntry::Item { order, .. } => *order,
+    //         VirtualEntry::Dir { order, .. } => *order,
+    //     }
+    // }
+    //
+    // pub fn protocol(&self) -> Option<RequestProtocol> {
+    //     match self {
+    //         VirtualEntry::Item { protocol, .. } => protocol.clone(),
+    //         VirtualEntry::Dir { .. } => None,
+    //     }
+    // }
 
     pub fn physical_path(&self) -> anyhow::Result<PathBuf> {
         match self {
@@ -97,8 +88,8 @@ impl VirtualEntry {
 }
 
 pub struct VirtualSnapshot {
-    entries_by_id: BPlusTreeMap<EntryId, Arc<VirtualEntry>>,
-    entries_by_path: BPlusTreeMap<Arc<Path>, EntryId>,
+    entries_by_id: BPlusTreeMap<Uuid, Arc<VirtualEntry>>,
+    entries_by_path: BPlusTreeMap<Arc<Path>, Uuid>,
 }
 
 impl VirtualSnapshot {
@@ -124,7 +115,7 @@ impl VirtualSnapshot {
         self.entries_by_id.insert(id, entry);
     }
 
-    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<VirtualEntry>> {
+    pub fn entry_by_id(&self, id: Uuid) -> Option<&Arc<VirtualEntry>> {
         self.entries_by_id.get(&id)
     }
 
@@ -139,7 +130,7 @@ impl VirtualSnapshot {
     pub fn iter_entries_by_prefix<'a>(
         &'a self,
         prefix: PathBuf,
-    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
+    ) -> impl Iterator<Item = (&'a Uuid, &'a Arc<VirtualEntry>)> + 'a {
         let prefix = prefix.to_path_buf();
         self.entries_by_path
             .iter()
@@ -163,7 +154,7 @@ impl VirtualSnapshot {
             let entries_to_remove = self
                 .iter_entries_by_prefix(path.to_path_buf())
                 .map(|(id, entry)| (*id, entry.clone()))
-                .collect::<Vec<(EntryId, Arc<VirtualEntry>)>>();
+                .collect::<Vec<(Uuid, Arc<VirtualEntry>)>>();
 
             for (entry_id, entry) in entries_to_remove {
                 let entry_path = match entry.as_ref() {
@@ -236,26 +227,25 @@ impl VirtualSnapshot {
             let new_entry = match entry {
                 VirtualEntry::Item {
                     id,
-                    order,
                     class,
-                    cases,
-                    protocol,
+                    specification,
                     ..
                 } => VirtualEntry::Item {
                     path: Arc::from(new_entry_path.as_path()),
                     id,
-                    order,
                     class,
-                    cases,
-                    protocol,
+                    specification,
                 },
                 VirtualEntry::Dir {
-                    id, order, class, ..
+                    id,
+                    class,
+                    specification,
+                    ..
                 } => VirtualEntry::Dir {
                     path: Arc::from(new_entry_path.as_path()),
                     id,
-                    order,
                     class,
+                    specification,
                 },
             };
             self.entries_by_path

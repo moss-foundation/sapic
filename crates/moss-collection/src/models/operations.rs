@@ -5,21 +5,24 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
+use crate::models::primitives::EntryId;
+use crate::models::specification::SpecificationContent;
 use crate::models::types::RequestProtocol;
-use crate::models::{primitives::EntryId, types::HttpMethod};
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 // TODO: Validate that destination matches with classification
+// TODO: Validate that specification content type matches with entry type
 // #[validate(schema(function = "validate_category", skip_on_field_errors = false))]
 pub struct CreateEntryInput {
     // TODO: Validate against all possible classification
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
-    #[ts(optional, type = "JsonValue")]
-    pub specification: Option<JsonValue>,
+    // FIXME: Figure out a strategy for passing and receiving specification
+    #[ts(optional)]
+    pub specification: Option<SpecificationContent>,
     #[ts(optional)]
     pub protocol: Option<RequestProtocol>,
     #[ts(optional)]

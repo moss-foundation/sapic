@@ -6,18 +6,25 @@ pub mod virtual_worktree;
 
 use moss_common::api::OperationError;
 use moss_fs::FileSystem;
+use moss_kdl::spec_models::SpecificationMetadata;
+use moss_kdl::spec_models::dir_spec::{DirContentByClass, DirSpecificationModel};
+use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
+use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
 use moss_text::sanitized;
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 use std::{
     path::{Component, Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 use thiserror::Error;
 use util::names::dir_name_from_classification;
+use uuid::Uuid;
 use virtual_worktree::VirtualWorktree;
 
 use crate::models::primitives::EntryId;
+use crate::models::specification::SpecificationContent;
 use crate::models::types::RequestProtocol;
 use crate::models::{primitives::ChangesDiffSet, types::Classification};
 use crate::tokens::FOLDER_SPEC_FILENAME;
@@ -82,7 +89,7 @@ impl Worktree {
 
         let next_virtual_entry_id = Arc::new(AtomicUsize::new(0)); // TODO: replace with IdRegistry
         Self {
-            pwt: PhysicalWorktree::new(fs, abs_path, next_entry_id),
+            pwt: PhysicalWorktree::new(fs.clone(), abs_path.clone(), next_entry_id),
             vwt: VirtualWorktree::new(next_virtual_entry_id),
         }
     }
@@ -96,7 +103,7 @@ impl Worktree {
         destination: PathBuf,
         order: Option<usize>,
         protocol: Option<RequestProtocol>,
-        specification: Option<Vec<u8>>,
+        specification: Option<SpecificationContent>,
         classification: Classification,
         is_dir: bool,
     ) -> WorktreeResult<WorktreeDiff> {
@@ -130,12 +137,16 @@ impl Worktree {
         parent: PathBuf,
         name: String,
         order: Option<usize>,
+        // TODO: Dir classification
         classification: Classification,
-        specification: Option<Vec<u8>>,
+        // FIXME: You shouldn't provide spec content when creating a dir
+        specification: Option<SpecificationContent>,
     ) -> WorktreeResult<WorktreeDiff> {
+        // TODO: Directory specification
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
 
+        let mut folder_specmap = HashMap::new();
         {
             let encoded_path = {
                 let encoded_name = sanitized::sanitize(&name);
@@ -159,6 +170,13 @@ impl Worktree {
             let mut current_level = lowest_ancestor_path.to_path_buf();
 
             for part in missing_part.components() {
+                let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+                let dir_model = DirSpecificationModel {
+                    metadata,
+                    content: None,
+                };
+                let model = Arc::new(WorktreeEntrySpecificationModel::Dir(dir_model));
+
                 current_level.push(part);
                 physical_changes.extend(
                     self.pwt
@@ -169,11 +187,13 @@ impl Worktree {
                 );
                 physical_changes.extend(
                     self.pwt
-                        .create_entry(current_level.join(FOLDER_SPEC_FILENAME), false, None)
+                        .create_entry(current_level.join(FOLDER_SPEC_FILENAME), false, Some(model))
                         .await?
                         .into_iter()
                         .cloned(),
-                )
+                );
+
+                folder_specmap.insert(current_level.clone(), model);
             }
         }
 
@@ -188,9 +208,14 @@ impl Worktree {
             // For each missing level, create a virtual dir entry
             for part in missing_part.components() {
                 current_level.push(part);
+                let encoded_current_level = moss_fs::utils::sanitize_path(&current_level, None)?;
+                let model = folder_specmap
+                    .get(&encoded_current_level)
+                    .expect("There must be matching physical entry for each virtual entry")
+                    .clone();
                 virtual_changes.extend(
                     self.vwt
-                        .create_entry(&current_level, order, classification.clone(), None, true)?
+                        .create_entry(&current_level, order, model)?
                         .into_iter()
                         .cloned(),
                 )
@@ -208,12 +233,14 @@ impl Worktree {
         parent: PathBuf,
         name: String,
         classification: Classification,
-        specification: Option<Vec<u8>>,
+        specification: Option<SpecificationContent>,
         order: Option<usize>,
         protocol: Option<RequestProtocol>,
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
+
+        let mut folder_specmap = HashMap::new();
         let protocol = protocol.unwrap_or_default();
         {
             let encoded_path = {
@@ -239,6 +266,13 @@ impl Worktree {
             if let Some(missing_part) = missing_part {
                 let mut current_level = lowest_ancestor_path.to_path_buf();
                 for part in missing_part.components() {
+                    let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+                    let dir_model = DirSpecificationModel {
+                        metadata,
+                        content: None,
+                    };
+                    let model = WorktreeEntrySpecificationModel::Dir(dir_model);
+
                     current_level.push(part);
                     physical_changes.extend(
                         self.pwt
@@ -254,6 +288,8 @@ impl Worktree {
                             .into_iter()
                             .cloned(),
                     );
+
+                    folder_specmap.insert(current_level.clone(), model);
                 }
             }
 
@@ -269,9 +305,22 @@ impl Worktree {
 
             let file_name = protocol.clone().to_filename();
             let file_path = encoded_path.join(file_name);
+
+            let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+
+            let spec_content: Option<ItemContentByClass> = if let Some(content) = specification {
+                content.try_into().ok()
+            } else {
+                None
+            };
+
+            let model = Arc::new(WorktreeEntrySpecificationModel::Item(
+                ItemSpecificationModel::new(metadata, spec_content),
+            ));
+
             physical_changes.extend(
                 self.pwt
-                    .create_entry(&file_path, false, specification)
+                    .create_entry(&file_path, false, Some(model))
                     .await?
                     .into_iter()
                     .cloned(),

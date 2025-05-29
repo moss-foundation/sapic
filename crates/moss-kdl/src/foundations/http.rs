@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 use crate::foundations::body::RequestBodyBlock;
 use crate::parse::{HttpRequestParseOptions, http};
+use crate::spec_models::item_spec::ItemContentByClass;
+use crate::spec_models::item_spec::request::RequestContent;
 use crate::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
 #[derive(Clone, Debug, Default)]
 pub struct HttpRequestFile {
@@ -33,6 +35,12 @@ impl HttpRequestFile {
 
     pub fn parse(input: KdlDocument, opts: &HttpRequestParseOptions) -> Result<Self> {
         http::parse(input, opts)
+    }
+}
+
+impl Into<ItemContentByClass> for HttpRequestFile {
+    fn into(self) -> ItemContentByClass {
+        ItemContentByClass::Request(RequestContent::Http(self))
     }
 }
 
