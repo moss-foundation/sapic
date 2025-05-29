@@ -1,12 +1,13 @@
-use moss_collection::models::operations::{
-    CreateEntryInput, DeleteEntryInput, UpdateEntryInput, UpdateEntryOutput,
+use moss_collection::models::{
+    operations::{CreateEntryInput, DeleteEntryInput, UpdateEntryInput, UpdateEntryOutput},
+    types::{Classification, PathChangeKind},
 };
-use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::random_request_name;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
+use moss_testutils::{fs_specific::FOLDERNAME_SPECIAL_CHARS, random_name::random_request_name};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use crate::shared::{
     create_test_collection, find_id_by_path, random_dir_name, request_folder_name,

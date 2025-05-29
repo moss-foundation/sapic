@@ -1,6 +1,10 @@
-use crate::kdl::foundations::body::RequestBodyBlock;
-use crate::kdl::tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT};
-use crate::models::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody};
+use crate::{
+    kdl::{
+        foundations::body::RequestBodyBlock,
+        tokens::{HEADERS_LIT, PARAMS_LIT, URL_LIT},
+    },
+    models::types::{HeaderParamItem, PathParamItem, QueryParamItem, RequestBody},
+};
 use kdl::{KdlDocument, KdlEntry, KdlNode};
 use std::collections::HashMap;
 

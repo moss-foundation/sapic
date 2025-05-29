@@ -1,11 +1,15 @@
 use anyhow::Result;
-use moss_file::common::FileHandle;
-use moss_file::toml::{EditableInPlaceFileHandle, InPlaceEditor};
+use moss_file::{
+    common::FileHandle,
+    toml::{EditableInPlaceFileHandle, InPlaceEditor},
+};
 use moss_fs::{FileSystem, RealFileSystem};
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use toml_edit::{DocumentMut, value};
 use uuid::Uuid;
 

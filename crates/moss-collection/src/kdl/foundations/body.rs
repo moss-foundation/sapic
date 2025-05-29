@@ -1,7 +1,5 @@
 use kdl::{KdlDocument, KdlEntry, KdlIdentifier, KdlNode};
-use std::collections::HashMap;
-use std::mem;
-use std::path::PathBuf;
+use std::{collections::HashMap, mem, path::PathBuf};
 
 use crate::{
     kdl::tokens::{BODY_LIT, RAW_STRING_INDENT, RAW_STRING_PREFIX, RAW_STRING_SUFFIX},

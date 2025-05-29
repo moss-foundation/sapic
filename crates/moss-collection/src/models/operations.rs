@@ -5,10 +5,11 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
-use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::EntryId,
-    types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
+    types::{
+        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestProtocol,
+    },
 };
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]

@@ -1,8 +1,11 @@
 use serde::{Deserialize, Serialize};
-use std::path::Path;
-use std::sync::Arc;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering::SeqCst;
+use std::{
+    path::Path,
+    sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering::SeqCst},
+    },
+};
 use ts_rs::TS;
 
 use super::types::PathChangeKind;

@@ -17,10 +17,13 @@ use thiserror::Error;
 use util::names::dir_name_from_classification;
 use virtual_worktree::VirtualWorktree;
 
-use crate::models::primitives::EntryId;
-use crate::models::types::RequestProtocol;
-use crate::models::{primitives::ChangesDiffSet, types::Classification};
-use crate::worktree::virtual_snapshot::VirtualEntry;
+use crate::{
+    models::{
+        primitives::{ChangesDiffSet, EntryId},
+        types::{Classification, RequestProtocol},
+    },
+    worktree::virtual_snapshot::VirtualEntry,
+};
 
 pub(crate) const ROOT_PATH: &str = "";
 
