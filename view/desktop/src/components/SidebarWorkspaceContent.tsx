@@ -9,6 +9,7 @@ import {
 
 interface SidebarWorkspaceContentProps {
   workspaceName?: string | null;
+  // FIXME: remove from props and replace with workspaceState?.sidebar?.treeViewGroupId ?? "default";
   groupId?: string;
 }
 
