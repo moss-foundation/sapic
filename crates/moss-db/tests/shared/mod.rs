@@ -1,12 +1,11 @@
-use moss_db::ReDbClient;
-use moss_db::bincode_table::BincodeTable;
-use moss_db::encrypted_bincode_table::{EncryptedBincodeTable, EncryptionOptions};
+use moss_db::{
+    ReDbClient,
+    bincode_table::BincodeTable,
+    encrypted_bincode_table::{EncryptedBincodeTable, EncryptionOptions},
+};
 use moss_testutils::random_name::random_string;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::string::ToString;
-use std::sync::LazyLock;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::{path::PathBuf, string::ToString, sync::LazyLock};
 
 pub const TEST_PASSWORD_1: &[u8] = "password_1".as_bytes();
 pub const TEST_PASSWORD_2: &[u8] = "password_2".as_bytes();

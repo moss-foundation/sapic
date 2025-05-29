@@ -1,21 +1,24 @@
-use moss_app::manager::AppManager;
-use moss_app::service::prelude::*;
+use moss_app::{manager::AppManager, service::prelude::*};
 use moss_fs::FileSystem;
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;
-use moss_state::service::AppDefaults;
-use moss_state::{command, command::CommandContext, service::StateService};
+use moss_state::{
+    command,
+    command::CommandContext,
+    service::{AppDefaults, StateService},
+};
 use moss_storage::GlobalStorage;
 use moss_tauri::TauriResult;
 use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
-use std::marker::PhantomData;
-use std::path::Path;
-use std::{path::PathBuf, sync::Arc};
-use tauri::Runtime as TauriRuntime;
-use tauri::{AppHandle, Manager};
+use std::{
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
 
 pub fn service_pool<R: TauriRuntime>(
     app_handle: &AppHandle<R>,

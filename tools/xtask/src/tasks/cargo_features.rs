@@ -25,7 +25,10 @@ pub async fn run_cargo_features(_args: CargoFeaturesCommandArgs, metadata: Metad
             if doc.get("cargo-features").is_some() {
                 doc.as_table_mut().remove("cargo-features");
                 tokio::fs::write(&manifest_path, doc.to_string()).await?;
-                println!("Removed cargo-features from {}", manifest_path.to_path_buf());
+                println!(
+                    "Removed cargo-features from {}",
+                    manifest_path.to_path_buf()
+                );
             }
             continue;
         }
@@ -73,7 +76,7 @@ pub async fn run_cargo_features(_args: CargoFeaturesCommandArgs, metadata: Metad
                 Some(suffix_str) => !suffix_str.as_str().unwrap_or("").contains('\n'),
                 None => true,
             };
-            
+
             if needs_newline {
                 value.decor_mut().set_suffix("\n");
             }

@@ -4,10 +4,12 @@ pub mod workspace_storage;
 
 use std::sync::Arc;
 
-use crate::collection_storage::stores::{CollectionUnitStore, CollectionVariableStore};
-use crate::global_storage::stores::GlobalItemStore;
-use crate::storage::{Storage, Transactional};
-use crate::workspace_storage::stores::{WorkspaceItemStore, WorkspaceVariableStore};
+use crate::{
+    collection_storage::stores::{CollectionUnitStore, CollectionVariableStore},
+    global_storage::stores::GlobalItemStore,
+    storage::{Storage, Transactional},
+    workspace_storage::stores::{WorkspaceItemStore, WorkspaceVariableStore},
+};
 
 pub trait GlobalStorage: Storage + Transactional + Send + Sync {
     fn item_store(&self) -> Arc<dyn GlobalItemStore>;
