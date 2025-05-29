@@ -37,6 +37,8 @@ jobs:
           files: |
             **.rs
             Cargo.toml
+          files_ignore: |
+            .github/**
 
       - name: Get all changed NodeJS files
         id: node
