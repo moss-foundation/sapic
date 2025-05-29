@@ -5,12 +5,11 @@ import { useListWorkspaces } from "./useListWorkspaces";
 export const useWorkspaceMapping = () => {
   const { data: workspaces } = useListWorkspaces();
 
-  const { workspaceMap, getWorkspaceById, getWorkspaceByName } = useMemo(() => {
+  const { workspaceMap, getWorkspaceById } = useMemo(() => {
     if (!workspaces) {
       return {
         workspaceMap: new Map<string, WorkspaceInfo>(),
         getWorkspaceById: () => undefined,
-        getWorkspaceByName: () => undefined,
       };
     }
 
@@ -23,7 +22,6 @@ export const useWorkspaceMapping = () => {
     return {
       workspaceMap,
       getWorkspaceById: (id: string) => workspaceMap.get(id),
-      getWorkspaceByName: (name: string) => workspaces.find((w) => w.displayName === name),
     };
   }, [workspaces]);
 
@@ -31,12 +29,6 @@ export const useWorkspaceMapping = () => {
     workspaces: workspaces || [],
     workspaceMap,
     getWorkspaceById,
-    getWorkspaceByName,
-    // Legacy methods for backward compatibility
     getNameById: (id: string) => workspaceMap.get(id)?.displayName,
-    getIdByName: (name: string) => {
-      const workspace = workspaces?.find((w) => w.displayName === name);
-      return workspace?.id;
-    },
   };
 };
