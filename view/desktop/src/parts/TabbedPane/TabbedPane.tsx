@@ -89,15 +89,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
       } else if (mode === "empty") {
         console.log("Starting with empty TabbedPane for workspace");
-      } else {
-        if (layout?.editor) {
-          event.api?.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
-        } else {
-          event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
-        }
       }
     } catch (error) {
-      console.error("Failed to restore layout:", error);
+      console.error("Failed to initialize TabbedPane:", error);
 
       const panels = [...event.api.panels];
       for (const panel of panels) {
@@ -109,6 +103,18 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       }
     }
   };
+
+  React.useEffect(() => {
+    if (!api || mode !== "auto") return;
+
+    try {
+      if (layout?.editor) {
+        api.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+      }
+    } catch (error) {
+      console.error("Failed to restore workspace layout:", error);
+    }
+  }, [api, layout, mode]);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;
