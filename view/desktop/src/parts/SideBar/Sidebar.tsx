@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
-import { Workspace } from "@/components/Workspace";
+import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useActivityBarStore } from "@/store/activityBar";
@@ -51,17 +51,17 @@ export const Sidebar = () => {
 
   const activeItem = useActivityBarStore((state) => state.getActiveItem());
 
-  const activeGroupId = activeItem?.id || "empty";
   const activeGroupTitle = activeItem?.title || "Launchpad";
+  const activeGroupId = activeItem?.id || "default";
 
   const activeWorkspaceId = appState?.lastWorkspace;
   const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
   const hasWorkspace = !!activeWorkspace;
 
   // Content based on workspace status
-  // Pass the workspace name to the Workspace component
+  // Pass the workspace name and groupId to the SidebarWorkspaceContent component
   const sidebarContent = hasWorkspace ? (
-    <Workspace workspaceName={activeWorkspace.displayName} />
+    <SidebarWorkspaceContent workspaceName={activeWorkspace.displayName} groupId={activeGroupId} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );
