@@ -7419,6 +7419,7 @@ dependencies = [
  "smol",
  "tokio",
  "toml",
+ "toml_edit 0.22.26",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",

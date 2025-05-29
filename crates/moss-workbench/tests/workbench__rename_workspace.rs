@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_workspace_name;

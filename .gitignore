@@ -1,69 +1,79 @@
-
-
-# dependencies
+# Dependencies
 node_modules
 .pnp
 .pnp.js
 
-# testing
+# Build outputs
+build
+dist/
+out/
+.next/
+.swc/
+.turbo
+
+# Testing
 coverage
 
-# next.js
-.next/
-out/
-build
-.swc/
+# Development tools
+.lefthook/
+.husky/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# Environment files
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# turbo
-.turbo
-
-# ui
-dist/
-
-# backend
-/target
-
-**/*.rs.bk
-
-/*.txt
-*.db
-/*.session*
-
-### IDEs and Editors
+# IDEs and Editors
 .idea
 .idea/**
+
+# Operating System
+.DS_Store
+
+# Certificates
+*.pem
+
+# Rust backend
+/target
+**/*.rs.bk
+
+# Database files
+*.db
+
+# Session files
+/*.session*
+
+# Text files
+/*.txt
+
+# Logs
+/logs/
+/crates/moss-logging/logs
+
+# Project-specific directories and files
 /crates/moss-wasmhost/wasm/target
 /crates/moss-git/src/secrets
 /crates/moss-git/test-repo
-crates/moss-git/oauth.json
-crates/moss-git/.env
-crates/moss-git/test-repo-lab/
+/crates/moss-git/test-repo-lab/
 /crates/moss-collection/TestCollection
-.env
-crates/moss-git-hosting-provider/github_oauth.json
-crates/moss-git-hosting-provider/gitlab_oauth.json
-/logs/
 /crates/moss-collection/Collections
 /crates/moss-collection/tests/data
 
-# this cannot be moved to the desktop folder because it makes tailwind ignore the icons
-# Icons
-view/desktop/src/assets/icons/
-/crates/moss-logging/logs
+# OAuth configuration files
+crates/moss-git/.env
+crates/moss-git/oauth.json
+crates/moss-git-hosting-provider/github_oauth.json
+crates/moss-git-hosting-provider/gitlab_oauth.json
 
+# Test data
 **/tests/data/
+
+# Icons (this cannot be moved to the desktop folder because it makes tailwind ignore the icons)
+view/desktop/src/assets/icons/

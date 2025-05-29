@@ -1,6 +1,8 @@
-use std::any::TypeId;
-use std::collections::HashMap;
-use std::sync::{Arc, atomic::AtomicUsize};
+use std::{
+    any::TypeId,
+    collections::HashMap,
+    sync::{Arc, atomic::AtomicUsize},
+};
 use tokio::sync::Mutex;
 
 use crate::models::primitives::Identifier;

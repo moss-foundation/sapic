@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use crate::shared::{setup_test_workspace_manager, workspace_key};
 use moss_common::api::OperationError;

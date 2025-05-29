@@ -9,11 +9,11 @@
     "clean": "turbo clean",
     "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\"",
     "precommit": "lint-staged",
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "test": "vitest --globals"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,css,md,json}": "prettier --plugin=prettier-plugin-tailwindcss --write"
+    "*.{js,jsx,ts,tsx,css,md,json,toml}": "prettier --plugin=prettier-plugin-tailwindcss --plugin=prettier-plugin-toml --write"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
@@ -33,10 +33,11 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^2.1.8",
     "clsx": "^2.1.1",
-    "husky": "^9.1.7",
+    "lefthook": "^1.11.13",
     "lint-staged": "^15.4.3",
-    "prettier": "^3.4.1",
+    "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "0.6.9",
+    "prettier-plugin-toml": "^2.0.5",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.1.0",
     "ts-node": "^10.9.2",

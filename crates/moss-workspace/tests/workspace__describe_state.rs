@@ -1,7 +1,9 @@
-mod shared;
+pub mod shared;
 
-use moss_workspace::models::operations::UpdateStateInput;
-use moss_workspace::models::types::{PanelPartState, SidebarPartState};
+use moss_workspace::models::{
+    operations::UpdateStateInput,
+    types::{PanelPartState, SidebarPartState},
+};
 use shared::create_simple_editor_state;
 
 use crate::shared::setup_test_workspace;

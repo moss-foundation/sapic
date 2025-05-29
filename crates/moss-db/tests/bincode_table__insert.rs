@@ -1,9 +1,8 @@
-mod shared;
+pub mod shared;
 
-use moss_db::common::DatabaseError;
-use moss_db::DatabaseClient;
+use moss_db::{DatabaseClient, common::DatabaseError};
 
-use crate::shared::{setup_test_bincode_table, TestNode, TEST_NODE_1, TEST_NODE_2, TEST_NODE_3};
+use crate::shared::{TEST_NODE_1, TEST_NODE_2, TEST_NODE_3, TestNode, setup_test_bincode_table};
 
 #[test]
 fn insert_success() {

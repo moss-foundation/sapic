@@ -1,8 +1,10 @@
-mod shared;
+pub mod shared;
 
 use moss_common::api::OperationError;
-use moss_storage::storage::operations::{GetItem, ListByPrefix};
-use moss_storage::workspace_storage::entities::collection_store_entities::CollectionCacheEntity;
+use moss_storage::{
+    storage::operations::{GetItem, ListByPrefix},
+    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
+};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 
@@ -134,6 +136,7 @@ async fn create_collection_with_order() {
         .create_collection(CreateCollectionInput {
             name: collection_name.clone(),
             order: Some(42),
+            external_path: None,
         })
         .await;
 

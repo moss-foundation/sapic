@@ -85,11 +85,7 @@ dashmap = "6.1.0"
 async-trait = "0.1.86"
 url = "2.5.4"
 dotenv = "0.15.0"
-keyring = { version = "3", features = [
-    "apple-native",
-    "windows-native",
-    "sync-secret-service",
-] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
 uuid = { version = "1.15.1", default-features = false }
@@ -100,9 +96,7 @@ aes-gcm = "0.10.3"
 argon2 = "0.5.1"
 arc-swap = "1.7.1"
 slotmap = "1.0.7"
-scraper = { version = "0.23.1", default-features = false, features = [
-    "errors",
-] }
+scraper = { version = "0.23.1", default-features = false, features = ["errors"] }
 xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
 futures = "0.3.31"

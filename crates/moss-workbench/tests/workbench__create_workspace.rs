@@ -1,4 +1,4 @@
-mod shared;
+pub mod shared;
 
 use crate::shared::{setup_test_workspace_manager, workspace_key};
 use moss_common::api::OperationError;
@@ -143,7 +143,7 @@ async fn create_workspace_same_name() {
 
     // Check only second workspace has entry in the databased since it's been opened
 
-    let global_storage = workspace_manager.__storage();
+    let _global_storage = workspace_manager.__storage();
     let item_store = workspace_manager.__storage().item_store();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).is_ok());
     assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_err());

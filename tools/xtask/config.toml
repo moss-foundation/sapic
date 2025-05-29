@@ -1,21 +1,21 @@
 licenses = ["LICENSE-MIT"]
 
 # Global
-rust_workspace_audit.global_ignore = ["syn", "quote", "proc-macro2", "clap"]
+audit.global_ignore = ["syn", "quote", "proc-macro2", "clap"]
 
-[rust_workspace_audit.crate_ignore]
+[audit.crate_ignore]
 
 desktop = [
-    "tauri-plugin-shell",
-    "tauri-plugin-os",
-    "tauri-specta",
-    "tauri-plugin-fs",
-    "tauri-plugin-log",
-    "tauri-plugin-global-shortcut",
-    "tauri-plugin-clipboard-manager",
-    "tauri-plugin-window-state",
-    "tauri-plugin-cli",
-    "tauri-plugin-single-instance"
+  "tauri-plugin-shell",
+  "tauri-plugin-os",
+  "tauri-specta",
+  "tauri-plugin-fs",
+  "tauri-plugin-log",
+  "tauri-plugin-global-shortcut",
+  "tauri-plugin-clipboard-manager",
+  "tauri-plugin-window-state",
+  "tauri-plugin-cli",
+  "tauri-plugin-single-instance",
 ]
 
 xtask = ["cargo_metadata", "clap", "futures", "pathdiff", "toml", "smol"]

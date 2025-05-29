@@ -1,12 +1,15 @@
 use redb::{Key, ReadableTable, TableDefinition};
-use serde::Serialize;
-use serde::de::DeserializeOwned;
-use std::borrow::Borrow;
-use std::fmt::{Debug, Display};
-use std::hash::Hash;
+use serde::{Serialize, de::DeserializeOwned};
+use std::{
+    borrow::Borrow,
+    fmt::{Debug, Display},
+    hash::Hash,
+};
 
-use crate::Table;
-use crate::common::{DatabaseError, Transaction};
+use crate::{
+    Table,
+    common::{DatabaseError, Transaction},
+};
 
 #[derive(Clone)]
 pub struct BincodeTable<'a, K, V>

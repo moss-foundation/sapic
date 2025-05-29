@@ -4,8 +4,8 @@ use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::prelude::AppService;
 use serde_json::Value as JsonValue;
-use std::collections::HashSet;
 use std::{
+    collections::HashSet,
     ffi::OsStr,
     fs,
     fs::File,
@@ -13,21 +13,22 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use tracing::Level;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{Level, debug, error, info, trace, warn};
 use tracing_appender::{non_blocking::WorkerGuard, rolling::Rotation};
-use tracing_subscriber::prelude::*;
 use tracing_subscriber::{
     filter::filter_fn,
     fmt::{
         format::{FmtSpan, JsonFields},
         time::ChronoLocal,
     },
+    prelude::*,
 };
 use uuid::Uuid;
 
-use crate::models::operations::{ListLogsInput, ListLogsOutput};
-use crate::models::types::{LogEntry, LogLevel};
+use crate::models::{
+    operations::{ListLogsInput, ListLogsOutput},
+    types::{LogEntry, LogLevel},
+};
 
 pub const LEVEL_LIT: &'static str = "level";
 pub const COLLECTION_LIT: &'static str = "collection";

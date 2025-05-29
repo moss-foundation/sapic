@@ -1,0 +1,34 @@
+assert_lefthook_installed: true
+
+templates:
+  tailwind-plugin: --plugin=prettier-plugin-tailwindcss
+  toml-plugin: --plugin=prettier-plugin-toml
+
+pre-commit:
+  parallel: true
+  jobs:
+    - run: make gen-license
+      always_run: true
+      stage_fixed: true
+
+    - name: "Format Rust files"
+      run: cargo +nightly fmt --all -- --unstable-features
+      glob: "**/*.rs"
+      stage_fixed: true
+
+    - name: "Format Typescript/Javascript files"
+      run: prettier {tailwind-plugin} --write "**/*.{ts,js}"
+      glob: "**/*.{ts,js}"
+      stage_fixed: true
+
+    - name: "Format React files"
+      run: prettier {tailwind-plugin} --write "**/*.{jsx,tsx,css}"
+      glob: "**/*.{jsx,tsx,css}"
+      stage_fixed: true
+
+    - name: "Format Other files"
+      run: prettier {toml-plugin} --write "**/*.{toml,md,json}"
+      glob: "**/*.{toml,md,json}"
+      stage_fixed: true
+
+

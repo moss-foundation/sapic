@@ -1,18 +1,18 @@
 use anyhow::Result;
-use git2::Cred;
-use git2::RemoteCallbacks;
+use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
 use moss_keyring::KeyringClient;
-use oauth2::basic::BasicClient;
 use oauth2::{
     AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, RefreshToken,
-    Scope, TokenResponse, TokenUrl,
+    Scope, TokenResponse, TokenUrl, basic::BasicClient,
 };
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::net::TcpListener;
-use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::{
+    net::TcpListener,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use crate::common::utils;
 
@@ -228,8 +228,7 @@ fn compute_time_to_refresh(expires_in: Duration) -> Instant {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
-    use std::sync::Arc;
+    use std::{path::Path, sync::Arc};
 
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
