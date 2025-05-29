@@ -1,5 +1,5 @@
 import { ActionMenu, IconLabelButton } from "@/components";
-import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import CollapsibleActionMenu from "./CollapsibleActionMenu";
@@ -32,12 +32,8 @@ export const HeadBarRightItems = ({
 }: HeadBarRightItemsProps) => {
   const isMac = os === "macos";
 
-  const { data: appState } = useDescribeAppState();
-  const { getWorkspaceById } = useWorkspaceMapping();
-
-  const activeWorkspaceId = appState?.lastWorkspace;
-  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
-  const selectedWorkspace = propSelectedWorkspace || activeWorkspace?.displayName || null;
+  const workspace = useActiveWorkspace();
+  const selectedWorkspace = propSelectedWorkspace || workspace?.displayName || null;
 
   return (
     <div className="flex items-center place-self-end">

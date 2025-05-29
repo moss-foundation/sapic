@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -30,12 +30,8 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  const { data: appState } = useDescribeAppState();
-  const { getWorkspaceById } = useWorkspaceMapping();
-
-  const activeWorkspaceId = appState?.lastWorkspace;
-  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
-  const selectedWorkspace = activeWorkspace?.displayName || null;
+  const workspace = useActiveWorkspace();
+  const selectedWorkspace = workspace?.displayName || null;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);

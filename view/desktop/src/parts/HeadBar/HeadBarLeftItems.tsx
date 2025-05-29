@@ -1,5 +1,5 @@
 import { ActionMenu, IconLabelButton } from "@/components";
-import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
@@ -28,12 +28,8 @@ export const HeadBarLeftItems = ({
   const isWindowsOrLinux = os === "windows" || os === "linux";
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
-  const { data: appState } = useDescribeAppState();
-  const { getWorkspaceById } = useWorkspaceMapping();
-
-  const activeWorkspaceId = appState?.lastWorkspace;
-  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
-  const selectedWorkspace = propSelectedWorkspace || activeWorkspace?.displayName || null;
+  const workspace = useActiveWorkspace();
+  const selectedWorkspace = propSelectedWorkspace || workspace?.displayName || null;
 
   return (
     <div

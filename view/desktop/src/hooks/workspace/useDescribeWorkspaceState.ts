@@ -1,7 +1,7 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
-import { useDescribeAppState } from "../appState/useDescribeAppState";
+import { useActiveWorkspace } from "./useActiveWorkspace";
 
 export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeWorkspaceState";
 
@@ -21,13 +21,12 @@ interface UseDescribeWorkspaceStateOptions {
 
 export const useDescribeWorkspaceState = (options: UseDescribeWorkspaceStateOptions = {}) => {
   const { enabled = true } = options;
-  const { data: appState } = useDescribeAppState();
-
-  const activeWorkspaceId = appState?.lastWorkspace;
+  const workspace = useActiveWorkspace();
+  const workspaceId = workspace?.id || null;
 
   return useQuery<DescribeStateOutput, Error>({
-    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, activeWorkspaceId],
+    queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY, workspaceId],
     queryFn: describeWorkspaceStateFn,
-    enabled: enabled && !!activeWorkspaceId,
+    enabled: enabled && !!workspaceId,
   });
 };
