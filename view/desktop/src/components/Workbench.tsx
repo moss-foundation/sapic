@@ -6,12 +6,11 @@ import { AppLayout, RootLayout } from "@/layouts";
 
 export const Workbench = () => {
   const { data: appState, isLoading: isLoadingAppState } = useDescribeAppState();
-  const { getNameById } = useWorkspaceMapping();
+  const { getWorkspaceById } = useWorkspaceMapping();
 
-  // Convert workspace ID to workspace name for compatibility
-  const currentWorkspaceId = appState?.lastWorkspace;
-  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
-  const hasWorkspace = !!currentWorkspaceName;
+  const activeWorkspaceId = appState?.lastWorkspace;
+  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
+  const hasWorkspace = !!activeWorkspace;
 
   if (isLoadingAppState) {
     return <div>Loading workbench state...</div>;
@@ -20,7 +19,9 @@ export const Workbench = () => {
   return (
     <ActivityEventsProvider>
       <RootLayout>
-        <AppLayout>{hasWorkspace ? <Workspace workspaceName={currentWorkspaceName} /> : <EmptyWorkspace />}</AppLayout>
+        <AppLayout>
+          {hasWorkspace ? <Workspace workspaceName={activeWorkspace.displayName} /> : <EmptyWorkspace />}
+        </AppLayout>
       </RootLayout>
     </ActivityEventsProvider>
   );

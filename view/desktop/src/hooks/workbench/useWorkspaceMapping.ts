@@ -1,42 +1,42 @@
 import { useMemo } from "react";
+import { WorkspaceInfo } from "@repo/moss-workbench";
 import { useListWorkspaces } from "./useListWorkspaces";
 
 export const useWorkspaceMapping = () => {
   const { data: workspaces } = useListWorkspaces();
 
-  const { idToName, nameToId, getWorkspaceById, getWorkspaceByName } = useMemo(() => {
+  const { workspaceMap, getWorkspaceById, getWorkspaceByName } = useMemo(() => {
     if (!workspaces) {
       return {
-        idToName: new Map<string, string>(),
-        nameToId: new Map<string, string>(),
+        workspaceMap: new Map<string, WorkspaceInfo>(),
         getWorkspaceById: () => undefined,
         getWorkspaceByName: () => undefined,
       };
     }
 
-    const idToName = new Map<string, string>();
-    const nameToId = new Map<string, string>();
+    const workspaceMap = new Map<string, WorkspaceInfo>();
 
     workspaces.forEach((workspace) => {
-      idToName.set(workspace.id, workspace.displayName);
-      nameToId.set(workspace.displayName, workspace.id);
+      workspaceMap.set(workspace.id, workspace);
     });
 
     return {
-      idToName,
-      nameToId,
-      getWorkspaceById: (id: string) => workspaces.find((w) => w.id === id),
+      workspaceMap,
+      getWorkspaceById: (id: string) => workspaceMap.get(id),
       getWorkspaceByName: (name: string) => workspaces.find((w) => w.displayName === name),
     };
   }, [workspaces]);
 
   return {
     workspaces: workspaces || [],
-    idToName,
-    nameToId,
+    workspaceMap,
     getWorkspaceById,
     getWorkspaceByName,
-    getNameById: (id: string) => idToName.get(id),
-    getIdByName: (name: string) => nameToId.get(name),
+    // Legacy methods for backward compatibility
+    getNameById: (id: string) => workspaceMap.get(id)?.displayName,
+    getIdByName: (name: string) => {
+      const workspace = workspaces?.find((w) => w.displayName === name);
+      return workspace?.id;
+    },
   };
 };

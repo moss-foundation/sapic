@@ -32,14 +32,12 @@ export const HeadBarRightItems = ({
 }: HeadBarRightItemsProps) => {
   const isMac = os === "macos";
 
-  // Get workspace from appState as backup to prop
   const { data: appState } = useDescribeAppState();
-  const { getNameById } = useWorkspaceMapping();
+  const { getWorkspaceById } = useWorkspaceMapping();
 
-  // Get workspace name from prop first, then appState as backup
-  const currentWorkspaceId = appState?.lastWorkspace;
-  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
-  const selectedWorkspace = propSelectedWorkspace || currentWorkspaceName;
+  const activeWorkspaceId = appState?.lastWorkspace;
+  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
+  const selectedWorkspace = propSelectedWorkspace || activeWorkspace?.displayName || null;
 
   return (
     <div className="flex items-center place-self-end">

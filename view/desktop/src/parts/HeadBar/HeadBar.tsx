@@ -31,11 +31,11 @@ export const HeadBar = () => {
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
   const { data: appState } = useDescribeAppState();
-  const { getNameById } = useWorkspaceMapping();
+  const { getWorkspaceById } = useWorkspaceMapping();
 
-  const currentWorkspaceId = appState?.lastWorkspace;
-  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
-  const selectedWorkspace = currentWorkspaceName;
+  const activeWorkspaceId = appState?.lastWorkspace;
+  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
+  const selectedWorkspace = activeWorkspace?.displayName || null;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);

@@ -37,7 +37,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
   const { data: appState } = useDescribeAppState();
-  const { getNameById } = useWorkspaceMapping();
+  const { getWorkspaceById } = useWorkspaceMapping();
 
   const lastActiveGroupRef = useRef<string | null>(null);
 
@@ -54,15 +54,14 @@ export const Sidebar = () => {
   const activeGroupId = activeItem?.id || "empty";
   const activeGroupTitle = activeItem?.title || "Launchpad";
 
-  // Get workspace name from appState
-  const currentWorkspaceId = appState?.lastWorkspace;
-  const currentWorkspaceName = currentWorkspaceId ? getNameById(currentWorkspaceId) : null;
-  const hasWorkspace = !!currentWorkspaceName;
+  const activeWorkspaceId = appState?.lastWorkspace;
+  const activeWorkspace = activeWorkspaceId ? getWorkspaceById(activeWorkspaceId) : null;
+  const hasWorkspace = !!activeWorkspace;
 
   // Content based on workspace status
   // Pass the workspace name to the Workspace component
   const sidebarContent = hasWorkspace ? (
-    <Workspace groupId={activeGroupId} workspaceName={currentWorkspaceName} />
+    <Workspace groupId={activeGroupId} workspaceName={activeWorkspace.displayName} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );
