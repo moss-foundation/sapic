@@ -61,7 +61,7 @@ export const Sidebar = () => {
   // Content based on workspace status
   // Pass the workspace name to the Workspace component
   const sidebarContent = hasWorkspace ? (
-    <Workspace groupId={activeGroupId} workspaceName={activeWorkspace.displayName} />
+    <Workspace workspaceName={activeWorkspace.displayName} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );

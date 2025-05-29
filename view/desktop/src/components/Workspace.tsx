@@ -1,18 +1,20 @@
-import { useEffect } from "react";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useListCollections } from "@/hooks/collection/useListCollections";
 import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import { ContentLayout } from "@/layouts/ContentLayout";
 import CollectionTreeView from "./CollectionTreeView";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
+import {
+  TREE_VIEW_GROUP_COLLECTIONS,
+  TREE_VIEW_GROUP_ENVIRONMENTS,
+  TREE_VIEW_GROUP_MOCK_SERVERS,
+} from "@repo/moss-workspace";
 
 interface WorkspaceProps {
-  groupId?: string;
   workspaceName?: string | null;
 }
 
-export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps) => {
-  // Use the provided workspaceName prop - context is no longer needed
+export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   const effectiveWorkspaceName = workspaceName ?? null;
 
   const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState({});
@@ -21,14 +23,11 @@ export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps
     isLoading: isLoadingCollections,
     error: collectionsError,
   } = useListCollections(effectiveWorkspaceName);
-  const { data: viewGroup, isLoading: isLoadingViewGroup } = useGetViewGroup(groupId);
 
-  useEffect(() => {
-    if (effectiveWorkspaceName) {
-      // Update page title when workspace changes
-      document.title = `Sapic - ${effectiveWorkspaceName}`;
-    }
-  }, [effectiveWorkspaceName]);
+  // Get groupId from sidebar state, defaulting to "default" if not available
+  const groupId = workspaceState?.sidebar?.treeViewGroupId ?? "default";
+
+  const { data: viewGroup, isLoading: isLoadingViewGroup } = useGetViewGroup(groupId);
 
   // Show loading state while any critical data is loading
   if (isLoadingWorkspace || isLoadingCollections || isLoadingViewGroup) {
@@ -78,10 +77,10 @@ export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps
 
   // Handle different sidebar views based on groupId
   switch (groupId) {
-    case "collections.groupId":
+    case TREE_VIEW_GROUP_COLLECTIONS:
       return <CollectionTreeView />;
 
-    case "environments.groupId":
+    case TREE_VIEW_GROUP_ENVIRONMENTS:
       return (
         <ContentLayout>
           <div className="p-6">
@@ -91,7 +90,7 @@ export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps
         </ContentLayout>
       );
 
-    case "mock.groupId":
+    case TREE_VIEW_GROUP_MOCK_SERVERS:
       return (
         <ContentLayout>
           <div className="p-6">
@@ -102,7 +101,6 @@ export const Workspace = ({ groupId = "default", workspaceName }: WorkspaceProps
       );
 
     default:
-      // Default sidebar view - show collections
       return (
         <ContentLayout>
           <div className="p-6">
