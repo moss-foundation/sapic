@@ -93,16 +93,16 @@ pub async fn check_dependencies_job(
 
 async fn handle_package_dependencies(
     cargo_toml: Value,
-    rwa_config: &AuditConfig,
+    config: &AuditConfig,
     package: Package,
 ) -> Result<()> {
     if let Some(dependencies) = cargo_toml.get("dependencies").and_then(|d| d.as_table()) {
         for (dep_name, dep_value) in dependencies {
-            if rwa_config.global_ignore.contains(&dep_name) {
+            if config.global_ignore.contains(&dep_name) {
                 trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                 continue;
             }
-            if let Some(ignored_list) = rwa_config.crate_ignore.get(&package.name) {
+            if let Some(ignored_list) = config.crate_ignore.get(&package.name) {
                 if ignored_list.contains(&dep_name) {
                     trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                     continue;
