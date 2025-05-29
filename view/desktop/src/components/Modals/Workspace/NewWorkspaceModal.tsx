@@ -7,6 +7,7 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+import { WorkspaceMode } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../types";
 
@@ -15,7 +16,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
   const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [name, setName] = useState("");
-  const [mode, setMode] = useState<"REQUEST_FIRST" | "DESIGN_FIRST">("REQUEST_FIRST");
+  const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   const handleSubmit = async () => {

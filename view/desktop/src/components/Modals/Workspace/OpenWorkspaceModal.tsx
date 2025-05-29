@@ -7,10 +7,9 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { ModalForm } from "@/components/ModalForm";
 import SelectOutlined from "@/components/SelectOutlined";
 import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
+import { WorkspaceMode } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../types";
-
-type WorkspaceMode = "REQUEST_FIRST" | "DESIGN_FIRST";
 
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { data: workspaces, isLoading, error } = useListWorkspaces();
