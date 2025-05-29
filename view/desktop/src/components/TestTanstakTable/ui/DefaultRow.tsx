@@ -11,11 +11,12 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { Row } from "@tanstack/react-table";
+import { Row, Table } from "@tanstack/react-table";
 
 interface DefaultRowProps<TData> extends HTMLAttributes<HTMLTableRowElement> {
   disableDnd?: boolean;
   row: Row<TData>;
+  table: Table<TData>;
 }
 
 export const DefaultRow = <TData,>({
@@ -23,18 +24,21 @@ export const DefaultRow = <TData,>({
   children,
   className,
   disableDnd = false,
+  table,
   ...props
 }: DefaultRowProps<TData>) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const originalRow = row.original;
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
+  const originalRow = row.original;
+
   useEffect(() => {
     const handle = handleRef.current;
     const element = rowRef.current;
+
     if (!element || !handle || disableDnd) return;
 
     return combine(
@@ -43,7 +47,8 @@ export const DefaultRow = <TData,>({
         getInitialData: () => ({
           type: "TableRow",
           data: {
-            originalRow,
+            tableId: table.options.meta?.id,
+            row: originalRow,
           },
         }),
         onDrop: () => {
@@ -65,7 +70,7 @@ export const DefaultRow = <TData,>({
         },
         getData({ input }) {
           return attachClosestEdge(
-            { type: "TableRow", data: { originalRow } },
+            { type: "TableRow", data: { tableId: table.options.meta?.id, row: originalRow } },
             {
               element,
               input,
@@ -76,7 +81,7 @@ export const DefaultRow = <TData,>({
         canDrop({ source }) {
           return source.data.type === "TableRow";
         },
-        onDrop({}) {
+        onDrop() {
           setClosestEdge(null);
         },
         onDragLeave() {
@@ -106,7 +111,7 @@ export const DefaultRow = <TData,>({
         <div ref={handleRef} className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
       )}
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
-      {preview && createPortal(<DefaultRow row={row} />, preview)}
+      {preview && createPortal(<DefaultRow table={table} row={row} />, preview)}
     </tr>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActionMenu } from "@/components";
@@ -16,10 +16,11 @@ import {
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
-import { createColumnHelper } from "@tanstack/react-table";
+import { CellContext, createColumnHelper } from "@tanstack/react-table";
 
 import * as iconsNames from "../assets/icons";
 import testData from "../components/TestTanstakTable/testData.json";
+import testData2 from "../components/TestTanstakTable/testData2.json";
 
 export const KitchenSink = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -63,6 +64,7 @@ const ComponentGallery = () => {
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <ExampleTable />
+      <ExampleTable2 />
       {/* Random Data Display */}
       {data !== null && (
         <div className="rounded-lg bg-blue-50 p-4 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
@@ -228,14 +230,15 @@ interface TestData {
 }
 
 const columnHelper = createColumnHelper<TestData>();
+
 const columns = [
   columnHelper.display({
     id: "checkbox",
     header: ({ table }) => (
       <div className="flex items-center justify-center">
         <CheckboxWithLabel
-          checked={table.getIsAllRowsSelected()}
-          onCheckedChange={table.getToggleAllRowsSelectedHandler()}
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         />
       </div>
     ),
@@ -254,38 +257,17 @@ const columns = [
   }),
   columnHelper.accessor("key", {
     header: () => "key",
-    cell: (info) => (
-      <input
-        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
-        disabled={info.row.original.properties.disabled}
-        value={info.getValue()}
-        onChange={() => {}}
-      />
-    ),
+    cell: (info) => <TestTableInputCell info={info} />,
     minSize: 60,
   }),
   columnHelper.accessor("value", {
     header: () => "value",
-    cell: (info) => (
-      <input
-        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
-        disabled={info.row.original.properties.disabled}
-        value={info.getValue()}
-        onChange={() => {}}
-      />
-    ),
+    cell: (info) => <TestTableInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("description", {
     header: () => "description",
-    cell: (info) => (
-      <input
-        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
-        disabled={info.row.original.properties.disabled}
-        value={info.getValue()}
-        onChange={() => {}}
-      />
-    ),
+    cell: (info) => <TestTableInputCell info={info} />,
     meta: {
       isGrow: true,
     },
@@ -293,26 +275,12 @@ const columns = [
   }),
   columnHelper.accessor("global_value", {
     header: () => "global_value",
-    cell: (info) => (
-      <input
-        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
-        disabled={info.row.original.properties.disabled}
-        value={info.getValue()}
-        onChange={() => {}}
-      />
-    ),
+    cell: (info) => <TestTableInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("local_value", {
     header: () => "local_value",
-    cell: (info) => (
-      <input
-        className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
-        disabled={info.row.original.properties.disabled}
-        value={info.getValue()}
-        onChange={() => {}}
-      />
-    ),
+    cell: (info) => <TestTableInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.display({
@@ -330,6 +298,18 @@ const columns = [
     size: 90,
   }),
 ];
+
+const TestTableInputCell = ({ info }: { info: CellContext<TestData, number | string> }) => {
+  const [str, setStr] = useState(info.getValue());
+
+  return (
+    <input
+      className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+      value={str}
+      onChange={(e) => setStr(e.target.value)}
+    />
+  );
+};
 
 const TableActionButton = ({ icon }: { icon: "Add" | "Edit" | "Delete" }) => {
   if (icon === "Add") {
@@ -396,8 +376,14 @@ const TableActionButton = ({ icon }: { icon: "Add" | "Edit" | "Delete" }) => {
       </button>
     );
   }
+
+  return null;
 };
 
 const ExampleTable = () => {
-  return <DataTable<TestData, string | number> columns={columns} data={testData} />;
+  return <DataTable<string | number> columns={columns} data={testData} />;
+};
+
+const ExampleTable2 = () => {
+  return <DataTable<string | number> columns={columns} data={testData2} />;
 };

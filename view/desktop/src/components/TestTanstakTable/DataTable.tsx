@@ -1,8 +1,17 @@
-import { useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
-import { ColumnDef, getCoreRowModel, getSortedRowModel, SortingState, useReactTable } from "@tanstack/react-table";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import {
+  ColumnDef,
+  getCoreRowModel,
+  getSortedRowModel,
+  RowData,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
 import { calculateTableSizing } from "./calculateTableSizing";
 import * as TableBody from "./TableBody";
@@ -14,10 +23,41 @@ import { DefaultRow } from "./ui/DefaultRow";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  meta?: {
+    id: string;
+    setData: (data: TData[]) => void;
+  };
 }
 
-export function DataTable<TData, TValue>({ columns, data: initialData }: DataTableProps<TData, TValue>) {
-  const [data, setData] = useState<TData[]>(initialData);
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    id: string;
+  }
+}
+
+interface TestData {
+  key: string;
+  value: string;
+  type: string;
+  description: string;
+  global_value: string;
+  local_value: number;
+  properties: {
+    disabled: boolean;
+  };
+}
+
+interface DnDRowData {
+  type: "TableRow";
+  data: {
+    tableId: string;
+    row: TestData;
+  };
+}
+
+export function DataTable<TValue>({ columns, data: initialData }: DataTableProps<TestData, TValue>) {
+  const tableId = useId();
+  const [data, setData] = useState<TestData[]>(initialData);
 
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -29,14 +69,15 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     enableColumnResizing: true,
+    enableRowSelection: true,
     columnResizeMode: "onChange",
-    enableRowSelection: (row) => !row.original.properties.disabled,
+    getRowId: (row) => row.key,
     state: {
       rowSelection,
       sorting,
     },
     meta: {
-      id: useId(),
+      id: tableId,
     },
   });
 
@@ -59,8 +100,60 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
     };
   }, [headers, table]);
 
+  useEffect(() => {
+    monitorForElements({
+      canMonitor: ({ source }) => {
+        return source.data.type === "TableRow";
+      },
+
+      onDrop({ location, source }) {
+        if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
+
+        const sourceTarget = source.data.data as DnDRowData["data"];
+        const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
+
+        if (sourceTarget.tableId === dropTarget.tableId) {
+          if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
+            setData((prev) => {
+              const sourceIndex = prev.findIndex((row) => row.key === sourceTarget.row.key);
+              const dropIndex = prev.findIndex((row) => row.key === dropTarget.row.key);
+
+              const newData = [...prev];
+
+              newData[sourceIndex] = dropTarget.row;
+              newData[dropIndex] = sourceTarget.row;
+
+              console.log(newData);
+
+              return newData;
+            });
+          }
+        }
+
+        if (sourceTarget.tableId === tableId) {
+          setData((prev) => {
+            return [...prev].filter((row) => row.key !== sourceTarget.row.key);
+          });
+        }
+
+        if (dropTarget.tableId === tableId) {
+          const edge = extractClosestEdge(location.current.dropTargets[0].data);
+          setData((prev) => {
+            const dropIndex = prev.findIndex((row) => row.key === dropTarget.row.key);
+            const newData = [...prev];
+
+            const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
+            newData.splice(insertIndex, 0, sourceTarget.row);
+
+            return newData;
+          });
+        }
+      },
+    });
+  }, [tableId]);
+
   return (
-    <Scrollbar className="w-full">
+    <Scrollbar className="relative w-full">
       <div className="w-[calc(100%-1px)]" ref={tableContainerRef}>
         <table
           className="w-full table-fixed border-collapse rounded border border-[#E0E0E0]"
@@ -77,45 +170,45 @@ export function DataTable<TData, TValue>({ columns, data: initialData }: DataTab
           </TableHead.Head>
           <TableBody.Body>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => {
-                const isLastRow = index === table.getRowModel().rows.length - 1;
-
-                return (
-                  <>
-                    <DefaultRow row={row} key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        return <DefaultCell key={cell.id} cell={cell} />;
-                      })}
-                    </DefaultRow>
-
-                    {isLastRow && (
-                      <DefaultRow row={row} key={"AddNewRowForm"} disableDnd>
-                        {row.getVisibleCells().map((cell) => {
-                          if (cell.column.id === "actions" || cell.column.id === "checkbox") {
-                            return (
-                              <td
-                                key={cell.id}
-                                className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
-                                style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
-                              />
-                            );
-                          }
-
-                          return (
-                            <td
-                              key={cell.id}
-                              className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
-                              style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
-                            >
-                              <input placeholder={cell.column.id} className="w-full outline-0" />
-                            </td>
-                          );
-                        })}
-                      </DefaultRow>
-                    )}
-                  </>
-                );
-              })
+              <>
+                {table.getRowModel().rows.map((row) => (
+                  <DefaultRow table={table} row={row} key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <DefaultCell key={cell.id} cell={cell} />
+                    ))}
+                  </DefaultRow>
+                ))}
+                <DefaultRow
+                  table={table}
+                  row={table.getRowModel().rows[table.getRowModel().rows.length - 1]}
+                  key="AddNewRowForm"
+                  disableDnd
+                >
+                  {table
+                    .getRowModel()
+                    .rows[table.getRowModel().rows.length - 1].getVisibleCells()
+                    .map((cell) => {
+                      if (cell.column.id === "actions" || cell.column.id === "checkbox") {
+                        return (
+                          <td
+                            key={cell.id}
+                            className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
+                            style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                          />
+                        );
+                      }
+                      return (
+                        <td
+                          key={cell.id}
+                          className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
+                          style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                        >
+                          <input placeholder={cell.column.id} className="w-full outline-0" />
+                        </td>
+                      );
+                    })}
+                </DefaultRow>
+              </>
             ) : (
               <TableBody.Row>
                 <TableBody.Cell colSpan={columns.length} className="h-24 text-center">

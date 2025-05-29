@@ -9,9 +9,8 @@ function Body({ children, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
 function Row({ children, className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
   return (
     <>
-      <tr className={cn("relative", className)} {...props}>
+      <tr className={cn(className)} {...props}>
         {children}
-        <div className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
       </tr>
     </>
   );

@@ -1,4 +1,4 @@
-import { lazy, StrictMode, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@/app/i18n";
@@ -44,16 +44,14 @@ if (rootElement) {
     .show()
     .then(() =>
       createRoot(rootElement).render(
-        <StrictMode>
-          <QueryClientProvider client={queryClient}>
-            {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <GeneralProvider>
-              <Suspense fallback={<PageLoader />}>
-                <App />
-              </Suspense>
-            </GeneralProvider>
-          </QueryClientProvider>
-        </StrictMode>
+        <QueryClientProvider client={queryClient}>
+          {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
+          <GeneralProvider>
+            <Suspense fallback={<PageLoader />}>
+              <App />
+            </Suspense>
+          </GeneralProvider>
+        </QueryClientProvider>
       )
     );
 
