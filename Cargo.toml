@@ -1,32 +1,31 @@
 [workspace]
 resolver = "1"
 members = [
-    "crates/moss-git",
-    "crates/moss-git-hosting-provider",
-    "crates/moss-tauri",
-    "crates/moss-text",
-    "crates/moss-collection",
-    "crates/moss-app",
-    "crates/moss-db",
-    "crates/moss-fs",
-    "crates/moss-keyring",
-    "crates/moss-vault",
-    "crates/moss-theme",
-    "crates/moss-state",
-    "crates/moss-nls",
-    "crates/moss-logging",
-    "crates/moss-session",
-    "crates/moss-workspace",
-    "crates/moss-environment",
-    "crates/moss-testutils",
-    "crates/moss-common",
-    "crates/moss-workbench",
-    "crates/moss-storage",
-    "crates/moss-activity-indicator",
-    "crates/moss-file",
-    "crates/moss-kdl",
-    "tools/xtask",
-    "view/desktop/bin",
+  "crates/moss-git",
+  "crates/moss-git-hosting-provider",
+  "crates/moss-tauri",
+  "crates/moss-text",
+  "crates/moss-collection",
+  "crates/moss-app",
+  "crates/moss-db",
+  "crates/moss-fs",
+  "crates/moss-keyring",
+  "crates/moss-vault",
+  "crates/moss-theme",
+  "crates/moss-state",
+  "crates/moss-nls",
+  "crates/moss-logging",
+  "crates/moss-session",
+  "crates/moss-workspace",
+  "crates/moss-environment",
+  "crates/moss-testutils",
+  "crates/moss-common",
+  "crates/moss-workbench",
+  "crates/moss-storage",
+  "crates/moss-activity-indicator",
+  "crates/moss-file",
+  "tools/xtask",
+  "view/desktop/bin",
 ]
 
 [workspace.dependencies]
@@ -53,7 +52,7 @@ moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
-moss_kdl = { path = "crates/moss-kdl" }
+
 async-stream = "0.3.6"
 notify = "8.0"
 redb = "2.5.0"

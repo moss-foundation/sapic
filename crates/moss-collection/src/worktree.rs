@@ -1,20 +1,26 @@
 pub mod physical_snapshot;
 pub mod physical_worktree;
+pub mod specification;
 pub mod util;
 pub mod virtual_snapshot;
 pub mod virtual_worktree;
 
 use moss_common::api::OperationError;
 use moss_fs::FileSystem;
-use moss_kdl::spec_models::SpecificationMetadata;
-use moss_kdl::spec_models::dir_spec::{DirContentByClass, DirSpecificationModel};
-use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
-use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
+// use moss_kdl::spec_models::SpecificationMetadata;
+// use moss_kdl::spec_models::dir_spec::{DirContentByClass, DirSpecificationModel};
+// use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
+// use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
 use moss_text::sanitized;
+
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
+use specification::{
+    DirSpecificationModel, DirSpecificationModelInner, HttpDirSpecificationModel,
+    RequestDirSpecificationModel, SpecificationMetadata, SpecificationMode, SpecificationModel,
+};
 use std::{
+    collections::HashMap,
     path::{Component, Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
@@ -23,12 +29,17 @@ use util::names::dir_name_from_classification;
 use uuid::Uuid;
 use virtual_worktree::VirtualWorktree;
 
-use crate::models::primitives::EntryId;
-use crate::models::specification::SpecificationContent;
-use crate::models::types::RequestProtocol;
-use crate::models::{primitives::ChangesDiffSet, types::Classification};
-use crate::tokens::FOLDER_SPEC_FILENAME;
-use crate::worktree::virtual_snapshot::VirtualEntry;
+use crate::{
+    models::{
+        primitives::{ChangesDiffSet, EntryId},
+        specification::{
+            DirSpecificationInfo, ItemSpecificationInfo, SpecificationContent, SpecificationInfo,
+        },
+        types::{Classification, RequestProtocol},
+    },
+    tokens::FOLDER_SPEC_FILENAME,
+    worktree::virtual_snapshot::VirtualEntry,
+};
 
 pub(crate) const ROOT_PATH: &str = "";
 
@@ -102,10 +113,7 @@ impl Worktree {
         &mut self,
         destination: PathBuf,
         order: Option<usize>,
-        protocol: Option<RequestProtocol>,
-        specification: Option<SpecificationContent>,
-        classification: Classification,
-        is_dir: bool,
+        specification: SpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
         // Check if an entry with the same virtual path already exists
         if self.vwt.entry_by_path(&destination).is_some() {
@@ -123,12 +131,13 @@ impl Worktree {
             })
             .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
 
-        if is_dir {
-            self.create_dir(parent, name, order, classification, specification)
-                .await
-        } else {
-            self.create_item(parent, name, classification, specification, order, protocol)
-                .await
+        match specification {
+            SpecificationInfo::Dir(specification) => {
+                self.create_dir(parent, name, order, specification).await
+            }
+            SpecificationInfo::Item(specification) => {
+                self.create_item(parent, name, order, specification).await
+            }
         }
     }
 
@@ -137,10 +146,7 @@ impl Worktree {
         parent: PathBuf,
         name: String,
         order: Option<usize>,
-        // TODO: Dir classification
-        classification: Classification,
-        // FIXME: You shouldn't provide spec content when creating a dir
-        specification: Option<SpecificationContent>,
+        specification: DirSpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
         // TODO: Directory specification
         let mut physical_changes = vec![];
@@ -173,9 +179,11 @@ impl Worktree {
                 let metadata = SpecificationMetadata { id: Uuid::new_v4() };
                 let dir_model = DirSpecificationModel {
                     metadata,
-                    content: None,
+                    inner: DirSpecificationModelInner::Request(RequestDirSpecificationModel::Http(
+                        HttpDirSpecificationModel {},
+                    )),
                 };
-                let model = Arc::new(WorktreeEntrySpecificationModel::Dir(dir_model));
+                let model = SpecificationModel::Dir(dir_model);
 
                 current_level.push(part);
                 physical_changes.extend(
@@ -232,10 +240,8 @@ impl Worktree {
         &mut self,
         parent: PathBuf,
         name: String,
-        classification: Classification,
-        specification: Option<SpecificationContent>,
         order: Option<usize>,
-        protocol: Option<RequestProtocol>,
+        specification: ItemSpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
@@ -257,6 +263,7 @@ impl Worktree {
                 .read()
                 .await
                 .lowest_ancestor_path(&encoded_path);
+
             // For each missing level before the last one, create both the directory and its spec file
             let missing_part = encoded_path
                 .strip_prefix(&lowest_ancestor_path)
@@ -269,9 +276,11 @@ impl Worktree {
                     let metadata = SpecificationMetadata { id: Uuid::new_v4() };
                     let dir_model = DirSpecificationModel {
                         metadata,
-                        content: None,
+                        inner: DirSpecificationModelInner::Request(
+                            RequestDirSpecificationModel::Http(HttpDirSpecificationModel {}),
+                        ),
                     };
-                    let model = WorktreeEntrySpecificationModel::Dir(dir_model);
+                    let model = SpecificationModel::Dir(dir_model);
 
                     current_level.push(part);
                     physical_changes.extend(
@@ -341,13 +350,7 @@ impl Worktree {
                     current_level.push(part);
                     virtual_changes.extend(
                         self.vwt
-                            .create_entry(
-                                &current_level,
-                                order,
-                                classification.clone(),
-                                None,
-                                true,
-                            )?
+                            .create_entry(&current_level, order, classification.clone(), None)?
                             .into_iter()
                             .cloned(),
                     );

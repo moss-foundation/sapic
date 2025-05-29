@@ -12,7 +12,6 @@ moss_storage.workspace = true
 moss_text.workspace = true
 moss_file.workspace = true
 moss_environment.workspace = true
-moss_kdl.workspace = true
 
 anyhow.workspace = true
 kdl.workspace = true

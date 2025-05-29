@@ -19,14 +19,7 @@ impl Collection {
         let mut worktree_lock = worktree.write().await;
 
         let changes = worktree_lock
-            .create_entry(
-                input.destination,
-                input.order,
-                input.protocol,
-                input.specification,
-                input.classification,
-                input.is_dir,
-            )
+            .create_entry(input.destination, input.order, input.specification)
             .await?;
 
         Ok(CreateEntryOutput {

@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 moss_fs.workspace = true
-moss_kdl.workspace = true
 
 kdl.workspace = true
 toml_edit.workspace = true

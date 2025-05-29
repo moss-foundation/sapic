@@ -2991,7 +2991,6 @@ dependencies = [
  "moss_environment",
  "moss_file",
  "moss_fs",
- "moss_kdl",
  "moss_storage",
  "moss_testutils",
  "moss_text",
@@ -3068,7 +3067,6 @@ dependencies = [
  "anyhow",
  "kdl",
  "moss_fs",
- "moss_kdl",
  "serde",
  "serde_json",
  "tokio",
@@ -3123,19 +3121,6 @@ dependencies = [
  "ssh2",
  "url",
  "webbrowser",
-]
-
-[[package]]
-name = "moss_kdl"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "kdl",
- "scraper",
- "serde_json",
- "thiserror 2.0.12",
- "uuid",
- "xml-rs",
 ]
 
 [[package]]

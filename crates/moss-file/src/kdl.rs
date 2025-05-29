@@ -1,18 +1,13 @@
 use anyhow::{Result, anyhow};
 use kdl::KdlDocument;
 use moss_fs::FileSystem;
-use std::ops::Deref;
-use std::path::Path;
-use std::sync::Arc;
+use std::{ops::Deref, path::Path, sync::Arc};
 
 use crate::common::FileHandle;
-use crate::tokens::{DELETE_SPECFILE, FOLDER_SPECFILE, GET_SPECFILE, POST_SPECFILE, PUT_SPECFILE};
 
-// kdl crate does not follow the serde serialization model
-#[derive(Clone)]
 pub struct KdlFileHandle<T>
 where
-    T: Clone + Into<KdlDocument>,
+    T: Clone,
 {
     inner: FileHandle<T>,
 }

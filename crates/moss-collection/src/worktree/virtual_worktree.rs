@@ -1,15 +1,14 @@
 use super::{
     WorktreeError, WorktreeResult,
+    specification::SpecificationModel,
     virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
     types::{Classification, PathChangeKind},
 };
-use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
-use std::path::PathBuf;
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 use uuid::Uuid;
@@ -48,29 +47,29 @@ impl VirtualWorktree {
         destination: impl AsRef<Path>,
         order: Option<usize>,
         class: Classification,
-        model: Arc<WorktreeEntrySpecificationModel>,
+        model: Arc<SpecificationModel>,
     ) -> WorktreeResult<ChangesDiffSet> {
-        let path = Arc::from(destination.as_ref());
+        let path: Arc<Path> = destination.as_ref().into();
         if self.snapshot.exists(&path) {
-            return Err(WorktreeError::AlreadyExists(
-                path.to_string_lossy().to_string(),
-            ));
-        }
-        let mut created_entries = Vec::new();
-        let id = model.id();
-        match model {
-            WorktreeEntrySpecificationModel::Item(item) => {
-                let id = item.id();
-                let entry = VirtualEntry::Item {
-                    id,
-                    class,
-                    path,
-                    specification: ,
-                };
-            }
-            WorktreeEntrySpecificationModel::Dir(dir) => {}
+            return Ok(ChangesDiffSet::from(vec![]));
         }
 
+        let mut created_entries = Vec::new();
+        let id = model.id();
+        let entry = match model.as_ref() {
+            SpecificationModel::Item(item) => VirtualEntry::Item {
+                id,
+                class,
+                path,
+                specification: Arc::new(item.clone()),
+            },
+            SpecificationModel::Dir(dir) => VirtualEntry::Dir {
+                id,
+                class,
+                path,
+                specification: Arc::new(dir.clone()),
+            },
+        };
         // if is_dir {
         //     let dir_id = EntryId::new(&self.next_entry_id);
         //     let dir_entry = VirtualEntry::Dir {
@@ -94,14 +93,13 @@ impl VirtualWorktree {
         //         protocol,
         //     };
 
-            self.snapshot.create_entry(Arc::new(entry));
+        // self.snapshot.create_entry(Arc::new(entry));
 
-            Ok(ChangesDiffSet::from(vec![(
-                path,
-                id,
-                PathChangeKind::Created,
-            )]))
-        }
+        Ok(ChangesDiffSet::from(vec![(
+            path,
+            id,
+            PathChangeKind::Created,
+        )]))
     }
 
     pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> WorktreeResult<ChangesDiffSet> {

@@ -5,10 +5,9 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
-use crate::models::primitives::EntryId;
-use crate::models::specification::SpecificationContent;
-use crate::models::types::RequestProtocol;
-
+use crate::models::{
+    primitives::EntryId, specification::SpecificationInfo, types::RequestProtocol,
+};
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -19,15 +18,11 @@ pub struct CreateEntryInput {
     // TODO: Validate against all possible classification
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
-    pub classification: Classification,
-    // FIXME: Figure out a strategy for passing and receiving specification
-    #[ts(optional)]
-    pub specification: Option<SpecificationContent>,
-    #[ts(optional)]
-    pub protocol: Option<RequestProtocol>,
+
+    pub specification: SpecificationInfo,
+
     #[ts(optional)]
     pub order: Option<usize>,
-    pub is_dir: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
