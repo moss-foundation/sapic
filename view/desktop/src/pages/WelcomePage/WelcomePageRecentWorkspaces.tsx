@@ -21,7 +21,7 @@ export const WelcomePageRecentWorkspaces = () => {
           <WelcomePageLink
             key={workspace.displayName}
             label={workspace.displayName}
-            onClick={() => openWorkspace(workspace.displayName)}
+            onClick={() => openWorkspace(workspace.id)}
           />
         ))}
       </div>

@@ -12,7 +12,7 @@ import { WorkspaceMode } from "@repo/moss-workspace";
 import { ModalWrapperProps } from "../types";
 
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { data: workspaces, isLoading, error } = useListWorkspaces();
+  const { data: workspaces, isLoading } = useListWorkspaces();
   const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
@@ -65,7 +65,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
               <SelectOutlined.Trigger placeholder="Select workspace" />
               <SelectOutlined.Content>
                 {workspaces?.map((workspace) => (
-                  <SelectOutlined.Item value={workspace.displayName} key={workspace.id}>
+                  <SelectOutlined.Item value={workspace.id} key={workspace.id}>
                     {workspace.displayName}
                   </SelectOutlined.Item>
                 ))}

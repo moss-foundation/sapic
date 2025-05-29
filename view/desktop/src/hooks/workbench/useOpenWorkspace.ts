@@ -7,10 +7,10 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
-const openWorkspaceFn = async (workspaceName: string): Promise<OpenWorkspaceOutput> => {
+const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput> => {
   const result = await invokeTauriIpc<OpenWorkspaceOutput>("open_workspace", {
     input: {
-      name: workspaceName,
+      id: workspaceId,
     } as OpenWorkspaceInput,
   });
 

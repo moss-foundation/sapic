@@ -28,9 +28,9 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
           openOnCreation: openAutomatically,
         },
         {
-          onSuccess: () => {
+          onSuccess: (data) => {
             if (openAutomatically) {
-              openWorkspace(name);
+              openWorkspace(data.id);
             }
           },
         }

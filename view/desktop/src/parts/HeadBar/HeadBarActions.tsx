@@ -1,8 +1,8 @@
 import { RefObject } from "react";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 
-// Helper to extract workspace name from prefixed ID
-const extractWorkspaceName = (actionId: string): string => {
+// Helper to extract workspace ID from prefixed action ID
+const extractWorkspaceId = (actionId: string): string => {
   return actionId.startsWith("workspace:") ? actionId.replace("workspace:", "") : actionId;
 };
 
@@ -119,21 +119,21 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
 
     // Handle opening workspace when the action ID has the workspace: prefix
     if (action.startsWith("workspace:")) {
-      const workspaceName = extractWorkspaceName(action);
-      openWorkspace(workspaceName);
+      const workspaceId = extractWorkspaceId(action);
+      openWorkspace(workspaceId);
       return;
     }
 
     // Handle menu item for a specific workspace
-    // e.g., "workspaceName-rename" for renaming a workspace
+    // e.g., "workspaceId-rename" for renaming a workspace
     const workspaceAction = action.match(/^(.+?)-(rename|duplicate|delete|new|save|edit-.+)$/);
     if (workspaceAction) {
-      const [, workspaceName, actionType] = workspaceAction;
-      console.log(`Workspace action for ${workspaceName}: ${actionType}`);
+      const [, workspaceId, actionType] = workspaceAction;
+      console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
       // Here you can implement specific actions for workspace items
       // For example:
-      // if (actionType === "rename") { handleRenameWorkspace(workspaceName); }
+      // if (actionType === "rename") { handleRenameWorkspace(workspaceId); }
 
       return;
     }
