@@ -1,3 +1,9 @@
+assert_lefthook_installed: true
+
+templates:
+  tailwind-plugin: --plugin=prettier-plugin-tailwindcss
+  toml-plugin: --plugin=prettier-plugin-toml
+
 pre-commit:
   parallel: true
   jobs:
@@ -11,17 +17,17 @@ pre-commit:
       stage_fixed: true
 
     - name: "Format Typescript/Javascript files"
-      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{ts,js}"
+      run: prettier {tailwind-plugin} --write "**/*.{ts,js}"
       glob: "**/*.{ts,js}"
       stage_fixed: true
 
     - name: "Format React files"
-      run: prettier --plugin=prettier-plugin-tailwindcss --write "**/*.{jsx,tsx,css}"
+      run: prettier {tailwind-plugin} --write "**/*.{jsx,tsx,css}"
       glob: "**/*.{jsx,tsx,css}"
       stage_fixed: true
 
     - name: "Format Other files"
-      run: prettier --plugin=prettier-plugin-toml --write "**/*.{toml,md,json}"
+      run: prettier {toml-plugin} --write "**/*.{toml,md,json}"
       glob: "**/*.{toml,md,json}"
       stage_fixed: true
 
