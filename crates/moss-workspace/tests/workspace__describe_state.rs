@@ -1,6 +1,5 @@
 pub mod shared;
 
-use moss_workspace::constants::TREE_VIEW_GROUP_COLLECTIONS;
 use moss_workspace::models::operations::UpdateStateInput;
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
@@ -33,7 +32,6 @@ async fn describe_layout_parts_state_sidebar_only() {
     let sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
-        tree_view_group_id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
 
     let update_state_result = workspace
@@ -53,10 +51,7 @@ async fn describe_layout_parts_state_sidebar_only() {
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 250);
     assert_eq!(retrieved_sidebar.is_visible, true);
-    assert_eq!(
-        retrieved_sidebar.tree_view_group_id,
-        TREE_VIEW_GROUP_COLLECTIONS.to_string()
-    );
+
     // Cleanup
     cleanup().await;
 }
@@ -119,10 +114,7 @@ async fn describe_layout_parts_state_editor_only() {
     // Check editor values
     assert!(!retrieved_editor.panels.is_empty());
     assert!(retrieved_editor.panels.contains_key("panel1"));
-    assert_eq!(
-        retrieved_editor.active_group,
-        Some(TREE_VIEW_GROUP_COLLECTIONS.to_string())
-    );
+    assert_eq!(retrieved_editor.active_group, Some("group1".to_string()));
 
     // Cleanup
     cleanup().await;
@@ -137,7 +129,6 @@ async fn describe_layout_parts_state_all() {
     let sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
-        tree_view_group_id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
     let panel_state = PanelPartState {
         preferred_size: 200,
@@ -170,20 +161,13 @@ async fn describe_layout_parts_state_all() {
     let retrieved_editor = describe_state_output.editor.unwrap();
     assert!(!retrieved_editor.panels.is_empty());
     assert!(retrieved_editor.panels.contains_key("panel1"));
-    assert_eq!(
-        retrieved_editor.active_group,
-        Some(TREE_VIEW_GROUP_COLLECTIONS.to_string())
-    );
+    assert_eq!(retrieved_editor.active_group, Some("group1".to_string()));
 
     // Check Sidebar
     assert!(describe_state_output.sidebar.is_some());
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 250);
     assert_eq!(retrieved_sidebar.is_visible, true);
-    assert_eq!(
-        retrieved_sidebar.tree_view_group_id,
-        TREE_VIEW_GROUP_COLLECTIONS.to_string()
-    );
 
     // Check Panel
     assert!(describe_state_output.panel.is_some());
@@ -204,7 +188,6 @@ async fn describe_layout_parts_state_after_update() {
     let initial_sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
-        tree_view_group_id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
     let initial_panel_state = PanelPartState {
         preferred_size: 200,
@@ -234,7 +217,6 @@ async fn describe_layout_parts_state_after_update() {
     let updated_sidebar_state = SidebarPartState {
         preferred_size: 300,
         is_visible: false,
-        tree_view_group_id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
     let update_sidebar_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(
@@ -257,10 +239,6 @@ async fn describe_layout_parts_state_after_update() {
     let retrieved_sidebar = describe_state_output.sidebar.unwrap();
     assert_eq!(retrieved_sidebar.preferred_size, 300); // Updated value
     assert_eq!(retrieved_sidebar.is_visible, false); // Updated value
-    assert_eq!(
-        retrieved_sidebar.tree_view_group_id,
-        TREE_VIEW_GROUP_COLLECTIONS.to_string()
-    );
 
     // Panel should not change
     assert!(describe_state_output.panel.is_some());

@@ -3,13 +3,17 @@ use moss_db::common::DatabaseError;
 use moss_db::primitives::AnyValue;
 use moss_storage::storage::operations::TransactionalGetItem;
 use moss_storage::workspace_storage::entities::state_store_entities::{
-    EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
+    ActivitybarPartStateEntity, EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
 use serde::de::DeserializeOwned;
 use tauri::Runtime as TauriRuntime;
 
-use crate::models::types::{EditorPartState, PanelPartState, SidebarPartState};
-use crate::storage::segments::{PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY};
+use crate::models::types::{
+    ActivitybarPartState, EditorPartState, PanelPartState, SidebarPartState,
+};
+use crate::storage::segments::{
+    PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+};
 use crate::{models::operations::DescribeStateOutput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
@@ -72,10 +76,23 @@ impl<R: TauriRuntime> Workspace<R> {
             PanelPartState::from,
         )?;
 
+        // Get activitybar state
+        let activitybar_result = TransactionalGetItem::get(
+            item_store.as_ref(),
+            &mut txn,
+            PART_ACTIVITYBAR_SEGKEY.to_segkey_buf(),
+        );
+        let activitybar = to_option(
+            activitybar_result,
+            std::marker::PhantomData::<ActivitybarPartStateEntity>,
+            ActivitybarPartState::from,
+        )?;
+
         Ok(DescribeStateOutput {
             editor,
             sidebar,
             panel,
+            activitybar,
         })
     }
 }

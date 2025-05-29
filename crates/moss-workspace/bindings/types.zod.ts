@@ -5,6 +5,10 @@ import { jsonValueSchema } from "@repo/bindings-utils";
 import { identifierSchema } from "./primitives.zod";
 import { type EditorGridNode } from "./types";
 
+export const activitybarPartStateSchema = z.object({
+  treeViewGroupId: z.string(),
+});
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -45,7 +49,6 @@ export const panelPartStateSchema = z.object({
 export const sidebarPartStateSchema = z.object({
   preferredSize: z.number(),
   isVisible: z.boolean(),
-  treeViewGroupId: z.string().optional(),
 });
 
 export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);

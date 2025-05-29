@@ -118,7 +118,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
     EditorPartState {
         grid,
         panels,
-        active_group: Some(TREE_VIEW_GROUP_COLLECTIONS.to_string()),
+        active_group: Some("group1".to_string()),
     }
 }
 

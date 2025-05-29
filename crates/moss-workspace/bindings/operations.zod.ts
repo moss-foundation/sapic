@@ -2,6 +2,7 @@
 import { variableInfoSchema } from "@repo/moss-environment";
 import { z } from "zod";
 import {
+  activitybarPartStateSchema,
   collectionInfoSchema,
   editorPartStateSchema,
   environmentInfoSchema,
@@ -49,6 +50,7 @@ export const describeStateOutputSchema = z.object({
   editor: editorPartStateSchema.optional(),
   sidebar: sidebarPartStateSchema.optional(),
   panel: panelPartStateSchema.optional(),
+  activitybar: activitybarPartStateSchema.optional(),
 });
 
 export const describeWorkspaceOutputSchema = z.object({
@@ -65,5 +67,8 @@ export const updateStateInputSchema = z.union([
   }),
   z.object({
     "updatePanelPartState": panelPartStateSchema,
+  }),
+  z.object({
+    "updateActivitybarPartState": activitybarPartStateSchema,
   }),
 ]);
