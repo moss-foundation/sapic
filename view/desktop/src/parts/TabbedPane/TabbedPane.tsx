@@ -108,6 +108,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     try {
       if (layout?.editor) {
         api.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+      } else if (layout !== undefined) {
+        // Layout data has been fetched but no editor state exists
+        // This means it's a new workspace - ensure it starts empty
+        console.log("Starting with empty TabbedPane for new workspace");
+        api.clear();
       }
     } catch (error) {
       console.error("Failed to restore workspace layout:", error);
