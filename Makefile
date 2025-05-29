@@ -174,7 +174,7 @@ export-css-variables:
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx .
+	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx,py .
 
 # ======================================================
 # Cleanup Commands
