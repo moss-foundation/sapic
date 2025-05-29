@@ -83,10 +83,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
-    use moss_testutils::random_name::random_string;
-    use std::ffi::OsStr;
-    use std::path::Path;
+    use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_string};
+    use std::{ffi::OsStr, path::Path};
 
     use crate::sanitized::desanitize;
 

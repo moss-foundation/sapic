@@ -1,19 +1,20 @@
 use aes_gcm::{
-    aead::{rand_core::RngCore, Aead, KeyInit, Payload},
     Aes256Gcm, Key as AesKey, Nonce,
+    aead::{Aead, KeyInit, Payload, rand_core::RngCore},
 };
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 use redb::{Key, TableDefinition};
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use std::borrow::Borrow;
-use std::fmt::{Debug, Display};
+use serde::{Serialize, de::DeserializeOwned};
+use std::{
+    borrow::Borrow,
+    fmt::{Debug, Display},
+};
 use zeroize::Zeroizing;
 
-use crate::{common::DatabaseError, Table, Transaction};
+use crate::{Table, Transaction, common::DatabaseError};
 
 pub const DEFAULT_ENCRYPTION_OPTIONS: EncryptionOptions = EncryptionOptions {
     memory_cost: 65536, // 64MB

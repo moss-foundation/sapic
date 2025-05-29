@@ -1,6 +1,6 @@
 use tauri::{AppHandle, Runtime as TauriRuntime, WebviewUrl, WebviewWindow};
 
-use crate::{menu, MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
+use crate::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH, menu};
 
 #[derive(Debug)]
 pub struct CreateWindowInput<'a> {

@@ -13,15 +13,13 @@ use moss_app::manager::AppManager;
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
 use services::service_pool;
-use std::path::PathBuf;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
 use window::{CreateWindowInput, create_window};
 
-use crate::constants::*;
-use crate::plugins::*;
+use crate::{constants::*, plugins::*};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {

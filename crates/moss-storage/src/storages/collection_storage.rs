@@ -1,19 +1,20 @@
-use moss_db::bincode_table::BincodeTable;
-use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction};
+use moss_db::{
+    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
+    primitives::AnyValue,
+};
 use redb::TableHandle;
 use serde_json::{Value as JsonValue, json};
-use std::any::TypeId;
-use std::collections::HashMap;
-use std::path::Path;
-use std::sync::Arc;
+use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 
-use crate::CollectionStorage;
-use crate::collection_storage::stores::unit_store::CollectionUnitStoreImpl;
-use crate::collection_storage::stores::variable_store::CollectionVariableStoreImpl;
-use crate::collection_storage::stores::{CollectionUnitStore, CollectionVariableStore};
-use crate::primitives::segkey::SegKeyBuf;
-use crate::storage::{SegBinTable, Storage, StoreTypeId, Transactional};
+use crate::{
+    CollectionStorage,
+    collection_storage::stores::{
+        CollectionUnitStore, CollectionVariableStore, unit_store::CollectionUnitStoreImpl,
+        variable_store::CollectionVariableStoreImpl,
+    },
+    primitives::segkey::SegKeyBuf,
+    storage::{SegBinTable, Storage, StoreTypeId, Transactional},
+};
 
 pub mod entities;
 pub mod stores;

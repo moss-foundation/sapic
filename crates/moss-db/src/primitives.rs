@@ -1,8 +1,6 @@
 use redb::{Key, TypeName, Value};
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
-use std::hash::Hash;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::{fmt::Debug, hash::Hash};
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub struct AnyKey(Vec<u8>);

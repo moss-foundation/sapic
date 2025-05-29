@@ -1,8 +1,7 @@
 use moss_db::ReDbClient;
 use std::sync::Arc;
 
-use crate::storage::SegBinTable;
-use crate::storages::collection_storage::stores::CollectionVariableStore;
+use crate::{storage::SegBinTable, storages::collection_storage::stores::CollectionVariableStore};
 
 pub struct CollectionVariableStoreImpl {
     #[allow(dead_code)]

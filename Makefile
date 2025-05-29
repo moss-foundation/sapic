@@ -174,7 +174,7 @@ export-css-variables:
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx .
+	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx,py .
 
 # ======================================================
 # Cleanup Commands
@@ -219,10 +219,10 @@ gen-license:
 	@cd $(XTASK_DIR) && $(CARGO) run license
 
 ## Audit workspace dependencies
-.PHONY: workspace-audit
-workspace-audit:
+.PHONY: rust-audit
+rust-audit:
 	@echo "Checking Non-workspace Dependencies..."
-	@cd $(XTASK_DIR) && $(CARGO) run rwa
+	@cd $(XTASK_DIR) && $(CARGO) run audit
 
 ## Check unused dependencies
 .PHONY: check-unused-deps

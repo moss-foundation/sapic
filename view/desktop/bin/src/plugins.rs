@@ -1,10 +1,9 @@
 pub mod mac_window;
 
-use tauri::plugin::TauriPlugin;
-use tauri::Runtime;
+use tauri::{Runtime, plugin::TauriPlugin};
 
 pub mod plugin_log {
-    use tauri_plugin_log::{fern::colors::ColoredLevelConfig, Target, TargetKind};
+    use tauri_plugin_log::{Target, TargetKind, fern::colors::ColoredLevelConfig};
 
     use super::*;
 
