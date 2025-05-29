@@ -1,5 +1,10 @@
 import { RefObject } from "react";
-import { useWorkspaceContext, extractWorkspaceName } from "@/context/WorkspaceContext";
+import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+
+// Helper to extract workspace ID from prefixed action ID
+const extractWorkspaceId = (actionId: string): string => {
+  return actionId.startsWith("workspace:") ? actionId.replace("workspace:", "") : actionId;
+};
 
 export interface HeadBarActionProps {
   openPanel: (panel: string) => void;
@@ -8,7 +13,6 @@ export interface HeadBarActionProps {
   setCollectionName?: (name: string) => void;
   collectionButtonRef?: RefObject<HTMLButtonElement>;
   setIsRenamingCollection?: (isRenaming: boolean) => void;
-  setSelectedWorkspace?: (workspace: string | null) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
@@ -107,29 +111,29 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { openPanel, setShowDebugPanels, showDebugPanels, openNewWorkspaceModal, openOpenWorkspaceModal } = props;
 
-  // Use the context for opening workspaces
-  const { openAndSelectWorkspace } = useWorkspaceContext();
+  // Use the hook directly instead of context
+  const { mutate: openWorkspace } = useOpenWorkspace();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
 
     // Handle opening workspace when the action ID has the workspace: prefix
     if (action.startsWith("workspace:")) {
-      const workspaceName = extractWorkspaceName(action);
-      openAndSelectWorkspace(workspaceName);
+      const workspaceId = extractWorkspaceId(action);
+      openWorkspace(workspaceId);
       return;
     }
 
     // Handle menu item for a specific workspace
-    // e.g., "workspaceName-rename" for renaming a workspace
+    // e.g., "workspaceId-rename" for renaming a workspace
     const workspaceAction = action.match(/^(.+?)-(rename|duplicate|delete|new|save|edit-.+)$/);
     if (workspaceAction) {
-      const [, workspaceName, actionType] = workspaceAction;
-      console.log(`Workspace action for ${workspaceName}: ${actionType}`);
+      const [, workspaceId, actionType] = workspaceAction;
+      console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
       // Here you can implement specific actions for workspace items
       // For example:
-      // if (actionType === "rename") { handleRenameWorkspace(workspaceName); }
+      // if (actionType === "rename") { handleRenameWorkspace(workspaceId); }
 
       return;
     }

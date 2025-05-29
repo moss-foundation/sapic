@@ -5,6 +5,10 @@ import { jsonValueSchema } from "@repo/bindings-utils";
 import { identifierSchema } from "./primitives.zod";
 import { type EditorGridNode } from "./types";
 
+export const activitybarPartStateSchema = z.object({
+  treeViewGroupId: z.string(),
+});
+
 export const editorGridLeafDataSchema = z.object({
   views: z.array(z.string()),
   activeView: z.string(),
@@ -78,10 +82,4 @@ export const environmentInfoSchema = z.object({
   collectionId: identifierSchema.optional(),
   name: z.string(),
   order: z.number().optional(),
-});
-
-export const streamCollectionsEventSchema = z.object({
-  id: identifierSchema,
-  displayName: z.string(),
-  order: z.number().nullable(),
 });

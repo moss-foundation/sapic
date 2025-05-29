@@ -3,14 +3,17 @@ use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::PutItem,
     workspace_storage::entities::state_store_entities::{
-        EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
+        ActivitybarPartStateEntity, EditorPartStateEntity, PanelPartStateEntity,
+        SidebarPartStateEntity,
     },
 };
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
     models::operations::UpdateStateInput,
-    storage::segments::{PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY},
+    storage::segments::{
+        PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+    },
     workspace::Workspace,
 };
 
@@ -40,6 +43,15 @@ impl<R: TauriRuntime> Workspace<R> {
                 PutItem::put(
                     item_store.as_ref(),
                     PART_PANEL_SEGKEY.to_segkey_buf(),
+                    value,
+                )?;
+            }
+            UpdateStateInput::UpdateActivitybarPartState(activitybar_part_state) => {
+                let value =
+                    AnyValue::serialize(&ActivitybarPartStateEntity::from(activitybar_part_state))?;
+                PutItem::put(
+                    item_store.as_ref(),
+                    PART_ACTIVITYBAR_SEGKEY.to_segkey_buf(),
                     value,
                 )?;
             }

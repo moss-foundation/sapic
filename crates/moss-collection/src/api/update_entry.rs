@@ -1,7 +1,9 @@
 use moss_common::api::OperationResult;
 
-use crate::collection::Collection;
-use crate::models::operations::{UpdateEntryInput, UpdateEntryOutput};
+use crate::{
+    collection::Collection,
+    models::operations::{UpdateEntryInput, UpdateEntryOutput},
+};
 
 impl Collection {
     pub async fn update_entry(

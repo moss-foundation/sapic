@@ -1,13 +1,15 @@
-use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
-use moss_collection::models::types::{Classification, HttpMethod, PathChangeKind, RequestProtocol};
+use moss_collection::models::{
+    operations::{CreateEntryInput, CreateEntryOutput},
+    types::{Classification, HttpMethod, PathChangeKind, RequestProtocol},
+};
 use moss_common::api::OperationError;
-use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::random_request_name;
+use moss_testutils::{fs_specific::FOLDERNAME_SPECIAL_CHARS, random_name::random_request_name};
 use moss_text::sanitized::sanitize;
-use serde_json::Value as JsonValue;
-use serde_json::json;
-use std::fs::read_to_string;
-use std::path::{Path, PathBuf};
+use serde_json::{Value as JsonValue, json};
+use std::{
+    fs::read_to_string,
+    path::{Path, PathBuf},
+};
 
 use crate::shared::{create_test_collection, random_dir_name, request_folder_name};
 

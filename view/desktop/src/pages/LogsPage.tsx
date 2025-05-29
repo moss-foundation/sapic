@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
+import LangchainAgent from "@/ai/LangchainAgent";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -33,6 +34,13 @@ export const Logs = () => {
   return (
     <main className="p-4">
       <h1 className="mb-4 text-2xl">{t("logs")}</h1>
+
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">AI Assistant</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <LangchainAgent />
+        </div>
+      </section>
 
       <ActivityEventSimulator className="mb-4" />
 

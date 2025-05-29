@@ -1,6 +1,11 @@
 import { create } from "zustand";
 
-import { Icons } from "@/components";
+import { Icons } from "@/lib/ui/Icon";
+import {
+  TREE_VIEW_GROUP_COLLECTIONS,
+  TREE_VIEW_GROUP_ENVIRONMENTS,
+  TREE_VIEW_GROUP_MOCK_SERVERS,
+} from "@repo/moss-workspace";
 
 export interface ActivityBarItem {
   id: string;
@@ -24,7 +29,7 @@ interface ActivityBarStore {
 export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   items: [
     {
-      "id": "collections.groupId",
+      "id": TREE_VIEW_GROUP_COLLECTIONS,
       "title": "Collections",
       "order": 1,
       "icon": "Folder",
@@ -32,7 +37,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       "isActive": true,
     },
     {
-      "id": "environments.groupId",
+      "id": TREE_VIEW_GROUP_ENVIRONMENTS,
       "title": "Environments",
       "order": 2,
       "icon": "Env",
@@ -40,7 +45,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       "isActive": false,
     },
     {
-      "id": "mock.groupId",
+      "id": TREE_VIEW_GROUP_MOCK_SERVERS,
       "title": "Mock",
       "order": 3,
       "icon": "WebServer",

@@ -25,10 +25,7 @@ impl Deref for ListWorkspacesOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceInput {
-    /// We use the workspace name instead of its path because
-    /// all workspaces can only be stored within a single directory.
-    #[validate(length(min = 1))]
-    pub name: String,
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, TS)]

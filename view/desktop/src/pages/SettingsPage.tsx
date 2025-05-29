@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import LangchainAgent from "@/ai/LangchainAgent";
 import { MenuItemProps } from "@/components/ActionMenu/types";
 import SelectOutlined from "@/components/SelectOutlined";
 import { ActivityBarState } from "@/hooks";
@@ -167,7 +166,6 @@ export const Settings = () => {
 
   return (
     <main className="">
-      <LangchainAgent />
       <div className="p-5">
         <h1 className="mb-5 text-2xl font-bold">{t("settings")}</h1>
 

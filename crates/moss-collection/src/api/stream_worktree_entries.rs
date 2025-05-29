@@ -8,11 +8,9 @@ use crate::{
 use futures::pin_mut;
 use moss_common::api::OperationResult;
 use moss_fs::utils::normalize_path;
-use std::path::Path;
-use std::{time::Duration, vec};
+use std::{path::Path, time::Duration, vec};
 use tauri::ipc::Channel as TauriChannel;
-use tokio_stream::StreamExt;
-use tokio_stream::StreamMap;
+use tokio_stream::{StreamExt, StreamMap};
 
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 const MAX_CHUNK_SIZE: usize = 100;

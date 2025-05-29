@@ -4,10 +4,12 @@ pub use editor::*;
 
 use moss_common::models::primitives::Identifier;
 use moss_storage::workspace_storage::entities::state_store_entities::{
-    PanelPartStateEntity, SidebarPartStateEntity,
+    ActivitybarPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+use crate::constants;
 
 pub type EnvironmentName = String;
 
@@ -53,6 +55,39 @@ pub struct EnvironmentInfo {
     pub order: Option<usize>,
 }
 
+// ------------------------------------------------------------
+// Activitybar Part State
+// ------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ActivitybarPartState {
+    pub tree_view_group_id: String, // TODO: validate that this is an expected id value
+}
+
+impl From<ActivitybarPartStateEntity> for ActivitybarPartState {
+    fn from(value: ActivitybarPartStateEntity) -> Self {
+        ActivitybarPartState {
+            tree_view_group_id: value
+                .tree_view_group_id
+                .unwrap_or(constants::TREE_VIEW_GROUP_COLLECTIONS.to_string()),
+        }
+    }
+}
+
+impl From<ActivitybarPartState> for ActivitybarPartStateEntity {
+    fn from(value: ActivitybarPartState) -> Self {
+        ActivitybarPartStateEntity {
+            tree_view_group_id: Some(value.tree_view_group_id),
+        }
+    }
+}
+
+// ------------------------------------------------------------
+// Sidebar Part State
+// ------------------------------------------------------------
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -78,6 +113,10 @@ impl From<SidebarPartState> for SidebarPartStateEntity {
         }
     }
 }
+
+// ------------------------------------------------------------
+// Panel Part State
+// ------------------------------------------------------------
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]

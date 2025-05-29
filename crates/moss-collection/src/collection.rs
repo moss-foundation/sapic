@@ -3,8 +3,7 @@ use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
-use moss_storage::CollectionStorage;
-use moss_storage::collection_storage::CollectionStorageImpl;
+use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
     collections::HashMap,
     path::Path,
@@ -14,10 +13,12 @@ use uuid::Uuid;
 
 use tokio::sync::{OnceCell, RwLock};
 
-use crate::config::{CONFIG_FILE_NAME, ConfigModel};
-use crate::defaults;
-use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff};
-use crate::worktree::Worktree;
+use crate::{
+    config::{CONFIG_FILE_NAME, ConfigModel},
+    defaults,
+    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    worktree::Worktree,
+};
 
 pub struct EnvironmentItem {
     pub id: Uuid,

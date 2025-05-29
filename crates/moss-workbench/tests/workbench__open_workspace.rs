@@ -5,6 +5,7 @@ use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workbench::models::operations::{CreateWorkspaceInput, OpenWorkspaceInput};
 use moss_workspace::models::types::WorkspaceMode;
+use uuid::Uuid;
 
 use crate::shared::{setup_test_workspace_manager, workspace_key};
 
@@ -35,7 +36,7 @@ async fn open_workspace_success() {
     // Open the first workspace
     let open_result = workspace_manager
         .open_workspace(&OpenWorkspaceInput {
-            name: first_name.clone(),
+            id: first_output.id,
         })
         .await;
     assert!(open_result.is_ok());
@@ -61,9 +62,7 @@ async fn open_workspace_not_found() {
     let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let open_result = workspace_manager
-        .open_workspace(&OpenWorkspaceInput {
-            name: "nonexistent_workspace_name".to_string(),
-        })
+        .open_workspace(&OpenWorkspaceInput { id: Uuid::new_v4() })
         .await;
     assert!(open_result.is_err());
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
@@ -95,7 +94,7 @@ async fn open_workspace_already_active() {
     // Try to open the same workspace again
     let open_result = workspace_manager
         .open_workspace(&OpenWorkspaceInput {
-            name: workspace_name.clone(),
+            id: create_output.id,
         })
         .await;
     assert!(open_result.is_ok());
@@ -116,10 +115,9 @@ async fn open_workspace_already_active() {
 async fn open_workspace_directory_deleted() {
     let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
-    let workspace_name = random_workspace_name();
     let create_output = workspace_manager
         .create_workspace(&CreateWorkspaceInput {
-            name: workspace_name.clone(),
+            name: random_workspace_name(),
             mode: WorkspaceMode::default(),
             open_on_creation: false,
         })
@@ -134,7 +132,7 @@ async fn open_workspace_directory_deleted() {
     // Try to open the deleted workspace
     let open_result = workspace_manager
         .open_workspace(&OpenWorkspaceInput {
-            name: workspace_name.clone(),
+            id: create_output.id,
         })
         .await;
     assert!(open_result.is_err());

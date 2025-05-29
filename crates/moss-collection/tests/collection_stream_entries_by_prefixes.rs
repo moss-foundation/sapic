@@ -1,10 +1,10 @@
 mod shared;
 
 use crate::shared::create_test_collection;
-use moss_collection::models::operations::CreateEntryInput;
-use moss_collection::models::types::Classification;
 use moss_collection::models::{
-    events::StreamWorktreeEntriesEvent, operations::StreamWorktreeEntriesInput,
+    events::StreamWorktreeEntriesEvent,
+    operations::{CreateEntryInput, StreamWorktreeEntriesInput},
+    types::Classification,
 };
 use serde_json::Value as JsonValue;
 use std::path::Path;
