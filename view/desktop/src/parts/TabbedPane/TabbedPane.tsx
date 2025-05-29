@@ -74,8 +74,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
 
-  // Only call useDescribeWorkspaceState when we need workspace layout data
-  // Skip it for "welcome" mode since there's no workspace
   const shouldFetchWorkspaceState = mode === "auto" || mode === "empty";
   const { data: layout } = useDescribeWorkspaceState({
     enabled: shouldFetchWorkspaceState,
