@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
-use serde_json::Value as JsonValue;
+use serde_json::{Number, Value as JsonValue};
 use ts_rs::TS;
 
 pub type VariableName = String;

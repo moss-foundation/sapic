@@ -1,7 +1,7 @@
 use strum::{AsRefStr as StrumAsRefStr, Display as StrumDisplay, EnumString as StrumEnumString};
 use tauri::{
-    menu::{Menu, MenuEvent, PredefinedMenuItem},
     AppHandle, Manager, Runtime as TauriRuntime, Window,
+    menu::{Menu, MenuEvent, PredefinedMenuItem},
 };
 
 // use crate::create_child_window;

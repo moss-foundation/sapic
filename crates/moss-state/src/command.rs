@@ -3,10 +3,7 @@ use moss_tauri::TauriResult;
 use moss_text::ReadOnlyStr;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::Arc;
+use std::{collections::HashMap, future::Future, pin::Pin, sync::Arc};
 use tauri::{AppHandle, Runtime as TauriRuntime, Window};
 use thiserror::Error;
 

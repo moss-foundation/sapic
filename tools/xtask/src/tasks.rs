@@ -1,5 +1,6 @@
+pub mod audit;
+pub mod cargo_features;
 pub mod license;
-pub mod rust_workspace_audit;
 
 use anyhow::Result;
 use futures::future::join_all;

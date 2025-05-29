@@ -3,7 +3,6 @@ name = "macos-trampoline"
 version = "0.1.0"
 edition = "2024"
 
-
 [dependencies]
 [target.'cfg(target_os = "macos")'.dependencies]
 swift-rs = { version = "1.0.6", features = ["serde"] }

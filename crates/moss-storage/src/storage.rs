@@ -1,8 +1,6 @@
 pub mod operations;
 
-use moss_db::bincode_table::BincodeTable;
-use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseResult, Transaction};
+use moss_db::{DatabaseResult, Transaction, bincode_table::BincodeTable, primitives::AnyValue};
 use serde_json::Value as JsonValue;
 use std::{any::TypeId, collections::HashMap};
 
@@ -23,10 +21,10 @@ pub type SegBinTable = BincodeTable<'static, SegKeyBuf, AnyValue>;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::WorkspaceStorage;
-    use crate::primitives::segkey::SegKey;
-    use crate::storage::operations::PutItem;
-    use crate::workspace_storage::WorkspaceStorageImpl;
+    use crate::{
+        WorkspaceStorage, primitives::segkey::SegKey, storage::operations::PutItem,
+        workspace_storage::WorkspaceStorageImpl,
+    };
     use serde::{Deserialize, Serialize};
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]

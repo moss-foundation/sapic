@@ -2,19 +2,23 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::constants::TREE_VIEW_GROUP_COLLECTIONS;
-use moss_workspace::models::types::{
-    EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
-    EditorPartState, PanelRenderer,
+use moss_workspace::{
+    Workspace,
+    models::types::{
+        EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState,
+        EditorPanelState, EditorPartState, PanelRenderer,
+    },
+    storage::segments::COLLECTION_SEGKEY,
+    workspace::CreateParams,
 };
-use moss_workspace::storage::segments::COLLECTION_SEGKEY;
-use moss_workspace::{Workspace, workspace::CreateParams};
-use std::collections::HashMap;
-use std::fs;
-use std::future::Future;
-use std::path::{Path, PathBuf};
-use std::pin::Pin;
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    fs,
+    future::Future,
+    path::{Path, PathBuf},
+    pin::Pin,
+    sync::Arc,
+};
 use tauri::test::MockRuntime;
 use uuid::Uuid;
 
@@ -64,7 +68,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
     let leaf_data = EditorGridLeafData {
         views: vec!["panel1".to_string()],
         active_view: "panel1".to_string(),
-        id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
+        id: "group1".to_string(),
     };
 
     let grid_node = EditorGridNode::Leaf {

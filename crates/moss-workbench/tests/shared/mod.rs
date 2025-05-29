@@ -1,13 +1,16 @@
 use moss_fs::RealFileSystem;
-use moss_storage::global_storage::GlobalStorageImpl;
-use moss_storage::primitives::segkey::SegKeyBuf;
+use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
-use moss_workbench::storage::segments::WORKSPACE_SEGKEY;
-use moss_workbench::workbench::{self, Workbench};
-use std::future::Future;
-use std::path::{Path, PathBuf};
-use std::pin::Pin;
-use std::sync::Arc;
+use moss_workbench::{
+    storage::segments::WORKSPACE_SEGKEY,
+    workbench::{self, Workbench},
+};
+use std::{
+    future::Future,
+    path::{Path, PathBuf},
+    pin::Pin,
+    sync::Arc,
+};
 use tauri::test::MockRuntime;
 use uuid::Uuid;
 

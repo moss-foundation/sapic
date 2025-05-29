@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Root as ToggleGroupRoot, Item as ToggleGroupItem } from "@/components/ToggleGroup";
+import React, { useEffect, useRef, useState } from "react";
+
+import { Item as ToggleGroupItem, Root as ToggleGroupRoot } from "@/components/ToggleGroup";
 import { cn } from "@/utils";
 
 type ToggleValue = "request" | "design";
@@ -66,7 +67,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
     >
       <div className="relative flex" ref={containerRef}>
         <div
-          className="absolute h-[24px] rounded-sm bg-white transition-all duration-500 ease-in-out"
+          className="absolute h-[24px] rounded-sm bg-white transition-all duration-300 ease-in-out"
           style={{
             width: `${sliderStyle.width}px`,
             left: `${sliderStyle.left}px`,
@@ -74,7 +75,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
         />
         <ToggleGroupItem
           value="request"
-          className="relative z-10 whitespace-nowrap transition-colors duration-500"
+          className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
           ref={(el) => (itemsRef.current["request"] = el)}
         >
@@ -82,7 +83,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
         </ToggleGroupItem>
         <ToggleGroupItem
           value="design"
-          className="relative z-10 whitespace-nowrap transition-colors duration-500"
+          className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
           ref={(el) => (itemsRef.current["design"] = el)}
         >

@@ -7,16 +7,16 @@ use tokio::task::JoinSet;
 use toml::Value;
 use tracing::{error, trace};
 
-use crate::config::{ConfigFile, RustWorkspaceAuditConfig};
+use crate::config::{AuditConfig, ConfigFile};
 
 #[derive(Parser)]
-pub struct RustWorkspaceAuditCommandArgs {
+pub struct AuditCommandArgs {
     #[clap(long, default_value = "config.toml")]
     config_file_path: String,
 }
 
 pub async fn check_dependencies_job(
-    args: RustWorkspaceAuditCommandArgs,
+    args: AuditCommandArgs,
     metadata: Metadata,
     fail_fast: bool,
 ) -> Result<()> {
@@ -54,12 +54,8 @@ pub async fn check_dependencies_job(
                     }
                 };
 
-                match handle_package_dependencies(
-                    cargo_toml,
-                    &config_file_clone.rust_workspace_audit,
-                    package,
-                )
-                .await
+                match handle_package_dependencies(cargo_toml, &config_file_clone.audit, package)
+                    .await
                 {
                     Ok(()) => Ok(()),
                     Err(e) => Err(e),
@@ -97,16 +93,16 @@ pub async fn check_dependencies_job(
 
 async fn handle_package_dependencies(
     cargo_toml: Value,
-    rwa_config: &RustWorkspaceAuditConfig,
+    config: &AuditConfig,
     package: Package,
 ) -> Result<()> {
     if let Some(dependencies) = cargo_toml.get("dependencies").and_then(|d| d.as_table()) {
         for (dep_name, dep_value) in dependencies {
-            if rwa_config.global_ignore.contains(&dep_name) {
+            if config.global_ignore.contains(&dep_name) {
                 trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                 continue;
             }
-            if let Some(ignored_list) = rwa_config.crate_ignore.get(&package.name) {
+            if let Some(ignored_list) = config.crate_ignore.get(&package.name) {
                 if ignored_list.contains(&dep_name) {
                     trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                     continue;

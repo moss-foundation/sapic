@@ -1,6 +1,6 @@
 #![cfg(target_os = "macos")]
 
-use swift_rs::{swift, SRString};
+use swift_rs::{SRString, swift};
 
 pub type NSObject = *mut std::ffi::c_void;
 

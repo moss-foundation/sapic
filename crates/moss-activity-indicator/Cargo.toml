@@ -8,5 +8,3 @@ anyhow.workspace = true
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
-
-

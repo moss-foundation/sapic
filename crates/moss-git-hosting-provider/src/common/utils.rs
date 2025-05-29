@@ -1,7 +1,9 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use oauth2::{AuthorizationCode, CsrfToken};
-use std::io::{BufRead, BufReader, Write};
-use std::net::TcpListener;
+use std::{
+    io::{BufRead, BufReader, Write},
+    net::TcpListener,
+};
 use url::Url;
 
 pub(crate) fn create_auth_tcp_listener() -> Result<(TcpListener, u16)> {
@@ -36,10 +38,14 @@ pub(crate) fn receive_auth_code(listener: &TcpListener) -> Result<(Authorization
     .ok_or_else(|| anyhow!("Failed to perform initial credentials setup: authorization code not found in request parameters"))?;
 
     let state = url
-    .query_pairs()
-    .find(|(key, _)| key == "state")
-    .map(|(_, state)| CsrfToken::new(state.into_owned()))
-    .ok_or_else(|| anyhow!("Failed to perform initial credentials setup: state not found in request parameters"))?;
+        .query_pairs()
+        .find(|(key, _)| key == "state")
+        .map(|(_, state)| CsrfToken::new(state.into_owned()))
+        .ok_or_else(|| {
+            anyhow!(
+                "Failed to perform initial credentials setup: state not found in request parameters"
+            )
+        })?;
 
     let message = "Go back to your terminal :)";
     let response = format!(

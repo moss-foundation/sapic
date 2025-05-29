@@ -1,20 +1,25 @@
 use moss_common::api::{OperationError, OperationResult};
-use moss_db::common::DatabaseError;
-use moss_db::primitives::AnyValue;
-use moss_storage::storage::operations::TransactionalGetItem;
-use moss_storage::workspace_storage::entities::state_store_entities::{
-    ActivitybarPartStateEntity, EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
+use moss_db::{common::DatabaseError, primitives::AnyValue};
+use moss_storage::{
+    storage::operations::TransactionalGetItem,
+    workspace_storage::entities::state_store_entities::{
+        ActivitybarPartStateEntity, EditorPartStateEntity, PanelPartStateEntity,
+        SidebarPartStateEntity,
+    },
 };
 use serde::de::DeserializeOwned;
 use tauri::Runtime as TauriRuntime;
 
-use crate::models::types::{
-    ActivitybarPartState, EditorPartState, PanelPartState, SidebarPartState,
+use crate::{
+    models::{
+        operations::DescribeStateOutput,
+        types::{ActivitybarPartState, EditorPartState, PanelPartState, SidebarPartState},
+    },
+    storage::segments::{
+        PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+    },
+    workspace::Workspace,
 };
-use crate::storage::segments::{
-    PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
-};
-use crate::{models::operations::DescribeStateOutput, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {

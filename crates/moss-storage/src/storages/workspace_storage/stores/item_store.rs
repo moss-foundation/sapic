@@ -1,14 +1,17 @@
-use moss_db::primitives::AnyValue;
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction};
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
 use std::sync::Arc;
 
-use crate::primitives::segkey::SegKeyBuf;
-use crate::storage::SegBinTable;
-use crate::storage::operations::{
-    GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem, TransactionalListByPrefix,
-    TransactionalPutItem, TransactionalRemoveItem,
+use crate::{
+    primitives::segkey::SegKeyBuf,
+    storage::{
+        SegBinTable,
+        operations::{
+            GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
+            TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
+        },
+    },
+    workspace_storage::stores::WorkspaceItemStore,
 };
-use crate::workspace_storage::stores::WorkspaceItemStore;
 
 pub struct WorkspaceItemStoreImpl {
     client: ReDbClient,

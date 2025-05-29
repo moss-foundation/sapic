@@ -37,6 +37,8 @@ jobs:
           files: |
             **.rs
             Cargo.toml
+          files_ignore: |
+            .github/**
 
       - name: Get all changed NodeJS files
         id: node
@@ -88,12 +90,16 @@ jobs:
       - name: Workspace Audit
         run: |
           cd "${GITHUB_WORKSPACE}/tools/xtask"
-          cargo -q run -- --fail-fast rwa
+          cargo -q run -- --fail-fast audit
 
+  # Checks for Rust compiler warnings in each package individually.
+  # This job is skipped for draft pull requests to allow developers to work
+  # without being blocked by warnings during the development process.
+  # Warnings checks will run when the PR is marked as ready for review.
   rust-warnings-check:
     name: Rust Warnings Check
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:

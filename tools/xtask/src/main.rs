@@ -6,15 +6,13 @@ use crate::metadata::load_cargo_metadata;
 use anyhow::{Context as _, Result};
 use clap::{Parser, Subcommand};
 use smol::fs;
-use std::fs::File;
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 use tasks::TaskRunner;
 use tracing::Level;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
-use tracing_subscriber::fmt::writer::MakeWriterExt;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{fmt, FmtSubscriber};
+use tracing_subscriber::{
+    FmtSubscriber, fmt, fmt::writer::MakeWriterExt, layer::SubscriberExt, util::SubscriberInitExt,
+};
 
 #[macro_use]
 extern crate anyhow;
@@ -45,10 +43,15 @@ enum InfoLevel {
 
 #[derive(Subcommand)]
 enum CliCommand {
+    #[command(name = "license")]
     License(tasks::license::LicenseCommandArgs),
-    Rwa(tasks::rust_workspace_audit::RustWorkspaceAuditCommandArgs),
-}
 
+    #[command(name = "audit")]
+    Audit(tasks::audit::AuditCommandArgs),
+
+    #[command(name = "cargo-features")]
+    CargoFeatures(tasks::cargo_features::CargoFeaturesCommandArgs),
+}
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
@@ -85,10 +88,14 @@ async fn main() -> Result<()> {
             runner.spawn_job(tasks::license::run_license(args, metadata));
             runner.run().await
         }
-        CliCommand::Rwa(args) => {
-            runner.spawn_job(tasks::rust_workspace_audit::check_dependencies_job(
+        CliCommand::Audit(args) => {
+            runner.spawn_job(tasks::audit::check_dependencies_job(
                 args, metadata, fail_fast,
             ));
+            runner.run().await
+        }
+        CliCommand::CargoFeatures(args) => {
+            runner.spawn_job(tasks::cargo_features::run_cargo_features(args, metadata));
             runner.run().await
         }
     }

@@ -2,7 +2,7 @@ use moss_git::GitAuthAgent;
 use std::sync::Arc;
 use url::Url;
 
-use crate::{common::SSHAuthAgent, GitHostingProvider};
+use crate::{GitHostingProvider, common::SSHAuthAgent};
 
 pub trait GitHubAuthAgent: GitAuthAgent {}
 
