@@ -17,12 +17,13 @@ impl<R: TauriRuntime> Workbench<R> {
         &self,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let descriptor = if let Some(d) = self.workspace_by_name(&input.name).await? {
-            d
+        let workspaces = self.workspaces().await?;
+        let descriptor = if let Some(d) = workspaces.read().await.get(&input.id) {
+            Arc::clone(d)
         } else {
             return Err(OperationError::NotFound(format!(
                 "workspace with name {}",
-                input.name
+                input.id
             )));
         };
 
