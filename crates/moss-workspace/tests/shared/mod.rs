@@ -2,6 +2,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_fs::RealFileSystem;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
+use moss_workspace::constants::TREE_VIEW_GROUP_COLLECTIONS;
 use moss_workspace::models::types::{
     EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState, EditorPanelState,
     EditorPartState, PanelRenderer,
@@ -63,7 +64,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
     let leaf_data = EditorGridLeafData {
         views: vec!["panel1".to_string()],
         active_view: "panel1".to_string(),
-        id: "group1".to_string(),
+        id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
 
     let grid_node = EditorGridNode::Leaf {
@@ -117,7 +118,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
     EditorPartState {
         grid,
         panels,
-        active_group: Some("group1".to_string()),
+        active_group: Some(TREE_VIEW_GROUP_COLLECTIONS.to_string()),
     }
 }
 

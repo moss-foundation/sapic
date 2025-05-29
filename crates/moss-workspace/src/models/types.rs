@@ -9,6 +9,8 @@ use moss_storage::workspace_storage::entities::state_store_entities::{
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::constants;
+
 pub type EnvironmentName = String;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
@@ -59,6 +61,7 @@ pub struct EnvironmentInfo {
 pub struct SidebarPartState {
     pub preferred_size: usize,
     pub is_visible: bool,
+    pub tree_view_group_id: String, // TODO: validate that this is an expected id value
 }
 
 impl From<SidebarPartStateEntity> for SidebarPartState {
@@ -66,6 +69,9 @@ impl From<SidebarPartStateEntity> for SidebarPartState {
         SidebarPartState {
             preferred_size: value.preferred_size,
             is_visible: value.is_visible,
+            tree_view_group_id: value
+                .tree_view_group_id
+                .unwrap_or(constants::TREE_VIEW_GROUP_COLLECTIONS.to_string()),
         }
     }
 }
@@ -75,6 +81,7 @@ impl From<SidebarPartState> for SidebarPartStateEntity {
         SidebarPartStateEntity {
             preferred_size: value.preferred_size,
             is_visible: value.is_visible,
+            tree_view_group_id: Some(value.tree_view_group_id),
         }
     }
 }

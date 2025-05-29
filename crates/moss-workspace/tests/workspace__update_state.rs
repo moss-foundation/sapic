@@ -5,6 +5,9 @@ use moss_storage::storage::operations::GetItem;
 use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorPartStateEntity, PanelPartStateEntity, SidebarPartStateEntity,
 };
+use moss_workspace::constants::{
+    TREE_VIEW_GROUP_COLLECTIONS, TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_MOCK_SERVERS,
+};
 use moss_workspace::models::operations::UpdateStateInput;
 use moss_workspace::models::types::{PanelPartState, SidebarPartState};
 use shared::create_simple_editor_state;
@@ -54,6 +57,7 @@ async fn update_state_sidebar_part() {
     let sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
+        tree_view_group_id: TREE_VIEW_GROUP_COLLECTIONS.to_string(),
     };
 
     let update_state_result = workspace
@@ -67,7 +71,16 @@ async fn update_state_sidebar_part() {
     // Verify the state was stored correctly
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert!(describe_state_output.sidebar.is_some());
-    assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
+    assert_eq!(
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &sidebar_state
+    );
+
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
+    assert_eq!(
+        retrieved_sidebar.tree_view_group_id,
+        TREE_VIEW_GROUP_COLLECTIONS.to_string()
+    );
 
     // Verify the database is updated
     let item_store = workspace.__storage().item_store();
@@ -124,6 +137,7 @@ async fn update_state_multiple_updates() {
     let sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
+        tree_view_group_id: TREE_VIEW_GROUP_ENVIRONMENTS.to_string(),
     };
     let panel_state = PanelPartState {
         preferred_size: 200,
@@ -156,6 +170,14 @@ async fn update_state_multiple_updates() {
     assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
+    // Verify tree_view_group_id specifically for initial sidebar state
+    let describe_state_output = workspace.describe_state().await.unwrap();
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
+    assert_eq!(
+        retrieved_sidebar.tree_view_group_id,
+        TREE_VIEW_GROUP_ENVIRONMENTS.to_string()
+    );
+
     let item_store = workspace.__storage().item_store();
     let editor_entity: EditorPartStateEntity =
         GetItem::get(item_store.as_ref(), PART_EDITOR_KEY.to_segkey_buf())
@@ -182,6 +204,7 @@ async fn update_state_multiple_updates() {
     let updated_sidebar_state = SidebarPartState {
         preferred_size: 300,
         is_visible: false,
+        tree_view_group_id: TREE_VIEW_GROUP_MOCK_SERVERS.to_string(),
     };
 
     let update_sidebar_result = workspace
@@ -195,10 +218,17 @@ async fn update_state_multiple_updates() {
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert_eq!(describe_state_output.editor.unwrap(), editor_state);
     assert_eq!(
-        describe_state_output.sidebar.unwrap(),
-        updated_sidebar_state
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &updated_sidebar_state
     );
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
+
+    // Verify tree_view_group_id specifically for updated sidebar state
+    let retrieved_updated_sidebar = describe_state_output.sidebar.unwrap();
+    assert_eq!(
+        retrieved_updated_sidebar.tree_view_group_id,
+        TREE_VIEW_GROUP_MOCK_SERVERS.to_string()
+    );
 
     let item_store = workspace.__storage().item_store();
     let editor_entity: EditorPartStateEntity =
@@ -234,6 +264,7 @@ async fn update_state_overwrite_existing() {
     let initial_sidebar_state = SidebarPartState {
         preferred_size: 250,
         is_visible: true,
+        tree_view_group_id: TREE_VIEW_GROUP_ENVIRONMENTS.to_string(),
     };
 
     let update_sidebar_result = workspace
@@ -247,6 +278,7 @@ async fn update_state_overwrite_existing() {
     let updated_sidebar_state = SidebarPartState {
         preferred_size: 300,
         is_visible: false,
+        tree_view_group_id: TREE_VIEW_GROUP_MOCK_SERVERS.to_string(),
     };
 
     let update_sidebar_result = workspace
@@ -259,8 +291,15 @@ async fn update_state_overwrite_existing() {
     // Verify state was overwritten
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert_eq!(
-        describe_state_output.sidebar.unwrap(),
-        updated_sidebar_state
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &updated_sidebar_state
+    );
+
+    // Verify tree_view_group_id specifically was overwritten
+    let retrieved_sidebar = describe_state_output.sidebar.unwrap();
+    assert_eq!(
+        retrieved_sidebar.tree_view_group_id,
+        TREE_VIEW_GROUP_MOCK_SERVERS.to_string()
     );
 
     // Verify database was updated

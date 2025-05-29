@@ -45,6 +45,7 @@ export const panelPartStateSchema = z.object({
 export const sidebarPartStateSchema = z.object({
   preferredSize: z.number(),
   isVisible: z.boolean(),
+  treeViewGroupId: z.string().optional(),
 });
 
 export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
@@ -78,10 +79,4 @@ export const environmentInfoSchema = z.object({
   collectionId: identifierSchema.optional(),
   name: z.string(),
   order: z.number().optional(),
-});
-
-export const streamCollectionsEventSchema = z.object({
-  id: identifierSchema,
-  displayName: z.string(),
-  order: z.number().nullable(),
 });

@@ -20,7 +20,7 @@ export const describeWorkbenchStateOutputSchema = z.object({
 });
 
 export const openWorkspaceInputSchema = z.object({
-  name: z.string(),
+  id: z.string(),
 });
 
 export const openWorkspaceOutputSchema = z.object({

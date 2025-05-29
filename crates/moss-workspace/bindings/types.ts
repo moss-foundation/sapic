@@ -40,8 +40,6 @@ export type PanelPartState = { preferredSize: number; isVisible: boolean };
 
 export type PanelRenderer = "onlyWhenVisible" | "always";
 
-export type SidebarPartState = { preferredSize: number; isVisible: boolean };
-
-export type StreamCollectionsEvent = { id: Identifier; displayName: string; order: number | null };
+export type SidebarPartState = { preferredSize: number; isVisible: boolean; treeViewGroupId?: string };
 
 export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

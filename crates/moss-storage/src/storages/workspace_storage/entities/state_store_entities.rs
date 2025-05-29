@@ -10,6 +10,7 @@ use std::collections::HashMap;
 pub struct SidebarPartStateEntity {
     pub preferred_size: usize,
     pub is_visible: bool,
+    pub tree_view_group_id: Option<String>,
 }
 
 // ------------------------------------------------------------
