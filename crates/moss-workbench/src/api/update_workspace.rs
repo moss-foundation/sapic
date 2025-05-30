@@ -7,7 +7,7 @@ use validator::Validate;
 use crate::{models::operations::UpdateWorkspaceInput, workbench::Workbench};
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn update_workspace(&self, input: UpdateWorkspaceInput) -> OperationResult<()> {
+    pub async fn update_workspace(&self, input: &UpdateWorkspaceInput) -> OperationResult<()> {
         input.validate()?;
 
         let workspaces = self.workspaces().await?;
@@ -27,8 +27,8 @@ impl<R: TauriRuntime> Workbench<R> {
                 .clone()
         };
 
-        if let Some(new_name) = input.name.and_then(|new_name| {
-            if new_name != descriptor.name {
+        if let Some(new_name) = input.name.as_ref().and_then(|new_name| {
+            if new_name != &descriptor.name {
                 Some(new_name)
             } else {
                 None
@@ -39,7 +39,7 @@ impl<R: TauriRuntime> Workbench<R> {
                     name: Some(new_name.clone()),
                 })
                 .await?;
-            descriptor.name = new_name;
+            descriptor.name = new_name.to_owned();
         }
 
         {
