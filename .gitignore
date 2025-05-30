@@ -37,6 +37,9 @@ yarn-error.log*
 # Operating System
 .DS_Store
 
+# Windows-specific files created by pre-commit hooks
+NUL
+
 # Certificates
 *.pem
 
