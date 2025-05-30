@@ -7,13 +7,7 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use ts_rs::TS;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "UPPERCASE")]
-#[ts(export, export_to = "types.ts")]
-pub enum EditorGridOrientation {
-    Horizontal,
-    Vertical,
-}
+use crate::models::primitives::{EditorGridOrientation, PanelRenderer};
 
 impl From<EditorGridOrientation> for EditorGridOrientationEntity {
     fn from(value: EditorGridOrientation) -> Self {
@@ -135,14 +129,6 @@ impl From<EditorGridStateEntity> for EditorGridState {
             orientation: value.orientation.into(),
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum PanelRenderer {
-    OnlyWhenVisible,
-    Always,
 }
 
 impl From<PanelRenderer> for PanelRendererEntity {

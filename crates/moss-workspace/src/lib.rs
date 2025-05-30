@@ -1,6 +1,7 @@
 pub mod api;
 pub mod manifest;
 pub mod models;
+pub mod state;
 pub mod storage;
 
 pub mod workspace;
@@ -24,6 +25,9 @@ pub mod constants {
 }
 
 mod defaults {
+    use super::constants::*;
+
+    pub const DEFAULT_TREE_VIEW_GROUP: &str = TREE_VIEW_GROUP_COLLECTIONS;
     pub(crate) const DEFAULT_WORKSPACE_NAME: &str = "New Workspace";
 }
 

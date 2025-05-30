@@ -7,8 +7,26 @@ use std::collections::HashMap;
 // ------------------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct ActivitybarItemStateEntity {
+    pub order: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum ActivitybarPositionState {
+    Default,
+    Top,
+    Bottom,
+    Hidden,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct ActivitybarPartStateEntity {
-    pub tree_view_group_id: Option<String>,
+    pub last_active_tree_view_item: Option<String>,
+
+    // HACK: this is a temporary solution to store the position of the activitybar and items order,
+    // as part of the workspace state. We should store it as a user preference not a workspace state.
+    pub position: Option<ActivitybarPositionState>,
+    pub items: HashMap<String, ActivitybarItemStateEntity>,
 }
 
 // ------------------------------------------------------------

@@ -26,6 +26,7 @@ use uuid::Uuid;
 use crate::{
     defaults, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    models::types::ActivitybarPartState,
     storage::segments::COLLECTION_SEGKEY,
 };
 
@@ -66,6 +67,34 @@ pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
 }
 
+// Storing state in this form is a temporary solution
+//it should later be replaced with a parameter map generated
+// from the incoming configuration.
+
+pub struct WorkspaceDefaults {
+    pub activitybar: ActivitybarPartState,
+}
+
+impl Default for WorkspaceDefaults {
+    fn default() -> Self {
+        Self {
+            activitybar: ActivitybarPartState::default(),
+        }
+    }
+}
+
+pub struct WorkspaceState {
+    pub defaults: WorkspaceDefaults,
+}
+
+impl Default for WorkspaceState {
+    fn default() -> Self {
+        Self {
+            defaults: WorkspaceDefaults::default(),
+        }
+    }
+}
+
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     pub(super) app_handle: AppHandle<R>,
@@ -85,6 +114,8 @@ pub struct Workspace<R: TauriRuntime> {
 
     #[allow(dead_code)]
     pub(super) manifest: EditableInPlaceFileHandle<ManifestModel>,
+
+    pub state: WorkspaceState,
 }
 
 pub struct CreateParams {
@@ -121,6 +152,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
+            state: WorkspaceState::default(),
         })
     }
 
@@ -158,6 +190,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
+            state: WorkspaceState::default(),
         })
     }
 
