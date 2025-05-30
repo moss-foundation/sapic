@@ -6,29 +6,23 @@ use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
 use crate::models::{
-    primitives::EntryId,
-    types::{
-        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestProtocol,
-    },
+    primitives::EntryId, specification::SpecificationInfo, types::RequestProtocol,
 };
-
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 // TODO: Validate that destination matches with classification
+// TODO: Validate that specification content type matches with entry type
 // #[validate(schema(function = "validate_category", skip_on_field_errors = false))]
 pub struct CreateEntryInput {
     // TODO: Validate against all possible classification
     #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
-    pub classification: Classification,
-    #[ts(optional, type = "JsonValue")]
-    pub specification: Option<JsonValue>,
-    #[ts(optional)]
-    pub protocol: Option<RequestProtocol>,
+
+    pub specification: SpecificationInfo,
+
     #[ts(optional)]
     pub order: Option<usize>,
-    pub is_dir: bool,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -85,19 +79,19 @@ pub struct UpdateEntryOutput {
     pub virtual_changes: ChangesDiffSet,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub enum CreateRequestProtocolSpecificPayload {
-    Http {
-        method: HttpMethod,
-        query_params: Vec<QueryParamItem>,
-        path_params: Vec<PathParamItem>,
-        headers: Vec<HeaderParamItem>,
-        #[ts(optional)]
-        body: Option<RequestBody>,
-    },
-}
+// #[derive(Clone, Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub enum CreateRequestProtocolSpecificPayload {
+//     Http {
+//         method: HttpMethod,
+//         query_params: Vec<QueryParamItem>,
+//         path_params: Vec<PathParamItem>,
+//         headers: Vec<HeaderParamItem>,
+//         #[ts(optional)]
+//         body: Option<RequestBody>,
+//     },
+// }
 
 // Stream Entries By Prefixes
 

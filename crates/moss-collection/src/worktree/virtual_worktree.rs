@@ -1,5 +1,6 @@
 use super::{
-    WorktreeResult,
+    WorktreeError, WorktreeResult,
+    specification::SpecificationModel,
     virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
 use crate::models::{
@@ -10,6 +11,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
+use uuid::Uuid;
 
 pub struct VirtualWorktree {
     next_entry_id: Arc<AtomicUsize>,
@@ -24,7 +26,11 @@ impl VirtualWorktree {
         }
     }
 
-    pub fn entry_by_id(&self, id: EntryId) -> Option<&Arc<VirtualEntry>> {
+    pub fn snapshot(&mut self) -> &VirtualSnapshot {
+        &mut self.snapshot
+    }
+
+    pub fn entry_by_id(&self, id: Uuid) -> Option<&Arc<VirtualEntry>> {
         self.snapshot.entry_by_id(id)
     }
 
@@ -41,83 +47,59 @@ impl VirtualWorktree {
         destination: impl AsRef<Path>,
         order: Option<usize>,
         class: Classification,
-        protocol: Option<RequestProtocol>,
-        is_dir: bool,
+        model: Arc<SpecificationModel>,
     ) -> WorktreeResult<ChangesDiffSet> {
-        if is_dir {
-            if self.snapshot.exists(&destination) {
-                return Ok(ChangesDiffSet::from(vec![]));
-            }
-
-            let lowest_ancestor_path = self.snapshot.lowest_ancestor_path(&destination);
-
-            // If the ancestor is the same as the destination, we don't need to create any directories
-            if lowest_ancestor_path.as_ref() == destination.as_ref() {
-                return Ok(ChangesDiffSet::from(vec![]));
-            }
-
-            // Build intermediate paths from the lowest existing ancestor to the destination
-            let relative_path = destination
-                .as_ref()
-                .strip_prefix(&lowest_ancestor_path)
-                .unwrap_or(destination.as_ref());
-            let mut current_path = lowest_ancestor_path.clone();
-            let mut created_entries = Vec::new();
-
-            // For each component in the relative path, create a directory entry
-            for (index, component) in relative_path.components().enumerate() {
-                let component_path = Path::new(component.as_os_str());
-                current_path = Arc::from(current_path.join(component_path));
-
-                if self.snapshot.exists(&current_path) {
-                    continue;
-                }
-
-                let component_name = component_path
-                    .file_name()
-                    .map(|os_str| os_str.to_string_lossy().to_string())
-                    .unwrap_or_default();
-                debug_assert_ne!(component_name, "");
-
-                // Determine if this is the last segment
-                let is_last_segment = index == relative_path.components().count() - 1;
-
-                // Only apply order to the last segment
-                let segment_order = if is_last_segment { order } else { None };
-
-                let dir_id = EntryId::new(&self.next_entry_id);
-                let dir_entry = VirtualEntry::Dir {
-                    id: dir_id,
-                    order: segment_order,
-                    class: class.clone(),
-                    path: current_path.clone(),
-                };
-
-                self.snapshot.create_entry(Arc::new(dir_entry));
-                created_entries.push((current_path.clone(), dir_id, PathChangeKind::Created));
-            }
-
-            Ok(ChangesDiffSet::from(created_entries))
-        } else {
-            let id = EntryId::new(&self.next_entry_id);
-            let path: Arc<Path> = destination.as_ref().into();
-            let entry = VirtualEntry::Item {
-                id,
-                order,
-                class,
-                path: path.clone(),
-                cases: vec![],
-                protocol,
-            };
-
-            self.snapshot.create_entry(Arc::new(entry));
-
-            Ok(ChangesDiffSet::from(vec![(
-                path,
-                id,
-                PathChangeKind::Created,
-            )]))
+        let path: Arc<Path> = destination.as_ref().into();
+        if self.snapshot.exists(&path) {
+            return Ok(ChangesDiffSet::from(vec![]));
         }
+
+        let mut created_entries = Vec::new();
+        let id = model.id();
+        let entry = match model.as_ref() {
+            SpecificationModel::Item(item) => VirtualEntry::Item {
+                id,
+                class,
+                path,
+                specification: Arc::new(item.clone()),
+            },
+            SpecificationModel::Dir(dir) => VirtualEntry::Dir {
+                id,
+                class,
+                path,
+                specification: Arc::new(dir.clone()),
+            },
+        };
+        // if is_dir {
+        //     let dir_id = EntryId::new(&self.next_entry_id);
+        //     let dir_entry = VirtualEntry::Dir {
+        //         id: dir_id,
+        //         order,
+        //         class,
+        //         path: path.clone(),
+        //     };
+        //
+        //     self.snapshot.create_entry(Arc::new(dir_entry));
+        //     created_entries.push((path.clone(), dir_id, PathChangeKind::Created));
+        //
+        //     Ok(ChangesDiffSet::from(created_entries))
+        // } else {
+        //     let id = EntryId::new(&self.next_entry_id);
+        //     let entry = VirtualEntry::Item {
+        //         id,
+        //         order,
+        //         class,
+        //         path: path.clone(),
+        //         protocol,
+        //     };
+
+        // self.snapshot.create_entry(Arc::new(entry));
+
+        Ok(ChangesDiffSet::from(vec![(
+            path,
+            id,
+            PathChangeKind::Created,
+        )]))
     }
 
     pub fn remove_entry(&mut self, path: impl AsRef<Path>) -> WorktreeResult<ChangesDiffSet> {

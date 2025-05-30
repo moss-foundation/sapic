@@ -1,27 +1,43 @@
 pub mod physical_snapshot;
 pub mod physical_worktree;
+pub mod specification;
 pub mod util;
 pub mod virtual_snapshot;
 pub mod virtual_worktree;
 
 use moss_common::api::OperationError;
 use moss_fs::FileSystem;
+// use moss_kdl::spec_models::SpecificationMetadata;
+// use moss_kdl::spec_models::dir_spec::{DirContentByClass, DirSpecificationModel};
+// use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
+// use moss_kdl::spec_models::item_spec::{ItemContentByClass, ItemSpecificationModel};
 use moss_text::sanitized;
+
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
+use specification::{
+    DirSpecificationModel, DirSpecificationModelInner, HttpDirSpecificationModel,
+    RequestDirSpecificationModel, SpecificationMetadata, SpecificationMode, SpecificationModel,
+};
 use std::{
+    collections::HashMap,
     path::{Component, Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 use thiserror::Error;
 use util::names::dir_name_from_classification;
+use uuid::Uuid;
 use virtual_worktree::VirtualWorktree;
 
 use crate::{
     models::{
         primitives::{ChangesDiffSet, EntryId},
+        specification::{
+            DirSpecificationInfo, ItemSpecificationInfo, SpecificationContent, SpecificationInfo,
+        },
         types::{Classification, RequestProtocol},
     },
+    tokens::FOLDER_SPEC_FILENAME,
     worktree::virtual_snapshot::VirtualEntry,
 };
 
@@ -84,7 +100,7 @@ impl Worktree {
 
         let next_virtual_entry_id = Arc::new(AtomicUsize::new(0)); // TODO: replace with IdRegistry
         Self {
-            pwt: PhysicalWorktree::new(fs, abs_path, next_entry_id),
+            pwt: PhysicalWorktree::new(fs.clone(), abs_path.clone(), next_entry_id),
             vwt: VirtualWorktree::new(next_virtual_entry_id),
         }
     }
@@ -97,10 +113,7 @@ impl Worktree {
         &mut self,
         destination: PathBuf,
         order: Option<usize>,
-        protocol: Option<RequestProtocol>,
-        specification: Option<Vec<u8>>,
-        classification: Classification,
-        is_dir: bool,
+        specification: SpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
         // Check if an entry with the same virtual path already exists
         if self.vwt.entry_by_path(&destination).is_some() {
@@ -118,12 +131,13 @@ impl Worktree {
             })
             .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
 
-        if is_dir {
-            self.create_dir(parent, name, order, classification, specification)
-                .await
-        } else {
-            self.create_item(parent, name, classification, specification, order, protocol)
-                .await
+        match specification {
+            SpecificationInfo::Dir(specification) => {
+                self.create_dir(parent, name, order, specification).await
+            }
+            SpecificationInfo::Item(specification) => {
+                self.create_item(parent, name, order, specification).await
+            }
         }
     }
 
@@ -132,12 +146,13 @@ impl Worktree {
         parent: PathBuf,
         name: String,
         order: Option<usize>,
-        classification: Classification,
-        specification: Option<Vec<u8>>,
+        specification: DirSpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
+        // TODO: Directory specification
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
 
+        let mut folder_specmap = HashMap::new();
         {
             let encoded_path = {
                 let encoded_name = sanitized::sanitize(&name);
@@ -145,31 +160,74 @@ impl Worktree {
 
                 encoded_path.join(encoded_name)
             };
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&encoded_path, true, None)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
 
-            let specfile_path = encoded_path.join("folder.sapic");
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&specfile_path, false, specification)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
+            let lowest_ancestor_path = self
+                .pwt
+                .snapshot()
+                .await
+                .read()
+                .await
+                .lowest_ancestor_path(&encoded_path);
+
+            // For each missing level, create both the directory and its spec file
+            let missing_part = encoded_path
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path");
+            let mut current_level = lowest_ancestor_path.to_path_buf();
+
+            for part in missing_part.components() {
+                let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+                let dir_model = DirSpecificationModel {
+                    metadata,
+                    inner: DirSpecificationModelInner::Request(RequestDirSpecificationModel::Http(
+                        HttpDirSpecificationModel {},
+                    )),
+                };
+                let model = SpecificationModel::Dir(dir_model);
+
+                current_level.push(part);
+                physical_changes.extend(
+                    self.pwt
+                        .create_entry(&current_level, true, None)
+                        .await?
+                        .into_iter()
+                        .cloned(),
+                );
+                physical_changes.extend(
+                    self.pwt
+                        .create_entry(current_level.join(FOLDER_SPEC_FILENAME), false, Some(model))
+                        .await?
+                        .into_iter()
+                        .cloned(),
+                );
+
+                folder_specmap.insert(current_level.clone(), model);
+            }
         }
 
         {
-            virtual_changes.extend(
-                self.vwt
-                    .create_entry(parent.join(name), order, classification.clone(), None, true)?
-                    .into_iter()
-                    .cloned(),
-            );
+            let destination = parent.join(name);
+            let lowest_ancestor_path = self.vwt.snapshot().lowest_ancestor_path(&destination);
+            let missing_part = destination
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path");
+            let mut current_level = lowest_ancestor_path.to_path_buf();
+
+            // For each missing level, create a virtual dir entry
+            for part in missing_part.components() {
+                current_level.push(part);
+                let encoded_current_level = moss_fs::utils::sanitize_path(&current_level, None)?;
+                let model = folder_specmap
+                    .get(&encoded_current_level)
+                    .expect("There must be matching physical entry for each virtual entry")
+                    .clone();
+                virtual_changes.extend(
+                    self.vwt
+                        .create_entry(&current_level, order, model)?
+                        .into_iter()
+                        .cloned(),
+                )
+            }
         }
 
         Ok(WorktreeDiff {
@@ -182,69 +240,145 @@ impl Worktree {
         &mut self,
         parent: PathBuf,
         name: String,
-        classification: Classification,
-        specification: Option<Vec<u8>>,
         order: Option<usize>,
-        protocol: Option<RequestProtocol>,
+        specification: ItemSpecificationInfo,
     ) -> WorktreeResult<WorktreeDiff> {
         let mut physical_changes = vec![];
         let mut virtual_changes = vec![];
 
-        let encoded_path = {
-            let encoded_name = sanitized::sanitize(&name);
-            let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
-
-            encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
-        };
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&encoded_path, true, None)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
-
-        // TODO: Handling protocol for non-request entities?
+        let mut folder_specmap = HashMap::new();
         let protocol = protocol.unwrap_or_default();
-        let file_name = protocol.to_filename();
-        let file_path = encoded_path.join(file_name);
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&file_path, false, specification)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
+        {
+            let encoded_path = {
+                let encoded_name = sanitized::sanitize(&name);
+                let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
 
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    &parent,
-                    None,
-                    classification.clone(),
-                    Some(protocol.clone()),
-                    true,
-                )?
-                .into_iter()
-                .cloned(),
-        );
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    parent.join(name),
-                    order,
-                    classification,
-                    Some(protocol),
-                    false,
-                )?
-                .into_iter()
-                .cloned(),
-        );
+                encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
+            };
+
+            let lowest_ancestor_path = self
+                .pwt
+                .snapshot()
+                .await
+                .read()
+                .await
+                .lowest_ancestor_path(&encoded_path);
+
+            // For each missing level before the last one, create both the directory and its spec file
+            let missing_part = encoded_path
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path")
+                .parent();
+
+            if let Some(missing_part) = missing_part {
+                let mut current_level = lowest_ancestor_path.to_path_buf();
+                for part in missing_part.components() {
+                    let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+                    let dir_model = DirSpecificationModel {
+                        metadata,
+                        inner: DirSpecificationModelInner::Request(
+                            RequestDirSpecificationModel::Http(HttpDirSpecificationModel {}),
+                        ),
+                    };
+                    let model = SpecificationModel::Dir(dir_model);
+
+                    current_level.push(part);
+                    physical_changes.extend(
+                        self.pwt
+                            .create_entry(&current_level, true, None)
+                            .await?
+                            .into_iter()
+                            .cloned(),
+                    );
+                    physical_changes.extend(
+                        self.pwt
+                            .create_entry(&current_level.join(FOLDER_SPEC_FILENAME), false, None)
+                            .await?
+                            .into_iter()
+                            .cloned(),
+                    );
+
+                    folder_specmap.insert(current_level.clone(), model);
+                }
+            }
+
+            // Create the target entry folder and its spec file
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&encoded_path, true, None)
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
+            // TODO: Handling protocol for non-request entities?
+
+            let file_name = protocol.clone().to_filename();
+            let file_path = encoded_path.join(file_name);
+
+            let metadata = SpecificationMetadata { id: Uuid::new_v4() };
+
+            let spec_content: Option<ItemContentByClass> = if let Some(content) = specification {
+                content.try_into().ok()
+            } else {
+                None
+            };
+
+            let model = Arc::new(WorktreeEntrySpecificationModel::Item(
+                ItemSpecificationModel::new(metadata, spec_content),
+            ));
+
+            physical_changes.extend(
+                self.pwt
+                    .create_entry(&file_path, false, Some(model))
+                    .await?
+                    .into_iter()
+                    .cloned(),
+            );
+        }
+
+        {
+            let destination = parent.join(name);
+            let lowest_ancestor_path = self.vwt.snapshot().lowest_ancestor_path(&destination);
+            // For each missing level before the last one, create a virtual dir entry
+            let missing_part = destination
+                .strip_prefix(&lowest_ancestor_path)
+                .expect("Lowest ancestor path must be a prefix of path")
+                .parent();
+            if let Some(missing_part) = missing_part {
+                let mut current_level = lowest_ancestor_path.to_path_buf();
+                for part in missing_part.components() {
+                    current_level.push(part);
+                    virtual_changes.extend(
+                        self.vwt
+                            .create_entry(&current_level, order, classification.clone(), None)?
+                            .into_iter()
+                            .cloned(),
+                    );
+                }
+            }
+            // Create the virtual entry for the target
+            virtual_changes.extend(
+                self.vwt
+                    .create_entry(&destination, order, classification, Some(protocol), false)?
+                    .into_iter()
+                    .cloned(),
+            );
+        }
 
         Ok(WorktreeDiff {
             physical_changes: ChangesDiffSet::from(physical_changes),
             virtual_changes: ChangesDiffSet::from(virtual_changes),
         })
+    }
+
+    async fn prepare_physical_path(&self, path: PathBuf) -> Result<()> {
+        let snapshot = self.pwt.snapshot().await;
+        let lowest_ancestor = snapshot.read().await.lowest_ancestor_path(&path);
+
+        let missing_part = path
+            .strip_prefix(&lowest_ancestor)
+            .context("Lowest ancestor path must be a prefix of path")?
+            .parent();
     }
 
     pub async fn delete_entry_by_virtual_id(

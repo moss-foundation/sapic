@@ -3065,6 +3065,7 @@ name = "moss_file"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "kdl",
  "moss_fs",
  "serde",
  "serde_json",
