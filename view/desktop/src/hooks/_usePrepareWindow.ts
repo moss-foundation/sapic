@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 
-import { useDescribeWorkspaceState } from "./workspaces/useDescribeWorkspaceState";
+import { useDescribeWorkspaceState } from "./workspace/useDescribeWorkspaceState";
 
 export interface WindowPreparationState {
   isPreparing: boolean;
@@ -12,7 +12,7 @@ export const usePrepareWindow = (): WindowPreparationState => {
   const [isPreparing, setIsPreparing] = useState(true);
 
   const { initialize } = useAppResizableLayoutStore();
-  const { isFetched, data: layout } = useDescribeWorkspaceState();
+  const { isFetched, data: layout } = useDescribeWorkspaceState({});
 
   useEffect(() => {
     if (isFetched) setIsPreparing(false);

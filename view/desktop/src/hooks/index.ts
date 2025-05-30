@@ -1,6 +1,6 @@
 export * from "./mockData";
 export * from "./useModal";
-export * from "./usePrepareWindow";
+export * from "./_usePrepareWindow";
 
 export * from "./appState/useDescribeAppState";
 export * from "./appState/useUpdateEditorPartState";
@@ -16,9 +16,9 @@ export * from "./locales/useSetLocale";
 export * from "./viewGroups/useChangeViewGroups";
 export * from "./viewGroups/useGetViewGroup";
 
-export * from "./workspaces/useCreateWorkspace";
-export * from "./workspaces/useDescribeWorkspaceState";
-export * from "./workspaces/useGetWorkspaces";
-export * from "./workspaces/useOpenWorkspace";
+export * from "./workbench";
+export * from "./workspace";
+
+export * from "./collection";
 
 export * from "./useResponsive";

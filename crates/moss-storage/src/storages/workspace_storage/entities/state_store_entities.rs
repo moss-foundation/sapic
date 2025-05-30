@@ -3,6 +3,15 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
 // ------------------------------------------------------------
+// Activitybar Part State
+// ------------------------------------------------------------
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct ActivitybarPartStateEntity {
+    pub tree_view_group_id: Option<String>,
+}
+
+// ------------------------------------------------------------
 // Sidebar Part State
 // ------------------------------------------------------------
 

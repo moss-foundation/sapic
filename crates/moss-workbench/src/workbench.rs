@@ -90,22 +90,6 @@ impl<R: TauriRuntime> Workbench<R> {
         })));
     }
 
-    pub(super) async fn workspace_by_name(
-        &self,
-        name: &str,
-    ) -> Result<Option<Arc<WorkspaceDescriptor>>> {
-        let workspaces = self.workspaces().await?;
-        let workspaces_lock = workspaces.read().await;
-
-        Ok(workspaces_lock.iter().find_map(|(_, entry)| {
-            if &entry.name == name {
-                Some(Arc::clone(entry))
-            } else {
-                None
-            }
-        }))
-    }
-
     pub(super) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {
         Ok(self
             .known_workspaces

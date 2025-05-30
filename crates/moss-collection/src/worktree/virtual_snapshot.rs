@@ -6,7 +6,7 @@ use crate::models::{
 use anyhow::anyhow;
 use moss_common::models::primitives::Identifier;
 use moss_fs::utils::sanitize_path;
-use moss_kdl::spec_models::{dir_spec::DirSpecificationModel, item_spec::ItemSpecificationModel};
+// use moss_kdl::spec_models::{dir_spec::DirSpecificationModel, item_spec::ItemSpecificationModel};
 use moss_text::sanitized::sanitize;
 use std::{
     path::{Path, PathBuf},

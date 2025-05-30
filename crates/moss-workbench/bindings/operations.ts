@@ -14,13 +14,7 @@ export type DescribeWorkbenchStateOutput = { prevWorkspaceId?: string };
 
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
-export type OpenWorkspaceInput = {
-  /**
-   * We use the workspace name instead of its path because
-   * all workspaces can only be stored within a single directory.
-   */
-  name: string;
-};
+export type OpenWorkspaceInput = { id: string };
 
 export type OpenWorkspaceOutput = { id: string };
 

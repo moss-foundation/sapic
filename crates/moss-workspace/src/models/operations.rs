@@ -13,6 +13,8 @@ use crate::models::types::{
     CollectionInfo, EditorPartState, EnvironmentInfo, PanelPartState, SidebarPartState,
 };
 
+use super::types::ActivitybarPartState;
+
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -112,6 +114,8 @@ pub struct DescribeStateOutput {
     pub sidebar: Option<SidebarPartState>,
     #[ts(optional)]
     pub panel: Option<PanelPartState>,
+    #[ts(optional)]
+    pub activitybar: Option<ActivitybarPartState>,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
@@ -121,4 +125,5 @@ pub enum UpdateStateInput {
     UpdateEditorPartState(EditorPartState),
     UpdateSidebarPartState(SidebarPartState),
     UpdatePanelPartState(PanelPartState),
+    UpdateActivitybarPartState(ActivitybarPartState),
 }

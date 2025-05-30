@@ -5,7 +5,8 @@ import React from "react";
 import { Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
-import { useDescribeWorkspaceState } from "@/hooks/workspaces/useDescribeWorkspaceState";
+import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -49,7 +50,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   return <ToolBar workspace={isWorkspace} />;
 };
 
-const TabbedPane = ({ theme }: { theme?: string }) => {
+const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
@@ -72,28 +73,51 @@ const TabbedPane = ({ theme }: { theme?: string }) => {
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
-  const { data: layout } = useDescribeWorkspaceState();
+
+  const shouldFetchWorkspaceState = mode === "auto" || mode === "empty";
+  const { data: layout } = useDescribeWorkspaceState({
+    enabled: shouldFetchWorkspaceState,
+  });
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
     try {
-      if (layout?.editor) {
-        event.api?.fromJSON(layout.editor);
-      } else {
+      if (mode === "welcome") {
         event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      } else if (mode === "empty") {
+        console.log("Starting with empty TabbedPane for workspace");
       }
     } catch (error) {
-      console.error("Failed to restore layout:", error);
+      console.error("Failed to initialize TabbedPane:", error);
 
       const panels = [...event.api.panels];
       for (const panel of panels) {
         panel.api.close();
       }
 
-      event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      if (mode === "welcome" || mode === "auto") {
+        event.api.addPanel({ id: "WelcomePage", component: "Welcome" });
+      }
     }
   };
+
+  React.useEffect(() => {
+    if (!api || mode !== "auto") return;
+
+    try {
+      if (layout?.editor) {
+        api.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+      } else if (layout !== undefined) {
+        // Layout data has been fetched but no editor state exists
+        // This means it's a new workspace - ensure it starts empty
+        console.log("Starting with empty TabbedPane for new workspace");
+        api.clear();
+      }
+    } catch (error) {
+      console.error("Failed to restore workspace layout:", error);
+    }
+  }, [api, layout, mode]);
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
     if (!pragmaticDropElement || !api) return;

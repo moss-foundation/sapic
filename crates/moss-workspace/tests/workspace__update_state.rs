@@ -71,7 +71,10 @@ async fn update_state_sidebar_part() {
     // Verify the state was stored correctly
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert!(describe_state_output.sidebar.is_some());
-    assert_eq!(describe_state_output.sidebar.unwrap(), sidebar_state);
+    assert_eq!(
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &sidebar_state
+    );
 
     // Verify the database is updated
     let item_store = workspace.__storage().item_store();
@@ -199,8 +202,8 @@ async fn update_state_multiple_updates() {
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert_eq!(describe_state_output.editor.unwrap(), editor_state);
     assert_eq!(
-        describe_state_output.sidebar.unwrap(),
-        updated_sidebar_state
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &updated_sidebar_state
     );
     assert_eq!(describe_state_output.panel.unwrap(), panel_state);
 
@@ -263,8 +266,8 @@ async fn update_state_overwrite_existing() {
     // Verify state was overwritten
     let describe_state_output = workspace.describe_state().await.unwrap();
     assert_eq!(
-        describe_state_output.sidebar.unwrap(),
-        updated_sidebar_state
+        describe_state_output.sidebar.as_ref().unwrap(),
+        &updated_sidebar_state
     );
 
     // Verify database was updated

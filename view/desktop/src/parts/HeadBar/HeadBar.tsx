@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -30,8 +30,8 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  // Use the workspace context instead of local state
-  const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
+  const workspace = useActiveWorkspace();
+  const selectedWorkspace = workspace?.displayName || null;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -57,7 +57,6 @@ export const HeadBar = () => {
     openPanel,
     showDebugPanels,
     setShowDebugPanels,
-    setSelectedWorkspace,
     setSelectedUser,
     setSelectedBranch,
     openNewWorkspaceModal,
@@ -132,6 +131,7 @@ export const HeadBar = () => {
               handleWindowsMenuAction={handleWindowsMenuAction}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
+              selectedWorkspace={selectedWorkspace}
             />
 
             {/*HeadBar Center items*/}
@@ -160,6 +160,7 @@ export const HeadBar = () => {
               setShowDebugPanels={setShowDebugPanels}
               openPanel={openPanel}
               os={os}
+              selectedWorkspace={selectedWorkspace}
               selectedUser={selectedUser}
             />
           </div>

@@ -2,6 +2,8 @@
 import { JsonValue } from "@repo/bindings-utils";
 import type { Identifier } from "./primitives";
 
+export type ActivitybarPartState = { treeViewGroupId: string };
+
 export type CollectionInfo = { id: Identifier; displayName: string; order?: number };
 
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
@@ -41,7 +43,5 @@ export type PanelPartState = { preferredSize: number; isVisible: boolean };
 export type PanelRenderer = "onlyWhenVisible" | "always";
 
 export type SidebarPartState = { preferredSize: number; isVisible: boolean };
-
-export type StreamCollectionsEvent = { id: Identifier; displayName: string; order: number | null };
 
 export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

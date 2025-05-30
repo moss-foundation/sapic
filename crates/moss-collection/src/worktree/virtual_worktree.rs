@@ -5,7 +5,7 @@ use super::{
 };
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
-    types::{Classification, PathChangeKind},
+    types::{Classification, PathChangeKind, RequestProtocol},
 };
 use std::{
     path::{Path, PathBuf},
