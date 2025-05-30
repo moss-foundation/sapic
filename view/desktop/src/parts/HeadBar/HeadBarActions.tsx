@@ -1,5 +1,6 @@
 import { RefObject } from "react";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -17,6 +18,11 @@ export interface HeadBarActionProps {
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
   openOpenWorkspaceModal?: () => void;
+  // Confirmation modal props
+  showDeleteConfirmModal?: boolean;
+  setShowDeleteConfirmModal?: (show: boolean) => void;
+  workspaceToDelete?: { id: string; name: string } | null;
+  setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
 }
 
 /**
@@ -109,10 +115,19 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props: HeadBarActionProps) => {
-  const { openPanel, setShowDebugPanels, showDebugPanels, openNewWorkspaceModal, openOpenWorkspaceModal } = props;
+  const {
+    openPanel,
+    setShowDebugPanels,
+    showDebugPanels,
+    openNewWorkspaceModal,
+    openOpenWorkspaceModal,
+    setShowDeleteConfirmModal,
+    setWorkspaceToDelete,
+  } = props;
 
-  // Use the hook directly instead of context
+  // Use the hooks
   const { mutate: openWorkspace } = useOpenWorkspace();
+  const { getWorkspaceById } = useWorkspaceMapping();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
@@ -131,9 +146,17 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       const [, workspaceId, actionType] = workspaceAction;
       console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
-      // Here you can implement specific actions for workspace items
-      // For example:
-      // if (actionType === "rename") { handleRenameWorkspace(workspaceId); }
+      if (actionType === "delete") {
+        const workspace = getWorkspaceById(workspaceId);
+        if (workspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
+          setWorkspaceToDelete({
+            id: workspaceId,
+            name: workspace.displayName,
+          });
+          setShowDeleteConfirmModal(true);
+        }
+        return;
+      }
 
       return;
     }

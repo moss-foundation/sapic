@@ -2,9 +2,11 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
+import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -52,6 +54,13 @@ export const HeadBar = () => {
     openModal: openOpenWorkspaceModal,
   } = useModal();
 
+  // Delete confirmation modal state
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Delete workspace hook
+  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+
   // User menu actions
   const actionProps: HeadBarActionProps = {
     openPanel,
@@ -61,6 +70,10 @@ export const HeadBar = () => {
     setSelectedBranch,
     openNewWorkspaceModal,
     openOpenWorkspaceModal,
+    showDeleteConfirmModal,
+    setShowDeleteConfirmModal,
+    workspaceToDelete,
+    setWorkspaceToDelete,
   };
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
@@ -90,11 +103,38 @@ export const HeadBar = () => {
     return false;
   };
 
+  // Delete workspace confirmation handler
+  const handleDeleteWorkspace = () => {
+    if (workspaceToDelete) {
+      deleteWorkspace({ id: workspaceToDelete.id });
+      setWorkspaceToDelete(null);
+    }
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteConfirmModal = () => {
+    setShowDeleteConfirmModal(false);
+    setWorkspaceToDelete(null);
+  };
+
   return (
     <WorkspaceMenuProvider>
       {/* Workspace Modals */}
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        showModal={showDeleteConfirmModal}
+        closeModal={closeDeleteConfirmModal}
+        title="Delete Workspace"
+        message={`Are you sure you want to delete the workspace "${workspaceToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteWorkspace}
+        variant="danger"
+        icon="Delete"
+      />
 
       <header
         data-tauri-drag-region
