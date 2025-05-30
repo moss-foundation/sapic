@@ -36,7 +36,6 @@ export const useUserMenuActions = (props: HeadBarActionProps) => {
 
   return (action: string) => {
     console.log(`User action: ${action}`);
-    // Here you would handle different user actions like profile, settings, logout, etc.
     if (action === "sign-in" || action === "user-profile") {
       setSelectedUser?.("Selected User");
     }
@@ -51,7 +50,6 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
 
   return (action: string) => {
     console.log(`Git action: ${action}`);
-    // Here you would handle different git actions like branch switching, pull, push, etc.
     if (action === "main" || action === "master") {
       setSelectedBranch?.(action);
     }
@@ -64,7 +62,6 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
 export const useWindowsMenuActions = (props: HeadBarActionProps) => {
   return (action: string) => {
     console.log(`Windows menu action: ${action}`);
-    // Here you would handle different Windows menu actions
   };
 };
 
@@ -77,9 +74,7 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
   const startRenameCollection = () => {
     setIsRenamingCollection?.(true);
 
-    // Use a small timeout to ensure the menu has closed
     setTimeout(() => {
-      // Dispatch a double-click event to the collection button to trigger renaming
       if (collectionButtonRef?.current) {
         const doubleClickEvent = new MouseEvent("dblclick", {
           bubbles: true,
@@ -101,7 +96,6 @@ export const useCollectionActions = (props: HeadBarActionProps) => {
   const handleCollectionActionMenuAction = (action: string) => {
     console.log(`Collection action: ${action}`);
 
-    // Check if the rename action was selected
     if (action === "rename") {
       startRenameCollection();
     }
@@ -130,7 +124,6 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     setWorkspaceToRename,
   } = props;
 
-  // Use the hooks
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
   const activeWorkspace = useActiveWorkspace();
@@ -138,54 +131,61 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
 
-    // Handle opening workspace when the action ID has the workspace: prefix
     if (action.startsWith("workspace:")) {
       const workspaceId = extractWorkspaceId(action);
       openWorkspace(workspaceId);
       return;
     }
 
-    // Handle menu item for a specific workspace
-    // e.g., "workspaceId-rename" for renaming a workspace
-    const workspaceAction = action.match(/^(.+?)-(rename|duplicate|delete|new|save|edit-.+)$/);
+    const workspaceAction = action.match(
+      /^([a-zA-Z0-9_-]+)-(rename|duplicate|delete|new|save|save-all|edit-configurations)$/
+    );
     if (workspaceAction) {
       const [, workspaceId, actionType] = workspaceAction;
       console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
-      if (actionType === "delete") {
-        const workspace = getWorkspaceById(workspaceId);
-        if (workspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
-          setWorkspaceToDelete({
-            id: workspaceId,
-            name: workspace.displayName,
-          });
-          setShowDeleteConfirmModal(true);
+      const generalActions = ["new", "open", "home", "logs", "debug", "separator"];
+      if (generalActions.includes(workspaceId)) {
+        console.log(`Skipping false match - "${workspaceId}" is a general action keyword`);
+      } else {
+        if (actionType === "delete") {
+          const workspace = getWorkspaceById(workspaceId);
+          if (workspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
+            setWorkspaceToDelete({
+              id: workspaceId,
+              name: workspace.displayName,
+            });
+            setShowDeleteConfirmModal(true);
+          }
+          return;
         }
+
+        if (actionType === "rename") {
+          const workspace = getWorkspaceById(workspaceId);
+          if (workspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
+            // Switch to target workspace first (backend only supports updating active workspace)
+            openWorkspace(workspaceId);
+
+            setTimeout(() => {
+              setWorkspaceToRename({
+                id: workspaceId,
+                name: workspace.displayName,
+              });
+              setShowRenameWorkspaceModal(true);
+            }, 100);
+          }
+          return;
+        }
+
         return;
       }
-
-      if (actionType === "rename") {
-        const workspace = getWorkspaceById(workspaceId);
-        if (workspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
-          setWorkspaceToRename({
-            id: workspaceId,
-            name: workspace.displayName,
-          });
-          setShowRenameWorkspaceModal(true);
-        }
-        return;
-      }
-
-      return;
     }
 
-    // Handle other specific actions
     if (action === "new-workspace") {
       openNewWorkspaceModal?.();
     } else if (action === "open-workspace") {
       openOpenWorkspaceModal?.();
     } else if (action === "rename") {
-      // Handle top-level rename action for active workspace
       if (activeWorkspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
         setWorkspaceToRename({
           id: activeWorkspace.id,

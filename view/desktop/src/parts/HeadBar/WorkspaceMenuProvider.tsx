@@ -25,7 +25,6 @@ export const useWorkspaceMenu = () => useContext(WorkspaceMenuContext);
 export const WorkspaceMenuProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { data: workspaces, isLoading } = useListWorkspaces();
 
-  // Create the All Workspaces menu section with real data
   const allWorkspacesMenuSection = createAllWorkspacesMenuSection(workspaces || []);
 
   // Combine base menu items with the dynamic workspaces section

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { InputOutlined } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
@@ -13,13 +13,10 @@ interface RenameWorkspaceModalProps {
   currentName: string;
 }
 
-export const RenameWorkspaceModal = ({ 
-  closeModal, 
-  showModal, 
-  currentName 
-}: RenameWorkspaceModalProps) => {
+export const RenameWorkspaceModal = ({ closeModal, showModal, currentName }: RenameWorkspaceModalProps) => {
   const { mutate: updateWorkspace, isPending } = useUpdateWorkspace();
   const [name, setName] = useState(currentName);
+  const isSelectingText = useRef(false);
 
   const handleSubmit = () => {
     if (name.trim() && name.trim() !== currentName) {
@@ -52,19 +49,36 @@ export const RenameWorkspaceModal = ({
     }, 200);
   };
 
+  const handleBackdropClick = () => {
+    // Only close if we're not in the middle of a text selection
+    if (!isSelectingText.current) {
+      handleCancel();
+    }
+  };
+
+  const handleInputMouseDown = () => {
+    // Mark that we're starting a text selection
+    isSelectingText.current = true;
+  };
+
+  const handleInputMouseUp = () => {
+    // End text selection after a short delay to ensure backdrop click is processed
+    setTimeout(() => {
+      isSelectingText.current = false;
+    }, 50);
+  };
+
   const isSubmitDisabled = !name.trim() || name.trim() === currentName || isPending;
 
   return (
     <ModalForm
       showModal={showModal}
-      onBackdropClick={handleCancel}
+      onBackdropClick={handleBackdropClick}
       title="Rename Workspace"
       content={
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-(--moss-primary-text) mb-2">
-              Workspace Name
-            </label>
+            <label className="mb-2 block text-sm font-medium text-(--moss-primary-text)">Workspace Name</label>
             <InputOutlined
               size="md"
               value={name}
@@ -80,15 +94,19 @@ export const RenameWorkspaceModal = ({
                   handleCancel();
                 }
               }}
+              onMouseDown={handleInputMouseDown}
+              onMouseUp={handleInputMouseUp}
+              onFocus={(e) => {
+                // Select all text when the input is focused for better UX
+                e.target.select();
+              }}
             />
           </div>
         </div>
       }
       footer={
         <div className="flex items-center justify-end gap-3 py-0.75">
-          <ButtonNeutralOutlined onClick={handleCancel}>
-            Cancel
-          </ButtonNeutralOutlined>
+          <ButtonNeutralOutlined onClick={handleCancel}>Cancel</ButtonNeutralOutlined>
           <ButtonPrimary disabled={isSubmitDisabled} onClick={handleSubmit}>
             {isPending ? "Renaming..." : "Rename"}
           </ButtonPrimary>
@@ -96,4 +114,4 @@ export const RenameWorkspaceModal = ({
       }
     />
   );
-}; 
+};
