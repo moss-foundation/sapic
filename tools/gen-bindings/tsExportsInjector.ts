@@ -1,7 +1,7 @@
-import { join } from "path";
-import { Project, SourceFile } from "ts-morph";
 import { readdirSync } from "node:fs";
 import { basename } from "node:path";
+import { join } from "path";
+import { Project, SourceFile } from "ts-morph";
 
 const path = process.argv[2];
 const indexPath = join(path, "index.ts");
@@ -29,5 +29,7 @@ tsFiles.forEach((fileName) => {
     moduleSpecifier: `./bindings/${importPath}`,
   });
 });
+
+indexFile.organizeImports();
 
 project.saveSync();
