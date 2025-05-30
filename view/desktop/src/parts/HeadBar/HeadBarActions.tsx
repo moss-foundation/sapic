@@ -19,7 +19,6 @@ export interface HeadBarActionProps {
   setSelectedBranch?: (branch: string | null) => void;
   openNewWorkspaceModal?: () => void;
   openOpenWorkspaceModal?: () => void;
-  // Confirmation modal props
   showDeleteConfirmModal?: boolean;
   setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
