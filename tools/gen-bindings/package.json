@@ -5,7 +5,8 @@
   "scripts": {
     "zodGenerator": "ts-node zodGenerator.ts",
     "importsResolver": "ts-node importsResolver.ts",
-    "importsConsolidator": "ts-node importsConsolidator.ts"
+    "importsConsolidator": "ts-node importsConsolidator.ts",
+    "tsExportsInjector": "ts-node tsExportsInjector.ts"
   },
   "keywords": [],
   "author": "",
