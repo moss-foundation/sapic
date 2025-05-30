@@ -1,6 +1,7 @@
 import { RefObject } from "react";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
+import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -23,6 +24,8 @@ export interface HeadBarActionProps {
   setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
   setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
+  setShowRenameWorkspaceModal?: (show: boolean) => void;
+  setWorkspaceToRename?: (workspace: { id: string; name: string } | null) => void;
 }
 
 /**
@@ -123,11 +126,14 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     openOpenWorkspaceModal,
     setShowDeleteConfirmModal,
     setWorkspaceToDelete,
+    setShowRenameWorkspaceModal,
+    setWorkspaceToRename,
   } = props;
 
   // Use the hooks
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
+  const activeWorkspace = useActiveWorkspace();
 
   return (action: string) => {
     console.log(`Workspace action: ${action}`);
@@ -158,6 +164,18 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         return;
       }
 
+      if (actionType === "rename") {
+        const workspace = getWorkspaceById(workspaceId);
+        if (workspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
+          setWorkspaceToRename({
+            id: workspaceId,
+            name: workspace.displayName,
+          });
+          setShowRenameWorkspaceModal(true);
+        }
+        return;
+      }
+
       return;
     }
 
@@ -166,6 +184,15 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       openNewWorkspaceModal?.();
     } else if (action === "open-workspace") {
       openOpenWorkspaceModal?.();
+    } else if (action === "rename") {
+      // Handle top-level rename action for active workspace
+      if (activeWorkspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
+        setWorkspaceToRename({
+          id: activeWorkspace.id,
+          name: activeWorkspace.displayName,
+        });
+        setShowRenameWorkspaceModal(true);
+      }
     } else if (action === "home") {
       openPanel("Home");
     } else if (action === "logs") {
@@ -173,7 +200,5 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     } else if (action === "debug") {
       setShowDebugPanels(!showDebugPanels);
     }
-
-    // Other actions like "rename", "duplicate", etc. will be handled elsewhere
   };
 };

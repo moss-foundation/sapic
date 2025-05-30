@@ -2,11 +2,12 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import { RenameWorkspaceModal } from "@/components/Modals/Workspace/RenameWorkspaceModal";
+import { ConfirmationModal } from "@/components";
 import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
-import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
+import { useDeleteWorkspace } from "@/hooks/workbench";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -58,6 +59,10 @@ export const HeadBar = () => {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
+  // Rename workspace modal state
+  const [showRenameWorkspaceModal, setShowRenameWorkspaceModal] = useState(false);
+  const [workspaceToRename, setWorkspaceToRename] = useState<{ id: string; name: string } | null>(null);
+
   // Delete workspace hook
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
@@ -74,6 +79,8 @@ export const HeadBar = () => {
     setShowDeleteConfirmModal,
     workspaceToDelete,
     setWorkspaceToDelete,
+    setShowRenameWorkspaceModal,
+    setWorkspaceToRename,
   };
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
@@ -117,11 +124,27 @@ export const HeadBar = () => {
     setWorkspaceToDelete(null);
   };
 
+  // Close rename workspace modal
+  const closeRenameWorkspaceModal = () => {
+    setShowRenameWorkspaceModal(false);
+    setWorkspaceToRename(null);
+  };
+
   return (
     <WorkspaceMenuProvider>
       {/* Workspace Modals */}
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      
+      {/* Rename Workspace Modal */}
+      {workspaceToRename && (
+        <RenameWorkspaceModal
+          showModal={showRenameWorkspaceModal}
+          closeModal={closeRenameWorkspaceModal}
+          workspaceId={workspaceToRename.id}
+          currentName={workspaceToRename.name}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
