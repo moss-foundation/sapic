@@ -184,6 +184,14 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       openNewWorkspaceModal?.();
     } else if (action === "open-workspace") {
       openOpenWorkspaceModal?.();
+    } else if (action === "delete") {
+      if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
+        setWorkspaceToDelete({
+          id: activeWorkspace.id,
+          name: activeWorkspace.displayName,
+        });
+        setShowDeleteConfirmModal(true);
+      }
     } else if (action === "rename") {
       if (activeWorkspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
         setWorkspaceToRename({
