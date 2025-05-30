@@ -371,6 +371,16 @@ impl Worktree {
         })
     }
 
+    async fn prepare_physical_path(&self, path: PathBuf) -> Result<()> {
+        let snapshot = self.pwt.snapshot().await;
+        let lowest_ancestor = snapshot.read().await.lowest_ancestor_path(&path);
+
+        let missing_part = path
+            .strip_prefix(&lowest_ancestor)
+            .context("Lowest ancestor path must be a prefix of path")?
+            .parent();
+    }
+
     pub async fn delete_entry_by_virtual_id(
         &mut self,
         id: EntryId,
