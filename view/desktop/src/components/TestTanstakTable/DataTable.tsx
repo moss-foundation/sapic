@@ -124,12 +124,14 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
               return swapListByIndexWithEdge(sourceIndex, dropIndex, prev, edge);
             });
           }
+          return;
         }
 
         if (sourceTarget.tableId === tableId) {
           setData((prev) => {
             return [...prev].filter((row) => row.key !== sourceTarget.row.key);
           });
+          return;
         }
 
         if (dropTarget.tableId === tableId) {
@@ -144,6 +146,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
             return newData;
           });
         }
+        return;
       },
     });
   }, [tableId]);

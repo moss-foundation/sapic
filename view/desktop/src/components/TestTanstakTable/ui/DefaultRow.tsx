@@ -66,7 +66,7 @@ export const DefaultRow = <TData,>({
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TableRow";
+          return source.data.type === "TableRow" && originalRow.key !== source.data.data.row.key;
         },
         onDrop() {
           setClosestEdge(null);
