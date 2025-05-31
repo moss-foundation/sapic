@@ -1,4 +1,5 @@
 pub mod api;
+pub mod layout;
 pub mod manifest;
 pub mod models;
 pub mod storage;
@@ -23,7 +24,7 @@ pub mod constants {
     pub const TREE_VIEW_GROUP_MOCK_SERVERS: &str = "workbench.view.mockServers";
 }
 
-mod defaults {
+pub mod defaults {
     pub(crate) const DEFAULT_WORKSPACE_NAME: &str = "New Workspace";
 }
 

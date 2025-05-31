@@ -25,6 +25,7 @@ use uuid::Uuid;
 
 use crate::{
     defaults, dirs,
+    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
     storage::segments::COLLECTION_SEGKEY,
 };
@@ -71,7 +72,7 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) app_handle: AppHandle<R>,
     pub(super) abs_path: Arc<Path>,
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) workspace_storage: Arc<dyn WorkspaceStorage>,
+    pub(super) storage: Arc<dyn WorkspaceStorage>,
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
@@ -85,6 +86,8 @@ pub struct Workspace<R: TauriRuntime> {
 
     #[allow(dead_code)]
     pub(super) manifest: EditableInPlaceFileHandle<ManifestModel>,
+
+    pub layout: LayoutService,
 }
 
 pub struct CreateParams {
@@ -102,18 +105,24 @@ impl<R: TauriRuntime> Workspace<R> {
         fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
-        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to load the workspace state database")?;
+        let storage = {
+            let storage = WorkspaceStorageImpl::new(&abs_path)
+                .context("Failed to load the workspace state database")?;
+
+            Arc::new(storage)
+        };
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest =
             EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
 
+        let layout = LayoutService::new(storage.clone());
+
         Ok(Self {
             app_handle,
             abs_path,
             fs,
-            workspace_storage: Arc::new(state_db_manager),
+            storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
@@ -121,6 +130,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
+            layout,
         })
     }
 
@@ -131,8 +141,12 @@ impl<R: TauriRuntime> Workspace<R> {
         activity_indicator: ActivityIndicator<R>,
         params: CreateParams,
     ) -> Result<Self> {
-        let state_db_manager = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to open the workspace state database")?;
+        let storage = {
+            let storage = WorkspaceStorageImpl::new(&abs_path)
+                .context("Failed to load the workspace state database")?;
+
+            Arc::new(storage)
+        };
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest = EditableInPlaceFileHandle::create(
@@ -146,11 +160,13 @@ impl<R: TauriRuntime> Workspace<R> {
         )
         .await?;
 
+        let layout = LayoutService::new(storage.clone());
+
         Ok(Self {
             app_handle,
             abs_path,
             fs,
-            workspace_storage: Arc::new(state_db_manager),
+            storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
@@ -158,6 +174,7 @@ impl<R: TauriRuntime> Workspace<R> {
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
+            layout,
         })
     }
 
@@ -222,7 +239,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     let environment = Environment::load(
                         &entry_abs_path,
                         self.fs.clone(),
-                        self.workspace_storage.variable_store().clone(),
+                        self.storage.variable_store().clone(),
                         self.next_variable_id.clone(),
                         environment::LoadParams {
                             create_if_not_exists: false,
@@ -260,7 +277,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 let restored_items = ListByPrefix::list_by_prefix(
-                    self.workspace_storage.item_store().as_ref(),
+                    self.storage.item_store().as_ref(),
                     COLLECTION_SEGKEY.as_str().expect("invalid utf-8"),
                 )?;
 
@@ -342,6 +359,6 @@ impl<R: TauriRuntime> Workspace<R> {
 
     // Test only utility, not feature-flagged for easier CI setup
     pub fn __storage(&self) -> Arc<dyn WorkspaceStorage> {
-        self.workspace_storage.clone()
+        self.storage.clone()
     }
 }

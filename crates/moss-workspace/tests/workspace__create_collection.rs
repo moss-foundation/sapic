@@ -49,7 +49,6 @@ async fn create_collection_success() {
         }
     );
 
-    // Clean up
     cleanup().await;
 }
 
@@ -76,7 +75,6 @@ async fn create_collection_empty_name() {
     let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "collection").unwrap();
     assert!(list_result.is_empty());
 
-    // Clean up
     cleanup().await;
 }
 
@@ -123,7 +121,6 @@ async fn create_collection_special_chars() {
         );
     }
 
-    // Clean up
     cleanup().await;
 }
 
@@ -168,6 +165,5 @@ async fn create_collection_with_order() {
         }
     );
 
-    // Clean up
     cleanup().await;
 }

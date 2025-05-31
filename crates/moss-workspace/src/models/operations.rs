@@ -9,11 +9,9 @@ use uuid::Uuid;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::types::{
-    CollectionInfo, EditorPartState, EnvironmentInfo, PanelPartState, SidebarPartState,
-};
+use crate::models::types::{CollectionInfo, EditorPartStateInfo, EnvironmentInfo};
 
-use super::types::ActivitybarPartState;
+use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -109,21 +107,21 @@ pub struct DescribeEnvironmentOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeStateOutput {
     #[ts(optional)]
-    pub editor: Option<EditorPartState>,
+    pub editor: Option<EditorPartStateInfo>,
     #[ts(optional)]
-    pub sidebar: Option<SidebarPartState>,
+    pub sidebar: Option<SidebarPartStateInfo>,
     #[ts(optional)]
-    pub panel: Option<PanelPartState>,
+    pub panel: Option<PanelPartStateInfo>,
     #[ts(optional)]
-    pub activitybar: Option<ActivitybarPartState>,
+    pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub enum UpdateStateInput {
-    UpdateEditorPartState(EditorPartState),
-    UpdateSidebarPartState(SidebarPartState),
-    UpdatePanelPartState(PanelPartState),
-    UpdateActivitybarPartState(ActivitybarPartState),
+    UpdateEditorPartState(EditorPartStateInfo),
+    UpdateSidebarPartState(SidebarPartStateInfo),
+    UpdatePanelPartState(PanelPartStateInfo),
+    UpdateActivitybarPartState(ActivitybarPartStateInfo),
 }
