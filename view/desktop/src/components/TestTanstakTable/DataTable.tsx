@@ -318,9 +318,9 @@ const EmptyRow = ({
 
   return (
     <tr ref={ref} key={`empty-row-${tableId}`}>
-      <TableBody.Cell colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "bg-blue-400")}>
+      <td colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "bg-blue-400")}>
         No results.
-      </TableBody.Cell>
+      </td>
     </tr>
   );
 };
