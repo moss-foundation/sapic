@@ -208,6 +208,17 @@ impl From<EditorPanelStateEntity> for EditorPanelState {
     }
 }
 
+// impl From<HashMap<String, EditorPanelState>> for EditorPanelsStateEntity {
+//     fn from(value: HashMap<String, EditorPanelState>) -> Self {
+//         EditorPanelsStateEntity(
+//             value
+//                 .into_iter()
+//                 .map(|(key, panel)| (key, panel.into()))
+//                 .collect(),
+//         )
+//     }
+// }
+
 // #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 // #[serde(rename_all = "camelCase")]
 // #[ts(export, export_to = "types.ts")]

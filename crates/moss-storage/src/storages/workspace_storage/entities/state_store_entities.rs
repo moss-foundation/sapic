@@ -108,6 +108,8 @@ pub struct EditorPanelStateEntity {
     pub maximum_height: Option<f64>,
 }
 
+// pub struct EditorPanelsStateEntity(pub HashMap<String, EditorPanelStateEntity>);
+
 // #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 // pub struct EditorPartStateEntity {
 //     pub grid: EditorGridStateEntity,

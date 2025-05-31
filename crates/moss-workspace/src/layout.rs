@@ -1,7 +1,12 @@
 use anyhow::Result;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
-    WorkspaceStorage, primitives::segkey::SegKeyBuf, storage::operations::TransactionalListByPrefix,
+    WorkspaceStorage,
+    primitives::segkey::SegKeyBuf,
+    storage::operations::TransactionalListByPrefix,
+    workspace_storage::entities::state_store_entities::{
+        EditorGridStateEntity, EditorPanelStateEntity,
+    },
 };
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, sync::Arc};
@@ -486,8 +491,10 @@ impl LayoutService {
         .map(|(segkey, value)| (segkey, value))
         .collect::<HashMap<SegKeyBuf, AnyValue>>();
 
-        let grid =
-            get_from_cache::<EditorGridState>(&mut editor_cache, PART_EDITOR_SEGKEY.join("grid"));
+        let grid = get_from_cache::<EditorGridStateEntity>(
+            &mut editor_cache,
+            PART_EDITOR_SEGKEY.join("grid"),
+        );
         let grid = if let Some(grid) = grid {
             grid
         } else {
@@ -495,7 +502,7 @@ impl LayoutService {
             return Ok(None);
         };
 
-        let panels = get_from_cache::<HashMap<String, EditorPanelState>>(
+        let panels = get_from_cache::<HashMap<String, EditorPanelStateEntity>>(
             &mut editor_cache,
             PART_EDITOR_SEGKEY.join("panels"),
         )
@@ -505,8 +512,11 @@ impl LayoutService {
             get_from_cache::<String>(&mut editor_cache, PART_EDITOR_SEGKEY.join("activeGroup"));
 
         Ok(Some(EditorPartStateInfo {
-            grid,
-            panels,
+            grid: grid.into(),
+            panels: panels
+                .into_iter()
+                .map(|(key, panel)| (key, panel.into()))
+                .collect(),
             active_group,
         }))
     }

@@ -1,8 +1,12 @@
+use std::collections::HashMap;
+
 use moss_common::api::OperationResult;
 use moss_db::primitives::AnyValue;
 use moss_storage::{
     storage::operations::TransactionalPutItem,
-    workspace_storage::entities::state_store_entities::EditorGridStateEntity,
+    workspace_storage::entities::state_store_entities::{
+        EditorGridStateEntity, EditorPanelStateEntity,
+    },
 };
 use tauri::Runtime as TauriRuntime;
 
@@ -44,6 +48,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let mut txn = self.storage.begin_write()?;
 
         let value = AnyValue::serialize(&EditorGridStateEntity::from(part_state.grid))?;
+        dbg!(&value);
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -51,7 +56,13 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.panels)?;
+        let value = AnyValue::serialize::<HashMap<String, EditorPanelStateEntity>>(
+            &part_state
+                .panels
+                .into_iter()
+                .map(|(key, panel)| (key, panel.into()))
+                .collect(),
+        )?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
