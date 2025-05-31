@@ -105,13 +105,15 @@ export const DefaultRow = <TData,>({
   });
 
   return (
-    <tr ref={rowRef} className={cn("relative", className)} {...props}>
-      {children}
-      {!disableDnd && (
-        <div ref={handleRef} className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
-      )}
-      {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
+    <>
+      <tr ref={rowRef} className={cn("relative", className)} {...props}>
+        {children}
+        {!disableDnd && (
+          <div ref={handleRef} className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
+        )}
+        {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
+      </tr>
       {preview && createPortal(<DefaultRow table={table} row={row} />, preview)}
-    </tr>
+    </>
   );
 };

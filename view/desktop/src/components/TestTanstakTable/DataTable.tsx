@@ -123,8 +123,6 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
               newData[sourceIndex] = dropTarget.row;
               newData[dropIndex] = sourceTarget.row;
 
-              console.log(newData);
-
               return newData;
             });
           }
@@ -152,8 +150,31 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
     });
   }, [tableId]);
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    const value = e.target.value.trim();
+    if (!value) return;
+
+    const columnId = e.target.placeholder;
+    const newRow: TestData = {
+      key: `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
+      value: columnId === "value" ? value : "",
+      type: columnId === "type" ? value : "",
+      description: columnId === "description" ? value : "",
+      global_value: columnId === "global_value" ? value : "",
+      local_value: columnId === "local_value" ? Number(value) || 0 : 0,
+      properties: {
+        disabled: false,
+      },
+    };
+
+    setData((prev) => [...prev, newRow]);
+    e.target.value = "";
+  };
+
   return (
-    <Scrollbar className="relative w-full">
+    <Scrollbar className="relative -ml-2 w-[calc(100%+8px)] pl-2">
       <div className="w-[calc(100%-1px)]" ref={tableContainerRef}>
         <table
           className="w-full table-fixed border-collapse rounded border border-[#E0E0E0]"
@@ -203,7 +224,12 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
                           className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
                           style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                         >
-                          <input placeholder={cell.column.id} className="w-full outline-0" />
+                          <input
+                            form={`${tableId}-AddNewRowForm`}
+                            placeholder={cell.column.id}
+                            className="w-full outline-0"
+                            onBlur={handleBlur}
+                          />
                         </td>
                       );
                     })}
@@ -218,6 +244,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
             )}
           </TableBody.Body>
         </table>
+        <form onSubmit={(e) => e.preventDefault()} id={`${tableId}-AddNewRowForm`} className="sr-only" />
       </div>
     </Scrollbar>
   );
