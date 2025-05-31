@@ -25,7 +25,6 @@ async fn describe_layout_parts_state_empty() {
     assert!(describe_state_output.panel.is_some());
     assert!(describe_state_output.activitybar.is_some());
 
-    // Clean up
     cleanup().await;
 }
 
@@ -62,7 +61,6 @@ async fn describe_layout_parts_state_sidebar_only() {
     assert_eq!(retrieved_sidebar.visible, true);
     assert_eq!(retrieved_sidebar.position, SidebarPosition::Left);
 
-    // Cleanup
     cleanup().await;
 }
 
@@ -97,7 +95,6 @@ async fn describe_layout_parts_state_panel_only() {
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.visible, false);
 
-    // Cleanup
     cleanup().await;
 }
 
@@ -117,7 +114,6 @@ async fn describe_layout_parts_state_editor_only() {
     // Editor should be None since no editor state is set
     assert!(describe_state_output.editor.is_none());
 
-    // Cleanup
     cleanup().await;
 }
 
@@ -168,7 +164,6 @@ async fn describe_layout_parts_state_all() {
     // Check Activitybar (should have default values)
     assert!(describe_state_output.activitybar.is_some());
 
-    // Cleanup
     cleanup().await;
 }
 
@@ -230,6 +225,5 @@ async fn describe_layout_parts_state_after_update() {
     assert_eq!(retrieved_panel.preferred_size, 200);
     assert_eq!(retrieved_panel.visible, false);
 
-    // Clean up
     cleanup().await;
 }

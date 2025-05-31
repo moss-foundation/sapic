@@ -58,7 +58,6 @@ async fn update_state_sidebar_part() {
     let stored_visible: bool = visible_value.deserialize().unwrap();
     assert_eq!(stored_visible, true);
 
-    // Clean up
     cleanup().await;
 }
 
@@ -96,7 +95,6 @@ async fn update_state_panel_part() {
     let stored_visible: bool = visible_value.deserialize().unwrap();
     assert_eq!(stored_visible, false);
 
-    // Clean up
     cleanup().await;
 }
 
@@ -221,7 +219,6 @@ async fn update_state_multiple_updates() {
             .unwrap();
     assert_eq!(panel_visible_after, false);
 
-    // Clean up
     cleanup().await;
 }
 
@@ -293,6 +290,5 @@ async fn update_state_overwrite_existing() {
             .unwrap();
     assert_eq!(updated_visible, false);
 
-    // Clean up
     cleanup().await;
 }
