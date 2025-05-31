@@ -281,7 +281,6 @@ const EmptyRow = ({
       }),
       dropTargetForElements({
         element,
-        getDropEffect: () => "copy",
         getData: () => {
           return { type: "TableRowNoResults", data: { tableId } };
         },

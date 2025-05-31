@@ -32,16 +32,18 @@ export const DefaultRow = <TData,>({
 
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
+  const [isDragging, setIsDragging] = useState(false);
+
   useEffect(() => {
-    const handle = handleRef.current;
+    const dragHandle = handleRef.current;
     const element = rowRef.current;
 
-    if (!element || !handle || disableDnd) return;
+    if (!element || !dragHandle || disableDnd) return;
 
     return combine(
       draggable({
         element,
-        dragHandle: handle,
+        dragHandle,
         getInitialData: () => ({
           type: "TableRow",
           data: {
@@ -49,12 +51,19 @@ export const DefaultRow = <TData,>({
             row: originalRow,
           },
         }),
+        onDragStart() {
+          setIsDragging(true);
+        },
+        onDrop() {
+          setIsDragging(false);
+        },
       }),
       dropTargetForElements({
         element,
         getIsSticky() {
           return true;
         },
+
         getData({ input }) {
           return attachClosestEdge(
             { type: "TableRow", data: { tableId: table.options.meta?.id, row: originalRow } },
@@ -95,18 +104,21 @@ export const DefaultRow = <TData,>({
     <>
       <tr ref={rowRef} className={cn("relative", className)} {...props}>
         {children}
-        {!disableDnd && <RowHandle ref={handleRef} />}
+        {!disableDnd && <RowHandle ref={handleRef} isDragging={isDragging} />}
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
       </tr>
     </>
   );
 };
 
-const RowHandle = forwardRef<HTMLDivElement>((_, ref) => {
+const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean }>(({ isDragging }, ref) => {
   return (
     <div
       ref={ref}
-      className="absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow"
+      className={cn(
+        "absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow",
+        isDragging && "hidden"
+      )}
     >
       <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
