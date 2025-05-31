@@ -3,7 +3,8 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -101,7 +102,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
   }, [headers, table]);
 
   useEffect(() => {
-    monitorForElements({
+    return monitorForElements({
       canMonitor: ({ source }) => {
         return source.data.type === "TableRow";
       },
@@ -236,11 +237,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
                 </DefaultRow>
               </>
             ) : (
-              <TableBody.Row>
-                <TableBody.Cell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableBody.Cell>
-              </TableBody.Row>
+              <EmptyRow colSpan={columns.length} setData={setData} tableId={tableId} />
             )}
           </TableBody.Body>
         </table>
@@ -249,3 +246,62 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
     </Scrollbar>
   );
 }
+
+const EmptyRow = ({
+  colSpan,
+  setData,
+  tableId,
+}: {
+  colSpan: number;
+  setData: (data: TestData[]) => void;
+  tableId: string;
+}) => {
+  const ref = useRef<HTMLTableRowElement>(null);
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    return combine(
+      monitorForElements({
+        canMonitor: ({ source }) => {
+          return source.data.type === "TableRow";
+        },
+        onDrop({ location, source }) {
+          if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
+
+          const sourceTarget = source.data.data as DnDRowData["data"];
+          const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
+
+          if (dropTarget.tableId === tableId) {
+            setData([sourceTarget.row]);
+          }
+        },
+      }),
+      dropTargetForElements({
+        element,
+        getData: () => {
+          return { type: "TableRowNoResults", data: { tableId } };
+        },
+        onDragEnter() {
+          setIsDraggedOver(true);
+        },
+        onDragLeave() {
+          setIsDraggedOver(false);
+        },
+        canDrop: ({ source }) => {
+          return source.data.type === "TableRow";
+        },
+      })
+    );
+  }, [setData, tableId]);
+
+  return (
+    <tr ref={ref} key={`empty-row-${tableId}`}>
+      <TableBody.Cell colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "bg-blue-400")}>
+        No results.
+      </TableBody.Cell>
+    </tr>
+  );
+};

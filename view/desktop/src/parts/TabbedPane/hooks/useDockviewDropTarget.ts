@@ -39,16 +39,14 @@ export const useTabbedPaneDropTarget = (
   React.useEffect(() => {
     if (!dockviewRef.current) return;
 
-    const dropTarget = dropTargetForElements({
+    return dropTargetForElements({
       element: dockviewRef.current,
       onDragEnter: evaluateDropTarget,
       onDragStart: evaluateDropTarget,
       onDragLeave: clearDropTarget,
       onDrop: clearDropTarget,
     });
-
-    return () => dropTarget();
-  }, [dockviewRef, setPragmaticDropElement]);
+  }, [setPragmaticDropElement]);
 
   return { canDrop, isDragging };
 };
