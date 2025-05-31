@@ -2,6 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
+import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -112,6 +113,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
 
         const sourceTarget = source.data.data as DnDRowData["data"];
         const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
+        const edge = extractClosestEdge(location.current.dropTargets[0].data);
 
         if (sourceTarget.tableId === dropTarget.tableId) {
           if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
@@ -119,12 +121,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
               const sourceIndex = prev.findIndex((row) => row.key === sourceTarget.row.key);
               const dropIndex = prev.findIndex((row) => row.key === dropTarget.row.key);
 
-              const newData = [...prev];
-
-              newData[sourceIndex] = dropTarget.row;
-              newData[dropIndex] = sourceTarget.row;
-
-              return newData;
+              return swapListByIndexWithEdge(sourceIndex, dropIndex, prev, edge);
             });
           }
         }

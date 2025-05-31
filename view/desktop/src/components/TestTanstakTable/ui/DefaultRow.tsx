@@ -1,5 +1,4 @@
-import { HTMLAttributes, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { forwardRef, HTMLAttributes, useEffect, useRef, useState } from "react";
 
 import DropIndicator from "@/components/DropIndicator";
 import { cn } from "@/utils";
@@ -10,7 +9,6 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { Row, Table } from "@tanstack/react-table";
 
 interface DefaultRowProps<TData> extends HTMLAttributes<HTMLTableRowElement> {
@@ -30,10 +28,9 @@ export const DefaultRow = <TData,>({
   const handleRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLTableRowElement>(null);
 
-  const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
-
   const originalRow = row.original;
+
+  const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   useEffect(() => {
     const handle = handleRef.current;
@@ -43,7 +40,8 @@ export const DefaultRow = <TData,>({
 
     return combine(
       draggable({
-        element: handle,
+        element,
+        dragHandle: handle,
         getInitialData: () => ({
           type: "TableRow",
           data: {
@@ -51,17 +49,6 @@ export const DefaultRow = <TData,>({
             row: originalRow,
           },
         }),
-        onDrop: () => {
-          setPreview(null);
-        },
-        onGenerateDragPreview({ nativeSetDragImage }) {
-          setCustomNativeDragPreview({
-            nativeSetDragImage,
-            render({ container }) {
-              setPreview((prev) => (prev === container ? prev : container));
-            },
-          });
-        },
       }),
       dropTargetForElements({
         element,
@@ -108,12 +95,27 @@ export const DefaultRow = <TData,>({
     <>
       <tr ref={rowRef} className={cn("relative", className)} {...props}>
         {children}
-        {!disableDnd && (
-          <div ref={handleRef} className="absolute top-1/2 -left-[8px] size-4 -translate-y-1/2 bg-red-500" />
-        )}
+        {!disableDnd && <RowHandle ref={handleRef} />}
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
       </tr>
-      {preview && createPortal(<DefaultRow table={table} row={row} />, preview)}
     </>
   );
 };
+
+const RowHandle = forwardRef<HTMLDivElement>((_, ref) => {
+  return (
+    <div
+      ref={ref}
+      className="absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow"
+    >
+      <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M0 0H2V2H0V0ZM4 0H6V2H4V0ZM2 4H0V6H2V4ZM4 4H6V6H4V4ZM2 8H0V10H2V8ZM4 8H6V10H4V8Z"
+          fill="#525252"
+        />
+      </svg>
+    </div>
+  );
+});
