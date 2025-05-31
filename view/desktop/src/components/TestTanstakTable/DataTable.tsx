@@ -174,11 +174,29 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
     e.target.value = "";
   };
 
+  const handleAddNewRow = (index: number) => {
+    setData((prev) => {
+      const newRow: TestData = {
+        key: `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
+        value: "",
+        type: "",
+        description: "",
+        global_value: "",
+        local_value: 0,
+        properties: {
+          disabled: false,
+        },
+      };
+
+      return [...prev.slice(0, index), newRow, ...prev.slice(index)];
+    });
+  };
+
   return (
     <Scrollbar className="relative -ml-2 w-[calc(100%+8px)] pl-2">
       <div className="w-[calc(100%-1px)]" ref={tableContainerRef}>
         <table
-          className="w-full table-fixed border-collapse rounded border border-[#E0E0E0]"
+          className="border-separate border-spacing-0 rounded border border-[#E0E0E0]"
           style={{ width: table.getCenterTotalSize() }}
         >
           <TableHead.Head>
@@ -194,7 +212,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
-                  <DefaultRow table={table} row={row} key={row.id}>
+                  <DefaultRow onAddNewRow={() => handleAddNewRow(row.index)} table={table} row={row} key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <DefaultCell key={cell.id} cell={cell} />
                     ))}
@@ -210,11 +228,12 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
                     .getRowModel()
                     .rows[table.getRowModel().rows.length - 1].getVisibleCells()
                     .map((cell) => {
+                      const isLastColumn = cell.column.getIsLastColumn();
                       if (cell.column.id === "actions" || cell.column.id === "checkbox") {
                         return (
                           <td
                             key={cell.id}
-                            className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
+                            className={cn("border-r border-[#E0E0E0] px-2 py-1.5", isLastColumn && "border-r-0")}
                             style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                           />
                         );
@@ -222,7 +241,7 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
                       return (
                         <td
                           key={cell.id}
-                          className={cn("border-1 border-b-0 border-l-0 border-[#E0E0E0] px-2 py-1.5")}
+                          className={cn("border-r border-[#E0E0E0] px-2 py-1.5", isLastColumn && "border-r-0")}
                           style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                         >
                           <input

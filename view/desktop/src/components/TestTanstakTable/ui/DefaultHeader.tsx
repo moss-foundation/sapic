@@ -9,9 +9,13 @@ interface DefaultHeaderProps<TData> extends HTMLAttributes<HTMLTableCellElement>
 }
 
 export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultHeaderProps<TData>) {
+  const isLastColumn = header.column.getIsLastColumn();
+
   return (
     <th
-      className="relative border-r border-r-[#E0E0E0] px-2 py-1.5 capitalize"
+      className={cn("relative border-r border-b border-[#E0E0E0] px-2 py-1.5 capitalize", {
+        "border-r-0": isLastColumn,
+      })}
       style={{ width: header.getSize() }}
       {...props}
     >

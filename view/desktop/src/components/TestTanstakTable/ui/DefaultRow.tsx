@@ -15,6 +15,7 @@ interface DefaultRowProps<TData> extends HTMLAttributes<HTMLTableRowElement> {
   disableDnd?: boolean;
   row: Row<TData>;
   table: Table<TData>;
+  onAddNewRow?: () => void;
 }
 
 export const DefaultRow = <TData,>({
@@ -23,6 +24,7 @@ export const DefaultRow = <TData,>({
   className,
   disableDnd = false,
   table,
+  onAddNewRow,
   ...props
 }: DefaultRowProps<TData>) => {
   const handleRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,7 @@ export const DefaultRow = <TData,>({
         {children}
         {!disableDnd && <RowHandle ref={handleRef} isDragging={isDragging} />}
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
+        <AddNewRowDividerButton onClick={onAddNewRow} />
       </tr>
     </>
   );
@@ -131,3 +134,67 @@ const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean }>(({ isDragg
     </div>
   );
 });
+
+const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
+  const [visible, setVisible] = useState(false);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    timeoutIdRef.current = setTimeout(() => {
+      setVisible(true);
+      timeoutIdRef.current = null;
+    }, 600);
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+    setVisible(false);
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onClick?.();
+  };
+
+  return (
+    <button
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      //prettier-ignore
+      className={cn(`
+          absolute -top-[1px] -left-2 
+          z-100 w-full h-[2px]
+          
+          background-(--moss-primary)
+          cursor-pointer
+
+          transition-opacity duration-100
+   
+          before:h-[5px] before:w-full before:content-[''] before:absolute before:left-0 before:-top-[5px]
+          after:h-[5px] after:w-full after:content-[''] after:absolute after:left-0 after:-bottom-[5px]
+         `,
+        {
+          "opacity-0": !visible,
+        }
+      )}
+      onClick={visible ? handleClick : undefined}
+    >
+      <div className="relative h-full w-full">
+        <div className="background-white absolute -top-[8px] left-0 flex size-4 items-center justify-center rounded-sm p-px">
+          <DividerButtonIcon />
+        </div>
+      </div>
+    </button>
+  );
+};
+
+const DividerButtonIcon = () => {
+  return (
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4.5 3.5V0H3.5V3.5H0V4.5H3.5V8H4.5V4.5H8V3.5H4.5Z" fill="#525252" />
+    </svg>
+  );
+};
