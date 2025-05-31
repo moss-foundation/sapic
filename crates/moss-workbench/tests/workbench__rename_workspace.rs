@@ -24,7 +24,7 @@ async fn rename_workspace_success() {
 
     let new_workspace_name = random_workspace_name();
     let update_workspace_result = workspace_manager
-        .update_workspace(UpdateWorkspaceInput {
+        .update_workspace(&UpdateWorkspaceInput {
             name: Some(new_workspace_name.clone()),
         })
         .await;
@@ -60,7 +60,7 @@ async fn rename_workspace_empty_name() {
 
     let new_workspace_name = "";
     let update_workspace_result = workspace_manager
-        .update_workspace(UpdateWorkspaceInput {
+        .update_workspace(&UpdateWorkspaceInput {
             name: Some(new_workspace_name.to_string()),
         })
         .await;
@@ -91,7 +91,7 @@ async fn rename_workspace_unchanged() {
 
     // Rename to same name
     let update_workspace_result = workspace_manager
-        .update_workspace(UpdateWorkspaceInput {
+        .update_workspace(&UpdateWorkspaceInput {
             name: Some(workspace_name.clone()),
         })
         .await;
@@ -118,7 +118,7 @@ async fn rename_workspace_not_opened() {
 
     // Try renaming a workspace with a non-existent ID
     let update_workspace_result = workspace_manager
-        .update_workspace(UpdateWorkspaceInput {
+        .update_workspace(&UpdateWorkspaceInput {
             name: Some(random_workspace_name()),
         })
         .await;

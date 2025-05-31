@@ -15,6 +15,8 @@ export type TauriIpcCommand =
   | "create_workspace"
   | "open_workspace"
   | "list_workspaces"
+  | "delete_workspace"
+  | "update_workspace"
   | "update_workspace_state"
   | "describe_workspace_state"
   | "list_collections"

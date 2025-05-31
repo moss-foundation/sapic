@@ -12,6 +12,7 @@ export * from "./DropIndicator";
 export * from "./IconLabelButton";
 export * from "./InputOutlined";
 export * from "./InputPlain";
+export * from "./Modals/ConfirmationModal";
 
 export * from "./PageLoader";
 export * as RadioGroup from "./RadioGroup";

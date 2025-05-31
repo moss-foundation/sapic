@@ -17,17 +17,17 @@ pre-commit:
       stage_fixed: true
 
     - name: "Format Typescript/Javascript files"
-      run: prettier {tailwind-plugin} --write "**/*.{ts,js}"
+      run: pnpm prettier {tailwind-plugin} --write {staged_files}
       glob: "**/*.{ts,js}"
       stage_fixed: true
 
     - name: "Format React files"
-      run: prettier {tailwind-plugin} --write "**/*.{jsx,tsx,css}"
+      run: pnpm prettier {tailwind-plugin} --write {staged_files}
       glob: "**/*.{jsx,tsx,css}"
       stage_fixed: true
 
     - name: "Format Other files"
-      run: prettier {toml-plugin} --write "**/*.{toml,md,json}"
+      run: pnpm prettier {toml-plugin} --write {staged_files}
       glob: "**/*.{toml,md,json}"
       stage_fixed: true
 
