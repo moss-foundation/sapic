@@ -58,7 +58,7 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
 /**
  * Windows menu action handler
  */
-export const useWindowsMenuActions = (props: HeadBarActionProps) => {
+export const useWindowsMenuActions = () => {
   return (action: string) => {
     console.log(`Windows menu action: ${action}`);
   };
