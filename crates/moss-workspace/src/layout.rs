@@ -18,8 +18,8 @@ use crate::{
     models::{
         primitives::{ActivitybarPosition, SidebarPosition},
         types::{
-            ActivitybarItemStateInfo, ActivitybarPartStateInfo, EditorGridState, EditorPanelState,
-            EditorPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo,
+            ActivitybarItemStateInfo, ActivitybarPartStateInfo, EditorPartStateInfo,
+            PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
     storage::segments::{
@@ -27,9 +27,9 @@ use crate::{
     },
 };
 
-// // ------------------------------------
-// // Activitybar
-// // ------------------------------------
+// ------------------------------------
+// Activitybar
+// ------------------------------------
 
 #[derive(Debug)]
 pub struct ActivitybarPreferencesItem {
@@ -78,15 +78,9 @@ const ACTIVITYBAR_DEFAULTS: ActivitybarPartDefaults = ActivitybarPartDefaults {
     ],
 };
 
-// #[derive(Debug)]
-// pub struct ActivitybarPart {
-//     pub defaults: ActivitybarPartDefaults,
-//     pub preferences: ActivitybarPartPreferences,
-// }
-
-// // ------------------------------------
-// // Sidebar
-// // ------------------------------------
+// ------------------------------------
+// Sidebar
+// ------------------------------------
 
 #[derive(Debug)]
 pub struct SidebarPartDefaults {
@@ -107,16 +101,9 @@ const SIDEBAR_DEFAULTS: SidebarPartDefaults = SidebarPartDefaults {
     is_visible: true,
 };
 
-// #[derive(Debug)]
-// pub struct SidebarPart {
-//     pub defaults: SidebarPartDefaults,
-//     pub preferences: SidebarPartPreferences,
-//     // pub cache: Option<SidebarPartCache>,
-// }
-
-// // ------------------------------------
-// // Panel
-// // ------------------------------------
+// ------------------------------------
+// Panel
+// ------------------------------------
 
 #[derive(Debug)]
 pub struct PanelPartDefaults {
@@ -134,16 +121,9 @@ const PANEL_DEFAULTS: PanelPartDefaults = PanelPartDefaults {
     is_visible: true,
 };
 
-// #[derive(Debug)]
-// pub struct PanelPart {
-//     pub defaults: PanelPartDefaults,
-//     pub preferences: PanelPartPreferences,
-//     // pub cache: Option<PanelPartCache>,
-// }
-
-// // ------------------------------------
-// // Editor
-// // ------------------------------------
+// ------------------------------------
+// Editor
+// ------------------------------------
 
 #[derive(Debug)]
 pub struct EditorPartDefaults {}
@@ -151,190 +131,7 @@ pub struct EditorPartDefaults {}
 #[derive(Debug)]
 pub struct EditorPartPreferences {}
 
-const EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
-
-// #[derive(Debug)]
-// pub struct EditorPart {
-//     pub defaults: EditorPartDefaults,
-//     pub preferences: EditorPartPreferences,
-// }
-
-// // ------------------------------------
-
-// pub struct LayoutService {
-//     storage: Arc<dyn WorkspaceStorage>, // TODO: replace with just a store when we have a way to begin a transaction from the store
-//     activitybar: ActivitybarPart,
-//     sidebar: SidebarPart,
-//     panel: PanelPart,
-//     // editor: EditorPart,
-// }
-
-// impl LayoutService {
-//     pub fn new(storage: Arc<dyn WorkspaceStorage>) -> Result<Self> {
-//         let item_store = storage.item_store();
-//         let mut txn = storage.begin_read()?;
-
-//         fn to_option<E, S>(
-//             result: Result<AnyValue, DatabaseError>,
-//             _: std::marker::PhantomData<E>,
-//             convert_fn: impl FnOnce(E) -> S,
-//         ) -> Result<Option<S>>
-//         where
-//             E: DeserializeOwned,
-//         {
-//             match result {
-//                 Ok(value) => {
-//                     let entity: E = value.deserialize()?;
-//                     Ok(Some(convert_fn(entity)))
-//                 }
-//                 Err(DatabaseError::NotFound { .. }) => Ok(None),
-//                 Err(err) => Err(err.into()),
-//             }
-//         }
-
-//         // ------------------------------------
-//         // Activitybar
-//         // ------------------------------------
-
-//         // let activitybar_result = TransactionalGetItem::get(
-//         //     item_store.as_ref(),
-//         //     &mut txn,
-//         //     PART_ACTIVITYBAR_SEGKEY.to_segkey_buf(),
-//         // );
-//         // let activitybar_cache = to_option(
-//         //     activitybar_result,
-//         //     std::marker::PhantomData::<ActivitybarPartStateEntity>,
-//         //     ActivitybarPartCache::from,
-//         // )?;
-
-//         let activitybar_defaults = ActivitybarPartDefaults {
-//             position: ActivitybarPosition::Default,
-//             items: HashMap::new(),
-//         };
-
-//         // let activitybar_preferences = ActivitybarPartPreferences {
-//         //     position: activitybar_cache
-//         //         .as_ref()
-//         //         .and_then(|cache| cache.position.clone()),
-//         //     items: activitybar_cache.as_ref().map(|cache| cache.items.clone()),
-//         // };
-
-//         let activitybar_preferences = ActivitybarPartPreferences {
-//             position: None, // HACK: hardcoded for now
-//             items: None,    // HACK: hardcoded for now
-//         };
-
-//         let activitybar = ActivitybarPart {
-//             defaults: activitybar_defaults,
-//             preferences: activitybar_preferences,
-//             // cache: activitybar_cache,
-//         };
-
-//         // ------------------------------------
-//         // Sidebar
-//         // ------------------------------------
-
-//         // let sidebar_result = TransactionalGetItem::get(
-//         //     item_store.as_ref(),
-//         //     &mut txn,
-//         //     PART_SIDEBAR_SEGKEY.to_segkey_buf(),
-//         // );
-//         // let sidebar_cache = to_option(
-//         //     sidebar_result,
-//         //     std::marker::PhantomData::<SidebarPartStateEntity>,
-//         //     SidebarPartCache::from,
-//         // )?;
-
-//         let sidebar_defaults = SidebarPartDefaults {
-//             position: SidebarPosition::Left,
-//             size: 200,
-//             is_visible: true,
-//         };
-
-//         let sidebar_preferences = SidebarPartPreferences {
-//             position: None,   // HACK: hardcoded for now
-//             is_visible: None, // HACK: hardcoded for now
-//         };
-
-//         let sidebar = SidebarPart {
-//             defaults: sidebar_defaults,
-//             preferences: sidebar_preferences,
-//             // cache: sidebar_cache,
-//         };
-
-//         // ------------------------------------
-//         // Panel
-//         // ------------------------------------
-
-//         let panel_defaults = PanelPartDefaults {
-//             size: 200,
-//             is_visible: true,
-//         };
-
-//         let panel_preferences = PanelPartPreferences { is_visible: true };
-
-//         let panel = PanelPart {
-//             defaults: panel_defaults,
-//             preferences: panel_preferences,
-//         };
-
-//         Ok(Self {
-//             storage,
-//             activitybar,
-//             sidebar,
-//             panel,
-//         })
-//     }
-
-//     pub fn layout_info(&self) -> Result<PanelPartInfo> {
-//         fn to_option<E, S>(
-//             result: Result<AnyValue, DatabaseError>,
-//             _: std::marker::PhantomData<E>,
-//             convert_fn: impl FnOnce(E) -> S,
-//         ) -> Result<Option<S>>
-//         where
-//             E: DeserializeOwned,
-//         {
-//             match result {
-//                 Ok(value) => {
-//                     let entity: E = value.deserialize()?;
-//                     Ok(Some(convert_fn(entity)))
-//                 }
-//                 Err(DatabaseError::NotFound { .. }) => Ok(None),
-//                 Err(err) => Err(err.into()),
-//             }
-//         }
-
-//         let item_store = self.storage.item_store();
-//         let mut txn = self.storage.begin_read()?;
-
-//         let activitybar_result = match TransactionalGetItem::get(
-//             item_store.as_ref(),
-//             &mut txn,
-//             PART_ACTIVITYBAR_SEGKEY.to_segkey_buf(),
-//         ) {
-//             Ok(value) => {
-//                 let entity: ActivitybarPartStateEntity = value.deserialize()?;
-//                 Some(entity)
-//             }
-//             Err(DatabaseError::NotFound { .. }) => None,
-//             Err(err) => return Err(err.into()),
-//         };
-
-//         // let activitybar_cache = to_option(
-//         //     activitybar_result,
-//         //     std::marker::PhantomData::<ActivitybarPartStateEntity>,
-//         //     ActivitybarPartCache::from,
-//         // )?;
-
-//         // PanelPartInfo {
-//         //     preferred_size: self.panel.defaults.size,
-//         //     is_visible: self.panel.preferences.is_visible,
-//         // }
-
-//         todo!()
-//     }
-// }
+const _EDITOR_DEFAULTS: EditorPartDefaults = EditorPartDefaults {};
 
 pub struct LayoutService {
     storage: Arc<dyn WorkspaceStorage>,

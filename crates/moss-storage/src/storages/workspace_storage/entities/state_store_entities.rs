@@ -2,57 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-// ------------------------------------------------------------
-// Activitybar Part State
-// ------------------------------------------------------------
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub struct ActivitybarItemStateEntity {
-//     pub order: Option<usize>,
-// }
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub enum ActivitybarPositionState {
-//     Default,
-//     Top,
-//     Bottom,
-//     Hidden,
-// }
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub struct ActivitybarPartStateEntity {
-//     pub last_active_tree_view_item: Option<String>,
-
-//     // HACK: this is a temporary solution to store the position of the activitybar and items order,
-//     // as part of the workspace state. We should store it as a user preference not a workspace state.
-//     pub position: Option<ActivitybarPositionState>,
-//     pub items: HashMap<String, ActivitybarItemStateEntity>,
-// }
-
-// ------------------------------------------------------------
-// Sidebar Part State
-// ------------------------------------------------------------
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub struct SidebarPartStateEntity {
-//     pub preferred_size: usize,
-//     pub is_visible: bool,
-// }
-
-// ------------------------------------------------------------
-// Panel Part State
-// ------------------------------------------------------------
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub struct PanelPartStateEntity {
-//     pub preferred_size: usize,
-//     pub is_visible: bool,
-// }
-
-// ------------------------------------------------------------
-// Editor Part State
-// ------------------------------------------------------------
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum EditorGridOrientationEntity {
@@ -107,12 +56,3 @@ pub struct EditorPanelStateEntity {
     pub maximum_width: Option<f64>,
     pub maximum_height: Option<f64>,
 }
-
-// pub struct EditorPanelsStateEntity(pub HashMap<String, EditorPanelStateEntity>);
-
-// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-// pub struct EditorPartStateEntity {
-//     pub grid: EditorGridStateEntity,
-//     pub panels: HashMap<String, EditorPanelStateEntity>,
-//     pub active_group: Option<String>,
-// }

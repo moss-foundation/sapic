@@ -25,9 +25,8 @@ use uuid::Uuid;
 
 use crate::{
     defaults, dirs,
-    layout::{self, LayoutService},
+    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
-    models::types::ActivitybarPartStateInfo,
     storage::segments::COLLECTION_SEGKEY,
 };
 
