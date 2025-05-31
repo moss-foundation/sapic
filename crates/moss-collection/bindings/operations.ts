@@ -37,7 +37,7 @@ export type DeleteEntryInput = { id: EntryId };
 
 export type DeleteEntryOutput = { virtualChanges: Array<[string, EntryId, PathChangeKind]> };
 
-export type StreamEntriesByPrefixesInput = Array<string>;
+export type StreamWorktreeEntriesInput = { prefixes: Array<string> };
 
 export type UpdateEntryInput = {
   id: EntryId;
