@@ -1,6 +1,6 @@
 use moss_storage::workspace_storage::entities::state_store_entities::{
     EditorGridLeafDataEntity, EditorGridNodeEntity, EditorGridOrientationEntity,
-    EditorGridStateEntity, EditorPanelStateEntity, EditorPartStateEntity, PanelRendererEntity,
+    EditorGridStateEntity, EditorPanelStateEntity, PanelRendererEntity,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -208,41 +208,41 @@ impl From<EditorPanelStateEntity> for EditorPanelState {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct EditorPartState {
-    pub grid: EditorGridState,
-    #[ts(type = "Record<string, EditorPanelState>")]
-    pub panels: HashMap<String, EditorPanelState>,
-    #[ts(optional)]
-    pub active_group: Option<String>,
-}
+// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct EditorPartStateInfo {
+//     pub grid: EditorGridState,
+//     #[ts(type = "Record<string, EditorPanelState>")]
+//     pub panels: HashMap<String, EditorPanelState>,
+//     #[ts(optional)]
+//     pub active_group: Option<String>,
+// }
 
-impl From<EditorPartState> for EditorPartStateEntity {
-    fn from(value: EditorPartState) -> Self {
-        EditorPartStateEntity {
-            grid: value.grid.into(),
-            panels: value
-                .panels
-                .into_iter()
-                .map(|(key, panel)| (key, panel.into()))
-                .collect(),
-            active_group: value.active_group,
-        }
-    }
-}
+// impl From<EditorPartStateInfo> for EditorPartStateEntity {
+//     fn from(value: EditorPartStateInfo) -> Self {
+//         EditorPartStateEntity {
+//             grid: value.grid.into(),
+//             panels: value
+//                 .panels
+//                 .into_iter()
+//                 .map(|(key, panel)| (key, panel.into()))
+//                 .collect(),
+//             active_group: value.active_group,
+//         }
+//     }
+// }
 
-impl From<EditorPartStateEntity> for EditorPartState {
-    fn from(value: EditorPartStateEntity) -> Self {
-        EditorPartState {
-            grid: value.grid.into(),
-            panels: value
-                .panels
-                .into_iter()
-                .map(|(key, panel)| (key, panel.into()))
-                .collect(),
-            active_group: value.active_group,
-        }
-    }
-}
+// impl From<EditorPartStateEntity> for EditorPartStateInfo {
+//     fn from(value: EditorPartStateEntity) -> Self {
+//         EditorPartStateInfo {
+//             grid: value.grid.into(),
+//             panels: value
+//                 .panels
+//                 .into_iter()
+//                 .map(|(key, panel)| (key, panel.into()))
+//                 .collect(),
+//             active_group: value.active_group,
+//         }
+//     }
+// }
