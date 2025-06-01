@@ -19,6 +19,7 @@ available throughout the project's toolchain.
 
 import tinycss2
 import json
+import argparse
 from pathlib import Path
 
 
@@ -58,6 +59,12 @@ def extract_css_variables(input_file: str, output_file: str):
 
 
 if __name__ == "__main__":
-    input_file = "../assets/themes/light.css"
-    output_file = "../packages/config-eslint/moss-lint-plugin/css_variables.json"
-    extract_css_variables(input_file, output_file)
+    parser = argparse.ArgumentParser(
+        description="Extract CSS custom properties (variables) from a CSS file and export them to a JSON file."
+    )
+    parser.add_argument("--source", type=Path, required=True, help="Path to the input css file")
+    parser.add_argument("--dest", type=Path, required=True, help="Path to the output json file")
+
+    args = parser.parse_args()
+
+    extract_css_variables(args.source, args.dest)
