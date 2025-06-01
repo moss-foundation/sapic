@@ -128,7 +128,7 @@ gen-$(1)-bindings:
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run zodGenerator ../../$($(2))
 
 	@echo "Updating exports in index.ts..."
-	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_exports_injector.py
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run tsExportsInjector ../../$($(2))
 
 	@echo "Formatting generated files"
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsConsolidator ../../$($(2))
