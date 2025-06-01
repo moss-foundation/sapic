@@ -84,7 +84,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 order: order.clone(),
                 external_abs_path: None,
             })?;
-            PutItem::put(self.workspace_storage.item_store().as_ref(), key, value)?;
+            PutItem::put(self.storage.item_store().as_ref(), key, value)?;
         }
 
         Ok(CreateCollectionOutput { id, abs_path })

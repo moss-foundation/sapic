@@ -53,7 +53,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         {
             let key = COLLECTION_SEGKEY.join(&id_str);
-            RemoveItem::remove(self.workspace_storage.item_store().as_ref(), key)?;
+            RemoveItem::remove(self.storage.item_store().as_ref(), key)?;
         }
 
         Ok(DeleteCollectionOutput {

@@ -3,7 +3,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import "@repo/moss-tabs/assets/styles.css";
 
 import { AllotmentHandle, LayoutPriority } from "allotment";
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
@@ -46,8 +46,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     if (!canUpdatePartState.current) return;
 
     updateSidebarPartState({
-      preferredSize: sideBar.width,
-      isVisible: sideBar.visible,
+      size: sideBar.width,
+      visible: sideBar.visible,
     });
   }, [sideBar, updateSidebarPartState]);
 
@@ -56,8 +56,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     if (!canUpdatePartState.current) return;
 
     updatePanelPartState({
-      preferredSize: bottomPane.height,
-      isVisible: bottomPane.visible,
+      size: bottomPane.height,
+      visible: bottomPane.visible,
     });
   }, [bottomPane, updatePanelPartState]);
 
