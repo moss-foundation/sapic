@@ -18,18 +18,10 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
-    ifeq ($(shell where py 2>NUL),)
-        PYTHON := python
-    else
-        PYTHON := py
-    endif
-    PIP := pip
 export DEV_APP_DIR = ${USERPROFILE}\.sapic
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
-    PYTHON := python3
-    PIP := pip3
 
 export DEV_APP_DIR = ${HOME}/.sapic
 endif
@@ -75,6 +67,7 @@ PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
 NPX := npx
+UV := uv
 
 # ======================================================
 # Run Commands
@@ -94,13 +87,12 @@ run-desktop:
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
-	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
 
 ## Icon generator tool
 .PHONY: gen-icons
 gen-icons:
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source ${ICONS_DIR}
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source ${ICONS_DIR} \
+	@cd $(MISC_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
+	@cd $(MISC_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
@@ -169,7 +161,7 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(MISC_DIR) && $(PYTHON) css_variables_exporter.py
+	@cd $(MISC_DIR) && $(UV) run css_variables_exporter.py
 
 ## Count Lines of Code
 .PHONY: loc
