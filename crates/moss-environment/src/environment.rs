@@ -8,7 +8,6 @@ use std::{
     path::Path,
     sync::{Arc, atomic::AtomicUsize},
 };
-use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
@@ -58,7 +57,7 @@ pub struct Environment {
     #[allow(dead_code)]
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
-    variables: RwLock<VariableMap>,
+    variables: VariableMap,
     #[allow(dead_code)]
     next_variable_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
@@ -131,7 +130,7 @@ impl Environment {
         Ok(Self {
             fs,
             abs_path,
-            variables: RwLock::new(variables),
+            variables,
             next_variable_id,
             store,
             file: file_handle,
@@ -142,7 +141,7 @@ impl Environment {
         self.file.model().await.id
     }
 
-    pub fn variables(&self) -> &RwLock<VariableMap> {
+    pub fn variables(&self) -> &VariableMap {
         &self.variables
     }
 
@@ -157,8 +156,8 @@ impl Environment {
         Ok(())
     }
 
-    pub async fn clear(&self) -> Result<()> {
-        self.variables.write().await.clear();
+    pub async fn clear(&mut self) -> Result<()> {
+        self.variables.clear();
         Ok(())
     }
 }

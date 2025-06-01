@@ -27,9 +27,7 @@ impl Collection {
         // let worktree_entries_state = unit_store.list_worktree_entries()?;
 
         let worktree = self.worktree().await?;
-        let worktree_lock = worktree.read().await;
-
-        if worktree_lock.is_empty() {
+        if worktree.is_empty() {
             // We need to send a final empty event to signal the end of the stream.
             let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
             return Ok(());
@@ -38,26 +36,25 @@ impl Collection {
         let mut streams = StreamMap::new();
         for prefix in input.prefixes {
             let normalized_prefix = normalize_path(Path::new(prefix));
-            let s =
-                tokio_stream::iter(worktree_lock.iter_entries_by_prefix(normalized_prefix).map(
-                    |(&id, entry)| {
-                        // TODO: Get order from collection storage
-                        EntryInfo {
-                            id,
-                            name: entry
-                                .path()
-                                .file_name()
-                                .unwrap_or_default()
-                                .to_string_lossy()
-                                .to_string(),
-                            path: entry.path().to_path_buf(),
-                            is_dir: entry.is_dir(),
-                            classification: entry.classification(),
-                            protocol: entry.protocol(),
-                            order: entry.order(),
-                        }
-                    },
-                ));
+            let s = tokio_stream::iter(worktree.iter_entries_by_prefix(normalized_prefix).map(
+                |(&id, entry)| {
+                    // TODO: Get order from collection storage
+                    EntryInfo {
+                        id,
+                        name: entry
+                            .path()
+                            .file_name()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            .to_string(),
+                        path: entry.path().to_path_buf(),
+                        is_dir: entry.is_dir(),
+                        classification: entry.classification(),
+                        protocol: entry.protocol(),
+                        order: entry.order(),
+                    }
+                },
+            ));
             streams.insert(prefix, s);
         }
 
