@@ -14,7 +14,9 @@ export type EntryInfo = {
   order?: number;
 };
 
-export type EntryKind = "unit" | "unloadedDir" | "dir" | "file";
+export type EntryKind = "dir" | "file";
+
+export type EnvironmentInfo = { id: string; name: string; order?: number };
 
 export type FormDataItem = {
   key: string;

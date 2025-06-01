@@ -20,12 +20,12 @@ export const usePrepareWindow = (): WindowPreparationState => {
     if (layout) {
       initialize({
         sideBar: {
-          width: layout?.sidebar?.preferredSize,
-          visible: layout?.sidebar?.isVisible,
+          width: layout?.sidebar?.size,
+          visible: layout?.sidebar?.visible,
         },
         bottomPane: {
-          height: layout?.panel?.preferredSize,
-          visible: layout?.panel?.isVisible,
+          height: layout?.panel?.size,
+          visible: layout?.panel?.visible,
         },
       });
     }

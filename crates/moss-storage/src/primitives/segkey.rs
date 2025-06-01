@@ -41,6 +41,19 @@ impl SegKeyBuf {
     pub fn as_bytes(&self) -> &[u8] {
         &self.inner
     }
+
+    pub fn join(&self, value: impl AsRef<str>) -> SegKeyBuf {
+        let value_bytes = value.as_ref().as_bytes();
+
+        let total = self.inner.len() + 1 + value_bytes.len(); // Plus 1 for the separator
+
+        let mut buf = SegKeyBuf::with_capacity(total);
+
+        buf.extend_from_slice(&self.inner);
+        buf.push(SEGMENT_SEPARATOR);
+        buf.extend_from_slice(value_bytes);
+        buf
+    }
 }
 
 impl std::borrow::Borrow<[u8]> for SegKeyBuf {
@@ -210,5 +223,55 @@ mod tests {
     fn test_segkey_with_capacity() {
         let buf = SegKeyBuf::with_capacity(100);
         assert!(buf.capacity() >= 100);
+    }
+
+    #[test]
+    fn test_segkeybuf_join() {
+        let key = SegKey::new("prefix");
+        let buf = key.to_segkey_buf();
+        let joined = buf.join("suffix");
+        assert_eq!(joined.as_bytes(), b"prefix:suffix");
+    }
+
+    #[test]
+    fn test_segkeybuf_join_multiple() {
+        let key = SegKey::new("prefix");
+        let buf1 = key.to_segkey_buf();
+        let buf2 = buf1.join("middle");
+        let buf3 = buf2.join("suffix");
+        assert_eq!(buf3.as_bytes(), b"prefix:middle:suffix");
+    }
+
+    #[test]
+    fn test_segkeybuf_join_empty() {
+        let key = SegKey::new("");
+        let buf = key.to_segkey_buf();
+        let joined = buf.join("value");
+        assert_eq!(joined.as_bytes(), b":value");
+    }
+
+    #[test]
+    fn test_segkeybuf_join_empty_value() {
+        let key = SegKey::new("prefix");
+        let buf = key.to_segkey_buf();
+        let joined = buf.join("");
+        assert_eq!(joined.as_bytes(), b"prefix:");
+    }
+
+    #[test]
+    fn test_segkeybuf_join_with_special_chars() {
+        let key = SegKey::new("prefix");
+        let buf = key.to_segkey_buf();
+        let joined = buf.join("value:with:colons");
+        assert_eq!(joined.as_bytes(), b"prefix:value:with:colons");
+    }
+
+    #[test]
+    fn test_segkeybuf_join_capacity() {
+        let buf = SegKeyBuf::with_capacity(50);
+        let joined = buf.join("test");
+        assert_eq!(joined.as_bytes(), b":test");
+        // Verify the capacity is reasonable
+        assert!(joined.capacity() >= 5);
     }
 }

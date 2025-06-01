@@ -37,6 +37,9 @@ yarn-error.log*
 # Operating System
 .DS_Store
 
+# Windows-specific files created by pre-commit hooks
+NUL
+
 # Certificates
 *.pem
 
@@ -77,3 +80,4 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 
 # Icons (this cannot be moved to the desktop folder because it makes tailwind ignore the icons)
 view/desktop/src/assets/icons/
+NUL

@@ -1,5 +1,5 @@
 import { GroupPanelViewState, Orientation, SerializedDockview, SerializedGridObject } from "@/lib/moss-tabs/src";
-import { EditorGridNode, EditorPartState } from "@repo/moss-workspace";
+import { EditorGridNode, EditorPartStateInfo } from "@repo/moss-workspace";
 
 const mapSerializedRootToEditorRoot = (node: SerializedGridObject<GroupPanelViewState>): EditorGridNode => {
   if (node.type === "branch") {
@@ -30,7 +30,7 @@ const mapSerializedOrientationToEditor = (orientation: Orientation): "HORIZONTAL
   return orientation === Orientation.HORIZONTAL ? "HORIZONTAL" : "VERTICAL";
 };
 
-export const mapEditorPartStateToSerializedDockview = (editor: EditorPartState): SerializedDockview => {
+export const mapEditorPartStateToSerializedDockview = (editor: EditorPartStateInfo): SerializedDockview => {
   const {
     panels,
     activeGroup,
@@ -49,7 +49,7 @@ export const mapEditorPartStateToSerializedDockview = (editor: EditorPartState):
   };
 };
 
-export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockview): EditorPartState => {
+export const mapSerializedDockviewToEditorPartState = (dockview: SerializedDockview): EditorPartStateInfo => {
   const {
     panels,
     activeGroup,
