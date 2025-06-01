@@ -1,10 +1,16 @@
-[default]
+[type.rs]
+extend-glob = ["*.rs"]
 extend-ignore-identifiers-re = [
-    "typ",
-    "testng",
-    "((?i)darcula)"
+    "typ", # `type` is a keyword in Rust
+    "ser", # `serde::ser`
 ]
 
+[type.ts]
+extend-glob = ["*.ts"]
+extend-ignore-identifiers-re = [
+    "testng", # TestNG, used in a test item
+    "((?i)darcula)" # Darcula theme, used in a test itme
+]
 
 [files]
-extend-exclude = ["assets/locales/**/*.json"]
+extend-exclude = ["assets/locales/**/*.json"] # Ignore localization files
