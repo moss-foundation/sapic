@@ -1,6 +1,5 @@
 use anyhow::{Context as _, Result};
 use moss_fs::FileSystem;
-use serde::{Serialize, de::DeserializeOwned};
 use std::{path::Path, sync::Arc};
 use tokio::sync::RwLock;
 

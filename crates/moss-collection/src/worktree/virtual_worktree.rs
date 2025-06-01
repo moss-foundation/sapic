@@ -1,11 +1,11 @@
 use super::{
-    WorktreeError, WorktreeResult,
+    WorktreeResult,
     specification::SpecificationModel,
     virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
-    types::{Classification, PathChangeKind, RequestProtocol},
+    types::{Classification, PathChangeKind},
 };
 use std::{
     path::{Path, PathBuf},

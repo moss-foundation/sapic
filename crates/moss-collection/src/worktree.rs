@@ -17,7 +17,7 @@ use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
 use specification::{
     DirSpecificationModel, DirSpecificationModelInner, HttpDirSpecificationModel,
-    RequestDirSpecificationModel, SpecificationMetadata, SpecificationMode, SpecificationModel,
+    RequestDirSpecificationModel, SpecificationMetadata, SpecificationModel,
 };
 use std::{
     collections::HashMap,
@@ -32,9 +32,7 @@ use virtual_worktree::VirtualWorktree;
 use crate::{
     models::{
         primitives::{ChangesDiffSet, EntryId},
-        specification::{
-            DirSpecificationInfo, ItemSpecificationInfo, SpecificationContent, SpecificationInfo,
-        },
+        specification::{DirSpecificationInfo, ItemSpecificationInfo, SpecificationInfo},
         types::{Classification, RequestProtocol},
     },
     tokens::FOLDER_SPEC_FILENAME,
@@ -153,6 +151,8 @@ impl Worktree {
         let mut virtual_changes = vec![];
 
         let mut folder_specmap = HashMap::new();
+
+        // Physical worktree changes
         {
             let encoded_path = {
                 let encoded_name = sanitized::sanitize(&name);
@@ -205,6 +205,7 @@ impl Worktree {
             }
         }
 
+        // Virtual worktree changes
         {
             let destination = parent.join(name);
             let lowest_ancestor_path = self.vwt.snapshot().lowest_ancestor_path(&destination);

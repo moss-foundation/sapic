@@ -1,19 +1,20 @@
 use super::{
     WorktreeResult,
     physical_snapshot::{PhysicalEntryNew, PhysicalSnapshot},
+    specification::SpecificationModel,
 };
 use crate::{
     models::{
         primitives::{ChangesDiffSet, EntryId},
-        specification::SpecificationContent,
         types::{EntryKind, PathChangeKind},
     },
-    worktree::{ROOT_PATH, WorktreeError},
+    worktree::{ROOT_PATH, WorktreeError, specification::ItemSpecificationModel},
 };
 use anyhow::{Context, Result, anyhow};
+use kdl::KdlDocument;
 use moss_file::kdl::KdlFileHandle;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
-use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
+// use moss_kdl::spec_models::entry_spec::WorktreeEntrySpecificationModel;
 use std::{
     collections::HashMap,
     ops::Deref,
@@ -103,7 +104,7 @@ impl PhysicalWorktree {
         &self,
         path: impl AsRef<Path>,
         is_dir: bool,
-        model: Option<Arc<WorktreeEntrySpecificationModel>>,
+        model: Arc<SpecificationModel>,
     ) -> WorktreeResult<ChangesDiffSet> {
         let path: Arc<Path> = path.as_ref().into();
         debug_assert!(path.is_relative());
@@ -131,12 +132,7 @@ impl PhysicalWorktree {
 
             changes
         } else {
-            let model = model.ok_or(anyhow!(
-                "Each physical file entry must have a corresponding WorktreeEntrySpecificationModel"
-            ))?;
-
-            // Create the specfile with a KdlFileHandle
-            let handle = KdlFileHandle::create(self.fs.clone(), &abs_path, model).await?;
+            let handle = KdlFileHandle::create(self.fs.clone(), &abs_path, model.into()).await?;
             let file_id =
                 file_id::get_file_id(&abs_path).map_err(|_| anyhow!("Cannot get file_id"))?;
 
@@ -150,7 +146,7 @@ impl PhysicalWorktree {
                 path: path.clone(),
                 mtime: metadata.modified().ok(),
                 file_id,
-                handle,
+                handle: Arc::new(handle),
             });
 
             {
@@ -366,22 +362,25 @@ impl PhysicalWorktree {
                             file_id,
                         },
                         EntryKind::File => {
+                            let handle = KdlFileHandle::load(
+                                self.fs.clone(),
+                                child_abs_path.as_ref(),
+                                |s| {
+                                    let doc: KdlDocument = s.parse().unwrap(); // TODO: handle errors
+                                    let model = ItemSpecificationModel::from(doc);
+
+                                    Ok(Arc::new(SpecificationModel::Item(model)))
+                                },
+                            )
+                            .await
+                            .unwrap(); // TODO: handle errors
+
                             PhysicalEntryNew::File {
                                 id: EntryId::new(next_entry_id.as_ref()),
                                 path: child_path.clone(),
                                 mtime: child_metadata.modified().ok(),
                                 file_id,
-                                // FIXME: Is it possible to strip the kdl parsing logic from physical worktree?
-                                handle: KdlFileHandle::load(
-                                    self.fs.clone(),
-                                    child_abs_path.as_ref(),
-                                    |s| {
-                                        WorktreeEntrySpecificationModel::parse(
-                                            child_path.as_ref(),
-                                            s,
-                                        )
-                                    },
-                                ),
+                                handle: Arc::new(handle),
                             }
                         }
                     };
@@ -422,14 +421,19 @@ impl PhysicalWorktree {
                 file_id,
             }
         } else {
+            let handle = KdlFileHandle::load(self.fs.clone(), abs_path.as_ref(), |s| {
+                let doc: KdlDocument = s.parse().unwrap(); // TODO: handle errors
+                let model = ItemSpecificationModel::from(doc);
+
+                Ok(SpecificationModel::Item(model))
+            })
+            .await?;
             PhysicalEntryNew::File {
                 id: EntryId::new(next_entry_id.as_ref()),
                 path: path.clone(),
                 mtime: metadata.modified().ok(),
                 file_id,
-                handle: KdlFileHandle::load(self.fs.clone(), abs_path.as_ref(), |s| {
-                    WorktreeEntrySpecificationModel::parse(path.as_ref(), s)
-                }),
+                handle: Arc::new(handle),
             }
         };
 
