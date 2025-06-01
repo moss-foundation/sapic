@@ -179,7 +179,6 @@ mod tests {
             let result5 = table.read(&read_txn, 5)?;
             assert_eq!(result5, AnyValueEnum::Text("hello world".to_string()));
         }
-        std::fs::remove_file(db_path)?;
 
         {
             // Test writing custom types
@@ -195,6 +194,8 @@ mod tests {
             let data_retrieved = result.deserialize::<TestData>()?;
             assert_eq!(test_data, data_retrieved);
         }
+
+        std::fs::remove_file(db_path)?;
 
         Ok(())
     }
