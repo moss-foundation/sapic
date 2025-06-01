@@ -1,7 +1,9 @@
+pub mod anyvalue_enum;
 pub mod bincode_table;
 pub mod common;
 pub mod encrypted_bincode_table;
 pub mod primitives;
+
 pub use common::*;
 
 use anyhow::Result;
