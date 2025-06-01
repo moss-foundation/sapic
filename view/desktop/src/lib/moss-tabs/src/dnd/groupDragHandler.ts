@@ -25,7 +25,7 @@ export class GroupDragHandler extends DragHandler {
           if (e.shiftKey) {
             /**
              * You cannot call e.preventDefault() because that will prevent drag events from firing
-             * but we also need to stop any group overlay drag events from occuring
+             * but we also need to stop any group overlay drag events from occurring
              * Use a custom event marker that can be checked by the overlay drag events
              */
             quasiPreventDefault(e);

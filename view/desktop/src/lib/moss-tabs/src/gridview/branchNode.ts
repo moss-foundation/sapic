@@ -311,7 +311,7 @@ export class BranchNode extends CompositeDisposable implements IView {
     this._childrenDisposable = new CompositeDisposable(
       Event.any(...this.children.map((c) => c.onDidChange))((e) => {
         /**
-         * indicate a change has occured to allows any re-rendering but don't bubble
+         * indicate a change has occurred to allows any re-rendering but don't bubble
          * event because that was specific to this branch
          */
         this._onDidChange.fire({ size: e.orthogonalSize });

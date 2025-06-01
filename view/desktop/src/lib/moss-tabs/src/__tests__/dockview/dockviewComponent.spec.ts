@@ -2074,7 +2074,7 @@ describe("dockviewComponent", () => {
     return disposable.dispose();
   });
 
-  test("load a layout with a non-existant tab id", () => {
+  test("load a layout with a non-existent tab id", () => {
     const container = document.createElement("div");
 
     const dockview = new DockviewComponent(container, {
@@ -2142,7 +2142,7 @@ describe("dockviewComponent", () => {
         panel2: {
           id: "panel2",
           contentComponent: "default",
-          tabComponent: "__non__existant_tab__",
+          tabComponent: "__non__existent_tab__",
           title: "panel2",
         },
         panel3: {
@@ -4683,7 +4683,7 @@ describe("dockviewComponent", () => {
       );
     });
 
-    test("deserailize popout with no reference group", async () => {
+    test("deserialize popout with no reference group", async () => {
       vi.useRealTimers();
 
       const container = document.createElement("div");
@@ -5349,7 +5349,7 @@ describe("dockviewComponent", () => {
       expect(dockview.panels.length).toBe(3);
     });
 
-    test("persistance with custom url", async () => {
+    test("persistence with custom url", async () => {
       const container = document.createElement("div");
 
       Object.defineProperty(window, "open", {
@@ -5625,7 +5625,7 @@ describe("dockviewComponent", () => {
   });
 
   describe("panel visibility", () => {
-    test("that setVisible toggles visiblity", () => {
+    test("that setVisible toggles visibility", () => {
       const container = document.createElement("div");
 
       const dockview = new DockviewComponent(container, {

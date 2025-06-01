@@ -273,7 +273,7 @@ async fn delete_entry_request_special_chars() {
     // Wait for spawned deletion tasks to finish
     tokio::time::sleep(Duration::from_millis(500)).await;
 
-    // Check taht all request entries are deleted
+    // Check that all request entries are deleted
     let mut read_dir = collection_path.join("requests").read_dir().unwrap();
 
     assert!(read_dir.next().is_none());

@@ -1,0 +1,10 @@
+[default]
+extend-ignore-identifiers-re = [
+    "typ",
+    "testng",
+    "((?i)darcula)"
+]
+
+
+[files]
+extend-exclude = ["assets/locales/**/*.json"]

@@ -1,14 +1,14 @@
-import { PanelInitParameters } from "../panel/types";
-import { IGridPanelComponentView } from "./gridviewComponent";
-import { FunctionOrValue } from "../types";
-import { BasePanelView, BasePanelViewExported, BasePanelViewState } from "./basePanelView";
 import { GridviewPanelApi, GridviewPanelApiImpl } from "../api/gridviewPanelApi";
-import { LayoutPriority } from "../splitview/splitview";
 import { Emitter, Event } from "../events";
-import { IViewSize } from "./gridview";
+import { PanelInitParameters } from "../panel/types";
+import { LayoutPriority } from "../splitview/splitview";
+import { FunctionOrValue } from "../types";
 import { BaseGrid, IGridPanelView } from "./baseComponentGridview";
+import { BasePanelView, BasePanelViewExported, BasePanelViewState } from "./basePanelView";
+import { IViewSize } from "./gridview";
+import { IGridPanelComponentView } from "./gridviewComponent";
 
-export interface Contraints {
+export interface Constraints {
   minimumWidth?: number;
   maximumWidth?: number;
   minimumHeight?: number;

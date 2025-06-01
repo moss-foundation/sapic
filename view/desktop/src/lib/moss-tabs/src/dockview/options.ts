@@ -4,7 +4,7 @@ import { DroptargetOverlayModel, Position } from "../dnd/droptarget";
 import { AcceptableEvent, IAcceptableEvent } from "../events";
 import { Direction } from "../gridview/baseComponentGridview";
 import { IGridView } from "../gridview/gridview";
-import { Contraints } from "../gridview/gridviewPanel";
+import { Constraints } from "../gridview/gridviewPanel";
 import { IDisposable } from "../lifecycle";
 import { DockviewPanelRenderer } from "../overlay/overlayRenderContainer";
 import { Parameters } from "../panel/types";
@@ -17,6 +17,7 @@ import { IContentRenderer, ITabRenderer, IWatermarkRenderer } from "./types";
 
 export interface IHeaderActionsRenderer extends IDisposable {
   readonly element: HTMLElement;
+
   init(params: IGroupHeaderProps): void;
 }
 
@@ -110,7 +111,7 @@ export const PROPERTY_KEYS_DOCKVIEW: (keyof DockviewOptions)[] = (() => {
 
 export interface CreateComponentOptions {
   /**
-   * The unqiue identifer of the component
+   * The unique identifier of the component
    */
   id: string;
   /**
@@ -224,7 +225,7 @@ export type AddPanelOptions<P extends object = Parameters> = {
   initialWidth?: number;
   initialHeight?: number;
 } & Partial<AddPanelOptionsUnion> &
-  Partial<Contraints>;
+  Partial<Constraints>;
 
 type AddGroupOptionsWithPanel = {
   referencePanel: string | IDockviewPanel;

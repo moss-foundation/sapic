@@ -96,16 +96,27 @@ export interface IPaneviewComponent extends IDisposable {
   readonly onDidLayoutChange: Event<void>;
   readonly onDidLayoutFromJSON: Event<void>;
   readonly onUnhandledDragOverEvent: Event<PaneviewDndOverlayEvent>;
+
   addPanel<T extends object = Parameters>(options: AddPaneviewComponentOptions<T>): IPaneviewPanel;
+
   layout(width: number, height: number): void;
+
   toJSON(): SerializedPaneview;
+
   fromJSON(serializedPaneview: SerializedPaneview): void;
+
   focus(): void;
+
   removePanel(panel: IPaneviewPanel): void;
+
   getPanel(id: string): IPaneviewPanel | undefined;
+
   movePanel(from: number, to: number): void;
+
   updateOptions(options: Partial<PaneviewComponentOptions>): void;
+
   setVisible(panel: IPaneviewPanel, visible: boolean): void;
+
   clear(): void;
 }
 
@@ -392,7 +403,7 @@ export class PaneviewComponent extends Resizable implements IPaneviewComponent {
           });
 
           setTimeout(() => {
-            // the original onDidAddView events are missed since they are fired before we can subcribe to them
+            // the original onDidAddView events are missed since they are fired before we can subscribe to them
             this._onDidAddView.fire(panel);
           }, 0);
 

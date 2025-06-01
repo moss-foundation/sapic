@@ -22,14 +22,14 @@ class Testview implements IView {
   readonly onLayoutCalled = this._onLayoutCalled.event;
 
   private readonly _onRendered = new Emitter<void>();
-  readonly onRenderered = this._onRendered.event;
+  readonly onRendered = this._onRendered.event;
 
   get minimumSize() {
     return this._minimumSize;
   }
 
   get maximumSize() {
-    return this._maxiumSize;
+    return this._maximumSize;
   }
 
   get element() {
@@ -51,7 +51,7 @@ class Testview implements IView {
 
   constructor(
     private _minimumSize: number,
-    private _maxiumSize: number,
+    private _maximumSize: number,
     priority?: LayoutPriority
   ) {
     this._priority = priority;
@@ -154,7 +154,7 @@ describe("splitview", () => {
     splitview.dispose();
   });
 
-  test("visiblity classnames", () => {
+  test("visibility classnames", () => {
     const splitview = new Splitview(container, {
       orientation: Orientation.HORIZONTAL,
     });
@@ -190,7 +190,7 @@ describe("splitview", () => {
     const layoutDisposable = view.onLayoutCalled(() => {
       layout = true;
     });
-    const renderDisposable = view.onRenderered(() => {
+    const renderDisposable = view.onRendered(() => {
       rendered = true;
     });
 
@@ -224,7 +224,7 @@ describe("splitview", () => {
     expect(splitview.getViews()).toEqual([view2, view3, view1]);
   });
 
-  test("streches to viewport", () => {
+  test("stretches to viewport", () => {
     const splitview = new Splitview(container, {
       orientation: Orientation.HORIZONTAL,
     });

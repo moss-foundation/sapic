@@ -50,7 +50,9 @@ export interface IBaseView extends IDisposable {
 export interface IView extends IBaseView {
   readonly element: HTMLElement | DocumentFragment;
   readonly onDidChange: Event<{ size?: number; orthogonalSize?: number }>;
+
   layout(size: number, orthogonalSize: number): void;
+
   setVisible(visible: boolean): void;
 }
 
@@ -74,9 +76,11 @@ export type Sizing = DistributeSizing | SplitSizing | InvisibleSizing;
 
 export namespace Sizing {
   export const Distribute: DistributeSizing = { type: "distribute" };
+
   export function Split(index: number): SplitSizing {
     return { type: "split", index };
   }
+
   export function Invisible(cachedVisibleSize: number): InvisibleSizing {
     return { type: "invisible", cachedVisibleSize };
   }
@@ -664,7 +668,7 @@ export class Splitview {
    *
    * To fit the margins each view must reduce in size by `(m * (n - 1)) / n`.
    *
-   * For each view `i` the offet must be adjusted by `m * i/(n - 1)`.
+   * For each view `i` the offset must be adjusted by `m * i/(n - 1)`.
    */
   private layoutViews(): void {
     this._contentSize = this.viewItems.reduce((r, i) => r + i.size, 0);

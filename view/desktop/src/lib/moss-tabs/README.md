@@ -20,4 +20,4 @@
 - High test coverage
 - Documentation website with live examples
 - Transparent builds and Code Analysis
-- Security at mind - verifed publishing and builds through GitHub Actions
+- Security at mind - verified publishing and builds through GitHub Actions

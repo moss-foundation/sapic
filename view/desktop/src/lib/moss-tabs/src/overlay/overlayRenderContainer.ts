@@ -48,7 +48,7 @@ export class OverlayRenderContainer extends CompositeDisposable {
     );
   }
 
-  detatch(panel: IDockviewPanel): boolean {
+  detach(panel: IDockviewPanel): boolean {
     if (this.map[panel.api.id]) {
       const { disposable, destroy } = this.map[panel.api.id];
       disposable.dispose();
@@ -144,7 +144,7 @@ export class OverlayRenderContainer extends CompositeDisposable {
     const disposable = new CompositeDisposable(
       observerDisposable,
       /**
-       * since container is positioned absoutely we must explicitly forward
+       * since container is positioned absolutely we must explicitly forward
        * the dnd events for the expect behaviours to continue to occur in terms of dnd
        *
        * the dnd observer does not need to be conditional on whether the panel is visible since

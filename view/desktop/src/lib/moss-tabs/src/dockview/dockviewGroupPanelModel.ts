@@ -5,7 +5,7 @@ import { Position, WillShowOverlayEvent } from "../dnd/droptarget";
 import { isAncestor, toggleClass } from "../dom";
 import { addDisposableListener, DockviewEvent, Emitter, Event, IDockviewEvent } from "../events";
 import { IViewSize } from "../gridview/gridview";
-import { Contraints } from "../gridview/gridviewPanel";
+import { Constraints } from "../gridview/gridviewPanel";
 import { CompositeDisposable, IDisposable } from "../lifecycle";
 import { OverlayRenderContainer } from "../overlay/overlayRenderContainer";
 import { IPanel, PanelInitParameters, PanelUpdateEvent, Parameters } from "../panel/types";
@@ -28,7 +28,7 @@ interface CoreGroupOptions {
   locked?: DockviewGroupPanelLocked;
   hideHeader?: boolean;
   skipSetActive?: boolean;
-  constraints?: Partial<Contraints>;
+  constraints?: Partial<Constraints>;
   initialWidth?: number;
   initialHeight?: number;
 }
@@ -132,11 +132,16 @@ export interface IDockviewGroupPanelModel extends IPanel {
   readonly onDidActivePanelChange: Event<DockviewGroupChangeEvent>;
   readonly onMove: Event<GroupMoveEvent>;
   locked: DockviewGroupPanelLocked;
+
   setActive(isActive: boolean): void;
+
   initialize(): void;
+
   // state
   isPanelActive: (panel: IDockviewPanel) => boolean;
+
   indexOf(panel: IDockviewPanel): number;
+
   // panel lifecycle
   openPanel(
     panel: IDockviewPanel,
@@ -147,12 +152,19 @@ export interface IDockviewGroupPanelModel extends IPanel {
       skipSetGroupActive?: boolean;
     }
   ): void;
+
   closePanel(panel: IDockviewPanel): void;
+
   closeAllPanels(): void;
+
   containsPanel(panel: IDockviewPanel): boolean;
+
   removePanel: (panelOrId: IDockviewPanel | string) => IDockviewPanel;
+
   moveToNext(options?: { panel?: IDockviewPanel; suppressRoll?: boolean }): void;
+
   moveToPrevious(options?: { panel?: IDockviewPanel; suppressRoll?: boolean }): void;
+
   canDisplayOverlay(event: DragEvent, position: Position, target: DockviewGroupDropLocation): boolean;
 }
 
@@ -436,7 +448,7 @@ export class DockviewGroupPanelModel extends CompositeDisposable implements IDoc
 
   set renderContainer(value: OverlayRenderContainer | null) {
     this.panels.forEach((panel) => {
-      this.renderContainer.detatch(panel);
+      this.renderContainer.detach(panel);
     });
 
     this._overwriteRenderContainer = value;

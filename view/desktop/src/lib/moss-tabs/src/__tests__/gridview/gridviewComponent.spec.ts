@@ -2898,7 +2898,7 @@ describe("gridview", () => {
     expect(gridview.disableResizing).toBeTruthy();
   });
 
-  test("that setVisible toggles visiblity", () => {
+  test("that setVisible toggles visibility", () => {
     const gridview = new GridviewComponent(container, {
       proportionalLayout: true,
       orientation: Orientation.HORIZONTAL,

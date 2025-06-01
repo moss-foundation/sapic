@@ -57,7 +57,7 @@ describe("overlayRenderContainer", () => {
 
     expect(panelContentEl.parentElement?.parentElement).toBe(parentContainer);
 
-    cut.detatch(panel);
+    cut.detach(panel);
 
     expect(panelContentEl.parentElement?.parentElement).toBeUndefined();
   });

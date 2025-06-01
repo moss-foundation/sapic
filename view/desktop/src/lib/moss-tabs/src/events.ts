@@ -26,6 +26,7 @@ export namespace Event {
 
 export interface IDockviewEvent {
   readonly defaultPrevented: boolean;
+
   preventDefault(): void;
 }
 
@@ -43,6 +44,7 @@ export class DockviewEvent implements IDockviewEvent {
 
 export interface IAcceptableEvent {
   readonly isAccepted: boolean;
+
   accept(): void;
 }
 
@@ -240,8 +242,8 @@ export class AsapEvent implements IDisposable {
        * if the current fire count is greater than the fire count at event subscription
        * then the event has been fired since we subscribed and it's ok to "on_next" the event.
        *
-       * if the count is not greater then what we are recieving is an event from the microtask
-       * queue that was triggered before we actually subscribed and therfore we should ignore it.
+       * if the count is not greater then what we are receiving is an event from the microtask
+       * queue that was triggered before we actually subscribed and therefore we should ignore it.
        */
       if (this._currentFireCount > fireCountAtTimeOfEventSubscription) {
         e();

@@ -29,6 +29,7 @@ class TestContentRenderer extends CompositeDisposable implements IContentRendere
   layout(width: number, height: number): void {
     //
   }
+
   update(event: PanelUpdateEvent): void {
     //
   }
@@ -115,7 +116,7 @@ describe("contentContainer", () => {
     // expect(focus).toBe(2);
     // expect(blur).toBe(1);
 
-    // new panel recieves focus
+    // new panel receives focus
     fireEvent.focus(contentRenderer2.element);
     expect(focus).toBe(2);
     expect(blur).toBe(1);
@@ -129,9 +130,9 @@ describe("contentContainer", () => {
     disposable.dispose();
   });
 
-  test("that panels renderered as 'onlyWhenVisible' are removed when closed", () => {
+  test("that panels rendered as 'onlyWhenVisible' are removed when closed", () => {
     const overlayRenderContainer = fromPartial<OverlayRenderContainer>({
-      detatch: vi.fn(),
+      detach: vi.fn(),
     });
 
     const cut = new ContentContainer(

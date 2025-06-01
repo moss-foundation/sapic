@@ -676,7 +676,7 @@ describe("componentSplitview", () => {
     expect(splitview.disableResizing).toBeTruthy();
   });
 
-  test("that setVisible toggles visiblity", () => {
+  test("that setVisible toggles visibility", () => {
     const splitview = new SplitviewComponent(container, {
       orientation: Orientation.HORIZONTAL,
       createComponent: (options) => {

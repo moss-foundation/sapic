@@ -45,11 +45,17 @@ export interface CommonApi<T = any> {
   readonly width: number;
   readonly onDidLayoutChange: Event<void>;
   readonly onDidLayoutFromJSON: Event<void>;
+
   focus(): void;
+
   layout(width: number, height: number): void;
+
   fromJSON(data: T): void;
+
   toJSON(): T;
+
   clear(): void;
+
   dispose(): void;
 }
 
@@ -81,6 +87,7 @@ export class SplitviewApi implements CommonApi<SerializedSplitview> {
   get height(): number {
     return this.component.height;
   }
+
   /**
    * The current number of panels.
    */
@@ -111,7 +118,7 @@ export class SplitviewApi implements CommonApi<SerializedSplitview> {
 
   /**
    * Invoked whenever any aspect of the layout changes.
-   * If listening to this event it may be worth debouncing ouputs.
+   * If listening to this event it may be worth debouncing outputs.
    */
   get onDidLayoutChange(): Event<void> {
     return this.component.onDidLayoutChange;
@@ -247,14 +254,14 @@ export class PaneviewApi implements CommonApi<SerializedPaneview> {
   }
 
   /**
-   * Invoked when any layout change occures, an aggregation of many events.
+   * Invoked when any layout change occurs, an aggregation of many events.
    */
   get onDidLayoutChange(): Event<void> {
     return this.component.onDidLayoutChange;
   }
 
   /**
-   * Invoked after a layout is deserialzied using the `fromJSON` method.
+   * Invoked after a layout is deserialized using the `fromJSON` method.
    */
   get onDidLayoutFromJSON(): Event<void> {
     return this.component.onDidLayoutFromJSON;
@@ -409,7 +416,7 @@ export class GridviewApi implements CommonApi<SerializedGridviewComponent> {
   }
 
   /**
-   * Invoked when any layout change occures, an aggregation of many events.
+   * Invoked when any layout change occurs, an aggregation of many events.
    */
   get onDidLayoutChange(): Event<void> {
     return this.component.onDidLayoutChange;
@@ -437,7 +444,7 @@ export class GridviewApi implements CommonApi<SerializedGridviewComponent> {
   }
 
   /**
-   * Invoked after a layout is deserialzied using the `fromJSON` method.
+   * Invoked after a layout is deserialized using the `fromJSON` method.
    */
   get onDidLayoutFromJSON(): Event<void> {
     return this.component.onDidLayoutFromJSON;
@@ -653,14 +660,14 @@ export class DockviewApi implements CommonApi<SerializedDockview> {
   }
 
   /**
-   * Invoked after a layout is deserialzied using the `fromJSON` method.
+   * Invoked after a layout is deserialized using the `fromJSON` method.
    */
   get onDidLayoutFromJSON(): Event<void> {
     return this.component.onDidLayoutFromJSON;
   }
 
   /**
-   * Invoked when any layout change occures, an aggregation of many events.
+   * Invoked when any layout change occurs, an aggregation of many events.
    */
   get onDidLayoutChange(): Event<void> {
     return this.component.onDidLayoutChange;
@@ -674,8 +681,8 @@ export class DockviewApi implements CommonApi<SerializedDockview> {
   }
 
   /**
-   * Invoked when a Drag'n'Drop event occurs but before dockview handles it giving the user an opportunity to intecept and
-   * prevent the event from occuring using the standard `preventDefault()` syntax.
+   * Invoked when a Drag'n'Drop event occurs but before dockview handles it giving the user an opportunity to intercept and
+   * prevent the event from occurring using the standard `preventDefault()` syntax.
    *
    * Preventing certain events may causes unexpected behaviours, use carefully.
    */

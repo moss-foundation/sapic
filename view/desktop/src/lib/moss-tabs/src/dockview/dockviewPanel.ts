@@ -1,14 +1,14 @@
 import { DockviewApi } from "../api/component.api";
 import { DockviewPanelApi, DockviewPanelApiImpl } from "../api/dockviewPanelApi";
-import { GroupviewPanelState, IGroupPanelInitParameters } from "./types";
-import { DockviewGroupPanel } from "./dockviewGroupPanel";
-import { CompositeDisposable, IDisposable } from "../lifecycle";
-import { IPanel, PanelUpdateEvent, Parameters } from "../panel/types";
-import { IDockviewPanelModel } from "./dockviewPanelModel";
-import { DockviewComponent } from "./dockviewComponent";
-import { DockviewPanelRenderer } from "../overlay/overlayRenderContainer";
 import { WillFocusEvent } from "../api/panelApi";
-import { Contraints } from "../gridview/gridviewPanel";
+import { Constraints } from "../gridview/gridviewPanel";
+import { CompositeDisposable, IDisposable } from "../lifecycle";
+import { DockviewPanelRenderer } from "../overlay/overlayRenderContainer";
+import { IPanel, PanelUpdateEvent, Parameters } from "../panel/types";
+import { DockviewComponent } from "./dockviewComponent";
+import { DockviewGroupPanel } from "./dockviewGroupPanel";
+import { IDockviewPanelModel } from "./dockviewPanelModel";
+import { GroupviewPanelState, IGroupPanelInitParameters } from "./types";
 
 export interface IDockviewPanel extends IDisposable, IPanel {
   readonly view: IDockviewPanelModel;
@@ -20,11 +20,17 @@ export interface IDockviewPanel extends IDisposable, IPanel {
   readonly minimumHeight?: number;
   readonly maximumWidth?: number;
   readonly maximumHeight?: number;
+
   updateParentGroup(group: DockviewGroupPanel, options?: { skipSetActive?: boolean }): void;
+
   init(params: IGroupPanelInitParameters): void;
+
   toJSON(): GroupviewPanelState;
+
   setTitle(title: string): void;
+
   update(event: PanelUpdateEvent): void;
+
   runEvents(): void;
 }
 
@@ -81,7 +87,7 @@ export class DockviewPanel extends CompositeDisposable implements IDockviewPanel
     private readonly containerApi: DockviewApi,
     group: DockviewGroupPanel,
     readonly view: IDockviewPanelModel,
-    options: { renderer?: DockviewPanelRenderer } & Partial<Contraints>
+    options: { renderer?: DockviewPanelRenderer } & Partial<Constraints>
   ) {
     super();
     this._renderer = options.renderer;

@@ -60,7 +60,7 @@ function moveGroupWithoutDestroying(options: { from: DockviewGroupPanel; to: Doc
   const activePanel = options.from.activePanel;
   const panels = [...options.from.panels].map((panel) => {
     const removedPanel = options.from.model.removePanel(panel);
-    options.from.model.renderContainer.detatch(panel);
+    options.from.model.renderContainer.detach(panel);
     return removedPanel;
   });
 
@@ -181,27 +181,45 @@ export interface IDockviewComponent extends IBaseGrid<DockviewGroupPanel> {
   readonly onDidMovePanel: Event<MovePanelEvent>;
   readonly onDidMaximizedGroupChange: Event<DockviewMaximizedGroupChanged>;
   readonly options: DockviewComponentOptions;
+
   updateOptions(options: DockviewOptions): void;
+
   moveGroupOrPanel(options: MoveGroupOrPanelOptions): void;
+
   moveGroup(options: MoveGroupOptions): void;
+
   doSetGroupActive: (group: DockviewGroupPanel, skipFocus?: boolean) => void;
   removeGroup: (group: DockviewGroupPanel) => void;
+
   addPanel<T extends object = Parameters>(options: AddPanelOptions<T>): IDockviewPanel;
+
   removePanel(panel: IDockviewPanel): void;
+
   getGroupPanel: (id: string) => IDockviewPanel | undefined;
+
   createWatermarkComponent(): IWatermarkRenderer;
+
   // lifecycle
   addGroup(options?: AddGroupOptions): DockviewGroupPanel;
+
   closeAllGroups(): void;
+
   // events
   moveToNext(options?: MovementOptions): void;
+
   moveToPrevious(options?: MovementOptions): void;
+
   setActivePanel(panel: IDockviewPanel): void;
+
   focus(): void;
+
   toJSON(): SerializedDockview;
+
   fromJSON(data: SerializedDockview): void;
+
   //
   addFloatingGroup(item: IDockviewPanel | DockviewGroupPanel, options?: FloatingGroupOptions): void;
+
   addPopoutGroup(
     item: IDockviewPanel | DockviewGroupPanel,
     options?: {
@@ -611,7 +629,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
         const referenceLocation = itemToPopout.api.location.type;
 
         /**
-         * The group that is being added doesn't already exist within the DOM, the most likely occurance
+         * The group that is being added doesn't already exist within the DOM, the most likely occurrence
          * of this case is when being called from the `fromJSON(...)` method
          */
         const isGroupAddedToDom = referenceGroup.element.parentElement !== null;
@@ -1032,7 +1050,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
 
     if (this._floatingGroups) {
       for (const floating of this._floatingGroups) {
-        // ensure floting groups stay within visible boundaries
+        // ensure floating groups stay within visible boundaries
         floating.overlay.setBounds();
       }
     }
@@ -1096,7 +1114,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
   /**
    * Serialize the current state of the layout
    *
-   * @returns A JSON respresentation of the layout
+   * @returns A JSON representation of the layout
    */
   toJSON(): SerializedDockview {
     const data = this.gridview.serialize();
@@ -1178,7 +1196,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
 
         for (const child of views) {
           /**
-           * Run the deserializer step seperately since this may fail to due corrupted external state.
+           * Run the deserializer step separately since this may fail to due corrupted external state.
            * In running this section first we avoid firing lots of 'add' events in the event of a failure
            * due to a corruption of input data.
            */
@@ -1511,7 +1529,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
     });
 
     if (!options.skipDispose) {
-      panel.group.model.renderContainer.detatch(panel);
+      panel.group.model.renderContainer.detach(panel);
       panel.dispose();
     }
 
@@ -1879,7 +1897,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
           })
         );
 
-        // after deleting the group we need to re-evaulate the ref location
+        // after deleting the group we need to re-evaluate the ref location
         const updatedReferenceLocation = getGridLocation(destinationGroup.element);
 
         const location = getRelativeLocation(this.gridview.orientation, updatedReferenceLocation, destinationTarget);
@@ -1893,7 +1911,7 @@ export class DockviewComponent extends BaseGrid<DockviewGroupPanel> implements I
       } else {
         /**
          * The group we are removing from has many panels, we need to remove the panels we are moving,
-         * create a new group, add the panels to that new group and add the new group in an appropiate position
+         * create a new group, add the panels to that new group and add the new group in an appropriate position
          */
         const removedPanel: IDockviewPanel | undefined = this.movingLock(() =>
           sourceGroup.model.removePanel(sourceItemId, {

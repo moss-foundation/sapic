@@ -1044,7 +1044,7 @@ mod tests {
         assert!(parse(text, &ParseOptions::default()).is_err());
     }
 
-    // FIXME: Right now, an error will occur if the html does not contain `<!DOCTYPE>` delcaration
+    // FIXME: Right now, an error will occur if the html does not contain `<!DOCTYPE>` declaration
     // However, this is not necessarily an error, and should probably be separated from other errors in parsing
     #[test]
     fn parse_body_html() {
