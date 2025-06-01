@@ -49,6 +49,7 @@ GEN_BINDINGS_DIR := tools/gen-bindings
 DESKTOP_DIR := view/desktop
 XTASK_DIR := tools/xtask
 MISC_DIR := misc
+SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
 COLLECTION_MODELS_DIR := crates/moss-collection
@@ -91,8 +92,8 @@ ready: gen-icons
 ## Icon generator tool
 .PHONY: gen-icons
 gen-icons:
-	@cd $(MISC_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
-	@cd $(MISC_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
+	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
+	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
@@ -161,7 +162,8 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(MISC_DIR) && $(UV) run css_variables_exporter.py
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 
 ## Count Lines of Code
 .PHONY: loc
