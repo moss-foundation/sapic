@@ -10,14 +10,14 @@ const defaultOptions: OverlayScrollbarsComponentProps = {
   defer: true,
 };
 
-export const Scrollbar = ({ children, options, ...props }: OverlayScrollbarsComponentProps) => {
+export const Scrollbar = ({ children, options, className, ...props }: OverlayScrollbarsComponentProps) => {
   const combinedOptions = {
     ...defaultOptions.options,
     ...options,
   };
 
   return (
-    <OverlayScrollbarsComponent options={combinedOptions} defer={defaultOptions.defer} {...props}>
+    <OverlayScrollbarsComponent className={className} options={combinedOptions} defer={defaultOptions.defer} {...props}>
       {children}
     </OverlayScrollbarsComponent>
   );

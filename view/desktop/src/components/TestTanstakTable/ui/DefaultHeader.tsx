@@ -1,5 +1,7 @@
 import { HTMLAttributes } from "react";
 
+import { ActionMenu } from "@/components";
+import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { flexRender, Header } from "@tanstack/react-table";
 
@@ -10,6 +12,9 @@ interface DefaultHeaderProps<TData> extends HTMLAttributes<HTMLTableCellElement>
 
 export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultHeaderProps<TData>) {
   const isLastColumn = header.column.getIsLastColumn();
+  const isSortable = header.column.getCanSort();
+  const canHide = header.column.getCanHide();
+  // const toggleVisibilityHandler = header.column.getToggleVisibilityHandler();
 
   return (
     <th
@@ -19,13 +24,57 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       style={{ width: header.getSize() }}
       {...props}
     >
-      <span className="relative cursor-pointer" onClick={header.column.getToggleSortingHandler()}>
-        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-        {{
-          asc: " 🔼",
-          desc: " 🔽",
-        }[header.column.getIsSorted() as string] ?? null}
-      </span>
+      <div className="group flex items-center justify-center">
+        <span
+          className="relative cursor-pointer truncate text-center"
+          onClick={isSortable ? header.column.getToggleSortingHandler() : undefined}
+        >
+          {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+        </span>
+
+        {isSortable && (
+          <div
+            //prettier-ignore
+            className={cn(`
+              h-full
+              absolute top-0 right-0 
+              flex items-center justify-center
+              bg-[#F4F4F4] px-2 
+               group-hover:opacity-100
+              transition-opacity duration-100
+           `)}
+          >
+            {header.column.getIsSorted() && (
+              <button className="cursor-pointer" onClick={header.column.getToggleSortingHandler()}>
+                {header.column.getIsSorted() === "asc" ? "🔼" : header.column.getIsSorted() === "desc" ? "🔽" : "🔼"}
+              </button>
+            )}
+
+            <ActionMenu.Root>
+              <ActionMenu.Trigger className="cursor-pointer rounded p-1 hover:bg-gray-300">
+                <Icon icon="MoreVertical" />
+              </ActionMenu.Trigger>
+
+              <ActionMenu.Content>
+                <ActionMenu.Item onClick={() => header.column.toggleSorting(false)}>
+                  <button>asc</button>
+                </ActionMenu.Item>
+                <ActionMenu.Item onClick={() => header.column.toggleSorting(true)}>
+                  <button>desc</button>
+                </ActionMenu.Item>
+                <ActionMenu.Item onClick={() => header.column.clearSorting()}>
+                  <button>clear sorting</button>
+                </ActionMenu.Item>
+                {canHide && (
+                  <ActionMenu.Item onClick={() => header.column.toggleVisibility()}>
+                    <button>hide col</button>
+                  </ActionMenu.Item>
+                )}
+              </ActionMenu.Content>
+            </ActionMenu.Root>
+          </div>
+        )}
+      </div>
 
       {header.column.getCanResize() && (
         <div

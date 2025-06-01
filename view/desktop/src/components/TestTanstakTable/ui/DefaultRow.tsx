@@ -169,7 +169,7 @@ const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
           z-100 w-full h-[2px]
           
           background-(--moss-primary)
-          cursor-pointer
+          cursor-pointer 
 
           transition-opacity duration-100
    
@@ -183,7 +183,7 @@ const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
       onClick={visible ? handleClick : undefined}
     >
       <div className="relative h-full w-full">
-        <div className="background-white absolute -top-[8px] left-0 flex size-4 items-center justify-center rounded-sm p-px">
+        <div className="background-white absolute -top-[8px] left-0 flex size-4 items-center justify-center rounded-sm p-px shadow">
           <DividerButtonIcon />
         </div>
       </div>

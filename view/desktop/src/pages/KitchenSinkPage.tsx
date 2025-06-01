@@ -230,7 +230,6 @@ interface TestData {
 }
 
 const columnHelper = createColumnHelper<TestData>();
-
 const columns = [
   columnHelper.display({
     id: "checkbox",

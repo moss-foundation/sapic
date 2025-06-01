@@ -13,6 +13,7 @@ import {
   RowData,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table";
 
 import { calculateTableSizing } from "./calculateTableSizing";
@@ -34,6 +35,7 @@ interface DataTableProps<TData, TValue> {
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     id: string;
+    tableType: "ActionsTable";
   }
 }
 
@@ -59,10 +61,12 @@ interface DnDRowData {
 
 export function DataTable<TValue>({ columns, data: initialData }: DataTableProps<TestData, TValue>) {
   const tableId = useId();
-  const [data, setData] = useState<TestData[]>(initialData);
 
+  const [data, setData] = useState<TestData[]>(initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
   const table = useReactTable({
     data,
     columns,
@@ -74,17 +78,21 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
     enableRowSelection: true,
     columnResizeMode: "onChange",
     getRowId: (row) => row.key,
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
+      columnVisibility,
       rowSelection,
       sorting,
     },
     meta: {
       id: tableId,
+      tableType: "ActionsTable",
     },
   });
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const tableHeight = tableContainerRef.current?.clientHeight;
+
   const headers = table.getFlatHeaders();
 
   useLayoutEffect(() => {
