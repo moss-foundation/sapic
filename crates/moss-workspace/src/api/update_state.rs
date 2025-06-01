@@ -93,7 +93,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.preferred_size)?;
+        let value = AnyValue::serialize(&part_state.size)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -124,7 +124,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.preferred_size)?;
+        let value = AnyValue::serialize(&part_state.size)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,

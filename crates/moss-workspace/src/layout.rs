@@ -167,11 +167,8 @@ impl LayoutService {
             .or(preferences.position)
             .unwrap_or(SIDEBAR_DEFAULTS.position),
 
-            preferred_size: get_from_cache::<usize>(
-                &mut sidebar_cache,
-                PART_SIDEBAR_SEGKEY.join("size"),
-            )
-            .unwrap_or(SIDEBAR_DEFAULTS.size),
+            size: get_from_cache::<usize>(&mut sidebar_cache, PART_SIDEBAR_SEGKEY.join("size"))
+                .unwrap_or(SIDEBAR_DEFAULTS.size),
 
             visible: get_from_cache::<bool>(
                 &mut sidebar_cache,
@@ -261,11 +258,8 @@ impl LayoutService {
         .collect::<HashMap<SegKeyBuf, AnyValue>>();
 
         Ok(PanelPartStateInfo {
-            preferred_size: get_from_cache::<usize>(
-                &mut panel_cache,
-                PART_PANEL_SEGKEY.join("size"),
-            )
-            .unwrap_or(PANEL_DEFAULTS.size),
+            size: get_from_cache::<usize>(&mut panel_cache, PART_PANEL_SEGKEY.join("size"))
+                .unwrap_or(PANEL_DEFAULTS.size),
 
             visible: get_from_cache::<bool>(&mut panel_cache, PART_PANEL_SEGKEY.join("visible"))
                 .or(preferences.visible)

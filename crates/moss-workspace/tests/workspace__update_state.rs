@@ -17,7 +17,7 @@ async fn update_state_sidebar_part() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let sidebar_state = SidebarPartStateInfo {
-        preferred_size: 250,
+        size: 250,
         visible: true,
         position: SidebarPosition::Left,
     };
@@ -66,7 +66,7 @@ async fn update_state_panel_part() {
     let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let panel_state = PanelPartStateInfo {
-        preferred_size: 200,
+        size: 200,
         visible: false,
     };
 
@@ -104,12 +104,12 @@ async fn update_state_multiple_updates() {
 
     // Initial states
     let sidebar_state = SidebarPartStateInfo {
-        preferred_size: 250,
+        size: 250,
         visible: true,
         position: SidebarPosition::Left,
     };
     let panel_state = PanelPartStateInfo {
-        preferred_size: 200,
+        size: 200,
         visible: false,
     };
 
@@ -170,7 +170,7 @@ async fn update_state_multiple_updates() {
 
     // Update individual states
     let updated_sidebar_state = SidebarPartStateInfo {
-        preferred_size: 300,
+        size: 300,
         visible: false,
         position: SidebarPosition::Left,
     };
@@ -228,7 +228,7 @@ async fn update_state_overwrite_existing() {
 
     // Set initial state
     let initial_sidebar_state = SidebarPartStateInfo {
-        preferred_size: 250,
+        size: 250,
         visible: true,
         position: SidebarPosition::Left,
     };
@@ -257,7 +257,7 @@ async fn update_state_overwrite_existing() {
 
     // Update with new state
     let updated_sidebar_state = SidebarPartStateInfo {
-        preferred_size: 300,
+        size: 300,
         visible: false,
         position: SidebarPosition::Left,
     };

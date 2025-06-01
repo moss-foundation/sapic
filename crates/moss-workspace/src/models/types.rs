@@ -83,7 +83,7 @@ pub struct ActivitybarPartStateInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct SidebarPartStateInfo {
     pub position: SidebarPosition,
-    pub preferred_size: usize, // TODO: rename to `size` ?
+    pub size: usize,
     pub visible: bool,
 }
 
@@ -95,7 +95,7 @@ pub struct SidebarPartStateInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct PanelPartStateInfo {
-    pub preferred_size: usize,
+    pub size: usize,
     pub visible: bool,
 }
 
