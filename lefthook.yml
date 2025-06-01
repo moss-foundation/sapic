@@ -13,6 +13,11 @@ pre-commit:
       always_run: true
       stage_fixed: true
 
+    - name: "Check typos"
+      run: typos {staged_files}
+      always_run: true
+      stage_fixed: true
+
     - name: "Export CSS variables to JSON"
       run: |
         uv run scripts/css_variables_exporter.py --source {css-variables-source} \
