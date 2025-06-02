@@ -40,6 +40,7 @@ impl AnyValueEnum {
     pub fn as_int(&self) -> Option<i64> {
         match self {
             AnyValueEnum::Int(i) => Some(*i),
+            AnyValueEnum::Uint(u) => Some(*u as i64),
             _ => None,
         }
     }
@@ -47,6 +48,7 @@ impl AnyValueEnum {
     pub fn as_uint(&self) -> Option<u64> {
         match self {
             AnyValueEnum::Uint(u) => Some(*u),
+            AnyValueEnum::Int(i) => Some(*i as u64),
             _ => None,
         }
     }
@@ -54,6 +56,8 @@ impl AnyValueEnum {
     pub fn as_double(&self) -> Option<f64> {
         match self {
             AnyValueEnum::Double(d) => Some(*d),
+            AnyValueEnum::Int(i) => Some(*i as f64),
+            AnyValueEnum::Uint(u) => Some(*u as f64),
             _ => None,
         }
     }
@@ -140,6 +144,76 @@ impl Value for AnyValueEnum {
 impl Key for AnyValueEnum {
     fn compare(data1: &[u8], data2: &[u8]) -> Ordering {
         std::cmp::Ord::cmp(data1, data2)
+    }
+}
+impl From<bool> for AnyValueEnum {
+    fn from(b: bool) -> AnyValueEnum {
+        AnyValueEnum::Bool(b)
+    }
+}
+impl From<i32> for AnyValueEnum {
+    fn from(i: i32) -> AnyValueEnum {
+        AnyValueEnum::Int(i as i64)
+    }
+}
+impl From<i64> for AnyValueEnum {
+    fn from(i: i64) -> AnyValueEnum {
+        AnyValueEnum::Int(i)
+    }
+}
+impl From<isize> for AnyValueEnum {
+    fn from(i: isize) -> Self {
+        AnyValueEnum::Int(i as i64)
+    }
+}
+
+impl From<u32> for AnyValueEnum {
+    fn from(u: u32) -> AnyValueEnum {
+        AnyValueEnum::Uint(u as u64)
+    }
+}
+impl From<u64> for AnyValueEnum {
+    fn from(u: u64) -> AnyValueEnum {
+        AnyValueEnum::Uint(u)
+    }
+}
+impl From<usize> for AnyValueEnum {
+    fn from(u: usize) -> AnyValueEnum {
+        AnyValueEnum::Uint(u as u64)
+    }
+}
+impl From<f32> for AnyValueEnum {
+    fn from(f: f32) -> AnyValueEnum {
+        AnyValueEnum::Double(f as f64)
+    }
+}
+impl From<f64> for AnyValueEnum {
+    fn from(f: f64) -> AnyValueEnum {
+        AnyValueEnum::Double(f)
+    }
+}
+
+impl From<String> for AnyValueEnum {
+    fn from(s: String) -> AnyValueEnum {
+        AnyValueEnum::Text(s)
+    }
+}
+
+impl From<&str> for AnyValueEnum {
+    fn from(value: &str) -> Self {
+        AnyValueEnum::Text(value.to_string())
+    }
+}
+
+impl From<Vec<u8>> for AnyValueEnum {
+    fn from(v: Vec<u8>) -> AnyValueEnum {
+        AnyValueEnum::Bytes(v)
+    }
+}
+
+impl From<&[u8]> for AnyValueEnum {
+    fn from(v: &[u8]) -> AnyValueEnum {
+        AnyValueEnum::Bytes(v.to_vec())
     }
 }
 
