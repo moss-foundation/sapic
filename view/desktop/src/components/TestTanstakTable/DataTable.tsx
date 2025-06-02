@@ -112,20 +112,13 @@ export function DataTable<TValue>({
 
   const headers = table.getFlatHeaders();
 
+  //this should only be called on mount
   useLayoutEffect(() => {
-    if (!tableContainerRef.current) return;
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        const initialColumnSizing = calculateTableSizing(headers, entry.contentRect.width);
-        table.setColumnSizing(initialColumnSizing);
-      }
-    });
-    resizeObserver.observe(tableContainerRef.current);
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [headers, table]);
+    if (tableContainerRef.current) {
+      const initialColumnSizing = calculateTableSizing(headers, tableContainerRef.current?.clientWidth);
+      table.setColumnSizing(initialColumnSizing);
+    }
+  }, []);
 
   useEffect(() => {
     return monitorForElements({
