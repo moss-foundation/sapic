@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use moss_common::models::primitives::Identifier;
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
@@ -11,7 +10,7 @@ use std::{
 };
 use uuid::Uuid;
 
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::OnceCell;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
@@ -30,12 +29,12 @@ type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Arc<RwLock<Worktree>>>,
+    worktree: OnceCell<Worktree>,
     abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     next_entry_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
-    environments: OnceCell<RwLock<EnvironmentMap>>,
+    environments: OnceCell<EnvironmentMap>,
     manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
     config: TomlFileHandle<ConfigModel>,
 }
@@ -151,7 +150,7 @@ impl Collection {
         self.manifest.model().await
     }
 
-    pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
+    pub async fn worktree(&self) -> Result<&Worktree> {
         let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
             external_abs_path
         } else {
@@ -162,9 +161,25 @@ impl Collection {
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
 
-                Ok(Arc::new(RwLock::new(worktree)))
+                Ok(worktree)
             })
             .await
+    }
+
+    pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
+        if !self.worktree.initialized() {
+            let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
+            {
+                external_abs_path
+            } else {
+                self.abs_path.clone()
+            };
+
+            let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
+            let _ = self.worktree.set(worktree);
+        }
+
+        Ok(self.worktree.get_mut().unwrap())
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
@@ -175,11 +190,11 @@ impl Collection {
         &self.storage
     }
 
-    pub async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
+    pub async fn environments(&self) -> Result<&EnvironmentMap> {
         let result = self
             .environments
             .get_or_try_init(|| async move {
-                let environments = RwLock::new(HashMap::new());
+                let environments = HashMap::new();
                 Ok::<_, anyhow::Error>(environments)
             })
             .await?;

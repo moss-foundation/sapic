@@ -17,7 +17,7 @@ mod shared;
 
 #[tokio::test]
 async fn create_entry_request_default_spec() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -80,7 +80,7 @@ async fn create_entry_request_default_spec() {
 
 #[tokio::test]
 async fn create_entry_request_with_spec_content() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -148,7 +148,7 @@ async fn create_entry_request_with_spec_content() {
 
 #[tokio::test]
 async fn create_entry_request_already_exists() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let input = CreateEntryInput {
@@ -171,7 +171,7 @@ async fn create_entry_request_already_exists() {
 
 #[tokio::test]
 async fn create_entry_request_multiple_same_level() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name1 = "1";
     let request_name2 = "2";
 
@@ -243,7 +243,7 @@ async fn create_entry_request_multiple_same_level() {
 
 #[tokio::test]
 async fn create_entry_request_nested() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -322,7 +322,7 @@ async fn create_entry_request_nested() {
 
 #[tokio::test]
 async fn create_entry_request_multiple_different_level() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     // requests\\1.request
     // requests\\group\\2.request
 
@@ -408,7 +408,7 @@ async fn create_entry_request_multiple_different_level() {
 
 #[tokio::test]
 async fn create_entry_request_special_chars_in_name() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let request_name = random_request_name();
     let request_name_list = FOLDERNAME_SPECIAL_CHARS
@@ -468,7 +468,7 @@ async fn create_entry_request_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_entry_request_special_chars_in_path() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let request_name = "1";
     let request_dir_name = random_dir_name();
@@ -548,7 +548,7 @@ async fn create_entry_request_same_name_as_another_dir() {
     // Create two entries with the same name, one normal and one dir
     // This will result in two identical virtual paths, so it should raise an error
 
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let destination = Path::new("requests").join("identical");
 
     let _ = collection

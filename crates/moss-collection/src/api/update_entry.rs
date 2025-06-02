@@ -7,11 +7,11 @@ use crate::{
 
 impl Collection {
     pub async fn update_entry(
-        &self,
+        &mut self,
         input: UpdateEntryInput,
     ) -> OperationResult<UpdateEntryOutput> {
-        let workspace = self.worktree().await?;
-        let mut worktree_lock = workspace.write().await;
+        let workspace = self.worktree_mut().await?;
+
         let UpdateEntryInput {
             id,
             name,
@@ -21,7 +21,7 @@ impl Collection {
             order,
         } = input;
 
-        let changes = worktree_lock
+        let changes = workspace
             .update_entry_by_virtual_id(id, name, classification, specification, protocol, order)
             .await?;
 

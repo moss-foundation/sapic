@@ -2,11 +2,19 @@
 import { z } from "zod";
 
 import { jsonValueSchema } from "@repo/bindings-utils";
-import { identifierSchema } from "./primitives.zod";
+import {
+  activitybarPositionSchema,
+  editorGridOrientationSchema,
+  identifierSchema,
+  panelRendererSchema,
+  sidebarPositionSchema,
+} from "./primitives.zod";
 import { type EditorGridNode } from "./types";
 
-export const activitybarPartStateSchema = z.object({
-  treeViewGroupId: z.string(),
+export const activitybarItemStateInfoSchema = z.object({
+  id: z.string(),
+  order: z.number(),
+  visible: z.boolean(),
 });
 
 export const editorGridLeafDataSchema = z.object({
@@ -30,32 +38,29 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
   ])
 );
 
-export const editorGridOrientationSchema = z.union([z.literal("HORIZONTAL"), z.literal("VERTICAL")]);
+export const panelPartStateInfoSchema = z.object({
+  size: z.number(),
+  visible: z.boolean(),
+});
+
+export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
+export const activitybarPartStateInfoSchema = z.object({
+  lastActiveContainerId: z.string().nullable(),
+  position: activitybarPositionSchema,
+  items: z.array(activitybarItemStateInfoSchema),
+});
+
+export const collectionInfoSchema = z.object({
+  id: identifierSchema,
+  displayName: z.string(),
+  order: z.number().optional(),
+});
 
 export const editorGridStateSchema = z.object({
   root: editorGridNodeSchema,
   width: z.number(),
   height: z.number(),
   orientation: editorGridOrientationSchema,
-});
-
-export const panelRendererSchema = z.union([z.literal("onlyWhenVisible"), z.literal("always")]);
-
-export const panelPartStateSchema = z.object({
-  preferredSize: z.number(),
-  isVisible: z.boolean(),
-});
-
-export const sidebarPartStateSchema = z.object({
-  preferredSize: z.number(),
-  isVisible: z.boolean(),
-});
-
-export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
-export const collectionInfoSchema = z.object({
-  id: identifierSchema,
-  displayName: z.string(),
-  order: z.number().optional(),
 });
 
 export const editorPanelStateSchema = z.object({
@@ -71,7 +76,7 @@ export const editorPanelStateSchema = z.object({
   maximumHeight: z.number().optional(),
 });
 
-export const editorPartStateSchema = z.object({
+export const editorPartStateInfoSchema = z.object({
   grid: editorGridStateSchema,
   panels: z.record(editorPanelStateSchema),
   activeGroup: z.string().optional(),
@@ -82,4 +87,10 @@ export const environmentInfoSchema = z.object({
   collectionId: identifierSchema.optional(),
   name: z.string(),
   order: z.number().optional(),
+});
+
+export const sidebarPartStateInfoSchema = z.object({
+  position: sidebarPositionSchema,
+  size: z.number(),
+  visible: z.boolean(),
 });

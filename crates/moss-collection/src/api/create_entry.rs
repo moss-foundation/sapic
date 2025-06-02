@@ -8,7 +8,7 @@ use crate::{
 
 impl Collection {
     pub async fn create_entry(
-        &self,
+        &mut self,
         input: CreateEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
@@ -21,10 +21,8 @@ impl Collection {
             None
         };
 
-        let worktree = self.worktree().await?;
-        let mut worktree_lock = worktree.write().await;
-
-        let changes = worktree_lock
+        let worktree = self.worktree_mut().await?;
+        let changes = worktree
             .create_entry(
                 input.destination,
                 input.order,

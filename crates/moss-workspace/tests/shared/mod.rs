@@ -4,9 +4,12 @@ use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
     Workspace,
-    models::types::{
-        EditorGridLeafData, EditorGridNode, EditorGridOrientation, EditorGridState,
-        EditorPanelState, EditorPartState, PanelRenderer,
+    models::{
+        primitives::{EditorGridOrientation, PanelRenderer},
+        types::{
+            EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
+            EditorPartStateInfo,
+        },
     },
     storage::segments::COLLECTION_SEGKEY,
     workspace::CreateParams,
@@ -63,7 +66,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
     (workspace_path, workspace, cleanup_fn)
 }
 
-pub fn create_simple_editor_state() -> EditorPartState {
+pub fn create_simple_editor_state() -> EditorPartStateInfo {
     // Create a simple grid with one leaf
     let leaf_data = EditorGridLeafData {
         views: vec!["panel1".to_string()],
@@ -119,7 +122,7 @@ pub fn create_simple_editor_state() -> EditorPartState {
         },
     );
 
-    EditorPartState {
+    EditorPartStateInfo {
         grid,
         panels,
         active_group: Some("group1".to_string()),

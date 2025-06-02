@@ -2,12 +2,12 @@
 import { variableInfoSchema } from "@repo/moss-environment";
 import { z } from "zod";
 import {
-  activitybarPartStateSchema,
+  activitybarPartStateInfoSchema,
   collectionInfoSchema,
-  editorPartStateSchema,
+  editorPartStateInfoSchema,
   environmentInfoSchema,
-  panelPartStateSchema,
-  sidebarPartStateSchema,
+  panelPartStateInfoSchema,
+  sidebarPartStateInfoSchema,
 } from "./types.zod";
 
 export const createCollectionInputSchema = z.object({
@@ -47,10 +47,10 @@ export const describeEnvironmentOutputSchema = z.object({
 });
 
 export const describeStateOutputSchema = z.object({
-  editor: editorPartStateSchema.optional(),
-  sidebar: sidebarPartStateSchema.optional(),
-  panel: panelPartStateSchema.optional(),
-  activitybar: activitybarPartStateSchema.optional(),
+  editor: editorPartStateInfoSchema.optional(),
+  sidebar: sidebarPartStateInfoSchema.optional(),
+  panel: panelPartStateInfoSchema.optional(),
+  activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
 export const describeWorkspaceOutputSchema = z.object({
@@ -60,15 +60,15 @@ export const describeWorkspaceOutputSchema = z.object({
 
 export const updateStateInputSchema = z.union([
   z.object({
-    "updateEditorPartState": editorPartStateSchema,
+    "updateEditorPartState": editorPartStateInfoSchema,
   }),
   z.object({
-    "updateSidebarPartState": sidebarPartStateSchema,
+    "updateSidebarPartState": sidebarPartStateInfoSchema,
   }),
   z.object({
-    "updatePanelPartState": panelPartStateSchema,
+    "updatePanelPartState": panelPartStateInfoSchema,
   }),
   z.object({
-    "updateActivitybarPartState": activitybarPartStateSchema,
+    "updateActivitybarPartState": activitybarPartStateInfoSchema,
   }),
 ]);
