@@ -15,7 +15,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   const isSortable = header.column.getCanSort();
   const canHide = header.column.getCanHide();
 
-  const toggleVisibilityHandler = header.column.getToggleVisibilityHandler();
+  const toggleSortingHandler = header.column.getToggleSortingHandler();
 
   return (
     <th
@@ -28,7 +28,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       <div className="group flex items-center justify-center">
         <span
           className="relative cursor-pointer truncate text-center"
-          onClick={isSortable ? toggleVisibilityHandler : undefined}
+          onClick={isSortable ? toggleSortingHandler : undefined}
         >
           {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
         </span>
