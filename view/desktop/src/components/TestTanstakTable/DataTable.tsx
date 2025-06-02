@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   RowData,
   SortingState,
+  Table,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
@@ -59,13 +60,23 @@ interface DnDRowData {
   };
 }
 
-export function DataTable<TValue>({ columns, data: initialData }: DataTableProps<TestData, TValue>) {
+export function DataTable<TValue>({
+  columns,
+  data: initialData,
+  onTableApiSet,
+}: DataTableProps<TestData, TValue> & {
+  onTableApiSet: (table: Table<TestData>) => void;
+}) {
   const tableId = useId();
 
   const [data, setData] = useState<TestData[]>(initialData);
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+
+  useEffect(() => {
+    console.log(columnVisibility);
+  }, [columnVisibility]);
 
   const table = useReactTable({
     data,
@@ -89,6 +100,12 @@ export function DataTable<TValue>({ columns, data: initialData }: DataTableProps
       tableType: "ActionsTable",
     },
   });
+
+  useEffect(() => {
+    if (table) {
+      onTableApiSet?.(table);
+    }
+  }, [onTableApiSet, table]);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const tableHeight = tableContainerRef.current?.clientHeight;
