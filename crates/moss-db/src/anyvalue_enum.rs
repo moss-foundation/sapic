@@ -3,6 +3,16 @@ use redb::{Key, TypeName, Value};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::cmp::Ordering;
 
+#[macro_export]
+macro_rules! any_value {
+    (null) => {
+        $crate::anyvalue_enum::AnyValueEnum::Null
+    };
+    ($value:expr) => {
+        $crate::anyvalue_enum::AnyValueEnum::from($value)
+    };
+}
+
 #[derive(Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub enum AnyValueEnum {
     Null,
