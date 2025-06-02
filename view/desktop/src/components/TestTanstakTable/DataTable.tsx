@@ -74,10 +74,6 @@ export function DataTable<TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  useEffect(() => {
-    console.log(columnVisibility);
-  }, [columnVisibility]);
-
   const table = useReactTable({
     data,
     columns,
@@ -181,7 +177,7 @@ export function DataTable<TValue>({
 
     const columnId = e.target.placeholder;
     const newRow: TestData = {
-      key: `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
+      key: columnId === "key" ? value : `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
       value: columnId === "value" ? value : "",
       type: columnId === "type" ? value : "",
       description: columnId === "description" ? value : "",

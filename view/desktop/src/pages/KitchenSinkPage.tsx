@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActionMenu } from "@/components";
@@ -387,41 +387,23 @@ const TableActionButton = ({ icon }: { icon: "Add" | "Edit" | "Delete" }) => {
 const ExampleTable = () => {
   const [tableApi, setTableApi] = useState<Table<TestData> | null>(null);
 
-  const keys = Object.keys(testData[0]);
-  const [keysState, setKeysState] = useState<{ [key: string]: boolean }>(
-    keys.reduce(
-      (acc, key) => {
-        acc[key] = true;
-        return acc;
-      },
-      {} as { [key: string]: boolean }
-    )
-  );
-
-  const handleKeyStateChange = (key: string, value: boolean) => {
-    setKeysState((prev) => ({ ...prev, [key]: value }));
+  const handleTableApiSet = (tableApi: Table<TestData>) => {
+    console.log("handleTableApiSet", tableApi);
+    setTableApi(tableApi);
   };
-
-  useEffect(() => {
-    if (!tableApi) return;
-    tableApi.setColumnVisibility(keysState);
-  }, [keysState, tableApi]);
 
   return (
     <>
       <h2 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">columns visibility</h2>
-      <div className="flex gap-4">
-        {keys.map((key) => (
-          <div key={key} className="flex items-center gap-2">
-            <CheckboxWithLabel
-              checked={keysState[key]}
-              onCheckedChange={() => handleKeyStateChange(key, !keysState[key])}
-            />
-            {key}
+      <div className="flex items-center gap-2">
+        {tableApi?.getAllLeafColumns().map((column) => (
+          <div>
+            <CheckboxWithLabel checked={column.getIsVisible()} onCheckedChange={() => column.toggleVisibility()} />
+            {column.id}
           </div>
         ))}
       </div>
-      <DataTable<string | number> columns={columns} data={testData} onTableApiSet={setTableApi} />
+      <DataTable<string | number> columns={columns} data={testData} onTableApiSet={handleTableApiSet} />
     </>
   );
 };
