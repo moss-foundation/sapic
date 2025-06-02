@@ -102,7 +102,7 @@ async fn handle_package_dependencies(
                 trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                 continue;
             }
-            if let Some(ignored_list) = config.crate_ignore.get(&package.name) {
+            if let Some(ignored_list) = config.crate_ignore.get(package.name.as_ref()) {
                 if ignored_list.contains(&dep_name) {
                     trace!("ignoring {} dependency in '{}'", dep_name, package.name);
                     continue;
