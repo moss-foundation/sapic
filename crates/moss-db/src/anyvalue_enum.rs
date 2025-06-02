@@ -1,7 +1,6 @@
 use anyhow::{Result, anyhow};
-use redb::{Key, TypeName, Value};
+use redb::{TypeName, Value};
 use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
-use std::cmp::Ordering;
 
 /// Macro for easily creating `AnyValueEnum` for primitive types
 /// For complex types, use `AnyValueEnum::serialize()`
