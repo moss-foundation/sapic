@@ -133,17 +133,20 @@ impl Value for AnyValueEnum {
     where
         Self: 'a,
     {
-        // FIXME: Is this always true?
-        serde_json::from_slice(data)
-            .expect("Should be able to deserialize bytes back to AnyValueEnum")
+        serde_json::from_slice(data).unwrap_or_else(|_| {
+            // JSON deserialization fails, store as raw bytes
+            AnyValueEnum::Bytes(data.to_vec())
+        })
     }
 
     fn as_bytes<'a, 'b: 'a>(value: &'a Self::SelfType<'b>) -> Self::AsBytes<'a>
     where
         Self: 'b,
     {
-        // FIXME: Is this always true?
-        serde_json::to_vec(value).expect("Should be able to serialize AnyValueEnum into bytes")
+        serde_json::to_vec(value).unwrap_or_else(|_| {
+            // Fall back to empty vec when serialization fails
+            vec![]
+        })
     }
 
     fn type_name() -> TypeName {
