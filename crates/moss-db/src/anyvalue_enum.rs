@@ -8,7 +8,7 @@ pub enum AnyValueEnum {
     Null,
     Bool(bool),
     Int(i64),
-    UnsizedInt(u64),
+    Uint(u64),
     Double(f64),
     Text(String),
     Bytes(Vec<u8>),
@@ -20,17 +20,14 @@ impl AnyValueEnum {
             AnyValueEnum::Null => "Null",
             AnyValueEnum::Bool(_) => "Bool",
             AnyValueEnum::Int(_) => "Int",
-            AnyValueEnum::UnsizedInt(_) => "UnsizedInt",
+            AnyValueEnum::Uint(_) => "UnsizedInt",
             AnyValueEnum::Double(_) => "Double",
             AnyValueEnum::Text(_) => "Text",
             AnyValueEnum::Bytes(_) => "Bytes",
         }
     }
     pub fn is_null(&self) -> bool {
-        match self {
-            AnyValueEnum::Null => true,
-            _ => false,
-        }
+        matches!(self, AnyValueEnum::Null)
     }
 
     pub fn as_bool(&self) -> Option<bool> {
@@ -47,9 +44,9 @@ impl AnyValueEnum {
         }
     }
 
-    pub fn as_unsized_int(&self) -> Option<u64> {
+    pub fn as_uint(&self) -> Option<u64> {
         match self {
-            AnyValueEnum::UnsizedInt(u) => Some(*u),
+            AnyValueEnum::Uint(u) => Some(*u),
             _ => None,
         }
     }
@@ -68,16 +65,38 @@ impl AnyValueEnum {
         }
     }
 
+    pub fn as_bytes(&self) -> Option<&[u8]> {
+        match self {
+            AnyValueEnum::Bytes(b) => Some(b.as_slice()),
+            _ => None,
+        }
+    }
+
+    pub fn try_as_number<T>(&self) -> Option<T>
+    where
+        T: TryFrom<i64> + TryFrom<u64> + TryFrom<f64>,
+    {
+        match self {
+            AnyValueEnum::Int(i) => TryFrom::try_from(*i).ok(),
+            AnyValueEnum::Uint(u) => TryFrom::try_from(*u).ok(),
+            AnyValueEnum::Double(d) => TryFrom::try_from(*d).ok(),
+            _ => None,
+        }
+    }
+
     pub fn serialize<T: Serialize>(value: &T) -> Result<Self> {
         serde_json::to_vec(value)
             .map(|bytes| Self::Bytes(bytes))
-            .map_err(|e| e.into())
+            .map_err(|e| anyhow!("Serialization failed: {}", e))
     }
 
     pub fn deserialize<T: DeserializeOwned>(&self) -> Result<T> {
         match self {
             AnyValueEnum::Bytes(bytes) => serde_json::from_slice(bytes).map_err(|e| e.into()),
-            _ => Err(anyhow!("cannot deserialize non-bytes value")),
+            _ => Err(anyhow!(
+                "Cannot deserialize non-bytes value: expected Bytes variant, got {}",
+                self.type_name()
+            )),
         }
     }
 }
@@ -151,7 +170,7 @@ mod tests {
             table.insert(&mut write_txn, 0, &AnyValueEnum::Null)?;
             table.insert(&mut write_txn, 1, &AnyValueEnum::Bool(true))?;
             table.insert(&mut write_txn, 2, &AnyValueEnum::Int(-42))?;
-            table.insert(&mut write_txn, 3, &AnyValueEnum::UnsizedInt(42))?;
+            table.insert(&mut write_txn, 3, &AnyValueEnum::Uint(42))?;
             table.insert(&mut write_txn, 4, &AnyValueEnum::Double(3.14))?;
             table.insert(
                 &mut write_txn,
@@ -171,7 +190,7 @@ mod tests {
             let result2 = table.read(&read_txn, 2)?;
             assert_eq!(result2, AnyValueEnum::Int(-42));
             let result3 = table.read(&read_txn, 3)?;
-            assert_eq!(result3, AnyValueEnum::UnsizedInt(42));
+            assert_eq!(result3, AnyValueEnum::Uint(42));
             let result4 = table.read(&read_txn, 4)?;
             // We can't directly compare two floats
             let float = result4.as_double().unwrap();
