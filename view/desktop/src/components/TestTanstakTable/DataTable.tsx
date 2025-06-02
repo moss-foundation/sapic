@@ -133,19 +133,23 @@ export function DataTable<TValue>({
         const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
         const edge = extractClosestEdge(location.current.dropTargets[0].data);
 
+        const flatRows = table.getRowModel().flatRows.map((row) => row.original);
+
         if (sourceTarget.tableId === dropTarget.tableId) {
           if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
-            setData((prev) => {
-              const sourceIndex = prev.findIndex((row) => row.key === sourceTarget.row.key);
-              const dropIndex = prev.findIndex((row) => row.key === dropTarget.row.key);
+            setSorting([]);
+            const sourceIndex = flatRows.findIndex((row) => row.key === sourceTarget.row.key);
+            const dropIndex = flatRows.findIndex((row) => row.key === dropTarget.row.key);
 
-              return swapListByIndexWithEdge(sourceIndex, dropIndex, prev, edge);
-            });
+            const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
+            setData(newData);
           }
           return;
         }
 
         if (sourceTarget.tableId === tableId) {
+          setSorting([]);
+
           setData((prev) => {
             return [...prev].filter((row) => row.key !== sourceTarget.row.key);
           });
@@ -153,21 +157,21 @@ export function DataTable<TValue>({
         }
 
         if (dropTarget.tableId === tableId) {
+          setSorting([]);
           const edge = extractClosestEdge(location.current.dropTargets[0].data);
-          setData((prev) => {
-            const dropIndex = prev.findIndex((row) => row.key === dropTarget.row.key);
-            const newData = [...prev];
 
-            const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
-            newData.splice(insertIndex, 0, sourceTarget.row);
+          const dropIndex = flatRows.findIndex((row) => row.key === dropTarget.row.key);
+          const newData = [...flatRows];
 
-            return newData;
-          });
+          const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
+          newData.splice(insertIndex, 0, sourceTarget.row);
+
+          setData(newData);
         }
         return;
       },
     });
-  }, [tableId]);
+  }, [table, tableId]);
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     e.preventDefault();
