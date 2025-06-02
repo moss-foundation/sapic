@@ -5,7 +5,7 @@ pub mod primitives;
 pub use common::*;
 
 use anyhow::Result;
-use redb::{Database, Key, TableDefinition};
+use redb::{Builder, Database, Key, TableDefinition};
 use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;
@@ -43,7 +43,9 @@ where
 impl ReDbClient {
     pub fn new(path: impl AsRef<Path>) -> Result<Self> {
         // Using compact() on an empty ReDb database will shrink its file size by 1 mb
-        let mut database = Database::create(path)?;
+        let mut database = Builder::new()
+            .create_with_file_format_v3(true)
+            .create(path)?;
         database.compact()?;
         Ok(Self {
             db: Arc::new(database),
