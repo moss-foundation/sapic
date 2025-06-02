@@ -45,8 +45,8 @@ export const HeadBarCenterItems = ({
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
           isMedium
-            ? "mr-[3px] h-[22px] w-[200px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            : "mr-[30px] h-[22px] w-[200px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            ? "mr-[3px] h-[22px] w-[10vw] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            : "mr-[30px] h-[22px] w-[10vw] hover:bg-[var(--moss-headBar-primary-background-hover)]"
         }
         title={collectionName}
         editable={true}
