@@ -184,8 +184,7 @@ async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResu
     logging_service.info(
         LogScope::App,
         LogPayload {
-            collection: None,
-            request: None,
+            resource: None,
             message: "Generate a log from the frontend".to_string(),
         },
     );

@@ -12,8 +12,7 @@ export const logEntrySchema = z.object({
 export const listLogsInputSchema = z.object({
   dates: z.array(logDateSchema),
   levels: z.array(logLevelSchema),
-  CollectionPath: z.string().optional(),
-  RequestPath: z.string().optional(),
+  resource: z.string().nullable(),
 });
 
 export const listLogsOutputSchema = z.object({
