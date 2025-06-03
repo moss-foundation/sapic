@@ -268,7 +268,7 @@ export function DataTable<TValue>({
                           <input
                             form={`${tableId}-AddNewRowForm`}
                             placeholder={cell.column.id}
-                            className="w-full outline-0"
+                            className="w-full text-(--moss-gray-9) outline-0"
                             onBlur={handleBlur}
                           />
                         </td>

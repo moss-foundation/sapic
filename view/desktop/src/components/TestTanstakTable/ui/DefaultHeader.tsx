@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useState } from "react";
 
 import { ActionMenu } from "@/components";
 import Icon from "@/lib/ui/Icon";
@@ -11,52 +11,66 @@ interface DefaultHeaderProps<TData> extends HTMLAttributes<HTMLTableCellElement>
 }
 
 export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultHeaderProps<TData>) {
+  const isFirstColumn = header.column.getIsFirstColumn();
   const isLastColumn = header.column.getIsLastColumn();
   const isSortable = header.column.getCanSort();
   const canHide = header.column.getCanHide();
+  const [showActionMenu, setShowActionMenu] = useState(false);
 
   const toggleSortingHandler = header.column.getToggleSortingHandler();
 
   return (
     <th
-      className={cn("relative border-r border-b border-[#E0E0E0] px-2 py-1.5 capitalize", {
+      className={cn("group/tableHeader relative border-r border-b border-[#E0E0E0] px-2 py-1.5 capitalize", {
         "border-r-0": isLastColumn,
       })}
       style={{ width: header.getSize() }}
+      onMouseEnter={() => setShowActionMenu(true)}
+      onMouseLeave={() => setShowActionMenu(false)}
       {...props}
     >
-      <div className="group flex items-center justify-center">
-        <span
-          className="relative cursor-pointer truncate text-center"
-          onClick={isSortable ? toggleSortingHandler : undefined}
-        >
+      <div
+        className={cn("group flex items-center gap-2", {
+          "justify-center": isFirstColumn,
+          "justify-between": !isFirstColumn,
+        })}
+      >
+        <span className="relative cursor-pointer truncate" onClick={isSortable ? toggleSortingHandler : undefined}>
           {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
         </span>
 
         {isSortable && (
-          <div
-            //prettier-ignore
-            className={cn(`
-              h-full
-              absolute top-0 right-0 
-              flex items-center justify-center
-              bg-[#F4F4F4] px-2 
-              group-hover:opacity-100
-              transition-opacity duration-100
-           `)}
-          >
+          <div className="flex h-full items-center justify-center gap-1 bg-[#F4F4F4]">
             {header.column.getIsSorted() && (
               <button className="cursor-pointer" onClick={header.column.getToggleSortingHandler()}>
                 {header.column.getIsSorted() === "asc" ? "🔼" : header.column.getIsSorted() === "desc" ? "🔽" : "🔼"}
               </button>
             )}
 
-            <ActionMenu.Root>
-              <ActionMenu.Trigger className="cursor-pointer rounded p-1 hover:bg-gray-300">
+            <ActionMenu.Root onOpenChange={setShowActionMenu}>
+              <ActionMenu.Trigger
+                className={cn(
+                  "background-(--moss-icon-secondary-background-hover) -my-px cursor-pointer rounded p-0.5 transition-opacity duration-100",
+                  {
+                    "opacity-100": showActionMenu,
+                    "sr-only opacity-0": !showActionMenu,
+                  }
+                )}
+                onClick={() => {
+                  setShowActionMenu(true);
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                }}
+              >
                 <Icon icon="MoreVertical" />
               </ActionMenu.Trigger>
 
-              <ActionMenu.Content>
+              <ActionMenu.Content
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                }}
+              >
                 <ActionMenu.Item onClick={() => header.column.toggleSorting(false)}>
                   <button>asc</button>
                 </ActionMenu.Item>

@@ -388,7 +388,6 @@ const ExampleTable = () => {
   const [tableApi, setTableApi] = useState<Table<TestData> | null>(null);
 
   const handleTableApiSet = (tableApi: Table<TestData>) => {
-    console.log("handleTableApiSet", tableApi);
     setTableApi(tableApi);
   };
 
