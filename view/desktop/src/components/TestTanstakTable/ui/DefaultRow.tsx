@@ -102,7 +102,17 @@ export const DefaultRow = <TData,>({
   });
 
   return (
-    <tr ref={rowRef} className={cn("group/tableRow relative", className)} {...props}>
+    <tr
+      ref={rowRef}
+      className={cn(
+        "group/tableRow relative",
+        {
+          "bg-gray-200": isDragging,
+        },
+        className
+      )}
+      {...props}
+    >
       {children}
       {!disableDnd && (
         <RowHandle
@@ -124,7 +134,7 @@ const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean; className: s
         ref={ref}
         className={cn(
           "absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow",
-          isDragging && "hidden",
+          isDragging && "bg-gray-400 opacity-100!",
           className
         )}
       >
