@@ -41,6 +41,7 @@ declare module "@tanstack/react-table" {
 }
 
 interface TestData {
+  id: string;
   key: string;
   value: string;
   type: string;
@@ -84,7 +85,7 @@ export function DataTable<TValue>({
     enableColumnResizing: true,
     enableRowSelection: true,
     columnResizeMode: "onChange",
-    getRowId: (row) => row.key,
+    getRowId: (row) => row.id,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       columnVisibility,
@@ -134,8 +135,8 @@ export function DataTable<TValue>({
         if (sourceTarget.tableId === dropTarget.tableId) {
           if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
             setSorting([]);
-            const sourceIndex = flatRows.findIndex((row) => row.key === sourceTarget.row.key);
-            const dropIndex = flatRows.findIndex((row) => row.key === dropTarget.row.key);
+            const sourceIndex = flatRows.findIndex((row) => row.id === sourceTarget.row.id);
+            const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
 
             const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
             setData(newData);
@@ -147,7 +148,7 @@ export function DataTable<TValue>({
           setSorting([]);
 
           setData((prev) => {
-            return [...prev].filter((row) => row.key !== sourceTarget.row.key);
+            return [...prev].filter((row) => row.id !== sourceTarget.row.id);
           });
           return;
         }
@@ -156,7 +157,7 @@ export function DataTable<TValue>({
           setSorting([]);
           const edge = extractClosestEdge(location.current.dropTargets[0].data);
 
-          const dropIndex = flatRows.findIndex((row) => row.key === dropTarget.row.key);
+          const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
           const newData = [...flatRows];
 
           const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
@@ -177,7 +178,8 @@ export function DataTable<TValue>({
 
     const columnId = e.target.placeholder;
     const newRow: TestData = {
-      key: columnId === "key" ? value : `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
+      id: Math.random().toString(36).substring(2, 15),
+      key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
       type: columnId === "type" ? value : "",
       description: columnId === "description" ? value : "",
@@ -195,7 +197,8 @@ export function DataTable<TValue>({
   const handleAddNewRow = (index: number) => {
     setData((prev) => {
       const newRow: TestData = {
-        key: `rand_key: ${Math.random().toString(36).substring(2, 15)}`,
+        id: Math.random().toString(36).substring(2, 15),
+        key: "",
         value: "",
         type: "",
         description: "",

@@ -65,7 +65,6 @@ export const DefaultRow = <TData,>({
         getIsSticky() {
           return true;
         },
-
         getData({ input }) {
           return attachClosestEdge(
             { type: "TableRow", data: { tableId: table.options.meta?.id, row: originalRow } },
@@ -77,7 +76,7 @@ export const DefaultRow = <TData,>({
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TableRow" && originalRow.key !== source.data.data.row.key;
+          return source.data.type === "TableRow" && originalRow.id !== source.data.data.row.id;
         },
         onDrop() {
           setClosestEdge(null);
@@ -103,14 +102,12 @@ export const DefaultRow = <TData,>({
   });
 
   return (
-    <>
-      <tr ref={rowRef} className={cn("relative", className)} {...props}>
-        {children}
-        {!disableDnd && <RowHandle ref={handleRef} isDragging={isDragging} />}
-        {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
-        <AddNewRowDividerButton onClick={onAddNewRow} />
-      </tr>
-    </>
+    <tr ref={rowRef} className={cn("relative", className)} {...props}>
+      {children}
+      {!disableDnd && <RowHandle ref={handleRef} isDragging={isDragging} />}
+      {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
+      <AddNewRowDividerButton onClick={onAddNewRow} />
+    </tr>
   );
 };
 

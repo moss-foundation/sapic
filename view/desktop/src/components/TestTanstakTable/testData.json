@@ -1,5 +1,6 @@
 [
   {
+    "id": "1",
     "key": "1",
     "value": "asd",
     "type": "string",
@@ -9,6 +10,7 @@
     "properties": { "disabled": false }
   },
   {
+    "id": "2",
     "key": "2",
     "value": "zxc",
     "type": "string",
@@ -18,6 +20,7 @@
     "properties": { "disabled": false }
   },
   {
+    "id": "3",
     "key": "3",
     "value": "фывфыв",
     "type": "string",
@@ -27,6 +30,7 @@
     "properties": { "disabled": false }
   },
   {
+    "id": "4",
     "key": "4",
     "value": "йцкйцк",
     "type": "string",
@@ -36,6 +40,7 @@
     "properties": { "disabled": false }
   },
   {
+    "id": "5",
     "key": "5",
     "value": "512312412",
     "type": "string",
@@ -45,6 +50,7 @@
     "properties": { "disabled": true }
   },
   {
+    "id": "6",
     "key": "6",
     "value": "wrb4365n687j",
     "type": "string",
