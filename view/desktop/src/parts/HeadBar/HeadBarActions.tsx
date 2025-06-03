@@ -200,8 +200,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         });
         setShowRenameWorkspaceModal(true);
       }
-    } else if (action === "home") {
-      openPanel("Home");
+    } else if (action === "kitchensink") {
+      openPanel("KitchenSink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {
