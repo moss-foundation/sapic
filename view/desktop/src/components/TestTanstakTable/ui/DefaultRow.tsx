@@ -102,35 +102,44 @@ export const DefaultRow = <TData,>({
   });
 
   return (
-    <tr ref={rowRef} className={cn("relative", className)} {...props}>
+    <tr ref={rowRef} className={cn("group/tableRow relative", className)} {...props}>
       {children}
-      {!disableDnd && <RowHandle ref={handleRef} isDragging={isDragging} />}
+      {!disableDnd && (
+        <RowHandle
+          className="opacity-0 transition-opacity duration-100 group-hover/tableRow:opacity-100"
+          ref={handleRef}
+          isDragging={isDragging}
+        />
+      )}
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
       <AddNewRowDividerButton onClick={onAddNewRow} />
     </tr>
   );
 };
 
-const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean }>(({ isDragging }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow",
-        isDragging && "hidden"
-      )}
-    >
-      <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M0 0H2V2H0V0ZM4 0H6V2H4V0ZM2 4H0V6H2V4ZM4 4H6V6H4V4ZM2 8H0V10H2V8ZM4 8H6V10H4V8Z"
-          fill="#525252"
-        />
-      </svg>
-    </div>
-  );
-});
+const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean; className: string }>(
+  ({ isDragging, className }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow",
+          isDragging && "hidden",
+          className
+        )}
+      >
+        <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M0 0H2V2H0V0ZM4 0H6V2H4V0ZM2 4H0V6H2V4ZM4 4H6V6H4V4ZM2 8H0V10H2V8ZM4 8H6V10H4V8Z"
+            fill="#525252"
+          />
+        </svg>
+      </div>
+    );
+  }
+);
 
 const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
   const [visible, setVisible] = useState(false);
