@@ -14,6 +14,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
+use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
 use tracing_appender::{non_blocking::WorkerGuard, rolling::Rotation};
 use tracing_subscriber::{
@@ -82,14 +83,15 @@ pub enum LogScope {
 }
 
 // TODO: in-memory log
-pub struct LoggingService {
+pub struct LoggingService<R: TauriRuntime> {
+    app_handle: AppHandle<R>, // We will emit logging event to the frontend
     app_log_path: PathBuf,
     session_path: PathBuf,
     _app_log_guard: WorkerGuard,
     _session_log_guard: WorkerGuard,
 }
 
-impl LoggingService {
+impl<R: TauriRuntime> LoggingService<R> {
     fn parse_file_with_filter(
         records: &mut Vec<(DateTime<FixedOffset>, JsonValue)>,
         path: &Path,
@@ -155,7 +157,7 @@ impl LoggingService {
         log_files.sort_by_key(|p| p.1);
         for (path, date_time) in &log_files {
             if filter.dates.is_empty() || filter.dates.contains(date_time) {
-                LoggingService::parse_file_with_filter(&mut result, path, filter)?
+                LoggingService::<R>::parse_file_with_filter(&mut result, path, filter)?
             }
         }
 
@@ -196,12 +198,13 @@ impl LoggingService {
     }
 }
 
-impl LoggingService {
+impl<R: TauriRuntime> LoggingService<R> {
     pub fn new(
+        app_handle: AppHandle<R>,
         app_log_path: &Path,
         session_log_path: &Path,
         session_id: &Uuid,
-    ) -> Result<LoggingService> {
+    ) -> Result<LoggingService<R>> {
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -265,6 +268,7 @@ impl LoggingService {
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
+            app_handle,
             _app_log_guard,
             _session_log_guard,
             app_log_path: app_log_path.to_path_buf(),
@@ -277,7 +281,7 @@ impl LoggingService {
         let filter: LogFilter = input.clone().into();
         let app_logs = self.combine_logs(&self.app_log_path, &filter)?;
         let session_logs = self.combine_logs(&self.session_path, &filter)?;
-        let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs);
+        let merged_logs = LoggingService::<R>::merge_logs_chronologically(app_logs, session_logs);
 
         let log_entries: Vec<LogEntry> = merged_logs
             .into_iter()
@@ -289,7 +293,7 @@ impl LoggingService {
     }
 }
 
-impl LoggingService {
+impl<R: TauriRuntime> LoggingService<R> {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
@@ -388,15 +392,20 @@ impl LoggingService {
     }
 }
 
-impl AppService for LoggingService {}
+impl<R: TauriRuntime> AppService for LoggingService<R> {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tauri::Manager;
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_collection(path: &Path, name: &str, log_service: &LoggingService) {
+    async fn create_collection<R: TauriRuntime>(
+        path: &Path,
+        name: &str,
+        log_service: &LoggingService<R>,
+    ) {
         let collection_path = path.join(name);
 
         log_service.info(
@@ -420,7 +429,11 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_request(collection_path: &Path, name: &str, log_service: &LoggingService) {
+    async fn create_request<R: TauriRuntime>(
+        collection_path: &Path,
+        name: &str,
+        log_service: &LoggingService<R>,
+    ) {
         let request_path = collection_path.join(name);
         log_service.info(
             LogScope::Session,
@@ -443,7 +456,7 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn something_terrible(log_service: &LoggingService) {
+    async fn something_terrible<R: TauriRuntime>(log_service: &LoggingService<R>) {
         log_service.warn(
             LogScope::App,
             LogPayload {
@@ -464,8 +477,10 @@ mod tests {
     const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
     #[test]
     fn test() {
+        let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
+            mock_app.app_handle().clone(),
             Path::new(TEST_APP_LOG_FOLDER),
             Path::new(TEST_SESSION_LOG_FOLDER),
             &session_id,
