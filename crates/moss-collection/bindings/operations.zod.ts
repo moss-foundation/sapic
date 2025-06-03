@@ -13,7 +13,9 @@ import {
   requestProtocolSchema,
 } from "./types.zod";
 
-export const streamEntriesByPrefixesInputSchema = z.array(z.string());
+export const streamWorktreeEntriesInputSchema = z.object({
+  prefixes: z.array(z.string()),
+});
 export const createEntryInputSchema = z.object({
   destination: z.string(),
   classification: classificationSchema,

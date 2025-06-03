@@ -1,3 +1,9 @@
+import {
+  TREE_VIEW_GROUP_COLLECTIONS,
+  TREE_VIEW_GROUP_ENVIRONMENTS,
+  TREE_VIEW_GROUP_MOCK_SERVERS,
+} from "@repo/moss-workspace";
+
 // ViewGroups mock data
 export interface ViewGroup {
   id: string;
@@ -19,19 +25,19 @@ export interface GroupView {
 export const MockViews: Views = {
   "viewGroups": [
     {
-      "id": "collections.groupId",
+      "id": TREE_VIEW_GROUP_COLLECTIONS,
       "title": "Collections",
       "order": 1,
       "icon": "ActivityBarCollections",
     },
     {
-      "id": "environments.groupId",
+      "id": TREE_VIEW_GROUP_ENVIRONMENTS,
       "title": "Environments",
       "order": 2,
       "icon": "ActivityBarEnvironments",
     },
     {
-      "id": "mock.groupId",
+      "id": TREE_VIEW_GROUP_MOCK_SERVERS,
       "title": "Mock Servers",
       "order": 3,
       "icon": "ActivityBarMock",
@@ -40,17 +46,17 @@ export const MockViews: Views = {
 };
 
 export const MockGroupViews = {
-  "collections.groupId": {
+  [TREE_VIEW_GROUP_COLLECTIONS]: {
     "id": "collections",
     "name": "My View1",
     "component": "CollectionsList",
   },
-  "environments.groupId": {
+  [TREE_VIEW_GROUP_ENVIRONMENTS]: {
     "id": "environments",
     "name": "My View2",
     "component": "EnvironmentsList",
   },
-  "mock.groupId": {
+  [TREE_VIEW_GROUP_MOCK_SERVERS]: {
     "id": "mock",
     "name": "My View3",
     "component": "MockServersList",

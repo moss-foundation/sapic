@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@/app/i18n";
@@ -13,8 +13,6 @@ import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-qu
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
-
-import GeneralProvider from "./app/Provider";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 
@@ -35,8 +33,15 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = lazy(() => import("@/app")); // lazy load the main App component
-const rootElement = document.getElementById("root") as HTMLElement; // cache the root element reference
+if (import.meta.env.MODE === "development") {
+  const script = document.createElement("script");
+  script.src = "http://localhost:8097";
+  document.head.appendChild(script);
+}
+
+const App = lazy(() => import("@/app"));
+const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));
+const rootElement = document.getElementById("root") as HTMLElement;
 
 if (rootElement) {
   // Prevent window flickering on startup by only showing the window after the webview is ready
@@ -44,14 +49,16 @@ if (rootElement) {
     .show()
     .then(() =>
       createRoot(rootElement).render(
-        <QueryClientProvider client={queryClient}>
-          {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-          <GeneralProvider>
+        <StrictMode>
+          <QueryClientProvider client={queryClient}>
+            {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
             <Suspense fallback={<PageLoader />}>
-              <App />
+              <App>
+                <Workbench />
+              </App>
             </Suspense>
-          </GeneralProvider>
-        </QueryClientProvider>
+          </QueryClientProvider>
+        </StrictMode>
       )
     );
 

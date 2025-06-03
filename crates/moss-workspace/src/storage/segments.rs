@@ -1,9 +1,10 @@
 use moss_storage::primitives::segkey::SegKey;
 
-pub(crate) static COLLECTION_SEGKEY: SegKey = SegKey::new("collection");
-pub(crate) static ENVIRONMENT_SEGKEY: SegKey = SegKey::new("environment");
-pub(crate) static PART_SEGKEY: SegKey = SegKey::new("part");
+pub static COLLECTION_SEGKEY: SegKey = SegKey::new("collection");
+pub static ENVIRONMENT_SEGKEY: SegKey = SegKey::new("environment");
+pub static PART_SEGKEY: SegKey = SegKey::new("part");
 
-pub(crate) static PART_SIDEBAR_SEGKEY: SegKey = SegKey::new("part:sidebar");
-pub(crate) static PART_PANEL_SEGKEY: SegKey = SegKey::new("part:panel");
-pub(crate) static PART_EDITOR_SEGKEY: SegKey = SegKey::new("part:editor");
+pub static PART_SIDEBAR_SEGKEY: SegKey = SegKey::new("part:sidebar");
+pub static PART_PANEL_SEGKEY: SegKey = SegKey::new("part:panel");
+pub static PART_EDITOR_SEGKEY: SegKey = SegKey::new("part:editor");
+pub static PART_ACTIVITYBAR_SEGKEY: SegKey = SegKey::new("part:activitybar");

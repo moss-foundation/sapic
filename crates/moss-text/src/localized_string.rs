@@ -1,6 +1,6 @@
 use serde::ser::{Serialize, SerializeSeq, Serializer};
 
-use crate::{bstring::BStringForFrontend, ReadOnlyStr};
+use crate::{ReadOnlyStr, bstring::BStringForFrontend};
 
 /// Macro for creating a `LocalizedString` with a given key, origin, and an optional description.
 ///

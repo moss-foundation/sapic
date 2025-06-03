@@ -2,14 +2,12 @@ use super::{
     WorktreeResult,
     virtual_snapshot::{VirtualEntry, VirtualSnapshot},
 };
-use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::{ChangesDiffSet, EntryId},
-    types::{Classification, PathChangeKind},
+    types::{Classification, PathChangeKind, RequestProtocol},
 };
-use std::path::PathBuf;
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
 

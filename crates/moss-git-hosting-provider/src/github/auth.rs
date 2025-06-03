@@ -1,16 +1,13 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
 use moss_keyring::KeyringClient;
-use oauth2::basic::BasicClient;
 use oauth2::{
     AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, Scope,
-    TokenResponse, TokenUrl,
+    TokenResponse, TokenUrl, basic::BasicClient,
 };
 use serde::{Deserialize, Serialize};
-use std::cell::OnceCell;
-use std::string::ToString;
-use std::sync::Arc;
+use std::{cell::OnceCell, string::ToString, sync::Arc};
 
 use crate::common::utils;
 
@@ -176,8 +173,7 @@ mod tests {
 
     use moss_git::repo::RepoHandle;
     use moss_keyring::KeyringClientImpl;
-    use std::path::Path;
-    use std::sync::Arc;
+    use std::{path::Path, sync::Arc};
 
     #[test]
     #[ignore]

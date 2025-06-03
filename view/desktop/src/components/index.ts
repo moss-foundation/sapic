@@ -12,10 +12,14 @@ export * from "./DropIndicator";
 export * from "./IconLabelButton";
 export * from "./InputOutlined";
 export * from "./InputPlain";
+export * from "./Modals/ConfirmationModal";
 
 export * from "./PageLoader";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
-export * from "./ViewContainer";
+
+export * from "./Workbench";
+export * from "./EmptyWorkspace";
+export * from "./Workspace";

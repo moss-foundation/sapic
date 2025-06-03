@@ -694,13 +694,53 @@ dependencies = [
 ]
 
 [[package]]
+name = "cargo-platform"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84982c6c0ae343635a3a4ee6dedef965513735c8b183caa7289fa6e27399ebd4"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "cargo-util-schemas"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e63d2780ac94487eb9f1fea7b0d56300abc9eb488800854ca217f102f5caccca"
+dependencies = [
+ "semver",
+ "serde",
+ "serde-untagged",
+ "serde-value",
+ "thiserror 1.0.69",
+ "toml",
+ "unicode-xid",
+ "url",
+]
+
+[[package]]
 name = "cargo_metadata"
 version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd5eb614ed4c27c5d706420e4320fbe3216ab31fa1c33cd8246ac36dae4479ba"
 dependencies = [
  "camino",
- "cargo-platform",
+ "cargo-platform 0.1.9",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "cargo_metadata"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f7835cfc6135093070e95eb2b53e5d9b5c403dc3a6be6040ee026270aa82502"
+dependencies = [
+ "camino",
+ "cargo-platform 0.2.0",
+ "cargo-util-schemas",
  "semver",
  "serde",
  "serde_json",
@@ -2988,9 +3028,12 @@ dependencies = [
  "moss_activity_indicator",
  "moss_common",
  "moss_db",
+ "moss_environment",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "notify",
  "scraper",
  "serde",
@@ -3000,7 +3043,9 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
+ "toml_edit 0.22.26",
  "ts-rs",
+ "uuid",
  "validator",
  "xml-rs",
 ]
@@ -3011,8 +3056,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_db",
- "moss_testutils",
- "regex",
  "serde",
  "serde_json",
  "slotmap",
@@ -3045,6 +3088,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_common",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "rand 0.9.1",
@@ -3053,6 +3097,21 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "ts-rs",
+ "uuid",
+]
+
+[[package]]
+name = "moss_file"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_fs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
+ "toml_edit 0.22.26",
+ "uuid",
 ]
 
 [[package]]
@@ -3064,6 +3123,7 @@ dependencies = [
  "async-trait",
  "futures",
  "moss_common",
+ "moss_text",
  "notify",
  "regex",
  "tokio",
@@ -3172,14 +3232,11 @@ name = "moss_storage"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "arc-swap",
- "async-trait",
  "moss_db",
  "redb",
  "serde",
  "serde_json",
  "smallvec",
- "tokio",
 ]
 
 [[package]]
@@ -3205,6 +3262,7 @@ version = "0.1.0"
 dependencies = [
  "arcstr",
  "bstr",
+ "moss_testutils",
  "serde",
 ]
 
@@ -3246,11 +3304,13 @@ dependencies = [
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "moss_workspace",
  "serde",
  "tauri",
  "tokio",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
@@ -3261,21 +3321,26 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "chrono",
+ "futures",
  "moss_activity_indicator",
  "moss_app",
  "moss_collection",
  "moss_common",
  "moss_db",
  "moss_environment",
+ "moss_file",
  "moss_fs",
  "moss_storage",
  "moss_testutils",
+ "moss_text",
  "serde",
  "serde_json",
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "toml_edit 0.22.26",
  "ts-rs",
+ "uuid",
  "validator",
 ]
 
@@ -3839,6 +3904,15 @@ name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
+
+[[package]]
+name = "ordered-float"
+version = "2.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68f19d67e5a2795c94e73e0bb1cc1a7edeb2e28efd39e2e1c9b7a40c1108b11c"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "ordered-stream"
@@ -4502,9 +4576,9 @@ checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
 
 [[package]]
 name = "redb"
-version = "2.5.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34bc6763177194266fc3773e2b2bb3693f7b02fdf461e285aa33202e3164b74e"
+checksum = "cef6a6d3a65ea334d6cdfb31fa2525c20184b7aa7bd1ad1e2e37502610d4609f"
 dependencies = [
  "libc",
 ]
@@ -4953,6 +5027,16 @@ dependencies = [
  "erased-serde",
  "serde",
  "typeid",
+]
+
+[[package]]
+name = "serde-value"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3a1a3341211875ef120e117ea7fd5228530ae7e7036a779fdc9117be6b3282c"
+dependencies = [
+ "ordered-float",
+ "serde",
 ]
 
 [[package]]
@@ -5639,9 +5723,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.2.1"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88371e340ad2f07409a3b68294abe73f20bc9c1bc1b631a31dc37a3d0161f682"
+checksum = "33ead0daec5d305adcefe05af9d970fc437bcc7996052d564e7393eb291252da"
 dependencies = [
  "anyhow",
  "dunce",
@@ -5657,7 +5741,6 @@ dependencies = [
  "thiserror 2.0.12",
  "toml",
  "url",
- "uuid",
 ]
 
 [[package]]
@@ -5802,7 +5885,7 @@ checksum = "b2900399c239a471bcff7f15c4399eb1a8c4fe511ba2853e07c996d771a5e0a4"
 dependencies = [
  "anyhow",
  "brotli",
- "cargo_metadata",
+ "cargo_metadata 0.19.2",
  "ctor",
  "dunce",
  "glob",
@@ -5992,9 +6075,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.44.2"
+version = "1.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6b88822cbe49de4185e3a4cbf8321dd487cf5fe0c5c65695fef6346371e9c48"
+checksum = "75ef51a33ef1da925cea3e4eb122833cb377c61439ca401b770f54902b806779"
 dependencies = [
  "backtrace",
  "bytes",
@@ -6239,6 +6322,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.12",
  "ts-rs-macros",
+ "uuid",
 ]
 
 [[package]]
@@ -6336,6 +6420,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
+name = "unicode-xid"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
 name = "universal-hash"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6407,12 +6497,14 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.16.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
+checksum = "3cf4199d1e5d15ddd86a694e4d0dffa9c323ce759fea589f00fef9d81cc1931d"
 dependencies = [
  "getrandom 0.3.2",
+ "js-sys",
  "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -7369,7 +7461,7 @@ name = "xtask"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "cargo_metadata",
+ "cargo_metadata 0.20.0",
  "clap",
  "futures",
  "pathdiff",
@@ -7377,6 +7469,7 @@ dependencies = [
  "smol",
  "tokio",
  "toml",
+ "toml_edit 0.22.26",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",

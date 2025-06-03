@@ -18,18 +18,10 @@ export SESSION_LOG_DIR = ${CURDIR}/logs/session
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
     HOME_DIR := ${USERPROFILE}
-    ifeq ($(shell where py 2>NUL),)
-        PYTHON := python
-    else
-        PYTHON := py
-    endif
-    PIP := pip
 export DEV_APP_DIR = ${USERPROFILE}\.sapic
 else
     DETECTED_OS := $(shell uname)
     HOME_DIR := ${HOME}
-    PYTHON := python3
-    PIP := pip3
 
 export DEV_APP_DIR = ${HOME}/.sapic
 endif
@@ -57,6 +49,7 @@ GEN_BINDINGS_DIR := tools/gen-bindings
 DESKTOP_DIR := view/desktop
 XTASK_DIR := tools/xtask
 MISC_DIR := misc
+SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
 COLLECTION_MODELS_DIR := crates/moss-collection
@@ -75,6 +68,7 @@ PNPM := pnpm
 CARGO := cargo
 RUSTUP := rustup
 NPX := npx
+UV := uv
 
 # ======================================================
 # Run Commands
@@ -94,13 +88,12 @@ run-desktop:
 .PHONY: ready
 ready: gen-icons
 	$(PNPM) i
-	@cd $(MISC_DIR) && $(PIP) install --break-system-packages -r requirements.txt
 
 ## Icon generator tool
 .PHONY: gen-icons
 gen-icons:
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py plan --source ${ICONS_DIR}
-	@cd $(MISC_DIR) && $(PYTHON) svg_component_generator.py gen --source ${ICONS_DIR} \
+	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py plan --source ${ICONS_DIR}
+	@cd $(SCRIPTS_DIR) && $(UV) run svg_component_generator.py gen --source ${ICONS_DIR} \
 								 --light-css ../assets/themes/light.css \
 								 --dark-css ../assets/themes/dark.css \
 								 --output-dir ${ICONS_OUTPUT_DIR}
@@ -128,7 +121,7 @@ gen-$(1)-bindings:
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run zodGenerator ../../$($(2))
 
 	@echo "Updating exports in index.ts..."
-	@cd $($(2)) && $(PYTHON) ${CURDIR}/$(MISC_DIR)/ts_exports_injector.py
+	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run tsExportsInjector ../../$($(2))
 
 	@echo "Formatting generated files"
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsConsolidator ../../$($(2))
@@ -169,12 +162,13 @@ gen-bindings: \
 ## Export CSS variables to JSON
 .PHONY: export-css-variables
 export-css-variables:
-	@cd $(MISC_DIR) && $(PYTHON) css_variables_exporter.py
+	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
+														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 
 ## Count Lines of Code
 .PHONY: loc
 loc:
-	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx .
+	@cloc --exclude-dir=target,node_modules --include-ext=rs,ts,tsx,py .
 
 # ======================================================
 # Cleanup Commands
@@ -219,10 +213,10 @@ gen-license:
 	@cd $(XTASK_DIR) && $(CARGO) run license
 
 ## Audit workspace dependencies
-.PHONY: workspace-audit
-workspace-audit:
+.PHONY: rust-audit
+rust-audit:
 	@echo "Checking Non-workspace Dependencies..."
-	@cd $(XTASK_DIR) && $(CARGO) run rwa
+	@cd $(XTASK_DIR) && $(CARGO) run audit
 
 ## Check unused dependencies
 .PHONY: check-unused-deps

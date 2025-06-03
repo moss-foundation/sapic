@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react";
-import { MenuItemProps } from "@/components/ActionMenu/ActionMenu";
-import { useGetWorkspaces } from "@/hooks/workspaces/useGetWorkspaces";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
+import { useListWorkspaces } from "@/hooks/workbench/useListWorkspaces";
 import {
   baseWorkspaceMenuItems,
   baseSelectedWorkspaceMenuItems,
@@ -23,9 +23,8 @@ const WorkspaceMenuContext = createContext<WorkspaceMenuContextType>({
 export const useWorkspaceMenu = () => useContext(WorkspaceMenuContext);
 
 export const WorkspaceMenuProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { data: workspaces, isLoading } = useGetWorkspaces();
+  const { data: workspaces, isLoading } = useListWorkspaces();
 
-  // Create the All Workspaces menu section with real data
   const allWorkspacesMenuSection = createAllWorkspacesMenuSection(workspaces || []);
 
   // Combine base menu items with the dynamic workspaces section

@@ -1,9 +1,8 @@
 use anyhow::Result;
 use notify::Watcher;
-use std::sync::Mutex;
 use std::{
     path::PathBuf,
-    sync::{Arc, OnceLock},
+    sync::{Arc, Mutex, OnceLock},
 };
 use tokio::sync::mpsc;
 

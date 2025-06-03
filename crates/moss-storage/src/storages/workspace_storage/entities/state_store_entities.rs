@@ -2,30 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-// ------------------------------------------------------------
-// Sidebar Part State
-// ------------------------------------------------------------
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct SidebarPartStateEntity {
-    pub preferred_size: usize,
-    pub is_visible: bool,
-}
-
-// ------------------------------------------------------------
-// Panel Part State
-// ------------------------------------------------------------
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct PanelPartStateEntity {
-    pub preferred_size: usize,
-    pub is_visible: bool,
-}
-
-// ------------------------------------------------------------
-// Editor Part State
-// ------------------------------------------------------------
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum EditorGridOrientationEntity {
@@ -79,11 +55,4 @@ pub struct EditorPanelStateEntity {
     pub minimum_height: Option<f64>,
     pub maximum_width: Option<f64>,
     pub maximum_height: Option<f64>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct EditorPartStateEntity {
-    pub grid: EditorGridStateEntity,
-    pub panels: HashMap<String, EditorPanelStateEntity>,
-    pub active_group: Option<String>,
 }

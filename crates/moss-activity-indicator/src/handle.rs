@@ -5,8 +5,7 @@ use std::sync::{
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 
-use crate::constants::ACTIVITY_INDICATOR_CHANNEL;
-use crate::models::events::ActivityEvent;
+use crate::{constants::ACTIVITY_INDICATOR_CHANNEL, models::events::ActivityEvent};
 
 pub struct ActivityHandle<'a, R: TauriRuntime> {
     pub activity_id: &'a str,

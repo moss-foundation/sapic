@@ -1,0 +1,44 @@
+assert_lefthook_installed: true
+
+templates:
+  tailwind-plugin: --plugin=prettier-plugin-tailwindcss
+  toml-plugin: --plugin=prettier-plugin-toml
+  css-variables-source: assets/themes/light.css
+  css-variables-dest: packages/config-eslint/moss-lint-plugin/css_variables.json
+
+pre-commit:
+  parallel: true
+  jobs:
+    - run: make gen-license
+      always_run: true
+      stage_fixed: true
+
+    - name: "Export CSS variables to JSON"
+      run: |
+        uv run scripts/css_variables_exporter.py --source {css-variables-source} \
+                                                 --dest {css-variables-dest}
+        pnpm prettier {tailwind-plugin} --write {css-variables-dest}
+        git add {css-variables-dest}
+      glob: assets/themes/light.css
+      stage_fixed: true
+
+    - name: "Format Rust files"
+      run: cargo +nightly fmt --all -- --unstable-features
+      glob: "**/*.rs"
+      stage_fixed: true
+
+    - name: "Format Typescript/Javascript files"
+      run: pnpm prettier {tailwind-plugin} --write {staged_files}
+      glob: "**/*.{ts,js}"
+      stage_fixed: true
+
+    - name: "Format React files"
+      run: pnpm prettier {tailwind-plugin} --write {staged_files}
+      glob: "**/*.{jsx,tsx,css}"
+      stage_fixed: true
+
+    - name: "Format Other files"
+      run: pnpm prettier {toml-plugin} --write {staged_files}
+      glob: "**/*.{toml,md,json}"
+      stage_fixed: true
+

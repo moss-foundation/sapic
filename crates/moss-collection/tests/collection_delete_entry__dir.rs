@@ -1,21 +1,21 @@
-use moss_collection::models::operations::{CreateEntryInput, DeleteEntryInput, DeleteEntryOutput};
-use moss_collection::models::types::{Classification, PathChangeKind};
+use moss_collection::models::{
+    operations::{CreateEntryInput, DeleteEntryInput, DeleteEntryOutput},
+    types::{Classification, PathChangeKind},
+};
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::utils::sanitize_path;
-use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::random_request_name;
-use std::path::Path;
-use std::time::Duration;
+use moss_testutils::{fs_specific::FOLDERNAME_SPECIAL_CHARS, random_name::random_request_name};
+use std::{path::Path, time::Duration};
 
 use crate::shared::{
-    find_id_by_path, random_dir_name, request_folder_name, set_up_test_collection,
+    create_test_collection, find_id_by_path, random_dir_name, request_folder_name,
 };
 
 mod shared;
 
 #[tokio::test]
 async fn delete_entry_dir_success() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let dir_name = random_dir_name();
 
     let destination = Path::new("requests").join(&dir_name);
@@ -68,7 +68,7 @@ async fn delete_entry_dir_success() {
     assert!(
         virtual_changes
             .iter()
-            .any(|(path, _id, kind)| path.to_path_buf() == destination)
+            .any(|(path, _id, _kind)| path.to_path_buf() == destination)
     );
 
     // Wait for spawned deletion task to finish
@@ -79,7 +79,7 @@ async fn delete_entry_dir_success() {
 
 #[tokio::test]
 async fn delete_entry_dir_nonexistent_key() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
     let destination = Path::new("requests").join(&dir_name);
@@ -113,7 +113,7 @@ async fn delete_entry_dir_nonexistent_key() {
 
 #[tokio::test]
 async fn delete_entry_dir_with_content() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
     let request_name = random_request_name();
@@ -213,7 +213,7 @@ async fn delete_entry_dir_with_content() {
 
 #[tokio::test]
 async fn delete_entry_dir_fs_already_deleted() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let dir_name = random_dir_name();
     let destination = Path::new("requests").join(&dir_name);
@@ -269,7 +269,7 @@ async fn delete_entry_dir_fs_already_deleted() {
 
 #[tokio::test]
 async fn delete_entry_dir_subfolder() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let outer_dir_name = random_dir_name();
     let inner_dir_name = random_dir_name();
 
@@ -341,7 +341,7 @@ async fn delete_entry_dir_subfolder() {
 
 #[tokio::test]
 async fn delete_entry_dir_special_chars() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let dir_name_list = FOLDERNAME_SPECIAL_CHARS
         .into_iter()
         .map(|s| format!("{s}{}", random_dir_name()))

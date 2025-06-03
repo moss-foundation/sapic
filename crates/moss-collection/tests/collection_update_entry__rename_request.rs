@@ -1,22 +1,23 @@
-use moss_collection::models::operations::{
-    CreateEntryInput, DeleteEntryInput, UpdateEntryInput, UpdateEntryOutput,
+use moss_collection::models::{
+    operations::{CreateEntryInput, DeleteEntryInput, UpdateEntryInput, UpdateEntryOutput},
+    types::{Classification, PathChangeKind},
 };
-use moss_collection::models::types::{Classification, PathChangeKind};
 use moss_common::api::OperationError;
-use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::random_request_name;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
+use moss_testutils::{fs_specific::FOLDERNAME_SPECIAL_CHARS, random_name::random_request_name};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use crate::shared::{
-    find_id_by_path, random_dir_name, request_folder_name, set_up_test_collection,
+    create_test_collection, find_id_by_path, random_dir_name, request_folder_name,
 };
 
 mod shared;
 
 #[tokio::test]
 async fn update_entry_rename_request_success() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let old_name = random_request_name();
     let new_name = format!("{old_name}_new");
@@ -98,7 +99,7 @@ async fn update_entry_rename_request_success() {
 
 #[tokio::test]
 async fn update_entry_rename_request_no_change() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
@@ -139,7 +140,7 @@ async fn update_entry_rename_request_no_change() {
 
 #[tokio::test]
 async fn update_entry_rename_request_same_name() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
 
@@ -180,7 +181,7 @@ async fn update_entry_rename_request_same_name() {
 
 #[tokio::test]
 async fn update_entry_rename_request_already_exists() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let first_destination = Path::new("requests").join("first");
     let second_destination = Path::new("requests").join("second");
 
@@ -231,7 +232,7 @@ async fn update_entry_rename_request_already_exists() {
 
 #[tokio::test]
 async fn update_entry_rename_request_already_exists_dir() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let first_destination = Path::new("requests").join("first");
     let second_destination = Path::new("requests").join("second");
 
@@ -282,7 +283,7 @@ async fn update_entry_rename_request_already_exists_dir() {
 
 #[tokio::test]
 async fn update_entry_rename_request_nonexistent_key() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
     let request_name_new = format!("{request_name}_new");
@@ -327,7 +328,7 @@ async fn update_entry_rename_request_nonexistent_key() {
 
 #[tokio::test]
 async fn update_entry_rename_request_fs_deleted() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
     let destination = Path::new("requests").join(&request_name);
     let request_new_name = format!("{request_name}_new");
@@ -371,7 +372,7 @@ async fn update_entry_rename_request_fs_deleted() {
 
 #[tokio::test]
 async fn update_entry_rename_request_nested() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
     let request_new_name = format!("{request_name}_new");
     let dir_name = random_dir_name();
@@ -453,7 +454,7 @@ async fn update_entry_rename_request_nested() {
 
 #[tokio::test]
 async fn update_entry_rename_request_special_chars() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     for char in FOLDERNAME_SPECIAL_CHARS {
         let request_name = random_request_name();
         let new_request_name = format!("{request_name}{char}");

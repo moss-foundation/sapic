@@ -1,13 +1,12 @@
 mod editor;
-
 pub use editor::*;
 
 use moss_common::models::primitives::Identifier;
-use moss_storage::workspace_storage::entities::state_store_entities::{
-    PanelPartStateEntity, SidebarPartStateEntity,
-};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use ts_rs::TS;
+
+use super::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
 
@@ -53,54 +52,64 @@ pub struct EnvironmentInfo {
     pub order: Option<usize>,
 }
 
+// ------------------------------------------------------------
+// Activitybar Part State
+// ------------------------------------------------------------
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct SidebarPartState {
-    pub preferred_size: usize,
-    pub is_visible: bool,
-}
-
-impl From<SidebarPartStateEntity> for SidebarPartState {
-    fn from(value: SidebarPartStateEntity) -> Self {
-        SidebarPartState {
-            preferred_size: value.preferred_size,
-            is_visible: value.is_visible,
-        }
-    }
-}
-
-impl From<SidebarPartState> for SidebarPartStateEntity {
-    fn from(value: SidebarPartState) -> Self {
-        SidebarPartStateEntity {
-            preferred_size: value.preferred_size,
-            is_visible: value.is_visible,
-        }
-    }
+pub struct ActivitybarItemStateInfo {
+    pub id: String,
+    pub order: usize,
+    pub visible: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct PanelPartState {
-    pub preferred_size: usize,
-    pub is_visible: bool,
+pub struct ActivitybarPartStateInfo {
+    pub last_active_container_id: Option<String>,
+    pub position: ActivitybarPosition,
+    pub items: Vec<ActivitybarItemStateInfo>,
 }
 
-impl From<PanelPartStateEntity> for PanelPartState {
-    fn from(value: PanelPartStateEntity) -> Self {
-        PanelPartState {
-            preferred_size: value.preferred_size,
-            is_visible: value.is_visible,
-        }
-    }
+// ------------------------------------------------------------
+// Sidebar Part State
+// ------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct SidebarPartStateInfo {
+    pub position: SidebarPosition,
+    pub size: usize,
+    pub visible: bool,
 }
 
-impl From<PanelPartState> for PanelPartStateEntity {
-    fn from(value: PanelPartState) -> Self {
-        PanelPartStateEntity {
-            preferred_size: value.preferred_size,
-            is_visible: value.is_visible,
-        }
-    }
+// ------------------------------------------------------------
+// Panel Part State
+// ------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct PanelPartStateInfo {
+    pub size: usize,
+    pub visible: bool,
+}
+
+// ------------------------------------------------------------
+// Editor Part State
+// ------------------------------------------------------------
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct EditorPartStateInfo {
+    pub grid: EditorGridState,
+    #[ts(type = "Record<string, EditorPanelState>")]
+    pub panels: HashMap<String, EditorPanelState>,
+    #[ts(optional)]
+    pub active_group: Option<String>,
 }

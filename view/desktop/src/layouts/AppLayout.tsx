@@ -3,7 +3,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import "@repo/moss-tabs/assets/styles.css";
 
 import { AllotmentHandle, LayoutPriority } from "allotment";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
@@ -14,7 +14,11 @@ import { cn } from "@/utils";
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
-export const AppLayout = () => {
+interface AppLayoutProps {
+  children?: ReactNode;
+}
+
+export const AppLayout = ({ children }: AppLayoutProps) => {
   const canUpdatePartState = useRef(false);
   const numberOfRerenders = useRef(0);
 
@@ -42,8 +46,8 @@ export const AppLayout = () => {
     if (!canUpdatePartState.current) return;
 
     updateSidebarPartState({
-      preferredSize: sideBar.width,
-      isVisible: sideBar.visible,
+      size: sideBar.width,
+      visible: sideBar.visible,
     });
   }, [sideBar, updateSidebarPartState]);
 
@@ -52,8 +56,8 @@ export const AppLayout = () => {
     if (!canUpdatePartState.current) return;
 
     updatePanelPartState({
-      preferredSize: bottomPane.height,
-      isVisible: bottomPane.visible,
+      size: bottomPane.height,
+      visible: bottomPane.visible,
     });
   }, [bottomPane, updatePanelPartState]);
 
@@ -117,9 +121,7 @@ export const AppLayout = () => {
                 if (index === 0) bottomPane.setVisible(visible);
               }}
             >
-              <ResizablePanel>
-                <MainContent />
-              </ResizablePanel>
+              <ResizablePanel>{children ?? <MainContent />}</ResizablePanel>
               <ResizablePanel
                 preferredSize={bottomPane.height}
                 visible={bottomPane.visible}

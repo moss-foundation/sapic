@@ -82,6 +82,25 @@ pub async fn open_workspace<R: TauriRuntime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
+pub async fn update_workspace<R: TauriRuntime>(
+    app_manager: State<'_, AppManager<R>>,
+    window: Window<R>,
+    input: UpdateWorkspaceInput,
+) -> TauriResult<()> {
+    let app_handle = app_manager.app_handle();
+    let workbench = app_manager
+        .services()
+        .get_by_type::<Workbench<R>>(&app_handle)
+        .await?;
+
+    workbench
+        .update_workspace(&input)
+        .await
+        .map_err(|err| TauriError(format!("Failed to update workspace: {}", err))) // TODO: improve error handling
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
 pub async fn describe_workbench_state<R: TauriRuntime>(
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,

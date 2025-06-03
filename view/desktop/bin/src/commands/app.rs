@@ -6,11 +6,8 @@ use moss_nls::{
 };
 use moss_state::{
     command::CommandContext,
-    models::operations::{SetColorThemeInput, SetLocaleInput},
-};
-use moss_state::{
     models::{
-        operations::DescribeAppStateOutput,
+        operations::{DescribeAppStateOutput, SetColorThemeInput, SetLocaleInput},
         types::{Defaults, Preferences},
     },
     service::StateService,

@@ -23,6 +23,7 @@ members = [
     "crates/moss-workbench",
     "crates/moss-storage",
     "crates/moss-activity-indicator",
+    "crates/moss-file",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -50,10 +51,10 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
-
+moss_file = { path = "crates/moss-file" }
 async-stream = "0.3.6"
 notify = "8.0"
-redb = "2.5.0"
+redb = "2.6.0"
 tauri = { version = "2.2.5", default-features = false }
 rand = { version = "0.9.0", features = ["thread_rng"] }
 serde = "1.0.217"
@@ -71,7 +72,7 @@ reqwest = "0.12.12"
 serde_json = "1.0"
 ssh2 = "0.9.5"
 strum = "0.27.0"
-tokio = "1.43.0"
+tokio = "1.45.1"
 tokio-stream = "0.1.17"
 tracing = "0.1"
 tracing-appender = "0.2.3"
@@ -82,14 +83,10 @@ dashmap = "6.1.0"
 async-trait = "0.1.86"
 url = "2.5.4"
 dotenv = "0.15.0"
-keyring = { version = "3", features = [
-    "apple-native",
-    "windows-native",
-    "sync-secret-service",
-] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
-uuid = { version = "1.15.1", default-features = false }
+uuid = { version = "1.17.0", default-features = false }
 webbrowser = "1.0.3"
 # miette = "7.5.0"
 zeroize = "1.7"
@@ -97,9 +94,7 @@ aes-gcm = "0.10.3"
 argon2 = "0.5.1"
 arc-swap = "1.7.1"
 slotmap = "1.0.7"
-scraper = { version = "0.23.1", default-features = false, features = [
-    "errors",
-] }
+scraper = { version = "0.23.1", default-features = false, features = ["errors"] }
 xml-rs = { version = "0.8.25", default-features = false, features = [] }
 validator = "0.20.0"
 futures = "0.3.31"
@@ -107,3 +102,5 @@ regex = { version = "1.11.1", default-features = false, features = [] }
 sweep-bptree = "0.4.1"
 file-id = "0.2.2"
 smallvec = "1.15.0"
+toml = "0.8"
+toml_edit = "0.22"

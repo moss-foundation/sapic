@@ -1,21 +1,22 @@
 use moss_common::api::OperationResult;
-use tauri::{Runtime as TauriRuntime, ipc::Channel};
+use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
 
 use crate::{models::events::StreamCollectionsEvent, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn stream_collections(
         &self,
-        channel: Channel<StreamCollectionsEvent>,
+        channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<()> {
         let collections = self.collections().await?;
         let collections_lock = collections.read().await;
 
         for collection in collections_lock.values() {
+            let collection_lock = collection.read().await;
             if let Err(e) = channel.send(StreamCollectionsEvent {
-                id: collection.id,
-                display_name: collection.display_name.clone(),
-                order: collection.order,
+                id: collection_lock.id,
+                name: collection_lock.name.clone(),
+                order: collection_lock.order,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error
             }

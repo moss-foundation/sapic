@@ -4,8 +4,9 @@ pub mod util;
 pub mod virtual_snapshot;
 pub mod virtual_worktree;
 
-use moss_common::{api::OperationError, sanitized};
+use moss_common::api::OperationError;
 use moss_fs::FileSystem;
+use moss_text::sanitized;
 use physical_worktree::PhysicalWorktree;
 use serde_json::Value as JsonValue;
 use std::{
@@ -16,10 +17,13 @@ use thiserror::Error;
 use util::names::dir_name_from_classification;
 use virtual_worktree::VirtualWorktree;
 
-use crate::models::primitives::EntryId;
-use crate::models::types::RequestProtocol;
-use crate::models::{primitives::ChangesDiffSet, types::Classification};
-use crate::worktree::virtual_snapshot::VirtualEntry;
+use crate::{
+    models::{
+        primitives::{ChangesDiffSet, EntryId},
+        types::{Classification, RequestProtocol},
+    },
+    worktree::virtual_snapshot::VirtualEntry,
+};
 
 pub(crate) const ROOT_PATH: &str = "";
 

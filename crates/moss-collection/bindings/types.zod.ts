@@ -10,12 +10,13 @@ export const classificationSchema = z.union([
 
 export const entryIdSchema = z.number();
 
-export const entryKindSchema = z.union([
-  z.literal("unit"),
-  z.literal("unloadedDir"),
-  z.literal("dir"),
-  z.literal("file"),
-]);
+export const entryKindSchema = z.union([z.literal("dir"), z.literal("file")]);
+
+export const environmentInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  order: z.number().optional(),
+});
 
 export const formDataValueSchema = z.union([
   z.object({

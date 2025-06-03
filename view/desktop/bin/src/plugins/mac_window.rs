@@ -13,10 +13,10 @@
  */
 
 use crate::MAIN_WINDOW_PREFIX;
-use rand::{distr::Alphanumeric, Rng};
+use rand::{Rng, distr::Alphanumeric};
 use tauri::{
-    plugin::{Builder, TauriPlugin},
     Emitter, Runtime, Window, WindowEvent, Wry,
+    plugin::{Builder, TauriPlugin},
 };
 
 const WINDOW_CONTROL_PAD_X: f64 = 13.0;
@@ -54,8 +54,10 @@ fn position_traffic_lights(ns_window_handle: UnsafeWindowHandle, x: f64, y: f64,
         return;
     }
 
-    use cocoa::appkit::{NSView, NSWindow, NSWindowButton};
-    use cocoa::foundation::NSRect;
+    use cocoa::{
+        appkit::{NSView, NSWindow, NSWindowButton},
+        foundation::NSRect,
+    };
 
     let ns_window = ns_window_handle.0 as cocoa::base::id;
     unsafe {
@@ -96,7 +98,7 @@ struct WindowState<R: Runtime> {
 pub fn setup_traffic_light_positioner<R: Runtime>(window: &Window<R>) {
     use cocoa::{
         appkit::NSWindow,
-        base::{id, nil, BOOL},
+        base::{BOOL, id, nil},
         delegate,
         foundation::NSUInteger,
     };

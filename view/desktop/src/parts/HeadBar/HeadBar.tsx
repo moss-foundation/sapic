@@ -2,9 +2,12 @@ import { useRef, useState } from "react";
 
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { useWorkspaceContext } from "@/context/WorkspaceContext";
+import { RenameWorkspaceModal } from "@/components/Modals/Workspace/RenameWorkspaceModal";
+import { ConfirmationModal } from "@/components";
+import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
+import { useDeleteWorkspace } from "@/hooks/workbench";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import { type } from "@tauri-apps/plugin-os";
@@ -30,8 +33,8 @@ export const HeadBar = () => {
   const openPanel = useTabbedPaneStore((state) => state.openPanel);
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
-  // Use the workspace context instead of local state
-  const { selectedWorkspace, setSelectedWorkspace } = useWorkspaceContext();
+  const workspace = useActiveWorkspace();
+  const selectedWorkspace = workspace?.displayName || null;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
@@ -52,16 +55,32 @@ export const HeadBar = () => {
     openModal: openOpenWorkspaceModal,
   } = useModal();
 
+  // Delete confirmation modal state
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  // Rename workspace modal state
+  const [showRenameWorkspaceModal, setShowRenameWorkspaceModal] = useState(false);
+  const [workspaceToRename, setWorkspaceToRename] = useState<{ id: string; name: string } | null>(null);
+
+  // Delete workspace hook
+  const { mutate: deleteWorkspace } = useDeleteWorkspace();
+
   // User menu actions
   const actionProps: HeadBarActionProps = {
     openPanel,
     showDebugPanels,
     setShowDebugPanels,
-    setSelectedWorkspace,
     setSelectedUser,
     setSelectedBranch,
     openNewWorkspaceModal,
     openOpenWorkspaceModal,
+    showDeleteConfirmModal,
+    setShowDeleteConfirmModal,
+    workspaceToDelete,
+    setWorkspaceToDelete,
+    setShowRenameWorkspaceModal,
+    setWorkspaceToRename,
   };
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
@@ -91,11 +110,54 @@ export const HeadBar = () => {
     return false;
   };
 
+  // Delete workspace confirmation handler
+  const handleDeleteWorkspace = () => {
+    if (workspaceToDelete) {
+      deleteWorkspace({ id: workspaceToDelete.id });
+      setWorkspaceToDelete(null);
+    }
+  };
+
+  // Close delete confirmation modal
+  const closeDeleteConfirmModal = () => {
+    setShowDeleteConfirmModal(false);
+    setWorkspaceToDelete(null);
+  };
+
+  // Close rename workspace modal
+  const closeRenameWorkspaceModal = () => {
+    setShowRenameWorkspaceModal(false);
+    setWorkspaceToRename(null);
+  };
+
   return (
     <WorkspaceMenuProvider>
       {/* Workspace Modals */}
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      
+      {/* Rename Workspace Modal */}
+      {workspaceToRename && (
+        <RenameWorkspaceModal
+          showModal={showRenameWorkspaceModal}
+          closeModal={closeRenameWorkspaceModal}
+          workspaceId={workspaceToRename.id}
+          currentName={workspaceToRename.name}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        showModal={showDeleteConfirmModal}
+        closeModal={closeDeleteConfirmModal}
+        title="Delete Workspace"
+        message={`Are you sure you want to delete the workspace "${workspaceToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteWorkspace}
+        variant="danger"
+        icon="Delete"
+      />
 
       <header
         data-tauri-drag-region
@@ -132,6 +194,7 @@ export const HeadBar = () => {
               handleWindowsMenuAction={handleWindowsMenuAction}
               handleWorkspaceMenuAction={handleWorkspaceMenuAction}
               os={os}
+              selectedWorkspace={selectedWorkspace}
             />
 
             {/*HeadBar Center items*/}
@@ -160,6 +223,7 @@ export const HeadBar = () => {
               setShowDebugPanels={setShowDebugPanels}
               openPanel={openPanel}
               os={os}
+              selectedWorkspace={selectedWorkspace}
               selectedUser={selectedUser}
             />
           </div>

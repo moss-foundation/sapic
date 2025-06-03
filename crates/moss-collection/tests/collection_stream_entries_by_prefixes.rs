@@ -1,17 +1,17 @@
 mod shared;
 
-use crate::shared::set_up_test_collection;
-use moss_collection::models::operations::CreateEntryInput;
-use moss_collection::models::types::Classification;
+use crate::shared::create_test_collection;
 use moss_collection::models::{
-    events::StreamEntriesByPrefixesEvent, operations::StreamEntriesByPrefixesInput,
+    events::StreamWorktreeEntriesEvent,
+    operations::{CreateEntryInput, StreamWorktreeEntriesInput},
+    types::Classification,
 };
 use serde_json::Value as JsonValue;
 use std::path::Path;
 use tauri::ipc::InvokeResponseBody;
 #[tokio::test]
 async fn stream_entries_by_prefixes() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (_collection_path, mut collection) = create_test_collection().await;
 
     collection
         .create_entry(CreateEntryInput {
@@ -39,7 +39,7 @@ async fn stream_entries_by_prefixes() {
 
     let variants = vec!["requests"];
 
-    let on_event = tauri::ipc::Channel::<StreamEntriesByPrefixesEvent>::new(|event| {
+    let on_event = tauri::ipc::Channel::<StreamWorktreeEntriesEvent>::new(|event| {
         match event {
             InvokeResponseBody::Json(s) => {
                 let value: JsonValue = serde_json::from_str(&s).unwrap();
@@ -54,7 +54,7 @@ async fn stream_entries_by_prefixes() {
     });
 
     let _ = collection
-        .stream_entries_by_prefixes(on_event, StreamEntriesByPrefixesInput(variants))
+        .stream_worktree_entries(on_event, StreamWorktreeEntriesInput { prefixes: variants })
         .await;
 
     // let mut all: Vec<EntryInfo> = Vec::new();

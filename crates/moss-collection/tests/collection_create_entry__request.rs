@@ -1,21 +1,23 @@
-use moss_collection::models::operations::{CreateEntryInput, CreateEntryOutput};
-use moss_collection::models::types::{Classification, HttpMethod, PathChangeKind, RequestProtocol};
+use moss_collection::models::{
+    operations::{CreateEntryInput, CreateEntryOutput},
+    types::{Classification, HttpMethod, PathChangeKind, RequestProtocol},
+};
 use moss_common::api::OperationError;
-use moss_common::sanitized::sanitize;
-use moss_testutils::fs_specific::FOLDERNAME_SPECIAL_CHARS;
-use moss_testutils::random_name::random_request_name;
-use serde_json::Value as JsonValue;
-use serde_json::json;
-use std::fs::read_to_string;
-use std::path::{Path, PathBuf};
+use moss_testutils::{fs_specific::FOLDERNAME_SPECIAL_CHARS, random_name::random_request_name};
+use moss_text::sanitized::sanitize;
+use serde_json::{Value as JsonValue, json};
+use std::{
+    fs::read_to_string,
+    path::{Path, PathBuf},
+};
 
-use crate::shared::{random_dir_name, request_folder_name, set_up_test_collection};
+use crate::shared::{create_test_collection, random_dir_name, request_folder_name};
 
 mod shared;
 
 #[tokio::test]
 async fn create_entry_request_default_spec() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -78,7 +80,7 @@ async fn create_entry_request_default_spec() {
 
 #[tokio::test]
 async fn create_entry_request_with_spec_content() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -146,7 +148,7 @@ async fn create_entry_request_with_spec_content() {
 
 #[tokio::test]
 async fn create_entry_request_already_exists() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let input = CreateEntryInput {
@@ -169,7 +171,7 @@ async fn create_entry_request_already_exists() {
 
 #[tokio::test]
 async fn create_entry_request_multiple_same_level() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name1 = "1";
     let request_name2 = "2";
 
@@ -241,7 +243,7 @@ async fn create_entry_request_multiple_same_level() {
 
 #[tokio::test]
 async fn create_entry_request_nested() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let request_name = random_request_name();
 
     let create_result = collection
@@ -320,7 +322,7 @@ async fn create_entry_request_nested() {
 
 #[tokio::test]
 async fn create_entry_request_multiple_different_level() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     // requests\\1.request
     // requests\\group\\2.request
 
@@ -406,7 +408,7 @@ async fn create_entry_request_multiple_different_level() {
 
 #[tokio::test]
 async fn create_entry_request_special_chars_in_name() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let request_name = random_request_name();
     let request_name_list = FOLDERNAME_SPECIAL_CHARS
@@ -466,7 +468,7 @@ async fn create_entry_request_special_chars_in_name() {
 
 #[tokio::test]
 async fn create_entry_request_special_chars_in_path() {
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let request_name = "1";
     let request_dir_name = random_dir_name();
@@ -546,7 +548,7 @@ async fn create_entry_request_same_name_as_another_dir() {
     // Create two entries with the same name, one normal and one dir
     // This will result in two identical virtual paths, so it should raise an error
 
-    let (collection_path, collection) = set_up_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let destination = Path::new("requests").join("identical");
 
     let _ = collection

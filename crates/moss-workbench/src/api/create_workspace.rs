@@ -1,22 +1,22 @@
 use anyhow::Context as _;
 use chrono::Utc;
-use moss_common::{
-    api::{OperationError, OperationResult, OperationResultExt},
-    models::primitives::Identifier,
-    sanitized::sanitize,
-};
+use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
-use moss_workspace::Workspace;
-use std::{path::Path, sync::Arc};
+use moss_workspace::{Workspace, workspace::CreateParams};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tauri::Runtime as TauriRuntime;
+use uuid::Uuid;
 use validator::Validate;
 
-use crate::workbench::WORKSPACES_DIR;
 use crate::{
+    dirs,
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     storage::segments::WORKSPACE_SEGKEY,
-    workbench::{Workbench, WorkspaceInfoEntry},
+    workbench::{Workbench, WorkspaceDescriptor},
 };
 
 impl<R: TauriRuntime> Workbench<R> {
@@ -26,8 +26,10 @@ impl<R: TauriRuntime> Workbench<R> {
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
-        let encoded_name = sanitize(&input.name);
-        let abs_path: Arc<Path> = self.absolutize(&encoded_name).into();
+        let id = Uuid::new_v4();
+        let id_str = id.to_string();
+        let path = PathBuf::from(dirs::WORKSPACES_DIR).join(&id_str);
+        let abs_path: Arc<Path> = self.absolutize(&path).into();
         if abs_path.exists() {
             return Err(OperationError::AlreadyExists(
                 abs_path.to_string_lossy().to_string(),
@@ -46,12 +48,16 @@ impl<R: TauriRuntime> Workbench<R> {
             .context("Failed to create workspace")
             .map_err_as_internal()?;
 
-        let new_workspace = Workspace::new(
+        let new_workspace = Workspace::create(
             self.app_handle.clone(),
-            Arc::clone(&abs_path),
+            &abs_path,
             Arc::clone(&self.fs),
             self.activity_indicator.clone(),
-        )?;
+            CreateParams {
+                name: Some(input.name.clone()),
+            },
+        )
+        .await?;
 
         let last_opened_at = if input.open_on_creation {
             Some(Utc::now().timestamp())
@@ -59,13 +65,11 @@ impl<R: TauriRuntime> Workbench<R> {
             None
         };
 
-        let id = Identifier::new(&self.options.next_workspace_id);
         workspaces.write().await.insert(
             id,
-            WorkspaceInfoEntry {
+            WorkspaceDescriptor {
                 id,
-                name: encoded_name.to_owned(),
-                display_name: input.name.to_owned(),
+                name: input.name.to_owned(),
                 last_opened_at,
                 abs_path: Arc::clone(&abs_path),
             }
@@ -77,7 +81,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 self.set_active_workspace(id, new_workspace);
 
                 let item_store = self.global_storage.item_store();
-                let segkey = WORKSPACE_SEGKEY.join(encoded_name);
+                let segkey = WORKSPACE_SEGKEY.join(id_str);
                 let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
                 PutItem::put(item_store.as_ref(), segkey, value)?;
             }

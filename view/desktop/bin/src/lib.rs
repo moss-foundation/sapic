@@ -13,15 +13,13 @@ use moss_app::manager::AppManager;
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
 use services::service_pool;
-use std::path::PathBuf;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
 use window::{CreateWindowInput, create_window};
 
-use crate::constants::*;
-use crate::plugins::*;
+use crate::{constants::*, plugins::*};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
@@ -66,14 +64,16 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_locales,
             commands::get_translations,
             commands::open_workspace,
+            commands::update_workspace,
             commands::update_workspace_state,
             commands::describe_workspace_state,
             commands::create_workspace,
             commands::list_workspaces,
             commands::delete_workspace,
             commands::describe_workbench_state,
+            commands::stream_workspace_environments,
         ])
-        .on_window_event(|window, event| match event {
+        .on_window_event(|_window, event| match event {
             // #[cfg(target_os = "macos")]
             // WindowEvent::CloseRequested { api, .. } => {
             //     if window.app_handle().webview_windows().len() == 1 {
@@ -82,7 +82,7 @@ pub async fn run<R: TauriRuntime>() {
             //     }
             // }
             WindowEvent::Focused(_) => { /* call updates, git fetch, etc. */ }
-            WindowEvent::CloseRequested { api, .. } => {}
+            WindowEvent::CloseRequested { .. } => {}
 
             _ => (),
         })

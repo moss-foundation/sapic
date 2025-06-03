@@ -1,20 +1,23 @@
 use anyhow::Result;
 use kdl::{KdlDocument, KdlNode};
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 use thiserror::Error;
 
-use crate::kdl::body::{FormDataBodyItem, FormDataOptions, UrlEncodedBodyItem, UrlEncodedOptions};
-use crate::kdl::foundations::{
-    body::RequestBodyBlock,
-    http::{
-        HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody, PathParamOptions,
-        QueryParamBody, QueryParamOptions, UrlBlock,
+use crate::{
+    kdl::{
+        body::{FormDataBodyItem, FormDataOptions, UrlEncodedBodyItem, UrlEncodedOptions},
+        foundations::{
+            body::RequestBodyBlock,
+            http::{
+                HeaderParamBody, HeaderParamOptions, HttpRequestFile, PathParamBody,
+                PathParamOptions, QueryParamBody, QueryParamOptions, UrlBlock,
+            },
+        },
+        tokens::*,
     },
+    models::types::{FormDataValue, RawBodyType},
 };
-use crate::kdl::tokens::*;
-use crate::models::types::{FormDataValue, RawBodyType};
 
 #[derive(Debug, Error)]
 pub enum ParseError {
@@ -503,8 +506,10 @@ pub fn parse(input: &str, opts: &ParseOptions) -> Result<HttpRequestFile> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::kdl::foundations::body::RequestBodyBlock;
-    use crate::kdl::foundations::http::{QueryParamBody, QueryParamOptions, UrlBlock};
+    use crate::kdl::foundations::{
+        body::RequestBodyBlock,
+        http::{QueryParamBody, QueryParamOptions, UrlBlock},
+    };
     use kdl::KdlNode;
 
     use std::fs;
@@ -1074,13 +1079,15 @@ mod tests {
 }"###;
         let html = r#"<head>
     <meta charset="utf-8">"#;
-        assert!(parse(
-            &malformed,
-            &ParseOptions {
-                html_parse_mode: HtmlParseMode::Strict
-            }
-        )
-        .is_err());
+        assert!(
+            parse(
+                &malformed,
+                &ParseOptions {
+                    html_parse_mode: HtmlParseMode::Strict
+                }
+            )
+            .is_err()
+        );
         let request = parse(
             &malformed,
             &ParseOptions {

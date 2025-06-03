@@ -2,11 +2,6 @@ import { type Icons } from "@/lib/ui/Icon";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ListWorkspacesOutput } from "@repo/moss-workbench";
 
-/**
- * Helper function to generate standard menu items with unique IDs
- * @param prefix A prefix to add to item IDs to ensure uniqueness
- * @returns An array of MenuItemProps
- */
 const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
   const idPrefix = prefix ? `${prefix}-` : "";
 
@@ -88,11 +83,6 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
 
 export const collectionActionMenuItems: MenuItemProps[] = createStandardMenuItems();
 
-/**
- * Creates the "All Workspaces" menu section with real workspace data
- * @param workspaces List of workspaces from the backend
- * @returns MenuItemProps for the all workspaces accordion section
- */
 export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput = []): MenuItemProps => {
   return {
     id: "all-workspaces",
@@ -100,11 +90,11 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
     label: "All Workspaces",
     icon: "ChevronRight",
     items: workspaces.map((workspace) => ({
-      id: `workspace:${workspace.displayName}`,
+      id: `workspace:${workspace.id}`,
       type: "submenu",
       label: workspace.displayName,
       icon: "WorkspaceActive" as Icons,
-      items: createStandardMenuItems(workspace.displayName),
+      items: createStandardMenuItems(workspace.id),
     })),
   };
 };

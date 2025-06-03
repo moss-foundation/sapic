@@ -1,55 +1,81 @@
-pub mod entities;
-
-mod tables;
-
-use async_trait::async_trait;
 use moss_db::{
-    DatabaseClient, ReDbClient, Transaction, common::DatabaseError, primitives::AnyValue,
+    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
+    primitives::AnyValue,
 };
-use std::{path::PathBuf, sync::Arc};
-use tables::ITEM_STORE;
+use redb::TableHandle;
+use serde_json::{Value as JsonValue, json};
+use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
-    common::item_store::{ItemStore, ItemStoreImpl},
+    GlobalStorage,
+    global_storage::stores::{GlobalItemStore, item_store::GlobalItemStoreImpl},
     primitives::segkey::SegKeyBuf,
-    storage::Transactional,
+    storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
 
-use super::GlobalStorage;
+pub mod entities;
+pub mod stores;
+
+pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
+
+pub struct GlobalStorageImpl {
+    client: ReDbClient,
+    tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
+}
 
 const DB_NAME: &str = "state.db";
 
-pub struct GlobalStorageImpl {
-    db_client: ReDbClient,
-    item_store: Arc<dyn ItemStore<SegKeyBuf, AnyValue>>,
-}
-
 impl GlobalStorageImpl {
-    pub fn new(path: &PathBuf) -> Result<Self, DatabaseError> {
-        let db_client = ReDbClient::new(path.join(DB_NAME))?.with_table(&ITEM_STORE)?;
+    pub fn new(path: impl AsRef<Path>) -> DatabaseResult<Self> {
+        let mut client = ReDbClient::new(path.as_ref().join(DB_NAME))?;
 
-        let item_store = Arc::new(ItemStoreImpl::new(db_client.clone(), ITEM_STORE));
+        let mut tables = HashMap::new();
+        for (type_id, table) in [(TypeId::of::<GlobalItemStoreImpl>(), TABLE_ITEMS)] {
+            client = client.with_table(&table)?;
+            tables.insert(type_id, Arc::new(table));
+        }
 
-        Ok(Self {
-            db_client,
-            item_store,
-        })
+        Ok(Self { client, tables })
     }
 }
 
-#[async_trait]
+impl Storage for GlobalStorageImpl {
+    fn dump(&self) -> DatabaseResult<HashMap<String, JsonValue>> {
+        let read_txn = self.client.begin_read()?;
+        let mut result = HashMap::new();
+        for table in self.tables.values() {
+            let name = table.table_definition().name().to_string();
+            let mut table_entries = HashMap::new();
+            for (k, v) in table.scan(&read_txn)? {
+                table_entries.insert(
+                    k.to_string(),
+                    serde_json::from_slice::<JsonValue>(v.as_bytes())?,
+                );
+            }
+            result.insert(format!("table:{}", name), json!(table_entries));
+        }
+        Ok(result)
+    }
+}
+
 impl Transactional for GlobalStorageImpl {
-    async fn begin_write(&self) -> Result<Transaction, DatabaseError> {
-        self.db_client.begin_write()
+    fn begin_write(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_write()
     }
 
-    async fn begin_read(&self) -> Result<Transaction, DatabaseError> {
-        self.db_client.begin_read()
+    fn begin_read(&self) -> DatabaseResult<Transaction> {
+        self.client.begin_read()
     }
 }
 
 impl GlobalStorage for GlobalStorageImpl {
-    fn item_store(&self) -> Arc<dyn ItemStore<SegKeyBuf, AnyValue>> {
-        self.item_store.clone()
+    fn item_store(&self) -> Arc<dyn GlobalItemStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<GlobalItemStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(GlobalItemStoreImpl::new(client, table))
     }
 }

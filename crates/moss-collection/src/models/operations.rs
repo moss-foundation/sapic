@@ -5,10 +5,11 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use super::{primitives::ChangesDiffSet, types::Classification};
-use crate::models::types::RequestProtocol;
 use crate::models::{
     primitives::EntryId,
-    types::{HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody},
+    types::{
+        HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestProtocol,
+    },
 };
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -100,9 +101,25 @@ pub enum CreateRequestProtocolSpecificPayload {
 
 // Stream Entries By Prefixes
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Validate)]
 #[ts(export, export_to = "operations.ts")]
-pub struct StreamEntriesByPrefixesInput(pub Vec<&'static str>);
+pub struct StreamWorktreeEntriesInput {
+    #[validate(custom(function = "validate_stream_worktree_entries_prefixes"))]
+    pub prefixes: Vec<&'static str>,
+}
+
+const ALLOWED_PREFIXES: [&str; 4] = ["requests", "endpoints", "components", "schemas"];
+fn validate_stream_worktree_entries_prefixes(
+    prefixes: &Vec<&'static str>,
+) -> Result<(), ValidationError> {
+    for prefix in prefixes {
+        if !ALLOWED_PREFIXES.contains(prefix) {
+            return Err(ValidationError::new("Invalid prefix"));
+        }
+    }
+
+    Ok(())
+}
 
 /// Validates the destination path for creating a request entry.
 /// Requirements:

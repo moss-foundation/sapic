@@ -46,8 +46,10 @@ impl GitAuthAgent for SSHAuthAgentImpl {
 mod tests {
     use super::*;
     use moss_git::repo::RepoHandle;
-    use std::path::{Path, PathBuf};
-    use std::sync::Arc;
+    use std::{
+        path::{Path, PathBuf},
+        sync::Arc,
+    };
     #[test]
     #[ignore]
     fn manual_github_cloning_with_ssh() {
