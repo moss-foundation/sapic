@@ -53,10 +53,14 @@ export const NoDataRow = ({ colSpan, setData, tableId }: NoDataRowProps) => {
   }, [setData, tableId]);
 
   return (
-    <tr ref={ref} key={`empty-row-${tableId}`}>
-      <td colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "background-(--moss-info-background)")}>
+    <div role="row" ref={ref} key={`empty-row-${tableId}`}>
+      <div
+        role="cell"
+        colSpan={colSpan}
+        className={cn("h-24 text-center", isDraggedOver && "background-(--moss-info-background)")}
+      >
         No results.
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };

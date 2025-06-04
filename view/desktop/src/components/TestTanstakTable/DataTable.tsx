@@ -157,20 +157,21 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
   return (
     <Scrollbar className="relative -ml-2 w-[calc(100%+8px)] pl-2">
       <div ref={tableContainerRef} className="w-[calc(100%-1px)]">
-        <table
-          className="border-separate border-spacing-0 rounded border border-(--moss-border-color)"
+        <div
+          role="table"
+          className="flex border-separate border-spacing-0 flex-col rounded border border-(--moss-border-color)"
           style={{ width: table.getCenterTotalSize() }}
         >
-          <thead>
+          <div role="rowgroup">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-(--moss-table-header-bg)">
+              <div role="row" key={headerGroup.id} className="flex bg-(--moss-table-header-bg)">
                 {headerGroup.headers.map((header) => (
                   <DefaultHeader tableHeight={tableHeight} key={header.id} header={header} />
                 ))}
-              </tr>
+              </div>
             ))}
-          </thead>
-          <tbody>
+          </div>
+          <div role="rowgroup" className="flex flex-col">
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
@@ -198,8 +199,9 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                       const isLastColumn = cell.column.getIsLastColumn();
                       if (cell.column.id === "actions" || cell.column.id === "checkbox") {
                         return (
-                          <td
+                          <div
                             key={cell.id}
+                            role="cell"
                             className={cn(
                               "border-r border-(--moss-border-color) px-2 py-1.5",
                               isLastColumn && "border-r-0"
@@ -209,7 +211,8 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                         );
                       }
                       return (
-                        <td
+                        <div
+                          role="cell"
                           key={cell.id}
                           className={cn(
                             "border-r border-(--moss-border-color) px-2 py-1.5",
@@ -223,7 +226,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                             className="w-full text-(--moss-table-add-row-form-text) outline-0"
                             onBlur={handleBlur}
                           />
-                        </td>
+                        </div>
                       );
                     })}
                 </DefaultRow>
@@ -231,8 +234,8 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
             ) : (
               <NoDataRow colSpan={columns.length} setData={setData} tableId={tableId} />
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
         <form onSubmit={(e) => e.preventDefault()} id={`${tableId}-AddNewRowForm`} className="sr-only" />
       </div>
     </Scrollbar>

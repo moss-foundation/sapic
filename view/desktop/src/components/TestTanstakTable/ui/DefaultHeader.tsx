@@ -22,7 +22,8 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   const toggleSortingHandler = header.column.getToggleSortingHandler();
 
   return (
-    <th
+    <div
+      role="columnheader"
       className={cn(
         "group/tableHeader relative border-r border-b border-(--moss-border-color) px-2 py-1.5 capitalize",
         { "border-r-0": isLastColumn }
@@ -115,7 +116,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
           style={{ height: tableHeight ? tableHeight - 1 : "100%" }}
         />
       )}
-    </th>
+    </div>
   );
 }
 

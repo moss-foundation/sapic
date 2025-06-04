@@ -110,10 +110,11 @@ export const DefaultRow = <TData,>({
   });
 
   return (
-    <tr
+    <div
+      role="row"
       ref={rowRef}
       className={cn(
-        "group/tableRow relative",
+        "group/tableRow relative flex",
         {
           "background-(--moss-table-cell-bg) brightness-90": isDragging,
         },
@@ -131,7 +132,7 @@ export const DefaultRow = <TData,>({
       )}
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
       <AddNewRowDividerButton onClick={onAddNewRow} />
-    </tr>
+    </div>
   );
 };
 
