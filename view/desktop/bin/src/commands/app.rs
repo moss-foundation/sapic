@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
+use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::{
     locale_service::LocaleService,
     models::operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
@@ -204,4 +205,25 @@ pub async fn execute_command<R: TauriRuntime>(
             quote!(cmd)
         ))),
     }
+}
+
+#[tauri::command(async)]
+pub async fn generate_test_log<R: TauriRuntime>(
+    app_manager: State<'_, AppManager<R>>,
+    window: Window<R>,
+) -> TauriResult<()> {
+    let app_handle = app_manager.app_handle();
+    let logging_service = app_manager
+        .services()
+        .get_by_type::<LoggingService<R>>(app_handle)
+        .await?;
+
+    logging_service.debug(
+        LogScope::App,
+        LogPayload {
+            resource: Some("Resource".to_string()),
+            message: "Test Message".to_string(),
+        },
+    );
+    Ok(())
 }

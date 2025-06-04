@@ -20,7 +20,8 @@ export type TauriIpcCommand =
   | "update_workspace_state"
   | "describe_workspace_state"
   | "list_collections"
-  | "describe_workbench_state";
+  | "describe_workbench_state"
+  | "generate_test_log";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

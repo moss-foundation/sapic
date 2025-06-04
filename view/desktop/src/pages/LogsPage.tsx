@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import LangchainAgent from "@/ai/LangchainAgent";
+import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
+import ButtonPrimary from "@/components/ButtonPrimary.tsx";
+import { useActivityEvents } from "@/context/ActivityEventsContext";
+import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { LogEntry } from "@repo/moss-logging";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useActivityEvents } from "@/context/ActivityEventsContext";
-import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import LangchainAgent from "@/ai/LangchainAgent";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const { activityEvents } = useActivityEvents();
 
   useEffect(() => {
-    const unlistenLogsStream = listen<string>("logs-stream", (event) => {
+    const unlistenLogsStream = listen<LogEntry>("logging", (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 
@@ -106,11 +109,14 @@ export const Logs = () => {
       </section>
 
       <section className="rounded bg-gray-100 p-4">
+        <ButtonPrimary onClick={() => invokeTauriIpc("generate_test_log")}>Generate Test Log</ButtonPrimary>
         <h2 className="mb-2 text-xl">{t("All Logs")}</h2>
         {logs.length > 0 ? (
           <ul>
             {logs.map((log, index) => (
-              <li key={index}>{log}</li>
+              <li key={index}>
+                {log.timestamp} {log.level} {log.resource} {log.message}
+              </li>
             ))}
           </ul>
         ) : (
