@@ -5,8 +5,7 @@ import { logDateSchema, logLevelSchema } from "./types.zod";
 export const logEntrySchema = z.object({
   timestamp: z.string(),
   level: z.string(),
-  request: z.string().optional(),
-  collection: z.string().optional(),
+  resource: z.string().optional(),
   message: z.string(),
 });
 export const listLogsInputSchema = z.object({

@@ -1,3 +1,4 @@
+mod makewriter;
 mod models;
 mod tokens;
 
@@ -28,6 +29,7 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
+    makewriter::{TauriMakeWriter, TauriWriter},
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
@@ -37,6 +39,8 @@ use crate::{
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
+
+pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
 
 // Empty field means that no filter will be applied
 #[derive(Default)]
@@ -250,20 +254,28 @@ impl<R: TauriRuntime> LoggingService<R> {
             .with(
                 // App log subscriber
                 tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format)
+                    .event_format(standard_log_format.clone())
                     .with_writer(app_log_writer)
                     .fmt_fields(JsonFields::default())
                     .with_filter(filter_fn(|metadata| {
                         metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
                     })),
             )
+            // .with(
+            //     // Showing all logs (including span events) to the console
+            //     tracing_subscriber::fmt::layer()
+            //         .event_format(instrument_log_format)
+            //         .with_span_events(FmtSpan::CLOSE)
+            //         .with_ansi(true)
+            //         .with_writer(io::stdout),
+            // )
             .with(
-                // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
-                    .event_format(instrument_log_format)
-                    .with_span_events(FmtSpan::CLOSE)
-                    .with_ansi(true)
-                    .with_writer(io::stdout),
+                    .event_format(standard_log_format)
+                    .fmt_fields(JsonFields::default())
+                    .with_writer(TauriMakeWriter {
+                        app_handle: app_handle.clone(),
+                    }),
             );
 
         tracing::subscriber::set_global_default(subscriber)?;
@@ -397,7 +409,7 @@ impl<R: TauriRuntime> AppService for LoggingService<R> {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tauri::Manager;
+    use tauri::{Listener, Manager};
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
@@ -475,8 +487,8 @@ mod tests {
 
     const TEST_SESSION_LOG_FOLDER: &'static str = "logs/session";
     const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
-    #[test]
-    fn test() {
+    #[tokio::test]
+    async fn test() {
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
@@ -486,20 +498,17 @@ mod tests {
             &session_id,
         )
         .unwrap();
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
 
-        // FIXME: Solve backslash issue
+        mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
+            println!("{}", event.payload())
+        });
+
         let collection_path = Path::new("").join("TestCollection");
         let request_path = Path::new("").join("TestCollection").join("TestRequest");
 
-        runtime.block_on(async {
-            create_collection(Path::new(""), "TestCollection", &logging_service).await;
-            create_request(&collection_path, "TestRequest", &logging_service).await;
-            something_terrible(&logging_service).await;
-        });
+        create_collection(Path::new(""), "TestCollection", &logging_service).await;
+        create_request(&collection_path, "TestRequest", &logging_service).await;
+        something_terrible(&logging_service).await;
 
         let input = ListLogsInput {
             dates: vec![],
