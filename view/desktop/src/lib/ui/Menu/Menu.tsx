@@ -44,17 +44,18 @@ interface ActionMenuProps {
   onOpenChange?(open: boolean): void;
   dir?: Direction;
   modal?: boolean;
+  open?: boolean;
 }
 
 const Root: React.FC<ActionMenuProps> = (props: ScopedProps<ActionMenuProps>) => {
-  const { __scopeActionMenu, children, onOpenChange, dir, modal = true } = props;
-  const [open, setOpen] = React.useState(false);
+  const { __scopeActionMenu, children, onOpenChange, dir, modal = true, open = false } = props;
+  const [openState, setOpenState] = React.useState(open);
   const menuScope = useMenuScope(__scopeActionMenu);
   const handleOpenChangeProp = useCallbackRef(onOpenChange);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const handleOpenChange = React.useCallback(
     (open: boolean) => {
-      setOpen(open);
+      setOpenState(open);
       handleOpenChangeProp(open);
     },
     [handleOpenChangeProp]
@@ -66,9 +67,9 @@ const Root: React.FC<ActionMenuProps> = (props: ScopedProps<ActionMenuProps>) =>
       triggerRef={triggerRef}
       contentId={useId()}
       scope={__scopeActionMenu}
-      open={open}
+      open={openState}
       onOpenChange={handleOpenChange}
-      onOpenToggle={React.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen])}
+      onOpenToggle={React.useCallback(() => setOpenState((prevOpen) => !prevOpen), [setOpenState])}
       modal={modal}
     >
       <MenuPrimitive.Root {...menuScope} dir={dir} open={open} onOpenChange={handleOpenChange} modal={modal}>
