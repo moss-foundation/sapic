@@ -107,7 +107,15 @@ where
         let salt = SaltString::encode_b64(salt)
             .map_err(|e| DatabaseError::Internal(format!("Failed to encode salt: {}", e)))?;
 
-        let argon2 = Argon2::default();
+        let params = argon2::ParamsBuilder::new()
+            .m_cost(self.options.memory_cost)
+            .t_cost(self.options.time_cost)
+            .p_cost(self.options.parallelism)
+            .output_len(32)
+            .build()
+            .map_err(|e| DatabaseError::Internal(format!("Failed to build Argon2 params: {}", e)))?;
+
+        let argon2 = Argon2::new(argon2::Algorithm::default(), argon2::Version::default(), params);
         let password_hash = argon2
             .hash_password(password, &salt)
             .map_err(|e| DatabaseError::Internal(format!("Failed to hash password: {}", e)))?;
