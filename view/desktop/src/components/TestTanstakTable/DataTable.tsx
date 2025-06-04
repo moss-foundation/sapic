@@ -2,7 +2,6 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
-
 import {
   ColumnDef,
   getCoreRowModel,
