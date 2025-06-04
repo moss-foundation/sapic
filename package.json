@@ -30,7 +30,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@typespec/prettier-plugin-typespec": "0.67.1",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^4.5.1",
     "@vitest/browser": "^2.1.8",
     "clsx": "^2.1.1",
     "lefthook": "^1.11.13",
