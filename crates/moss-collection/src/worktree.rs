@@ -1,31 +1,41 @@
-pub mod physical_snapshot;
-pub mod physical_worktree;
+// pub mod physical_snapshot;
+// pub mod physical_worktree;
 pub mod snapshot;
 pub mod util;
-pub mod virtual_snapshot;
-pub mod virtual_worktree;
+// pub mod virtual_snapshot;
+// pub mod virtual_worktree;
 
+use anyhow::Context;
 use moss_common::api::OperationError;
+use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::FileSystem;
 use moss_text::sanitized;
-use physical_worktree::PhysicalWorktree;
+
 use serde_json::Value as JsonValue;
-use snapshot::Snapshot;
+use snapshot::{
+    ConfigurationModel, DirConfigurationModel, Entry, Snapshot, SpecificationMetadata,
+    UnloadedEntry,
+};
 use std::{
+    collections::VecDeque,
     path::{Component, Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    },
 };
 use thiserror::Error;
+use tokio::sync::mpsc;
 use util::names::dir_name_from_classification;
-use virtual_worktree::VirtualWorktree;
+use uuid::Uuid;
 
-use crate::{
-    models::{
-        primitives::{ChangesDiffSet, EntryId},
-        types::{Classification, RequestProtocol},
-    },
-    worktree::virtual_snapshot::VirtualEntry,
+use crate::models::{
+    primitives::{ChangesDiffSet, EntryId},
+    types::{Classification, RequestProtocol},
 };
+
+pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
+pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
 
 pub(crate) const ROOT_PATH: &str = "";
 
@@ -57,18 +67,24 @@ impl From<WorktreeError> for OperationError {
 
 pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
-pub struct WorktreeDiff {
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
-}
+// pub struct WorktreeDiff {
+//     pub physical_changes: ChangesDiffSet,
+//     pub virtual_changes: ChangesDiffSet,
+// }
 
-impl Default for WorktreeDiff {
-    fn default() -> Self {
-        Self {
-            physical_changes: Arc::new([]),
-            virtual_changes: Arc::new([]),
-        }
-    }
+// impl Default for WorktreeDiff {
+//     fn default() -> Self {
+//         Self {
+//             physical_changes: Arc::new([]),
+//             virtual_changes: Arc::new([]),
+//         }
+//     }
+// }
+
+struct ScanJob {
+    abs_path: Arc<Path>,
+    path: Arc<Path>,
+    scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
 pub struct Worktree {
@@ -81,27 +97,329 @@ pub struct Worktree {
 
 impl Worktree {
     pub async fn new(fs: Arc<dyn FileSystem>, abs_path: Arc<Path>) -> Result<Self, WorktreeError> {
-        let worktree = Self {
+        debug_assert!(abs_path.is_absolute());
+
+        let next_unloaded_id = Arc::new(AtomicUsize::new(0));
+        let unloaded_entries = Self::scan(
+            fs.clone(),
+            &abs_path,
+            &Path::new(ROOT_PATH),
+            next_unloaded_id.clone(),
+        )
+        .await?;
+        let snapshot = Snapshot::new(unloaded_entries);
+
+        Ok(Self {
             abs_path,
             fs,
-            snapshot: Snapshot::new(),
+            snapshot,
+        })
+    }
+
+    async fn scan(
+        fs: Arc<dyn FileSystem>,
+        abs_path: &Path,
+        path: &Path,
+        next_unloaded_id: Arc<AtomicUsize>,
+    ) -> WorktreeResult<Vec<UnloadedEntry>> {
+        debug_assert!(path.is_relative());
+        debug_assert!(abs_path.is_absolute());
+
+        let path: Arc<Path> = path.into();
+        let scanned_abs_path: Arc<Path> = Self::absolutize(&abs_path, &path)?.into();
+        let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
+
+        let initial_job = ScanJob {
+            abs_path: Arc::clone(&scanned_abs_path),
+            path: Arc::clone(&path),
+            scan_queue: scan_job_tx.clone(),
         };
+        scan_job_tx.send(initial_job).unwrap();
 
-        worktree.initial_scan().await?;
+        drop(scan_job_tx);
 
-        Ok(worktree)
+        let mut handles = Vec::new();
+        while let Some(job) = scan_job_rx.recv().await {
+            let fs_clone = fs.clone();
+            let next_unloaded_id = next_unloaded_id.clone();
+
+            let handle = tokio::spawn(async move {
+                let root_entry: UnloadedEntry;
+                if job.abs_path.join(CONFIG_FILE_NAME_DIR).exists() {
+                    root_entry = UnloadedEntry::Dir {
+                        id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
+                        path: Arc::clone(&job.path),
+                        abs_path: Arc::clone(&job.abs_path),
+                    };
+                } else if job.abs_path.join(CONFIG_FILE_NAME_ITEM).exists() {
+                    root_entry = UnloadedEntry::Item {
+                        id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
+                        path: Arc::clone(&job.path),
+                        abs_path: Arc::clone(&job.abs_path),
+                    };
+                } else {
+                    println!("{} is not a valid directory", job.abs_path.display());
+                    return vec![];
+                }
+
+                let mut new_jobs = Vec::new();
+                let mut new_entries = Vec::new();
+                new_entries.push(root_entry);
+
+                let mut read_dir = fs_clone.read_dir(&job.abs_path).await.unwrap();
+
+                let mut child_paths = Vec::new();
+                while let Some(dir_entry) = read_dir.next_entry().await.unwrap_or(None) {
+                    child_paths.push(dir_entry);
+                }
+
+                for child_entry in child_paths {
+                    let child_abs_path: Arc<Path> = child_entry.path().into();
+                    let child_name = child_abs_path.file_name().unwrap();
+                    let child_path: Arc<Path> = job.path.join(child_name).into();
+
+                    let child_file_type = child_entry.file_type().await.unwrap();
+                    if child_file_type.is_dir() {
+                        new_jobs.push(ScanJob {
+                            abs_path: Arc::clone(&child_abs_path),
+                            path: child_path,
+                            scan_queue: job.scan_queue.clone(),
+                        });
+                    } else {
+                        // TODO
+                    }
+                }
+
+                for new_job in new_jobs {
+                    job.scan_queue.send(new_job).unwrap();
+                }
+
+                new_entries
+            });
+
+            handles.push(handle);
+        }
+
+        Ok(futures::future::join_all(handles)
+            .await
+            .into_iter()
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(anyhow::Error::from)?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>())
     }
 
-    async fn initial_scan(&self) -> Result<(), WorktreeError> {
+    pub fn absolutize(abs_path: &Path, path: &Path) -> WorktreeResult<PathBuf> {
+        debug_assert!(abs_path.is_absolute());
+        debug_assert!(path.is_relative());
+
+        if path
+            .components()
+            .any(|c| c == std::path::Component::ParentDir)
+        {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Path cannot contain '..' components: {}",
+                path.display()
+            )));
+        }
+
+        if path.file_name().is_some() {
+            Ok(abs_path.join(path))
+        } else {
+            Ok(abs_path.to_path_buf())
+        }
+    }
+
+    pub async fn load_entry(&mut self, path: &Path, depth: u8) -> WorktreeResult<()> {
+        // if self.snapshot.is_loaded(path) {
+        //     return Ok(());
+        // }
+
+        // let unloaded_entry = self
+        //     .snapshot
+        //     .unloaded_entry_by_path(path)
+        //     .ok_or(WorktreeError::NotFound(path.display().to_string()))?;
+
+        let unloaded_entry = self.snapshot.unloaded_entry_by_path(path);
+
+        // dbg!(&unloaded_entry);
+        // let children = self
+        //     .snapshot
+        //     .unloaded_entry_children(unloaded_entry.id(), depth);
+        // dbg!(children.len());
+        // dbg!(&children);
+
+        // let config_path = match unloaded_entry {
+        //     UnloadedEntry::Item { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_ITEM),
+        //     UnloadedEntry::Dir { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_DIR),
+        // };
+
+        // let config: EditableInPlaceFileHandle<ConfigurationModel> =
+        //     EditableInPlaceFileHandle::load(self.fs.clone(), &config_path).await?;
+        // let id = config.model().await.id();
+        // let entry = Entry {
+        //     id,
+        //     path: unloaded_entry.path().to_owned(),
+        //     config: Some(config),
+        // };
+
+        // self.snapshot.create_entry(entry, None)?;
+
         todo!()
+
+        // Ok(())
     }
 
-    async fn scan(&self) -> Result<(), WorktreeError> {
-        todo!()
-    }
+    pub async fn create_entry(
+        &mut self,
+        path: &Path,
+        config: ConfigurationModel,
+    ) -> Result<(), WorktreeError> {
+        assert!(path.is_relative());
 
-    pub async fn create_(&self, path: &Path) -> Result<(), WorktreeError> {
+        if path.file_name().is_none() {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Target name is not a valid: {}",
+                path.display()
+            )));
+        }
+
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let lowest_ancestor_ref = self.snapshot.lowest_loaded_ancestor_path(&encoded_path);
+
+        let missing_part = encoded_path
+            .strip_prefix(&lowest_ancestor_ref.path)
+            .expect("Lowest ancestor path must be a prefix of path");
+
+        let mut current_level = lowest_ancestor_ref.path.to_path_buf();
+        let mut next_parent_id = lowest_ancestor_ref.id;
+        let last_component = missing_part
+            .components()
+            .last()
+            .context("Missing part should have at least one component")?;
+
+        // We intentionally use a `Option` to track the input config
+        // and guarantee that the input config is consumed only once.
+        let mut config = Some(config);
+
+        for component in missing_part.components() {
+            current_level.push(component.as_os_str());
+
+            let current_config = if component == last_component {
+                // This should never happen. The input config should be consumed by the last component only.
+                // A panic here indicates a bug in the implementation logic.
+                debug_assert!(config.is_some());
+
+                config.take().context("The input config was consumed")?
+            } else {
+                let id = Uuid::new_v4();
+                ConfigurationModel::Dir(DirConfigurationModel {
+                    metadata: SpecificationMetadata { id },
+                })
+            };
+            let id = current_config.id();
+
+            let abs_path = Self::absolutize(&self.abs_path, &current_level)?;
+            self.fs.create_dir(&abs_path).await?;
+
+            let file_name = match current_config {
+                ConfigurationModel::Item(_) => CONFIG_FILE_NAME_ITEM,
+                ConfigurationModel::Dir(_) => CONFIG_FILE_NAME_DIR,
+            };
+            let config_handle = EditableInPlaceFileHandle::create(
+                self.fs.clone(),
+                &abs_path.join(file_name),
+                current_config,
+            )
+            .await
+            .context("Failed to create config file")?;
+
+            let entry = Entry {
+                id,
+                path: current_level.clone().into(),
+                config: Some(config_handle),
+            };
+
+            self.snapshot.create_entry(entry, Some(next_parent_id))?;
+
+            next_parent_id = id;
+        }
+
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::RealFileSystem;
+
+    use crate::worktree::snapshot::ItemConfigurationModel;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_scan() {
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data/test")
+                .into(),
+        )
+        .await
+        .unwrap();
+
+        worktree.load_entry(Path::new(""), u8::MAX).await.unwrap();
+
+        println!("{}", worktree.snapshot);
+    }
+
+    #[tokio::test]
+    async fn test_create_entry() {
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data")
+                .into(),
+        )
+        .await
+        .unwrap();
+
+        let changes = worktree
+            .create_entry(
+                Path::new("test/foo/bar"),
+                ConfigurationModel::Item(ItemConfigurationModel {
+                    metadata: SpecificationMetadata { id: Uuid::new_v4() },
+                }),
+            )
+            .await
+            .unwrap();
+
+        let changes = worktree
+            .create_entry(
+                Path::new("test/foo/baz"),
+                ConfigurationModel::Item(ItemConfigurationModel {
+                    metadata: SpecificationMetadata { id: Uuid::new_v4() },
+                }),
+            )
+            .await
+            .unwrap();
+
+        let changes = worktree
+            .create_entry(
+                Path::new("test/qux"),
+                ConfigurationModel::Item(ItemConfigurationModel {
+                    metadata: SpecificationMetadata { id: Uuid::new_v4() },
+                }),
+            )
+            .await
+            .unwrap();
+
+        println!("{}", worktree.snapshot);
     }
 }
 

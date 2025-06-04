@@ -26,49 +26,51 @@ impl Collection {
         //
         // let worktree_entries_state = unit_store.list_worktree_entries()?;
 
-        let worktree = self.worktree().await?;
-        if worktree.is_empty() {
-            // We need to send a final empty event to signal the end of the stream.
-            let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
-            return Ok(());
-        }
+        // let worktree = self.worktree().await?;
+        // if worktree.is_empty() {
+        //     // We need to send a final empty event to signal the end of the stream.
+        //     let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
+        //     return Ok(());
+        // }
 
-        let mut streams = StreamMap::new();
-        for prefix in input.prefixes {
-            let normalized_prefix = normalize_path(Path::new(prefix));
-            let s = tokio_stream::iter(worktree.iter_entries_by_prefix(normalized_prefix).map(
-                |(&id, entry)| {
-                    // TODO: Get order from collection storage
-                    EntryInfo {
-                        id,
-                        name: entry
-                            .path()
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            .to_string(),
-                        path: entry.path().to_path_buf(),
-                        is_dir: entry.is_dir(),
-                        classification: entry.classification(),
-                        protocol: entry.protocol(),
-                        order: entry.order(),
-                    }
-                },
-            ));
-            streams.insert(prefix, s);
-        }
+        // let mut streams = StreamMap::new();
+        // for prefix in input.prefixes {
+        //     let normalized_prefix = normalize_path(Path::new(prefix));
+        //     let s = tokio_stream::iter(worktree.iter_entries_by_prefix(normalized_prefix).map(
+        //         |(&id, entry)| {
+        //             // TODO: Get order from collection storage
+        //             EntryInfo {
+        //                 id,
+        //                 name: entry
+        //                     .path()
+        //                     .file_name()
+        //                     .unwrap_or_default()
+        //                     .to_string_lossy()
+        //                     .to_string(),
+        //                 path: entry.path().to_path_buf(),
+        //                 is_dir: entry.is_dir(),
+        //                 classification: entry.classification(),
+        //                 protocol: entry.protocol(),
+        //                 order: entry.order(),
+        //             }
+        //         },
+        //     ));
+        //     streams.insert(prefix, s);
+        // }
 
-        let stream = streams.map(|(_key, value)| value);
-        let batched = stream.chunks_timeout(MAX_CHUNK_SIZE, POLL_INTERVAL);
-        pin_mut!(batched);
+        // let stream = streams.map(|(_key, value)| value);
+        // let batched = stream.chunks_timeout(MAX_CHUNK_SIZE, POLL_INTERVAL);
+        // pin_mut!(batched);
 
-        while let Some(batch) = batched.next().await {
-            let _ = channel.send(StreamWorktreeEntriesEvent(batch));
-        }
+        // while let Some(batch) = batched.next().await {
+        //     let _ = channel.send(StreamWorktreeEntriesEvent(batch));
+        // }
 
-        // We need to send a final empty event to signal the end of the stream.
-        let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
+        // // We need to send a final empty event to signal the end of the stream.
+        // let _ = channel.send(StreamWorktreeEntriesEvent(vec![]));
 
-        Ok(())
+        // Ok(())
+
+        todo!()
     }
 }

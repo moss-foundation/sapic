@@ -10,24 +10,26 @@ impl Collection {
         &mut self,
         input: UpdateEntryInput,
     ) -> OperationResult<UpdateEntryOutput> {
-        let workspace = self.worktree_mut().await?;
+        // let workspace = self.worktree_mut().await?;
 
-        let UpdateEntryInput {
-            id,
-            name,
-            classification,
-            specification,
-            protocol,
-            order,
-        } = input;
+        // let UpdateEntryInput {
+        //     id,
+        //     name,
+        //     classification,
+        //     specification,
+        //     protocol,
+        //     order,
+        // } = input;
 
-        let changes = workspace
-            .update_entry_by_virtual_id(id, name, classification, specification, protocol, order)
-            .await?;
+        // let changes = workspace
+        //     .update_entry_by_virtual_id(id, name, classification, specification, protocol, order)
+        //     .await?;
 
-        Ok(UpdateEntryOutput {
-            physical_changes: changes.physical_changes,
-            virtual_changes: changes.virtual_changes,
-        })
+        // Ok(UpdateEntryOutput {
+        //     physical_changes: changes.physical_changes,
+        //     virtual_changes: changes.virtual_changes,
+        // })
+
+        todo!()
     }
 }

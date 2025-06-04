@@ -21,21 +21,23 @@ impl Collection {
             None
         };
 
-        let worktree = self.worktree_mut().await?;
-        let changes = worktree
-            .create_entry(
-                input.destination,
-                input.order,
-                input.protocol,
-                content,
-                input.classification,
-                input.is_dir,
-            )
-            .await?;
+        // let worktree = self.worktree_mut().await?;
+        // let changes = worktree
+        //     .create_entry(
+        //         input.destination,
+        //         input.order,
+        //         input.protocol,
+        //         content,
+        //         input.classification,
+        //         input.is_dir,
+        //     )
+        //     .await?;
 
-        Ok(CreateEntryOutput {
-            physical_changes: changes.physical_changes,
-            virtual_changes: changes.virtual_changes,
-        })
+        // Ok(CreateEntryOutput {
+        //     physical_changes: changes.physical_changes,
+        //     virtual_changes: changes.virtual_changes,
+        // })
+
+        todo!()
     }
 }

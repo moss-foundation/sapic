@@ -151,35 +151,37 @@ impl Collection {
     }
 
     pub async fn worktree(&self) -> Result<&Worktree> {
-        let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
-            external_abs_path
-        } else {
-            self.abs_path.clone()
-        };
+        todo!()
+        // let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
+        //     external_abs_path
+        // } else {
+        //     self.abs_path.clone()
+        // };
 
-        self.worktree
-            .get_or_try_init(|| async move {
-                let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
+        // self.worktree
+        //     .get_or_try_init(|| async move {
+        //         let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
 
-                Ok(worktree)
-            })
-            .await
+        //         Ok(worktree)
+        //     })
+        //     .await
     }
 
     pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
-        if !self.worktree.initialized() {
-            let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
-            {
-                external_abs_path
-            } else {
-                self.abs_path.clone()
-            };
+        todo!()
+        // if !self.worktree.initialized() {
+        //     let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
+        //     {
+        //         external_abs_path
+        //     } else {
+        //         self.abs_path.clone()
+        //     };
 
-            let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
-            let _ = self.worktree.set(worktree);
-        }
+        //     let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
+        //     let _ = self.worktree.set(worktree);
+        // }
 
-        Ok(self.worktree.get_mut().unwrap())
+        // Ok(self.worktree.get_mut().unwrap())
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
