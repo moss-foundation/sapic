@@ -2,7 +2,7 @@ import { cn } from "@/utils";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useEffect, useRef, useState } from "react";
-import { DnDRowData, TestData } from "../DataTable";
+import { TableRowDnDData, TestData } from "../DataTable";
 
 interface NoDataRowProps {
   colSpan: number;
@@ -26,8 +26,8 @@ export const NoDataRow = ({ colSpan, setData, tableId }: NoDataRowProps) => {
         onDrop({ location, source }) {
           if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
 
-          const sourceTarget = source.data.data as DnDRowData["data"];
-          const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
+          const sourceTarget = source.data.data as TableRowDnDData["data"];
+          const dropTarget = location.current.dropTargets[0].data.data as TableRowDnDData["data"];
 
           if (dropTarget.tableId === tableId) {
             setData([sourceTarget.row]);

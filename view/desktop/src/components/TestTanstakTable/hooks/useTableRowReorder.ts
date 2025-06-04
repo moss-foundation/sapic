@@ -3,27 +3,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SortingState, Table } from "@tanstack/react-table";
 import { Dispatch, SetStateAction, useEffect } from "react";
-
-interface TestData {
-  id: string;
-  key: string;
-  value: string;
-  type: string;
-  description: string;
-  global_value: string;
-  local_value: number;
-  properties: {
-    disabled: boolean;
-  };
-}
-
-interface DnDRowData {
-  type: "TableRow";
-  data: {
-    tableId: string;
-    row: TestData;
-  };
-}
+import { TableRowDnDData, TestData } from "../DataTable";
 
 interface TableRowReorderProps {
   table: Table<TestData>;
@@ -36,25 +16,36 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
   useEffect(() => {
     return monitorForElements({
       canMonitor: ({ source }) => {
-        return source.data.type === "TableRow";
+        if (source.data.type !== "TableRow") {
+          return false;
+        }
+
+        const sourceTarget = source.data.data as TableRowDnDData["data"];
+
+        if (sourceTarget.tableType !== table.options.meta?.tableType) {
+          return false;
+        }
+
+        return true;
       },
 
       onDrop({ location, source }) {
         if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
 
-        const sourceTarget = source.data.data as DnDRowData["data"];
-        const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
+        const sourceTarget = source.data.data as TableRowDnDData["data"];
+        const dropTarget = location.current.dropTargets[0].data.data as TableRowDnDData["data"];
         const edge = extractClosestEdge(location.current.dropTargets[0].data);
-
         const flatRows = table.getRowModel().flatRows.map((row) => row.original);
 
         if (sourceTarget.tableId === dropTarget.tableId) {
           if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
             setSorting([]);
+
             const sourceIndex = flatRows.findIndex((row) => row.id === sourceTarget.row.id);
             const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
 
             const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
+
             setData(newData);
           }
 
@@ -62,12 +53,7 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
         }
 
         if (sourceTarget.tableId === tableId) {
-          setSorting([]);
-
-          setData((prev) => {
-            return [...prev].filter((row) => row.id !== sourceTarget.row.id);
-          });
-
+          setData((prev) => [...prev].filter((row) => row.id !== sourceTarget.row.id));
           return;
         }
 

@@ -49,7 +49,8 @@ export const DefaultRow = <TData,>({
         getInitialData: () => ({
           type: "TableRow",
           data: {
-            tableId: table.options.meta?.id,
+            tableId: table.options.meta?.tableId,
+            tableType: table.options.meta?.tableType,
             row: originalRow,
           },
         }),
@@ -67,7 +68,14 @@ export const DefaultRow = <TData,>({
         },
         getData({ input }) {
           return attachClosestEdge(
-            { type: "TableRow", data: { tableId: table.options.meta?.id, row: originalRow } },
+            {
+              type: "TableRow",
+              data: {
+                tableId: table.options.meta?.tableId,
+                tableType: table.options.meta?.tableType,
+                row: originalRow,
+              },
+            },
             {
               element,
               input,

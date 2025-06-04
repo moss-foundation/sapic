@@ -24,7 +24,7 @@ import { NoDataRow } from "./ui/NoDataRow";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  meta?: {
+  meta: {
     id: string;
     setData: (data: TData[]) => void;
   };
@@ -32,8 +32,12 @@ interface DataTableProps<TData, TValue> {
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
-    id: string;
+    tableId: string;
     tableType: "ActionsTable";
+  }
+  interface ColumnMeta<TData extends RowData, TValue> {
+    isGrow?: boolean;
+    widthPercentage?: number;
   }
 }
 
@@ -50,21 +54,22 @@ export interface TestData {
   };
 }
 
-export interface DnDRowData {
+export interface TableRowDnDData {
   type: "TableRow";
   data: {
+    tableType: string;
     tableId: string;
     row: TestData;
   };
 }
 
-export function DataTable<TValue>({
-  columns,
-  data: initialData,
-  onTableApiSet,
-}: DataTableProps<TestData, TValue> & {
-  onTableApiSet: (table: Table<TestData>) => void;
-}) {
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  onTableApiSet: (table: Table<TData>) => void;
+}
+
+export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData, TValue>) {
   const tableId = useId();
 
   const [data, setData] = useState<TestData[]>(initialData);
@@ -90,7 +95,7 @@ export function DataTable<TValue>({
       sorting,
     },
     meta: {
-      id: tableId,
+      tableId,
       tableType: "ActionsTable",
     },
   });
@@ -169,13 +174,18 @@ export function DataTable<TValue>({
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
-                  <DefaultRow onAddNewRow={() => handleAddNewRow(row.index)} table={table} row={row} key={row.id}>
+                  <DefaultRow<TestData>
+                    onAddNewRow={() => handleAddNewRow(row.index)}
+                    table={table}
+                    row={row}
+                    key={row.id}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <DefaultCell key={cell.id} cell={cell} />
                     ))}
                   </DefaultRow>
                 ))}
-                <DefaultRow
+                <DefaultRow<TestData>
                   table={table}
                   row={table.getRowModel().rows[table.getRowModel().rows.length - 1]}
                   key={`${tableId}-AddNewRowForm`}
