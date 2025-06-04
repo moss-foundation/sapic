@@ -96,11 +96,6 @@ fn state_service<R: TauriRuntime>(
             theme: default_theme.clone(),
             locale: default_locale.clone(),
         };
-
-        StateService::new(defaults).with_commands([
-            // FIXME: Remove this example command
-            command!("example.generateLog", generate_log),
-        ])
     }
 }
 

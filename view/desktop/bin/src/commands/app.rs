@@ -206,24 +206,3 @@ pub async fn execute_command<R: TauriRuntime>(
         ))),
     }
 }
-
-#[tauri::command(async)]
-pub async fn generate_test_log<R: TauriRuntime>(
-    app_manager: State<'_, AppManager<R>>,
-    window: Window<R>,
-) -> TauriResult<()> {
-    let app_handle = app_manager.app_handle();
-    let logging_service = app_manager
-        .services()
-        .get_by_type::<LoggingService>(app_handle)
-        .await?;
-
-    logging_service.debug(
-        LogScope::App,
-        LogPayload {
-            resource: Some("Resource".to_string()),
-            message: "Test Message".to_string(),
-        },
-    );
-    Ok(())
-}

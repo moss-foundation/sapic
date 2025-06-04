@@ -1,17 +1,17 @@
-use crate::{LOGGING_SERVICE_CHANNEL, models::types::LogEntry};
+use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntry};
 use std::io::ErrorKind;
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use tracing_subscriber::fmt::MakeWriter;
 
-pub struct TauriMakeWriter<R: TauriRuntime> {
+pub struct TauriLogMakeWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,
 }
 
-pub struct TauriWriter<R: TauriRuntime> {
+pub struct TauriLogWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,
 }
 
-impl<'a, R: TauriRuntime> std::io::Write for TauriWriter<R> {
+impl<'a, R: TauriRuntime> std::io::Write for TauriLogWriter<R> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         // FIXME: Maybe we can find a better approach
         let log_body = String::from_utf8_lossy(buf).to_string();
@@ -34,11 +34,11 @@ impl<'a, R: TauriRuntime> std::io::Write for TauriWriter<R> {
     }
 }
 
-impl<'a, R: TauriRuntime> MakeWriter<'a> for TauriMakeWriter<R> {
-    type Writer = TauriWriter<R>;
+impl<'a, R: TauriRuntime> MakeWriter<'a> for TauriLogMakeWriter<R> {
+    type Writer = TauriLogWriter<R>;
 
     fn make_writer(&'a self) -> Self::Writer {
-        TauriWriter {
+        TauriLogWriter {
             app_handle: self.app_handle.clone(),
         }
     }

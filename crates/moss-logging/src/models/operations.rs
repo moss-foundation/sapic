@@ -8,6 +8,7 @@ use ts_rs::TS;
 pub struct ListLogsInput {
     pub dates: Vec<LogDate>,
     pub levels: Vec<LogLevel>,
+    #[ts(optional)]
     pub resource: Option<String>,
 }
 

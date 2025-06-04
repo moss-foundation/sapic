@@ -1,6 +1,6 @@
+mod constants;
 mod makewriter;
 mod models;
-mod tokens;
 
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
@@ -30,18 +30,16 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    makewriter::TauriMakeWriter,
+    constants::{APP_SCOPE, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
+    makewriter::TauriLogMakeWriter,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
     },
-    tokens::{APP_SCOPE, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
 };
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
-
-pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
 
 // Empty field means that no filter will be applied
 #[derive(Default)]
@@ -87,7 +85,6 @@ pub enum LogScope {
     Session,
 }
 
-// TODO: in-memory log
 pub struct LoggingService {
     app_log_path: PathBuf,
     session_path: PathBuf,
@@ -273,7 +270,7 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format)
                     .fmt_fields(JsonFields::default())
-                    .with_writer(TauriMakeWriter {
+                    .with_writer(TauriLogMakeWriter {
                         app_handle: app_handle.clone(),
                     }),
             );
@@ -408,6 +405,7 @@ impl AppService for LoggingService {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
     use tauri::{Listener, Manager};
     use tracing::instrument;
 

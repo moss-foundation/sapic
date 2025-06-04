@@ -3,10 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import LangchainAgent from "@/ai/LangchainAgent";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import ButtonPrimary from "@/components/ButtonPrimary.tsx";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
-import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
-import { LogEntry } from "@repo/moss-logging";
+import { LogEntry, LOGGING_SERVICE_CHANNEL } from "@repo/moss-logging";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
@@ -16,7 +14,7 @@ export const Logs = () => {
   const { activityEvents } = useActivityEvents();
 
   useEffect(() => {
-    const unlistenLogsStream = listen<LogEntry>("logging", (event) => {
+    const unlistenLogsStream = listen<LogEntry>(LOGGING_SERVICE_CHANNEL, (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 
@@ -109,7 +107,6 @@ export const Logs = () => {
       </section>
 
       <section className="rounded bg-gray-100 p-4">
-        <ButtonPrimary onClick={() => invokeTauriIpc("generate_test_log")}>Generate Test Log</ButtonPrimary>
         <h2 className="mb-2 text-xl">{t("All Logs")}</h2>
         {logs.length > 0 ? (
           <ul>
