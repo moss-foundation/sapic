@@ -75,6 +75,17 @@ pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Men
             .quit()
             .build()?;
 
+        let edit_menu = SubmenuBuilder::new(app_handle, "Edit")
+            .undo()
+            .redo()
+            .separator()
+            .cut()
+            .copy()
+            .paste()
+            .separator()
+            .select_all()
+            .build()?;
+
         let window_menu = SubmenuBuilder::new(app_handle, "Window")
             .minimize()
             .item(
@@ -85,6 +96,7 @@ pub fn app_menu<R: TauriRuntime>(app_handle: &AppHandle<R>) -> tauri::Result<Men
 
         let menu = MenuBuilder::new(app_handle)
             .item(&app_menu)
+            .item(&edit_menu)
             .item(&window_menu)
             .build()?;
 
