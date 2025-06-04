@@ -13,10 +13,10 @@
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.5.2",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.2",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@langchain/core": "^0.3.53",
-    "@langchain/langgraph": "^0.2.68",
+    "@langchain/langgraph": "^0.3.0",
     "@langchain/ollama": "^0.2.0",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-checkbox": "^1.2.2",
@@ -38,7 +38,7 @@
     "@repo/moss-theme": "workspace:*",
     "@repo/moss-workbench": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
-    "@tanstack/react-pacer": "^0.2.0",
+    "@tanstack/react-pacer": "^0.8.0",
     "@tanstack/react-query": "^5.67.1",
     "@tanstack/react-query-devtools": "^5.67.1",
     "@tanstack/react-table": "^8.21.3",

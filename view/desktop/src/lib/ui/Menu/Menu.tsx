@@ -72,7 +72,7 @@ const Root: React.FC<ActionMenuProps> = (props: ScopedProps<ActionMenuProps>) =>
       onOpenToggle={React.useCallback(() => setOpenState((prevOpen) => !prevOpen), [setOpenState])}
       modal={modal}
     >
-      <MenuPrimitive.Root {...menuScope} dir={dir} open={open} onOpenChange={handleOpenChange} modal={modal}>
+      <MenuPrimitive.Root {...menuScope} dir={dir} open={openState} onOpenChange={handleOpenChange} modal={modal}>
         {children}
       </MenuPrimitive.Root>
     </ActionMenuProvider>
