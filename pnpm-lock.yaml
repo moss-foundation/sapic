@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.4.0
+        specifier: ^1.7.2
         version: 1.7.2
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: ^1.0.3
@@ -330,7 +330,7 @@ importers:
   view/desktop:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.5.2
+        specifier: ^1.7.2
         version: 1.7.2
       '@atlaskit/pragmatic-drag-and-drop-hitbox':
         specifier: ^1.1.0
@@ -405,8 +405,8 @@ importers:
         specifier: workspace:*
         version: link:../../crates/moss-workspace
       '@tanstack/react-pacer':
-        specifier: ^0.2.0
-        version: 0.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^0.8.0
+        version: 0.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: ^5.67.1
         version: 5.80.3(react@18.3.1)
@@ -650,6 +650,10 @@ packages:
 
   '@babel/runtime@7.27.1':
     resolution: {integrity: sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@7.27.4':
+    resolution: {integrity: sha512-t3yaEOuGu9NlIZ+hIeGbBjFtZT7j2cb2tg0fuaJKeGotchRjjLfrBA9Kwf8quhpP1EUuxModQg04q/mBwyg8uA==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.0':
@@ -1939,8 +1943,8 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6
 
-  '@tanstack/pacer@0.2.0':
-    resolution: {integrity: sha512-fUJs3NpSwtAL/tfq8kuYdgvm9HbbJvHsOG6aHY2dFDfff0NBFNwjvyGreWZZRPs2zgoIbr4nOk+rRV7aQgmf+A==}
+  '@tanstack/pacer@0.8.0':
+    resolution: {integrity: sha512-wh9um4sF37woA9M/Pf05eyl30/V8RYN5x06yDQIhdJ+dB4YsQUR7qt+gIyGmygutFvqTMKDERXSC7NLIBZND9Q==}
     engines: {node: '>=18'}
 
   '@tanstack/query-core@5.80.2':
@@ -1949,8 +1953,8 @@ packages:
   '@tanstack/query-devtools@5.80.0':
     resolution: {integrity: sha512-D6gH4asyjaoXrCOt5vG5Og/YSj0D/TxwNQgtLJIgWbhbWCC/emu2E92EFoVHh4ppVWg1qT2gKHvKyQBEFZhCuA==}
 
-  '@tanstack/react-pacer@0.2.0':
-    resolution: {integrity: sha512-KU5GtjkKSeNdYCilen5Dc+Pu/6BPQbsQshKrUUjrg7URyJIiGBCz6ZZFre1QjDz/aeUeqUJWMWSm+2Dsh64v+w==}
+  '@tanstack/react-pacer@0.8.0':
+    resolution: {integrity: sha512-nQX5ACRHdOiZjPOudA3Ii64mPfRkeRkSYtjQaRMD3FqY9AQKuQJgPglAFA7U4UenLOXJvqXiKMWzFDi1Bw9EZQ==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8'
@@ -4348,13 +4352,13 @@ snapshots:
 
   '@atlaskit/atlassian-context@0.2.0(react@18.3.1)':
     dependencies:
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
       react: 18.3.1
 
   '@atlaskit/ds-lib@4.0.0(@types/react@18.3.23)(react@18.3.1)':
     dependencies:
       '@atlaskit/platform-feature-flags': 1.1.1(react@18.3.1)
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
       bind-event-listener: 3.0.0
       react: 18.3.1
       react-uid: 2.4.0(@types/react@18.3.23)(react@18.3.1)
@@ -4364,7 +4368,7 @@ snapshots:
   '@atlaskit/feature-gate-js-client@5.3.1(react@18.3.1)':
     dependencies:
       '@atlaskit/atlassian-context': 0.2.0(react@18.3.1)
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
       '@statsig/client-core': 3.17.2
       '@statsig/js-client': 3.17.2
       eventemitter2: 4.1.2
@@ -4374,7 +4378,7 @@ snapshots:
   '@atlaskit/platform-feature-flags@1.1.1(react@18.3.1)':
     dependencies:
       '@atlaskit/feature-gate-js-client': 5.3.1(react@18.3.1)
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
     transitivePeerDependencies:
       - react
 
@@ -4397,7 +4401,7 @@ snapshots:
 
   '@atlaskit/pragmatic-drag-and-drop@1.7.2':
     dependencies:
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
@@ -4405,7 +4409,7 @@ snapshots:
     dependencies:
       '@atlaskit/ds-lib': 4.0.0(@types/react@18.3.23)(react@18.3.1)
       '@atlaskit/platform-feature-flags': 1.1.1(react@18.3.1)
-      '@babel/runtime': 7.27.0
+      '@babel/runtime': 7.27.4
       '@babel/traverse': 7.27.4
       '@babel/types': 7.27.3
       bind-event-listener: 3.0.0
@@ -4528,6 +4532,8 @@ snapshots:
       regenerator-runtime: 0.14.1
 
   '@babel/runtime@7.27.1': {}
+
+  '@babel/runtime@7.27.4': {}
 
   '@babel/template@7.27.0':
     dependencies:
@@ -5576,15 +5582,15 @@ snapshots:
       tailwindcss: 4.1.8
       vite: 6.3.5(@types/node@22.15.29)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1)
 
-  '@tanstack/pacer@0.2.0': {}
+  '@tanstack/pacer@0.8.0': {}
 
   '@tanstack/query-core@5.80.2': {}
 
   '@tanstack/query-devtools@5.80.0': {}
 
-  '@tanstack/react-pacer@0.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-pacer@0.8.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/pacer': 0.2.0
+      '@tanstack/pacer': 0.8.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
