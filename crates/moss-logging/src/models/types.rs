@@ -28,8 +28,6 @@ pub struct LogEntry {
     timestamp: String,
     level: String,
     #[ts(optional)]
-    request: Option<String>,
-    #[ts(optional)]
-    collection: Option<String>,
+    resource: Option<String>,
     message: String,
 }
