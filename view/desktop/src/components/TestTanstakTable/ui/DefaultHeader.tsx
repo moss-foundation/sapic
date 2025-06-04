@@ -29,9 +29,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       )}
       style={{ width: header.getSize() }}
       onMouseEnter={() => setShowActionMenuButton(true)}
-      onMouseLeave={() => {
-        setShowActionMenuButton(false);
-      }}
+      onMouseLeave={() => setShowActionMenuButton(false)}
       {...props}
     >
       <div

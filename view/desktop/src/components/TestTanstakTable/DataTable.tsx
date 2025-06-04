@@ -1,11 +1,8 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
-import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
-import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+
 import {
   ColumnDef,
   getCoreRowModel,
@@ -17,10 +14,12 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 
-import { calculateTableSizing } from "./calculateTableSizing";
+import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
+import { useTableRowReorder } from "./hooks/useTableRowReorder";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
+import { NoDataRow } from "./ui/NoDataRow";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,7 +37,7 @@ declare module "@tanstack/react-table" {
   }
 }
 
-interface TestData {
+export interface TestData {
   id: string;
   key: string;
   value: string;
@@ -51,7 +50,7 @@ interface TestData {
   };
 }
 
-interface DnDRowData {
+export interface DnDRowData {
   type: "TableRow";
   data: {
     tableId: string;
@@ -96,75 +95,16 @@ export function DataTable<TValue>({
     },
   });
 
-  useEffect(() => {
-    if (table) onTableApiSet?.(table);
-  }, [onTableApiSet, table]);
-
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const tableHeight = tableContainerRef.current?.clientHeight;
 
-  const headers = table.getFlatHeaders();
+  useTableRowReorder({ table, tableId, setSorting, setData });
 
-  //this should only be called on mount
-  useLayoutEffect(() => {
-    if (tableContainerRef.current) {
-      const initialColumnSizing = calculateTableSizing(headers, tableContainerRef.current?.clientWidth);
-      table.setColumnSizing(initialColumnSizing);
-    }
-  }, []);
+  useAdjustColumnsWithoutSizes({ table, tableContainerRef });
 
   useEffect(() => {
-    return monitorForElements({
-      canMonitor: ({ source }) => {
-        return source.data.type === "TableRow";
-      },
-
-      onDrop({ location, source }) {
-        if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
-
-        const sourceTarget = source.data.data as DnDRowData["data"];
-        const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
-        const edge = extractClosestEdge(location.current.dropTargets[0].data);
-
-        const flatRows = table.getRowModel().flatRows.map((row) => row.original);
-
-        if (sourceTarget.tableId === dropTarget.tableId) {
-          if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
-            setSorting([]);
-            const sourceIndex = flatRows.findIndex((row) => row.id === sourceTarget.row.id);
-            const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
-
-            const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
-            setData(newData);
-          }
-          return;
-        }
-
-        if (sourceTarget.tableId === tableId) {
-          setSorting([]);
-
-          setData((prev) => {
-            return [...prev].filter((row) => row.id !== sourceTarget.row.id);
-          });
-          return;
-        }
-
-        if (dropTarget.tableId === tableId) {
-          setSorting([]);
-          const edge = extractClosestEdge(location.current.dropTargets[0].data);
-
-          const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);
-          const newData = [...flatRows];
-
-          const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
-          newData.splice(insertIndex, 0, sourceTarget.row);
-
-          setData(newData);
-        }
-        return;
-      },
-    });
-  }, [table, tableId]);
+    if (table) onTableApiSet?.(table);
+  }, [onTableApiSet, table]);
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -238,7 +178,7 @@ export function DataTable<TValue>({
                 <DefaultRow
                   table={table}
                   row={table.getRowModel().rows[table.getRowModel().rows.length - 1]}
-                  key="AddNewRowForm"
+                  key={`${tableId}-AddNewRowForm`}
                   disableDnd
                 >
                   {table
@@ -279,7 +219,7 @@ export function DataTable<TValue>({
                 </DefaultRow>
               </>
             ) : (
-              <EmptyRow colSpan={columns.length} setData={setData} tableId={tableId} />
+              <NoDataRow colSpan={columns.length} setData={setData} tableId={tableId} />
             )}
           </tbody>
         </table>
@@ -288,62 +228,3 @@ export function DataTable<TValue>({
     </Scrollbar>
   );
 }
-
-const EmptyRow = ({
-  colSpan,
-  setData,
-  tableId,
-}: {
-  colSpan: number;
-  setData: (data: TestData[]) => void;
-  tableId: string;
-}) => {
-  const ref = useRef<HTMLTableRowElement>(null);
-  const [isDraggedOver, setIsDraggedOver] = useState(false);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    return combine(
-      monitorForElements({
-        canMonitor: ({ source }) => {
-          return source.data.type === "TableRow";
-        },
-        onDrop({ location, source }) {
-          if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
-
-          const sourceTarget = source.data.data as DnDRowData["data"];
-          const dropTarget = location.current.dropTargets[0].data.data as DnDRowData["data"];
-
-          if (dropTarget.tableId === tableId) {
-            setData([sourceTarget.row]);
-          }
-        },
-      }),
-      dropTargetForElements({
-        element,
-        getData: () => {
-          return { type: "TableRowNoResults", data: { tableId } };
-        },
-        onDragEnter() {
-          setIsDraggedOver(true);
-        },
-        onDragLeave() {
-          setIsDraggedOver(false);
-        },
-        canDrop: ({ source }) => {
-          return source.data.type === "TableRow";
-        },
-      })
-    );
-  }, [setData, tableId]);
-
-  return (
-    <tr ref={ref} key={`empty-row-${tableId}`}>
-      <td colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "background-(--moss-primary)")}>
-        No results.
-      </td>
-    </tr>
-  );
-};
