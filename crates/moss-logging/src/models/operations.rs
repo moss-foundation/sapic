@@ -8,10 +8,8 @@ use ts_rs::TS;
 pub struct ListLogsInput {
     pub dates: Vec<LogDate>,
     pub levels: Vec<LogLevel>,
-    #[ts(optional, rename = "CollectionPath")]
-    pub collection: Option<String>,
-    #[ts(optional, rename = "RequestPath")]
-    pub request: Option<String>,
+    #[ts(optional)]
+    pub resource: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
