@@ -156,7 +156,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
 
   return (
     <Scrollbar className="relative -ml-2 w-[calc(100%+8px)] pl-2">
-      <div className="w-[calc(100%-1px)]" ref={tableContainerRef}>
+      <div ref={tableContainerRef} className="w-[calc(100%-1px)]">
         <table
           className="border-separate border-spacing-0 rounded border border-(--moss-border-color)"
           style={{ width: table.getCenterTotalSize() }}

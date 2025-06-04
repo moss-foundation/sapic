@@ -15,7 +15,9 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   const isLastColumn = header.column.getIsLastColumn();
   const isSortable = header.column.getCanSort();
   const canHide = header.column.getCanHide();
+
   const [showActionMenuButton, setShowActionMenuButton] = useState(false);
+  const [showActionMenu, setShowActionMenu] = useState(false);
 
   const toggleSortingHandler = header.column.getToggleSortingHandler();
 
@@ -23,13 +25,14 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
     <th
       className={cn(
         "group/tableHeader relative border-r border-b border-(--moss-border-color) px-2 py-1.5 capitalize",
-        {
-          "border-r-0": isLastColumn,
-        }
+        { "border-r-0": isLastColumn }
       )}
       style={{ width: header.getSize() }}
-      onMouseEnter={() => setShowActionMenuButton(true)}
-      onMouseLeave={() => setShowActionMenuButton(false)}
+      onMouseOver={() => setShowActionMenuButton(true)}
+      onMouseLeave={() => {
+        console.log("onMouseLeave");
+        setShowActionMenuButton(false);
+      }}
       {...props}
     >
       <div
@@ -45,12 +48,17 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
         {isSortable && (
           <div className="background-(--moss-table-header-bg) absolute top-0 right-0 flex h-full items-center justify-center gap-1">
             {header.column.getIsSorted() && (
-              <button className="cursor-pointer" onClick={header.column.getToggleSortingHandler()}>
+              <button className="cursor-pointer" onClick={toggleSortingHandler}>
                 {header.column.getIsSorted() === "asc" ? "🔼" : header.column.getIsSorted() === "desc" ? "🔽" : "🔼"}
               </button>
             )}
 
-            <ActionMenu.Root onOpenChange={setShowActionMenuButton}>
+            <ActionMenu.Root
+              open={showActionMenu}
+              onOpenChange={() => {
+                setShowActionMenu(false);
+              }}
+            >
               <ActionMenu.Trigger
                 className={cn(
                   "background-(--moss-icon-secondary-background-hover) -my-px cursor-pointer rounded p-0.5 transition-opacity duration-100",
@@ -59,8 +67,11 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
                     "sr-only opacity-0": !showActionMenuButton,
                   }
                 )}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                }}
                 onClick={() => {
-                  setShowActionMenuButton(true);
+                  setShowActionMenu(true);
                 }}
               >
                 <Icon icon="MoreVertical" />
