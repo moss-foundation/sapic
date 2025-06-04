@@ -37,15 +37,13 @@ export const DefaultRow = <TData,>({
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    const dragHandle = handleRef.current;
     const element = rowRef.current;
 
-    if (!element || !dragHandle || disableDnd) return;
+    if (!element || disableDnd) return;
 
     return combine(
       draggable({
         element,
-        dragHandle,
         getInitialData: () => ({
           type: "TableRow",
           data: {
@@ -111,7 +109,6 @@ export const DefaultRow = <TData,>({
 
   return (
     <tr
-      ref={rowRef}
       className={cn(
         "group/tableRow relative",
         {
@@ -124,8 +121,8 @@ export const DefaultRow = <TData,>({
       {children}
       {!disableDnd && (
         <RowHandle
+          ref={rowRef}
           className="opacity-0 transition-opacity duration-100 group-hover/tableRow:opacity-100"
-          ref={handleRef}
           isDragging={isDragging}
         />
       )}
