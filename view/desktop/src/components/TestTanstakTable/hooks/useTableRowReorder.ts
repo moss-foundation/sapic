@@ -37,6 +37,10 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
         const edge = extractClosestEdge(location.current.dropTargets[0].data);
         const flatRows = table.getRowModel().flatRows.map((row) => row.original);
 
+        if (!sourceTarget || !dropTarget) {
+          return;
+        }
+
         if (sourceTarget.tableId === dropTarget.tableId) {
           if (dropTarget.tableId === tableId && sourceTarget.tableId === tableId) {
             setSorting([]);
