@@ -107,7 +107,7 @@ export const DefaultRow = <TData,>({
       className={cn(
         "group/tableRow relative",
         {
-          "bg-gray-200": isDragging,
+          "background-(--moss-table-cell-bg) brightness-90": isDragging,
         },
         className
       )}
@@ -133,8 +133,8 @@ const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean; className: s
       <div
         ref={ref}
         className={cn(
-          "absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded bg-white shadow",
-          isDragging && "bg-gray-400 opacity-100!",
+          "background-(--moss-table-handle-bg) absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded shadow",
+          isDragging && "opacity-100!",
           className
         )}
       >
@@ -181,11 +181,11 @@ const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
       onMouseLeave={handleMouseLeave}
       //prettier-ignore
       className={cn(`
-          absolute -top-[1px] -left-2 
-          z-100 w-full h-[2px]
+          absolute -top-[1px] left-0 z-100
+          w-full h-[2px]
           
           background-(--moss-primary)
-          cursor-pointer 
+          cursor-pointer
 
           transition-opacity duration-100
    
@@ -199,7 +199,7 @@ const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
       onClick={visible ? handleClick : undefined}
     >
       <div className="relative h-full w-full">
-        <div className="background-white absolute -top-[8px] left-0 flex size-4 items-center justify-center rounded-sm p-px shadow">
+        <div className="background-(--moss-table-handle-bg) absolute -top-[8px] -left-2 flex size-4 items-center justify-center rounded-sm p-px shadow">
           <DividerButtonIcon />
         </div>
       </div>

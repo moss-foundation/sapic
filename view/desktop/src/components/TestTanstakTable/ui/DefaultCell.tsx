@@ -7,7 +7,7 @@ function DefaultCell<TData>({ cell }: { cell: Cell<TData, unknown> }) {
 
   return (
     <td
-      className={cn("border-r border-b border-[#E0E0E0] px-2 py-1.5", {
+      className={cn("border-r border-b border-(--moss-border-color) px-2 py-1.5", {
         "border-r-0": isLastColumn,
         "opacity-60": !isSelected,
       })}

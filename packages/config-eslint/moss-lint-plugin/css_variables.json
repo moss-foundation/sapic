@@ -211,5 +211,10 @@
   "--moss-radio-bg",
   "--moss-radio-border",
   "--moss-radio-bg-disabled",
-  "--moss-radio-border-disabled"
+  "--moss-radio-border-disabled",
+  "--moss-table-header-bg",
+  "--moss-table-cell-bg",
+  "--moss-table-add-form-text",
+  "--moss-table-handle-bg",
+  "--moss-table-add-row-form-text"
 ]

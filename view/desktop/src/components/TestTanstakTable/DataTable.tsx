@@ -18,8 +18,6 @@ import {
 } from "@tanstack/react-table";
 
 import { calculateTableSizing } from "./calculateTableSizing";
-import * as TableBody from "./TableBody";
-import * as TableHead from "./TableHead";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
@@ -99,9 +97,7 @@ export function DataTable<TValue>({
   });
 
   useEffect(() => {
-    if (table) {
-      onTableApiSet?.(table);
-    }
+    if (table) onTableApiSet?.(table);
   }, [onTableApiSet, table]);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -217,19 +213,19 @@ export function DataTable<TValue>({
     <Scrollbar className="relative -ml-2 w-[calc(100%+8px)] pl-2">
       <div className="w-[calc(100%-1px)]" ref={tableContainerRef}>
         <table
-          className="border-separate border-spacing-0 rounded border border-[#E0E0E0]"
+          className="border-separate border-spacing-0 rounded border border-(--moss-border-color)"
           style={{ width: table.getCenterTotalSize() }}
         >
-          <TableHead.Head>
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-[#F5F5F5]">
+              <tr key={headerGroup.id} className="bg-(--moss-table-header-bg)">
                 {headerGroup.headers.map((header) => (
                   <DefaultHeader tableHeight={tableHeight} key={header.id} header={header} />
                 ))}
               </tr>
             ))}
-          </TableHead.Head>
-          <TableBody.Body>
+          </thead>
+          <tbody>
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
@@ -254,7 +250,10 @@ export function DataTable<TValue>({
                         return (
                           <td
                             key={cell.id}
-                            className={cn("border-r border-[#E0E0E0] px-2 py-1.5", isLastColumn && "border-r-0")}
+                            className={cn(
+                              "border-r border-(--moss-border-color) px-2 py-1.5",
+                              isLastColumn && "border-r-0"
+                            )}
                             style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                           />
                         );
@@ -262,13 +261,16 @@ export function DataTable<TValue>({
                       return (
                         <td
                           key={cell.id}
-                          className={cn("border-r border-[#E0E0E0] px-2 py-1.5", isLastColumn && "border-r-0")}
+                          className={cn(
+                            "border-r border-(--moss-border-color) px-2 py-1.5",
+                            isLastColumn && "border-r-0"
+                          )}
                           style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
                         >
                           <input
                             form={`${tableId}-AddNewRowForm`}
                             placeholder={cell.column.id}
-                            className="w-full text-(--moss-gray-9) outline-0"
+                            className="w-full text-(--moss-table-add-row-form-text) outline-0"
                             onBlur={handleBlur}
                           />
                         </td>
@@ -279,7 +281,7 @@ export function DataTable<TValue>({
             ) : (
               <EmptyRow colSpan={columns.length} setData={setData} tableId={tableId} />
             )}
-          </TableBody.Body>
+          </tbody>
         </table>
         <form onSubmit={(e) => e.preventDefault()} id={`${tableId}-AddNewRowForm`} className="sr-only" />
       </div>
@@ -339,7 +341,7 @@ const EmptyRow = ({
 
   return (
     <tr ref={ref} key={`empty-row-${tableId}`}>
-      <td colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "bg-blue-400")}>
+      <td colSpan={colSpan} className={cn("h-24 text-center", isDraggedOver && "background-(--moss-primary)")}>
         No results.
       </td>
     </tr>
