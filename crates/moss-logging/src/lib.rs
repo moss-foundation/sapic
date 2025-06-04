@@ -493,7 +493,6 @@ mod tests {
         });
 
         let collection_path = Path::new("").join("TestCollection");
-        let request_path = Path::new("").join("TestCollection").join("TestRequest");
 
         create_collection(Path::new(""), "TestCollection", &logging_service).await;
         create_request(&collection_path, "TestRequest", &logging_service).await;
