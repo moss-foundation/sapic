@@ -197,6 +197,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                     .rows[table.getRowModel().rows.length - 1].getVisibleCells()
                     .map((cell) => {
                       const isLastColumn = cell.column.getIsLastColumn();
+
                       if (cell.column.id === "actions" || cell.column.id === "checkbox") {
                         return (
                           <div
@@ -210,6 +211,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                           />
                         );
                       }
+
                       return (
                         <div
                           role="cell"
