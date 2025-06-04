@@ -22,7 +22,7 @@ interface IPanelWrapperRef {
  * creative in how we update props.
  * A ref of the component is exposed with an update method; which when called stores the props
  * as a ref within this component and forcefully triggers a re-render of the component using
- * the ref of props we just set on the renderered component as the props passed to the inner
+ * the ref of props we just set on the rendered component as the props passed to the inner
  * component
  */
 const ReactComponentBridge: React.ForwardRefRenderFunction<IPanelWrapperRef, IPanelWrapperProps> = (props, ref) => {

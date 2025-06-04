@@ -1,5 +1,5 @@
-import { Event as DockviewEvent, Emitter, addDisposableListener, addDisposableWindowListener } from "./events";
-import { IDisposable, CompositeDisposable } from "./lifecycle";
+import { addDisposableListener, addDisposableWindowListener, Event as DockviewEvent, Emitter } from "./events";
+import { CompositeDisposable, IDisposable } from "./lifecycle";
 
 export interface OverflowEvent {
   hasScrollX: boolean;
@@ -30,14 +30,14 @@ export class OverflowObserver extends CompositeDisposable {
 }
 
 export function watchElementResize(element: HTMLElement, cb: (entry: ResizeObserverEntry) => void): IDisposable {
-  const observer = new ResizeObserver((entires) => {
+  const observer = new ResizeObserver((entries) => {
     /**
      * Fast browser window resize produces Error: ResizeObserver loop limit exceeded.
      * The error isn't visible in browser console, doesn't affect functionality, but degrades performance.
      * See https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded/58701523#58701523
      */
     requestAnimationFrame(() => {
-      const firstEntry = entires[0];
+      const firstEntry = entries[0];
       cb(firstEntry);
     });
   });
@@ -96,6 +96,7 @@ export function getElementsByTagName(tag: string): HTMLElement[] {
 export interface IFocusTracker extends IDisposable {
   readonly onDidFocus: DockviewEvent<void>;
   readonly onDidBlur: DockviewEvent<void>;
+
   refreshState?(): void;
 }
 

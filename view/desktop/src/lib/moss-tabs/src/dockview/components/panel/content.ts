@@ -1,22 +1,27 @@
-import { CompositeDisposable, IDisposable, MutableDisposable } from "../../../lifecycle";
-import { Emitter, Event } from "../../../events";
-import { trackFocus } from "../../../dom";
-import { IDockviewPanel } from "../../dockviewPanel";
-import { DockviewComponent } from "../../dockviewComponent";
-import { Droptarget } from "../../../dnd/droptarget";
-import { DockviewGroupPanelModel } from "../../dockviewGroupPanelModel";
 import { getPanelData } from "../../../dnd/dataTransfer";
+import { Droptarget } from "../../../dnd/droptarget";
+import { trackFocus } from "../../../dom";
+import { Emitter, Event } from "../../../events";
+import { CompositeDisposable, IDisposable, MutableDisposable } from "../../../lifecycle";
+import { DockviewComponent } from "../../dockviewComponent";
+import { DockviewGroupPanelModel } from "../../dockviewGroupPanelModel";
+import { IDockviewPanel } from "../../dockviewPanel";
 
 export interface IContentContainer extends IDisposable {
   readonly dropTarget: Droptarget;
   onDidFocus: Event<void>;
   onDidBlur: Event<void>;
   element: HTMLElement;
+
   layout(width: number, height: number): void;
+
   openPanel: (panel: IDockviewPanel) => void;
   closePanel: () => void;
+
   show(): void;
+
   hide(): void;
+
   renderPanel(panel: IDockviewPanel, options: { asActive: boolean }): void;
 }
 
@@ -110,7 +115,7 @@ export class ContentContainer extends CompositeDisposable implements IContentCon
 
     switch (panel.api.renderer) {
       case "onlyWhenVisible":
-        this.group.renderContainer.detatch(panel);
+        this.group.renderContainer.detach(panel);
         if (this.panel) {
           if (doRender) {
             this._element.appendChild(this.panel.view.content.element);

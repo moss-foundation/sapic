@@ -34,15 +34,25 @@ export interface IGridPanelComponentView extends IGridPanelView {
 export interface IGridviewComponent extends IBaseGrid<GridviewPanel> {
   readonly orientation: Orientation;
   readonly onDidLayoutFromJSON: Event<void>;
+
   updateOptions(options: Partial<GridviewComponentOptions>): void;
+
   addPanel<T extends object = Parameters>(options: AddComponentOptions<T>): IGridviewPanel;
+
   removePanel(panel: IGridviewPanel, sizing?: Sizing): void;
+
   focus(): void;
+
   fromJSON(serializedGridview: SerializedGridviewComponent): void;
+
   toJSON(): SerializedGridviewComponent;
+
   movePanel(panel: IGridviewPanel, options: { direction: Direction; reference: string; size?: number }): void;
+
   setVisible(panel: IGridviewPanel, visible: boolean): void;
+
   setActive(panel: IGridviewPanel): void;
+
   readonly onDidRemoveGroup: Event<GridviewPanel>;
   readonly onDidAddGroup: Event<GridviewPanel>;
   readonly onDidActiveGroupChange: Event<GridviewPanel | undefined>;
@@ -133,7 +143,7 @@ export class GridviewComponent extends BaseGrid<GridviewPanel> implements IGridv
   /**
    * Serialize the current state of the layout
    *
-   * @returns A JSON respresentation of the layout
+   * @returns A JSON representation of the layout
    */
   public toJSON(): SerializedGridviewComponent {
     const data = this.gridview.serialize() as {
@@ -375,7 +385,7 @@ export class GridviewComponent extends BaseGrid<GridviewPanel> implements IGridv
       skipDispose: true,
     });
 
-    // after deleting the group we need to re-evaulate the ref location
+    // after deleting the group we need to re-evaluate the ref location
     const updatedReferenceLocation = getGridLocation(referenceGroup.element);
     const location = getRelativeLocation(this.gridview.orientation, updatedReferenceLocation, target);
     this.doAddGroup(targetGroup, location);

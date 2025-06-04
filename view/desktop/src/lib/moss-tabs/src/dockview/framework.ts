@@ -1,7 +1,7 @@
 import { DockviewApi } from "../api/component.api";
 import { DockviewGroupPanelApi } from "../api/dockviewGroupPanelApi";
 import { DockviewPanelApi } from "../api/dockviewPanelApi";
-import { PanelParameters } from "../framwork";
+import { PanelParameters } from "../framework";
 import { DockviewGroupPanel, IDockviewGroupPanel } from "./dockviewGroupPanel";
 import { IDockviewPanel } from "./dockviewPanel";
 

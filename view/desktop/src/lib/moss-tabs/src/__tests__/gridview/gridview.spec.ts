@@ -671,7 +671,7 @@ describe("gridview", () => {
     });
   });
 
-  test("re-structuring deep gridivew where a branchnode becomes of length one and is coverted to a leaf node", () => {
+  test("re-structuring deep gridivew where a branchnode becomes of length one and is converted to a leaf node", () => {
     const gridview = new Gridview(false, { separatorBorder: "" }, Orientation.HORIZONTAL);
     gridview.layout(1000, 1000);
 

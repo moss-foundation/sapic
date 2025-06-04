@@ -11,7 +11,7 @@ import {
   runSelectorItems,
   themeItems,
 } from "@/data/actionMenuMockData";
-import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
+import { invokeMossCommand } from "@/lib/backend/platform.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 

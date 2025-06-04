@@ -46,17 +46,29 @@ export interface ISplitviewComponent extends IDisposable {
   readonly onDidRemoveView: Event<IView>;
   readonly onDidLayoutFromJSON: Event<void>;
   readonly panels: SplitviewPanel[];
+
   updateOptions(options: Partial<SplitViewOptions>): void;
+
   addPanel<T extends object = Parameters>(options: AddSplitviewComponentOptions<T>): ISplitviewPanel;
+
   layout(width: number, height: number): void;
+
   onDidLayoutChange: Event<void>;
+
   toJSON(): SerializedSplitview;
+
   fromJSON(serializedSplitview: SerializedSplitview): void;
+
   focus(): void;
+
   getPanel(id: string): ISplitviewPanel | undefined;
+
   removePanel(panel: ISplitviewPanel, sizing?: Sizing): void;
+
   setVisible(panel: ISplitviewPanel, visible: boolean): void;
+
   movePanel(from: number, to: number): void;
+
   clear(): void;
 }
 
@@ -334,7 +346,7 @@ export class SplitviewComponent extends Resizable implements ISplitviewComponent
 
           this.doAddView(panel);
           setTimeout(() => {
-            // the original onDidAddView events are missed since they are fired before we can subcribe to them
+            // the original onDidAddView events are missed since they are fired before we can subscribe to them
             this._onDidAddView.fire(panel);
           }, 0);
 

@@ -35,7 +35,7 @@ describe("dockviewGroupPanel", () => {
       doSetGroupActive: vi.fn(),
       overlayRenderContainer: fromPartial<OverlayRenderContainer>({
         attach: vi.fn(),
-        detatch: vi.fn(),
+        detach: vi.fn(),
       }),
       options: {},
     });

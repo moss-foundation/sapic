@@ -12,12 +12,12 @@ import { BranchNode } from "./branchNode";
 import { LeafNode } from "./leafNode";
 import { Node } from "./types";
 
-function findLeaf(candiateNode: Node, last: boolean): LeafNode {
-  if (candiateNode instanceof LeafNode) {
-    return candiateNode;
+function findLeaf(candidateNode: Node, last: boolean): LeafNode {
+  if (candidateNode instanceof LeafNode) {
+    return candidateNode;
   }
-  if (candiateNode instanceof BranchNode) {
-    return findLeaf(candiateNode.children[last ? candiateNode.children.length - 1 : 0], last);
+  if (candidateNode instanceof BranchNode) {
+    return findLeaf(candidateNode.children[last ? candidateNode.children.length - 1 : 0], last);
   }
   throw new Error("invalid node");
 }
@@ -138,10 +138,15 @@ export interface IGridView {
   readonly maximumHeight: number;
   readonly isVisible: boolean;
   priority?: LayoutPriority;
+
   layout(width: number, height: number): void;
+
   toJSON(): object;
+
   fromJSON?(json: object): void;
+
   snap?: boolean;
+
   setVisible?(visible: boolean): void;
 }
 
@@ -436,7 +441,7 @@ export class Gridview implements IDisposable {
        * the saved layout cannot be in its maxmized state otherwise all of the underlying
        * view dimensions will be wrong
        *
-       * To counteract this we temporaily remove the maximized view to compute the serialized output
+       * To counteract this we temporarily remove the maximized view to compute the serialized output
        * of the grid before adding back the maxmized view as to not alter the layout from the users
        * perspective when `.toJSON()` is called
        */
@@ -445,7 +450,7 @@ export class Gridview implements IDisposable {
 
     const root = serializeBranchNode(this.getView(), this.orientation);
 
-    const resullt: SerializedGridview<any> = {
+    const result: SerializedGridview<any> = {
       root,
       width: this.width,
       height: this.height,
@@ -453,7 +458,7 @@ export class Gridview implements IDisposable {
     };
 
     if (maxmizedViewLocation) {
-      resullt.maximizedNode = {
+      result.maximizedNode = {
         location: maxmizedViewLocation,
       };
     }
@@ -463,7 +468,7 @@ export class Gridview implements IDisposable {
       this.maximizeView(maximizedView);
     }
 
-    return resullt;
+    return result;
   }
 
   public dispose(): void {
@@ -584,7 +589,7 @@ export class Gridview implements IDisposable {
 
   /**
    * If the root is orientated as a VERTICAL node then nest the existing root within a new HORIZIONTAL root node
-   * If the root is orientated as a HORIZONTAL node then nest the existing root within a new VERITCAL root node
+   * If the root is orientated as a HORIZONTAL node then nest the existing root within a new VERTICAL root node
    */
   public insertOrthogonalSplitviewAtRoot(): void {
     if (!this._root) {
@@ -881,7 +886,7 @@ export class Gridview implements IDisposable {
       }
 
       /**
-       * clean down the branch node since we need to dipose of it and
+       * clean down the branch node since we need to dispose of it and
        * when .dispose() it called on a branch it will dispose of any
        * views it is holding onto.
        */
