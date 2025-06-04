@@ -86,7 +86,7 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons
+ready: gen-icons export-css-variables
 	$(PNPM) i
 
 ## Icon generator tool
