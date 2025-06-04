@@ -16,13 +16,8 @@ use zeroize::Zeroizing;
 
 use crate::{Table, Transaction, common::DatabaseError};
 
-pub const DEFAULT_ENCRYPTION_OPTIONS: EncryptionOptions = EncryptionOptions {
-    memory_cost: 65536, // 64MB
-    time_cost: 10,
-    parallelism: 4,
-    salt_len: 32,
-    nonce_len: 12,
-};
+// See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+// OWASP recommends m=47104 (46 MiB), t=1, p=1. Our default is stronger, and appears to have acceptable performance
 
 #[derive(Debug, Clone)]
 pub struct EncryptionOptions {
@@ -37,7 +32,7 @@ impl Default for EncryptionOptions {
     fn default() -> Self {
         Self {
             memory_cost: 65536, // 64MB
-            time_cost: 10,
+            time_cost: 2,
             parallelism: 4,
             salt_len: 32,
             nonce_len: 12,
@@ -113,9 +108,15 @@ where
             .p_cost(self.options.parallelism)
             .output_len(32)
             .build()
-            .map_err(|e| DatabaseError::Internal(format!("Failed to build Argon2 params: {}", e)))?;
+            .map_err(|e| {
+                DatabaseError::Internal(format!("Failed to build Argon2 params: {}", e))
+            })?;
 
-        let argon2 = Argon2::new(argon2::Algorithm::default(), argon2::Version::default(), params);
+        let argon2 = Argon2::new(
+            argon2::Algorithm::default(),
+            argon2::Version::default(),
+            params,
+        );
         let password_hash = argon2
             .hash_password(password, &salt)
             .map_err(|e| DatabaseError::Internal(format!("Failed to hash password: {}", e)))?;
