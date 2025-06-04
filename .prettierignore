@@ -1,5 +1,4 @@
 target/
-obsolete/
 .turbo/
 .vscode/
 node_modules/
