@@ -96,6 +96,8 @@ fn state_service<R: TauriRuntime>(
             theme: default_theme.clone(),
             locale: default_locale.clone(),
         };
+
+        StateService::new(defaults)
     }
 }
 
