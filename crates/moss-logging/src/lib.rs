@@ -412,11 +412,7 @@ mod tests {
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_collection<R: TauriRuntime>(
-        path: &Path,
-        name: &str,
-        log_service: &LoggingService,
-    ) {
+    async fn create_collection(path: &Path, name: &str, log_service: &LoggingService) {
         let collection_path = path.join(name);
 
         log_service.info(
@@ -440,11 +436,7 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_request<R: TauriRuntime>(
-        collection_path: &Path,
-        name: &str,
-        log_service: &LoggingService,
-    ) {
+    async fn create_request(collection_path: &Path, name: &str, log_service: &LoggingService) {
         let request_path = collection_path.join(name);
         log_service.info(
             LogScope::Session,
@@ -467,7 +459,7 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn something_terrible<R: TauriRuntime>(log_service: &LoggingService) {
+    async fn something_terrible(log_service: &LoggingService) {
         log_service.warn(
             LogScope::App,
             LogPayload {
