@@ -18,7 +18,12 @@ impl<'a, R: TauriRuntime> std::io::Write for TauriWriter<R> {
         let log_entry: LogEntry = serde_json::from_str(log_body.as_str())?;
         self.app_handle
             .emit(LOGGING_SERVICE_CHANNEL, log_entry)
-            .map_err(|e| std::io::Error::new(ErrorKind::Other, "Unable to emit a tauri event"))?;
+            .map_err(|e| {
+                std::io::Error::new(
+                    ErrorKind::Other,
+                    format!("Unable to emit a tauri event: {}", e),
+                )
+            })?;
         Ok(buf.len())
         // Emit an event to tauri app_handle
     }

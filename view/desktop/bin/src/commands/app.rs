@@ -215,7 +215,7 @@ pub async fn generate_test_log<R: TauriRuntime>(
     let app_handle = app_manager.app_handle();
     let logging_service = app_manager
         .services()
-        .get_by_type::<LoggingService<R>>(app_handle)
+        .get_by_type::<LoggingService>(app_handle)
         .await?;
 
     logging_service.debug(

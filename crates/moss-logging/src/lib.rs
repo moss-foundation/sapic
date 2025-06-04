@@ -11,7 +11,8 @@ use std::{
     ffi::OsStr,
     fs,
     fs::File,
-    io::{self, BufRead, BufReader},
+    io,
+    io::{BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -29,7 +30,7 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    makewriter::{TauriMakeWriter, TauriWriter},
+    makewriter::TauriMakeWriter,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
@@ -87,15 +88,14 @@ pub enum LogScope {
 }
 
 // TODO: in-memory log
-pub struct LoggingService<R: TauriRuntime> {
-    app_handle: AppHandle<R>, // We will emit logging event to the frontend
+pub struct LoggingService {
     app_log_path: PathBuf,
     session_path: PathBuf,
     _app_log_guard: WorkerGuard,
     _session_log_guard: WorkerGuard,
 }
 
-impl<R: TauriRuntime> LoggingService<R> {
+impl LoggingService {
     fn parse_file_with_filter(
         records: &mut Vec<(DateTime<FixedOffset>, JsonValue)>,
         path: &Path,
@@ -161,7 +161,7 @@ impl<R: TauriRuntime> LoggingService<R> {
         log_files.sort_by_key(|p| p.1);
         for (path, date_time) in &log_files {
             if filter.dates.is_empty() || filter.dates.contains(date_time) {
-                LoggingService::<R>::parse_file_with_filter(&mut result, path, filter)?
+                LoggingService::parse_file_with_filter(&mut result, path, filter)?
             }
         }
 
@@ -202,13 +202,13 @@ impl<R: TauriRuntime> LoggingService<R> {
     }
 }
 
-impl<R: TauriRuntime> LoggingService<R> {
-    pub fn new(
+impl LoggingService {
+    pub fn new<R: TauriRuntime>(
         app_handle: AppHandle<R>,
         app_log_path: &Path,
         session_log_path: &Path,
         session_id: &Uuid,
-    ) -> Result<LoggingService<R>> {
+    ) -> Result<LoggingService> {
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -261,14 +261,14 @@ impl<R: TauriRuntime> LoggingService<R> {
                         metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
                     })),
             )
-            // .with(
-            //     // Showing all logs (including span events) to the console
-            //     tracing_subscriber::fmt::layer()
-            //         .event_format(instrument_log_format)
-            //         .with_span_events(FmtSpan::CLOSE)
-            //         .with_ansi(true)
-            //         .with_writer(io::stdout),
-            // )
+            .with(
+                // Showing all logs (including span events) to the console
+                tracing_subscriber::fmt::layer()
+                    .event_format(instrument_log_format)
+                    .with_span_events(FmtSpan::CLOSE)
+                    .with_ansi(true)
+                    .with_writer(io::stdout),
+            )
             .with(
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format)
@@ -280,7 +280,6 @@ impl<R: TauriRuntime> LoggingService<R> {
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
-            app_handle,
             _app_log_guard,
             _session_log_guard,
             app_log_path: app_log_path.to_path_buf(),
@@ -293,7 +292,7 @@ impl<R: TauriRuntime> LoggingService<R> {
         let filter: LogFilter = input.clone().into();
         let app_logs = self.combine_logs(&self.app_log_path, &filter)?;
         let session_logs = self.combine_logs(&self.session_path, &filter)?;
-        let merged_logs = LoggingService::<R>::merge_logs_chronologically(app_logs, session_logs);
+        let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs);
 
         let log_entries: Vec<LogEntry> = merged_logs
             .into_iter()
@@ -305,7 +304,7 @@ impl<R: TauriRuntime> LoggingService<R> {
     }
 }
 
-impl<R: TauriRuntime> LoggingService<R> {
+impl LoggingService {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
@@ -404,7 +403,7 @@ impl<R: TauriRuntime> LoggingService<R> {
     }
 }
 
-impl<R: TauriRuntime> AppService for LoggingService<R> {}
+impl AppService for LoggingService {}
 
 #[cfg(test)]
 mod tests {
@@ -416,7 +415,7 @@ mod tests {
     async fn create_collection<R: TauriRuntime>(
         path: &Path,
         name: &str,
-        log_service: &LoggingService<R>,
+        log_service: &LoggingService,
     ) {
         let collection_path = path.join(name);
 
@@ -444,7 +443,7 @@ mod tests {
     async fn create_request<R: TauriRuntime>(
         collection_path: &Path,
         name: &str,
-        log_service: &LoggingService<R>,
+        log_service: &LoggingService,
     ) {
         let request_path = collection_path.join(name);
         log_service.info(
@@ -468,7 +467,7 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn something_terrible<R: TauriRuntime>(log_service: &LoggingService<R>) {
+    async fn something_terrible<R: TauriRuntime>(log_service: &LoggingService) {
         log_service.warn(
             LogScope::App,
             LogPayload {

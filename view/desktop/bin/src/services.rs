@@ -131,7 +131,7 @@ fn locale_service<R: TauriRuntime>(
 
 fn logging_service<R: TauriRuntime>(
     session_service_key: ServiceKey,
-) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService<R> + Send + Sync + 'static {
+) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
     let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
@@ -179,7 +179,7 @@ async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResu
     let app_manager = app_handle.state::<AppManager<R>>();
     let logging_service = app_manager
         .services()
-        .get_by_type::<LoggingService<R>>(app_handle)
+        .get_by_type::<LoggingService>(app_handle)
         .await?;
 
     logging_service.info(
