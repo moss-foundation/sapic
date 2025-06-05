@@ -83,3 +83,11 @@ pub trait RekeyItem: Send + Sync {
 
     fn rekey(&self, old_key: Self::Key, new_key: Self::Key) -> DatabaseResult<()>;
 }
+
+pub trait Truncate: Send + Sync {
+    fn truncate(&self) -> DatabaseResult<()>;
+}
+
+pub trait TransactionalTruncate: Send + Sync {
+    fn truncate(&self, txn: &mut Transaction) -> DatabaseResult<()>;
+}
