@@ -2,9 +2,21 @@ mod constants;
 mod makewriter;
 mod models;
 
+use crate::{
+    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
+    makewriter::TauriLogMakeWriter,
+    models::{
+        operations::{ListLogsInput, ListLogsOutput},
+        types::{LogEntry, LogLevel},
+    },
+};
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::prelude::AppService;
+use moss_storage::{
+    GlobalStorage,
+    global_storage::stores::{AppLogCache, SessionLogCache},
+};
 use nanoid::nanoid;
 use serde_json::Value as JsonValue;
 use std::{
@@ -16,6 +28,7 @@ use std::{
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
+    sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
@@ -29,15 +42,6 @@ use tracing_subscriber::{
     prelude::*,
 };
 use uuid::Uuid;
-
-use crate::{
-    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
-    makewriter::TauriLogMakeWriter,
-    models::{
-        operations::{ListLogsInput, ListLogsOutput},
-        types::{LogEntry, LogLevel},
-    },
-};
 
 fn new_id() -> String {
     nanoid!(ID_LENGTH)
@@ -90,9 +94,15 @@ pub enum LogScope {
     Session,
 }
 
+/// Logs structure
+/// App Log Path: logs\
+/// Session Log Path: {App Log Path}\sessions\{session_id}\
 pub struct LoggingService {
-    app_log_path: PathBuf,
-    session_path: PathBuf,
+    applog_path: PathBuf,
+    sessionlog_path: PathBuf,
+    applog_cache: Arc<dyn AppLogCache>,
+    sessionlog_cache: Arc<dyn SessionLogCache>,
+    // TODO: Remove
     _app_log_guard: WorkerGuard,
     _session_log_guard: WorkerGuard,
 }
@@ -208,8 +218,8 @@ impl LoggingService {
     pub fn new<R: TauriRuntime>(
         app_handle: AppHandle<R>,
         app_log_path: &Path,
-        session_log_path: &Path,
         session_id: &Uuid,
+        global_storage: Arc<dyn GlobalStorage>,
     ) -> Result<LoggingService> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
@@ -230,7 +240,7 @@ impl LoggingService {
             .compact()
             .with_ansi(true);
 
-        let session_path = session_log_path.join(session_id.to_string());
+        let session_path = app_log_path.join("sessions").join(session_id.to_string());
 
         let session_log_appender = tracing_appender_localtime::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
@@ -289,16 +299,18 @@ impl LoggingService {
         Ok(Self {
             _app_log_guard,
             _session_log_guard,
-            app_log_path: app_log_path.to_path_buf(),
-            session_path,
+            applog_path: app_log_path.to_path_buf(),
+            sessionlog_path: session_path,
+            applog_cache: global_storage.applog_cache(),
+            sessionlog_cache: global_storage.sessionlog_cache(),
         })
     }
 
     pub fn list_logs(&self, input: &ListLogsInput) -> Result<ListLogsOutput> {
         // Combining both app and session log
         let filter: LogFilter = input.clone().into();
-        let app_logs = self.combine_logs(&self.app_log_path, &filter)?;
-        let session_logs = self.combine_logs(&self.session_path, &filter)?;
+        let app_logs = self.combine_logs(&self.applog_path, &filter)?;
+        let session_logs = self.combine_logs(&self.sessionlog_path, &filter)?;
         let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs);
 
         let log_entries: Vec<LogEntry> = merged_logs

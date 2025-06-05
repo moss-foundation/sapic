@@ -49,7 +49,10 @@ pub fn service_pool<R: TauriRuntime>(
         app_handle,
     );
     builder.register(
-        Instantiation::Instant(logging_service(session_service_key), PhantomData),
+        Instantiation::Instant(
+            logging_service(session_service_key, global_storage.clone()),
+            PhantomData,
+        ),
         app_handle,
     );
     builder.register(
@@ -128,14 +131,12 @@ fn locale_service<R: TauriRuntime>(
 
 fn logging_service<R: TauriRuntime>(
     session_service_key: ServiceKey,
+    global_storage: Arc<dyn GlobalStorage>,
 ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
     let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
         .expect("Environment variable APP_LOG_DIR is not set")
-        .into();
-    let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
-        .expect("Environment variable SESSION_LOG_DIR is not set")
         .into();
 
     move |pool, app_handle| {
@@ -147,8 +148,8 @@ fn logging_service<R: TauriRuntime>(
         LoggingService::new(
             app_handle.clone(),
             &app_log_dir,
-            &session_log_dir,
             session_service.get_session_uuid(),
+            global_storage,
         )
         .unwrap()
     }
