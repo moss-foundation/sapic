@@ -3,6 +3,7 @@ import { z } from "zod";
 import { logDateSchema, logLevelSchema } from "./types.zod";
 
 export const logEntrySchema = z.object({
+  id: z.string(),
   timestamp: z.string(),
   level: z.string(),
   resource: z.string().optional(),

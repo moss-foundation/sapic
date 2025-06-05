@@ -25,6 +25,7 @@ pub enum LogLevel {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct LogEntry {
+    id: String,
     timestamp: String,
     level: String,
     #[ts(optional)]

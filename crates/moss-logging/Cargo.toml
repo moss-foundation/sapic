@@ -8,6 +8,7 @@ moss_app.workspace = true
 
 anyhow.workspace = true
 chrono.workspace = true
+nanoid.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tauri = { workspace = true, features = ["test"] }

@@ -5,6 +5,7 @@ mod models;
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::prelude::AppService;
+use nanoid::nanoid;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashSet,
@@ -30,13 +31,17 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    constants::{APP_SCOPE, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
+    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
     makewriter::TauriLogMakeWriter,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
     },
 };
+
+fn new_id() -> String {
+    nanoid!(ID_LENGTH)
+}
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
@@ -206,6 +211,7 @@ impl LoggingService {
         session_log_path: &Path,
         session_id: &Uuid,
     ) -> Result<LoggingService> {
+        // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
             .with_file(false)
             .with_line_number(false)
@@ -215,6 +221,7 @@ impl LoggingService {
             .flatten_event(true)
             .with_current_span(true);
 
+        // Console log format
         let instrument_log_format = tracing_subscriber::fmt::format()
             .with_file(true)
             .with_line_number(true)
@@ -224,17 +231,18 @@ impl LoggingService {
             .with_ansi(true);
 
         let session_path = session_log_path.join(session_id.to_string());
+
         let session_log_appender = tracing_appender::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
             .build(&session_path)?;
+        let (session_log_writer, _session_log_guard) =
+            tracing_appender::non_blocking(session_log_appender);
 
         let app_log_appender = tracing_appender::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
             .build(&app_log_path)?;
-        let (session_log_writer, _session_log_guard) =
-            tracing_appender::non_blocking(session_log_appender);
         let (app_log_writer, _app_log_guard) = tracing_appender::non_blocking(app_log_appender);
 
         let subscriber = tracing_subscriber::registry()
@@ -267,6 +275,7 @@ impl LoggingService {
                     .with_writer(io::stdout),
             )
             .with(
+                // Emitting all logs to the frontend at LOGGING_SERVICE_CHANNEL
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format)
                     .fmt_fields(JsonFields::default())
@@ -309,6 +318,7 @@ impl LoggingService {
             LogScope::App => {
                 trace!(
                     target: APP_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -316,6 +326,7 @@ impl LoggingService {
             LogScope::Session => {
                 trace!(
                     target: SESSION_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -328,6 +339,7 @@ impl LoggingService {
             LogScope::App => {
                 debug!(
                     target: APP_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -335,6 +347,7 @@ impl LoggingService {
             LogScope::Session => {
                 debug!(
                     target: SESSION_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -347,6 +360,7 @@ impl LoggingService {
             LogScope::App => {
                 info!(
                     target: APP_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -354,6 +368,7 @@ impl LoggingService {
             LogScope::Session => {
                 info!(
                     target: SESSION_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -366,6 +381,7 @@ impl LoggingService {
             LogScope::App => {
                 warn!(
                     target: APP_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -373,6 +389,7 @@ impl LoggingService {
             LogScope::Session => {
                 warn!(
                     target: SESSION_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -385,6 +402,7 @@ impl LoggingService {
             LogScope::App => {
                 error!(
                     target: APP_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -392,6 +410,7 @@ impl LoggingService {
             LogScope::Session => {
                 error!(
                     target: SESSION_SCOPE,
+                    id = new_id(),
                     resource = payload.resource,
                     message = payload.message
                 )

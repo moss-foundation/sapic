@@ -5,4 +5,4 @@ export type ListLogsInput = { dates: Array<LogDate>; levels: Array<LogLevel>; re
 
 export type ListLogsOutput = { contents: Array<LogEntry> };
 
-export type LogEntry = { timestamp: string; level: string; resource?: string; message: string };
+export type LogEntry = { id: string; timestamp: string; level: string; resource?: string; message: string };
