@@ -19,7 +19,7 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
-use tracing_appender::{non_blocking::WorkerGuard, rolling::Rotation};
+use tracing_appender_localtime::{non_blocking::WorkerGuard, rolling::Rotation};
 use tracing_subscriber::{
     filter::filter_fn,
     fmt::{
@@ -232,18 +232,19 @@ impl LoggingService {
 
         let session_path = session_log_path.join(session_id.to_string());
 
-        let session_log_appender = tracing_appender::rolling::Builder::new()
+        let session_log_appender = tracing_appender_localtime::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
             .build(&session_path)?;
         let (session_log_writer, _session_log_guard) =
-            tracing_appender::non_blocking(session_log_appender);
+            tracing_appender_localtime::non_blocking(session_log_appender);
 
-        let app_log_appender = tracing_appender::rolling::Builder::new()
+        let app_log_appender = tracing_appender_localtime::rolling::Builder::new()
             .rotation(Rotation::MINUTELY)
             .filename_suffix("log")
             .build(&app_log_path)?;
-        let (app_log_writer, _app_log_guard) = tracing_appender::non_blocking(app_log_appender);
+        let (app_log_writer, _app_log_guard) =
+            tracing_appender_localtime::non_blocking(app_log_appender);
 
         let subscriber = tracing_subscriber::registry()
             .with(
