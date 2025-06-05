@@ -83,14 +83,71 @@ jobs:
         with:
           workspaces: ".github/cache"
 
-      - name: Run Unit Tests
-        run: cargo -q test --lib
-        working-directory: ".github/cache"
 
       - name: Workspace Audit
         run: |
           cd "${GITHUB_WORKSPACE}/tools/xtask"
           cargo -q run -- --fail-fast audit
+
+  rust-tests:
+    name: Rust Tests - ${{ matrix.package }}
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - moss_git
+          - moss_git_hosting_provider
+          - moss_tauri
+          - moss_text
+          - moss_collection
+          - moss_app
+          - moss_db
+          - moss_fs
+          - moss_keyring
+          - moss_vault
+          - moss_theme
+          - moss_state
+          - moss_nls
+          - moss_logging
+          - moss_session
+          - moss_workspace
+          - moss_environment
+          - moss_testutils
+          - moss_common
+          - moss_workbench
+          - moss_storage
+          - moss_activity_indicator
+          - moss_file
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
+
+      - name: Run Tests - ${{ matrix.package }}
+        run: cargo test -p ${{ matrix.package }} --lib
 
   # Checks for Rust compiler warnings in each package individually.
   # This job is skipped for draft pull requests to allow developers to work
