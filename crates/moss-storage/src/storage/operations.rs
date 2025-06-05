@@ -91,3 +91,15 @@ pub trait Truncate: Send + Sync {
 pub trait TransactionalTruncate: Send + Sync {
     fn truncate(&self, txn: &mut Transaction) -> DatabaseResult<()>;
 }
+
+pub trait Scan: Send + Sync {
+    type Key;
+    type Entity;
+    fn scan(&self) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
+pub trait TransactionalScan: Send + Sync {
+    type Key;
+    type Entity;
+    fn scan(&self, txn: &Transaction) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}

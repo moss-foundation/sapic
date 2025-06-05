@@ -7,9 +7,9 @@ use crate::{
     storage::{
         SegBinTable,
         operations::{
-            GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
+            GetItem, ListByPrefix, PutItem, RemoveItem, Scan, TransactionalGetItem,
             TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-            TransactionalTruncate, Truncate,
+            TransactionalScan, TransactionalTruncate, Truncate,
         },
     },
 };
@@ -22,29 +22,6 @@ pub struct AppLogCacheImpl {
 impl AppLogCacheImpl {
     pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
         Self { client, table }
-    }
-}
-
-impl ListByPrefix for AppLogCacheImpl {
-    type Key = SegKeyBuf;
-    type Entity = AnyValue;
-
-    fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        let read_txn = self.client.begin_read()?;
-        self.table.scan_by_prefix(&read_txn, prefix)
-    }
-}
-
-impl TransactionalListByPrefix for AppLogCacheImpl {
-    type Key = SegKeyBuf;
-    type Entity = AnyValue;
-
-    fn list_by_prefix(
-        &self,
-        txn: &Transaction,
-        prefix: &str,
-    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
-        self.table.scan_by_prefix(txn, prefix)
     }
 }
 
@@ -116,13 +93,33 @@ impl TransactionalGetItem for AppLogCacheImpl {
 impl Truncate for AppLogCacheImpl {
     fn truncate(&self) -> DatabaseResult<()> {
         let mut write_txn = self.client.begin_write()?;
-        self.table.truncate(&mut write_txn)
+        self.table.truncate(&mut write_txn)?;
+        write_txn.commit()
     }
 }
 
 impl TransactionalTruncate for AppLogCacheImpl {
     fn truncate(&self, txn: &mut Transaction) -> DatabaseResult<()> {
         self.table.truncate(txn)
+    }
+}
+
+impl Scan for AppLogCacheImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn scan(&self) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let read_txn = self.client.begin_read()?;
+        self.table.scan(&read_txn).map(|res| res.collect())
+    }
+}
+
+impl TransactionalScan for AppLogCacheImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn scan(&self, txn: &Transaction) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        self.table.scan(txn).map(|res| res.collect())
     }
 }
 

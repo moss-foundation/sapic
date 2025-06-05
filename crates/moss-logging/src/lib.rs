@@ -1,8 +1,10 @@
+mod applog_writer;
 mod constants;
 mod makewriter;
 mod models;
 
 use crate::{
+    applog_writer::AppLogMakeWriter,
     constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
     makewriter::TauriLogMakeWriter,
     models::{
@@ -28,7 +30,7 @@ use std::{
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
-    sync::Arc,
+    sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
@@ -103,8 +105,8 @@ pub struct LoggingService {
     applog_cache: Arc<dyn AppLogCache>,
     sessionlog_cache: Arc<dyn SessionLogCache>,
     // TODO: Remove
-    _app_log_guard: WorkerGuard,
-    _session_log_guard: WorkerGuard,
+    // _app_log_guard: WorkerGuard,
+    // _session_log_guard: WorkerGuard,
 }
 
 impl LoggingService {
@@ -242,41 +244,41 @@ impl LoggingService {
 
         let session_path = app_log_path.join("sessions").join(session_id.to_string());
 
-        let session_log_appender = tracing_appender_localtime::rolling::Builder::new()
-            .rotation(Rotation::MINUTELY)
-            .filename_suffix("log")
-            .build(&session_path)?;
-        let (session_log_writer, _session_log_guard) =
-            tracing_appender_localtime::non_blocking(session_log_appender);
-
-        let app_log_appender = tracing_appender_localtime::rolling::Builder::new()
-            .rotation(Rotation::MINUTELY)
-            .filename_suffix("log")
-            .build(&app_log_path)?;
-        let (app_log_writer, _app_log_guard) =
-            tracing_appender_localtime::non_blocking(app_log_appender);
+        // let session_log_appender = tracing_appender_localtime::rolling::Builder::new()
+        //     .rotation(Rotation::MINUTELY)
+        //     .filename_suffix("log")
+        //     .build(&session_path)?;
+        // let (session_log_writer, _session_log_guard) =
+        //     tracing_appender_localtime::non_blocking(session_log_appender);
+        //
+        // let app_log_appender = tracing_appender_localtime::rolling::Builder::new()
+        //     .rotation(Rotation::MINUTELY)
+        //     .filename_suffix("log")
+        //     .build(&app_log_path)?;
+        // let (app_log_writer, _app_log_guard) =
+        //     tracing_appender_localtime::non_blocking(app_log_appender);
 
         let subscriber = tracing_subscriber::registry()
-            .with(
-                // Session log subscriber
-                tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format.clone())
-                    .with_writer(session_log_writer)
-                    .fmt_fields(JsonFields::default())
-                    .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
-                    })),
-            )
-            .with(
-                // App log subscriber
-                tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format.clone())
-                    .with_writer(app_log_writer)
-                    .fmt_fields(JsonFields::default())
-                    .with_filter(filter_fn(|metadata| {
-                        metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
-                    })),
-            )
+            // .with(
+            //     // Session log subscriber
+            //     tracing_subscriber::fmt::layer()
+            //         .event_format(standard_log_format.clone())
+            //         .with_writer(session_log_writer)
+            //         .fmt_fields(JsonFields::default())
+            //         .with_filter(filter_fn(|metadata| {
+            //             metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
+            //         })),
+            // )
+            // .with(
+            //     // App log subscriber
+            //     tracing_subscriber::fmt::layer()
+            //         .event_format(standard_log_format.clone())
+            //         .with_writer(app_log_writer)
+            //         .fmt_fields(JsonFields::default())
+            //         .with_filter(filter_fn(|metadata| {
+            //             metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
+            //         })),
+            // )
             .with(
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
@@ -288,17 +290,29 @@ impl LoggingService {
             .with(
                 // Emitting all logs to the frontend at LOGGING_SERVICE_CHANNEL
                 tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format)
+                    .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
                     .with_writer(TauriLogMakeWriter {
                         app_handle: app_handle.clone(),
                     }),
+            )
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format.clone())
+                    .fmt_fields(JsonFields::default())
+                    .with_writer(AppLogMakeWriter {
+                        applog_cache: global_storage.applog_cache(),
+                        applog_path: app_log_path.to_path_buf(),
+                        cache_counter: Arc::new(AtomicUsize::new(0)),
+                        dump_threshold: 50,
+                    })
+                    .with_filter(filter_fn(|metadata| metadata.target() == APP_SCOPE)),
             );
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
-            _app_log_guard,
-            _session_log_guard,
+            // _app_log_guard,
+            // _session_log_guard,
             applog_path: app_log_path.to_path_buf(),
             sessionlog_path: session_path,
             applog_cache: global_storage.applog_cache(),
@@ -438,6 +452,8 @@ impl AppService for LoggingService {}
 mod tests {
     use super::*;
     use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use moss_storage::global_storage::GlobalStorageImpl;
+    use std::time::Duration;
     use tauri::{Listener, Manager};
     use tracing::instrument;
 
@@ -506,45 +522,71 @@ mod tests {
         );
     }
 
-    const TEST_SESSION_LOG_FOLDER: &'static str = "logs/session";
-    const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
+    const TEST_APP_LOG_FOLDER: &'static str = "test/logs";
+    const TEST_GLOBAL_STORAGE_PATH: &'static str = "test";
+
     #[tokio::test]
-    async fn test() {
+    async fn test_applog_writer() {
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
+        let storage = Arc::new(GlobalStorageImpl::new(TEST_GLOBAL_STORAGE_PATH).unwrap());
         let logging_service = LoggingService::new(
             mock_app.app_handle().clone(),
             Path::new(TEST_APP_LOG_FOLDER),
-            Path::new(TEST_SESSION_LOG_FOLDER),
             &session_id,
+            storage.clone(),
         )
         .unwrap();
 
-        mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
-            println!("{}", event.payload())
-        });
-
-        let collection_path = Path::new("").join("TestCollection");
-
-        create_collection(Path::new(""), "TestCollection", &logging_service).await;
-        create_request(&collection_path, "TestRequest", &logging_service).await;
-        something_terrible(&logging_service).await;
-
-        let input = ListLogsInput {
-            dates: vec![],
-            levels: vec![LogLevel::INFO],
-            resource: None,
-        };
-
-        let output = logging_service
-            .list_logs(&input)
-            .unwrap()
-            .contents
-            .into_iter()
-            .map(|entry| serde_json::to_value(entry).unwrap().to_string())
-            .collect::<Vec<_>>()
-            .join("\n");
-
-        fs::write("logs/filtered", output).unwrap();
+        loop {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            logging_service.debug(
+                LogScope::App,
+                LogPayload {
+                    resource: None,
+                    message: "Test".to_string(),
+                },
+            )
+        }
     }
+
+    // #[tokio::test]
+    // async fn test() {
+    //     let mock_app = tauri::test::mock_app();
+    //     let session_id = Uuid::new_v4();
+    //     let logging_service = LoggingService::new(
+    //         mock_app.app_handle().clone(),
+    //         Path::new(TEST_APP_LOG_FOLDER),
+    //         Path::new(TEST_SESSION_LOG_FOLDER),
+    //         &session_id,
+    //     )
+    //     .unwrap();
+    //
+    //     mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
+    //         println!("{}", event.payload())
+    //     });
+    //
+    //     let collection_path = Path::new("").join("TestCollection");
+    //
+    //     create_collection(Path::new(""), "TestCollection", &logging_service).await;
+    //     create_request(&collection_path, "TestRequest", &logging_service).await;
+    //     something_terrible(&logging_service).await;
+    //
+    //     let input = ListLogsInput {
+    //         dates: vec![],
+    //         levels: vec![LogLevel::INFO],
+    //         resource: None,
+    //     };
+    //
+    //     let output = logging_service
+    //         .list_logs(&input)
+    //         .unwrap()
+    //         .contents
+    //         .into_iter()
+    //         .map(|entry| serde_json::to_value(entry).unwrap().to_string())
+    //         .collect::<Vec<_>>()
+    //         .join("\n");
+    //
+    //     fs::write("logs/filtered", output).unwrap();
+    // }
 }
