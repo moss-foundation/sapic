@@ -206,7 +206,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                               "border-r border-(--moss-border-color) px-2 py-1.5",
                               isLastColumn && "border-r-0"
                             )}
-                            style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                            style={{ width: cell.column.getSize() }}
                           />
                         );
                       }
@@ -219,7 +219,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                             "border-r border-(--moss-border-color) px-2 py-1.5",
                             isLastColumn && "border-r-0"
                           )}
-                          style={{ width: cell.column.getSize() !== 150 ? cell.column.getSize() : "auto" }}
+                          style={{ width: cell.column.getSize() }}
                         >
                           <input
                             form={`${tableId}-AddNewRowForm`}

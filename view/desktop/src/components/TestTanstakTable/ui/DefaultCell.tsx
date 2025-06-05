@@ -8,7 +8,7 @@ function DefaultCell<TData>({ cell }: { cell: Cell<TData, unknown> }) {
   return (
     <div
       role="cell"
-      className={cn("border-r border-b border-(--moss-border-color) px-2 py-1.5", {
+      className={cn("flex items-center justify-center border-r border-b border-(--moss-border-color)", {
         "border-r-0": isLastColumn,
         "opacity-60": !isSelected,
       })}

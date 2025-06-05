@@ -308,7 +308,7 @@ const TestTableInputCell = ({ info }: { info: CellContext<TestData, number | str
 
   return (
     <input
-      className="w-full truncate outline-0 disabled:text-(--moss-gray-1)/50"
+      className="w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-(--moss-primary) disabled:text-(--moss-gray-1)/50"
       value={str}
       onChange={(e) => setStr(e.target.value)}
     />
