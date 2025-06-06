@@ -29,15 +29,19 @@ use tokio::sync::mpsc;
 use util::names::dir_name_from_classification;
 use uuid::Uuid;
 
-use crate::models::{
-    primitives::{ChangesDiffSet, EntryId},
-    types::{Classification, RequestProtocol},
+use crate::{
+    models::{
+        primitives::{ChangesDiffSet, EntryId},
+        types::{Classification, PathChangeKind, RequestProtocol},
+    },
+    worktree::snapshot::{UnloadedId, UnloadedParentId},
 };
 
 pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
 pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
 
 pub(crate) const ROOT_PATH: &str = "";
+pub(crate) const ROOT_UNLOADED_ID: UnloadedId = 0;
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
@@ -98,10 +102,10 @@ impl Worktree {
     pub async fn new(fs: Arc<dyn FileSystem>, abs_path: Arc<Path>) -> Result<Self, WorktreeError> {
         debug_assert!(abs_path.is_absolute());
 
-        let next_unloaded_id = Arc::new(AtomicUsize::new(0));
+        let next_unloaded_id = Arc::new(AtomicUsize::new(ROOT_UNLOADED_ID + 1));
         let mut unloaded_entries = vec![(
             UnloadedEntry::Dir {
-                id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
+                id: ROOT_UNLOADED_ID,
                 path: Path::new(ROOT_PATH).into(),
                 abs_path: Arc::clone(&abs_path),
             },
@@ -131,7 +135,7 @@ impl Worktree {
         abs_path: &Path,
         path: &Path,
         next_unloaded_id: Arc<AtomicUsize>,
-    ) -> WorktreeResult<Vec<(UnloadedEntry, Option<usize>)>> {
+    ) -> WorktreeResult<Vec<(UnloadedEntry, Option<UnloadedParentId>)>> {
         debug_assert!(path.is_relative());
         debug_assert!(abs_path.is_absolute());
 
@@ -184,7 +188,6 @@ impl Worktree {
                             abs_path: Arc::clone(&child_abs_path),
                         };
                     } else {
-                        println!("{} is not a valid directory", child_abs_path.display());
                         continue;
                     }
 
@@ -244,97 +247,177 @@ impl Worktree {
         }
     }
 
-    pub async fn load_entry(&mut self, path: &Path, depth: u8) -> WorktreeResult<()> {
-        let mut ancestors_to_load = Vec::new();
+    pub async fn load_entry(&mut self, path: &Path, depth: u8) -> WorktreeResult<ChangesDiffSet> {
+        let mut changes = Vec::new();
+        let encoded_path: Arc<Path> = moss_fs::utils::sanitize_path(path, None)?.into();
 
-        // Collect all ancestors that need to be loaded
-        for ancestor in path.ancestors() {
-            if !self.snapshot.is_loaded(ancestor) {
-                ancestors_to_load.push(ancestor.to_path_buf());
-            } else {
-                // Stop if we found a loaded ancestor
-                break;
-            }
+        // Load all ancestors and their children at depth 1
+        let ancestors_to_load = self.collect_ancestors_to_load(&encoded_path);
+        self.load_ancestors_with_children(&ancestors_to_load, &encoded_path, &mut changes)
+            .await?;
+
+        // Load the target path if not already loaded
+        if !self.snapshot.is_loaded(&encoded_path) {
+            let id = self.load_single_entry(encoded_path.clone()).await?;
+            changes.push((encoded_path.clone(), id, PathChangeKind::Loaded));
         }
 
-        // Load ancestors from root to leaves (in reverse order)
-        ancestors_to_load.reverse();
-        for ancestor_path in ancestors_to_load {
-            if !self.snapshot.is_loaded(&ancestor_path) {
-                self.load_single_entry(&ancestor_path).await?;
-            }
-        }
-
-        if !self.snapshot.is_loaded(path) {
-            self.load_single_entry(path).await?;
-        }
-
-        // If depth > 0, load children on the specified depth
+        // Load children of the target path at the specified depth
         if depth > 0 {
-            let mut current_level = vec![path.to_path_buf()];
+            self.load_entry_internal(encoded_path, depth, &mut changes)
+                .await?;
+        }
 
-            for _ in 0..depth {
-                let mut next_level = Vec::new();
+        Ok(ChangesDiffSet::from(changes))
+    }
 
-                for current_path in current_level {
-                    // Get unloaded children of this path
-                    let unloaded_children = self
-                        .snapshot
-                        .unloaded_children_by_parent_path(&current_path);
+    /// Collects all ancestors that need to be loaded, from root to target
+    fn collect_ancestors_to_load(&self, target_path: &Path) -> Vec<PathBuf> {
+        let mut ancestors_to_load = Vec::new();
+        let mut current_path = target_path;
 
-                    for child in unloaded_children {
-                        let child_path = child.path().to_path_buf();
-                        if !self.snapshot.is_loaded(&child_path) {
-                            self.load_single_entry(&child_path).await?;
-                        }
-                        next_level.push(child_path);
-                    }
-                }
+        // Collect unloaded ancestors
+        while !current_path.as_os_str().is_empty() {
+            if !self.snapshot.is_loaded(current_path) {
+                ancestors_to_load.push(current_path.to_path_buf());
+            }
+            current_path = current_path.parent().unwrap_or(Path::new(""));
+        }
 
-                current_level = next_level;
-                if current_level.is_empty() {
-                    break;
-                }
+        // Ensure root is included if not loaded
+        if !self.snapshot.is_loaded(Path::new("")) {
+            ancestors_to_load.push(PathBuf::from(""));
+        }
+
+        // Reverse to load from root down
+        ancestors_to_load.reverse();
+        ancestors_to_load
+    }
+
+    /// Loads ancestors and their children at depth 1 (excluding target path)
+    async fn load_ancestors_with_children(
+        &mut self,
+        ancestors_to_load: &[PathBuf],
+        target_path: &Path,
+        changes: &mut Vec<(Arc<Path>, Uuid, PathChangeKind)>,
+    ) -> WorktreeResult<()> {
+        for ancestor_path in ancestors_to_load {
+            if !self.snapshot.is_loaded(ancestor_path) {
+                let ancestor_id = self.load_single_entry(ancestor_path.clone().into()).await?;
+                changes.push((
+                    ancestor_path.clone().into(),
+                    ancestor_id,
+                    PathChangeKind::Loaded,
+                ));
+            }
+        }
+
+        // Load children of ancestors at depth 1 (except target path)
+        for ancestor_path in ancestors_to_load {
+            if ancestor_path != target_path {
+                changes.extend(self.load_entry_children(ancestor_path).await?);
             }
         }
 
         Ok(())
     }
 
-    pub async fn load_single_entry(&mut self, path: &Path) -> WorktreeResult<()> {
+    /// Loads children of the target path at the specified depth
+    async fn load_entry_internal(
+        &mut self,
+        target_path: Arc<Path>,
+        depth: u8,
+        changes: &mut Vec<(Arc<Path>, Uuid, PathChangeKind)>,
+    ) -> WorktreeResult<()> {
+        let mut current_level = vec![target_path];
+
+        for _ in 0..depth {
+            let mut next_level = Vec::new();
+
+            for current_path in current_level {
+                let children_changes = self.load_entry_children(&current_path).await?;
+                next_level.extend(children_changes.iter().map(|(path, _, _)| path.clone()));
+                changes.extend(children_changes);
+            }
+
+            current_level = next_level;
+            if current_level.is_empty() {
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn load_entry_children(
+        &mut self,
+        parent_path: &Path,
+    ) -> WorktreeResult<Vec<(Arc<Path>, Uuid, PathChangeKind)>> {
+        let unloaded_children = self.snapshot.unloaded_children_by_parent_path(parent_path);
+        let mut changes = Vec::with_capacity(unloaded_children.len());
+
+        for child in unloaded_children {
+            let child_path: Arc<Path> = Arc::clone(child.path());
+            if !self.snapshot.is_loaded(&child_path) {
+                let child_id = self.load_single_entry(child_path.clone()).await?;
+                changes.push((child_path, child_id, PathChangeKind::Loaded));
+            }
+        }
+
+        Ok(changes)
+    }
+
+    async fn load_single_entry(&mut self, path: Arc<Path>) -> WorktreeResult<Uuid> {
         let unloaded_entry = self
             .snapshot
-            .unloaded_entry_by_path(path)
-            .ok_or(WorktreeError::NotFound(path.display().to_string()))?
-            .clone();
+            .unloaded_entry_by_path(&path)
+            .ok_or(WorktreeError::NotFound(path.display().to_string()))?;
 
-        let entry = if unloaded_entry.is_root() {
-            Entry {
+        let entry = self
+            .create_entry_from_unloaded(unloaded_entry, path)
+            .await?;
+        let id = entry.id;
+
+        self.snapshot.load_entry(unloaded_entry.id(), entry)?;
+
+        Ok(id)
+    }
+
+    /// Creates an Entry from an UnloadedEntry, handling config loading
+    async fn create_entry_from_unloaded(
+        &self,
+        unloaded_entry: &UnloadedEntry,
+        path: Arc<Path>,
+    ) -> WorktreeResult<Entry> {
+        if unloaded_entry.is_root() {
+            Ok(Entry {
                 id: Uuid::nil(),
-                path: unloaded_entry.path().to_owned(),
+                path,
                 config: None,
-            }
+            })
         } else {
-            let config_path = match &unloaded_entry {
-                UnloadedEntry::Item { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_ITEM),
-                UnloadedEntry::Dir { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_DIR),
-            };
-
+            let config_path = self.get_config_path(unloaded_entry);
             let config = EditableInPlaceFileHandle::<ConfigurationModel>::load(
                 self.fs.clone(),
                 &config_path,
             )
             .await?;
-            Entry {
-                id: config.model().await.id(),
-                path: unloaded_entry.path().to_owned(),
+
+            let id = config.model().await.id();
+            Ok(Entry {
+                id,
+                path,
                 config: Some(config),
-            }
-        };
+            })
+        }
+    }
 
-        self.snapshot.load_entry(unloaded_entry.id(), entry)?;
-
-        Ok(())
+    /// Gets the config file path for an unloaded entry
+    fn get_config_path(&self, unloaded_entry: &UnloadedEntry) -> PathBuf {
+        match unloaded_entry {
+            UnloadedEntry::Item { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_ITEM),
+            UnloadedEntry::Dir { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_DIR),
+        }
     }
 
     pub async fn create_entry(
@@ -471,12 +554,12 @@ mod tests {
 
         // worktree.load_entry(Path::new("qux"), 1).await.unwrap();
 
-        worktree
-            .load_entry(Path::new("foo"), u8::MAX)
-            .await
-            .unwrap();
+        let changes = worktree.load_entry(Path::new(""), 1).await.unwrap();
 
         println!("{}", worktree.snapshot);
+        for change in changes.iter() {
+            println!("{:?}", change);
+        }
     }
 
     #[tokio::test]
@@ -533,6 +616,43 @@ mod tests {
             .unwrap();
 
         println!("{}", worktree.snapshot);
+    }
+
+    #[tokio::test]
+    async fn test_load_with_parent_children() {
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data/test")
+                .into(),
+        )
+        .await
+        .unwrap();
+
+        // Load only foo/baz with depth 0 (no children of target)
+        let changes = worktree.load_entry(Path::new("foo/baz"), 0).await.unwrap();
+
+        println!("=== Snapshot after loading foo/baz ===");
+        println!("{}", worktree.snapshot);
+
+        println!("=== Changes ===");
+        for change in changes.iter() {
+            println!("{:?}", change);
+        }
+
+        // Verify that:
+        // 1. Root is loaded
+        // 2. All children of root are loaded (foo, qux)
+        // 3. Target foo/baz is loaded
+        // 4. Children of foo/baz are NOT loaded (depth=0)
+
+        assert!(worktree.snapshot.is_loaded(Path::new(""))); // root
+        assert!(worktree.snapshot.is_loaded(Path::new("foo"))); // child of root
+        assert!(worktree.snapshot.is_loaded(Path::new("qux"))); // child of root
+        assert!(worktree.snapshot.is_loaded(Path::new("foo/baz"))); // target
+        assert!(!worktree.snapshot.is_loaded(Path::new("foo/baz/pax"))); // child of target (should not be loaded)
     }
 }
 

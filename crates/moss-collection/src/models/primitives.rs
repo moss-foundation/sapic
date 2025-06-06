@@ -7,6 +7,7 @@ use std::{
     },
 };
 use ts_rs::TS;
+use uuid::Uuid;
 
 use super::types::PathChangeKind;
 
@@ -31,4 +32,4 @@ impl std::fmt::Display for EntryId {
     }
 }
 
-pub type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
+pub type ChangesDiffSet = Arc<[(Arc<Path>, Uuid, PathChangeKind)]>;

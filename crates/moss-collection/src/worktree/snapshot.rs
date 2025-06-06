@@ -16,6 +16,8 @@ use std::{
 };
 use uuid::Uuid;
 
+use crate::worktree::ROOT_UNLOADED_ID;
+
 use super::ROOT_PATH;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,22 +75,25 @@ impl ConfigurationModel {
     }
 }
 
+pub type UnloadedId = usize;
+pub type UnloadedParentId = UnloadedId;
+
 #[derive(Debug, Clone)]
 pub enum UnloadedEntry {
     Item {
-        id: usize,
+        id: UnloadedId,
         abs_path: Arc<Path>,
         path: Arc<Path>,
     },
     Dir {
-        id: usize,
+        id: UnloadedId,
         abs_path: Arc<Path>,
         path: Arc<Path>,
     },
 }
 
 impl UnloadedEntry {
-    pub fn id(&self) -> usize {
+    pub fn id(&self) -> UnloadedId {
         match self {
             UnloadedEntry::Item { id, .. } => *id,
             UnloadedEntry::Dir { id, .. } => *id,
@@ -103,7 +108,7 @@ impl UnloadedEntry {
     }
 
     pub fn is_root(&self) -> bool {
-        self.id() == 0
+        self.id() == ROOT_UNLOADED_ID
     }
 }
 
@@ -143,13 +148,13 @@ pub struct Snapshot {
     entries: DiGraph<Entry, ()>,
     entries_by_id: HashMap<Uuid, NodeIndex>,
     entries_by_path: HashMap<Arc<Path>, NodeIndex>,
-    unloaded_entries: DiGraphMap<usize, ()>,
-    unloaded_entries_by_id: HashMap<usize, UnloadedEntry>,
-    unloaded_entries_by_path: HashMap<Arc<Path>, usize>,
+    unloaded_entries: DiGraphMap<UnloadedId, ()>,
+    unloaded_entries_by_id: HashMap<UnloadedId, UnloadedEntry>,
+    unloaded_entries_by_path: HashMap<Arc<Path>, UnloadedId>,
 }
 
 impl Snapshot {
-    pub fn new(mut unloaded_entries: Vec<(UnloadedEntry, Option<usize>)>) -> Self {
+    pub fn new(mut unloaded_entries: Vec<(UnloadedEntry, Option<UnloadedParentId>)>) -> Self {
         debug_assert!(
             unloaded_entries.len() > 0,
             "At least one the root entry must be present"
@@ -167,6 +172,9 @@ impl Snapshot {
 
         for (unloaded_entry, parent_opt) in unloaded_entries.into_iter() {
             let id = unloaded_entry.id();
+
+            dbg!(&unloaded_entry);
+            dbg!(&parent_opt);
 
             unloaded_entries_graph.add_node(id);
             unloaded_entries_by_id.insert(id, unloaded_entry.clone());
@@ -254,17 +262,27 @@ impl Snapshot {
         self.unloaded_entries.remove_node(unloaded_id);
         self.unloaded_entries_by_path.remove(entry.path());
 
-        dbg!(parent_path);
-        if let Some(parent_idx) = self.entries_by_path.get(parent_path) {
+        if entry.is_root() {
+            self.create_entry(entry, None)?;
+        } else if let Some(parent_idx) = self.entries_by_path.get(parent_path) {
             let parent_id = self.entries[*parent_idx].id;
             self.create_entry(entry, Some(parent_id))?;
-        } else if parent_path == Path::new(ROOT_PATH) {
-            self.create_entry(entry, None)?;
         } else {
             return Err(anyhow::anyhow!(
-                "Child entry cannot be unloaded before its parent"
+                "Child entry cannot be loaded before its parent"
             ));
         }
+
+        // if let Some(parent_idx) = self.entries_by_path.get(parent_path) {
+        //     let parent_id = self.entries[*parent_idx].id;
+        //     self.create_entry(entry, Some(parent_id))?;
+        // } else if parent_path == Path::new(ROOT_PATH) {
+        //     self.create_entry(entry, None)?;
+        // } else {
+        //     return Err(anyhow::anyhow!(
+        //         "Child entry cannot be unloaded before its parent"
+        //     ));
+        // }
 
         Ok(())
     }
