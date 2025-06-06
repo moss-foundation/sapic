@@ -1,11 +1,6 @@
 use chrono::DateTime;
-use std::{
-    collections::VecDeque,
-    fs::OpenOptions,
-    io::BufWriter,
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use parking_lot::Mutex;
+use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
 use tracing_subscriber::fmt::MakeWriter;
 
 use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntryInfo};
@@ -34,7 +29,7 @@ impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.log_queue.lock().unwrap();
+        let mut queue_lock = self.log_queue.lock();
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =

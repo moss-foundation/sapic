@@ -3180,6 +3180,7 @@ dependencies = [
  "moss_common",
  "moss_testutils",
  "nanoid",
+ "parking_lot",
  "serde",
  "serde_json",
  "tauri",

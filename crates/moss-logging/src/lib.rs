@@ -6,11 +6,12 @@ mod writers;
 use anyhow::Result;
 use moss_app::service::prelude::AppService;
 use nanoid::nanoid;
+use parking_lot::Mutex;
 use std::{
     collections::VecDeque,
     fs, io,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, subscriber::DefaultGuard, trace, warn};

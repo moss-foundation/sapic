@@ -1,6 +1,7 @@
 use anyhow::Result;
 use chrono::{NaiveDate, NaiveDateTime};
 use moss_common::api::{OperationError, OperationResult};
+use parking_lot::Mutex;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -8,7 +9,7 @@ use std::{
     io::{BufRead, BufReader},
     path::Path,
     str::FromStr,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use tracing::Level;
 
@@ -147,7 +148,7 @@ impl LoggingService {
             }
         }
         result.extend({
-            let lock = queue.lock().unwrap();
+            let lock = queue.lock();
             lock.clone().into_iter().filter_map(|entry| {
                 if let Ok(datetime) =
                     NaiveDateTime::parse_from_str(&entry.timestamp, TIMESTAMP_FORMAT)

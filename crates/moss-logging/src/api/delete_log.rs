@@ -18,7 +18,7 @@ impl LoggingService {
                 OperationError::InvalidInput("The input timestamp is invalid".to_string())
             })?;
         {
-            let mut applog_queue_lock = self.applog_queue.lock().unwrap();
+            let mut applog_queue_lock = self.applog_queue.lock();
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -26,7 +26,7 @@ impl LoggingService {
             }
         }
         {
-            let mut sessionlog_queue_lock = self.sessionlog_queue.lock().unwrap();
+            let mut sessionlog_queue_lock = self.sessionlog_queue.lock();
             let idx = sessionlog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
