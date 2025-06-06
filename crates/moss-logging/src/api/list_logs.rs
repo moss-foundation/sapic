@@ -1,9 +1,10 @@
+use anyhow::Result;
 use chrono::{NaiveDate, NaiveDateTime};
+use moss_common::api::{OperationError, OperationResult};
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
     fs,
-    fs::File,
     io::{BufRead, BufReader},
     path::Path,
     str::FromStr,
@@ -54,7 +55,7 @@ impl From<ListLogsInput> for LogFilter {
 }
 
 impl LoggingService {
-    pub fn list_logs(&self, input: &ListLogsInput) -> anyhow::Result<ListLogsOutput> {
+    pub fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
         // Combining both app and session log
         let filter: LogFilter = input.clone().into();
         let app_logs = self.combine_logs(&self.applog_path, &filter, self.applog_queue.clone())?;
@@ -79,10 +80,10 @@ impl LoggingService {
         records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
         path: &Path,
         filter: &LogFilter,
-    ) -> anyhow::Result<()> {
+    ) -> Result<()> {
         // In the log files, each line is a LogEntry JSON object
         // Entries in each log files are already sorted chronologically
-        let file = File::open(path)?;
+        let file = fs::File::open(path)?;
 
         for line in BufReader::new(file).lines() {
             let line = line?;
@@ -118,7 +119,7 @@ impl LoggingService {
         path: &Path,
         filter: &LogFilter,
         queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    ) -> anyhow::Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
+    ) -> Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
         // Combine all log entries in app/session log path according to a certain filter
         // And append the current log queue at the end
         let mut result = Vec::new();
@@ -131,12 +132,13 @@ impl LoggingService {
                 continue;
             }
 
-            let file_date = NaiveDate::parse_from_str(
+            // Skip log files with ill-formatted names
+            if let Ok(file_date) = NaiveDate::parse_from_str(
                 &path.file_stem().unwrap().to_string_lossy().to_string(),
                 FILE_DATE_FORMAT,
-            )?;
-
-            log_files.push((path, file_date));
+            ) {
+                log_files.push((path, file_date));
+            }
         }
         log_files.sort_by_key(|p| p.1);
         for (path, date_time) in &log_files {

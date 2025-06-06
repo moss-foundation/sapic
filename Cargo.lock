@@ -3177,6 +3177,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "moss_app",
+ "moss_common",
  "moss_testutils",
  "nanoid",
  "serde",

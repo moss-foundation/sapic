@@ -1,5 +1,6 @@
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDateTime};
+use moss_common::api::{OperationError, OperationResult};
 use std::{
     fs::{File, read_to_string},
     io::Write,
@@ -11,7 +12,11 @@ use crate::{
     models::{operations::DeleteLogInput, types::LogEntryInfo},
 };
 impl LoggingService {
-    pub fn delete_log(&self, input: &DeleteLogInput) -> Result<()> {
+    pub fn delete_log(&self, input: &DeleteLogInput) -> OperationResult<()> {
+        let datetime =
+            DateTime::parse_from_str(&input.timestamp, TIMESTAMP_FORMAT).map_err(|err| {
+                OperationError::InvalidInput("The input timestamp is invalid".to_string())
+            })?;
         {
             let mut applog_queue_lock = self.applog_queue.lock().unwrap();
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
@@ -28,7 +33,6 @@ impl LoggingService {
                 return Ok(());
             }
         }
-        let datetime = DateTime::parse_from_str(&input.timestamp, TIMESTAMP_FORMAT)?;
         {
             let log_files = Self::identify_log_file(&self.applog_path, datetime)?;
             for file in log_files {
