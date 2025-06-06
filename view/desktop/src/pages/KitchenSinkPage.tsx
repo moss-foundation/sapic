@@ -395,12 +395,16 @@ const ExampleTable = () => {
     <>
       <h2 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">columns visibility</h2>
       <div className="flex items-center gap-2">
-        {tableApi?.getAllLeafColumns().map((column) => (
-          <div>
-            <CheckboxWithLabel checked={column.getIsVisible()} onCheckedChange={() => column.toggleVisibility()} />
-            {column.id}
-          </div>
-        ))}
+        {tableApi
+          ?.getAllLeafColumns()
+          .map((column) => (
+            <CheckboxWithLabel
+              key={column.id}
+              label={column.id}
+              checked={column.getIsVisible()}
+              onCheckedChange={() => column.toggleVisibility()}
+            />
+          ))}
       </div>
       <DataTable<string | number> columns={columns} data={testData} onTableApiSet={handleTableApiSet} />
     </>
