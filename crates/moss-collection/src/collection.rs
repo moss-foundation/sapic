@@ -32,7 +32,6 @@ pub struct Collection {
     worktree: OnceCell<Worktree>,
     abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
-    next_entry_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     environments: OnceCell<EnvironmentMap>,
     manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
@@ -50,11 +49,7 @@ pub struct ModifyParams {
 }
 
 impl Collection {
-    pub async fn load(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        next_entry_id: Arc<AtomicUsize>,
-    ) -> Result<Self> {
+    pub async fn load(abs_path: &Path, fs: Arc<dyn FileSystem>) -> Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
         let storage = CollectionStorageImpl::new(&abs_path).context(format!(
@@ -75,18 +70,13 @@ impl Collection {
             abs_path: abs_path.to_owned().into(),
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
-            next_entry_id,
             environments: OnceCell::new(),
             manifest,
             config,
         })
     }
 
-    pub async fn create<'a>(
-        fs: Arc<dyn FileSystem>,
-        next_entry_id: Arc<AtomicUsize>,
-        params: CreateParams<'a>,
-    ) -> Result<Self> {
+    pub async fn create<'a>(fs: Arc<dyn FileSystem>, params: CreateParams<'a>) -> Result<Self> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
@@ -127,7 +117,6 @@ impl Collection {
             abs_path: params.internal_abs_path.to_owned().into(),
             worktree: OnceCell::new(),
             storage: Arc::new(storage),
-            next_entry_id,
             environments: OnceCell::new(),
             manifest,
             config,
@@ -151,37 +140,36 @@ impl Collection {
     }
 
     pub async fn worktree(&self) -> Result<&Worktree> {
-        todo!()
-        // let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
-        //     external_abs_path
-        // } else {
-        //     self.abs_path.clone()
-        // };
+        let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
+            external_abs_path
+        } else {
+            self.abs_path.clone()
+        };
 
-        // self.worktree
-        //     .get_or_try_init(|| async move {
-        //         let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
+        self.worktree
+            .get_or_try_init(|| async move {
+                let worktree = Worktree::new(self.fs.clone(), abs_path).await?;
 
-        //         Ok(worktree)
-        //     })
-        //     .await
+                Ok::<_, anyhow::Error>(worktree)
+            })
+            .await
     }
 
     pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
-        todo!()
-        // if !self.worktree.initialized() {
-        //     let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
-        //     {
-        //         external_abs_path
-        //     } else {
-        //         self.abs_path.clone()
-        //     };
+        if !self.worktree.initialized() {
+            let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
+            {
+                external_abs_path
+            } else {
+                self.abs_path.clone()
+            };
 
-        //     let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
-        //     let _ = self.worktree.set(worktree);
-        // }
+            let worktree = Worktree::new(self.fs.clone(), abs_path).await?;
 
-        // Ok(self.worktree.get_mut().unwrap())
+            let _ = self.worktree.set(worktree);
+        }
+
+        Ok(self.worktree.get_mut().unwrap())
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
