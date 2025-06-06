@@ -3177,16 +3177,12 @@ dependencies = [
  "anyhow",
  "chrono",
  "moss_app",
- "moss_db",
- "moss_storage",
  "nanoid",
  "serde",
  "serde_json",
  "tauri",
  "tokio",
  "tracing",
- "tracing-appender",
- "tracing-appender-localtime",
  "tracing-subscriber",
  "ts-rs",
  "uuid",
@@ -6267,19 +6263,6 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3566e8ce28cc0a3fe42519fc80e6b4c943cc4c8cef275620eb8dac2d3d4e06cf"
 dependencies = [
- "crossbeam-channel",
- "thiserror 1.0.69",
- "time",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "tracing-appender-localtime"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "670bc982b2c71a1e7784dd30699144e125920d9cfc058a9d797c11447abf841e"
-dependencies = [
- "chrono",
  "crossbeam-channel",
  "thiserror 1.0.69",
  "time",

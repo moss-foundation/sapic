@@ -8,10 +8,7 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     GlobalStorage,
-    global_storage::stores::{
-        AppLogCache, GlobalItemStore, SessionLogCache, applog_cache::AppLogCacheImpl,
-        item_store::GlobalItemStoreImpl, sessionlog_cache::SessionLogCacheImpl,
-    },
+    global_storage::stores::{GlobalItemStore, item_store::GlobalItemStoreImpl},
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
@@ -20,8 +17,6 @@ pub mod entities;
 pub mod stores;
 
 pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
-pub const TABLE_APPLOGS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("applogs");
-pub const TABLE_SESSIONLOGS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("sessionlogs");
 pub struct GlobalStorageImpl {
     client: ReDbClient,
     tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
@@ -34,11 +29,7 @@ impl GlobalStorageImpl {
         let mut client = ReDbClient::new(path.as_ref().join(DB_NAME))?;
 
         let mut tables = HashMap::new();
-        for (type_id, table) in [
-            (TypeId::of::<GlobalItemStoreImpl>(), TABLE_ITEMS),
-            (TypeId::of::<AppLogCacheImpl>(), TABLE_APPLOGS),
-            (TypeId::of::<SessionLogCacheImpl>(), TABLE_SESSIONLOGS),
-        ] {
+        for (type_id, table) in [(TypeId::of::<GlobalItemStoreImpl>(), TABLE_ITEMS)] {
             client = client.with_table(&table)?;
             tables.insert(type_id, Arc::new(table));
         }
@@ -85,25 +76,5 @@ impl GlobalStorage for GlobalStorageImpl {
             .unwrap()
             .clone();
         Arc::new(GlobalItemStoreImpl::new(client, table))
-    }
-
-    fn applog_cache(&self) -> Arc<dyn AppLogCache> {
-        let client = self.client.clone();
-        let table = self
-            .tables
-            .get(&TypeId::of::<AppLogCacheImpl>())
-            .unwrap()
-            .clone();
-        Arc::new(AppLogCacheImpl::new(client, table))
-    }
-
-    fn sessionlog_cache(&self) -> Arc<dyn SessionLogCache> {
-        let client = self.client.clone();
-        let table = self
-            .tables
-            .get(&TypeId::of::<SessionLogCacheImpl>())
-            .unwrap()
-            .clone();
-        Arc::new(SessionLogCacheImpl::new(client, table))
     }
 }

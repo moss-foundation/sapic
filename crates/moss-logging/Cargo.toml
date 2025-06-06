@@ -5,8 +5,6 @@ edition = "2024"
 
 [dependencies]
 moss_app.workspace = true
-moss_db.workspace = true
-moss_storage.workspace = true
 
 anyhow.workspace = true
 chrono.workspace = true
@@ -16,8 +14,6 @@ serde_json.workspace = true
 tauri = { workspace = true, features = ["test"] }
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
-tracing-appender.workspace = true
-tracing-appender-localtime.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
 ts-rs.workspace = true
 uuid = { workspace = true, features = ["v4"] }

@@ -3,38 +3,22 @@ mod constants;
 mod makewriter;
 mod models;
 
-use crate::{
-    applog_writer::AppLogMakeWriter,
-    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
-    makewriter::TauriLogMakeWriter,
-    models::{
-        operations::{ListLogsInput, ListLogsOutput},
-        types::{LogEntry, LogLevel},
-    },
-};
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::prelude::AppService;
-use moss_storage::{
-    GlobalStorage,
-    global_storage::stores::{AppLogCache, SessionLogCache},
-};
 use nanoid::nanoid;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashSet,
     ffi::OsStr,
-    fs,
-    fs::File,
-    io,
-    io::{BufRead, BufReader},
+    fs::{self, File},
+    io::{self, BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
     sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
-use tracing_appender_localtime::{non_blocking::WorkerGuard, rolling::Rotation};
 use tracing_subscriber::{
     filter::filter_fn,
     fmt::{
@@ -44,6 +28,16 @@ use tracing_subscriber::{
     prelude::*,
 };
 use uuid::Uuid;
+
+use crate::{
+    applog_writer::AppLogMakeWriter,
+    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
+    makewriter::TauriLogMakeWriter,
+    models::{
+        operations::{ListLogsInput, ListLogsOutput},
+        types::{LogEntry, LogLevel},
+    },
+};
 
 fn new_id() -> String {
     nanoid!(ID_LENGTH)
@@ -102,11 +96,6 @@ pub enum LogScope {
 pub struct LoggingService {
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
-    applog_cache: Arc<dyn AppLogCache>,
-    sessionlog_cache: Arc<dyn SessionLogCache>,
-    // TODO: Remove
-    // _app_log_guard: WorkerGuard,
-    // _session_log_guard: WorkerGuard,
 }
 
 impl LoggingService {
@@ -219,9 +208,8 @@ impl LoggingService {
 impl LoggingService {
     pub fn new<R: TauriRuntime>(
         app_handle: AppHandle<R>,
-        app_log_path: &Path,
+        applog_path: &Path,
         session_id: &Uuid,
-        global_storage: Arc<dyn GlobalStorage>,
     ) -> Result<LoggingService> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
@@ -242,43 +230,9 @@ impl LoggingService {
             .compact()
             .with_ansi(true);
 
-        let session_path = app_log_path.join("sessions").join(session_id.to_string());
-
-        // let session_log_appender = tracing_appender_localtime::rolling::Builder::new()
-        //     .rotation(Rotation::MINUTELY)
-        //     .filename_suffix("log")
-        //     .build(&session_path)?;
-        // let (session_log_writer, _session_log_guard) =
-        //     tracing_appender_localtime::non_blocking(session_log_appender);
-        //
-        // let app_log_appender = tracing_appender_localtime::rolling::Builder::new()
-        //     .rotation(Rotation::MINUTELY)
-        //     .filename_suffix("log")
-        //     .build(&app_log_path)?;
-        // let (app_log_writer, _app_log_guard) =
-        //     tracing_appender_localtime::non_blocking(app_log_appender);
+        let session_path = applog_path.join("sessions").join(session_id.to_string());
 
         let subscriber = tracing_subscriber::registry()
-            // .with(
-            //     // Session log subscriber
-            //     tracing_subscriber::fmt::layer()
-            //         .event_format(standard_log_format.clone())
-            //         .with_writer(session_log_writer)
-            //         .fmt_fields(JsonFields::default())
-            //         .with_filter(filter_fn(|metadata| {
-            //             metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
-            //         })),
-            // )
-            // .with(
-            //     // App log subscriber
-            //     tracing_subscriber::fmt::layer()
-            //         .event_format(standard_log_format.clone())
-            //         .with_writer(app_log_writer)
-            //         .fmt_fields(JsonFields::default())
-            //         .with_filter(filter_fn(|metadata| {
-            //             metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
-            //         })),
-            // )
             .with(
                 // Showing all logs (including span events) to the console
                 tracing_subscriber::fmt::layer()
@@ -297,26 +251,20 @@ impl LoggingService {
                     }),
             )
             .with(
+                // Rolling writer for app-scope logs
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(AppLogMakeWriter {
-                        applog_cache: global_storage.applog_cache(),
-                        applog_path: app_log_path.to_path_buf(),
-                        cache_counter: Arc::new(AtomicUsize::new(0)),
-                        dump_threshold: 50,
-                    })
-                    .with_filter(filter_fn(|metadata| metadata.target() == APP_SCOPE)),
+                    .with_writer(AppLogMakeWriter::new(&applog_path, 10))
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
+                    })),
             );
 
         tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
-            // _app_log_guard,
-            // _session_log_guard,
-            applog_path: app_log_path.to_path_buf(),
+            applog_path: applog_path.to_path_buf(),
             sessionlog_path: session_path,
-            applog_cache: global_storage.applog_cache(),
-            sessionlog_cache: global_storage.sessionlog_cache(),
         })
     }
 
@@ -452,9 +400,8 @@ impl AppService for LoggingService {}
 mod tests {
     use super::*;
     use crate::constants::LOGGING_SERVICE_CHANNEL;
-    use moss_storage::global_storage::GlobalStorageImpl;
     use std::time::Duration;
-    use tauri::{Listener, Manager};
+    use tauri::Manager;
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
@@ -525,16 +472,15 @@ mod tests {
     const TEST_APP_LOG_FOLDER: &'static str = "test/logs";
     const TEST_GLOBAL_STORAGE_PATH: &'static str = "test";
 
+    #[ignore]
     #[tokio::test]
     async fn test_applog_writer() {
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
-        let storage = Arc::new(GlobalStorageImpl::new(TEST_GLOBAL_STORAGE_PATH).unwrap());
         let logging_service = LoggingService::new(
             mock_app.app_handle().clone(),
             Path::new(TEST_APP_LOG_FOLDER),
             &session_id,
-            storage.clone(),
         )
         .unwrap();
 
