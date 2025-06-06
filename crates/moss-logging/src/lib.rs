@@ -14,6 +14,7 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, subscriber::DefaultGuard, trace, warn};
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::filter_fn,
     fmt::{
@@ -27,7 +28,7 @@ use uuid::Uuid;
 use crate::{
     constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
     models::types::LogEntryInfo,
-    writers::{rolling_writer::RollingMakeWriter, taurilog_writer::TauriLogMakeWriter},
+    writers::{rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
 };
 
 fn new_id() -> String {
@@ -36,6 +37,8 @@ fn new_id() -> String {
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
+
+const DUMP_THRESHOLD: usize = 10;
 
 pub struct LogPayload {
     pub resource: Option<String>,
@@ -55,7 +58,10 @@ pub struct LoggingService {
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    subscriber_guard: DefaultGuard,
+    _applog_writerguard: WorkerGuard,
+    _sessionlog_writerguard: WorkerGuard,
+    _taurilog_writerguard: WorkerGuard,
+    _subscriber_guard: DefaultGuard,
 }
 
 impl LoggingService {
@@ -83,11 +89,29 @@ impl LoggingService {
             .compact()
             .with_ansi(true);
 
-        let session_path = applog_path.join("sessions").join(session_id.to_string());
-        fs::create_dir_all(&session_path)?;
+        let sessionlog_path = applog_path.join("sessions").join(session_id.to_string());
+        fs::create_dir_all(&sessionlog_path)?;
 
+        // Create non-blocking writers
         let applog_queue = Arc::new(Mutex::new(VecDeque::new()));
+        let (applog_writer, _applog_writerguard) =
+            tracing_appender::non_blocking(RollingLogWriter::new(
+                applog_path.to_path_buf(),
+                DUMP_THRESHOLD,
+                applog_queue.clone(),
+            ));
+
         let sessionlog_queue = Arc::new(Mutex::new(VecDeque::new()));
+        let (sessionlog_writer, _sessionlog_writerguard) =
+            tracing_appender::non_blocking(RollingLogWriter::new(
+                sessionlog_path.clone(),
+                DUMP_THRESHOLD,
+                sessionlog_queue.clone(),
+            ));
+
+        let (taurilog_writer, _taurilog_writerguard) =
+            tracing_appender::non_blocking(TauriLogWriter::new(app_handle.clone()));
+
         let subscriber = tracing_subscriber::registry()
             .with(
                 // Showing all logs (including span events) to the console
@@ -102,20 +126,14 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(TauriLogMakeWriter {
-                        app_handle: app_handle.clone(),
-                    }),
+                    .with_writer(taurilog_writer),
             )
             .with(
                 // Rolling writer for app-scope logs
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(RollingMakeWriter::new(
-                        applog_path.to_path_buf(),
-                        10,
-                        applog_queue.clone(),
-                    ))
+                    .with_writer(applog_writer)
                     .with_filter(filter_fn(|metadata| {
                         metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
                     })),
@@ -125,23 +143,22 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(RollingMakeWriter::new(
-                        session_path.clone(),
-                        10,
-                        sessionlog_queue.clone(),
-                    ))
+                    .with_writer(sessionlog_writer)
                     .with_filter(filter_fn(|metadata| {
                         metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
                     })),
             );
 
-        let subscriber_guard = tracing::subscriber::set_default(subscriber);
+        let _subscriber_guard = tracing::subscriber::set_default(subscriber);
         Ok(Self {
             applog_path: applog_path.to_path_buf(),
-            sessionlog_path: session_path,
+            sessionlog_path,
             applog_queue,
             sessionlog_queue,
-            subscriber_guard,
+            _applog_writerguard,
+            _sessionlog_writerguard,
+            _taurilog_writerguard,
+            _subscriber_guard,
         })
     }
 }

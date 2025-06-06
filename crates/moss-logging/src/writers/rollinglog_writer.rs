@@ -10,18 +10,18 @@ use tracing_subscriber::fmt::MakeWriter;
 
 use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntryInfo};
 
-pub struct RollingMakeWriter {
+pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
 }
 
-impl RollingMakeWriter {
+impl RollingLogWriter {
     pub fn new(
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    ) -> RollingMakeWriter {
+    ) -> Self {
         Self {
             log_path,
             dump_threshold,
@@ -30,13 +30,7 @@ impl RollingMakeWriter {
     }
 }
 
-pub struct RollingWriter {
-    pub log_path: PathBuf,
-    pub dump_threshold: usize,
-    pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-}
-
-impl<'a> std::io::Write for RollingWriter {
+impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
@@ -68,17 +62,5 @@ impl<'a> std::io::Write for RollingWriter {
 
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
-    }
-}
-
-impl<'a> MakeWriter<'a> for RollingMakeWriter {
-    type Writer = RollingWriter;
-
-    fn make_writer(&'a self) -> Self::Writer {
-        Self::Writer {
-            log_path: self.log_path.clone(),
-            dump_threshold: self.dump_threshold,
-            log_queue: self.log_queue.clone(),
-        }
     }
 }

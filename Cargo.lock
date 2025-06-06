@@ -3184,6 +3184,7 @@ dependencies = [
  "tauri",
  "tokio",
  "tracing",
+ "tracing-appender",
  "tracing-subscriber",
  "ts-rs",
  "uuid",

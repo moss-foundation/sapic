@@ -4,12 +4,17 @@ use tracing_subscriber::fmt::MakeWriter;
 
 use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntryInfo};
 
-pub struct TauriLogMakeWriter<R: TauriRuntime> {
+pub struct TauriLogWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,
 }
 
-pub struct TauriLogWriter<R: TauriRuntime> {
-    pub app_handle: AppHandle<R>,
+impl<R> TauriLogWriter<R>
+where
+    R: TauriRuntime,
+{
+    pub fn new(app_handle: AppHandle<R>) -> Self {
+        Self { app_handle }
+    }
 }
 
 impl<'a, R: TauriRuntime> std::io::Write for TauriLogWriter<R> {
@@ -32,15 +37,5 @@ impl<'a, R: TauriRuntime> std::io::Write for TauriLogWriter<R> {
     fn flush(&mut self) -> std::io::Result<()> {
         // No need for this since this is not an actual buffered writer
         Ok(())
-    }
-}
-
-impl<'a, R: TauriRuntime> MakeWriter<'a> for TauriLogMakeWriter<R> {
-    type Writer = TauriLogWriter<R>;
-
-    fn make_writer(&'a self) -> Self::Writer {
-        TauriLogWriter {
-            app_handle: self.app_handle.clone(),
-        }
     }
 }
