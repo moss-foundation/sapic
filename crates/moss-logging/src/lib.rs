@@ -2,6 +2,7 @@ mod applog_writer;
 mod constants;
 mod makewriter;
 mod models;
+mod sessionlog_writer;
 
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
@@ -37,6 +38,7 @@ use crate::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
     },
+    sessionlog_writer::SessionLogMakeWriter,
 };
 
 fn new_id() -> String {
@@ -232,8 +234,10 @@ impl LoggingService {
             .with_ansi(true);
 
         let session_path = applog_path.join("sessions").join(session_id.to_string());
+        fs::create_dir_all(&session_path)?;
 
         let applog_queue = Arc::new(Mutex::new(VecDeque::new()));
+        let sessionlog_queue = Arc::new(Mutex::new(VecDeque::new()));
         let subscriber = tracing_subscriber::registry()
             .with(
                 // Showing all logs (including span events) to the console
@@ -264,6 +268,20 @@ impl LoggingService {
                     ))
                     .with_filter(filter_fn(|metadata| {
                         metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
+                    })),
+            )
+            .with(
+                // Rolling writer for session-scope logs
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format.clone())
+                    .fmt_fields(JsonFields::default())
+                    .with_writer(SessionLogMakeWriter::new(
+                        &session_path,
+                        10,
+                        sessionlog_queue.clone(),
+                    ))
+                    .with_filter(filter_fn(|metadata| {
+                        metadata.level() < &Level::TRACE && metadata.target() == SESSION_SCOPE
                     })),
             );
 
@@ -479,9 +497,8 @@ mod tests {
     const TEST_APP_LOG_FOLDER: &'static str = "test/logs";
     const TEST_GLOBAL_STORAGE_PATH: &'static str = "test";
 
-    #[ignore]
     #[tokio::test]
-    async fn test_applog_writer() {
+    async fn test_writer() {
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
@@ -491,10 +508,17 @@ mod tests {
         )
         .unwrap();
 
-        loop {
+        for i in 0..100 {
             tokio::time::sleep(Duration::from_millis(100)).await;
             logging_service.debug(
                 LogScope::App,
+                LogPayload {
+                    resource: None,
+                    message: "Test".to_string(),
+                },
+            );
+            logging_service.debug(
+                LogScope::Session,
                 LogPayload {
                     resource: None,
                     message: "Test".to_string(),

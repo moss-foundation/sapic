@@ -1,3 +1,4 @@
+use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntry};
 use chrono::DateTime;
 use std::{
     collections::VecDeque,
@@ -8,39 +9,37 @@ use std::{
 };
 use tracing_subscriber::fmt::MakeWriter;
 
-use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntry};
-
-pub struct AppLogMakeWriter {
-    pub applog_path: PathBuf,
-    pub dump_threshold: usize, // Dump the cached logs to a file
-    pub applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+pub struct SessionLogMakeWriter {
+    pub sessionlog_path: PathBuf,
+    pub dump_threshold: usize,
+    pub sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
 }
 
-impl AppLogMakeWriter {
+impl SessionLogMakeWriter {
     pub fn new(
-        applog_path: &Path,
+        sessionlog_path: &Path,
         dump_threshold: usize,
-        applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
-    ) -> AppLogMakeWriter {
+        sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    ) -> SessionLogMakeWriter {
         Self {
-            applog_path: applog_path.to_owned(),
+            sessionlog_path: sessionlog_path.to_owned(),
             dump_threshold,
-            applog_queue,
+            sessionlog_queue,
         }
     }
 }
 
-pub struct AppLogWriter {
-    pub applog_path: PathBuf,
-    pub dump_threshold: usize, // Dump the cached logs to a file
-    pub applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+pub struct SessionLogWriter {
+    pub sessionlog_path: PathBuf,
+    pub dump_threshold: usize,
+    pub sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
 }
 
-impl<'a> std::io::Write for AppLogWriter {
+impl<'a> std::io::Write for SessionLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntry = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.applog_queue.lock().unwrap();
+        let mut queue_lock = self.sessionlog_queue.lock().unwrap();
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =
@@ -51,7 +50,7 @@ impl<'a> std::io::Write for AppLogWriter {
                 let mut file = OpenOptions::new()
                     .create(true)
                     .append(true)
-                    .open(&self.applog_path.join(file_name))?;
+                    .open(&self.sessionlog_path.join(file_name))?;
                 let mut writer = BufWriter::new(file);
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
@@ -63,23 +62,23 @@ impl<'a> std::io::Write for AppLogWriter {
                 queue_lock.pop_front();
             }
         }
-
         queue_lock.push_back(log_entry);
         Ok(buf.len())
     }
+
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
     }
 }
 
-impl<'a> MakeWriter<'a> for AppLogMakeWriter {
-    type Writer = AppLogWriter;
+impl<'a> MakeWriter<'a> for SessionLogMakeWriter {
+    type Writer = SessionLogWriter;
 
     fn make_writer(&'a self) -> Self::Writer {
-        AppLogWriter {
-            applog_path: self.applog_path.clone(),
+        SessionLogWriter {
+            sessionlog_path: self.sessionlog_path.clone(),
             dump_threshold: self.dump_threshold,
-            applog_queue: self.applog_queue.clone(),
+            sessionlog_queue: self.sessionlog_queue.clone(),
         }
     }
 }
