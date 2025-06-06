@@ -9,13 +9,13 @@ use moss_app::service::prelude::AppService;
 use nanoid::nanoid;
 use serde_json::Value as JsonValue;
 use std::{
-    collections::HashSet,
+    collections::{HashSet, VecDeque},
     ffi::OsStr,
     fs::{self, File},
     io::{self, BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
-    sync::{Arc, atomic::AtomicUsize},
+    sync::{Arc, Mutex, atomic::AtomicUsize},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
@@ -96,6 +96,7 @@ pub enum LogScope {
 pub struct LoggingService {
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
+    applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
 }
 
 impl LoggingService {
@@ -232,6 +233,7 @@ impl LoggingService {
 
         let session_path = applog_path.join("sessions").join(session_id.to_string());
 
+        let applog_queue = Arc::new(Mutex::new(VecDeque::new()));
         let subscriber = tracing_subscriber::registry()
             .with(
                 // Showing all logs (including span events) to the console
@@ -255,7 +257,11 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(AppLogMakeWriter::new(&applog_path, 10))
+                    .with_writer(AppLogMakeWriter::new(
+                        &applog_path,
+                        10,
+                        applog_queue.clone(),
+                    ))
                     .with_filter(filter_fn(|metadata| {
                         metadata.level() < &Level::TRACE && metadata.target() == APP_SCOPE
                     })),
@@ -265,6 +271,7 @@ impl LoggingService {
         Ok(Self {
             applog_path: applog_path.to_path_buf(),
             sessionlog_path: session_path,
+            applog_queue,
         })
     }
 

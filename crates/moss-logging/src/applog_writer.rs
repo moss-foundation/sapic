@@ -17,11 +17,15 @@ pub struct AppLogMakeWriter {
 }
 
 impl AppLogMakeWriter {
-    pub fn new(applog_path: &Path, dump_threshold: usize) -> AppLogMakeWriter {
+    pub fn new(
+        applog_path: &Path,
+        dump_threshold: usize,
+        applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    ) -> AppLogMakeWriter {
         Self {
             applog_path: applog_path.to_owned(),
             dump_threshold,
-            applog_queue: Arc::new(Mutex::new(VecDeque::with_capacity(dump_threshold))),
+            applog_queue,
         }
     }
 }
