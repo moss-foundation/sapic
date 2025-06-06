@@ -1,77 +1,22 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use moss_file::toml;
 use petgraph::{
     graph::{DiGraph, NodeIndex},
-    graphmap::NodeTrait,
     prelude::DiGraphMap,
     visit::EdgeRef,
 };
-use serde::{Deserialize, Serialize};
 use std::{
-    cell::OnceCell,
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
+    collections::{HashMap, HashSet},
     fmt::{self, Display, Formatter},
-    path::{Path, PathBuf},
+    path::Path,
     sync::Arc,
 };
 use uuid::Uuid;
 
-use crate::worktree::constants::{ROOT_PATH, ROOT_UNLOADED_ID};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SpecificationMetadata {
-    pub id: Uuid,
-}
-
-// Items specs
-
-pub enum RequestItemSpecificationModel {}
-
-pub enum ItemSpecificationModelInner {
-    Request(RequestItemSpecificationModel),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ItemConfigurationModel {
-    pub metadata: SpecificationMetadata,
-    // pub inner: ItemSpecificationModelInner,
-}
-
-// Dirs specs
-
-pub struct HttpDirSpecificationModel {}
-
-pub enum RequestDirSpecificationModel {
-    Http(HttpDirSpecificationModel),
-}
-
-pub enum DirSpecificationModelInner {
-    Request(RequestDirSpecificationModel),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DirConfigurationModel {
-    pub metadata: SpecificationMetadata,
-    // pub inner: DirSpecificationModelInner,
-}
-
-// Specification model
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ConfigurationModel {
-    Item(ItemConfigurationModel),
-    Dir(DirConfigurationModel),
-}
-
-impl ConfigurationModel {
-    pub fn id(&self) -> Uuid {
-        match self {
-            ConfigurationModel::Item(item) => item.metadata.id,
-            ConfigurationModel::Dir(dir) => dir.metadata.id,
-        }
-    }
-}
+use crate::{
+    configuration::ConfigurationModel,
+    worktree::constants::{ROOT_ID, ROOT_PATH, ROOT_UNLOADED_ID},
+};
 
 pub type UnloadedId = usize;
 pub type UnloadedParentId = UnloadedId;
@@ -126,20 +71,8 @@ impl Entry {
     }
 
     pub fn is_root(&self) -> bool {
-        self.id == Uuid::nil()
+        self.id == ROOT_ID
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct EntryRef {
-    pub id: Uuid,
-    pub idx: NodeIndex,
-    pub path: Arc<Path>,
-}
-
-pub struct UnloadedEntryRef {
-    pub id: usize,
-    pub path: Arc<Path>,
 }
 
 pub struct Snapshot {

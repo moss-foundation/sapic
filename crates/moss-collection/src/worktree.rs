@@ -1,15 +1,11 @@
 pub mod snapshot;
-pub mod util;
 
 use anyhow::Context;
 use moss_common::api::OperationError;
 use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::FileSystem;
 
-use snapshot::{
-    ConfigurationModel, DirConfigurationModel, Entry, Snapshot, SpecificationMetadata,
-    UnloadedEntry,
-};
+use snapshot::{Entry, Snapshot, UnloadedEntry};
 use std::{
     path::{Path, PathBuf},
     sync::{
@@ -22,17 +18,21 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 
 use crate::{
+    configuration::{ConfigurationModel, DirConfigurationModel, SpecificationMetadata},
     models::{primitives::ChangesDiffSet, types::PathChangeKind},
     worktree::{constants::*, snapshot::UnloadedParentId},
 };
 
 pub mod constants {
+    use uuid::Uuid;
+
     use crate::worktree::snapshot::UnloadedId;
 
     pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
     pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
 
     pub(crate) const ROOT_PATH: &str = "";
+    pub(crate) const ROOT_ID: Uuid = Uuid::nil();
     pub(crate) const ROOT_UNLOADED_ID: UnloadedId = 0;
 }
 
@@ -350,7 +350,7 @@ impl Worktree {
 
         let entry = if unloaded_entry.is_root() {
             Entry {
-                id: Uuid::nil(),
+                id: ROOT_ID,
                 path,
                 config: None,
             }
@@ -500,7 +500,7 @@ impl Worktree {
 mod tests {
     use moss_fs::RealFileSystem;
 
-    use crate::worktree::snapshot::ItemConfigurationModel;
+    use crate::configuration::ItemConfigurationModel;
 
     use super::*;
 

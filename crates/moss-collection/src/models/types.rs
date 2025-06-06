@@ -1,4 +1,3 @@
-use moss_common::models::primitives::Identifier;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
