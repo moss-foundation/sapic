@@ -66,6 +66,7 @@ pub struct LoggingService {
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
 }
 
 impl LoggingService {
@@ -150,6 +151,7 @@ impl LoggingService {
             applog_path: applog_path.to_path_buf(),
             sessionlog_path: session_path,
             applog_queue,
+            sessionlog_queue,
         })
     }
 }
@@ -268,7 +270,7 @@ impl AppService for LoggingService {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use crate::{constants::LOGGING_SERVICE_CHANNEL, models::operations::DeleteLogInput};
     use std::time::Duration;
     use tauri::Manager;
     use tracing::instrument;
@@ -369,6 +371,81 @@ mod tests {
                 },
             )
         }
+    }
+
+    #[tokio::test]
+    async fn test_delete_log() {
+        let mock_app = tauri::test::mock_app();
+        let session_id = Uuid::new_v4();
+        let logging_service = LoggingService::new(
+            mock_app.app_handle().clone(),
+            Path::new(TEST_APP_LOG_FOLDER),
+            &session_id,
+        )
+        .unwrap();
+
+        for i in 0..15 {
+            logging_service.debug(
+                LogScope::App,
+                LogPayload {
+                    resource: None,
+                    message: "Test".to_string(),
+                },
+            );
+            logging_service.debug(
+                LogScope::Session,
+                LogPayload {
+                    resource: None,
+                    message: "Test".to_string(),
+                },
+            )
+        }
+
+        let old_logs = logging_service
+            .list_logs(&ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            })
+            .unwrap()
+            .contents;
+
+        // Test deleting both from the file and from the queue
+
+        let first_entry = old_logs.first().unwrap().clone();
+        let first_id = first_entry.id;
+        dbg!(&first_id);
+        let first_timestamp = first_entry.timestamp;
+        logging_service
+            .delete_log(&DeleteLogInput {
+                timestamp: first_timestamp,
+                id: first_id.clone(),
+            })
+            .unwrap();
+
+        let last_entry = old_logs.last().unwrap().clone();
+        let last_id = last_entry.id;
+        dbg!(&last_id);
+        let last_timestamp = last_entry.timestamp;
+        logging_service
+            .delete_log(&DeleteLogInput {
+                timestamp: last_timestamp,
+                id: last_id.clone(),
+            })
+            .unwrap();
+
+        let updated_logs = logging_service
+            .list_logs(&ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            })
+            .unwrap()
+            .contents;
+
+        assert_eq!(old_logs.len() - updated_logs.len(), 2);
+        assert!(updated_logs.iter().find(|log| log.id == first_id).is_none());
+        assert!(updated_logs.iter().find(|log| log.id == last_id).is_none());
     }
 
     // #[tokio::test]

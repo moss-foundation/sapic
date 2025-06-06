@@ -17,3 +17,4 @@ tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "a
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
 ts-rs.workspace = true
 uuid = { workspace = true, features = ["v4"] }
+log = "0.4.27"

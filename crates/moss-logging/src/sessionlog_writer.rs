@@ -50,7 +50,7 @@ impl<'a> std::io::Write for SessionLogWriter {
                 let mut file = OpenOptions::new()
                     .create(true)
                     .append(true)
-                    .open(&self.sessionlog_path.join(file_name))?;
+                    .open(&self.sessionlog_path.join(file_name).with_extension("log"))?;
                 let mut writer = BufWriter::new(file);
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;

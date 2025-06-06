@@ -1,16 +1,3 @@
-use chrono::{DateTime, FixedOffset, NaiveDate};
-use serde_json::Value as JsonValue;
-use std::{
-    collections::HashSet,
-    ffi::OsStr,
-    fs,
-    fs::File,
-    io::{BufRead, BufReader},
-    path::Path,
-    str::FromStr,
-};
-use tracing::Level;
-
 use crate::{
     FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
     constants::{LEVEL_LIT, RESOURCE_LIT},
@@ -19,6 +6,20 @@ use crate::{
         types::{LogEntry, LogLevel},
     },
 };
+use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
+use log::log;
+use serde_json::Value as JsonValue;
+use std::{
+    collections::{HashSet, VecDeque},
+    ffi::OsStr,
+    fs,
+    fs::File,
+    io::{BufRead, BufReader},
+    path::Path,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
+use tracing::Level;
 
 // Empty field means that no filter will be applied
 #[derive(Default)]
@@ -58,23 +59,26 @@ impl LoggingService {
     pub fn list_logs(&self, input: &ListLogsInput) -> anyhow::Result<ListLogsOutput> {
         // Combining both app and session log
         let filter: LogFilter = input.clone().into();
-        let app_logs = self.combine_logs(&self.applog_path, &filter)?;
-        let session_logs = self.combine_logs(&self.sessionlog_path, &filter)?;
-        let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs);
-
-        let log_entries: Vec<LogEntry> = merged_logs
+        let app_logs = self.combine_logs(&self.applog_path, &filter, self.applog_queue.clone())?;
+        let session_logs = self.combine_logs(
+            &self.sessionlog_path,
+            &filter,
+            self.sessionlog_queue.clone(),
+        )?;
+        let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs)
             .into_iter()
-            .map(|(_dt, value)| serde_json::from_value(value))
-            .collect::<anyhow::Result<Vec<_>, _>>()?;
+            .map(|item| item.1)
+            .collect();
+
         Ok(ListLogsOutput {
-            contents: log_entries,
+            contents: merged_logs,
         })
     }
 }
 
 impl LoggingService {
     fn parse_file_with_filter(
-        records: &mut Vec<(DateTime<FixedOffset>, JsonValue)>,
+        records: &mut Vec<(NaiveDateTime, LogEntry)>,
         path: &Path,
         filter: &LogFilter,
     ) -> anyhow::Result<()> {
@@ -84,32 +88,29 @@ impl LoggingService {
 
         for line in BufReader::new(file).lines() {
             let line = line?;
-            let value: JsonValue = serde_json::from_str(&line)?;
+            let log_entry: LogEntry = serde_json::from_str(&line)?;
 
             if !filter.levels.is_empty() {
-                let level = Level::from_str(value.get(LEVEL_LIT).unwrap().as_str().unwrap())?;
+                let level = Level::from_str(&log_entry.level)?;
                 if !filter.levels.contains(&level) {
                     continue;
                 }
             }
 
             if let Some(resource_filter) = filter.resource.as_ref() {
-                if let Some(resource) = value.get(RESOURCE_LIT).and_then(|v| v.as_str()) {
+                if let Some(resource) = log_entry.resource.as_ref() {
                     if resource_filter != resource {
                         continue;
                     }
                 } else {
                     // With resource filter, skip entries without resource field
+                    continue;
                 }
             }
 
-            let timestamp = value
-                .get("timestamp")
-                .and_then(|v| v.as_str())
-                .map(|ts| DateTime::<FixedOffset>::parse_from_str(ts, TIMESTAMP_FORMAT))
-                .unwrap()?;
+            let timestamp = NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
 
-            records.push((timestamp, value));
+            records.push((timestamp, log_entry));
         }
         Ok(())
     }
@@ -118,8 +119,10 @@ impl LoggingService {
         &self,
         path: &Path,
         filter: &LogFilter,
-    ) -> anyhow::Result<Vec<(DateTime<FixedOffset>, JsonValue)>> {
+        queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    ) -> anyhow::Result<Vec<(NaiveDateTime, LogEntry)>> {
         // Combine all log entries in app/session log path according to a certain filter
+        // And append the current log queue at the end
         let mut result = Vec::new();
         let mut log_files = Vec::new();
 
@@ -143,14 +146,27 @@ impl LoggingService {
                 LoggingService::parse_file_with_filter(&mut result, path, filter)?
             }
         }
+        result.extend({
+            let lock = queue.lock().unwrap();
+            lock.clone().into_iter().filter_map(|entry| {
+                if let Ok(datetime) =
+                    NaiveDateTime::parse_from_str(&entry.timestamp, TIMESTAMP_FORMAT)
+                {
+                    Some((datetime, entry))
+                } else {
+                    // Skip entries in the que that has invalid timestamp
+                    None
+                }
+            })
+        });
 
         Ok(result)
     }
 
     fn merge_logs_chronologically(
-        a: Vec<(DateTime<FixedOffset>, JsonValue)>,
-        b: Vec<(DateTime<FixedOffset>, JsonValue)>,
-    ) -> Vec<(DateTime<FixedOffset>, JsonValue)> {
+        a: Vec<(NaiveDateTime, LogEntry)>,
+        b: Vec<(NaiveDateTime, LogEntry)>,
+    ) -> Vec<(NaiveDateTime, LogEntry)> {
         // Merging app logs and session logs, which are already separately sorted
         let mut iter_a = a.into_iter();
         let mut iter_b = b.into_iter();
