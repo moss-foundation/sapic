@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::{NaiveDate, NaiveDateTime};
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::OperationResult;
 use parking_lot::Mutex;
 use std::{
     collections::{HashSet, VecDeque},
@@ -14,7 +14,7 @@ use std::{
 use tracing::Level;
 
 use crate::{
-    FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
+    FILE_TIME_FORMAT, LoggingService, TIMESTAMP_FORMAT,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntryInfo, LogLevel},
@@ -136,7 +136,7 @@ impl LoggingService {
             // Skip log files with ill-formatted names
             if let Ok(file_date) = NaiveDate::parse_from_str(
                 &path.file_stem().unwrap().to_string_lossy().to_string(),
-                FILE_DATE_FORMAT,
+                FILE_TIME_FORMAT,
             ) {
                 log_files.push((path, file_date));
             }

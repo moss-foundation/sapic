@@ -1,6 +1,5 @@
 use std::io::ErrorKind;
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
-use tracing_subscriber::fmt::MakeWriter;
 
 use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntryInfo};
 

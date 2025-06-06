@@ -3178,6 +3178,7 @@ dependencies = [
  "chrono",
  "moss_app",
  "moss_common",
+ "moss_fs",
  "moss_testutils",
  "nanoid",
  "parking_lot",

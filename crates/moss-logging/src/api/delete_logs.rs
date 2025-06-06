@@ -6,10 +6,10 @@ use crate::{
 };
 
 impl LoggingService {
-    pub fn delete_logs(&self, input: &DeleteLogsInput) -> OperationResult<DeleteLogsOutput> {
+    pub async fn delete_logs(&self, input: &DeleteLogsInput) -> OperationResult<DeleteLogsOutput> {
         let mut deleted_entries: Vec<DeleteLogOutput> = Vec::new();
         for input in &input.entries {
-            deleted_entries.push(self.delete_log(input)?);
+            deleted_entries.push(self.delete_log(input).await?);
         }
         Ok(DeleteLogsOutput { deleted_entries })
     }

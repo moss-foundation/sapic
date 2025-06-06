@@ -3,8 +3,14 @@ mod constants;
 mod models;
 mod writers;
 
+use crate::{
+    constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
+    models::types::LogEntryInfo,
+    writers::{rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
+};
 use anyhow::Result;
 use moss_app::service::prelude::AppService;
+use moss_fs::FileSystem;
 use nanoid::nanoid;
 use parking_lot::Mutex;
 use std::{
@@ -26,18 +32,12 @@ use tracing_subscriber::{
 };
 use uuid::Uuid;
 
-use crate::{
-    constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
-    models::types::LogEntryInfo,
-    writers::{rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
-};
-
 fn new_id() -> String {
     nanoid!(ID_LENGTH)
 }
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
-pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
+pub const FILE_TIME_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
 
 const DUMP_THRESHOLD: usize = 10;
 
@@ -55,6 +55,7 @@ pub enum LogScope {
 /// App Log Path: logs\
 /// Session Log Path: {App Log Path}\sessions\{session_id}\
 pub struct LoggingService {
+    fs: Arc<dyn FileSystem>,
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
@@ -67,6 +68,7 @@ pub struct LoggingService {
 
 impl LoggingService {
     pub fn new<R: TauriRuntime>(
+        fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
         session_id: &Uuid,
@@ -152,6 +154,7 @@ impl LoggingService {
 
         let _subscriber_guard = tracing::subscriber::set_default(subscriber);
         Ok(Self {
+            fs,
             applog_path: applog_path.to_path_buf(),
             sessionlog_path,
             applog_queue,
@@ -282,6 +285,7 @@ mod tests {
         constants::LOGGING_SERVICE_CHANNEL,
         models::operations::{DeleteLogInput, ListLogsInput},
     };
+    use moss_fs::RealFileSystem;
     use moss_testutils::random_name::random_string;
     use std::fs::create_dir_all;
     use tauri::{Listener, Manager};
@@ -361,16 +365,19 @@ mod tests {
     async fn test_delete_log() {
         let test_app_log_path = random_app_log_path();
         create_dir_all(&test_app_log_path).unwrap();
+
+        let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
+            fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
             &session_id,
         )
         .unwrap();
 
-        for i in 0..15 {
+        for _ in 0..15 {
             logging_service.debug(
                 LogScope::App,
                 LogPayload {
@@ -407,6 +414,7 @@ mod tests {
                 timestamp: first_timestamp,
                 id: first_id.clone(),
             })
+            .await
             .unwrap();
 
         let last_entry = old_logs.last().unwrap().clone();
@@ -418,6 +426,7 @@ mod tests {
                 timestamp: last_timestamp,
                 id: last_id.clone(),
             })
+            .await
             .unwrap();
 
         let updated_logs = logging_service
@@ -438,9 +447,13 @@ mod tests {
     #[tokio::test]
     async fn test_taurilog_writer() {
         let test_app_log_path = random_app_log_path();
+        fs::create_dir_all(&test_app_log_path).unwrap();
+
+        let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
+            fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
             &session_id,
