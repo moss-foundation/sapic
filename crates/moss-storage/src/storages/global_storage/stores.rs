@@ -1,12 +1,10 @@
 use moss_db::primitives::AnyValue;
-use redb::Key;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
     storage::operations::{
-        GetItem, ListByPrefix, PutItem, RemoveItem, Scan, TransactionalGetItem,
+        GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
         TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-        TransactionalScan, TransactionalTruncate, Truncate,
     },
 };
 

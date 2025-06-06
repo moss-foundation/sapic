@@ -13,7 +13,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tracing::{Level, debug, error, info, trace, warn};
+use tracing::{Level, debug, error, info, subscriber::DefaultGuard, trace, warn};
 use tracing_subscriber::{
     filter::filter_fn,
     fmt::{
@@ -58,6 +58,7 @@ pub struct LoggingService {
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    subscriber_guard: DefaultGuard,
 }
 
 impl LoggingService {
@@ -137,12 +138,13 @@ impl LoggingService {
                     })),
             );
 
-        tracing::subscriber::set_global_default(subscriber)?;
+        let subscriber_guard = tracing::subscriber::set_default(subscriber);
         Ok(Self {
             applog_path: applog_path.to_path_buf(),
             sessionlog_path: session_path,
             applog_queue,
             sessionlog_queue,
+            subscriber_guard,
         })
     }
 }
@@ -261,9 +263,12 @@ impl AppService for LoggingService {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{constants::LOGGING_SERVICE_CHANNEL, models::operations::DeleteLogInput};
+    use crate::{
+        constants::LOGGING_SERVICE_CHANNEL,
+        models::operations::{DeleteLogInput, ListLogsInput},
+    };
     use moss_testutils::random_name::random_string;
-    use std::{fs::create_dir_all, time::Duration};
+    use std::fs::create_dir_all;
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
     use tracing::instrument;

@@ -2,6 +2,15 @@
 import { z } from "zod";
 import { logDateSchema, logLevelSchema } from "./types.zod";
 
+export const deleteLogInputSchema = z.object({
+  timestamp: z.string(),
+  id: z.string(),
+});
+
+export const deleteLogsInputSchema = z.object({
+  inputs: z.array(deleteLogInputSchema),
+});
+
 export const logEntrySchema = z.object({
   id: z.string(),
   timestamp: z.string(),
