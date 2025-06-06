@@ -24,10 +24,11 @@ pub enum LogLevel {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct LogEntry {
-    timestamp: String,
-    level: String,
+pub struct LogEntryInfo {
+    pub id: String,
+    pub timestamp: String,
+    pub level: String,
     #[ts(optional)]
-    resource: Option<String>,
-    message: String,
+    pub resource: Option<String>,
+    pub message: String,
 }
