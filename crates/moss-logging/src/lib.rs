@@ -1,9 +1,7 @@
 pub mod api;
-mod applog_writer;
 mod constants;
 mod models;
-mod sessionlog_writer;
-mod taurilog_writer;
+mod writers;
 
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
@@ -32,14 +30,15 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    applog_writer::AppLogMakeWriter,
     constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
     },
-    sessionlog_writer::SessionLogMakeWriter,
-    taurilog_writer::TauriLogMakeWriter,
+    writers::{
+        applog_writer::AppLogMakeWriter, sessionlog_writer::SessionLogMakeWriter,
+        taurilog_writer::TauriLogMakeWriter,
+    },
 };
 
 fn new_id() -> String {
