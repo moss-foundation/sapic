@@ -16,9 +16,7 @@ use std::{
 };
 use uuid::Uuid;
 
-use crate::worktree::ROOT_UNLOADED_ID;
-
-use super::ROOT_PATH;
+use crate::worktree::constants::{ROOT_PATH, ROOT_UNLOADED_ID};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SpecificationMetadata {
@@ -151,66 +149,57 @@ pub struct Snapshot {
     unloaded_entries: DiGraphMap<UnloadedId, ()>,
     unloaded_entries_by_id: HashMap<UnloadedId, UnloadedEntry>,
     unloaded_entries_by_path: HashMap<Arc<Path>, UnloadedId>,
+    known_paths: HashSet<Arc<Path>>,
 }
 
-impl Snapshot {
-    pub fn new(mut unloaded_entries: Vec<(UnloadedEntry, Option<UnloadedParentId>)>) -> Self {
+impl From<Vec<(UnloadedEntry, Option<UnloadedParentId>)>> for Snapshot {
+    fn from(mut list: Vec<(UnloadedEntry, Option<UnloadedParentId>)>) -> Self {
         debug_assert!(
-            unloaded_entries.len() > 0,
+            list.len() > 0,
             "At least one the root entry must be present"
         );
 
-        unloaded_entries.sort_by_key(|(e, _)| e.path().components().count());
+        list.sort_by_key(|(e, _)| e.path().components().count());
 
-        let entries = DiGraph::new();
-        let entries_by_id = HashMap::new();
-        let entries_by_path = HashMap::new();
+        let mut known_paths = HashSet::new();
+        let mut unloaded_entries_by_id = HashMap::new();
+        let mut unloaded_entries_by_path = HashMap::new();
+        let mut unloaded_entries = DiGraphMap::new();
 
-        let mut unloaded_entries_by_id: HashMap<usize, UnloadedEntry> = HashMap::new();
-        let mut unloaded_entries_by_path: HashMap<Arc<Path>, usize> = HashMap::new();
-        let mut unloaded_entries_graph = DiGraphMap::new();
-
-        for (unloaded_entry, parent_opt) in unloaded_entries.into_iter() {
+        for (unloaded_entry, parent) in list {
             let id = unloaded_entry.id();
+            let path = Arc::clone(unloaded_entry.path());
 
-            dbg!(&unloaded_entry);
-            dbg!(&parent_opt);
-
-            unloaded_entries_graph.add_node(id);
+            unloaded_entries.add_node(id);
             unloaded_entries_by_id.insert(id, unloaded_entry.clone());
-            unloaded_entries_by_path.insert(Arc::clone(unloaded_entry.path()), id);
+            unloaded_entries_by_path.insert(path.clone(), id);
+            known_paths.insert(path);
 
-            if let Some(pid) = parent_opt {
-                unloaded_entries_graph.add_edge(pid, id, ());
-            }
+            parent.map(|idx| unloaded_entries.add_edge(idx, id, ()));
         }
+
         Self {
-            entries,
-            entries_by_id,
-            entries_by_path,
-            unloaded_entries: unloaded_entries_graph,
+            entries: DiGraph::new(),
+            entries_by_id: HashMap::new(),
+            entries_by_path: HashMap::new(),
+            unloaded_entries,
             unloaded_entries_by_id,
             unloaded_entries_by_path,
+            known_paths,
         }
     }
+}
 
+impl Snapshot {
     pub fn root_idx(&self) -> NodeIndex {
         self.entries_by_id
             .get(&Uuid::nil())
-            .expect("Root path must be present")
+            .expect("The root entry must be present")
             .clone()
     }
 
     pub fn is_loaded(&self, path: &Path) -> bool {
         self.entries_by_path.contains_key(path)
-    }
-
-    pub fn loaded_entries_count(&self) -> usize {
-        self.entries_by_id.len()
-    }
-
-    pub fn unloaded_entries_count(&self) -> usize {
-        self.unloaded_entries_by_id.len()
     }
 
     pub fn unloaded_entry_by_path(&self, path: &Path) -> Option<&UnloadedEntry> {
@@ -219,27 +208,7 @@ impl Snapshot {
             .and_then(|id| self.unloaded_entries_by_id.get(id))
     }
 
-    pub fn unloaded_entry_children(&self, unloaded_id: usize, depth: u8) -> Vec<UnloadedEntry> {
-        if !self.unloaded_entries.contains_node(unloaded_id) {
-            return vec![];
-        }
-
-        let mut current: Vec<usize> = vec![unloaded_id];
-        for _ in 0..depth {
-            let next: Vec<usize> = current
-                .into_iter()
-                .flat_map(|id| self.unloaded_entries.neighbors(id))
-                .collect();
-            current = next;
-        }
-
-        current
-            .into_iter()
-            .filter_map(|id| self.unloaded_entries_by_id.get(&id).cloned())
-            .collect()
-    }
-
-    pub fn unloaded_children_by_parent_path(&self, parent_path: &Path) -> Vec<UnloadedEntry> {
+    pub fn unloaded_entry_children_by_path(&self, parent_path: &Path) -> Vec<UnloadedEntry> {
         self.unloaded_entries_by_path
             .iter()
             .filter_map(|(child_path, &child_id)| {
@@ -256,35 +225,23 @@ impl Snapshot {
             .collect()
     }
 
-    pub fn load_entry(&mut self, unloaded_id: usize, entry: Entry) -> Result<()> {
+    pub fn load_entry(&mut self, unloaded_id: usize, entry: Entry) -> Result<Uuid> {
         let parent_path = entry.path().parent().unwrap_or(Path::new(ROOT_PATH));
 
         self.unloaded_entries.remove_node(unloaded_id);
         self.unloaded_entries_by_path.remove(entry.path());
 
+        let id = entry.id;
         if entry.is_root() {
             self.create_entry(entry, None)?;
         } else if let Some(parent_idx) = self.entries_by_path.get(parent_path) {
             let parent_id = self.entries[*parent_idx].id;
             self.create_entry(entry, Some(parent_id))?;
         } else {
-            return Err(anyhow::anyhow!(
-                "Child entry cannot be loaded before its parent"
-            ));
+            anyhow::bail!("Child entry cannot be loaded before its parent");
         }
 
-        // if let Some(parent_idx) = self.entries_by_path.get(parent_path) {
-        //     let parent_id = self.entries[*parent_idx].id;
-        //     self.create_entry(entry, Some(parent_id))?;
-        // } else if parent_path == Path::new(ROOT_PATH) {
-        //     self.create_entry(entry, None)?;
-        // } else {
-        //     return Err(anyhow::anyhow!(
-        //         "Child entry cannot be unloaded before its parent"
-        //     ));
-        // }
-
-        Ok(())
+        Ok(id)
     }
 
     pub fn create_entry(&mut self, entry: Entry, parent_id: Option<Uuid>) -> Result<NodeIndex> {
@@ -338,68 +295,19 @@ impl Snapshot {
         }
     }
 
-    pub fn descendants_by_id(&self, id: Uuid) -> Option<HashSet<NodeIndex>> {
-        let idx = self.entries_by_id.get(&id)?;
-        self.descendants_by_idx(idx)
-    }
-
-    pub fn descendants_by_path(&self, path: &Path) -> Option<HashSet<NodeIndex>> {
-        let idx = self.entries_by_path.get(path)?;
-        self.descendants_by_idx(idx)
-    }
-
-    pub fn descendants_by_idx(&self, idx: &NodeIndex) -> Option<HashSet<NodeIndex>> {
-        let mut to_visit = VecDeque::new();
-        let mut visited = HashSet::new();
-
-        to_visit.push_back(*idx);
-
-        while let Some(current) = to_visit.pop_front() {
-            if visited.insert(current) {
-                for edge in self.entries.edges_directed(current, petgraph::Outgoing) {
-                    to_visit.push_back(edge.target());
-                }
-            }
-        }
-
-        Some(visited)
-    }
-
-    pub fn lowest_loaded_ancestor_path(&self, path: &Path) -> Option<EntryRef> {
+    pub fn lowest_ancestor_path(&self, path: &Path) -> Arc<Path> {
         for ancestor in path.ancestors() {
-            if let Some(entry) = self.entry_by_path(ancestor) {
-                return Some(EntryRef {
-                    id: entry.id,
-                    idx: self.entries_by_path[&entry.path],
-                    path: Arc::clone(&entry.path),
-                });
+            if let Some(unloaded_entry) = self.known_paths.get(ancestor) {
+                return unloaded_entry.clone();
             }
         }
-
-        None
-    }
-
-    pub fn lowest_ancestor_path(&self, path: &Path) -> UnloadedEntryRef {
-        for ancestor in path.ancestors() {
-            if let Some(unloaded_entry) = self.unloaded_entry_by_path(ancestor) {
-                return UnloadedEntryRef {
-                    id: unloaded_entry.id(),
-                    path: Arc::clone(unloaded_entry.path()),
-                };
-            }
-        }
-
-        UnloadedEntryRef {
-            id: 0,
-            path: Path::new(ROOT_PATH).into(),
-        }
+        Path::new(ROOT_PATH).into()
     }
 }
 
 impl Display for Snapshot {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        // Print root entry without prefix
-        writeln!(f, "(X)")?;
+        writeln!(f, "*")?;
 
         // Collect children of root, sort them by path
         let mut children: Vec<NodeIndex> = self
@@ -409,7 +317,6 @@ impl Display for Snapshot {
             .collect();
         children.sort_by_key(|&child_idx| self.entries[child_idx].path.clone());
 
-        // For each child, call recursive printer
         let last = children.len().saturating_sub(1);
         for (i, &child_idx) in children.iter().enumerate() {
             let is_last = i == last;
