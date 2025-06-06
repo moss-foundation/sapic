@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use ts_rs::TS;
 
 use crate::models::types::{LogDate, LogEntryInfo, LogLevel};
@@ -31,6 +32,23 @@ pub struct DeleteLogInput {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
+pub struct DeleteLogOutput {
+    pub id: String,
+    #[serde(skip)]
+    // None if deleted from in-memory queue
+    pub file_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
 pub struct DeleteLogsInput {
-    pub inputs: Vec<DeleteLogInput>,
+    pub entries: Vec<DeleteLogInput>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DeleteLogsOutput {
+    pub deleted_entries: Vec<DeleteLogOutput>,
 }

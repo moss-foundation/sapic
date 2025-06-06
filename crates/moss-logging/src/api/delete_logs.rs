@@ -1,11 +1,16 @@
-use crate::{LoggingService, models::operations::DeleteLogsInput};
 use moss_common::api::OperationResult;
 
+use crate::{
+    LoggingService,
+    models::operations::{DeleteLogOutput, DeleteLogsInput, DeleteLogsOutput},
+};
+
 impl LoggingService {
-    pub fn delete_logs(&self, input: &DeleteLogsInput) -> OperationResult<()> {
-        for input in &input.inputs {
-            self.delete_log(input)?;
+    pub fn delete_logs(&self, input: &DeleteLogsInput) -> OperationResult<DeleteLogsOutput> {
+        let mut deleted_entries: Vec<DeleteLogOutput> = Vec::new();
+        for input in &input.entries {
+            deleted_entries.push(self.delete_log(input)?);
         }
-        Ok(())
+        Ok(DeleteLogsOutput { deleted_entries })
     }
 }

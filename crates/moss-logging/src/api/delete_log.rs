@@ -9,10 +9,14 @@ use std::{
 
 use crate::{
     FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
-    models::{operations::DeleteLogInput, types::LogEntryInfo},
+    models::{
+        operations::{DeleteLogInput, DeleteLogOutput},
+        types::LogEntryInfo,
+    },
 };
+
 impl LoggingService {
-    pub fn delete_log(&self, input: &DeleteLogInput) -> OperationResult<()> {
+    pub fn delete_log(&self, input: &DeleteLogInput) -> OperationResult<DeleteLogOutput> {
         let datetime =
             DateTime::parse_from_str(&input.timestamp, TIMESTAMP_FORMAT).map_err(|err| {
                 OperationError::InvalidInput("The input timestamp is invalid".to_string())
@@ -22,7 +26,10 @@ impl LoggingService {
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
-                return Ok(());
+                return Ok(DeleteLogOutput {
+                    id: input.id.clone(),
+                    file_path: None,
+                });
             }
         }
         {
@@ -30,7 +37,10 @@ impl LoggingService {
             let idx = sessionlog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
-                return Ok(());
+                return Ok(DeleteLogOutput {
+                    id: input.id.clone(),
+                    file_path: None,
+                });
             }
         }
         {
@@ -38,7 +48,10 @@ impl LoggingService {
             for file in log_files {
                 let updated = Self::update_log_file(&file, &input.id)?;
                 if updated {
-                    return Ok(());
+                    return Ok(DeleteLogOutput {
+                        id: input.id.clone(),
+                        file_path: Some(file),
+                    });
                 }
             }
         }
@@ -47,13 +60,18 @@ impl LoggingService {
             for file in log_files {
                 let updated = Self::update_log_file(&file, &input.id)?;
                 if updated {
-                    return Ok(());
+                    return Ok(DeleteLogOutput {
+                        id: input.id.clone(),
+                        file_path: Some(file),
+                    });
                 }
             }
         }
 
-        // FIXME: Result for non-existent log entry?
-        Ok(())
+        Err(OperationError::NotFound(format!(
+            "Log id {} not found",
+            input.id
+        )))
     }
 }
 
