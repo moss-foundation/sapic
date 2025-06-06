@@ -23,14 +23,14 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   return (
     <div
       role="columnheader"
-      className={cn("group/tableHeader relative border-r border-b border-(--moss-border-color) px-2 py-1.5", {
+      className={cn("relative border-r border-b border-(--moss-border-color) px-2 py-1.5", {
         "border-r-0": isLastColumn,
       })}
       style={{ width: header.getSize() }}
       {...props}
     >
       <div
-        className={cn("group relative flex items-center gap-2 capitalize", {
+        className={cn("group/tableHeader relative flex items-center gap-2 capitalize", {
           "justify-center": isFirstColumn,
           "justify-between": !isFirstColumn,
         })}
@@ -55,18 +55,11 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
                     "not-sr-only opacity-100": showActionMenu,
                   }
                 )}
-                onClick={() => {
-                  setShowActionMenu(true);
-                }}
               >
                 <Icon icon="MoreVertical" />
               </ActionMenu.Trigger>
 
-              <ActionMenu.Content
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                }}
-              >
+              <ActionMenu.Content>
                 <ActionMenu.Item onClick={() => header.column.toggleSorting(false)}>
                   <button>asc</button>
                 </ActionMenu.Item>
@@ -95,8 +88,6 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
               "background-(--moss-primary)": header.column.getIsResizing(),
             }
           )}
-          onMouseOver={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
           onMouseDown={header.getResizeHandler()}
           style={{ height: tableHeight ? tableHeight - 1 : "100%" }}
         />
