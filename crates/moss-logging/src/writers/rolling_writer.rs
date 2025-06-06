@@ -3,44 +3,44 @@ use std::{
     collections::VecDeque,
     fs::OpenOptions,
     io::BufWriter,
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 use tracing_subscriber::fmt::MakeWriter;
 
 use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntryInfo};
 
-pub struct SessionLogMakeWriter {
-    pub sessionlog_path: PathBuf,
+pub struct RollingMakeWriter {
+    pub log_path: PathBuf,
     pub dump_threshold: usize,
-    pub sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
 }
 
-impl SessionLogMakeWriter {
+impl RollingMakeWriter {
     pub fn new(
-        sessionlog_path: &Path,
+        log_path: PathBuf,
         dump_threshold: usize,
-        sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    ) -> SessionLogMakeWriter {
+        log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    ) -> RollingMakeWriter {
         Self {
-            sessionlog_path: sessionlog_path.to_owned(),
+            log_path,
             dump_threshold,
-            sessionlog_queue,
+            log_queue,
         }
     }
 }
 
-pub struct SessionLogWriter {
-    pub sessionlog_path: PathBuf,
+pub struct RollingWriter {
+    pub log_path: PathBuf,
     pub dump_threshold: usize,
-    pub sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
 }
 
-impl<'a> std::io::Write for SessionLogWriter {
+impl<'a> std::io::Write for RollingWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.sessionlog_queue.lock().unwrap();
+        let mut queue_lock = self.log_queue.lock().unwrap();
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =
@@ -51,7 +51,7 @@ impl<'a> std::io::Write for SessionLogWriter {
                 let file = OpenOptions::new()
                     .create(true)
                     .append(true)
-                    .open(&self.sessionlog_path.join(file_name).with_extension("log"))?;
+                    .open(&self.log_path.join(file_name).with_extension("log"))?;
                 let mut writer = BufWriter::new(file);
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
@@ -71,14 +71,14 @@ impl<'a> std::io::Write for SessionLogWriter {
     }
 }
 
-impl<'a> MakeWriter<'a> for SessionLogMakeWriter {
-    type Writer = SessionLogWriter;
+impl<'a> MakeWriter<'a> for RollingMakeWriter {
+    type Writer = RollingWriter;
 
     fn make_writer(&'a self) -> Self::Writer {
-        SessionLogWriter {
-            sessionlog_path: self.sessionlog_path.clone(),
+        Self::Writer {
+            log_path: self.log_path.clone(),
             dump_threshold: self.dump_threshold,
-            sessionlog_queue: self.sessionlog_queue.clone(),
+            log_queue: self.log_queue.clone(),
         }
     }
 }

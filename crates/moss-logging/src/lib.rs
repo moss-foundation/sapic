@@ -27,10 +27,7 @@ use uuid::Uuid;
 use crate::{
     constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
     models::types::LogEntryInfo,
-    writers::{
-        applog_writer::AppLogMakeWriter, sessionlog_writer::SessionLogMakeWriter,
-        taurilog_writer::TauriLogMakeWriter,
-    },
+    writers::{rolling_writer::RollingMakeWriter, taurilog_writer::TauriLogMakeWriter},
 };
 
 fn new_id() -> String {
@@ -114,8 +111,8 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(AppLogMakeWriter::new(
-                        &applog_path,
+                    .with_writer(RollingMakeWriter::new(
+                        applog_path.to_path_buf(),
                         10,
                         applog_queue.clone(),
                     ))
@@ -128,8 +125,8 @@ impl LoggingService {
                 tracing_subscriber::fmt::layer()
                     .event_format(standard_log_format.clone())
                     .fmt_fields(JsonFields::default())
-                    .with_writer(SessionLogMakeWriter::new(
-                        &session_path,
+                    .with_writer(RollingMakeWriter::new(
+                        session_path.clone(),
                         10,
                         sessionlog_queue.clone(),
                     ))
