@@ -13,13 +13,10 @@ updates:
           - "patch"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: [ "version-update:semver-patch" ]
     commit-message:
       prefix: ci
       include: scope
-    reviewers:
-      - g10z3r
-      - jevgenis33
     open-pull-requests-limit: 5
 
   - package-ecosystem: "cargo"
@@ -35,12 +32,10 @@ updates:
           - "patch"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: [ "version-update:semver-patch" ]
     commit-message:
       prefix: build(rust)
       prefix-development: chore(rust)
-    reviewers:
-      - brutusyhy
     labels:
       - dependencies
       - rust
@@ -80,13 +75,10 @@ updates:
           - "patch"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+        update-types: [ "version-update:semver-patch" ]
     commit-message:
       prefix: build(typescript)
       prefix-development: chore(typescript)
-    reviewers:
-      - Enthceph
-      - jevgenis33
     labels:
       - dependencies
       - typescript
