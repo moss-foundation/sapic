@@ -114,7 +114,7 @@ export const DefaultRow = <TData,>({
       role="row"
       ref={rowRef}
       className={cn(
-        "group/tableRow relative flex",
+        "relative flex",
         {
           "background-(--moss-table-cell-bg) brightness-90": isDragging,
         },
@@ -122,10 +122,11 @@ export const DefaultRow = <TData,>({
       )}
       {...props}
     >
-      {children}
+      <span className="peer/tableRow flex">{children}</span>
+
       {!disableDnd && (
         <RowHandle
-          className="opacity-0 transition-opacity duration-100 group-hover/tableRow:opacity-100"
+          className="opacity-0 transition-opacity duration-100 peer-hover/tableRow:opacity-100"
           ref={handleRef}
           isDragging={isDragging}
         />
