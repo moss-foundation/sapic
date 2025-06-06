@@ -1,4 +1,3 @@
-use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntry};
 use chrono::DateTime;
 use std::{
     collections::VecDeque,
@@ -8,6 +7,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tracing_subscriber::fmt::MakeWriter;
+
+use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntry};
 
 pub struct SessionLogMakeWriter {
     pub sessionlog_path: PathBuf,
@@ -47,7 +48,7 @@ impl<'a> std::io::Write for SessionLogWriter {
             {
                 let file_name = datetime.format(FILE_DATE_FORMAT).to_string();
 
-                let mut file = OpenOptions::new()
+                let file = OpenOptions::new()
                     .create(true)
                     .append(true)
                     .open(&self.sessionlog_path.join(file_name).with_extension("log"))?;

@@ -4,18 +4,13 @@ mod models;
 mod writers;
 
 use anyhow::Result;
-use chrono::{DateTime, FixedOffset, NaiveDate};
 use moss_app::service::prelude::AppService;
 use nanoid::nanoid;
-use serde_json::Value as JsonValue;
 use std::{
-    collections::{HashSet, VecDeque},
-    ffi::OsStr,
-    fs::{self, File},
-    io::{self, BufRead, BufReader},
+    collections::VecDeque,
+    fs, io,
     path::{Path, PathBuf},
-    str::FromStr,
-    sync::{Arc, Mutex, atomic::AtomicUsize},
+    sync::{Arc, Mutex},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
@@ -30,11 +25,8 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
-    models::{
-        operations::{ListLogsInput, ListLogsOutput},
-        types::{LogEntry, LogLevel},
-    },
+    constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
+    models::types::LogEntry,
     writers::{
         applog_writer::AppLogMakeWriter, sessionlog_writer::SessionLogMakeWriter,
         taurilog_writer::TauriLogMakeWriter,

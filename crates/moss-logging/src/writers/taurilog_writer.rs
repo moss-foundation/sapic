@@ -1,7 +1,8 @@
-use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntry};
 use std::io::ErrorKind;
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use tracing_subscriber::fmt::MakeWriter;
+
+use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntry};
 
 pub struct TauriLogMakeWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,

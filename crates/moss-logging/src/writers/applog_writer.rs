@@ -48,7 +48,7 @@ impl<'a> std::io::Write for AppLogWriter {
             {
                 let file_name = datetime.format(FILE_DATE_FORMAT).to_string();
 
-                let mut file = OpenOptions::new()
+                let file = OpenOptions::new()
                     .create(true)
                     .append(true)
                     .open(&self.applog_path.join(file_name).with_extension("log"))?;

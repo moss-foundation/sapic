@@ -1,14 +1,4 @@
-use crate::{
-    FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
-    constants::{LEVEL_LIT, RESOURCE_LIT},
-    models::{
-        operations::{ListLogsInput, ListLogsOutput},
-        types::{LogEntry, LogLevel},
-    },
-};
-use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime};
-use log::log;
-use serde_json::Value as JsonValue;
+use chrono::{NaiveDate, NaiveDateTime};
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -20,6 +10,14 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tracing::Level;
+
+use crate::{
+    FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
+    models::{
+        operations::{ListLogsInput, ListLogsOutput},
+        types::{LogEntry, LogLevel},
+    },
+};
 
 // Empty field means that no filter will be applied
 #[derive(Default)]
