@@ -1,9 +1,9 @@
 pub mod api;
 mod applog_writer;
 mod constants;
-mod makewriter;
 mod models;
 mod sessionlog_writer;
+mod taurilog_writer;
 
 use anyhow::Result;
 use chrono::{DateTime, FixedOffset, NaiveDate};
@@ -34,12 +34,12 @@ use uuid::Uuid;
 use crate::{
     applog_writer::AppLogMakeWriter,
     constants::{APP_SCOPE, ID_LENGTH, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
-    makewriter::TauriLogMakeWriter,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
         types::{LogEntry, LogLevel},
     },
     sessionlog_writer::SessionLogMakeWriter,
+    taurilog_writer::TauriLogMakeWriter,
 };
 
 fn new_id() -> String {
@@ -271,8 +271,10 @@ impl AppService for LoggingService {}
 mod tests {
     use super::*;
     use crate::{constants::LOGGING_SERVICE_CHANNEL, models::operations::DeleteLogInput};
-    use std::time::Duration;
-    use tauri::Manager;
+    use moss_testutils::random_name::random_string;
+    use std::{fs::create_dir_all, time::Duration};
+    use tauri::{Listener, Manager};
+    use tokio::fs::remove_dir_all;
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
@@ -340,46 +342,19 @@ mod tests {
         );
     }
 
-    const TEST_APP_LOG_FOLDER: &'static str = "test/logs";
-    const TEST_GLOBAL_STORAGE_PATH: &'static str = "test";
-
-    #[tokio::test]
-    async fn test_writer() {
-        let mock_app = tauri::test::mock_app();
-        let session_id = Uuid::new_v4();
-        let logging_service = LoggingService::new(
-            mock_app.app_handle().clone(),
-            Path::new(TEST_APP_LOG_FOLDER),
-            &session_id,
-        )
-        .unwrap();
-
-        for i in 0..100 {
-            tokio::time::sleep(Duration::from_millis(100)).await;
-            logging_service.debug(
-                LogScope::App,
-                LogPayload {
-                    resource: None,
-                    message: "Test".to_string(),
-                },
-            );
-            logging_service.debug(
-                LogScope::Session,
-                LogPayload {
-                    resource: None,
-                    message: "Test".to_string(),
-                },
-            )
-        }
+    fn random_app_log_path() -> PathBuf {
+        Path::new("test").join(random_string(10))
     }
 
     #[tokio::test]
     async fn test_delete_log() {
+        let test_app_log_path = random_app_log_path();
+        create_dir_all(&test_app_log_path).unwrap();
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
             mock_app.app_handle().clone(),
-            Path::new(TEST_APP_LOG_FOLDER),
+            &test_app_log_path,
             &session_id,
         )
         .unwrap();
@@ -446,45 +421,31 @@ mod tests {
         assert_eq!(old_logs.len() - updated_logs.len(), 2);
         assert!(updated_logs.iter().find(|log| log.id == first_id).is_none());
         assert!(updated_logs.iter().find(|log| log.id == last_id).is_none());
+        remove_dir_all(&test_app_log_path).await.unwrap();
     }
 
-    // #[tokio::test]
-    // async fn test() {
-    //     let mock_app = tauri::test::mock_app();
-    //     let session_id = Uuid::new_v4();
-    //     let logging_service = LoggingService::new(
-    //         mock_app.app_handle().clone(),
-    //         Path::new(TEST_APP_LOG_FOLDER),
-    //         Path::new(TEST_SESSION_LOG_FOLDER),
-    //         &session_id,
-    //     )
-    //     .unwrap();
-    //
-    //     mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
-    //         println!("{}", event.payload())
-    //     });
-    //
-    //     let collection_path = Path::new("").join("TestCollection");
-    //
-    //     create_collection(Path::new(""), "TestCollection", &logging_service).await;
-    //     create_request(&collection_path, "TestRequest", &logging_service).await;
-    //     something_terrible(&logging_service).await;
-    //
-    //     let input = ListLogsInput {
-    //         dates: vec![],
-    //         levels: vec![LogLevel::INFO],
-    //         resource: None,
-    //     };
-    //
-    //     let output = logging_service
-    //         .list_logs(&input)
-    //         .unwrap()
-    //         .contents
-    //         .into_iter()
-    //         .map(|entry| serde_json::to_value(entry).unwrap().to_string())
-    //         .collect::<Vec<_>>()
-    //         .join("\n");
-    //
-    //     fs::write("logs/filtered", output).unwrap();
-    // }
+    #[tokio::test]
+    async fn test_taurilog_writer() {
+        let test_app_log_path = random_app_log_path();
+        let mock_app = tauri::test::mock_app();
+        let session_id = Uuid::new_v4();
+        let logging_service = LoggingService::new(
+            mock_app.app_handle().clone(),
+            &test_app_log_path,
+            &session_id,
+        )
+        .unwrap();
+
+        mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
+            println!("{}", event.payload())
+        });
+
+        let collection_path = Path::new("").join("TestCollection");
+
+        create_collection(Path::new(""), "TestCollection", &logging_service).await;
+        create_request(&collection_path, "TestRequest", &logging_service).await;
+        something_terrible(&logging_service).await;
+
+        remove_dir_all(&test_app_log_path).await.unwrap()
+    }
 }
