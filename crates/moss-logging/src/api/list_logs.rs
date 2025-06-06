@@ -15,7 +15,7 @@ use crate::{
     FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
     models::{
         operations::{ListLogsInput, ListLogsOutput},
-        types::{LogEntry, LogLevel},
+        types::{LogEntryInfo, LogLevel},
     },
 };
 
@@ -76,7 +76,7 @@ impl LoggingService {
 
 impl LoggingService {
     fn parse_file_with_filter(
-        records: &mut Vec<(NaiveDateTime, LogEntry)>,
+        records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
         path: &Path,
         filter: &LogFilter,
     ) -> anyhow::Result<()> {
@@ -86,7 +86,7 @@ impl LoggingService {
 
         for line in BufReader::new(file).lines() {
             let line = line?;
-            let log_entry: LogEntry = serde_json::from_str(&line)?;
+            let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
 
             if !filter.levels.is_empty() {
                 let level = Level::from_str(&log_entry.level)?;
@@ -117,8 +117,8 @@ impl LoggingService {
         &self,
         path: &Path,
         filter: &LogFilter,
-        queue: Arc<Mutex<VecDeque<LogEntry>>>,
-    ) -> anyhow::Result<Vec<(NaiveDateTime, LogEntry)>> {
+        queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    ) -> anyhow::Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
         // Combine all log entries in app/session log path according to a certain filter
         // And append the current log queue at the end
         let mut result = Vec::new();
@@ -162,9 +162,9 @@ impl LoggingService {
     }
 
     fn merge_logs_chronologically(
-        a: Vec<(NaiveDateTime, LogEntry)>,
-        b: Vec<(NaiveDateTime, LogEntry)>,
-    ) -> Vec<(NaiveDateTime, LogEntry)> {
+        a: Vec<(NaiveDateTime, LogEntryInfo)>,
+        b: Vec<(NaiveDateTime, LogEntryInfo)>,
+    ) -> Vec<(NaiveDateTime, LogEntryInfo)> {
         // Merging app logs and session logs, which are already separately sorted
         let mut iter_a = a.into_iter();
         let mut iter_b = b.into_iter();

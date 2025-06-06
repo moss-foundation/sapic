@@ -2,7 +2,7 @@ use std::io::ErrorKind;
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 use tracing_subscriber::fmt::MakeWriter;
 
-use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntry};
+use crate::{constants::LOGGING_SERVICE_CHANNEL, models::types::LogEntryInfo};
 
 pub struct TauriLogMakeWriter<R: TauriRuntime> {
     pub app_handle: AppHandle<R>,
@@ -16,7 +16,7 @@ impl<'a, R: TauriRuntime> std::io::Write for TauriLogWriter<R> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         // FIXME: Maybe we can find a better approach
         let log_body = String::from_utf8_lossy(buf).to_string();
-        let log_entry: LogEntry = serde_json::from_str(log_body.as_str())?;
+        let log_entry: LogEntryInfo = serde_json::from_str(log_body.as_str())?;
         self.app_handle
             .emit(LOGGING_SERVICE_CHANNEL, log_entry)
             .map_err(|e| {

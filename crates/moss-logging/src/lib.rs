@@ -26,7 +26,7 @@ use uuid::Uuid;
 
 use crate::{
     constants::{APP_SCOPE, ID_LENGTH, SESSION_SCOPE},
-    models::types::LogEntry,
+    models::types::LogEntryInfo,
     writers::{
         applog_writer::AppLogMakeWriter, sessionlog_writer::SessionLogMakeWriter,
         taurilog_writer::TauriLogMakeWriter,
@@ -56,8 +56,8 @@ pub enum LogScope {
 pub struct LoggingService {
     applog_path: PathBuf,
     sessionlog_path: PathBuf,
-    applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
-    sessionlog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     subscriber_guard: DefaultGuard,
 }
 
@@ -339,7 +339,7 @@ mod tests {
     }
 
     fn random_app_log_path() -> PathBuf {
-        Path::new("test").join(random_string(10))
+        Path::new("tests").join("data").join(random_string(10))
     }
 
     #[tokio::test]

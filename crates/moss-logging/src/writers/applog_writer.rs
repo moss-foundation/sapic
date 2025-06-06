@@ -8,19 +8,19 @@ use std::{
 };
 use tracing_subscriber::fmt::MakeWriter;
 
-use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntry};
+use crate::{FILE_DATE_FORMAT, TIMESTAMP_FORMAT, models::types::LogEntryInfo};
 
 pub struct AppLogMakeWriter {
     pub applog_path: PathBuf,
     pub dump_threshold: usize, // Dump the cached logs to a file
-    pub applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    pub applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
 }
 
 impl AppLogMakeWriter {
     pub fn new(
         applog_path: &Path,
         dump_threshold: usize,
-        applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+        applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     ) -> AppLogMakeWriter {
         Self {
             applog_path: applog_path.to_owned(),
@@ -33,12 +33,12 @@ impl AppLogMakeWriter {
 pub struct AppLogWriter {
     pub applog_path: PathBuf,
     pub dump_threshold: usize, // Dump the cached logs to a file
-    pub applog_queue: Arc<Mutex<VecDeque<LogEntry>>>,
+    pub applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
 }
 
 impl<'a> std::io::Write for AppLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let log_entry: LogEntry = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
+        let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
         let mut queue_lock = self.applog_queue.lock().unwrap();
         while queue_lock.len() >= self.dump_threshold {
@@ -59,7 +59,6 @@ impl<'a> std::io::Write for AppLogWriter {
                 }
             } else {
                 // Skip the first entry since its timestamp is invalid
-                dbg!("Invalid timestamp");
                 queue_lock.pop_front();
             }
         }

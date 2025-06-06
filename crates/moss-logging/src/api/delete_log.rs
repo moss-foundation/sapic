@@ -8,11 +8,10 @@ use std::{
 
 use crate::{
     FILE_DATE_FORMAT, LoggingService, TIMESTAMP_FORMAT,
-    models::{operations::DeleteLogInput, types::LogEntry},
+    models::{operations::DeleteLogInput, types::LogEntryInfo},
 };
 impl LoggingService {
     pub fn delete_log(&self, input: &DeleteLogInput) -> Result<()> {
-        // 1. Check if the log is inside logs cache
         {
             let mut applog_queue_lock = self.applog_queue.lock().unwrap();
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
@@ -30,7 +29,6 @@ impl LoggingService {
             }
         }
         let datetime = DateTime::parse_from_str(&input.timestamp, TIMESTAMP_FORMAT)?;
-        // 2. Check if the log is inside app logs and update it
         {
             let log_files = Self::identify_log_file(&self.applog_path, datetime)?;
             for file in log_files {
@@ -40,7 +38,6 @@ impl LoggingService {
                 }
             }
         }
-        // 3. Check if the log is inside session logs and update it
         {
             let log_files = Self::identify_log_file(&self.sessionlog_path, datetime)?;
             for file in log_files {
@@ -67,12 +64,13 @@ impl LoggingService {
         for entry in std::fs::read_dir(path)? {
             let entry = entry?;
             let path = entry.path();
-            if path.is_file() {
-                if let Some(stem) = path.file_stem() {
-                    let stem = stem.to_string_lossy().to_string();
-                    let dt = NaiveDateTime::parse_from_str(&stem, FILE_DATE_FORMAT)?;
-                    file_list.push((stem, dt))
-                }
+            if !path.is_file() {
+                continue;
+            }
+            if let Some(stem) = path.file_stem() {
+                let stem = stem.to_string_lossy().to_string();
+                let dt = NaiveDateTime::parse_from_str(&stem, FILE_DATE_FORMAT)?;
+                file_list.push((stem, dt))
             }
         }
         file_list.sort_by(|a, b| a.1.cmp(&b.1));
@@ -93,7 +91,7 @@ impl LoggingService {
         let mut new_content = String::with_capacity(old_content.len());
         let mut deleted = false;
         for line in old_content.lines() {
-            let log_entry: LogEntry = serde_json::from_str(line)?;
+            let log_entry: LogEntryInfo = serde_json::from_str(line)?;
             if log_entry.id == id {
                 deleted = true;
             } else {

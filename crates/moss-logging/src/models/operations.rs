@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::types::{LogDate, LogEntry, LogLevel};
+use crate::models::types::{LogDate, LogEntryInfo, LogLevel};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -17,7 +17,7 @@ pub struct ListLogsInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLogsOutput {
-    pub contents: Vec<LogEntry>,
+    pub contents: Vec<LogEntryInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
