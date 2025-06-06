@@ -16,7 +16,6 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   const isSortable = header.column.getCanSort();
   const canHide = header.column.getCanHide();
 
-  const [showActionMenuButton, setShowActionMenuButton] = useState(false);
   const [showActionMenu, setShowActionMenu] = useState(false);
 
   const toggleSortingHandler = header.column.getToggleSortingHandler();
@@ -24,27 +23,21 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
   return (
     <div
       role="columnheader"
-      className={cn(
-        "group/tableHeader relative border-r border-b border-(--moss-border-color) px-2 py-1.5 capitalize",
-        { "border-r-0": isLastColumn }
-      )}
+      className={cn("group/tableHeader relative border-r border-b border-(--moss-border-color) px-2 py-1.5", {
+        "border-r-0": isLastColumn,
+      })}
       style={{ width: header.getSize() }}
-      onMouseOver={() => setShowActionMenuButton(true)}
-      onMouseLeave={() => {
-        console.log("onMouseLeave");
-        setShowActionMenuButton(false);
-      }}
       {...props}
     >
       <div
-        className={cn("group relative flex items-center gap-2", {
+        className={cn("group relative flex items-center gap-2 capitalize", {
           "justify-center": isFirstColumn,
           "justify-between": !isFirstColumn,
         })}
       >
-        <span className="relative cursor-pointer truncate" onClick={isSortable ? toggleSortingHandler : undefined}>
+        <button className="relative cursor-pointer truncate" onClick={isSortable ? toggleSortingHandler : undefined}>
           {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-        </span>
+        </button>
 
         {isSortable && (
           <div className="background-(--moss-table-header-bg) absolute top-0 right-0 flex h-full items-center justify-center gap-1">
@@ -54,23 +47,14 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
               </button>
             )}
 
-            <ActionMenu.Root
-              open={showActionMenu}
-              onOpenChange={() => {
-                setShowActionMenu(false);
-              }}
-            >
+            <ActionMenu.Root open={showActionMenu} onOpenChange={setShowActionMenu}>
               <ActionMenu.Trigger
                 className={cn(
-                  "background-(--moss-icon-secondary-background-hover) -my-px cursor-pointer rounded p-0.5 transition-opacity duration-100",
+                  "background-(--moss-icon-secondary-background-hover) sr-only -my-px cursor-pointer rounded p-0.5! opacity-0 transition-opacity duration-100 group-hover/tableHeader:not-sr-only group-hover/tableHeader:opacity-100",
                   {
-                    "opacity-100": showActionMenuButton,
-                    "sr-only opacity-0": !showActionMenuButton,
+                    "not-sr-only opacity-100": showActionMenu,
                   }
                 )}
-                onMouseLeave={(e) => {
-                  e.stopPropagation();
-                }}
                 onClick={() => {
                   setShowActionMenu(true);
                 }}
@@ -111,6 +95,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
               "background-(--moss-primary)": header.column.getIsResizing(),
             }
           )}
+          onMouseOver={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={header.getResizeHandler()}
           style={{ height: tableHeight ? tableHeight - 1 : "100%" }}
