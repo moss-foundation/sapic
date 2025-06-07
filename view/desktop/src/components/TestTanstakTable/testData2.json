@@ -1,0 +1,35 @@
+[
+  {
+    "order": 1,
+    "id": "7",
+    "key": "7",
+    "value": "asd",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "100",
+    "local_value": 14,
+    "properties": { "disabled": false }
+  },
+  {
+    "order": 2,
+    "id": "8",
+    "key": "8",
+    "value": "zxc",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "2125",
+    "local_value": 22,
+    "properties": { "disabled": false }
+  },
+  {
+    "order": 3,
+    "id": "9",
+    "key": "9",
+    "value": "фывфыв",
+    "type": "string",
+    "description": "Lorem ipsum dolor sit, amet consectetur, adipisicing elit. Omnis ducimus ut deleniti voluptas exercitationem officiis iure unde ipsum similique animi? Soluta quod, dolorum voluptatem. Nihil, dolore quasi qui quidem error.",
+    "global_value": "31",
+    "local_value": 33,
+    "properties": { "disabled": false }
+  }
+]

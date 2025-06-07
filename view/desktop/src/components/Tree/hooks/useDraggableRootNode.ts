@@ -64,7 +64,6 @@ export const useDraggableRootNode = (
           setClosestEdge(closestEdge);
         },
         onDrag({ self }) {
-          console.log(1);
           const closestEdge = extractClosestEdge(self.data);
 
           setClosestEdge((current) => {

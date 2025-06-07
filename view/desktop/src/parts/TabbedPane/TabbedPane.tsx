@@ -8,7 +8,7 @@ import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartSt
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -27,7 +27,6 @@ import LogsPanel from "./DebugComponents/LogsPanel";
 import Metadata from "./DebugComponents/Metadata";
 import { useTabbedPaneDropTarget } from "./hooks/useDockviewDropTarget";
 import { useTabbedPaneEventHandlers } from "./hooks/useDockviewEventHandlers";
-import { useDockviewLogger } from "./hooks/useDockviewLogger";
 import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
@@ -63,13 +62,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const [showLogs, setShowLogs] = React.useState(false);
   const [debug, setDebug] = React.useState(false);
 
-  const { logLines, addLogLine, setLogLines } = useDockviewLogger();
-
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useTabbedPaneEventHandlers(api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup);
-  useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
+  const { canDrop, isDragging } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
@@ -209,9 +206,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
-    Home: () => (
+    KitchenSink: () => (
       <Scrollbar className="h-full">
-        <Home />
+        <KitchenSink />
       </Scrollbar>
     ),
     Settings: () => (
@@ -263,15 +260,16 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   defaultTabComponent={headerComponents.default}
                   rightHeaderActionsComponent={PanelToolbar}
                   leftHeaderActionsComponent={AddPanelButton}
-                  watermarkComponent={watermark ? Watermark : undefined}
+                  watermarkComponent={Watermark}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
+                  disableDnd={isDragging && canDrop === false}
                 />
               </div>
             </DebugContext.Provider>
           </Scrollbar>
-          {showLogs && <LogsPanel logLines={logLines} onClear={() => setLogLines([])} />}
+          {showLogs && <LogsPanel />}
         </div>
       </div>
     </Scrollbar>

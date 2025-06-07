@@ -17,6 +17,7 @@ const inputStyles = cva(`
     has-[input:focus-within]:outline-(--moss-primary)
     has-[input:focus-within]:has-data-invalid:outline-(--moss-error)
     has-[input:focus-within]:outline-2
+    font-normal
   `, 
 {
   variants: {

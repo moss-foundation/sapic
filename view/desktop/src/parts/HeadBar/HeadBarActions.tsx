@@ -1,7 +1,7 @@
-import { RefObject } from "react";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { RefObject } from "react";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -200,8 +200,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         });
         setShowRenameWorkspaceModal(true);
       }
-    } else if (action === "home") {
-      openPanel("Home");
+    } else if (action === "kitchensink") {
+      openPanel("KitchenSink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {

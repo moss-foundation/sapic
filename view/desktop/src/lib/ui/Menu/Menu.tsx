@@ -6,7 +6,7 @@ import { createContextScope, Scope } from "@radix-ui/react-context";
 import * as MenuPrimitive from "@radix-ui/react-menu";
 import { createMenuScope } from "@radix-ui/react-menu";
 import { Primitive } from "@radix-ui/react-primitive";
-import { useCallbackRef } from "@radix-ui/react-use-callback-ref";
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
 
 import { Icon, type Icons } from "../Icon";
 import { menuContentStyles, menuItemStyles } from "./styles";
@@ -27,9 +27,7 @@ export const useMenuScope = createActionMenuScope();
 
 type ActionMenuContextValue = {
   open: boolean;
-  onOpenChange(open: boolean): void;
   modal: boolean;
-
   triggerId: string;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   contentId: string;
@@ -44,34 +42,32 @@ interface ActionMenuProps {
   onOpenChange?(open: boolean): void;
   dir?: Direction;
   modal?: boolean;
+  open?: boolean;
 }
 
 const Root: React.FC<ActionMenuProps> = (props: ScopedProps<ActionMenuProps>) => {
-  const { __scopeActionMenu, children, onOpenChange, dir, modal = true } = props;
-  const [open, setOpen] = React.useState(false);
+  const { __scopeActionMenu, children, onOpenChange, dir, modal = true, open: openProp } = props;
   const menuScope = useMenuScope(__scopeActionMenu);
-  const handleOpenChangeProp = useCallbackRef(onOpenChange);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
-  const handleOpenChange = React.useCallback(
-    (open: boolean) => {
-      setOpen(open);
-      handleOpenChangeProp(open);
-    },
-    [handleOpenChangeProp]
-  );
+  const [open, setOpen] = useControllableState({
+    prop: openProp,
+    defaultProp: false,
+    onChange: onOpenChange,
+    caller: ACTION_MENU_NAME,
+  });
 
   return (
     <ActionMenuProvider
+      scope={__scopeActionMenu}
       triggerId={useId()}
       triggerRef={triggerRef}
       contentId={useId()}
-      scope={__scopeActionMenu}
       open={open}
-      onOpenChange={handleOpenChange}
+      onOpenChange={setOpen}
       onOpenToggle={React.useCallback(() => setOpen((prevOpen) => !prevOpen), [setOpen])}
       modal={modal}
     >
-      <MenuPrimitive.Root {...menuScope} dir={dir} open={open} onOpenChange={handleOpenChange} modal={modal}>
+      <MenuPrimitive.Root {...menuScope} dir={dir} open={open} onOpenChange={setOpen} modal={modal}>
         {children}
       </MenuPrimitive.Root>
     </ActionMenuProvider>
