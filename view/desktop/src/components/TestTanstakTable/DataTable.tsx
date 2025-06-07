@@ -120,11 +120,13 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     if (!value) return;
 
     const columnId = e.target.placeholder;
+    const newId = Math.random().toString(36).substring(2, 15);
+
     setFocusInputType(columnId);
 
     const newRow: TestData = {
       order: data.length + 1,
-      id: Math.random().toString(36).substring(2, 15),
+      id: newId,
       key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
       type: columnId === "type" ? value : "",
@@ -135,6 +137,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     };
 
     setData((prev) => [...prev, newRow]);
+    setRowSelection((prev) => ({ ...prev, [newId]: true }));
   };
 
   const handleAddNewRowFromDivider = (index: number) => {
