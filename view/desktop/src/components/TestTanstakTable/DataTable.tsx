@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
-import { cn } from "@/utils";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -18,6 +17,7 @@ import { useTableRowReorder } from "./hooks/useTableRowReorder";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
+import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
 interface DataTableProps<TData, TValue> {
@@ -41,6 +41,7 @@ declare module "@tanstack/react-table" {
 }
 
 export interface TestData {
+  order: number;
   id: string;
   key: string;
   value: string;
@@ -75,6 +76,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [focusInputType, setFocusInputType] = useState<string | null>(null);
 
   const table = useReactTable({
     data,
@@ -86,6 +88,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     enableColumnResizing: true,
     enableRowSelection: true,
     columnResizeMode: "onChange",
+
     getRowId: (row) => row.id,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
@@ -110,14 +113,17 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     if (table) onTableApiSet?.(table);
   }, [onTableApiSet, table]);
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const addNewRowAtTheEnd = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     const value = e.target.value.trim();
     if (!value) return;
 
     const columnId = e.target.placeholder;
+    setFocusInputType(columnId);
+
     const newRow: TestData = {
+      order: data.length,
       id: Math.random().toString(36).substring(2, 15),
       key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
@@ -125,18 +131,16 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
       description: columnId === "description" ? value : "",
       global_value: columnId === "global_value" ? value : "",
       local_value: columnId === "local_value" ? Number(value) || 0 : 0,
-      properties: {
-        disabled: false,
-      },
+      properties: { disabled: false },
     };
 
     setData((prev) => [...prev, newRow]);
-    e.target.value = "";
   };
 
-  const handleAddNewRow = (index: number) => {
+  const handleAddNewRowFromDivider = (index: number) => {
     setData((prev) => {
       const newRow: TestData = {
+        order: index,
         id: Math.random().toString(36).substring(2, 15),
         key: "",
         value: "",
@@ -144,12 +148,13 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
         description: "",
         global_value: "",
         local_value: 0,
-        properties: {
-          disabled: false,
-        },
+        properties: { disabled: false },
       };
 
-      return [...prev.slice(0, index), newRow, ...prev.slice(index)];
+      return [...prev.slice(0, index), newRow, ...prev.slice(index)].map((row, index) => ({
+        ...row,
+        order: index + 1,
+      }));
     });
   };
 
@@ -158,8 +163,8 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
       <div ref={tableContainerRef} className="w-[calc(100%-1px)]">
         <div
           role="table"
-          className="flex border-separate border-spacing-0 flex-col rounded border border-(--moss-border-color)"
-          style={{ width: table.getCenterTotalSize() }}
+          className="flex flex-col rounded border border-(--moss-border-color)"
+          style={{ width: table.getTotalSize() }}
         >
           <div role="rowgroup">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -170,74 +175,37 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
               </div>
             ))}
           </div>
-          <div role="rowgroup" className="flex flex-col">
+
+          <div role="rowgroup">
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
                   <DefaultRow<TestData>
-                    onAddNewRow={() => handleAddNewRow(row.index)}
+                    onAddNewRow={() => handleAddNewRowFromDivider(row.index)}
                     table={table}
                     row={row}
                     key={row.id}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <DefaultCell key={cell.id} cell={cell} />
+                      <DefaultCell
+                        key={cell.id}
+                        cell={cell}
+                        focusOnMount={focusInputType === cell.column.id && cell.row.index === data.length - 1}
+                      />
                     ))}
                   </DefaultRow>
                 ))}
-                <DefaultRow<TestData>
+                <DefaultAddNewRowForm<TestData>
                   table={table}
-                  row={table.getRowModel().rows[table.getRowModel().rows.length - 1]}
-                  key={`${tableId}-AddNewRowForm`}
-                  disableDnd
-                >
-                  {table
-                    .getRowModel()
-                    .rows[table.getRowModel().rows.length - 1].getVisibleCells()
-                    .map((cell) => {
-                      const isLastColumn = cell.column.getIsLastColumn();
-
-                      if (cell.column.id === "actions" || cell.column.id === "checkbox") {
-                        return (
-                          <div
-                            key={cell.id}
-                            role="cell"
-                            className={cn(
-                              "border-r border-(--moss-border-color) px-2 py-1.5",
-                              isLastColumn && "border-r-0"
-                            )}
-                            style={{ width: cell.column.getSize() }}
-                          />
-                        );
-                      }
-
-                      return (
-                        <div
-                          role="cell"
-                          key={cell.id}
-                          className={cn(
-                            "border-r border-(--moss-border-color) px-2 py-1.5",
-                            isLastColumn && "border-r-0"
-                          )}
-                          style={{ width: cell.column.getSize() }}
-                        >
-                          <input
-                            form={`${tableId}-AddNewRowForm`}
-                            placeholder={cell.column.id}
-                            className="w-full text-(--moss-table-add-row-form-text) outline-0"
-                            onBlur={handleBlur}
-                          />
-                        </div>
-                      );
-                    })}
-                </DefaultRow>
+                  key={`${tableId}-AddNewRowForm-${data.length}`}
+                  onInput={addNewRowAtTheEnd}
+                />
               </>
             ) : (
               <NoDataRow colSpan={columns.length} setData={setData} tableId={tableId} />
             )}
           </div>
         </div>
-        <form onSubmit={(e) => e.preventDefault()} id={`${tableId}-AddNewRowForm`} className="sr-only" />
       </div>
     </Scrollbar>
   );

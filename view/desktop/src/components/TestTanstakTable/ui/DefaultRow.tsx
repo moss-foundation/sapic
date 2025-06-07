@@ -122,7 +122,7 @@ export const DefaultRow = <TData,>({
       )}
       {...props}
     >
-      <span className="peer/tableRow flex">{children}</span>
+      <span className="peer/tableRow contents">{children}</span>
 
       {!disableDnd && (
         <RowHandle

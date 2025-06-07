@@ -1,5 +1,6 @@
 [
   {
+    "order": 1,
     "id": "1",
     "key": "1",
     "value": "asd",
@@ -10,6 +11,7 @@
     "properties": { "disabled": false }
   },
   {
+    "order": 2,
     "id": "2",
     "key": "2",
     "value": "zxc",
@@ -20,6 +22,7 @@
     "properties": { "disabled": false }
   },
   {
+    "order": 3,
     "id": "3",
     "key": "3",
     "value": "фывфыв",
@@ -30,6 +33,7 @@
     "properties": { "disabled": false }
   },
   {
+    "order": 4,
     "id": "4",
     "key": "4",
     "value": "йцкйцк",
@@ -40,6 +44,7 @@
     "properties": { "disabled": false }
   },
   {
+    "order": 5,
     "id": "5",
     "key": "5",
     "value": "512312412",
@@ -50,6 +55,7 @@
     "properties": { "disabled": true }
   },
   {
+    "order": 6,
     "id": "6",
     "key": "6",
     "value": "wrb4365n687j",

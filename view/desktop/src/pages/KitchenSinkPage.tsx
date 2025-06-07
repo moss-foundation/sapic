@@ -15,6 +15,7 @@ import {
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons, Scrollbar } from "@/lib/ui";
+import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 import { CellContext, createColumnHelper, Table } from "@tanstack/react-table";
 
@@ -234,21 +235,17 @@ const columns = [
   columnHelper.display({
     id: "checkbox",
     header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <CheckboxWithLabel
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        />
-      </div>
+      <CheckboxWithLabel
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      />
     ),
     cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <CheckboxWithLabel
-          disabled={!row.getCanSelect()}
-          checked={row.getIsSelected()}
-          onCheckedChange={row.getToggleSelectedHandler()}
-        />
-      </div>
+      <CheckboxWithLabel
+        disabled={!row.getCanSelect()}
+        checked={row.getIsSelected()}
+        onCheckedChange={row.getToggleSelectedHandler()}
+      />
     ),
     enableSorting: false,
     enableResizing: false,
@@ -303,14 +300,25 @@ const columns = [
   }),
 ];
 
-const TestTableInputCell = ({ info }: { info: CellContext<TestData, number | string> }) => {
+const TestTableInputCell = ({
+  info,
+}: {
+  info: CellContext<TestData, number | string> & { focusOnMount?: boolean };
+}) => {
   const [str, setStr] = useState(info.getValue());
+  const isSelected = info.row.getIsSelected();
 
   return (
     <input
-      className="w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-(--moss-primary) disabled:text-(--moss-gray-1)/50"
+      className={cn(
+        "w-full truncate px-2 py-1.5 focus:outline-1 focus:outline-(--moss-primary) disabled:text-(--moss-gray-1)/50",
+        {
+          "opacity-60": !isSelected,
+        }
+      )}
       value={str}
       onChange={(e) => setStr(e.target.value)}
+      autoFocus={info.focusOnMount}
     />
   );
 };

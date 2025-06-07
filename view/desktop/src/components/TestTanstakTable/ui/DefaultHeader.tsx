@@ -20,6 +20,18 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
 
   const toggleSortingHandler = header.column.getToggleSortingHandler();
 
+  if (isFirstColumn) {
+    return (
+      <div
+        role="columnheader"
+        className="flex items-center justify-center border-r border-b border-(--moss-border-color) py-1.5"
+        style={{ width: header.getSize() }}
+      >
+        {flexRender(header.column.columnDef.header, header.getContext())}
+      </div>
+    );
+  }
+
   return (
     <div
       role="columnheader"
@@ -29,13 +41,13 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       style={{ width: header.getSize() }}
       {...props}
     >
-      <div
-        className={cn("group/tableHeader relative flex items-center gap-2 capitalize", {
-          "justify-center": isFirstColumn,
-          "justify-between": !isFirstColumn,
-        })}
-      >
-        <button className="relative cursor-pointer truncate" onClick={isSortable ? toggleSortingHandler : undefined}>
+      <div className={cn("group/tableHeader relative flex items-center gap-2")}>
+        <button
+          className={cn("relative cursor-pointer truncate capitalize", {
+            "cursor-default": isLastColumn,
+          })}
+          onClick={isSortable ? toggleSortingHandler : undefined}
+        >
           {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
         </button>
 
