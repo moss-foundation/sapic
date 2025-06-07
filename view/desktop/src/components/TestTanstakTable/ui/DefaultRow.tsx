@@ -126,7 +126,7 @@ export const DefaultRow = <TData,>({
 
       {!disableDnd && (
         <RowHandle
-          className="opacity-0 transition-opacity duration-100 peer-hover/tableRow:opacity-100"
+          className="opacity-0 transition-opacity duration-100 peer-hover/tableRow:opacity-100 hover:opacity-100"
           ref={handleRef}
           isDragging={isDragging}
         />
