@@ -1,7 +1,9 @@
 import { cn } from "@/utils";
 import { Cell, flexRender } from "@tanstack/react-table";
 
-function DefaultCell<TData>({ cell, focusOnMount }: { cell: Cell<TData, unknown>; focusOnMount?: boolean }) {
+import { TestData } from "../types";
+
+function DefaultCell({ cell, focusOnMount }: { cell: Cell<TestData, unknown>; focusOnMount?: boolean }) {
   const isLastColumn = cell.column.getIsLastColumn();
 
   return (

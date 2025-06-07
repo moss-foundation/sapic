@@ -3,16 +3,17 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/utils";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { Table } from "@tanstack/react-table";
 
 import { TableRowDnDData, TestData } from "../types";
 
 interface NoDataRowProps {
-  colSpan: number;
   setData: (data: TestData[]) => void;
   tableId: string;
+  table: Table<TestData>;
 }
 
-export const NoDataRow = ({ setData, tableId }: NoDataRowProps) => {
+export const NoDataRow = ({ setData, tableId, table }: NoDataRowProps) => {
   const ref = useRef<HTMLTableRowElement>(null);
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 
@@ -23,7 +24,13 @@ export const NoDataRow = ({ setData, tableId }: NoDataRowProps) => {
     return combine(
       monitorForElements({
         canMonitor: ({ source }) => {
-          return source.data.type === "TableRow" || source.data.type === "TableRowNoResults";
+          if (source.data.type !== "TableRow") return false;
+
+          const sourceTarget = source.data.data as TableRowDnDData["data"];
+
+          if (sourceTarget.tableType !== table.options.meta?.tableType) return false;
+
+          return true;
         },
         onDrop({ location, source }) {
           if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;

@@ -6,7 +6,8 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { RowSelectionState, SortingState, Table } from "@tanstack/react-table";
 
-import { TableRowDnDData, TestData } from "../types";
+import { TestData } from "../types";
+import { getTableRowData } from "../utils";
 
 interface UseTableDragAndDropProps {
   table: Table<TestData>;
@@ -30,7 +31,7 @@ export const useTableDragAndDrop = ({
           return false;
         }
 
-        const sourceTarget = source.data.data as TableRowDnDData["data"];
+        const sourceTarget = getTableRowData(source);
 
         if (sourceTarget.tableType !== table.options.meta?.tableType) {
           return false;
@@ -42,9 +43,11 @@ export const useTableDragAndDrop = ({
       onDrop({ location, source }) {
         if (source.data.type !== "TableRow" || location.current.dropTargets.length === 0) return;
 
-        const sourceTarget = source.data.data as TableRowDnDData["data"];
-        const dropTarget = location.current.dropTargets[0].data.data as TableRowDnDData["data"];
+        const sourceTarget = getTableRowData(source);
+        const dropTarget = getTableRowData(location);
+
         const edge = extractClosestEdge(location.current.dropTargets[0].data);
+
         const flatRows = table.getRowModel().flatRows.map((row) => row.original);
 
         if (!sourceTarget || !dropTarget) {

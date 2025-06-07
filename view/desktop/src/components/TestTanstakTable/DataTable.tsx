@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
-import { useTableDragAndDrop } from "./hooks/useTableRowReorder";
+import { useTableDragAndDrop } from "./hooks/useTableDragAndDrop";
 import { DataTableProps, TestData } from "./types";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
@@ -144,7 +144,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
             {table.getRowModel().rows?.length ? (
               <>
                 {table.getRowModel().rows.map((row) => (
-                  <DefaultRow<TestData>
+                  <DefaultRow
                     onAddNewRow={() => handleAddNewRowFromDivider(row.index)}
                     table={table}
                     row={row}
@@ -159,14 +159,14 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
                     ))}
                   </DefaultRow>
                 ))}
-                <DefaultAddNewRowForm<TestData>
+                <DefaultAddNewRowForm
                   table={table}
                   key={`${tableId}-AddNewRowForm-${data.length}`}
                   onInput={addNewRowAtTheEnd}
                 />
               </>
             ) : (
-              <NoDataRow colSpan={columns.length} setData={setData} tableId={tableId} />
+              <NoDataRow setData={setData} tableId={tableId} table={table} />
             )}
           </div>
         </div>

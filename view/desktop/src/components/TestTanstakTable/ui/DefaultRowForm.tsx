@@ -3,18 +3,14 @@ import { HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Table } from "@tanstack/react-table";
 
-interface DefaultRowFormProps<TData> extends Omit<HTMLAttributes<HTMLFormElement>, "onInput"> {
-  table: Table<TData>;
+import { TestData } from "../types";
+
+interface DefaultRowFormProps extends Omit<HTMLAttributes<HTMLFormElement>, "onInput"> {
+  table: Table<TestData>;
   onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const DefaultAddNewRowForm = <TData,>({
-  children,
-  className,
-  table,
-  onInput,
-  ...props
-}: DefaultRowFormProps<TData>) => {
+export const DefaultAddNewRowForm = ({ children, className, table, onInput, ...props }: DefaultRowFormProps) => {
   return (
     <form
       id={`${table.options.meta?.tableId}-AddNewRowForm`}

@@ -1,6 +1,8 @@
-import { Header, Table } from "@tanstack/react-table";
 import { RefObject, useLayoutEffect } from "react";
-import { TestData } from "../DataTable";
+
+import { Header, Table } from "@tanstack/react-table";
+
+import { TestData } from "../types";
 
 interface AdjustColumnsWithoutSizesProps {
   table: Table<TestData>;
