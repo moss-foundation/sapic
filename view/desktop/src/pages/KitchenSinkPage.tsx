@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ActionMenu } from "@/components";
+import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
+import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import SelectOutlined from "@/components/SelectOutlined";
 import { DataTable } from "@/components/TestTanstakTable/DataTable";
@@ -184,6 +186,14 @@ const ComponentGallery = () => {
         <p className="mb-6 text-gray-600 dark:text-gray-300">
           Various button states and variants available in the application.
         </p>
+        <div className="flex gap-2">
+          <ButtonPrimary>ButtonPrimary</ButtonPrimary>
+          <ButtonPrimary disabled>ButtonPrimaryDisabled</ButtonPrimary>
+        </div>
+        <div className="flex gap-2">
+          <ButtonNeutralOutlined>ButtonNeutralOutlined</ButtonNeutralOutlined>
+          <ButtonNeutralOutlined disabled>ButtonNeutralOutlinedDisabled</ButtonNeutralOutlined>
+        </div>
       </section>
       {/* Command Section */}
       <section className="rounded-xl bg-white p-6 shadow-md dark:bg-stone-800">
