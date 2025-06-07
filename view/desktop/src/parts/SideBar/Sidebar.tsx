@@ -8,6 +8,7 @@ import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { useActiveWorkspace } from "@/hooks";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -39,6 +40,10 @@ export const Sidebar = () => {
   const workspace = useActiveWorkspace();
   const hasWorkspace = !!workspace;
 
+  const { data: workspaceState } = useDescribeWorkspaceState();
+  const { updateFromWorkspaceState } = useActivityBarStore();
+  const hasRestoredActivityBarState = useRef(false);
+
   const lastActiveGroupRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -46,6 +51,19 @@ export const Sidebar = () => {
       lastActiveGroupRef.current = projectSessionState.lastActiveGroup;
     }
   }, [projectSessionState?.lastActiveGroup]);
+
+  // Restore activity bar state from workspace state (only once)
+  useEffect(() => {
+    if (workspaceState?.activitybar && !hasRestoredActivityBarState.current) {
+      updateFromWorkspaceState(workspaceState.activitybar);
+      hasRestoredActivityBarState.current = true;
+    }
+  }, [workspaceState?.activitybar, updateFromWorkspaceState]);
+
+  // Reset the restoration flag when workspace changes
+  useEffect(() => {
+    hasRestoredActivityBarState.current = false;
+  }, [workspace?.id]);
 
   const { position } = useActivityBarStore();
 
@@ -62,7 +80,7 @@ export const Sidebar = () => {
     <EmptyWorkspace inSidebar={true} />
   );
 
-  if (position === "top") {
+  if (position === "TOP") {
     return (
       <BaseSidebar>
         <ActivityBar />
@@ -72,11 +90,11 @@ export const Sidebar = () => {
     );
   }
 
-  if (position === "bottom") {
+  if (position === "BOTTOM") {
     return (
-      <BaseSidebar>
+      <BaseSidebar className="relative">
         <SidebarHeader title={activeGroupTitle} />
-        {sidebarContent}
+        <div className="flex-1 overflow-auto">{sidebarContent}</div>
         <ActivityBar />
       </BaseSidebar>
     );

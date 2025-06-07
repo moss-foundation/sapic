@@ -8,6 +8,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
 import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
+import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 
@@ -22,7 +23,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const canUpdatePartState = useRef(false);
   const numberOfRerenders = useRef(0);
 
-  const { position } = useActivityBarStore();
+  const { position, toWorkspaceState } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
 
   const handleSidebarEdgeHandlerClick = () => {
@@ -48,8 +49,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     updateSidebarPartState({
       size: sideBar.width,
       visible: sideBar.visible,
+      position: sideBarPosition === "left" ? "LEFT" : "RIGHT",
     });
-  }, [sideBar, updateSidebarPartState]);
+  }, [sideBar, sideBarPosition, updateSidebarPartState]);
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
@@ -60,6 +62,21 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       visible: bottomPane.visible,
     });
   }, [bottomPane, updatePanelPartState]);
+
+  // ActivityBar state persistence
+  const { mutate: updateActivitybarPartState } = useUpdateActivitybarPartState();
+  const activityBarState = useActivityBarStore();
+  useEffect(() => {
+    if (!canUpdatePartState.current) return;
+
+    updateActivitybarPartState(toWorkspaceState());
+  }, [
+    activityBarState.position,
+    activityBarState.items,
+    activityBarState.lastActiveContainerId,
+    updateActivitybarPartState,
+    toWorkspaceState,
+  ]);
 
   //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
   useEffect(() => {
@@ -72,7 +89,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="flex h-full w-full">
-      {position === "default" && sideBarPosition === "left" && <ActivityBar />}
+      {position === "DEFAULT" && sideBarPosition === "left" && <ActivityBar />}
       <div className="relative flex h-full w-full">
         {!sideBar.visible && sideBarPosition === "left" && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
@@ -155,7 +172,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         )}
       </div>
 
-      {position === "default" && sideBarPosition === "right" && <ActivityBar />}
+      {position === "DEFAULT" && sideBarPosition === "right" && <ActivityBar />}
     </div>
   );
 };

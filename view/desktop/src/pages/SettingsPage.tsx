@@ -1,15 +1,14 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { MenuItemProps } from "@/components/ActionMenu/types";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import SelectOutlined from "@/components/SelectOutlined";
-import { ActivityBarState } from "@/hooks";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useListColorThemes } from "@/hooks/colorTheme/useListColorThemes";
 import { useSetColorTheme } from "@/hooks/colorTheme/useSetColorTheme";
 import { useListLocales } from "@/hooks/locales/useListLocales";
 import { useSetLocale } from "@/hooks/locales/useSetLocale";
 import { useActivityBarStore } from "@/store/activityBar";
+import { ActivitybarPosition } from "@repo/moss-workspace";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
 
@@ -27,14 +26,6 @@ export const Settings = () => {
 
   const { setPosition, position } = useActivityBarStore();
   const { setSideBarPosition, sideBarPosition } = useAppResizableLayoutStore();
-
-  // Menu open states
-  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [sidebarTypeMenuOpen, setSidebarTypeMenuOpen] = useState(false);
-  const [sidebarVisibilityMenuOpen, setSidebarVisibilityMenuOpen] = useState(false);
-  const [bottomPaneMenuOpen, setBottomPaneMenuOpen] = useState(false);
-  const [activityBarMenuOpen, setActivityBarMenuOpen] = useState(false);
 
   const handleLanguageChange = (value: string) => {
     const selectedLocaleCode = value;
@@ -72,7 +63,7 @@ export const Settings = () => {
   };
 
   const handleActivityBarPositionChange = (value: string) => {
-    const position = value as ActivityBarState["position"];
+    const position = value as ActivitybarPosition;
     setPosition(position);
   };
 
@@ -139,28 +130,28 @@ export const Settings = () => {
   // Activity bar position items
   const activityBarPositionItems: MenuItemProps[] = [
     {
-      id: "default",
+      id: "DEFAULT",
       type: "radio",
       label: "Default",
-      value: "default",
+      value: "DEFAULT",
     },
     {
-      id: "top",
+      id: "TOP",
       type: "radio",
       label: "Top",
-      value: "top",
+      value: "TOP",
     },
     {
-      id: "bottom",
+      id: "BOTTOM",
       type: "radio",
       label: "Bottom",
-      value: "bottom",
+      value: "BOTTOM",
     },
     {
-      id: "hidden",
+      id: "HIDDEN",
       type: "radio",
       label: "Hidden",
-      value: "hidden",
+      value: "HIDDEN",
     },
   ];
 
@@ -296,7 +287,7 @@ export const Settings = () => {
         <div className="mt-4">
           <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
           <div className="w-[200px]">
-            <SelectOutlined.Root value={position || "default"} onValueChange={handleActivityBarPositionChange}>
+            <SelectOutlined.Root value={position || "DEFAULT"} onValueChange={handleActivityBarPositionChange}>
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>
                 {activityBarPositionItems.map((item) => {
