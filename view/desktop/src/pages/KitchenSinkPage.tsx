@@ -380,11 +380,11 @@ const ExampleTable = () => {
             />
           ))}
       </div>
-      <DataTable<string | number> columns={columns} data={testData} onTableApiSet={handleTableApiSet} />
+      <DataTable columns={columns} data={testData} onTableApiSet={handleTableApiSet} />
     </>
   );
 };
 
 const ExampleTable2 = () => {
-  return <DataTable<string | number> columns={columns} data={testData2} />;
+  return <DataTable columns={columns} data={testData2} />;
 };

@@ -3,12 +3,7 @@ import { ColumnDef, RowData, Table } from "@tanstack/react-table";
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onTableApiSet: (table: Table<TData>) => void;
-
-  meta: {
-    id: string;
-    setData: (data: TData[]) => void;
-  };
+  onTableApiSet?: (table: Table<TData>) => void;
 }
 
 declare module "@tanstack/react-table" {

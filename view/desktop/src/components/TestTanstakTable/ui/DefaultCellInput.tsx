@@ -5,11 +5,11 @@ import { CellContext } from "@tanstack/react-table";
 
 import { TestData } from "../types";
 
-export const TestTableInputCell = ({
-  info,
-}: {
+interface DefaultCellInputProps {
   info: CellContext<TestData, number | string> & { focusOnMount?: boolean };
-}) => {
+}
+
+export const TestTableInputCell = ({ info }: DefaultCellInputProps) => {
   const [value, setValue] = useState(info.getValue());
   const isSelected = info.row.getIsSelected();
 
