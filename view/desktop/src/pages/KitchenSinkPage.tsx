@@ -220,6 +220,7 @@ const ComponentGallery = () => {
 
 interface TestData {
   key: string;
+  order: string;
   value: string;
   type: string;
   description: string;

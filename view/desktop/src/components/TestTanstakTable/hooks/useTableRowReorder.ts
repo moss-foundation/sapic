@@ -1,8 +1,11 @@
+import { Dispatch, SetStateAction, useEffect } from "react";
+
+import { refreshOrders } from "@/utils/refreshOrders";
 import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SortingState, Table } from "@tanstack/react-table";
-import { Dispatch, SetStateAction, useEffect } from "react";
+
 import { TableRowDnDData, TestData } from "../DataTable";
 
 interface TableRowReorderProps {
@@ -50,14 +53,14 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
 
             const newData = swapListByIndexWithEdge(sourceIndex, dropIndex, flatRows, edge);
 
-            setData(newData);
+            setData(refreshOrders(newData));
           }
 
           return;
         }
 
         if (sourceTarget.tableId === tableId) {
-          setData((prev) => [...prev].filter((row) => row.id !== sourceTarget.row.id));
+          setData((prev) => refreshOrders([...prev].filter((row) => row.id !== sourceTarget.row.id)));
           return;
         }
 
@@ -71,7 +74,7 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
           const insertIndex = edge === "bottom" ? dropIndex + 1 : dropIndex;
           newData.splice(insertIndex, 0, sourceTarget.row);
 
-          setData(newData);
+          setData(refreshOrders(newData));
 
           return;
         }

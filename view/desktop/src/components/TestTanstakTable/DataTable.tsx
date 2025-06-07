@@ -123,7 +123,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     setFocusInputType(columnId);
 
     const newRow: TestData = {
-      order: data.length,
+      order: data.length + 1,
       id: Math.random().toString(36).substring(2, 15),
       key: columnId === "key" ? value : "",
       value: columnId === "value" ? value : "",
