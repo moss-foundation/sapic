@@ -54,7 +54,7 @@ export const ActivityBar = () => {
         "h-full flex-col py-1.5": position === "DEFAULT",
         "hidden": position === "HIDDEN",
 
-        "border-l border-l-(--moss-border-color)": sideBarPosition === "right" && position === "DEFAULT",
+        "border-l border-l-(--moss-border-color)": sideBarPosition === "RIGHT" && position === "DEFAULT",
       })}
     >
       {items
@@ -200,8 +200,8 @@ const ActivityBarButtonIndicator = () => {
         "bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-t-[10px] [button:hover_+_&]:w-full": position === "TOP",
         "top-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-b-[10px] [button:hover_+_&]:w-full": position === "BOTTOM",
         "top-1/2 h-2.5 w-0.5 -translate-y-1/2 [button:hover_+_&]:h-full": position === "DEFAULT",
-        "right-0 rounded-l-[10px]": sideBarPosition === "right" && position === "DEFAULT",
-        "left-0 rounded-r-[10px]": sideBarPosition === "left" && position === "DEFAULT",
+        "right-0 rounded-l-[10px]": sideBarPosition === "RIGHT" && position === "DEFAULT",
+        "left-0 rounded-r-[10px]": sideBarPosition === "LEFT" && position === "DEFAULT",
       })}
     />
   );

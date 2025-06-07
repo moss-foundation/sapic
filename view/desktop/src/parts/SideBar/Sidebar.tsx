@@ -25,7 +25,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
       className={cn(
         "background-(--moss-secondary-background) flex h-full flex-col",
         {
-          "border-l border-(--moss-border-color)": sideBarPosition === "left",
+          "border-l border-(--moss-border-color)": sideBarPosition === "LEFT",
         },
         className
       )}

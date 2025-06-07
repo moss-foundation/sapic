@@ -49,7 +49,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     updateSidebarPartState({
       size: sideBar.width,
       visible: sideBar.visible,
-      position: sideBarPosition === "left" ? "LEFT" : "RIGHT",
+      position: sideBarPosition,
     });
   }, [sideBar, sideBarPosition, updateSidebarPartState]);
 
@@ -89,9 +89,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="flex h-full w-full">
-      {position === "DEFAULT" && sideBarPosition === "left" && <ActivityBar />}
+      {position === "DEFAULT" && sideBarPosition === "LEFT" && <ActivityBar />}
       <div className="relative flex h-full w-full">
-        {!sideBar.visible && sideBarPosition === "left" && (
+        {!sideBar.visible && sideBarPosition === "LEFT" && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
         )}
 
@@ -99,24 +99,24 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           proportionalLayout={false}
           ref={resizableRef}
           onDragEnd={(sizes) => {
-            if (sideBarPosition === "left") {
+            if (sideBarPosition === "LEFT") {
               const [leftPanelSize, _mainPanelSize] = sizes;
               sideBar.setWidth(leftPanelSize);
             }
-            if (sideBarPosition === "right") {
+            if (sideBarPosition === "RIGHT") {
               const [_mainPanelSize, rightPanelSize] = sizes;
               sideBar.setWidth(rightPanelSize);
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (sideBarPosition === "left" && index === 0) sideBar.setVisible(visible);
-            if (sideBarPosition === "right" && index === 1) sideBar.setVisible(visible);
+            if (sideBarPosition === "LEFT" && index === 0) sideBar.setVisible(visible);
+            if (sideBarPosition === "RIGHT" && index === 1) sideBar.setVisible(visible);
           }}
         >
-          {sideBarPosition === "left" && (
+          {sideBarPosition === "LEFT" && (
             <ResizablePanel
               preferredSize={sideBar.width}
-              visible={sideBar.visible && sideBarPosition === "left"}
+              visible={sideBar.visible && sideBarPosition === "LEFT"}
               minSize={sideBar.minWidth}
               maxSize={sideBar.maxWidth}
               snap
@@ -153,10 +153,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             )}
           </ResizablePanel>
 
-          {sideBarPosition === "right" && (
+          {sideBarPosition === "RIGHT" && (
             <ResizablePanel
               preferredSize={sideBar.width}
-              visible={sideBar.visible && sideBarPosition === "right"}
+              visible={sideBar.visible && sideBarPosition === "RIGHT"}
               minSize={sideBar.minWidth}
               maxSize={sideBar.maxWidth}
               snap
@@ -167,12 +167,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           )}
         </Resizable>
 
-        {!sideBar.visible && sideBarPosition === "right" && (
+        {!sideBar.visible && sideBarPosition === "RIGHT" && (
           <SidebarEdgeHandler alignment="right" onClick={handleSidebarEdgeHandlerClick} />
         )}
       </div>
 
-      {position === "DEFAULT" && sideBarPosition === "right" && <ActivityBar />}
+      {position === "DEFAULT" && sideBarPosition === "RIGHT" && <ActivityBar />}
     </div>
   );
 };
