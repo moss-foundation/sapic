@@ -200,7 +200,8 @@ impl LayoutService {
             last_active_container_id: get_from_cache::<String>(
                 &mut activitybar_cache,
                 PART_ACTIVITYBAR_SEGKEY.join("lastActiveContainerId"),
-            ),
+            )
+            .or_else(|| Some(TREE_VIEW_GROUP_COLLECTIONS.to_string())),
 
             position: get_from_cache::<ActivitybarPosition>(
                 &mut activitybar_cache,

@@ -96,6 +96,9 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => {
     const currentItems = get().items;
 
+    // Ensure we have a valid lastActiveContainerId, default to Collections if not
+    const activeContainerId = activitybarState.lastActiveContainerId || TREE_VIEW_GROUP_COLLECTIONS;
+
     // Create a map of workspace state items by id for easy lookup
     const workspaceItemsMap = new Map(activitybarState.items.map((item) => [item.id, item]));
 
@@ -107,12 +110,12 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
           ...item,
           order: workspaceItem.order,
           visible: workspaceItem.visible,
-          isActive: item.id === activitybarState.lastActiveContainerId,
+          isActive: item.id === activeContainerId,
         };
       }
       return {
         ...item,
-        isActive: item.id === activitybarState.lastActiveContainerId,
+        isActive: item.id === activeContainerId,
       };
     });
 
@@ -122,7 +125,7 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
     set({
       items: updatedItems,
       position: activitybarState.position,
-      lastActiveContainerId: activitybarState.lastActiveContainerId,
+      lastActiveContainerId: activeContainerId,
     });
   },
 }));
