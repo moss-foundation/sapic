@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useModal } from "@/hooks/useModal";
+import { useGlobalSidebarState } from "@/hooks/workspace/useGlobalSidebarState";
 import ButtonPrimary from "./ButtonPrimary";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
@@ -12,6 +13,8 @@ interface EmptyWorkspaceProps {
 
 export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
   const { t } = useTranslation();
+
+  useGlobalSidebarState();
 
   const {
     showModal: showNewWorkspaceModal,

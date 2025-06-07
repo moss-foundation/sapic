@@ -7,7 +7,6 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
-import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
 import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
@@ -41,17 +40,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
     resizableRef.current.reset();
   }, [bottomPane, sideBar, sideBarPosition]);
-
-  const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
-  useEffect(() => {
-    if (!canUpdatePartState.current) return;
-
-    updateSidebarPartState({
-      size: sideBar.width,
-      visible: sideBar.visible,
-      position: sideBarPosition,
-    });
-  }, [sideBar, sideBarPosition, updateSidebarPartState]);
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {

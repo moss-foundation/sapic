@@ -1,6 +1,4 @@
 export * from "./useModal";
-export * from "./_usePrepareWindow";
-
 export * from "./appState/useDescribeAppState";
 export * from "./appState/useUpdateEditorPartState";
 export * from "./appState/useUpdatePanelPartState";
