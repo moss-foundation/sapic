@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
+    ops::Deref,
     path::Path,
     sync::{
         Arc,
@@ -7,6 +8,7 @@ use std::{
     },
 };
 use ts_rs::TS;
+use uuid::Uuid;
 
 use super::types::PathChangeKind;
 
@@ -31,4 +33,46 @@ impl std::fmt::Display for EntryId {
     }
 }
 
-pub type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(tag = "type")]
+#[ts(export, export_to = "types.ts")]
+pub enum WorktreeChange {
+    Loaded {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+    Created {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+    Moved {
+        id: Uuid,
+        from_id: Uuid,
+        to_id: Uuid,
+        old_path: Arc<Path>,
+        new_path: Arc<Path>,
+    },
+    Deleted {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+}
+
+pub type ChangesDiffSet = Arc<[(Arc<Path>, Uuid, PathChangeKind)]>;
+
+#[derive(Clone, Debug)]
+pub struct ChangesDiffSetNew(Arc<[WorktreeChange]>);
+
+impl Deref for ChangesDiffSetNew {
+    type Target = [WorktreeChange];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<Vec<WorktreeChange>> for ChangesDiffSetNew {
+    fn from(changes: Vec<WorktreeChange>) -> Self {
+        Self(Arc::from(changes))
+    }
+}
