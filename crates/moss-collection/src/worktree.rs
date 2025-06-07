@@ -14,7 +14,7 @@ use std::{
     },
 };
 use thiserror::Error;
-use tokio::sync::mpsc;
+use tokio::{sync::mpsc, task::JoinHandle};
 use uuid::Uuid;
 
 use crate::{
@@ -75,6 +75,7 @@ pub struct Worktree {
     abs_path: Arc<Path>,
     snapshot: Snapshot,
     fs: Arc<dyn FileSystem>,
+    background_tasks: Vec<JoinHandle<()>>,
 }
 
 impl Worktree {
@@ -106,6 +107,7 @@ impl Worktree {
             abs_path,
             fs,
             snapshot,
+            background_tasks: Vec::new(),
         })
     }
 
@@ -245,6 +247,8 @@ impl Worktree {
         path: &Path,
         depth: u8,
     ) -> WorktreeResult<Vec<(Arc<Path>, Uuid, PathChangeKind)>> {
+        debug_assert!(path.is_relative());
+
         let mut changes = Vec::new();
 
         let ancestors_to_load = self.collect_ancestors_to_load(&path);
@@ -343,6 +347,8 @@ impl Worktree {
     }
 
     async fn load_single_entry(&mut self, path: Arc<Path>) -> WorktreeResult<Uuid> {
+        debug_assert!(path.is_relative());
+
         let unloaded_entry = self
             .snapshot
             .unloaded_entry_by_path(&path)
@@ -565,6 +571,9 @@ impl Worktree {
         }
 
         let mut changes = vec![];
+
+        // We need to load children of the parent since on the frontend we will expand the destination
+        // folder and a user needs to see the children of the destination folder.
         self.load_children_at_depth(parent_path.clone(), 1, &mut changes)
             .await?;
 
@@ -588,6 +597,89 @@ impl Worktree {
         // TODO: collect children of the moved entry
 
         Ok(ChangesDiffSet::from(changes))
+    }
+
+    pub async fn remove_entry(&mut self, entry_id: Uuid) -> WorktreeResult<ChangesDiffSet> {
+        let mut changes = vec![];
+        let entry = if let Some(entry) = self.snapshot.entry_by_id(entry_id) {
+            entry
+        } else {
+            return Ok(ChangesDiffSet::from(changes));
+        };
+
+        let entry_path = entry.path.clone();
+        let entry_abs_path = self.abs_path.join(&entry_path);
+        if entry_abs_path.exists() {
+            let mut temp_dir = entry_abs_path.clone();
+            let original_name = temp_dir.file_name().unwrap().to_string_lossy().to_string();
+            let temp_name = format!("{}.deleted.{}", original_name, std::process::id());
+            temp_dir.set_file_name(temp_name);
+
+            self.fs
+                .rename(
+                    &entry_abs_path,
+                    &temp_dir,
+                    RenameOptions {
+                        overwrite: true,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
+
+            self.spawn_background_task(async move {
+                match tokio::fs::remove_dir_all(&temp_dir).await {
+                    Ok(_) => (),
+                    Err(e) => eprintln!(
+                        "Error removing temporary directory {}: {}",
+                        temp_dir.display(),
+                        e
+                    ),
+                }
+            });
+        }
+
+        let mut nodes_to_remove = self.collect_loaded_descendants(entry_id);
+        nodes_to_remove.push(entry_id); // Add the target entry itself at the end
+
+        // Remove nodes bottom-up and collect changes
+        for node_id in nodes_to_remove {
+            if let Some(removed_entry) = self.snapshot.remove_entry(node_id) {
+                changes.push((removed_entry.path, node_id, PathChangeKind::Removed));
+            }
+        }
+
+        self.snapshot.remove_unloaded_by_prefix(&entry_path);
+
+        Ok(ChangesDiffSet::from(changes))
+    }
+
+    fn collect_loaded_descendants(&self, entry_id: Uuid) -> Vec<Uuid> {
+        self.snapshot.collect_loaded_descendants(entry_id)
+    }
+
+    /// Spawns a background task and stores its handle for later cleanup
+    pub fn spawn_background_task<F>(&mut self, future: F)
+    where
+        F: std::future::Future<Output = ()> + Send + 'static,
+    {
+        let handle = tokio::spawn(future);
+        self.background_tasks.push(handle);
+    }
+
+    /// Waits for all background tasks to complete
+    pub async fn wait_for_background_tasks(&mut self) -> Result<(), tokio::task::JoinError> {
+        let tasks = std::mem::take(&mut self.background_tasks);
+
+        for task in tasks {
+            task.await?;
+        }
+
+        Ok(())
+    }
+
+    /// Returns the number of currently running background tasks
+    pub fn background_tasks_count(&self) -> usize {
+        self.background_tasks.len()
     }
 }
 
@@ -626,14 +718,66 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_remove_entry() {
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data/test")
+                .into(),
+        )
+        .await
+        .unwrap();
+
+        let id = Uuid::new_v4();
+        let changes = worktree
+            .create_entry(
+                Path::new("test/foo/a"),
+                ConfigurationModel::Dir(DirConfigurationModel {
+                    metadata: SpecificationMetadata { id },
+                }),
+            )
+            .await
+            .unwrap();
+
+        let changes = worktree
+            .create_entry(
+                Path::new("test/foo/a/b/c/d"),
+                ConfigurationModel::Item(ItemConfigurationModel {
+                    metadata: SpecificationMetadata { id: Uuid::new_v4() },
+                }),
+            )
+            .await
+            .unwrap();
+
+        println!("{}", worktree.snapshot);
+
+        println!("=== Changes ===");
+
+        let changes = worktree.remove_entry(id).await.unwrap();
+
+        dbg!(&changes);
+
+        worktree.wait_for_background_tasks().await.unwrap();
+
+        println!("{}", worktree.snapshot);
+    }
+
+    #[tokio::test]
     async fn test_create_entry() {
         use std::env;
 
-        let temp_dir = env::temp_dir().join(format!("moss_test_create_{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(&temp_dir).unwrap();
-
         let fs = Arc::new(RealFileSystem::new());
-        let mut worktree = Worktree::new(fs, temp_dir.clone().into()).await.unwrap();
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data/test")
+                .into(),
+        )
+        .await
+        .unwrap();
 
         let changes = worktree
             .create_entry(
@@ -678,7 +822,7 @@ mod tests {
         println!("{}", worktree.snapshot);
 
         // Cleanup
-        std::fs::remove_dir_all(&temp_dir).ok();
+        // std::fs::remove_dir_all(&temp_dir).ok();
     }
 
     #[tokio::test]
@@ -792,5 +936,46 @@ mod tests {
 
         // Cleanup
         std::fs::remove_dir_all(&temp_dir).ok();
+    }
+
+    #[tokio::test]
+    async fn test_background_tasks() {
+        use std::{env, time::Duration};
+
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(
+            fs,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("tests")
+                .join("data/test")
+                .into(),
+        )
+        .await
+        .unwrap();
+
+        // Initially no background tasks
+        assert_eq!(worktree.background_tasks_count(), 0);
+
+        // Spawn some background tasks
+        worktree.spawn_background_task(async {
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            println!("Background task 1 completed");
+        });
+
+        worktree.spawn_background_task(async {
+            tokio::time::sleep(Duration::from_millis(200)).await;
+            println!("Background task 2 completed");
+        });
+
+        // Should have 2 background tasks now
+        assert_eq!(worktree.background_tasks_count(), 2);
+
+        // Wait for all background tasks to complete
+        worktree.wait_for_background_tasks().await.unwrap();
+
+        // Should have no background tasks after waiting
+        assert_eq!(worktree.background_tasks_count(), 0);
+
+        println!("All background tasks completed successfully");
     }
 }

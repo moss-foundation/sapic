@@ -32,4 +32,29 @@ impl std::fmt::Display for EntryId {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(tag = "type")]
+#[ts(export, export_to = "types.ts")]
+pub enum WorktreeChange {
+    Loaded {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+    Created {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+    Moved {
+        id: Uuid,
+        from_id: Uuid,
+        to_id: Uuid,
+        old_path: Arc<Path>,
+        new_path: Arc<Path>,
+    },
+    Deleted {
+        id: Uuid,
+        path: Arc<Path>,
+    },
+}
+
 pub type ChangesDiffSet = Arc<[(Arc<Path>, Uuid, PathChangeKind)]>;

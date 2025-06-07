@@ -233,17 +233,6 @@ impl Snapshot {
         Some(&mut self.entries[*idx])
     }
 
-    pub fn remove_entry(&mut self, id: Uuid) -> Option<NodeIndex> {
-        if let Some(idx) = self.entries_by_id.remove(&id) {
-            let node = self.entries.remove_node(idx).unwrap();
-            self.entries_by_path.remove(&node.path);
-
-            Some(idx)
-        } else {
-            None
-        }
-    }
-
     pub fn lowest_ancestor_path(&self, path: &Path) -> Arc<Path> {
         for ancestor in path.ancestors() {
             if let Some(unloaded_entry) = self.known_paths.get(ancestor) {
@@ -292,6 +281,65 @@ impl Snapshot {
         self.entries.add_edge(parent_idx, entry_idx, ());
 
         Ok(())
+    }
+
+    pub fn remove_entry(&mut self, id: Uuid) -> Option<Entry> {
+        let idx = self.entries_by_id.get(&id)?;
+        let entry = self.entries.remove_node(*idx);
+
+        if let Some(entry) = &entry {
+            self.entries_by_id.remove(&entry.id);
+            self.entries_by_path.remove(&entry.path);
+            self.known_paths.remove(&entry.path);
+        }
+
+        entry
+    }
+
+    pub fn remove_unloaded_by_prefix(&mut self, prefix: &Path) {
+        let paths_to_remove: Vec<Arc<Path>> = self
+            .unloaded_entries_by_path
+            .keys()
+            .filter(|path| path.starts_with(prefix))
+            .cloned()
+            .collect();
+
+        for path in paths_to_remove {
+            let id = match self.unloaded_entries_by_path.get(&path) {
+                Some(&id) => id,
+                None => continue,
+            };
+
+            self.unloaded_entries.remove_node(id);
+            self.unloaded_entries_by_id.remove(&id);
+            self.known_paths.remove(&path);
+            self.unloaded_entries_by_path.remove(&path);
+        }
+    }
+
+    pub fn collect_loaded_descendants(&self, entry_id: Uuid) -> Vec<Uuid> {
+        let mut descendants = Vec::new();
+        let mut to_visit = vec![entry_id];
+
+        while let Some(current_id) = to_visit.pop() {
+            // Find all loaded children of current node
+            if let Some(current_idx) = self.entries_by_id.get(&current_id) {
+                let children: Vec<Uuid> = self
+                    .entries
+                    .edges_directed(*current_idx, petgraph::Outgoing)
+                    .map(|edge| self.entries[edge.target()].id)
+                    .collect();
+
+                for child_id in children {
+                    descendants.push(child_id);
+                    to_visit.push(child_id);
+                }
+            }
+        }
+
+        // Reverse to get bottom-up order (deepest nodes first)
+        descendants.reverse();
+        descendants
     }
 }
 
