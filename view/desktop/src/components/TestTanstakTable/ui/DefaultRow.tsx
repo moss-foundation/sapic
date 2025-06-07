@@ -51,6 +51,7 @@ export const DefaultRow = <TData,>({
           data: {
             tableId: table.options.meta?.tableId,
             tableType: table.options.meta?.tableType,
+            isSelected: row.getIsSelected(),
             row: originalRow,
           },
         }),

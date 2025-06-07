@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-table";
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
-import { useTableRowReorder } from "./hooks/useTableRowReorder";
+import { useTableDragAndDrop } from "./hooks/useTableRowReorder";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
@@ -33,6 +33,7 @@ declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     tableId: string;
     tableType: "ActionsTable";
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
   }
   interface ColumnMeta<TData extends RowData, TValue> {
     isGrow?: boolean;
@@ -60,6 +61,7 @@ export interface TableRowDnDData {
     tableType: string;
     tableId: string;
     row: TestData;
+    isSelected: boolean;
   };
 }
 
@@ -88,7 +90,6 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     enableColumnResizing: true,
     enableRowSelection: true,
     columnResizeMode: "onChange",
-
     getRowId: (row) => row.id,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
@@ -99,13 +100,26 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
     meta: {
       tableId,
       tableType: "ActionsTable",
+      updateData: (rowIndex, columnId, value) => {
+        setData((old) =>
+          old.map((row, index) => {
+            if (index === rowIndex) {
+              return {
+                ...old[rowIndex]!,
+                [columnId]: value,
+              };
+            }
+            return row;
+          })
+        );
+      },
     },
   });
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const tableHeight = tableContainerRef.current?.clientHeight;
 
-  useTableRowReorder({ table, tableId, setSorting, setData });
+  useTableDragAndDrop({ table, tableId, setSorting, setData, setRowSelection });
 
   useAdjustColumnsWithoutSizes({ table, tableContainerRef });
 
@@ -166,7 +180,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
       <div ref={tableContainerRef} className="w-[calc(100%-1px)]">
         <div
           role="table"
-          className="flex flex-col rounded border border-(--moss-border-color)"
+          className="rounded border border-(--moss-border-color)"
           style={{ width: table.getTotalSize() }}
         >
           <div role="rowgroup">

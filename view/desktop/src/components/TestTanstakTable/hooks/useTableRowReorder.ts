@@ -4,18 +4,25 @@ import { refreshOrders } from "@/utils/refreshOrders";
 import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { SortingState, Table } from "@tanstack/react-table";
+import { RowSelectionState, SortingState, Table } from "@tanstack/react-table";
 
 import { TableRowDnDData, TestData } from "../DataTable";
 
-interface TableRowReorderProps {
+interface UseTableDragAndDropProps {
   table: Table<TestData>;
   tableId: string;
   setSorting: (sorting: SortingState) => void;
   setData: Dispatch<SetStateAction<TestData[]>>;
+  setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
 }
 
-export const useTableRowReorder = ({ table, tableId, setSorting, setData }: TableRowReorderProps) => {
+export const useTableDragAndDrop = ({
+  table,
+  tableId,
+  setSorting,
+  setData,
+  setRowSelection,
+}: UseTableDragAndDropProps) => {
   useEffect(() => {
     return monitorForElements({
       canMonitor: ({ source }) => {
@@ -61,11 +68,25 @@ export const useTableRowReorder = ({ table, tableId, setSorting, setData }: Tabl
 
         if (sourceTarget.tableId === tableId) {
           setData((prev) => refreshOrders([...prev].filter((row) => row.id !== sourceTarget.row.id)));
+
+          if (sourceTarget.isSelected) {
+            setRowSelection((prev) => {
+              const newRowSelection = { ...prev };
+              delete newRowSelection[sourceTarget.row.id];
+              return newRowSelection;
+            });
+          }
+
           return;
         }
 
         if (dropTarget.tableId === tableId) {
           setSorting([]);
+
+          if (sourceTarget.isSelected) {
+            setRowSelection((prev) => ({ ...prev, [sourceTarget.row.id]: true }));
+          }
+
           const edge = extractClosestEdge(location.current.dropTargets[0].data);
 
           const dropIndex = flatRows.findIndex((row) => row.id === dropTarget.row.id);

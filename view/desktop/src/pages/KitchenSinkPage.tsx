@@ -306,8 +306,12 @@ const TestTableInputCell = ({
 }: {
   info: CellContext<TestData, number | string> & { focusOnMount?: boolean };
 }) => {
-  const [str, setStr] = useState(info.getValue());
+  const [value, setValue] = useState(info.getValue());
   const isSelected = info.row.getIsSelected();
+
+  const onBlur = () => {
+    info.table.options.meta?.updateData(info.row.index, info.column.id, value);
+  };
 
   return (
     <input
@@ -317,9 +321,10 @@ const TestTableInputCell = ({
           "opacity-60": !isSelected,
         }
       )}
-      value={str}
-      onChange={(e) => setStr(e.target.value)}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
       autoFocus={info.focusOnMount}
+      onBlur={onBlur}
     />
   );
 };
