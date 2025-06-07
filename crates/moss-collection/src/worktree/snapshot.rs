@@ -287,15 +287,10 @@ impl Snapshot {
     }
 
     pub fn remove_entry(&mut self, id: Uuid) -> Option<Entry> {
-        let idx = self.entries_by_id.get(&id);
-        if idx.is_none() {
-            return None;
-        }
-        let idx = *idx.unwrap();
-
+        let &idx = self.entries_by_id.get(&id)?;
         let entry = self.entries.remove_node(idx);
 
-        if let Some(entry) = &entry {
+        if let Some(ref entry) = entry {
             self.entries_by_id.remove(&entry.id);
             self.entries_by_path.remove(&entry.path);
             self.known_paths.remove(&entry.path);

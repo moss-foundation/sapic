@@ -1311,7 +1311,7 @@ mod tests {
         let mut fresh_worktree = Worktree::new(fs, temp_dir.clone().into()).await.unwrap();
 
         // Load lib with children
-        let changes = fresh_worktree
+        let _changes = fresh_worktree
             .load_entry(Path::new("lib"), 1)
             .await
             .unwrap();
