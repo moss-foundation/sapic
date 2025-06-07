@@ -1,7 +1,7 @@
 import { ColumnDef, RowData, Table } from "@tanstack/react-table";
 
-export interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+export interface DataTableProps<TData> {
+  columns: ColumnDef<TData>[];
   data: TData[];
   onTableApiSet?: (table: Table<TData>) => void;
 }

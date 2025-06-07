@@ -18,7 +18,7 @@ import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
 
-export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData, string | number>) {
+export function DataTable({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData>) {
   const tableId = useId();
 
   const [data, setData] = useState<TestData[]>(initialData);
