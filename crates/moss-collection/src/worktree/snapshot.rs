@@ -57,21 +57,27 @@ impl UnloadedEntry {
 
 pub struct Entry {
     pub id: Uuid,
+    pub name: String,
     pub path: Arc<Path>,
+    pub is_dir: bool,
     pub config: Option<toml::EditableInPlaceFileHandle<ConfigurationModel>>,
 }
 
 impl Entry {
-    pub fn id(&self) -> Uuid {
-        self.id
-    }
-
-    pub fn path(&self) -> &Arc<Path> {
-        &self.path
-    }
-
     pub fn is_root(&self) -> bool {
         self.id == ROOT_ID
+    }
+
+    pub fn config(&self) -> &toml::EditableInPlaceFileHandle<ConfigurationModel> {
+        debug_assert!(!self.is_root(), "Root entry does not have a config");
+
+        self.config.as_ref().unwrap()
+    }
+
+    pub fn config_mut(&mut self) -> &mut toml::EditableInPlaceFileHandle<ConfigurationModel> {
+        debug_assert!(!self.is_root(), "Root entry does not have a config");
+
+        self.config.as_mut().unwrap()
     }
 }
 
@@ -159,10 +165,10 @@ impl Snapshot {
     }
 
     pub fn load_entry(&mut self, unloaded_id: usize, entry: Entry) -> Result<Uuid> {
-        let parent_path = entry.path().parent().unwrap_or(Path::new(ROOT_PATH));
+        let parent_path = entry.path.parent().unwrap_or(Path::new(ROOT_PATH));
 
         self.unloaded_entries.remove_node(unloaded_id);
-        self.unloaded_entries_by_path.remove(entry.path());
+        self.unloaded_entries_by_path.remove(&entry.path);
 
         let id = entry.id;
         if entry.is_root() {
@@ -202,9 +208,19 @@ impl Snapshot {
         Some(&self.entries[*idx])
     }
 
+    pub fn entry_by_id_unchecked(&self, id: Uuid) -> &Entry {
+        let idx = self.entries_by_id[&id];
+        &self.entries[idx]
+    }
+
     pub fn entry_by_id_mut(&mut self, id: Uuid) -> Option<&mut Entry> {
         let idx = self.entries_by_id.get(&id)?;
         Some(&mut self.entries[*idx])
+    }
+
+    pub fn entry_by_id_mut_unchecked(&mut self, id: Uuid) -> &mut Entry {
+        let idx = self.entries_by_id[&id];
+        &mut self.entries[idx]
     }
 
     pub fn entry_by_path(&self, path: &Path) -> Option<&Entry> {
@@ -235,6 +251,47 @@ impl Snapshot {
             }
         }
         Path::new(ROOT_PATH).into()
+    }
+
+    pub fn move_entry(&mut self, entry_id: Uuid, new_parent_id: Uuid) -> Result<()> {
+        let entry_idx = *self
+            .entries_by_id
+            .get(&entry_id)
+            .ok_or_else(|| anyhow::anyhow!("Entry not found"))?;
+
+        let parent_idx = *self
+            .entries_by_id
+            .get(&new_parent_id)
+            .ok_or_else(|| anyhow::anyhow!("New parent not found"))?;
+
+        let old_path = self.entries[entry_idx].path.clone();
+        let parent_path = self.entries[parent_idx].path.clone();
+        let entry_name = self.entries[entry_idx].name.clone();
+
+        let new_path: Arc<Path> = parent_path.join(&entry_name).into();
+
+        self.entries_by_path.remove(&old_path);
+
+        let entry = &mut self.entries[entry_idx];
+        entry.path = new_path.clone();
+
+        self.entries_by_path.insert(new_path.clone(), entry_idx);
+        self.known_paths.remove(&old_path);
+        self.known_paths.insert(new_path);
+
+        let old_edges: Vec<_> = self
+            .entries
+            .edges_directed(entry_idx, petgraph::Incoming)
+            .map(|edge| edge.id())
+            .collect();
+
+        for edge_id in old_edges {
+            self.entries.remove_edge(edge_id);
+        }
+
+        self.entries.add_edge(parent_idx, entry_idx, ());
+
+        Ok(())
     }
 }
 
@@ -268,9 +325,7 @@ impl Snapshot {
         is_last: bool,
         f: &mut Formatter<'_>,
     ) -> fmt::Result {
-        // Select branch symbols
         let branch = if is_last { "└── " } else { "├── " };
-        // Print current node with prefix and branch
         let entry = &self.entries[idx];
         let name = entry
             .path
@@ -278,17 +333,20 @@ impl Snapshot {
             .unwrap_or_else(|| entry.path.as_os_str())
             .to_string_lossy();
 
-        writeln!(f, "{}{}{}", prefix, branch, name)?;
+        let display_name = if entry.is_dir {
+            format!("/{}", name)
+        } else {
+            name.to_string()
+        };
 
-        // Calculate new prefix for children:
-        // if current is not last, draw «│   », otherwise draw «    »
+        writeln!(f, "{}{}{}", prefix, branch, display_name)?;
+
         let child_prefix = if is_last {
             format!("{}    ", prefix)
         } else {
             format!("{}│   ", prefix)
         };
 
-        // Collect and sort children by name (path)
         let mut children: Vec<NodeIndex> = self
             .entries
             .edges_directed(idx, petgraph::Outgoing)
