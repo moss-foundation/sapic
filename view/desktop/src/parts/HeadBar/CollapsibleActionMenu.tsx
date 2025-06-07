@@ -44,7 +44,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
         <ActionMenu.Item onClick={() => {}} icon="Bell">
           Notifications
         </ActionMenu.Item>
-        {sideBarPosition === "left" ? (
+        {sideBarPosition === "LEFT" ? (
           <>
             <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}

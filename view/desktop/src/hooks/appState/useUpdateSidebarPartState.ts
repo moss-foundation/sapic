@@ -18,6 +18,8 @@ const debouncedSetSidebarPartState = asyncDebounce(
 export const useUpdateSidebarPartState = () => {
   return useMutation<void, Error, SidebarPartStateInfo>({
     mutationKey: [USE_UPDATE_SIDEBAR_PART_STATE_MUTATION_KEY],
-    mutationFn: debouncedSetSidebarPartState,
+    mutationFn: async (sidebar: SidebarPartStateInfo): Promise<void> => {
+      await debouncedSetSidebarPartState(sidebar);
+    },
   });
 };

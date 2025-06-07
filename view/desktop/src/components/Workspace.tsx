@@ -1,4 +1,5 @@
 import { useListCollections } from "@/hooks/collection/useListCollections";
+import { useWorkspaceSidebarState } from "@/hooks/workspace/useWorkspaceSidebarState";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 interface WorkspaceProps {
@@ -7,6 +8,8 @@ interface WorkspaceProps {
 
 export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   const effectiveWorkspaceName = workspaceName ?? null;
+
+  useWorkspaceSidebarState();
 
   const { isLoading: isLoadingCollections, error: collectionsError } = useListCollections(effectiveWorkspaceName);
 
