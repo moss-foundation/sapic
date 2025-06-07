@@ -97,10 +97,7 @@ fn state_service<R: TauriRuntime>(
             locale: default_locale.clone(),
         };
 
-        StateService::new(defaults).with_commands([
-            // FIXME: Remove this example command
-            command!("example.generateLog", generate_log),
-        ])
+        StateService::new(defaults)
     }
 }
 
@@ -148,6 +145,7 @@ fn logging_service<R: TauriRuntime>(
         .expect("Session service needs to be registered first");
 
         LoggingService::new(
+            app_handle.clone(),
             &app_log_dir,
             &session_log_dir,
             session_service.get_session_uuid(),
@@ -184,8 +182,7 @@ async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResu
     logging_service.info(
         LogScope::App,
         LogPayload {
-            collection: None,
-            request: None,
+            resource: None,
             message: "Generate a log from the frontend".to_string(),
         },
     );

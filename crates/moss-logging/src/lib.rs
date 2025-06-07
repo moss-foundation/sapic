@@ -1,3 +1,5 @@
+mod constants;
+mod makewriter;
 mod models;
 
 use anyhow::Result;
@@ -9,10 +11,12 @@ use std::{
     ffi::OsStr,
     fs,
     fs::File,
-    io::{self, BufRead, BufReader},
+    io,
+    io::{BufRead, BufReader},
     path::{Path, PathBuf},
     str::FromStr,
 };
+use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
 use tracing_appender::{non_blocking::WorkerGuard, rolling::Rotation};
 use tracing_subscriber::{
@@ -25,17 +29,14 @@ use tracing_subscriber::{
 };
 use uuid::Uuid;
 
-use crate::models::{
-    operations::{ListLogsInput, ListLogsOutput},
-    types::{LogEntry, LogLevel},
+use crate::{
+    constants::{APP_SCOPE, LEVEL_LIT, RESOURCE_LIT, SESSION_SCOPE},
+    makewriter::TauriLogMakeWriter,
+    models::{
+        operations::{ListLogsInput, ListLogsOutput},
+        types::{LogEntry, LogLevel},
+    },
 };
-
-pub const LEVEL_LIT: &'static str = "level";
-pub const COLLECTION_LIT: &'static str = "collection";
-pub const REQUEST_LIT: &'static str = "request";
-
-pub const APP_SCOPE: &'static str = "app";
-pub const SESSION_SCOPE: &'static str = "session";
 
 pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
@@ -45,8 +46,7 @@ pub const FILE_DATE_FORMAT: &'static str = "%Y-%m-%d-%H-%M";
 pub struct LogFilter {
     dates: HashSet<NaiveDate>,
     levels: HashSet<Level>,
-    collection: Option<PathBuf>,
-    request: Option<PathBuf>,
+    resource: Option<String>,
 }
 
 fn get_level(level: LogLevel) -> Level {
@@ -70,15 +70,13 @@ impl From<ListLogsInput> for LogFilter {
                 })
                 .collect(),
             levels: input.levels.into_iter().map(get_level).collect(),
-            collection: input.collection.map(PathBuf::from),
-            request: input.request.map(PathBuf::from),
+            resource: input.resource,
         }
     }
 }
 
 pub struct LogPayload {
-    pub collection: Option<PathBuf>,
-    pub request: Option<PathBuf>,
+    pub resource: Option<String>,
     pub message: String,
 }
 
@@ -87,7 +85,6 @@ pub enum LogScope {
     Session,
 }
 
-// TODO: in-memory log
 pub struct LoggingService {
     app_log_path: PathBuf,
     session_path: PathBuf,
@@ -115,35 +112,16 @@ impl LoggingService {
                 }
             }
 
-            if filter.collection.is_some() {
-                if let Some(collection) = value
-                    .get(COLLECTION_LIT)
-                    .and_then(|v| v.as_str())
-                    .map(PathBuf::from)
-                {
-                    if filter.collection.clone().unwrap() != collection {
+            if let Some(resource_filter) = filter.resource.as_ref() {
+                if let Some(resource) = value.get(RESOURCE_LIT).and_then(|v| v.as_str()) {
+                    if resource_filter != resource {
                         continue;
                     }
                 } else {
-                    // With collection filter, skip entries without collection field
-                    continue;
+                    // With resource filter, skip entries without resource field
                 }
             }
 
-            if filter.request.is_some() {
-                if let Some(request) = value
-                    .get(REQUEST_LIT)
-                    .and_then(|v| v.as_str())
-                    .map(PathBuf::from)
-                {
-                    if filter.request.clone().unwrap() != request {
-                        continue;
-                    }
-                } else {
-                    // With request filter, skip entries without request field
-                    continue;
-                }
-            }
             let timestamp = value
                 .get("timestamp")
                 .and_then(|v| v.as_str())
@@ -222,7 +200,8 @@ impl LoggingService {
 }
 
 impl LoggingService {
-    pub fn new(
+    pub fn new<R: TauriRuntime>(
+        app_handle: AppHandle<R>,
         app_log_path: &Path,
         session_log_path: &Path,
         session_id: &Uuid,
@@ -272,7 +251,7 @@ impl LoggingService {
             .with(
                 // App log subscriber
                 tracing_subscriber::fmt::layer()
-                    .event_format(standard_log_format)
+                    .event_format(standard_log_format.clone())
                     .with_writer(app_log_writer)
                     .fmt_fields(JsonFields::default())
                     .with_filter(filter_fn(|metadata| {
@@ -286,6 +265,14 @@ impl LoggingService {
                     .with_span_events(FmtSpan::CLOSE)
                     .with_ansi(true)
                     .with_writer(io::stdout),
+            )
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .event_format(standard_log_format)
+                    .fmt_fields(JsonFields::default())
+                    .with_writer(TauriLogMakeWriter {
+                        app_handle: app_handle.clone(),
+                    }),
             );
 
         tracing::subscriber::set_global_default(subscriber)?;
@@ -322,16 +309,14 @@ impl LoggingService {
             LogScope::App => {
                 trace!(
                     target: APP_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
             LogScope::Session => {
                 trace!(
                     target: SESSION_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
@@ -343,16 +328,14 @@ impl LoggingService {
             LogScope::App => {
                 debug!(
                     target: APP_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
             LogScope::Session => {
                 debug!(
                     target: SESSION_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
@@ -364,16 +347,14 @@ impl LoggingService {
             LogScope::App => {
                 info!(
                     target: APP_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
             LogScope::Session => {
                 info!(
                     target: SESSION_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
@@ -385,16 +366,14 @@ impl LoggingService {
             LogScope::App => {
                 warn!(
                     target: APP_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
             LogScope::Session => {
                 warn!(
                     target: SESSION_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
@@ -406,16 +385,14 @@ impl LoggingService {
             LogScope::App => {
                 error!(
                     target: APP_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
             LogScope::Session => {
                 error!(
                     target: SESSION_SCOPE,
-                    collection = payload.collection.map(|p| p.display().to_string()).unwrap_or_default(),
-                    request = payload.request.map(|p| p.display().to_string()).unwrap_or_default(),
+                    resource = payload.resource,
                     message = payload.message
                 )
             }
@@ -428,6 +405,8 @@ impl AppService for LoggingService {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use tauri::{Listener, Manager};
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
@@ -437,8 +416,7 @@ mod tests {
         log_service.info(
             LogScope::Session,
             LogPayload {
-                collection: Some(collection_path.clone()),
-                request: None,
+                resource: Some(collection_path.to_string_lossy().to_string()),
                 message: format!(
                     "Created collection {} at {}",
                     name,
@@ -449,8 +427,7 @@ mod tests {
         log_service.info(
             LogScope::App,
             LogPayload {
-                collection: None,
-                request: None,
+                resource: Some(collection_path.to_string_lossy().to_string()),
                 message: "Successfully created collection".to_string(),
             },
         )
@@ -462,8 +439,7 @@ mod tests {
         log_service.info(
             LogScope::Session,
             LogPayload {
-                collection: Some(collection_path.to_path_buf()),
-                request: Some(request_path.clone()),
+                resource: Some(request_path.to_string_lossy().to_string()),
                 message: format!(
                     "Created request {} at {}",
                     name,
@@ -474,32 +450,25 @@ mod tests {
         log_service.info(
             LogScope::App,
             LogPayload {
-                collection: None,
-                request: None,
+                resource: Some(request_path.to_string_lossy().to_string()),
                 message: "Successfully created request".to_string(),
             },
         )
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn something_terrible(
-        collection_path: &Path,
-        request_path: &Path,
-        log_service: &LoggingService,
-    ) {
+    async fn something_terrible(log_service: &LoggingService) {
         log_service.warn(
             LogScope::App,
             LogPayload {
-                collection: Some(collection_path.to_path_buf()),
-                request: Some(request_path.to_path_buf()),
+                resource: None,
                 message: "Something bad!".to_string(),
             },
         );
         log_service.error(
             LogScope::App,
             LogPayload {
-                collection: Some(collection_path.to_path_buf()),
-                request: Some(request_path.to_path_buf()),
+                resource: None,
                 message: "Something terrible!".to_string(),
             },
         );
@@ -507,35 +476,32 @@ mod tests {
 
     const TEST_SESSION_LOG_FOLDER: &'static str = "logs/session";
     const TEST_APP_LOG_FOLDER: &'static str = "logs/app";
-    #[test]
-    fn test() {
+    #[tokio::test]
+    async fn test() {
+        let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
         let logging_service = LoggingService::new(
+            mock_app.app_handle().clone(),
             Path::new(TEST_APP_LOG_FOLDER),
             Path::new(TEST_SESSION_LOG_FOLDER),
             &session_id,
         )
         .unwrap();
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
 
-        // FIXME: Solve backslash issue
-        let collection_path = Path::new("").join("TestCollection");
-        let request_path = Path::new("").join("TestCollection").join("TestRequest");
-
-        runtime.block_on(async {
-            create_collection(Path::new(""), "TestCollection", &logging_service).await;
-            create_request(&collection_path, "TestRequest", &logging_service).await;
-            something_terrible(&collection_path, &request_path, &logging_service).await;
+        mock_app.listen(LOGGING_SERVICE_CHANNEL, |event| {
+            println!("{}", event.payload())
         });
+
+        let collection_path = Path::new("").join("TestCollection");
+
+        create_collection(Path::new(""), "TestCollection", &logging_service).await;
+        create_request(&collection_path, "TestRequest", &logging_service).await;
+        something_terrible(&logging_service).await;
 
         let input = ListLogsInput {
             dates: vec![],
             levels: vec![LogLevel::INFO],
-            collection: None,
-            request: None,
+            resource: None,
         };
 
         let output = logging_service
