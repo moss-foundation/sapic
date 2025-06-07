@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{
+    ops::Deref,
     path::Path,
     sync::{
         Arc,
@@ -58,3 +59,20 @@ pub enum WorktreeChange {
 }
 
 pub type ChangesDiffSet = Arc<[(Arc<Path>, Uuid, PathChangeKind)]>;
+
+#[derive(Clone, Debug)]
+pub struct ChangesDiffSetNew(Arc<[WorktreeChange]>);
+
+impl Deref for ChangesDiffSetNew {
+    type Target = [WorktreeChange];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<Vec<WorktreeChange>> for ChangesDiffSetNew {
+    fn from(changes: Vec<WorktreeChange>) -> Self {
+        Self(Arc::from(changes))
+    }
+}
