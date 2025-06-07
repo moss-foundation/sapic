@@ -11,14 +11,16 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { Row, Table } from "@tanstack/react-table";
 
-interface DefaultRowProps<TData> extends HTMLAttributes<HTMLTableRowElement> {
+import { getTableRowData, isTableRow } from "../utils";
+
+interface DefaultRowProps<TestData> extends HTMLAttributes<HTMLTableRowElement> {
   disableDnd?: boolean;
-  row: Row<TData>;
-  table: Table<TData>;
+  row: Row<TestData>;
+  table: Table<TestData>;
   onAddNewRow?: () => void;
 }
 
-export const DefaultRow = <TData,>({
+export const DefaultRow = <TestData,>({
   row,
   children,
   className,
@@ -26,14 +28,13 @@ export const DefaultRow = <TData,>({
   table,
   onAddNewRow,
   ...props
-}: DefaultRowProps<TData>) => {
+}: DefaultRowProps<TestData>) => {
   const handleRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLTableRowElement>(null);
 
   const originalRow = row.original;
 
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
-
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
@@ -85,7 +86,13 @@ export const DefaultRow = <TData,>({
           );
         },
         canDrop({ source }) {
-          return source.data.type === "TableRow" && originalRow.id !== source.data.data.row.id;
+          if (isTableRow(source)) {
+            const sourceTableRowData = getTableRowData(source);
+
+            return originalRow.id !== sourceTableRowData.row.id;
+          }
+
+          return false;
         },
         onDrop() {
           setClosestEdge(null);

@@ -1,8 +1,10 @@
+import { useEffect, useRef, useState } from "react";
+
 import { cn } from "@/utils";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { useEffect, useRef, useState } from "react";
-import { TableRowDnDData, TestData } from "../DataTable";
+
+import { TableRowDnDData, TestData } from "../types";
 
 interface NoDataRowProps {
   colSpan: number;
@@ -10,7 +12,7 @@ interface NoDataRowProps {
   tableId: string;
 }
 
-export const NoDataRow = ({ colSpan, setData, tableId }: NoDataRowProps) => {
+export const NoDataRow = ({ setData, tableId }: NoDataRowProps) => {
   const ref = useRef<HTMLTableRowElement>(null);
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 

@@ -6,7 +6,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { RowSelectionState, SortingState, Table } from "@tanstack/react-table";
 
-import { TableRowDnDData, TestData } from "../DataTable";
+import { TableRowDnDData, TestData } from "../types";
 
 interface UseTableDragAndDropProps {
   table: Table<TestData>;

@@ -2,74 +2,21 @@ import { useEffect, useId, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import {
-  ColumnDef,
   getCoreRowModel,
   getSortedRowModel,
-  RowData,
   SortingState,
-  Table,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
 
 import { useAdjustColumnsWithoutSizes } from "./hooks/useAdjustColumnsWithoutSizes";
 import { useTableDragAndDrop } from "./hooks/useTableRowReorder";
+import { DataTableProps, TestData } from "./types";
 import { DefaultCell } from "./ui/DefaultCell";
 import DefaultHeader from "./ui/DefaultHeader";
 import { DefaultRow } from "./ui/DefaultRow";
 import { DefaultAddNewRowForm } from "./ui/DefaultRowForm";
 import { NoDataRow } from "./ui/NoDataRow";
-
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  meta: {
-    id: string;
-    setData: (data: TData[]) => void;
-  };
-}
-
-declare module "@tanstack/react-table" {
-  interface TableMeta<TData extends RowData> {
-    tableId: string;
-    tableType: "ActionsTable";
-    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
-  }
-  interface ColumnMeta<TData extends RowData, TValue> {
-    isGrow?: boolean;
-    widthPercentage?: number;
-  }
-}
-
-export interface TestData {
-  order: number;
-  id: string;
-  key: string;
-  value: string;
-  type: string;
-  description: string;
-  global_value: string;
-  local_value: number;
-  properties: {
-    disabled: boolean;
-  };
-}
-
-export interface TableRowDnDData {
-  type: "TableRow";
-  data: {
-    tableType: string;
-    tableId: string;
-    row: TestData;
-    isSelected: boolean;
-  };
-}
-
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  onTableApiSet: (table: Table<TData>) => void;
-}
 
 export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }: DataTableProps<TestData, TValue>) {
   const tableId = useId();
@@ -80,7 +27,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [focusInputType, setFocusInputType] = useState<string | null>(null);
 
-  const table = useReactTable({
+  const table = useReactTable<TestData>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -101,6 +48,7 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
       tableId,
       tableType: "ActionsTable",
       updateData: (rowIndex, columnId, value) => {
+        setFocusInputType(null);
         setData((old) =>
           old.map((row, index) => {
             if (index === rowIndex) {
@@ -120,7 +68,6 @@ export function DataTable<TValue>({ columns, data: initialData, onTableApiSet }:
   const tableHeight = tableContainerRef.current?.clientHeight;
 
   useTableDragAndDrop({ table, tableId, setSorting, setData, setRowSelection });
-
   useAdjustColumnsWithoutSizes({ table, tableContainerRef });
 
   useEffect(() => {
