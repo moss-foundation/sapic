@@ -80,6 +80,7 @@ const ActivityBarButton = ({
   icon,
   iconActive,
   isActive,
+  visible: _visible, // Extract visible to prevent it from being passed to DOM
   ...props
 }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
