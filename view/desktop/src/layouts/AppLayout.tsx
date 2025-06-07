@@ -9,6 +9,8 @@ import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
 import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
+import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { cn } from "@/utils";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
@@ -19,11 +21,45 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
+  const workspace = useActiveWorkspace();
   const canUpdatePartState = useRef(false);
-  const numberOfRerenders = useRef(0);
 
   const { position, toWorkspaceState } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
+
+  // Fetch workspace state to know when initialization is complete
+  const { data: workspaceState, isFetched } = useDescribeWorkspaceState({
+    enabled: !!workspace,
+  });
+
+  // Initialize bottom pane state from workspace data (panels are still managed here)
+  useEffect(() => {
+    if (workspace && !isFetched) {
+      // Still waiting for workspace state
+      canUpdatePartState.current = false;
+      return;
+    }
+
+    // Initialize bottom pane from workspace state if available
+    if (workspaceState?.panel) {
+      const { initialize } = useAppResizableLayoutStore.getState();
+      initialize({
+        sideBar: {
+          // Don't modify sidebar - handled by workspace hooks
+        },
+        bottomPane: {
+          height: workspaceState.panel.size,
+          visible: workspaceState.panel.visible,
+        },
+      });
+    }
+
+    // Enable updates after workspace state is loaded (or when no workspace)
+    // Use a small delay to ensure all initialization effects have run
+    setTimeout(() => {
+      canUpdatePartState.current = true;
+    }, 50);
+  }, [workspace, workspaceState, isFetched]);
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -65,15 +101,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     updateActivitybarPartState,
     toWorkspaceState,
   ]);
-
-  //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
-  useEffect(() => {
-    numberOfRerenders.current++;
-
-    if (numberOfRerenders.current >= 2) {
-      canUpdatePartState.current = true;
-    }
-  }, []);
 
   return (
     <div className="flex h-full w-full">
