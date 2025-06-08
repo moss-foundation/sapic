@@ -24,6 +24,7 @@
 
 svg:not(.animate-spin),
 svg:not(.animate-spin) * {
-  transform: translateZ(0);
+  /* TODO: This breaks some icons, so i turned it off for now */
+  /* transform: translateZ(0); */
   image-rendering: optimizeSpeed;
 }
