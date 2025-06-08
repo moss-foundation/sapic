@@ -9,6 +9,8 @@ import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { PageView, PageHeader, PageContent, PageTabs, PageToolbar } from "@/components";
+import { Icon, type Icons } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -143,19 +145,106 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     return () => event.dispose();
   }, [api, updateEditorPartState]);
 
+  // Page configurations with metadata
+  type PageConfig = {
+    title: string;
+    icon: Icons;
+    component: React.ComponentType;
+    isFullPage?: boolean;
+    hasCustomLayout?: boolean; // For pages that manage their own tabs/toolbar
+  };
+
+  const pageConfigs: Record<string, PageConfig> = {
+    Home: {
+      title: "Home",
+      icon: "Settings",
+      component: Home,
+    },
+    Settings: {
+      title: "Settings",
+      icon: "Settings",
+      component: Settings,
+    },
+    Logs: {
+      title: "Logs",
+      icon: "Console",
+      component: Logs,
+    },
+    Welcome: {
+      title: "Welcome",
+      icon: "Info",
+      component: WelcomePage,
+      isFullPage: true, // Special case for welcome page
+    },
+  };
+
   const components = {
     Default: (props: IDockviewPanelProps) => {
       const isDebug = React.useContext(DebugContext);
+      const [activeTab, setActiveTab] = React.useState("endpoint");
+
+      const tabs = (
+        <PageTabs>
+          <button
+            className={cn(
+              "rounded px-3 py-1 text-xs font-medium transition-colors",
+              activeTab === "endpoint"
+                ? "bg-blue-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
+            )}
+            onClick={() => setActiveTab("endpoint")}
+          >
+            Endpoint
+          </button>
+          <button
+            className={cn(
+              "rounded px-3 py-1 text-xs font-medium transition-colors",
+              activeTab === "request"
+                ? "bg-blue-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
+            )}
+            onClick={() => setActiveTab("request")}
+          >
+            Request
+          </button>
+          <button
+            className={cn(
+              "rounded px-3 py-1 text-xs font-medium transition-colors",
+              activeTab === "mock"
+                ? "bg-blue-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
+            )}
+            onClick={() => setActiveTab("mock")}
+          >
+            Mock
+          </button>
+        </PageTabs>
+      );
+
+      const toolbar = (
+        <PageToolbar>
+          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            <Icon icon="Settings" className="size-4" />
+          </button>
+          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            <Icon icon="Settings" className="size-4" />
+          </button>
+          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            <Icon icon="Settings" className="size-4" />
+          </button>
+        </PageToolbar>
+      );
 
       return (
-        <>
-          <Breadcrumbs panelId={props.api.id} />
-          <Scrollbar
-            className={cn(
-              "relative h-full overflow-auto p-1.25",
-              isDebug && "border-2 border-dashed border-orange-500"
-            )}
-          >
+        <PageView>
+          <PageHeader
+            title={props.api.title ?? "Untitled"}
+            icon={<Icon icon="Settings" className="size-4" />}
+            tabs={tabs}
+            toolbar={toolbar}
+          />
+          <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
+            <Breadcrumbs panelId={props.api.id} />
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
 
@@ -173,8 +262,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 api={props.api}
               />
             )}
-          </Scrollbar>
-        </>
+          </PageContent>
+        </PageView>
       );
     },
     nested: () => {
@@ -209,25 +298,29 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
-    Home: () => (
-      <Scrollbar className="h-full">
-        <Home />
-      </Scrollbar>
-    ),
-    Settings: () => (
-      <Scrollbar className="h-full">
-        <Settings />
-      </Scrollbar>
-    ),
-    Logs: () => (
-      <Scrollbar className="h-full">
-        <Logs />
-      </Scrollbar>
-    ),
-    Welcome: () => (
-      <Scrollbar className="h-full">
-        <WelcomePage />
-      </Scrollbar>
+    ...Object.entries(pageConfigs).reduce(
+      (acc, [key, config]) => {
+        acc[key] = () => {
+          const PageComponent = config.component;
+
+          // Special case for full-page components like WelcomePage
+          if (config.isFullPage) {
+            return <PageComponent />;
+          }
+
+          // Standard page structure with header and content
+          return (
+            <PageView>
+              <PageHeader title={config.title} icon={<Icon icon={config.icon} className="size-4" />} />
+              <PageContent>
+                <PageComponent />
+              </PageContent>
+            </PageView>
+          );
+        };
+        return acc;
+      },
+      {} as Record<string, () => JSX.Element>
     ),
   };
 
