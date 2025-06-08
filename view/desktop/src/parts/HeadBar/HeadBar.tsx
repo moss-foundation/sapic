@@ -85,7 +85,6 @@ export const HeadBar = () => {
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
   const gitActionProps: HeadBarActionProps = { ...actionProps };
-  const windowsActionProps: HeadBarActionProps = { ...actionProps };
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };
   const collectionActionProps: HeadBarActionProps = {
     ...actionProps,
@@ -96,7 +95,7 @@ export const HeadBar = () => {
 
   const handleUserMenuAction = useUserMenuActions(userActionProps);
   const handleGitMenuAction = useGitMenuActions(gitActionProps);
-  const handleWindowsMenuAction = useWindowsMenuActions(windowsActionProps);
+  const handleWindowsMenuAction = useWindowsMenuActions();
   const handleWorkspaceMenuAction = useWorkspaceActions(workspaceActionProps);
   const collectionActions = useCollectionActions(collectionActionProps);
   const handleCollectionActionMenuAction = collectionActions.handleCollectionActionMenuAction;
@@ -135,7 +134,7 @@ export const HeadBar = () => {
       {/* Workspace Modals */}
       <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
       <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
-      
+
       {/* Rename Workspace Modal */}
       {workspaceToRename && (
         <RenameWorkspaceModal
@@ -182,8 +181,8 @@ export const HeadBar = () => {
           {/* Main content container with proper layout */}
           <div
             className={cn("grid w-full gap-1", {
-              "grid-cols-[minmax(1px,673px)_1fr_1fr]": selectedWorkspace,
-              "grid-cols-[1fr_1fr]": !selectedWorkspace,
+              "grid-cols-[max-content_1fr_max-content]": selectedWorkspace,
+              "grid-cols-[max-content_1fr]": !selectedWorkspace,
             })}
             data-tauri-drag-region
           >
@@ -199,33 +198,37 @@ export const HeadBar = () => {
 
             {/*HeadBar Center items*/}
             {selectedWorkspace && (
-              <HeadBarCenterItems
-                isMedium={isMedium}
-                isXLarge={isXLarge}
-                breakpoint={breakpoint}
-                handleGitMenuAction={handleGitMenuAction}
-                handleCollectionActionMenuAction={handleCollectionActionMenuAction}
-                selectedBranch={selectedBranch}
-                collectionName={collectionName}
-                onRenameCollection={handleRenameCollection}
-                collectionButtonRef={collectionButtonRef}
-                os={os}
-              />
+              <div className="flex justify-center" data-tauri-drag-region>
+                <HeadBarCenterItems
+                  isMedium={isMedium}
+                  isXLarge={isXLarge}
+                  breakpoint={breakpoint}
+                  handleGitMenuAction={handleGitMenuAction}
+                  handleCollectionActionMenuAction={handleCollectionActionMenuAction}
+                  selectedBranch={selectedBranch}
+                  collectionName={collectionName}
+                  onRenameCollection={handleRenameCollection}
+                  collectionButtonRef={collectionButtonRef}
+                  os={os}
+                />
+              </div>
             )}
 
             {/*HeadBar Right-side items*/}
-            <HeadBarRightItems
-              isMedium={isMedium}
-              isLarge={isLarge}
-              breakpoint={breakpoint}
-              handleUserMenuAction={handleUserMenuAction}
-              showDebugPanels={showDebugPanels}
-              setShowDebugPanels={setShowDebugPanels}
-              openPanel={openPanel}
-              os={os}
-              selectedWorkspace={selectedWorkspace}
-              selectedUser={selectedUser}
-            />
+            <div className="flex justify-end" data-tauri-drag-region>
+              <HeadBarRightItems
+                isMedium={isMedium}
+                isLarge={isLarge}
+                breakpoint={breakpoint}
+                handleUserMenuAction={handleUserMenuAction}
+                showDebugPanels={showDebugPanels}
+                setShowDebugPanels={setShowDebugPanels}
+                openPanel={openPanel}
+                os={os}
+                selectedWorkspace={selectedWorkspace}
+                selectedUser={selectedUser}
+              />
+            </div>
           </div>
         </div>
 

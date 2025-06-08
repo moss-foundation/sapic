@@ -5,6 +5,7 @@ import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItem, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn, swapListById } from "@/utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -49,27 +50,30 @@ export const ActivityBar = () => {
   return (
     <div
       className={cn("background-(--moss-secondary-background) flex items-center gap-3", {
-        "w-full border-b border-b-(--moss-border-color) px-1.5": position === "top",
-        "w-full border-t border-t-(--moss-border-color) px-1.5": position === "bottom",
-        "h-full flex-col py-1.5": position === "default",
-        "hidden": position === "hidden",
+        "w-full border-b border-b-(--moss-border-color) px-1.5": position === ACTIVITYBAR_POSITION.TOP,
+        "w-full border-t border-t-(--moss-border-color) px-1.5": position === ACTIVITYBAR_POSITION.BOTTOM,
+        "h-full flex-col py-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
+        "hidden": position === ACTIVITYBAR_POSITION.HIDDEN,
 
-        "border-l border-l-(--moss-border-color)": sideBarPosition === "right" && position === "default",
+        "border-l border-l-(--moss-border-color)":
+          sideBarPosition === SIDEBAR_POSITION.RIGHT && position === ACTIVITYBAR_POSITION.DEFAULT,
       })}
     >
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className={cn("relative flex flex-col", {
-            "px-1.5": position === "default",
-            "py-1.5": position === "top" || position === "bottom",
-          })}
-        >
-          <ActivityBarButton key={item.id} {...item} />
+      {items
+        .filter((item) => item.visible !== false) // Only show visible items
+        .map((item) => (
+          <div
+            key={item.id}
+            className={cn("relative flex flex-col", {
+              "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
+              "py-1.5": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+            })}
+          >
+            <ActivityBarButton key={item.id} {...item} />
 
-          {item.isActive && visible && <ActivityBarButtonIndicator />}
-        </div>
-      ))}
+            {item.isActive && visible && <ActivityBarButtonIndicator />}
+          </div>
+        ))}
     </div>
   );
 };
@@ -78,30 +82,24 @@ const ActivityBarButton = ({
   icon,
   iconActive,
   isActive,
+  visible: _visible, // Extract visible to prevent it from being passed to DOM
   ...props
 }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
-  const { alignment, setItems, items, position } = useActivityBarStore();
+  const { position, setActiveItem } = useActivityBarStore();
   const { setVisible, visible } = useAppResizableLayoutStore((state) => state.sideBar);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
   const handleClick = (id: string) => {
-    if (isActive && position === "default" && visible) {
+    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && visible) {
       setVisible(false);
       return;
     }
 
-    setItems(
-      items.map((item) => {
-        return {
-          ...item,
-          isActive: item.id === id,
-        };
-      })
-    );
+    setActiveItem(id);
     setVisible(true);
   };
 
@@ -134,7 +132,10 @@ const ActivityBarButton = ({
             {
               element,
               input,
-              allowedEdges: alignment === "horizontal" ? ["right", "left"] : ["top", "bottom"],
+              allowedEdges:
+                position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM
+                  ? ["right", "left"]
+                  : ["top", "bottom"],
             }
           );
         },
@@ -165,7 +166,7 @@ const ActivityBarButton = ({
         },
       })
     );
-  }, [alignment, icon, props]);
+  }, [position, icon, props]);
 
   return (
     <button
@@ -202,11 +203,15 @@ const ActivityBarButtonIndicator = () => {
   return (
     <div
       className={cn("absolute shadow-[inset_0_-2px_10px_var(--moss-primary)] transition-[height,width] duration-300", {
-        "bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-t-[10px] [button:hover_+_&]:w-full": position === "top",
-        "top-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-b-[10px] [button:hover_+_&]:w-full": position === "bottom",
-        "top-1/2 h-2.5 w-0.5 -translate-y-1/2 [button:hover_+_&]:h-full": position === "default",
-        "right-0 rounded-l-[10px]": sideBarPosition === "right" && position === "default",
-        "left-0 rounded-r-[10px]": sideBarPosition === "left" && position === "default",
+        "bottom-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-t-[10px] [button:hover_+_&]:w-full":
+          position === ACTIVITYBAR_POSITION.TOP,
+        "top-0 left-1/2 h-0.5 w-2.5 -translate-x-1/2 rounded-b-[10px] [button:hover_+_&]:w-full":
+          position === ACTIVITYBAR_POSITION.BOTTOM,
+        "top-1/2 h-2.5 w-0.5 -translate-y-1/2 [button:hover_+_&]:h-full": position === ACTIVITYBAR_POSITION.DEFAULT,
+        "right-0 rounded-l-[10px]":
+          sideBarPosition === SIDEBAR_POSITION.RIGHT && position === ACTIVITYBAR_POSITION.DEFAULT,
+        "left-0 rounded-r-[10px]":
+          sideBarPosition === SIDEBAR_POSITION.LEFT && position === ACTIVITYBAR_POSITION.DEFAULT,
       })}
     />
   );

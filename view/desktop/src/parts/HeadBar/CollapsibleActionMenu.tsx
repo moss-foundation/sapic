@@ -1,7 +1,6 @@
-import { useState } from "react";
-
 import { ActionButton, ActionMenu } from "@/components";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import PanelToggleButtons from "./PanelToggleButtons";
 
@@ -14,7 +13,6 @@ export interface CollapsibleActionMenuProps {
 
 // Collapsible Menu component that shows action buttons or collapses them into a dropdown
 export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActionMenuProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
 
   // When not in compact mode, show all buttons
@@ -47,7 +45,7 @@ export const CollapsibleActionMenu = ({ isCompact, openPanel }: CollapsibleActio
         <ActionMenu.Item onClick={() => {}} icon="Bell">
           Notifications
         </ActionMenu.Item>
-        {sideBarPosition === "left" ? (
+        {sideBarPosition === SIDEBAR_POSITION.LEFT ? (
           <>
             <ActionMenu.Item
               onClick={() => sideBar.setVisible(!sideBar.visible)}

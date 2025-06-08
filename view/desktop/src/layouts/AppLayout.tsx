@@ -7,9 +7,12 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
 import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
-import { useUpdateSidebarPartState } from "@/hooks/appState/useUpdateSidebarPartState";
+import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
 import { useActivityBarStore } from "@/store/activityBar";
+import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -19,11 +22,63 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
+  const workspace = useActiveWorkspace();
+  const workspaceId = workspace?.id || null;
   const canUpdatePartState = useRef(false);
-  const numberOfRerenders = useRef(0);
+  const lastProcessedWorkspaceId = useRef<string | null>(null);
+  const isTransitioning = useRef(false);
 
-  const { position } = useActivityBarStore();
+  const { position, toWorkspaceState } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
+
+  // Fetch workspace state to know when initialization is complete
+  const {
+    data: workspaceState,
+    isFetched,
+    isSuccess,
+  } = useDescribeWorkspaceState({
+    enabled: !!workspace,
+  });
+
+  // Reset update permission when workspace changes
+  useEffect(() => {
+    if (lastProcessedWorkspaceId.current !== workspaceId) {
+      canUpdatePartState.current = false;
+      isTransitioning.current = true;
+      lastProcessedWorkspaceId.current = workspaceId;
+    }
+  }, [workspaceId]);
+
+  // Initialize bottom pane state from workspace data (panels are still managed here)
+  useEffect(() => {
+    if (workspace && (!isFetched || !isSuccess)) {
+      // Still waiting for workspace state
+      canUpdatePartState.current = false;
+      isTransitioning.current = true;
+      return;
+    }
+
+    // Initialize bottom pane from workspace state if available
+    if (workspaceState?.panel) {
+      const { initialize } = useAppResizableLayoutStore.getState();
+      initialize({
+        sideBar: {
+          // Don't modify sidebar - handled by workspace hooks
+        },
+        bottomPane: {
+          height: workspaceState.panel.size,
+          visible: workspaceState.panel.visible,
+        },
+      });
+    }
+
+    // Enable updates after workspace state is loaded (or when no workspace)
+    // Use a delay to ensure all initialization effects have run
+    setTimeout(() => {
+      canUpdatePartState.current = true;
+      isTransitioning.current = false;
+    }, 200);
+  }, [workspace, workspaceState, isFetched, isSuccess]);
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -41,40 +96,37 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     resizableRef.current.reset();
   }, [bottomPane, sideBar, sideBarPosition]);
 
-  const { mutate: updateSidebarPartState } = useUpdateSidebarPartState();
-  useEffect(() => {
-    if (!canUpdatePartState.current) return;
-
-    updateSidebarPartState({
-      size: sideBar.width,
-      visible: sideBar.visible,
-    });
-  }, [sideBar, updateSidebarPartState]);
-
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
-    if (!canUpdatePartState.current) return;
+    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
 
     updatePanelPartState({
       size: bottomPane.height,
       visible: bottomPane.visible,
     });
-  }, [bottomPane, updatePanelPartState]);
+  }, [workspaceId, bottomPane, updatePanelPartState]);
 
-  //FIXME this is a hack to prevent the part state from being updated on initial mount in strict mode.
+  // ActivityBar state persistence - only save when workspace is stable and initialization is complete
+  const { mutate: updateActivitybarPartState } = useUpdateActivitybarPartState();
+  const activityBarState = useActivityBarStore();
   useEffect(() => {
-    numberOfRerenders.current++;
+    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
 
-    if (numberOfRerenders.current >= 2) {
-      canUpdatePartState.current = true;
-    }
-  }, []);
+    updateActivitybarPartState(toWorkspaceState());
+  }, [
+    workspaceId,
+    activityBarState.position,
+    activityBarState.items,
+    activityBarState.lastActiveContainerId,
+    updateActivitybarPartState,
+    toWorkspaceState,
+  ]);
 
   return (
     <div className="flex h-full w-full">
-      {position === "default" && sideBarPosition === "left" && <ActivityBar />}
+      {position === ACTIVITYBAR_POSITION.DEFAULT && sideBarPosition === SIDEBAR_POSITION.LEFT && <ActivityBar />}
       <div className="relative flex h-full w-full">
-        {!sideBar.visible && sideBarPosition === "left" && (
+        {!sideBar.visible && sideBarPosition === SIDEBAR_POSITION.LEFT && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
         )}
 
@@ -82,24 +134,24 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           proportionalLayout={false}
           ref={resizableRef}
           onDragEnd={(sizes) => {
-            if (sideBarPosition === "left") {
+            if (sideBarPosition === SIDEBAR_POSITION.LEFT) {
               const [leftPanelSize, _mainPanelSize] = sizes;
               sideBar.setWidth(leftPanelSize);
             }
-            if (sideBarPosition === "right") {
+            if (sideBarPosition === SIDEBAR_POSITION.RIGHT) {
               const [_mainPanelSize, rightPanelSize] = sizes;
               sideBar.setWidth(rightPanelSize);
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (sideBarPosition === "left" && index === 0) sideBar.setVisible(visible);
-            if (sideBarPosition === "right" && index === 1) sideBar.setVisible(visible);
+            if (sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0) sideBar.setVisible(visible);
+            if (sideBarPosition === SIDEBAR_POSITION.RIGHT && index === 1) sideBar.setVisible(visible);
           }}
         >
-          {sideBarPosition === "left" && (
+          {sideBarPosition === SIDEBAR_POSITION.LEFT && (
             <ResizablePanel
               preferredSize={sideBar.width}
-              visible={sideBar.visible && sideBarPosition === "left"}
+              visible={sideBar.visible && sideBarPosition === SIDEBAR_POSITION.LEFT}
               minSize={sideBar.minWidth}
               maxSize={sideBar.maxWidth}
               snap
@@ -136,10 +188,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             )}
           </ResizablePanel>
 
-          {sideBarPosition === "right" && (
+          {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
             <ResizablePanel
               preferredSize={sideBar.width}
-              visible={sideBar.visible && sideBarPosition === "right"}
+              visible={sideBar.visible && sideBarPosition === SIDEBAR_POSITION.RIGHT}
               minSize={sideBar.minWidth}
               maxSize={sideBar.maxWidth}
               snap
@@ -150,12 +202,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           )}
         </Resizable>
 
-        {!sideBar.visible && sideBarPosition === "right" && (
+        {!sideBar.visible && sideBarPosition === SIDEBAR_POSITION.RIGHT && (
           <SidebarEdgeHandler alignment="right" onClick={handleSidebarEdgeHandlerClick} />
         )}
       </div>
 
-      {position === "default" && sideBarPosition === "right" && <ActivityBar />}
+      {position === ACTIVITYBAR_POSITION.DEFAULT && sideBarPosition === SIDEBAR_POSITION.RIGHT && <ActivityBar />}
     </div>
   );
 };
