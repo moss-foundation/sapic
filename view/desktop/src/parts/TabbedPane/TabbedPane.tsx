@@ -148,7 +148,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   // Page configurations with metadata
   type PageConfig = {
     title: string;
-    icon: Icons;
+    icon?: Icons;
     component: React.ComponentType;
     isFullPage?: boolean;
     hasCustomLayout?: boolean; // For pages that manage their own tabs/toolbar
@@ -157,24 +157,20 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const pageConfigs: Record<string, PageConfig> = {
     Home: {
       title: "Home",
-      icon: "Settings",
       component: Home,
     },
     Settings: {
       title: "Settings",
-      icon: "Settings",
       component: Settings,
     },
     Logs: {
       title: "Logs",
-      icon: "Console",
       component: Logs,
     },
     Welcome: {
       title: "Welcome",
-      icon: "Info",
       component: WelcomePage,
-      isFullPage: true, // Special case for welcome page
+      isFullPage: true,
     },
   };
 
@@ -287,7 +283,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           // Standard page structure with header and content
           return (
             <PageView>
-              <PageHeader title={config.title} icon={<Icon icon={config.icon} className="size-[18px]" />} />
+              <PageHeader
+                title={config.title}
+                icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
+              />
               <PageContent>
                 <PageComponent />
               </PageContent>

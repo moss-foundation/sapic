@@ -9,10 +9,10 @@ export const PageTabs: React.FC<PageTabsProps> = ({ children, className }) => {
       const isActive = child.props["data-active"] === true;
       return React.cloneElement(child as React.ReactElement<any>, {
         className: cn(
-          "rounded px-2 py-0.5 text-base transition-colors",
+          "cursor-pointer rounded px-2 py-0.5 text-base transition-colors",
           isActive
             ? "background-(--moss-blue-12) text-(--moss-blue-4)"
-            : "bg-white text-(--moss-gray-1) hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
+            : "hover:background-(--moss-gray-12) bg-white text-(--moss-gray-1)"
         ),
       });
     }
