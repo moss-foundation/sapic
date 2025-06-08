@@ -93,7 +93,6 @@ impl LoggingService {
 
         let mut read_dir = self.fs.read_dir(path).await?;
         while let Some(entry) = read_dir.next_entry().await.unwrap_or(None) {
-            dbg!(&entry);
             let path = entry.path();
             if !path.is_file() || path.file_stem().is_none() {
                 continue;
@@ -101,7 +100,6 @@ impl LoggingService {
             let stem = path.file_stem().unwrap().to_string_lossy().to_string();
             // example: 2025-06-06-18-00.log
             if let Ok(dt) = NaiveDateTime::parse_from_str(&stem, FILE_TIME_FORMAT) {
-                dbg!(&path, &dt);
                 file_list.push((path, dt));
             }
             // Skip a log file if its name is not well-formatted

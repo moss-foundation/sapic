@@ -5,7 +5,6 @@ use parking_lot::Mutex;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
-    fs,
     io::{BufRead, BufReader},
     path::Path,
     str::FromStr,
@@ -56,15 +55,19 @@ impl From<ListLogsInput> for LogFilter {
 }
 
 impl LoggingService {
-    pub fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
+    pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
         // Combining both app and session log
         let filter: LogFilter = input.clone().into();
-        let app_logs = self.combine_logs(&self.applog_path, &filter, self.applog_queue.clone())?;
-        let session_logs = self.combine_logs(
-            &self.sessionlog_path,
-            &filter,
-            self.sessionlog_queue.clone(),
-        )?;
+        let app_logs = self
+            .combine_logs(&self.applog_path, &filter, self.applog_queue.clone())
+            .await?;
+        let session_logs = self
+            .combine_logs(
+                &self.sessionlog_path,
+                &filter,
+                self.sessionlog_queue.clone(),
+            )
+            .await?;
         let merged_logs = LoggingService::merge_logs_chronologically(app_logs, session_logs)
             .into_iter()
             .map(|item| item.1)
@@ -77,14 +80,15 @@ impl LoggingService {
 }
 
 impl LoggingService {
-    fn parse_file_with_filter(
+    async fn parse_file_with_filter(
+        &self,
         records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
         path: &Path,
         filter: &LogFilter,
     ) -> Result<()> {
         // In the log files, each line is a LogEntry JSON object
         // Entries in each log files are already sorted chronologically
-        let file = fs::File::open(path)?;
+        let file = self.fs.open_file(path).await?;
 
         for line in BufReader::new(file).lines() {
             let line = line?;
@@ -115,7 +119,7 @@ impl LoggingService {
         Ok(())
     }
 
-    fn combine_logs(
+    async fn combine_logs(
         &self,
         path: &Path,
         filter: &LogFilter,
@@ -125,9 +129,9 @@ impl LoggingService {
         // And append the current log queue at the end
         let mut result = Vec::new();
         let mut log_files = Vec::new();
+        let mut read_dir = self.fs.read_dir(path).await?;
 
-        for entry in fs::read_dir(path)? {
-            let entry = entry?;
+        while let Some(entry) = read_dir.next_entry().await.unwrap_or(None) {
             let path = entry.path();
             if path.is_dir() || path.extension() != Some(OsStr::new("log")) {
                 continue;
@@ -144,7 +148,8 @@ impl LoggingService {
         log_files.sort_by_key(|p| p.1);
         for (path, date_time) in &log_files {
             if filter.dates.is_empty() || filter.dates.contains(date_time) {
-                LoggingService::parse_file_with_filter(&mut result, path, filter)?
+                self.parse_file_with_filter(&mut result, path, filter)
+                    .await?
             }
         }
         result.extend({

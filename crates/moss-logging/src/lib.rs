@@ -400,6 +400,7 @@ mod tests {
                 levels: vec![],
                 resource: None,
             })
+            .await
             .unwrap()
             .contents;
 
@@ -435,6 +436,7 @@ mod tests {
                 levels: vec![],
                 resource: None,
             })
+            .await
             .unwrap()
             .contents;
 
