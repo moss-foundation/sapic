@@ -1,6 +1,7 @@
-import { ActionButton } from "@/components";
+import { ActionButton } from "@/components/ActionButton";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
+import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 export interface PanelToggleButtonsProps {
   className?: string;
@@ -19,7 +20,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
   return (
     <div className={cn("flex shrink-0 -space-x-0.5", className)}>
-      {sideBarPosition === "left" && (
+      {sideBarPosition === SIDEBAR_POSITION.LEFT && (
         <ActionButton
           iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
           icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
@@ -35,7 +36,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
         title="Toggle Bottom Panel"
       />
 
-      {sideBarPosition === "right" && (
+      {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
         <ActionButton
           iconClassName="size-4.5 text-(--moss-headBar-icon-primary-text)"
           icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}

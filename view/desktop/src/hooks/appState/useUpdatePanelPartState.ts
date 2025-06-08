@@ -18,6 +18,8 @@ const debouncedSetPanelPartState = asyncDebounce(
 export const useUpdatePanelPartState = () => {
   return useMutation<void, Error, PanelPartStateInfo>({
     mutationKey: [USE_UPDATE_PANEL_PART_STATE_MUTATION_KEY],
-    mutationFn: debouncedSetPanelPartState,
+    mutationFn: async (panel: PanelPartStateInfo): Promise<void> => {
+      await debouncedSetPanelPartState(panel);
+    },
   });
 };

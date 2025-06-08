@@ -8,6 +8,8 @@ import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { useActiveWorkspace } from "@/hooks";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -24,7 +26,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
       className={cn(
         "background-(--moss-secondary-background) flex h-full flex-col",
         {
-          "border-l border-(--moss-border-color)": sideBarPosition === "left",
+          "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
@@ -38,6 +40,11 @@ export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
   const workspace = useActiveWorkspace();
   const hasWorkspace = !!workspace;
+  const workspaceId = workspace?.id || null;
+
+  const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
+  const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
+  const lastRestoredWorkspaceId = useRef<string | null>(null);
 
   const lastActiveGroupRef = useRef<string | null>(null);
 
@@ -46,6 +53,38 @@ export const Sidebar = () => {
       lastActiveGroupRef.current = projectSessionState.lastActiveGroup;
     }
   }, [projectSessionState?.lastActiveGroup]);
+
+  // Reset activity bar state when workspace changes (before restoration)
+  useEffect(() => {
+    if (lastRestoredWorkspaceId.current !== workspaceId) {
+      // Reset to default state before loading new workspace state
+      if (workspaceId) {
+        // Will be restored from workspace state
+        resetToDefaults();
+        lastRestoredWorkspaceId.current = null;
+      } else {
+        // Reset to default when no workspace
+        resetToDefaults();
+        lastRestoredWorkspaceId.current = workspaceId;
+      }
+    }
+  }, [workspaceId, resetToDefaults]);
+
+  // Restore activity bar state from workspace state
+  useEffect(() => {
+    if (!workspaceId || !isFetched || !isSuccess || !workspaceState?.activitybar) return;
+
+    if (lastRestoredWorkspaceId.current === workspaceId) return;
+
+    // Only restore if we have fresh workspace state for this workspace
+    // Add a small delay to ensure workspace switching is complete
+    const timeoutId = setTimeout(() => {
+      updateFromWorkspaceState(workspaceState.activitybar!);
+      lastRestoredWorkspaceId.current = workspaceId;
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [workspaceId, workspaceState?.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
 
   const { position } = useActivityBarStore();
 
@@ -62,7 +101,7 @@ export const Sidebar = () => {
     <EmptyWorkspace inSidebar={true} />
   );
 
-  if (position === "top") {
+  if (position === ACTIVITYBAR_POSITION.TOP) {
     return (
       <BaseSidebar>
         <ActivityBar />
@@ -72,11 +111,11 @@ export const Sidebar = () => {
     );
   }
 
-  if (position === "bottom") {
+  if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
-      <BaseSidebar>
+      <BaseSidebar className="relative">
         <SidebarHeader title={activeGroupTitle} />
-        {sidebarContent}
+        <div className="flex-1 overflow-auto">{sidebarContent}</div>
         <ActivityBar />
       </BaseSidebar>
     );

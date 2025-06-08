@@ -20,6 +20,8 @@ const debouncedSetEditorPartState = asyncDebounce(
 export const useUpdateEditorPartState = () => {
   return useMutation<void, Error, SerializedDockview>({
     mutationKey: [USE_UPDATE_EDITOR_PART_STATE_MUTATION_KEY],
-    mutationFn: debouncedSetEditorPartState,
+    mutationFn: async (editor: SerializedDockview): Promise<void> => {
+      await debouncedSetEditorPartState(editor);
+    },
   });
 };
