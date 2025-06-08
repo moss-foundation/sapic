@@ -55,7 +55,13 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
           <div className="background-(--moss-table-header-bg) absolute top-0 right-0 flex h-full items-center justify-center gap-1">
             {header.column.getIsSorted() && (
               <button className="cursor-pointer" onClick={toggleSortingHandler}>
-                {header.column.getIsSorted() === "asc" ? "🔼" : header.column.getIsSorted() === "desc" ? "🔽" : "🔼"}
+                {header.column.getIsSorted() === "asc" ? (
+                  <Icon icon="SortAlphabetically" />
+                ) : header.column.getIsSorted() === "desc" ? (
+                  <Icon icon="SortAlphabetically" className="rotate-180" />
+                ) : (
+                  <Icon icon="SortAlphabetically" />
+                )}
               </button>
             )}
 

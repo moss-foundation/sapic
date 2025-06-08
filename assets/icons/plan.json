@@ -185,6 +185,15 @@
   "Settings": {
     "identical": true
   },
+  "SortAlphabetically": {
+    "identical": true
+  },
+  "SortByDuration": {
+    "identical": true
+  },
+  "SortByType": {
+    "identical": true
+  },
   "Success": {
     "identical": true
   },
