@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { SidebarPosition } from "@repo/moss-workspace";
+import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {
@@ -35,7 +36,7 @@ export interface AppResizableLayoutStore {
 }
 
 export const useAppResizableLayoutStore = create<AppResizableLayoutStore>()((set, get) => ({
-  sideBarPosition: "LEFT",
+  sideBarPosition: SIDEBAR_POSITION.LEFT,
   setSideBarPosition: (position: SidebarPosition) =>
     set(() => ({
       sideBarPosition: position,

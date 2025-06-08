@@ -12,6 +12,7 @@ import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ColorThemeInfo } from "@repo/moss-theme";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
@@ -104,13 +105,13 @@ export const Settings = () => {
       id: "sidebar-left",
       type: "radio",
       label: "Left",
-      value: "LEFT",
+      value: SIDEBAR_POSITION.LEFT,
     },
     {
       id: "sidebar-right",
       type: "radio",
       label: "Right",
-      value: "RIGHT",
+      value: SIDEBAR_POSITION.RIGHT,
     },
   ];
 
@@ -133,28 +134,28 @@ export const Settings = () => {
   // Activity bar position items
   const activityBarPositionItems: MenuItemProps[] = [
     {
-      id: "DEFAULT",
+      id: ACTIVITYBAR_POSITION.DEFAULT,
       type: "radio",
       label: "Default",
-      value: "DEFAULT",
+      value: ACTIVITYBAR_POSITION.DEFAULT,
     },
     {
-      id: "TOP",
+      id: ACTIVITYBAR_POSITION.TOP,
       type: "radio",
       label: "Top",
-      value: "TOP",
+      value: ACTIVITYBAR_POSITION.TOP,
     },
     {
-      id: "BOTTOM",
+      id: ACTIVITYBAR_POSITION.BOTTOM,
       type: "radio",
       label: "Bottom",
-      value: "BOTTOM",
+      value: ACTIVITYBAR_POSITION.BOTTOM,
     },
     {
-      id: "HIDDEN",
+      id: ACTIVITYBAR_POSITION.HIDDEN,
       type: "radio",
       label: "Hidden",
-      value: "HIDDEN",
+      value: ACTIVITYBAR_POSITION.HIDDEN,
     },
   ];
 
@@ -230,7 +231,7 @@ export const Settings = () => {
             <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Type</h3>
             <div className="w-[200px]">
               <SelectOutlined.Root
-                value={sideBarPosition || "LEFT"}
+                value={sideBarPosition || SIDEBAR_POSITION.LEFT}
                 onValueChange={handleSidebarTypeChange}
                 disabled={!hasWorkspace}
               >
@@ -306,7 +307,10 @@ export const Settings = () => {
           <div className="mt-4">
             <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
             <div className="w-[200px]">
-              <SelectOutlined.Root value={position || "DEFAULT"} onValueChange={handleActivityBarPositionChange}>
+              <SelectOutlined.Root
+                value={position || ACTIVITYBAR_POSITION.DEFAULT}
+                onValueChange={handleActivityBarPositionChange}
+              >
                 <SelectOutlined.Trigger />
                 <SelectOutlined.Content>
                   {activityBarPositionItems.map((item) => {

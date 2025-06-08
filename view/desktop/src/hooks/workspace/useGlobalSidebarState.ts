@@ -2,11 +2,12 @@ import { useEffect, useRef } from "react";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { useActiveWorkspace } from "./useActiveWorkspace";
 import { SidebarPosition } from "@repo/moss-workspace";
+import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 const GLOBAL_SIDEBAR_DEFAULTS = {
   width: 255,
   visible: true,
-  position: "LEFT" as SidebarPosition,
+  position: SIDEBAR_POSITION.LEFT as SidebarPosition,
 };
 
 export const useGlobalSidebarState = () => {

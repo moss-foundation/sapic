@@ -9,6 +9,7 @@ import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { useActiveWorkspace } from "@/hooks";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -25,7 +26,7 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
       className={cn(
         "background-(--moss-secondary-background) flex h-full flex-col",
         {
-          "border-l border-(--moss-border-color)": sideBarPosition === "LEFT",
+          "border-l border-(--moss-border-color)": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
@@ -100,7 +101,7 @@ export const Sidebar = () => {
     <EmptyWorkspace inSidebar={true} />
   );
 
-  if (position === "TOP") {
+  if (position === ACTIVITYBAR_POSITION.TOP) {
     return (
       <BaseSidebar>
         <ActivityBar />
@@ -110,7 +111,7 @@ export const Sidebar = () => {
     );
   }
 
-  if (position === "BOTTOM") {
+  if (position === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar className="relative">
         <SidebarHeader title={activeGroupTitle} />
