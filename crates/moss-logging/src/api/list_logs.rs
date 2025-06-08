@@ -124,7 +124,7 @@ impl LoggingService {
         filter: &LogFilter,
         queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     ) -> Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
-        // Combine all log entries in app/session log path according to a certain filter
+        // Combine all log entries in a log folder according to a certain filter
         // And append the current log queue at the end
         let mut result = Vec::new();
         let mut log_files = Vec::new();
@@ -132,6 +132,7 @@ impl LoggingService {
 
         while let Some(entry) = read_dir.next_entry().await.unwrap_or(None) {
             let path = entry.path();
+            // Skip non-log files
             if path.is_dir() || path.extension() != Some(OsStr::new("log")) {
                 continue;
             }
@@ -151,6 +152,7 @@ impl LoggingService {
                     .await?
             }
         }
+
         result.extend({
             let lock = queue.lock();
             lock.clone().into_iter().filter_map(|entry| {
@@ -159,7 +161,7 @@ impl LoggingService {
                 {
                     Some((datetime, entry))
                 } else {
-                    // Skip entries in the que that has invalid timestamp
+                    // Skip entries in the queue that has invalid timestamp
                     None
                 }
             })

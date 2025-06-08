@@ -13,4 +13,13 @@ export type ListLogsInput = { dates: Array<LogDate>; levels: Array<LogLevel>; re
 
 export type ListLogsOutput = { contents: Array<LogEntryInfo> };
 
-export type LogEntryInfo = { id: string; timestamp: string; level: LogLevel; resource?: string; message: string };
+export type LogEntryInfo = {
+  id: string;
+  /**
+   * A timestamp string, such as "2025-06-06T19:26:39.084+0300"
+   */
+  timestamp: string;
+  level: LogLevel;
+  resource?: string;
+  message: string;
+};

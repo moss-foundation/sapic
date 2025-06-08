@@ -39,6 +39,7 @@ impl Into<Level> for LogLevel {
 #[ts(export, export_to = "operations.ts")]
 pub struct LogEntryInfo {
     pub id: String,
+    /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"
     pub timestamp: String,
     pub level: LogLevel,
     #[ts(optional)]
