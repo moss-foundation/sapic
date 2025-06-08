@@ -2,12 +2,16 @@ import { forwardRef } from "react";
 
 import { cn } from "@/utils";
 
-const DragHandleButton = forwardRef<HTMLDivElement, { className: string }>(({ className }, ref) => {
+interface DragHandleButtonProps {
+  className?: string;
+}
+
+const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ className }, ref) => {
   return (
     <div
       ref={ref}
       className={cn(
-        "background-(--moss-table-handle-bg) flex size-4 cursor-grab items-center justify-center rounded shadow",
+        "background-(--moss-drag-handle-bg) flex size-4 cursor-grab items-center justify-center rounded shadow",
         className
       )}
     >

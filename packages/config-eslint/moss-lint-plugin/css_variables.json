@@ -215,6 +215,6 @@
   "--moss-table-header-bg",
   "--moss-table-cell-bg",
   "--moss-table-add-form-text",
-  "--moss-table-handle-bg",
-  "--moss-table-add-row-form-text"
+  "--moss-table-add-row-form-text",
+  "--moss-drag-handle-bg"
 ]
