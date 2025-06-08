@@ -8,7 +8,7 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import SelectOutlined from "@/components/SelectOutlined";
 import { DataTable } from "@/components/TestTanstakTable/DataTable";
 import { TestData } from "@/components/TestTanstakTable/types";
-import { TestTableInputCell } from "@/components/TestTanstakTable/ui/DefaultCellInput";
+import { DefaultInputCell } from "@/components/TestTanstakTable/ui/DefaultCellInput";
 import {
   editorContextItems,
   generateItems,
@@ -252,22 +252,22 @@ const columns = [
   }),
   columnHelper.accessor("key", {
     header: () => "key",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     minSize: 60,
   }),
   columnHelper.accessor("value", {
     header: () => "value",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("type", {
     header: () => "type",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("description", {
     header: () => "description",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     meta: {
       isGrow: true,
     },
@@ -275,12 +275,12 @@ const columns = [
   }),
   columnHelper.accessor("global_value", {
     header: () => "Global value",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.accessor("local_value", {
     header: () => "Local value",
-    cell: (info) => <TestTableInputCell info={info} />,
+    cell: (info) => <DefaultInputCell info={info} />,
     minSize: 100,
   }),
   columnHelper.display({

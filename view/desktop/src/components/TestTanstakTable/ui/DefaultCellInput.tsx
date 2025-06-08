@@ -9,7 +9,7 @@ interface DefaultCellInputProps {
   info: CellContext<TestData, number | string> & { focusOnMount?: boolean };
 }
 
-export const TestTableInputCell = ({ info }: DefaultCellInputProps) => {
+export const DefaultInputCell = ({ info }: DefaultCellInputProps) => {
   const [value, setValue] = useState(info.getValue());
   const isSelected = info.row.getIsSelected();
 

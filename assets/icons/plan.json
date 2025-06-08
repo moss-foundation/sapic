@@ -185,13 +185,22 @@
   "Settings": {
     "identical": true
   },
-  "SortAlphabetically": {
+  "SortAlphabeticallyAsc": {
     "identical": true
   },
-  "SortByDuration": {
+  "SortAlphabeticallyDesc": {
     "identical": true
   },
-  "SortByType": {
+  "SortByDurationAsc": {
+    "identical": true
+  },
+  "SortByDurationDesc": {
+    "identical": true
+  },
+  "SortByTypeAsc": {
+    "identical": true
+  },
+  "SortByTypeDesc": {
     "identical": true
   },
   "Success": {

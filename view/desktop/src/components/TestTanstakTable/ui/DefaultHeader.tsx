@@ -56,11 +56,11 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
             {header.column.getIsSorted() && (
               <button className="cursor-pointer" onClick={toggleSortingHandler}>
                 {header.column.getIsSorted() === "asc" ? (
-                  <Icon icon="SortAlphabetically" />
+                  <Icon icon="SortAlphabeticallyAsc" />
                 ) : header.column.getIsSorted() === "desc" ? (
-                  <Icon icon="SortAlphabetically" className="rotate-180" />
+                  <Icon icon="SortAlphabeticallyDesc" />
                 ) : (
-                  <Icon icon="SortAlphabetically" />
+                  <Icon icon="SortAlphabeticallyAsc" />
                 )}
               </button>
             )}
