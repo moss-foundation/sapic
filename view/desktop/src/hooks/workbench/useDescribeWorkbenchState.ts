@@ -1,3 +1,5 @@
+/* FIXME: This hook is currently not used */
+
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DescribeWorkbenchStateOutput } from "@repo/moss-workbench";
 import { useQuery } from "@tanstack/react-query";
