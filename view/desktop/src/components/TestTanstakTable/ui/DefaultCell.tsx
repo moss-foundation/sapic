@@ -13,7 +13,7 @@ function DefaultCell({ cell, focusOnMount }: { cell: Cell<TestData, unknown>; fo
       className={cn("flex items-center justify-center border-r border-b border-(--moss-border-color)", {
         "border-r-0": isLastColumn,
       })}
-      style={{ width: cell.column.getSize() }}
+      style={{ width: `calc(var(--col-${cell.column.id}-size) * 1px)` }}
     >
       {flexRender(cell.column.columnDef.cell, { ...cell.getContext(), focusOnMount })}
     </div>

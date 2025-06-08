@@ -25,7 +25,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       <div
         role="columnheader"
         className="flex items-center justify-center border-r border-b border-(--moss-border-color) py-1.5"
-        style={{ width: header.getSize() }}
+        style={{ width: `calc(var(--header-${header?.id}-size) * 1px)` }}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </div>
@@ -38,7 +38,7 @@ export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultH
       className={cn("relative border-r border-b border-(--moss-border-color) px-2 py-1.5", {
         "border-r-0": isLastColumn,
       })}
-      style={{ width: header.getSize() }}
+      style={{ width: `calc(var(--header-${header?.id}-size) * 1px)` }}
       {...props}
     >
       <div className={cn("group/tableHeader relative flex items-center gap-2")}>

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Scrollbar } from "@/lib/ui";
 import {
@@ -64,6 +64,17 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
     },
   });
 
+  const columnSizeVars = useMemo(() => {
+    const headers = table.getFlatHeaders();
+    const colSizes: { [key: string]: number } = {};
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i]!;
+      colSizes[`--header-${header.id}-size`] = header.getSize();
+      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+    }
+    return colSizes;
+  }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
+
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const tableHeight = tableContainerRef.current?.clientHeight;
 
@@ -128,7 +139,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
         <div
           role="table"
           className="rounded border border-(--moss-border-color)"
-          style={{ width: table.getTotalSize() }}
+          style={{ ...columnSizeVars, width: table.getTotalSize() }}
         >
           <div role="rowgroup">
             {table.getHeaderGroups().map((headerGroup) => (
