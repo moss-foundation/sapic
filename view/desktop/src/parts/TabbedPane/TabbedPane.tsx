@@ -185,37 +185,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       const tabs = (
         <PageTabs>
-          <button
-            className={cn(
-              "rounded px-3 py-1 text-xs font-medium transition-colors",
-              activeTab === "endpoint"
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
-            )}
-            onClick={() => setActiveTab("endpoint")}
-          >
+          <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
             Endpoint
           </button>
-          <button
-            className={cn(
-              "rounded px-3 py-1 text-xs font-medium transition-colors",
-              activeTab === "request"
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
-            )}
-            onClick={() => setActiveTab("request")}
-          >
+          <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
             Request
           </button>
-          <button
-            className={cn(
-              "rounded px-3 py-1 text-xs font-medium transition-colors",
-              activeTab === "mock"
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100 dark:bg-stone-800 dark:text-gray-300 dark:hover:bg-stone-700"
-            )}
-            onClick={() => setActiveTab("mock")}
-          >
+          <button data-active={activeTab === "mock"} onClick={() => setActiveTab("mock")}>
             Mock
           </button>
         </PageTabs>
@@ -239,7 +215,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         <PageView>
           <PageHeader
             title={props.api.title ?? "Untitled"}
-            icon={<Icon icon="Settings" className="size-4" />}
+            icon={<Icon icon="Placeholder" className="size-[18px]" />}
             tabs={tabs}
             toolbar={toolbar}
           />
@@ -311,7 +287,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           // Standard page structure with header and content
           return (
             <PageView>
-              <PageHeader title={config.title} icon={<Icon icon={config.icon} className="size-4" />} />
+              <PageHeader title={config.title} icon={<Icon icon={config.icon} className="size-[18px]" />} />
               <PageContent>
                 <PageComponent />
               </PageContent>
