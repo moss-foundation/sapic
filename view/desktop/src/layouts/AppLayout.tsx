@@ -22,21 +22,38 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const workspace = useActiveWorkspace();
+  const workspaceId = workspace?.id || null;
   const canUpdatePartState = useRef(false);
+  const lastProcessedWorkspaceId = useRef<string | null>(null);
+  const isTransitioning = useRef(false);
 
   const { position, toWorkspaceState } = useActivityBarStore();
   const { bottomPane, sideBar, sideBarPosition } = useAppResizableLayoutStore();
 
   // Fetch workspace state to know when initialization is complete
-  const { data: workspaceState, isFetched } = useDescribeWorkspaceState({
+  const {
+    data: workspaceState,
+    isFetched,
+    isSuccess,
+  } = useDescribeWorkspaceState({
     enabled: !!workspace,
   });
 
+  // Reset update permission when workspace changes
+  useEffect(() => {
+    if (lastProcessedWorkspaceId.current !== workspaceId) {
+      canUpdatePartState.current = false;
+      isTransitioning.current = true;
+      lastProcessedWorkspaceId.current = workspaceId;
+    }
+  }, [workspaceId]);
+
   // Initialize bottom pane state from workspace data (panels are still managed here)
   useEffect(() => {
-    if (workspace && !isFetched) {
+    if (workspace && (!isFetched || !isSuccess)) {
       // Still waiting for workspace state
       canUpdatePartState.current = false;
+      isTransitioning.current = true;
       return;
     }
 
@@ -55,11 +72,12 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     }
 
     // Enable updates after workspace state is loaded (or when no workspace)
-    // Use a small delay to ensure all initialization effects have run
+    // Use a delay to ensure all initialization effects have run
     setTimeout(() => {
       canUpdatePartState.current = true;
-    }, 50);
-  }, [workspace, workspaceState, isFetched]);
+      isTransitioning.current = false;
+    }, 200);
+  }, [workspace, workspaceState, isFetched, isSuccess]);
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!sideBar.visible) sideBar.setVisible(true);
@@ -79,22 +97,23 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   const { mutate: updatePanelPartState } = useUpdatePanelPartState();
   useEffect(() => {
-    if (!canUpdatePartState.current) return;
+    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
 
     updatePanelPartState({
       size: bottomPane.height,
       visible: bottomPane.visible,
     });
-  }, [bottomPane, updatePanelPartState]);
+  }, [workspaceId, bottomPane, updatePanelPartState]);
 
-  // ActivityBar state persistence
+  // ActivityBar state persistence - only save when workspace is stable and initialization is complete
   const { mutate: updateActivitybarPartState } = useUpdateActivitybarPartState();
   const activityBarState = useActivityBarStore();
   useEffect(() => {
-    if (!canUpdatePartState.current) return;
+    if (!canUpdatePartState.current || !workspaceId || isTransitioning.current) return;
 
     updateActivitybarPartState(toWorkspaceState());
   }, [
+    workspaceId,
     activityBarState.position,
     activityBarState.items,
     activityBarState.lastActiveContainerId,

@@ -39,10 +39,11 @@ export const Sidebar = () => {
   const { data: projectSessionState } = useGetProjectSessionState();
   const workspace = useActiveWorkspace();
   const hasWorkspace = !!workspace;
+  const workspaceId = workspace?.id || null;
 
-  const { data: workspaceState } = useDescribeWorkspaceState();
-  const { updateFromWorkspaceState } = useActivityBarStore();
-  const hasRestoredActivityBarState = useRef(false);
+  const { data: workspaceState, isFetched, isSuccess } = useDescribeWorkspaceState();
+  const { updateFromWorkspaceState, resetToDefaults } = useActivityBarStore();
+  const lastRestoredWorkspaceId = useRef<string | null>(null);
 
   const lastActiveGroupRef = useRef<string | null>(null);
 
@@ -52,18 +53,37 @@ export const Sidebar = () => {
     }
   }, [projectSessionState?.lastActiveGroup]);
 
-  // Restore activity bar state from workspace state (only once)
+  // Reset activity bar state when workspace changes (before restoration)
   useEffect(() => {
-    if (workspaceState?.activitybar && !hasRestoredActivityBarState.current) {
-      updateFromWorkspaceState(workspaceState.activitybar);
-      hasRestoredActivityBarState.current = true;
+    if (lastRestoredWorkspaceId.current !== workspaceId) {
+      // Reset to default state before loading new workspace state
+      if (workspaceId) {
+        // Will be restored from workspace state
+        resetToDefaults();
+        lastRestoredWorkspaceId.current = null;
+      } else {
+        // Reset to default when no workspace
+        resetToDefaults();
+        lastRestoredWorkspaceId.current = workspaceId;
+      }
     }
-  }, [workspaceState?.activitybar, updateFromWorkspaceState]);
+  }, [workspaceId, resetToDefaults]);
 
-  // Reset the restoration flag when workspace changes
+  // Restore activity bar state from workspace state
   useEffect(() => {
-    hasRestoredActivityBarState.current = false;
-  }, [workspace?.id]);
+    if (!workspaceId || !isFetched || !isSuccess || !workspaceState?.activitybar) return;
+
+    if (lastRestoredWorkspaceId.current === workspaceId) return;
+
+    // Only restore if we have fresh workspace state for this workspace
+    // Add a small delay to ensure workspace switching is complete
+    const timeoutId = setTimeout(() => {
+      updateFromWorkspaceState(workspaceState.activitybar!);
+      lastRestoredWorkspaceId.current = workspaceId;
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [workspaceId, workspaceState?.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
 
   const { position } = useActivityBarStore();
 

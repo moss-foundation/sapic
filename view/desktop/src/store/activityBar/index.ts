@@ -28,6 +28,7 @@ interface ActivityBarStore {
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => void;
   setActiveItem: (itemId: string) => void;
   toWorkspaceState: () => ActivitybarPartStateInfo;
+  resetToDefaults: () => void;
 }
 
 // Default activity bar items with static properties
@@ -79,6 +80,13 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
       isActive: item.id === itemId,
     }));
     set({ items: updatedItems, lastActiveContainerId: itemId });
+  },
+  resetToDefaults: () => {
+    set({
+      items: [...defaultItems],
+      position: "DEFAULT",
+      lastActiveContainerId: TREE_VIEW_GROUP_COLLECTIONS,
+    });
   },
   toWorkspaceState: (): ActivitybarPartStateInfo => {
     const state = get();
