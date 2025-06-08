@@ -3,7 +3,12 @@ import { Cell, flexRender } from "@tanstack/react-table";
 
 import { TestData } from "../types";
 
-function DefaultCell({ cell, focusOnMount }: { cell: Cell<TestData, unknown>; focusOnMount?: boolean }) {
+interface DefaultCellProps {
+  cell: Cell<TestData, unknown>;
+  focusOnMount?: boolean;
+}
+
+function DefaultCell({ cell, focusOnMount }: DefaultCellProps) {
   const isLastColumn = cell.column.getIsLastColumn();
 
   return (

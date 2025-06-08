@@ -5,12 +5,14 @@ import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { flexRender, Header } from "@tanstack/react-table";
 
-interface DefaultHeaderProps<TData> extends HTMLAttributes<HTMLTableCellElement> {
-  header: Header<TData, unknown>;
+import { TestData } from "../types";
+
+interface DefaultHeaderProps extends HTMLAttributes<HTMLTableCellElement> {
+  header: Header<TestData, unknown>;
   tableHeight?: number;
 }
 
-export function DefaultHeader<TData>({ header, tableHeight, ...props }: DefaultHeaderProps<TData>) {
+export function DefaultHeader({ header, tableHeight, ...props }: DefaultHeaderProps) {
   const isFirstColumn = header.column.getIsFirstColumn();
   const isLastColumn = header.column.getIsLastColumn();
   const isSortable = header.column.getCanSort();
