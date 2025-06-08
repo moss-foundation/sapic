@@ -7,7 +7,6 @@ use std::{
     ffi::OsStr,
     io::{BufRead, BufReader},
     path::Path,
-    str::FromStr,
     sync::Arc,
 };
 use tracing::Level;

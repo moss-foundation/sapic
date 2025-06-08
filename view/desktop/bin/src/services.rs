@@ -43,7 +43,10 @@ pub fn service_pool<R: TauriRuntime>(
         app_handle,
     );
     builder.register(
-        Instantiation::Instant(logging_service(session_service_key), PhantomData),
+        Instantiation::Instant(
+            logging_service(session_service_key, fs.clone()),
+            PhantomData,
+        ),
         app_handle,
     );
     builder.register(
@@ -122,6 +125,7 @@ fn locale_service<R: TauriRuntime>(
 
 fn logging_service<R: TauriRuntime>(
     session_service_key: ServiceKey,
+    fs: Arc<dyn FileSystem>,
 ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
@@ -136,6 +140,7 @@ fn logging_service<R: TauriRuntime>(
         .expect("Session service needs to be registered first");
 
         LoggingService::new(
+            fs,
             app_handle.clone(),
             &app_log_dir,
             session_service.get_session_uuid(),
