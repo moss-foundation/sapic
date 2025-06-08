@@ -1,5 +1,6 @@
-import { forwardRef, HTMLAttributes, useEffect, useRef, useState } from "react";
+import { HTMLAttributes, useEffect, useRef, useState } from "react";
 
+import { DragHandleButton } from "@/components/DragHandleButton";
 import DropIndicator from "@/components/DropIndicator";
 import { cn } from "@/utils";
 import {
@@ -139,10 +140,14 @@ export const DefaultRow = ({
       <span className="peer/tableRow contents">{children}</span>
 
       {!disableDnd && (
-        <RowHandle
-          className="opacity-0 transition-opacity duration-100 peer-hover/tableRow:opacity-100 hover:opacity-100"
+        <DragHandleButton
+          className={cn(
+            "absolute top-1/2 -left-[8px] -translate-y-1/2 opacity-0 transition-opacity duration-100 peer-hover/tableRow:opacity-100 hover:opacity-100",
+            {
+              "opacity-100": isDragging,
+            }
+          )}
           ref={handleRef}
-          isDragging={isDragging}
         />
       )}
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} />}
@@ -150,30 +155,6 @@ export const DefaultRow = ({
     </div>
   );
 };
-
-const RowHandle = forwardRef<HTMLDivElement, { isDragging: boolean; className: string }>(
-  ({ isDragging, className }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          "background-(--moss-table-handle-bg) absolute top-1/2 -left-[8px] flex size-4 -translate-y-1/2 cursor-grab items-center justify-center rounded shadow",
-          isDragging && "opacity-100!",
-          className
-        )}
-      >
-        <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M0 0H2V2H0V0ZM4 0H6V2H4V0ZM2 4H0V6H2V4ZM4 4H6V6H4V4ZM2 8H0V10H2V8ZM4 8H6V10H4V8Z"
-            fill="#525252"
-          />
-        </svg>
-      </div>
-    );
-  }
-);
 
 const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
   const [visible, setVisible] = useState(false);
