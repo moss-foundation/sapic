@@ -6,9 +6,9 @@ import { ButtonNeutralOutlined } from "@/components/ButtonNeutralOutlined";
 import { ButtonPrimary } from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import SelectOutlined from "@/components/SelectOutlined";
-import { DataTable } from "@/components/TestTanstakTable/DataTable";
-import { TestData } from "@/components/TestTanstakTable/types";
-import { DefaultInputCell } from "@/components/TestTanstakTable/ui/DefaultCellInput";
+import { DataTable } from "@/components/Table/DataTable";
+import { TestData } from "@/components/Table/types";
+import { DefaultInputCell } from "@/components/Table/ui/DefaultCellInput";
 import {
   editorContextItems,
   generateItems,
@@ -23,8 +23,8 @@ import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 import { createColumnHelper, Table } from "@tanstack/react-table";
 
 import * as iconsNames from "../assets/icons";
-import testData from "../components/TestTanstakTable/testData.json";
-import testData2 from "../components/TestTanstakTable/testData2.json";
+import testData from "../components/Table/testData.json";
+import testData2 from "../components/Table/testData2.json";
 
 export const KitchenSink = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
