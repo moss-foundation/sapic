@@ -3,10 +3,14 @@ import type { LogDate, LogLevel } from "./types";
 
 export type DeleteLogInput = { timestamp: string; id: string };
 
-export type DeleteLogsInput = { inputs: Array<DeleteLogInput> };
+export type DeleteLogOutput = { id: string };
+
+export type DeleteLogsInput = { entries: Array<DeleteLogInput> };
+
+export type DeleteLogsOutput = { deletedEntries: Array<DeleteLogOutput> };
 
 export type ListLogsInput = { dates: Array<LogDate>; levels: Array<LogLevel>; resource?: string };
 
-export type ListLogsOutput = { contents: Array<LogEntry> };
+export type ListLogsOutput = { contents: Array<LogEntryInfo> };
 
-export type LogEntry = { id: string; timestamp: string; level: string; resource?: string; message: string };
+export type LogEntryInfo = { id: string; timestamp: string; level: LogLevel; resource?: string; message: string };

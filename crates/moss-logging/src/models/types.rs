@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tracing::Level;
 use ts_rs::TS;
 
 // FIXME: Is this the best way to handle date type?
@@ -21,13 +22,25 @@ pub enum LogLevel {
     ERROR,
 }
 
+impl Into<Level> for LogLevel {
+    fn into(self) -> Level {
+        match self {
+            LogLevel::TRACE => Level::TRACE,
+            LogLevel::DEBUG => Level::DEBUG,
+            LogLevel::INFO => Level::INFO,
+            LogLevel::WARN => Level::WARN,
+            LogLevel::ERROR => Level::ERROR,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct LogEntryInfo {
     pub id: String,
     pub timestamp: String,
-    pub level: String,
+    pub level: LogLevel,
     #[ts(optional)]
     pub resource: Option<String>,
     pub message: String,

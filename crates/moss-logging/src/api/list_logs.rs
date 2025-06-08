@@ -94,20 +94,19 @@ impl LoggingService {
             let line = line?;
             let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
 
-            if !filter.levels.is_empty() {
-                let level = Level::from_str(&log_entry.level)?;
-                if !filter.levels.contains(&level) {
-                    continue;
-                }
+            let level = log_entry.level.clone();
+            if !filter.levels.is_empty() && !filter.levels.contains(&level.into()) {
+                continue;
             }
 
             if let Some(resource_filter) = filter.resource.as_ref() {
-                if let Some(resource) = log_entry.resource.as_ref() {
-                    if resource_filter != resource {
-                        continue;
-                    }
-                } else {
-                    // With resource filter, skip entries without resource field
+                // With resource filter, skip entries without resource field
+                if log_entry.resource.is_none() {
+                    continue;
+                }
+
+                let resource = log_entry.resource.as_ref().unwrap();
+                if resource_filter != resource {
                     continue;
                 }
             }
