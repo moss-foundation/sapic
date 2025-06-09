@@ -17,7 +17,7 @@ import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 
 import * as iconsNames from "../assets/icons";
 
-export const Home = () => {
+export const Kitchensink = () => {
   return (
     <div className="space-y-6">
       <div className="mb-4">

@@ -143,7 +143,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       const [, workspaceId, actionType] = workspaceAction;
       console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
-      const generalActions = ["new", "open", "home", "logs", "debug", "separator"];
+      const generalActions = ["new", "open", "kitchensink", "logs", "debug", "separator"];
       if (generalActions.includes(workspaceId)) {
         console.log(`Skipping false match - "${workspaceId}" is a general action keyword`);
       } else {
@@ -200,8 +200,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         });
         setShowRenameWorkspaceModal(true);
       }
-    } else if (action === "home") {
-      openPanel("Home");
+    } else if (action === "kitchensink") {
+      openPanel("Kitchensink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {

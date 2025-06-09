@@ -8,7 +8,7 @@ import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartSt
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { Kitchensink, Logs, Settings, WelcomePage } from "@/pages";
 import { PageView, PageHeader, PageContent, PageTabs, PageToolbar } from "@/components";
 import { Icon, type Icons } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
@@ -155,9 +155,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   };
 
   const pageConfigs: Record<string, PageConfig> = {
-    Home: {
-      title: "Home",
-      component: Home,
+    Kitchensink: {
+      title: "Kitchensink",
+      component: Kitchensink,
     },
     Settings: {
       title: "Settings",
