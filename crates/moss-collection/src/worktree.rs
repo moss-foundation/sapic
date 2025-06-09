@@ -631,7 +631,7 @@ impl Worktree {
 
         // We need to load children of the parent since on the frontend we will expand the destination
         // folder and a user needs to see the children of the destination folder.
-        changes.extend(self.load_children(&to_path).await?);
+        changes.extend(self.load_children(new_parent.path.clone().as_ref()).await?);
 
         let from_abs_path = self.abs_path.join(&from_path);
         let to_abs_path = self.abs_path.join(&to_path);
@@ -1265,6 +1265,72 @@ mod tests {
 
         let result = worktree.move_entry(Uuid::nil(), target_id).await;
         assert!(matches!(result, Err(WorktreeError::InvalidInput(_))));
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
+    async fn test_move_entry_should_load_children_of_destination() {
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let item_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: item_id },
+        });
+        worktree
+            .create_entry(Path::new("item"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        let another_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: another_id },
+        });
+        worktree
+            .create_entry(Path::new("dest/another"), config)
+            .await
+            .unwrap();
+
+        drop(worktree);
+
+        // Load a fresh worktree
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(fs, temp_dir.as_path().into()).await.unwrap();
+
+        // Load the children of root entry
+        worktree.load_children(Path::new(ROOT_PATH)).await.unwrap();
+
+        // Move `entry` to `dest\entry`
+        let changes = worktree.move_entry(item_id, dest_id).await.unwrap();
+
+        // Verify move
+        assert!(!worktree.snapshot.is_loaded(Path::new("item")));
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/item")));
+
+        // Verify that the children of `dest` are also loaded
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/another")));
+
+        // Check that te move and load changes are recorded
+        assert_eq!(changes.len(), 2);
+        assert!(
+            changes
+                .iter()
+                .any(|change| matches!(change, WorktreeChange::Moved { .. }))
+        );
+        assert!(
+            changes
+                .iter()
+                .any(|change| matches!(change, WorktreeChange::Loaded { .. }))
+        );
 
         cleanup_test_dir(&temp_dir);
     }

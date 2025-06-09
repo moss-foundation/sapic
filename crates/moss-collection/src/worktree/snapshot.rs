@@ -7,7 +7,7 @@ use petgraph::{
 };
 use std::{
     collections::{HashMap, HashSet},
-    fmt::{self, Display, Formatter},
+    fmt::{self, Debug, Display, Formatter},
     path::Path,
     sync::Arc,
 };
@@ -65,6 +65,17 @@ pub struct Entry {
     /// The configuration file for the entry.
     /// Should always be present for non-root entries.
     pub config: Option<toml::EditableInPlaceFileHandle<ConfigurationModel>>,
+}
+
+impl Debug for Entry {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Entry")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .field("path", &self.path)
+            .field("is_dir", &self.is_dir)
+            .finish()
+    }
 }
 
 impl Entry {
