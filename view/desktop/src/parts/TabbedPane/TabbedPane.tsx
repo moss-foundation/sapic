@@ -2,13 +2,15 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { Breadcrumbs } from "@/components";
+import { ActionButton, Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { Home, Logs, Settings, WelcomePage } from "@/pages";
+import { Kitchensink, Logs, Settings, WelcomePage } from "@/pages";
+import { PageView, PageHeader, PageContent, PageTabs, PageToolbar } from "@/components";
+import { Icon, type Icons } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -143,19 +145,65 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     return () => event.dispose();
   }, [api, updateEditorPartState]);
 
+  type PageConfig = {
+    title?: string;
+    icon?: Icons;
+    component: React.ComponentType;
+  };
+
+  const pageConfigs: Record<string, PageConfig> = {
+    Kitchensink: {
+      title: "Kitchensink",
+      component: Kitchensink,
+    },
+    Settings: {
+      title: "Settings",
+      component: Settings,
+    },
+    Logs: {
+      title: "Logs",
+      component: Logs,
+    },
+    Welcome: {
+      component: WelcomePage,
+    },
+  };
+
   const components = {
     Default: (props: IDockviewPanelProps) => {
       const isDebug = React.useContext(DebugContext);
+      const [activeTab, setActiveTab] = React.useState("endpoint");
+
+      const tabs = (
+        <PageTabs>
+          <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
+            Endpoint
+          </button>
+          <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
+            Request
+          </button>
+          <button data-active={activeTab === "mock"} onClick={() => setActiveTab("mock")}>
+            Mock
+          </button>
+        </PageTabs>
+      );
+
+      const toolbar = (
+        <PageToolbar>
+          <ActionButton icon="MoreHorizontal" />
+        </PageToolbar>
+      );
 
       return (
-        <>
-          <Breadcrumbs panelId={props.api.id} />
-          <Scrollbar
-            className={cn(
-              "relative h-full overflow-auto p-1.25",
-              isDebug && "border-2 border-dashed border-orange-500"
-            )}
-          >
+        <PageView>
+          <PageHeader
+            title={props.api.title ?? "Untitled"}
+            icon={<Icon icon="Placeholder" className="size-[18px]" />}
+            tabs={tabs}
+            toolbar={toolbar}
+          />
+          <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
+            <Breadcrumbs panelId={props.api.id} />
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
 
@@ -173,8 +221,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 api={props.api}
               />
             )}
-          </Scrollbar>
-        </>
+          </PageContent>
+        </PageView>
       );
     },
     nested: () => {
@@ -209,25 +257,32 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
-    Home: () => (
-      <Scrollbar className="h-full">
-        <Home />
-      </Scrollbar>
-    ),
-    Settings: () => (
-      <Scrollbar className="h-full">
-        <Settings />
-      </Scrollbar>
-    ),
-    Logs: () => (
-      <Scrollbar className="h-full">
-        <Logs />
-      </Scrollbar>
-    ),
-    Welcome: () => (
-      <Scrollbar className="h-full">
-        <WelcomePage />
-      </Scrollbar>
+    ...Object.entries(pageConfigs).reduce(
+      (acc, [key, config]) => {
+        acc[key] = () => {
+          const PageComponent = config.component;
+
+          // Special case for full-page components (no title)
+          if (!config.title) {
+            return <PageComponent />;
+          }
+
+          // Standard page structure with header and content
+          return (
+            <PageView>
+              <PageHeader
+                title={config.title}
+                icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
+              />
+              <PageContent>
+                <PageComponent />
+              </PageContent>
+            </PageView>
+          );
+        };
+        return acc;
+      },
+      {} as Record<string, () => JSX.Element>
     ),
   };
 

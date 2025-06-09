@@ -15,6 +15,7 @@ export * from "./InputPlain";
 export * from "./Modals/ConfirmationModal";
 
 export * from "./PageLoader";
+export * from "./PageView/";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
