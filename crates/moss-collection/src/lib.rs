@@ -5,6 +5,7 @@ pub mod configuration;
 pub mod kdl;
 pub mod manifest;
 pub mod models;
+pub mod storage;
 pub mod worktree;
 
 pub use collection::Collection;

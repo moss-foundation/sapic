@@ -2,11 +2,12 @@ use serde::Serialize;
 use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
 use ts_rs::TS;
+use uuid::Uuid;
 use validator::{Validate, ValidationError};
 
-use super::{primitives::ChangesDiffSet, types::Classification};
+use super::types::Classification;
 use crate::models::{
-    primitives::EntryId,
+    primitives::WorktreeDiff,
     types::{
         HeaderParamItem, HttpMethod, PathParamItem, QueryParamItem, RequestBody, RequestProtocol,
     },
@@ -35,34 +36,28 @@ pub struct CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
+    pub changes: WorktreeDiff,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {
-    pub id: EntryId,
+    pub id: Uuid,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
+    pub changes: WorktreeDiff,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEntryInput {
-    pub id: EntryId,
+    pub id: Uuid,
     #[ts(optional)]
     pub name: Option<String>,
     #[ts(optional)]
@@ -79,10 +74,7 @@ pub struct UpdateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEntryOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
+    pub changes: WorktreeDiff,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -184,6 +176,23 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
     }
 
     Ok(())
+}
+
+// Expand Entry
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExpandEntryInput {
+    pub path: Uuid,
+    pub depth: u8,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExpandEntryOutput {
+    pub changes: WorktreeDiff,
 }
 
 #[cfg(test)]

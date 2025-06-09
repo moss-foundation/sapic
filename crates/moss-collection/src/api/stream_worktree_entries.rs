@@ -1,9 +1,6 @@
 use crate::{
     collection::Collection,
-    models::{
-        events::StreamWorktreeEntriesEvent, operations::StreamWorktreeEntriesInput,
-        types::EntryInfo,
-    },
+    models::{events::StreamWorktreeEntriesEvent, operations::StreamWorktreeEntriesInput},
 };
 use futures::pin_mut;
 use moss_common::api::OperationResult;

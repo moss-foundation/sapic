@@ -3,8 +3,6 @@ use std::path::PathBuf;
 use ts_rs::TS;
 use uuid::Uuid;
 
-use super::primitives::EntryId;
-
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -239,14 +237,9 @@ impl Classification {
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct EntryInfo {
-    pub id: EntryId,
+pub struct EnvironmentInfo {
+    pub id: Uuid,
     pub name: String,
-    pub path: PathBuf,
-    pub is_dir: bool,
-    pub classification: Classification,
-    #[ts(optional)]
-    pub protocol: Option<RequestProtocol>,
     #[ts(optional)]
     pub order: Option<usize>,
 }
@@ -254,9 +247,8 @@ pub struct EntryInfo {
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub struct EnvironmentInfo {
+pub struct EntryInfo {
     pub id: Uuid,
     pub name: String,
-    #[ts(optional)]
-    pub order: Option<usize>,
+    pub path: PathBuf,
 }
