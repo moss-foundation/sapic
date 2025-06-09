@@ -283,7 +283,10 @@ mod tests {
     use super::*;
     use crate::{
         constants::LOGGING_SERVICE_CHANNEL,
-        models::operations::{DeleteLogInput, ListLogsInput},
+        models::{
+            operations::{DeleteLogInput, ListLogsInput},
+            types::LogLevel,
+        },
     };
     use moss_fs::RealFileSystem;
     use moss_testutils::random_name::random_string;
@@ -293,7 +296,7 @@ mod tests {
     use tracing::instrument;
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_collection(path: &Path, name: &str, log_service: &LoggingService) {
+    async fn test_create_collection(path: &Path, name: &str, log_service: &LoggingService) {
         let collection_path = path.join(name);
 
         log_service.info(
@@ -317,7 +320,7 @@ mod tests {
     }
 
     #[instrument(level = "trace", skip_all)]
-    async fn create_request(collection_path: &Path, name: &str, log_service: &LoggingService) {
+    async fn test_create_request(collection_path: &Path, name: &str, log_service: &LoggingService) {
         let request_path = collection_path.join(name);
         log_service.info(
             LogScope::Session,
@@ -440,6 +443,8 @@ mod tests {
             .unwrap()
             .contents;
 
+        // Wait for all writes to finish
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
         assert_eq!(old_logs.len() - updated_logs.len(), 2);
         assert!(updated_logs.iter().find(|log| log.id == first_id).is_none());
         assert!(updated_logs.iter().find(|log| log.id == last_id).is_none());
@@ -447,9 +452,95 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_list_logs() {
+        let test_app_log_path = random_app_log_path();
+        create_dir_all(&test_app_log_path).unwrap();
+
+        let fs = Arc::new(RealFileSystem::new());
+        let mock_app = tauri::test::mock_app();
+        let session_id = Uuid::new_v4();
+        let logging_service = LoggingService::new(
+            fs,
+            mock_app.app_handle().clone(),
+            &test_app_log_path,
+            &session_id,
+        )
+        .unwrap();
+
+        // Creating more logs than the buffer size to test reading from files
+        for _ in 0..10 {
+            logging_service.warn(
+                LogScope::App,
+                LogPayload {
+                    resource: None,
+                    message: "Test".to_string(),
+                },
+            );
+            logging_service.debug(
+                LogScope::App,
+                LogPayload {
+                    resource: Some("resource".to_string()),
+                    message: "".to_string(),
+                },
+            );
+            logging_service.debug(
+                LogScope::App,
+                LogPayload {
+                    resource: None,
+                    message: "".to_string(),
+                },
+            );
+        }
+
+        // Wait for all writes to finish
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+
+        let warn_entries = logging_service
+            .list_logs(&ListLogsInput {
+                dates: vec![],
+                levels: vec![LogLevel::WARN],
+                resource: None,
+            })
+            .await
+            .unwrap()
+            .contents;
+        assert_eq!(warn_entries.len(), 10);
+        assert!(warn_entries.iter().all(|log| log.level == LogLevel::WARN));
+
+        let resource_entries = logging_service
+            .list_logs(&ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: Some("resource".to_string()),
+            })
+            .await
+            .unwrap()
+            .contents;
+        assert_eq!(resource_entries.len(), 10);
+        assert!(
+            resource_entries
+                .iter()
+                .all(|log| log.resource == Some("resource".to_string()))
+        );
+
+        let all_entries = logging_service
+            .list_logs(&ListLogsInput {
+                dates: vec![],
+                levels: vec![],
+                resource: None,
+            })
+            .await
+            .unwrap()
+            .contents;
+        assert_eq!(all_entries.len(), 30);
+
+        remove_dir_all(&test_app_log_path).await.unwrap();
+    }
+
+    #[tokio::test]
     async fn test_taurilog_writer() {
         let test_app_log_path = random_app_log_path();
-        fs::create_dir_all(&test_app_log_path).unwrap();
+        create_dir_all(&test_app_log_path).unwrap();
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
@@ -468,8 +559,8 @@ mod tests {
 
         let collection_path = Path::new("").join("TestCollection");
 
-        create_collection(Path::new(""), "TestCollection", &logging_service).await;
-        create_request(&collection_path, "TestRequest", &logging_service).await;
+        test_create_collection(Path::new(""), "TestCollection", &logging_service).await;
+        test_create_request(&collection_path, "TestRequest", &logging_service).await;
         something_terrible(&logging_service).await;
 
         remove_dir_all(&test_app_log_path).await.unwrap()

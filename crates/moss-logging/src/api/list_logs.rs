@@ -27,6 +27,33 @@ pub struct LogFilter {
     resource: Option<String>,
 }
 
+impl LogFilter {
+    pub fn check_entry(&self, log_entry: &LogEntryInfo) -> Result<bool> {
+        let date = NaiveDate::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
+        if !self.dates.is_empty() && !self.dates.contains(&date) {
+            return Ok(false);
+        }
+
+        let level = log_entry.level.clone();
+        if !self.levels.is_empty() && !self.levels.contains(&level.into()) {
+            return Ok(false);
+        }
+
+        if let Some(resource_filter) = self.resource.as_ref() {
+            // With resource filter, skip entries without resource field
+            if log_entry.resource.is_none() {
+                return Ok(false);
+            }
+
+            let resource = log_entry.resource.as_ref().unwrap();
+            if resource_filter != resource {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+}
+
 fn get_level(level: LogLevel) -> Level {
     match level {
         LogLevel::TRACE => Level::TRACE,
@@ -93,26 +120,11 @@ impl LoggingService {
             let line = line?;
             let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
 
-            let level = log_entry.level.clone();
-            if !filter.levels.is_empty() && !filter.levels.contains(&level.into()) {
-                continue;
+            if filter.check_entry(&log_entry)? {
+                let timestamp =
+                    NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
+                records.push((timestamp, log_entry));
             }
-
-            if let Some(resource_filter) = filter.resource.as_ref() {
-                // With resource filter, skip entries without resource field
-                if log_entry.resource.is_none() {
-                    continue;
-                }
-
-                let resource = log_entry.resource.as_ref().unwrap();
-                if resource_filter != resource {
-                    continue;
-                }
-            }
-
-            let timestamp = NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
-
-            records.push((timestamp, log_entry));
         }
         Ok(())
     }
@@ -151,19 +163,30 @@ impl LoggingService {
                     .await?
             }
         }
+        dbg!(result.len());
 
         result.extend({
             let lock = queue.lock();
-            lock.clone().into_iter().filter_map(|entry| {
-                if let Ok(datetime) =
-                    NaiveDateTime::parse_from_str(&entry.timestamp, TIMESTAMP_FORMAT)
-                {
-                    Some((datetime, entry))
-                } else {
-                    // Skip entries in the queue that has invalid timestamp
-                    None
-                }
-            })
+
+            lock.clone()
+                .into_iter()
+                .filter(|entry| {
+                    if matches!(filter.check_entry(&entry), Ok(true)) {
+                        true
+                    } else {
+                        false
+                    }
+                })
+                .filter_map(|entry| {
+                    if let Ok(datetime) =
+                        NaiveDateTime::parse_from_str(&entry.timestamp, TIMESTAMP_FORMAT)
+                    {
+                        Some((datetime, entry))
+                    } else {
+                        // Skip entries in the queue that has invalid timestamp
+                        None
+                    }
+                })
         });
 
         Ok(result)

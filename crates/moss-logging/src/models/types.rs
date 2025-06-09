@@ -12,7 +12,7 @@ pub struct LogDate {
     pub day: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export, export_to = "types.ts")]
 pub enum LogLevel {
     TRACE,
