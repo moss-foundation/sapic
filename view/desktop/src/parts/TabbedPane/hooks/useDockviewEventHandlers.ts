@@ -1,16 +1,17 @@
 import React from "react";
 
+import { useDockviewLoggerStore } from "@/store/dockviewLogger";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { DockviewApi } from "@repo/moss-tabs";
 
 export const useTabbedPaneEventHandlers = (
   api: DockviewApi | undefined,
-  addLogLine: (message: string) => void,
   setPanels: React.Dispatch<React.SetStateAction<string[]>>,
   setGroups: React.Dispatch<React.SetStateAction<string[]>>,
   setActivePanel: React.Dispatch<React.SetStateAction<string | undefined>>,
   setActiveGroup: React.Dispatch<React.SetStateAction<string | undefined>>
 ) => {
+  const { add: addLogLine } = useDockviewLoggerStore();
   const { setActivePanelId } = useTabbedPaneStore();
 
   React.useEffect(() => {

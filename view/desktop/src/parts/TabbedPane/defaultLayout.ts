@@ -8,10 +8,10 @@ export const nextId = (() => {
 
 export function defaultConfig(api: DockviewApi) {
   const panel1 = api.addPanel({
-    id: "Kitchensink",
-    component: "Kitchensink",
+    id: "KitchenSink",
+    component: "KitchenSink",
     renderer: "onlyWhenVisible",
-    title: "Kitchensink",
+    title: "KitchenSink",
   });
 
   api.addPanel({

@@ -1,4 +1,5 @@
 import { RefObject } from "react";
+
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
@@ -201,7 +202,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         setShowRenameWorkspaceModal(true);
       }
     } else if (action === "kitchensink") {
-      openPanel("Kitchensink");
+      openPanel("KitchenSink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {

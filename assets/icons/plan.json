@@ -8,6 +8,9 @@
   "AddCircleActive": {
     "identical": true
   },
+  "AddToVcs": {
+    "identical": true
+  },
   "Bell": {
     "identical": false
   },
@@ -45,6 +48,9 @@
     "identical": false
   },
   "CollapseAll": {
+    "identical": true
+  },
+  "ConfigMap": {
     "identical": true
   },
   "Console": {
@@ -170,10 +176,31 @@
   "Refresh": {
     "identical": true
   },
+  "RemoveCircle": {
+    "identical": true
+  },
   "Send": {
     "identical": false
   },
   "Settings": {
+    "identical": true
+  },
+  "SortAlphabeticallyAsc": {
+    "identical": true
+  },
+  "SortAlphabeticallyDesc": {
+    "identical": true
+  },
+  "SortByDurationAsc": {
+    "identical": true
+  },
+  "SortByDurationDesc": {
+    "identical": true
+  },
+  "SortByTypeAsc": {
+    "identical": true
+  },
+  "SortByTypeDesc": {
     "identical": true
   },
   "Success": {

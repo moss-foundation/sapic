@@ -1,12 +1,9 @@
 import { Scrollbar } from "@/lib/ui/Scrollbar";
+import { useDockviewLoggerStore } from "@/store/dockviewLogger";
 
-const LogsPanel = ({
-  logLines,
-  onClear,
-}: {
-  logLines: { text: string; timestamp?: Date; backgroundColor?: string }[];
-  onClear: () => void;
-}) => {
+const LogsPanel = () => {
+  const { logLines, clear } = useDockviewLoggerStore();
+
   return (
     <div className="ml-2 flex w-[400px] shrink-0 flex-col overflow-hidden bg-black font-mono text-white">
       <Scrollbar className="grow overflow-auto">
@@ -28,9 +25,9 @@ const LogsPanel = ({
           </div>
         ))}
       </Scrollbar>
-      <Scrollbar className="flex justify-end p-1">
-        <button onClick={onClear}>Clear</button>
-      </Scrollbar>
+      <div className="p-1">
+        <button onClick={clear}>Add Log</button>
+      </div>
     </div>
   );
 };

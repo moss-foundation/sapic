@@ -20,10 +20,10 @@ export default [
         },
         alias: {
           map: [
-            ["@/hooks", path.resolve(__dirname, "./src/hooks")],
             ["@/assets", path.resolve(__dirname, "./src/assets")],
-            ["@/store", path.resolve(__dirname, "./src/store")],
             ["@/components", path.resolve(__dirname, "./src/components")],
+            ["@/hooks", path.resolve(__dirname, "./src/hooks")],
+            ["@/store", path.resolve(__dirname, "./src/store")],
           ],
           extensions: [".js", ".jsx", ".ts", ".d.ts", ".tsx"],
         },

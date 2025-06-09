@@ -180,7 +180,7 @@ const ActivityBarButton = ({
       {...props}
     >
       <Icon icon={isActive && visible ? iconActive : icon} className="size-5" />
-      {closestEdge ? <DropIndicator edge={closestEdge} gap={12} /> : null}
+      {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
       {preview &&
         createPortal(
           <ActivityBarButton

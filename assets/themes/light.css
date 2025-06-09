@@ -286,4 +286,13 @@
 
   --moss-radio-bg-disabled: var(--moss-gray-10);
   --moss-radio-border-disabled: var(--moss-gray-10);
+
+  /* Table */
+  --moss-table-header-bg: var(--moss-gray-13);
+  --moss-table-cell-bg: var(--moss-gray-14);
+  --moss-table-add-form-text: var(--moss-gray-9);
+  --moss-table-add-row-form-text: var(--moss-gray-9);
+
+  /* Drag Handle */
+  --moss-drag-handle-bg: var(--moss-gray-14);
 }
