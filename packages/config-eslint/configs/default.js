@@ -20,7 +20,6 @@ export default tseslint.config(...tseslint.configs.recommended, {
   languageOptions: {},
   settings: {},
   files: ["**/*.{ts,tsx,js,jsx}"],
-
   plugins: {
     "react-hooks": reactHooksPlugin,
     "react-refresh": reactRefreshPlugin,
