@@ -17,7 +17,6 @@ pub mod entities;
 pub mod stores;
 
 pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
-
 pub struct GlobalStorageImpl {
     client: ReDbClient,
     tables: HashMap<StoreTypeId, Arc<SegBinTable>>,

@@ -83,3 +83,23 @@ pub trait RekeyItem: Send + Sync {
 
     fn rekey(&self, old_key: Self::Key, new_key: Self::Key) -> DatabaseResult<()>;
 }
+
+pub trait Truncate: Send + Sync {
+    fn truncate(&self) -> DatabaseResult<()>;
+}
+
+pub trait TransactionalTruncate: Send + Sync {
+    fn truncate(&self, txn: &mut Transaction) -> DatabaseResult<()>;
+}
+
+pub trait Scan: Send + Sync {
+    type Key;
+    type Entity;
+    fn scan(&self) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
+pub trait TransactionalScan: Send + Sync {
+    type Key;
+    type Entity;
+    fn scan(&self, txn: &Transaction) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}

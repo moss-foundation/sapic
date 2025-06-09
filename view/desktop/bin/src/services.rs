@@ -1,16 +1,10 @@
-use moss_app::{manager::AppManager, service::prelude::*};
+use moss_app::service::prelude::*;
 use moss_fs::FileSystem;
-use moss_logging::{LogPayload, LogScope, LoggingService};
+use moss_logging::LoggingService;
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;
-use moss_state::{
-    command,
-    command::CommandContext,
-    service::{AppDefaults, StateService},
-};
+use moss_state::service::{AppDefaults, StateService};
 use moss_storage::GlobalStorage;
-use moss_tauri::TauriResult;
-use moss_text::read_only_str;
 use moss_theme::theme_service::ThemeService;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::{
@@ -49,7 +43,10 @@ pub fn service_pool<R: TauriRuntime>(
         app_handle,
     );
     builder.register(
-        Instantiation::Instant(logging_service(session_service_key), PhantomData),
+        Instantiation::Instant(
+            logging_service(session_service_key, fs.clone()),
+            PhantomData,
+        ),
         app_handle,
     );
     builder.register(
@@ -128,14 +125,12 @@ fn locale_service<R: TauriRuntime>(
 
 fn logging_service<R: TauriRuntime>(
     session_service_key: ServiceKey,
+    fs: Arc<dyn FileSystem>,
 ) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> LoggingService + Send + Sync + 'static {
     // FIXME: In the future, we will place logs at appropriate locations
     // Now we put `logs` folder at the project root for easier development
     let app_log_dir: PathBuf = std::env::var("APP_LOG_DIR")
         .expect("Environment variable APP_LOG_DIR is not set")
-        .into();
-    let session_log_dir: PathBuf = std::env::var("SESSION_LOG_DIR")
-        .expect("Environment variable SESSION_LOG_DIR is not set")
         .into();
 
     move |pool, app_handle| {
@@ -145,9 +140,9 @@ fn logging_service<R: TauriRuntime>(
         .expect("Session service needs to be registered first");
 
         LoggingService::new(
+            fs,
             app_handle.clone(),
             &app_log_dir,
-            &session_log_dir,
             session_service.get_session_uuid(),
         )
         .unwrap()
@@ -169,23 +164,4 @@ fn workspace_manager<R: tauri::Runtime>(
             WorkbenchOptions { abs_path },
         )
     }
-}
-
-async fn generate_log<R: TauriRuntime>(ctx: &mut CommandContext<R>) -> TauriResult<String> {
-    let app_handle = ctx.app_handle();
-    let app_manager = app_handle.state::<AppManager<R>>();
-    let logging_service = app_manager
-        .services()
-        .get_by_type::<LoggingService>(app_handle)
-        .await?;
-
-    logging_service.info(
-        LogScope::App,
-        LogPayload {
-            resource: None,
-            message: "Generate a log from the frontend".to_string(),
-        },
-    );
-
-    Ok("Successfully generated a log!".to_string())
 }

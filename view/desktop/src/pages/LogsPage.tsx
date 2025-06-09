@@ -111,7 +111,7 @@ export const Logs = () => {
           <ul>
             {logs.map((log, index) => (
               <li key={index}>
-                {log.timestamp} {log.level} {log.resource} {log.message}
+                {log.id} {log.timestamp} {log.level} {log.resource} {log.message}
               </li>
             ))}
           </ul>

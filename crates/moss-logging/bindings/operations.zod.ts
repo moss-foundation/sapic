@@ -2,11 +2,21 @@
 import { z } from "zod";
 import { logDateSchema, logLevelSchema } from "./types.zod";
 
-export const logEntrySchema = z.object({
+export const deleteLogInputSchema = z.object({
   timestamp: z.string(),
-  level: z.string(),
-  resource: z.string().optional(),
-  message: z.string(),
+  id: z.string(),
+});
+
+export const deleteLogOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteLogsInputSchema = z.object({
+  entries: z.array(deleteLogInputSchema),
+});
+
+export const deleteLogsOutputSchema = z.object({
+  deletedEntries: z.array(deleteLogOutputSchema),
 });
 export const listLogsInputSchema = z.object({
   dates: z.array(logDateSchema),
@@ -14,6 +24,14 @@ export const listLogsInputSchema = z.object({
   resource: z.string().optional(),
 });
 
+export const logEntryInfoSchema = z.object({
+  id: z.string(),
+  timestamp: z.string(),
+  level: logLevelSchema,
+  resource: z.string().optional(),
+  message: z.string(),
+});
+
 export const listLogsOutputSchema = z.object({
-  contents: z.array(logEntrySchema),
+  contents: z.array(logEntryInfoSchema),
 });
