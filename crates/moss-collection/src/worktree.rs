@@ -695,14 +695,11 @@ impl Worktree {
 
         let mut changes = Vec::new();
 
-        // Move the root entry to a temporary directory for deletion
-
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // FIXME: the path is not correct, we need to rename the target entry only
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        let root_entry_abs_path = self.abs_path.join(&entry_path);
+        // Move the target entry to a temporary directory for deletion
+        let target_entry_abs_path = self.abs_path.join(&entry_path);
+        dbg!(&target_entry_abs_path);
         let temp_dir = self.abs_path.join(format!(".{}.deleted", entry_id));
-        let root_entry_name = entry.name.clone();
+        let target_entry_name = entry.name.clone();
 
         if let Err(e) = self.fs.create_dir(&temp_dir).await {
             eprintln!("Failed to create temp directory: {}", e);
@@ -712,8 +709,8 @@ impl Worktree {
         if let Err(e) = self
             .fs
             .rename(
-                &root_entry_abs_path,
-                &temp_dir.join(&root_entry_name),
+                &target_entry_abs_path,
+                &temp_dir.join(&target_entry_name),
                 RenameOptions::default(),
             )
             .await
