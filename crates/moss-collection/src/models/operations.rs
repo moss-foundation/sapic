@@ -185,7 +185,10 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
 #[ts(export, export_to = "operations.ts")]
 pub struct ExpandEntryInput {
     pub id: Uuid,
-    pub depth: u8,
+    pub path: PathBuf,
+
+    #[ts(optional)]
+    pub depth: Option<u8>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]

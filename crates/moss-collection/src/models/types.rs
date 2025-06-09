@@ -252,3 +252,13 @@ pub struct EntryInfo {
     pub name: String,
     pub path: PathBuf,
 }
+
+impl EntryInfo {
+    pub fn from_entry(entry: &crate::worktree::snapshot::Entry) -> Self {
+        Self {
+            id: entry.id,
+            name: entry.name.clone(),
+            path: entry.path.as_ref().to_path_buf(),
+        }
+    }
+}

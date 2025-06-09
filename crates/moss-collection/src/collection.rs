@@ -10,7 +10,7 @@ use std::{
 };
 use uuid::Uuid;
 
-use tokio::sync::OnceCell;
+use tokio::sync::{OnceCell, RwLock};
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
@@ -29,7 +29,7 @@ type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct Collection {
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Worktree>,
+    worktree: OnceCell<Arc<RwLock<Worktree>>>,
     abs_path: Arc<Path>,
     storage: Arc<dyn CollectionStorage>,
     #[allow(dead_code)]
@@ -139,7 +139,7 @@ impl Collection {
         self.manifest.model().await
     }
 
-    pub async fn worktree(&self) -> Result<&Worktree> {
+    pub async fn worktree(&self) -> Result<&Arc<RwLock<Worktree>>> {
         let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
             external_abs_path
         } else {
@@ -150,27 +150,27 @@ impl Collection {
             .get_or_try_init(|| async move {
                 let worktree = Worktree::new(self.fs.clone(), abs_path).await?;
 
-                Ok::<_, anyhow::Error>(worktree)
+                Ok::<_, anyhow::Error>(Arc::new(RwLock::new(worktree)))
             })
             .await
     }
 
-    pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
-        if !self.worktree.initialized() {
-            let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
-            {
-                external_abs_path
-            } else {
-                self.abs_path.clone()
-            };
+    // pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
+    //     if !self.worktree.initialized() {
+    //         let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
+    //         {
+    //             external_abs_path
+    //         } else {
+    //             self.abs_path.clone()
+    //         };
 
-            let worktree = Worktree::new(self.fs.clone(), abs_path).await?;
+    //         let worktree = Worktree::new(self.fs.clone(), abs_path).await?;
 
-            let _ = self.worktree.set(worktree);
-        }
+    //         let _ = self.worktree.set(worktree);
+    //     }
 
-        Ok(self.worktree.get_mut().unwrap())
-    }
+    //     Ok(self.worktree.get_mut().unwrap())
+    // }
 
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path

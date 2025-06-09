@@ -692,6 +692,10 @@ impl Worktree {
         let mut changes = Vec::new();
 
         // Move the root entry to a temporary directory for deletion
+
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // FIXME: the path is not correct, we need to rename the target entry only
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         let root_entry_abs_path = self.abs_path.join(&entry_path);
         let temp_dir = self.abs_path.join(format!(".{}.deleted", entry_id));
         let root_entry_name = entry.name.clone();

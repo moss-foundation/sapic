@@ -1,17 +1,21 @@
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
 };
 
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::OperationResult;
 use moss_storage::storage::operations::GetItem;
 use tauri::ipc::Channel as TauriChannel;
+use tokio::sync::{mpsc, oneshot};
+use uuid::Uuid;
 
 use crate::{
     Collection,
     models::{
+        events::ExpandEntryEvent,
         operations::{ExpandEntryInput, ExpandEntryOutput},
-        primitives::WorktreeChange,
+        primitives::WorktreeDiff,
+        types::EntryInfo,
     },
     storage::{WorktreeNodeStateEntity, segments::SEGKEY_FOLDERS_STATE},
 };
@@ -19,7 +23,7 @@ use crate::{
 impl Collection {
     pub async fn expand_entry(
         &mut self,
-        channel: TauriChannel<ExpandEntryOutput>,
+        channel: TauriChannel<ExpandEntryEvent>,
         input: ExpandEntryInput,
     ) -> OperationResult<ExpandEntryOutput> {
         let folders_state = GetItem::get(
@@ -27,11 +31,6 @@ impl Collection {
             SEGKEY_FOLDERS_STATE.to_segkey_buf(),
         )?
         .deserialize::<HashMap<String, WorktreeNodeStateEntity>>()?;
-
-        let worktree = self.worktree_mut().await?;
-        let entry = worktree
-            .entry(input.id)
-            .ok_or(OperationError::NotFound(input.id.to_string()))?;
 
         let expanded_paths = folders_state
             .iter()
@@ -44,19 +43,95 @@ impl Collection {
             })
             .collect::<HashSet<_>>();
 
-        let r = filter_by_expanded_ancestors(&entry.path, expanded_paths);
+        let worktree = self.worktree().await?;
 
-        worktree.load_many(r.into_iter()).await?;
+        let mut changes = vec![];
 
-        // let changes = worktree.restore(&input.path, expanded_paths).await?;
+        // Load entries based on expanded ancestors
+        {
+            let mut worktree_lock = worktree.write().await;
 
-        // let changes = worktree.load_entry(&input.path, input.depth).await?;
+            changes.extend(
+                worktree_lock
+                    .load_many(
+                        filter_by_expanded_ancestors(&input.path, expanded_paths).into_iter(),
+                    )
+                    .await?
+                    .iter()
+                    .cloned(),
+            );
+        }
 
-        // worktree.walk(id, resolver, sender).await?;
+        let (walk_tx, mut walk_rx) = mpsc::unbounded_channel::<(Uuid, EntryInfo)>();
+        let (completion_tx, completion_rx) = oneshot::channel();
 
-        // Ok(ExpandEntryOutput { changes })
+        // Clone Arc to move into spawn
+        let worktree_clone = worktree.clone();
+        let entry_id = input.id;
 
-        todo!()
+        // Start walk in background task with completion signaling
+        let walk_task = tokio::spawn(async move {
+            let worktree_lock = worktree_clone.read().await;
+            let result = worktree_lock
+                .walk(entry_id, |entry| EntryInfo::from_entry(entry), walk_tx)
+                .await;
+
+            let _ = completion_tx.send(result);
+        });
+
+        let mut completion_rx = Some(completion_rx);
+        loop {
+            tokio::select! {
+                result = walk_rx.recv() => {
+                    match result {
+                        Some((parent_id, entry_info)) => {
+                            let event = ExpandEntryEvent {
+                                parent_id,
+                                entry: entry_info,
+                            };
+
+                            if channel.send(event).is_err() {
+                                break;
+                            }
+                        }
+                        None => {
+                            break; // Walk data channel closed, this happens after walk completes
+                        }
+                    }
+                }
+
+                // Wait for walk completion signal
+                result = async { completion_rx.take().unwrap().await }, if completion_rx.is_some() => {
+                    match result {
+                        Ok(walk_result) => {
+                            match walk_result {
+                                Ok(_) => {
+                                    // Walk completed successfully
+                                    // Continue reading remaining data from walk_rx until None
+                                }
+                                Err(e) => {
+                                    eprintln!("Walk failed: {}", e);
+                                    // TODO: Log error
+                                    break;
+                                }
+                            }
+                        }
+                        Err(_) => {
+                            // Completion sender dropped (shouldn't happen)
+                            eprintln!("Completion signal lost");
+                            // TODO: Log error
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        walk_task.abort();
+
+        Ok(ExpandEntryOutput {
+            changes: WorktreeDiff::from(changes),
+        })
     }
 }
 
