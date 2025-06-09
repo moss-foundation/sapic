@@ -184,7 +184,7 @@ fn validate_request_destination(destination: &Path) -> Result<(), ValidationErro
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ExpandEntryInput {
-    pub path: Uuid,
+    pub id: Uuid,
     pub depth: u8,
 }
 

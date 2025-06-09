@@ -114,36 +114,34 @@ impl Worktree {
     ///
     /// This performs an initial scan of the file system to discover all entries
     /// with configuration files, but doesn't load their full configuration data.
-    pub async fn new(fs: Arc<dyn FileSystem>, abs_path: Arc<Path>) -> Result<Self, WorktreeError> {
+    pub async fn new(fs: Arc<dyn FileSystem>, abs_path: Arc<Path>) -> WorktreeResult<Self> {
         debug_assert!(abs_path.is_absolute());
 
         let next_unloaded_id = Arc::new(AtomicUsize::new(ROOT_UNLOADED_ID + 1));
-        let mut unloaded_entries = vec![(
-            UnloadedEntry::Dir {
-                id: ROOT_UNLOADED_ID,
-                path: Path::new(ROOT_PATH).into(),
-                abs_path: Arc::clone(&abs_path),
-            },
-            None,
-        )];
-        unloaded_entries.extend(
-            Self::scan(
-                fs.clone(),
-                &abs_path,
-                &Path::new(ROOT_PATH),
-                next_unloaded_id.clone(),
-            )
-            .await?,
-        );
+
+        let unloaded_entries = Self::scan(
+            fs.clone(),
+            &abs_path,
+            &Path::new(ROOT_PATH),
+            next_unloaded_id.clone(),
+        )
+        .await?;
 
         let snapshot = Snapshot::from(unloaded_entries);
 
-        Ok(Self {
+        let mut worktree = Self {
             abs_path,
             fs,
             snapshot,
             background_tasks: Vec::new(),
-        })
+        };
+
+        // Automatically load the root entry
+        worktree
+            .load_single_entry(Path::new(ROOT_PATH).into())
+            .await?;
+
+        Ok(worktree)
     }
 
     async fn scan(
@@ -157,12 +155,29 @@ impl Worktree {
 
         let path: Arc<Path> = path.into();
         let scanned_abs_path: Arc<Path> = Self::absolutize(&abs_path, &path)?.into();
+
+        let mut result = Vec::new();
+        let current_entry_id = if path.as_os_str().is_empty() {
+            ROOT_UNLOADED_ID
+        } else {
+            next_unloaded_id.fetch_add(1, Ordering::Relaxed)
+        };
+
+        let current_entry = UnloadedEntry::Dir {
+            id: current_entry_id,
+            path: Arc::clone(&path),
+            abs_path: Arc::clone(&scanned_abs_path),
+        };
+
+        // Root entry has no parent, others will get parent assigned by caller
+        result.push((current_entry, None));
+
         let (scan_job_tx, mut scan_job_rx) = mpsc::unbounded_channel();
 
         let initial_job = ScanJob {
             abs_path: Arc::clone(&scanned_abs_path),
             path: Arc::clone(&path),
-            parent_unloaded_id: None,
+            parent_unloaded_id: Some(current_entry_id),
             scan_queue: scan_job_tx.clone(),
         };
         scan_job_tx.send(initial_job).unwrap();
@@ -240,15 +255,21 @@ impl Worktree {
             handles.push(handle);
         }
 
-        Ok(futures::future::join_all(handles)
-            .await
-            .into_iter()
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(anyhow::Error::from)?
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>())
+        result.extend(
+            futures::future::join_all(handles)
+                .await
+                .into_iter()
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(anyhow::Error::from)?
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>(),
+        );
+
+        Ok(result)
     }
+
+    // pub fn entry_by_path(&self, path: &Path) -> Option<&Entry> {}
 
     pub fn absolutize(abs_path: &Path, path: &Path) -> WorktreeResult<PathBuf> {
         debug_assert!(abs_path.is_absolute());
@@ -269,6 +290,10 @@ impl Worktree {
         } else {
             Ok(abs_path.to_path_buf())
         }
+    }
+
+    pub fn entry(&self, id: Uuid) -> Option<&Entry> {
+        self.snapshot.entry_by_id(id)
     }
 
     /// Loads an entry and optionally its children from the file system.
@@ -746,22 +771,18 @@ impl Worktree {
         self.background_tasks.len()
     }
 
-    // INFO: Maybe not the best name for this method.
-    pub async fn expand_entry<'a>(
+    pub async fn load_many<'a>(
         &mut self,
-        path: Uuid,
-        cache: impl IntoIterator<Item = &'a str>,
+        paths: impl IntoIterator<Item = PathBuf>,
     ) -> WorktreeResult<WorktreeDiff> {
-        let entry = self
-            .snapshot
-            .entry_by_id(path)
-            .ok_or_else(|| WorktreeError::NotFound(path.to_string()))?;
+        let mut paths_to_load = paths
+            .into_iter()
+            .map(|p| p.to_path_buf())
+            .collect::<Vec<_>>();
 
-        let mut paths_to_load = filter_paths_by_expanded_ancestors(&entry.path, cache);
         paths_to_load.sort_by_key(|p| p.components().count());
 
         let mut changes = vec![];
-
         for path in find_maximal_paths(paths_to_load) {
             changes.extend(self.load_entry_internal(&path, 1).await?);
         }
@@ -833,54 +854,18 @@ impl Worktree {
     }
 }
 
-pub fn filter_paths_by_expanded_ancestors<'a>(
-    boundary: &Path,
-    expanded_paths: impl IntoIterator<Item = &'a str>,
-) -> Vec<PathBuf> {
-    let path_strings: Vec<&str> = expanded_paths.into_iter().map(|s| s).collect();
-    let path_set: HashSet<PathBuf> = path_strings.iter().map(PathBuf::from).collect();
-
-    let mut result = vec![boundary.to_path_buf()];
-
-    'path_loop: for path_str in &path_strings {
-        let p = PathBuf::from(path_str);
-
-        if !boundary.as_os_str().is_empty() && !p.starts_with(boundary) {
-            continue 'path_loop; // Boundary is not empty
-        }
-
-        let mut current = p.clone();
-        while let Some(parent) = current.parent() {
-            if parent == boundary {
-                break; // Reached boundary
-            }
-
-            if parent.as_os_str().is_empty() {
-                if boundary.as_os_str().is_empty() {
-                    break;
-                } else {
-                    continue 'path_loop; // Boundary is not empty, root is above boundary
-                }
-            }
-
-            if !path_set.contains(parent) {
-                continue 'path_loop; // Parent is not in the original set
-            }
-            current = parent.to_path_buf();
-        }
-
-        result.push(p);
-    }
-
-    result
-}
-
 pub fn find_maximal_paths(paths: impl IntoIterator<Item = PathBuf>) -> Vec<PathBuf> {
     let paths: BTreeSet<PathBuf> = paths.into_iter().collect();
     let mut result = Vec::new();
 
     for path in &paths {
         let mut is_prefix = false;
+
+        // Root path should always be included if present
+        if path.as_os_str().is_empty() {
+            result.push(path.clone());
+            continue;
+        }
 
         for other in paths.range(path.clone()..) {
             if other == path {
@@ -913,26 +898,6 @@ mod tests {
     use moss_fs::RealFileSystem;
     use std::{env, path::PathBuf};
     use uuid::Uuid;
-
-    #[test]
-    fn test_filter_without_boundary_root() {
-        let input = vec!["a", "a/b", "a/b/c/d"];
-        let boundary = Path::new("");
-        let result = filter_paths_by_expanded_ancestors(&boundary, input.clone());
-        assert_eq!(
-            result,
-            vec![PathBuf::from(""), PathBuf::from("a"), PathBuf::from("a/b")]
-        );
-    }
-
-    #[test]
-    fn test_filter_with_boundary() {
-        let input = vec!["a", "a/b", "a/b/c/d"];
-        let boundary = Path::new("a/b");
-        let result = filter_paths_by_expanded_ancestors(&boundary, input);
-
-        assert_eq!(result, vec![PathBuf::from("a/b")]);
-    }
 
     #[test]
     fn test_find_maximal_paths_pathbuf() {
@@ -978,8 +943,26 @@ mod tests {
     async fn test_expand_entry() {
         let (mut worktree, temp_dir) = create_test_worktree().await;
 
-        let changes = worktree
-            .expand_entry(Uuid::nil(), vec!["a", "a/b", "a/b/c/d"])
+        // Create some structure first for testing restore
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: Uuid::new_v4() },
+        });
+        worktree.create_entry(Path::new("a"), config).await.unwrap();
+
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: Uuid::new_v4() },
+        });
+        worktree
+            .create_entry(Path::new("a/b"), config)
+            .await
+            .unwrap();
+
+        let _changes = worktree
+            .load_many(vec![
+                PathBuf::from(""),
+                PathBuf::from("a"),
+                PathBuf::from("a/b"),
+            ])
             .await
             .unwrap();
 
@@ -990,8 +973,9 @@ mod tests {
     async fn test_new_worktree_creation() {
         let (worktree, temp_dir) = create_test_worktree().await;
 
-        // Worktree should be created successfully
+        // Worktree should be created successfully and root should be loaded
         assert_eq!(worktree.background_tasks_count(), 0);
+        assert!(worktree.snapshot.is_loaded(Path::new("")));
 
         cleanup_test_dir(&temp_dir);
     }
@@ -1009,20 +993,15 @@ mod tests {
             .await
             .unwrap();
 
-        // Should create one entry + load root (2 changes total: 1 Loaded for root, 1 Created for item)
-        assert_eq!(changes.len(), 2);
+        // Should create one entry (root is already loaded, so no Loaded change for root)
+        assert_eq!(changes.len(), 1);
 
-        // Check that we have one Loaded change (root) and one Created change (item)
-        let loaded_changes: Vec<_> = changes
-            .iter()
-            .filter(|change| matches!(change, WorktreeChange::Loaded { .. }))
-            .collect();
+        // Check that we have one Created change (item)
         let created_changes: Vec<_> = changes
             .iter()
             .filter(|change| matches!(change, WorktreeChange::Created { .. }))
             .collect();
 
-        assert_eq!(loaded_changes.len(), 1); // root loaded
         assert_eq!(created_changes.len(), 1); // item created
 
         // Entry should be loaded
@@ -1045,20 +1024,15 @@ mod tests {
             .await
             .unwrap();
 
-        // Should create 4 entries + load root (5 changes total: 1 Loaded for root, 4 Created for directories and item)
-        assert_eq!(changes.len(), 5);
+        // Should create 4 entries (root is already loaded, so no Loaded change for root)
+        assert_eq!(changes.len(), 4);
 
-        // Check that we have one Loaded change (root) and four Created changes
-        let loaded_changes: Vec<_> = changes
-            .iter()
-            .filter(|change| matches!(change, WorktreeChange::Loaded { .. }))
-            .collect();
+        // Check that we have four Created changes
         let created_changes: Vec<_> = changes
             .iter()
             .filter(|change| matches!(change, WorktreeChange::Created { .. }))
             .collect();
 
-        assert_eq!(loaded_changes.len(), 1); // root loaded
         assert_eq!(created_changes.len(), 4); // 3 directories + 1 item created
 
         // All levels should be loaded
