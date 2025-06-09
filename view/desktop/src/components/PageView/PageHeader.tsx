@@ -9,7 +9,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, icon, tabs, toolb
       className={cn("background-(--moss-primary-background) h-9 border-b border-(--moss-border-color)", className)}
     >
       {/* Main Header Row - Title, Tabs, and Toolbar */}
-      <div className="flex h-full items-center px-5">
+      <div className="flex h-full items-center px-3">
         {/* Left side - Title and Icon */}
         <div className="flex min-w-0 flex-shrink-0 items-center gap-1.5">
           {icon && <div className="flex-shrink-0">{icon}</div>}

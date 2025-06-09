@@ -12,7 +12,7 @@ export const PageTabs: React.FC<PageTabsProps> = ({ children, className }) => {
           "cursor-pointer rounded px-2 py-0.5 text-base transition-colors",
           isActive
             ? "background-(--moss-info-background) text-(--moss-primary)"
-            : "background-(--moss-primary-background) hover:background-(--moss-primary-background-hover) text-(--moss-primary-text)"
+            : "background-(--moss-primary-background) hover:background-(--moss-icon-secondary-background-hover) text-(--moss-primary-text)"
         ),
       });
     }
