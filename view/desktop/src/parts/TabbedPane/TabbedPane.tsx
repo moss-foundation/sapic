@@ -2,7 +2,7 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { Breadcrumbs } from "@/components";
+import { ActionButton, Breadcrumbs } from "@/components";
 import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
@@ -145,13 +145,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     return () => event.dispose();
   }, [api, updateEditorPartState]);
 
-  // Page configurations with metadata
   type PageConfig = {
     title: string;
     icon?: Icons;
     component: React.ComponentType;
     isFullPage?: boolean;
-    hasCustomLayout?: boolean; // For pages that manage their own tabs/toolbar
   };
 
   const pageConfigs: Record<string, PageConfig> = {
@@ -195,15 +193,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       const toolbar = (
         <PageToolbar>
-          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-            <Icon icon="Settings" className="size-4" />
-          </button>
-          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-            <Icon icon="Settings" className="size-4" />
-          </button>
-          <button className="p-1 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-            <Icon icon="Settings" className="size-4" />
-          </button>
+          <ActionButton icon="MoreHorizontal" />
         </PageToolbar>
       );
 
