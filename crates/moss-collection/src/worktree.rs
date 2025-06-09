@@ -626,15 +626,19 @@ impl Worktree {
             .ok_or_else(|| WorktreeError::NotFound(new_parent_id.to_string()))?;
 
         let to_path = new_parent.path.join(entry.path.file_name().unwrap());
+        let to_abs_path = self.abs_path.join(&to_path);
+        if to_abs_path.exists() {
+            return Err(WorktreeError::AlreadyExists(
+                to_abs_path.to_string_lossy().to_string(),
+            ));
+        }
+        let from_abs_path = self.abs_path.join(&from_path);
 
         let mut changes = vec![];
 
         // We need to load children of the parent since on the frontend we will expand the destination
         // folder and a user needs to see the children of the destination folder.
         changes.extend(self.load_children(new_parent.path.clone().as_ref()).await?);
-
-        let from_abs_path = self.abs_path.join(&from_path);
-        let to_abs_path = self.abs_path.join(&to_path);
 
         self.fs
             .rename(&from_abs_path, &to_abs_path, RenameOptions::default())
@@ -1331,6 +1335,46 @@ mod tests {
                 .iter()
                 .any(|change| matches!(change, WorktreeChange::Loaded { .. }))
         );
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
+    async fn test_move_entry_already_exists() {
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let item_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: item_id },
+        });
+        worktree
+            .create_entry(Path::new("item"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        let existing_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: existing_id },
+        });
+        worktree
+            .create_entry(Path::new("dest/item"), config)
+            .await
+            .unwrap();
+
+        let move_entry_result = worktree.move_entry(item_id, dest_id).await;
+        assert!(matches!(
+            move_entry_result,
+            Err(WorktreeError::AlreadyExists { .. })
+        ));
 
         cleanup_test_dir(&temp_dir);
     }
