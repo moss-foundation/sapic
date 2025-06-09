@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
+
 import SelectOutlined from "@/components/SelectOutlined";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useListColorThemes } from "@/hooks/colorTheme/useListColorThemes";
@@ -160,20 +161,106 @@ export const Settings = () => {
   ];
 
   return (
-    <main className="">
-      <div className="p-5">
-        <h1 className="mb-5 text-2xl font-bold">{t("settings")}</h1>
+    <div className="space-y-6">
+      <div className="mt-4">
+        <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectLanguage")}</h3>
+        <div className="w-[200px]">
+          <SelectOutlined.Root
+            value={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
+            onValueChange={handleLanguageChange}
+          >
+            <SelectOutlined.Trigger />
+            <SelectOutlined.Content>
+              {languageItems.map((item) => {
+                if (item.type === "separator") {
+                  return <SelectOutlined.Separator key={item.id} />;
+                }
+
+                return (
+                  <SelectOutlined.Item key={item.id} value={item.value!}>
+                    {item.label}
+                  </SelectOutlined.Item>
+                );
+              })}
+            </SelectOutlined.Content>
+          </SelectOutlined.Root>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectTheme")}</h3>
+        <div className="w-[200px]">
+          <SelectOutlined.Root
+            value={(appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || "")
+              .split(/[./]/)
+              .pop()}
+            onValueChange={handleThemeChange}
+          >
+            <SelectOutlined.Trigger />
+            <SelectOutlined.Content>
+              {themeItems.map((item) => {
+                if (item.type === "separator") {
+                  return <SelectOutlined.Separator key={item.id} />;
+                }
+
+                return (
+                  <SelectOutlined.Item key={item.id} value={item.value!}>
+                    {item.label}
+                  </SelectOutlined.Item>
+                );
+              })}
+            </SelectOutlined.Content>
+          </SelectOutlined.Root>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <h2 className="mb-4 text-lg font-semibold">Workspace Layout</h2>
+        {!hasWorkspace && (
+          <div className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
+            <p>
+              Sidebar and panel settings are only available when a workspace is active. These settings are saved per
+              workspace.
+            </p>
+          </div>
+        )}
 
         <div className="mt-4">
-          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectLanguage")}</h3>
+          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Type</h3>
           <div className="w-[200px]">
             <SelectOutlined.Root
-              value={appState?.preferences.locale?.code || appState?.defaults.locale?.code || ""}
-              onValueChange={handleLanguageChange}
+              value={sideBarPosition || SIDEBAR_POSITION.LEFT}
+              onValueChange={handleSidebarTypeChange}
+              disabled={!hasWorkspace}
             >
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>
-                {languageItems.map((item) => {
+                {sidebarTypeItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
+
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Visibility</h3>
+          <div className="w-[200px]">
+            <SelectOutlined.Root
+              value={sideBar.visible ? "visible" : "hidden"}
+              onValueChange={handleSidebarVisibilityChange}
+              disabled={!hasWorkspace}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {visibilityItems.map((item) => {
                   if (item.type === "separator") {
                     return <SelectOutlined.Separator key={item.id} />;
                   }
@@ -190,17 +277,16 @@ export const Settings = () => {
         </div>
 
         <div className="mt-4">
-          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">{t("selectTheme")}</h3>
+          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Bottom Pane Visibility</h3>
           <div className="w-[200px]">
             <SelectOutlined.Root
-              value={(appState?.preferences.theme?.identifier || appState?.defaults.theme?.identifier || "")
-                .split(/[./]/)
-                .pop()}
-              onValueChange={handleThemeChange}
+              value={bottomPane.visible ? "visible" : "hidden"}
+              onValueChange={handleBottomPaneVisibilityChange}
+              disabled={!hasWorkspace}
             >
               <SelectOutlined.Trigger />
               <SelectOutlined.Content>
-                {themeItems.map((item) => {
+                {visibilityItems.map((item) => {
                   if (item.type === "separator") {
                     return <SelectOutlined.Separator key={item.id} />;
                   }
@@ -216,120 +302,31 @@ export const Settings = () => {
           </div>
         </div>
 
-        <div className="mt-6">
-          <h2 className="mb-4 text-lg font-semibold">Workspace Layout</h2>
-          {!hasWorkspace && (
-            <div className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-              <p>
-                Sidebar and panel settings are only available when a workspace is active. These settings are saved per
-                workspace.
-              </p>
-            </div>
-          )}
+        <div className="mt-4">
+          <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
+          <div className="w-[200px]">
+            <SelectOutlined.Root
+              value={position || ACTIVITYBAR_POSITION.DEFAULT}
+              onValueChange={handleActivityBarPositionChange}
+            >
+              <SelectOutlined.Trigger />
+              <SelectOutlined.Content>
+                {activityBarPositionItems.map((item) => {
+                  if (item.type === "separator") {
+                    return <SelectOutlined.Separator key={item.id} />;
+                  }
 
-          <div className="mt-4">
-            <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Type</h3>
-            <div className="w-[200px]">
-              <SelectOutlined.Root
-                value={sideBarPosition || SIDEBAR_POSITION.LEFT}
-                onValueChange={handleSidebarTypeChange}
-                disabled={!hasWorkspace}
-              >
-                <SelectOutlined.Trigger />
-                <SelectOutlined.Content>
-                  {sidebarTypeItems.map((item) => {
-                    if (item.type === "separator") {
-                      return <SelectOutlined.Separator key={item.id} />;
-                    }
-
-                    return (
-                      <SelectOutlined.Item key={item.id} value={item.value!}>
-                        {item.label}
-                      </SelectOutlined.Item>
-                    );
-                  })}
-                </SelectOutlined.Content>
-              </SelectOutlined.Root>
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Sidebar Visibility</h3>
-            <div className="w-[200px]">
-              <SelectOutlined.Root
-                value={sideBar.visible ? "visible" : "hidden"}
-                onValueChange={handleSidebarVisibilityChange}
-                disabled={!hasWorkspace}
-              >
-                <SelectOutlined.Trigger />
-                <SelectOutlined.Content>
-                  {visibilityItems.map((item) => {
-                    if (item.type === "separator") {
-                      return <SelectOutlined.Separator key={item.id} />;
-                    }
-
-                    return (
-                      <SelectOutlined.Item key={item.id} value={item.value!}>
-                        {item.label}
-                      </SelectOutlined.Item>
-                    );
-                  })}
-                </SelectOutlined.Content>
-              </SelectOutlined.Root>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Bottom Pane Visibility</h3>
-            <div className="w-[200px]">
-              <SelectOutlined.Root
-                value={bottomPane.visible ? "visible" : "hidden"}
-                onValueChange={handleBottomPaneVisibilityChange}
-                disabled={!hasWorkspace}
-              >
-                <SelectOutlined.Trigger />
-                <SelectOutlined.Content>
-                  {visibilityItems.map((item) => {
-                    if (item.type === "separator") {
-                      return <SelectOutlined.Separator key={item.id} />;
-                    }
-
-                    return (
-                      <SelectOutlined.Item key={item.id} value={item.value!}>
-                        {item.label}
-                      </SelectOutlined.Item>
-                    );
-                  })}
-                </SelectOutlined.Content>
-              </SelectOutlined.Root>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">ActivityBar Position</h3>
-            <div className="w-[200px]">
-              <SelectOutlined.Root
-                value={position || ACTIVITYBAR_POSITION.DEFAULT}
-                onValueChange={handleActivityBarPositionChange}
-              >
-                <SelectOutlined.Trigger />
-                <SelectOutlined.Content>
-                  {activityBarPositionItems.map((item) => {
-                    if (item.type === "separator") {
-                      return <SelectOutlined.Separator key={item.id} />;
-                    }
-
-                    return (
-                      <SelectOutlined.Item key={item.id} value={item.value!}>
-                        {item.label}
-                      </SelectOutlined.Item>
-                    );
-                  })}
-                </SelectOutlined.Content>
-              </SelectOutlined.Root>
-            </div>
+                  return (
+                    <SelectOutlined.Item key={item.id} value={item.value!}>
+                      {item.label}
+                    </SelectOutlined.Item>
+                  );
+                })}
+              </SelectOutlined.Content>
+            </SelectOutlined.Root>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 };

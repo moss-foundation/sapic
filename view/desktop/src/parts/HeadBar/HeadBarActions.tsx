@@ -1,7 +1,8 @@
+import { RefObject } from "react";
+
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { RefObject } from "react";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
@@ -143,7 +144,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       const [, workspaceId, actionType] = workspaceAction;
       console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
-      const generalActions = ["new", "open", "home", "logs", "debug", "separator"];
+      const generalActions = ["new", "open", "kitchensink", "logs", "debug", "separator"];
       if (generalActions.includes(workspaceId)) {
         console.log(`Skipping false match - "${workspaceId}" is a general action keyword`);
       } else {

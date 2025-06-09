@@ -172,7 +172,7 @@ export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [
   {
     id: "kitchensink",
     type: "action",
-    label: "Kitchensink",
+    label: "KitchenSink",
     alignWithIcons: true,
   },
   {
