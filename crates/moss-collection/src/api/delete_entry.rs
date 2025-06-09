@@ -9,7 +9,7 @@ impl Collection {
         &mut self,
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
-        let worktree = self.worktree_mut().await?;
+        // let worktree = self.worktree_mut().await?;
 
         // let changes = worktree.delete_entry_by_virtual_id(input.id).await?;
 

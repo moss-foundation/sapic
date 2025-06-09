@@ -20,6 +20,7 @@ use crate::{
 
 pub type UnloadedId = usize;
 pub type UnloadedParentId = UnloadedId;
+pub type ParentId = Uuid;
 
 #[derive(Debug, Clone)]
 pub enum UnloadedEntry {
@@ -142,6 +143,10 @@ impl Snapshot {
 
     pub fn is_loaded(&self, path: &Path) -> bool {
         self.entries_by_path.contains_key(path)
+    }
+
+    pub fn is_known_path(&self, path: &Path) -> bool {
+        self.known_paths.contains(path)
     }
 
     pub fn unloaded_entry_by_path(&self, path: &Path) -> Option<&UnloadedEntry> {
@@ -362,6 +367,17 @@ impl Snapshot {
         // Reverse to get bottom-up order (deepest nodes first)
         descendants.reverse();
         descendants
+    }
+
+    pub fn entry_children(&self, entry_id: Uuid) -> Vec<Uuid> {
+        if let Some(entry_idx) = self.entries_by_id.get(&entry_id) {
+            self.entries
+                .edges_directed(*entry_idx, petgraph::Outgoing)
+                .map(|edge| self.entries[edge.target()].id)
+                .collect()
+        } else {
+            Vec::new()
+        }
     }
 }
 

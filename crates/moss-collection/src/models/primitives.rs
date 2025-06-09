@@ -1,41 +1,11 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    ops::Deref,
-    path::Path,
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering::SeqCst},
-    },
-};
+use std::{ops::Deref, path::Path, sync::Arc};
 use ts_rs::TS;
 use uuid::Uuid;
 
-use super::types::PathChangeKind;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, TS)]
-#[serde(transparent)]
-#[ts(export, export_to = "types.ts")]
-pub struct EntryId(usize);
-
-impl EntryId {
-    pub fn new(counter: &AtomicUsize) -> Self {
-        Self(counter.fetch_add(1, SeqCst))
-    }
-
-    pub fn to_usize(&self) -> usize {
-        self.0
-    }
-}
-
-impl std::fmt::Display for EntryId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(tag = "type")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "primitives.ts")]
 pub enum WorktreeChange {
     Loaded {
         id: Uuid,
@@ -58,12 +28,12 @@ pub enum WorktreeChange {
     },
 }
 
-pub type ChangesDiffSet = Arc<[(Arc<Path>, Uuid, PathChangeKind)]>;
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(transparent)]
+#[ts(export, export_to = "primitives.ts")]
+pub struct WorktreeDiff(Arc<[WorktreeChange]>);
 
-#[derive(Clone, Debug)]
-pub struct ChangesDiffSetNew(Arc<[WorktreeChange]>);
-
-impl Deref for ChangesDiffSetNew {
+impl Deref for WorktreeDiff {
     type Target = [WorktreeChange];
 
     fn deref(&self) -> &Self::Target {
@@ -71,7 +41,7 @@ impl Deref for ChangesDiffSetNew {
     }
 }
 
-impl From<Vec<WorktreeChange>> for ChangesDiffSetNew {
+impl From<Vec<WorktreeChange>> for WorktreeDiff {
     fn from(changes: Vec<WorktreeChange>) -> Self {
         Self(Arc::from(changes))
     }
