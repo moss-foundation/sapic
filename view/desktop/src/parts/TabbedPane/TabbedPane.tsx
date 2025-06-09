@@ -146,10 +146,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   }, [api, updateEditorPartState]);
 
   type PageConfig = {
-    title: string;
+    title?: string;
     icon?: Icons;
     component: React.ComponentType;
-    isFullPage?: boolean;
   };
 
   const pageConfigs: Record<string, PageConfig> = {
@@ -166,9 +165,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       component: Logs,
     },
     Welcome: {
-      title: "Welcome",
       component: WelcomePage,
-      isFullPage: true,
     },
   };
 
@@ -265,8 +262,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         acc[key] = () => {
           const PageComponent = config.component;
 
-          // Special case for full-page components like WelcomePage
-          if (config.isFullPage) {
+          // Special case for full-page components (no title)
+          if (!config.title) {
             return <PageComponent />;
           }
 
