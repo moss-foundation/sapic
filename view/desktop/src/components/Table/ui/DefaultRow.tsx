@@ -204,7 +204,7 @@ const AddNewRowDividerButton = ({ onClick }: { onClick?: () => void }) => {
       onClick={visible ? handleClick : undefined}
     >
       <div className="relative h-full w-full">
-        <div className="background-(--moss-table-handle-bg) absolute -top-[8px] -left-2 flex size-4 items-center justify-center rounded-sm p-px shadow">
+        <div className="background-(--moss-drag-handle-bg) absolute -top-[8px] -left-2 flex size-4 items-center justify-center rounded-sm p-px shadow">
           <DividerButtonIcon />
         </div>
       </div>
