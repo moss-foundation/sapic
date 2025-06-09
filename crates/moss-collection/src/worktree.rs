@@ -795,9 +795,6 @@ impl Worktree {
     }
 
     /// Walks through the worktree starting from the specified entry ID,
-    /// sending resolved entries through the provided channel.
-    /// The walk is performed in depth-first order and does not include the starting entry.
-    /// Walks through the worktree starting from the specified entry ID,
     /// sending resolved entries with their parent IDs through the provided channel.
     /// The walk is performed in depth-first order and does not include the starting entry.
     pub async fn walk<T, F>(
@@ -1445,19 +1442,25 @@ mod tests {
 
     #[tokio::test]
     async fn test_absolutize_path() {
-        let abs_path = Path::new("/project/root");
-        let rel_path = Path::new("src/module");
+        let abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let rel_path = Path::new("src").join("module");
 
-        let result = Worktree::absolutize(abs_path, rel_path).unwrap();
-        assert_eq!(result, PathBuf::from("/project/root/src/module"));
+        let result = Worktree::absolutize(&abs_path, &rel_path).unwrap();
+
+        assert_eq!(
+            result,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("src")
+                .join("module")
+        );
     }
 
     #[tokio::test]
     async fn test_absolutize_path_with_parent_dir_fails() {
-        let abs_path = Path::new("/project/root");
+        let abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let rel_path = Path::new("../outside");
 
-        let result = Worktree::absolutize(abs_path, rel_path);
+        let result = Worktree::absolutize(&abs_path, rel_path);
         assert!(matches!(result, Err(WorktreeError::InvalidInput(_))));
     }
 
@@ -1587,13 +1590,15 @@ mod tests {
         // Collect all received entries
         let mut received_data: Vec<(snapshot::ParentId, String)> = Vec::new();
         while let Ok((parent_id, path)) = receiver.try_recv() {
-            received_data.push((parent_id, path));
+            // Make the test work on Windows by normalizing the path separator
+            received_data.push((parent_id, path.replace('\\', "/")));
         }
 
         let received_paths: Vec<String> =
             received_data.iter().map(|(_, path)| path.clone()).collect();
 
         // Should receive all descendants of parent (but not parent itself)
+        dbg!(&received_paths);
         assert_eq!(received_paths.len(), 3);
         assert!(received_paths.contains(&"parent/child1".to_string()));
         assert!(received_paths.contains(&"parent/child2".to_string()));
