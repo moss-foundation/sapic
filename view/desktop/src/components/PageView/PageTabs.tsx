@@ -11,8 +11,8 @@ export const PageTabs: React.FC<PageTabsProps> = ({ children, className }) => {
         className: cn(
           "cursor-pointer rounded px-2 py-0.5 text-base transition-colors",
           isActive
-            ? "background-(--moss-blue-12) text-(--moss-blue-4)"
-            : "hover:background-(--moss-gray-12) bg-white text-(--moss-gray-1)"
+            ? "background-(--moss-info-background) text-(--moss-primary)"
+            : "background-(--moss-primary-background) hover:background-(--moss-primary-background-hover) text-(--moss-primary-text)"
         ),
       });
     }
