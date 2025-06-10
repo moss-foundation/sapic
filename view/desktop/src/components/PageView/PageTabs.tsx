@@ -9,7 +9,7 @@ export const PageTabs: React.FC<PageTabsProps> = ({ children, className }) => {
   const styledChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child) && child.type === "button") {
       const isActive = child.props["data-active"] === true;
-      return React.cloneElement(child as React.ReactElement<any>, {
+      return React.cloneElement(child as React.ReactElement<HTMLButtonElement>, {
         className: cn(
           "cursor-pointer rounded px-2 py-0.5 text-base transition-colors",
           isActive
