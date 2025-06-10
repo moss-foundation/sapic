@@ -33,7 +33,7 @@ use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::{FileSystem, RenameOptions};
 use snapshot::{Entry, Snapshot, UnloadedEntry};
 use std::{
-    collections::{BTreeSet, HashSet},
+    collections::BTreeSet,
     path::{Path, PathBuf},
     sync::{
         Arc,
@@ -58,8 +58,8 @@ pub mod constants {
 
     use crate::worktree::snapshot::UnloadedId;
 
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
+    pub const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
+    pub const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
 
     pub(crate) const ROOT_PATH: &str = "";
     pub(crate) const ROOT_ID: Uuid = Uuid::nil();

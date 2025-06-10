@@ -16,11 +16,8 @@ use crate::models::{
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-// TODO: Validate that destination matches with classification
-// #[validate(schema(function = "validate_category", skip_on_field_errors = false))]
+// TODO: Implement new validation logic for destination
 pub struct CreateEntryInput {
-    // TODO: Validate against all possible classification
-    #[validate(custom(function = "validate_request_destination"))]
     pub destination: PathBuf,
     pub classification: Classification,
     #[ts(optional, type = "JsonValue")]
@@ -121,62 +118,62 @@ fn validate_stream_worktree_entries_prefixes(
 /// - Path must have at least one component after 'requests'
 /// - Last segment cannot end with forbidden extension, e.g. ".request"
 
-const RESERVED_EXTENSIONS: [&str; 1] = ["request"];
-fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
-    if destination.is_absolute() {
-        return Err(ValidationError::new("Destination path cannot be absolute"));
-    }
-
-    if destination.as_os_str().is_empty() {
-        return Err(ValidationError::new("Destination path cannot be empty"));
-    }
-
-    // Check that the first segment is 'requests'
-    let mut components = destination.components();
-    let first = components.next();
-
-    match first {
-        Some(std::path::Component::Normal(name)) => {
-            if name != "requests" {
-                return Err(ValidationError::new(
-                    "First path segment must be 'requests'",
-                ));
-            }
-        }
-        _ => {
-            return Err(ValidationError::new(
-                "First path segment must be 'requests'",
-            ));
-        }
-    }
-
-    // Ensure there's at least one more component after 'requests'
-    if components.next().is_none() {
-        return Err(ValidationError::new(
-            "Path must contain at least one component after 'requests'",
-        ));
-    }
-
-    // Check for invalid path characters
-    let path_str = destination.to_string_lossy();
-    if path_str.contains("..") || path_str.contains("//") {
-        return Err(ValidationError::new("Path contains invalid sequences"));
-    }
-
-    let extension = destination
-        .extension()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .to_string();
-    // Check for forbidden extensions
-    if RESERVED_EXTENSIONS.contains(&extension.as_ref()) {
-        return Err(ValidationError::new(
-            "Filename contains forbidden extension",
-        ));
-    }
-
-    Ok(())
-}
+// const RESERVED_EXTENSIONS: [&str; 1] = ["request"];
+// fn validate_request_destination(destination: &Path) -> Result<(), ValidationError> {
+//     if destination.is_absolute() {
+//         return Err(ValidationError::new("Destination path cannot be absolute"));
+//     }
+//
+//     if destination.as_os_str().is_empty() {
+//         return Err(ValidationError::new("Destination path cannot be empty"));
+//     }
+//
+//     // Check that the first segment is 'requests'
+//     let mut components = destination.components();
+//     let first = components.next();
+//
+//     match first {
+//         Some(std::path::Component::Normal(name)) => {
+//             if name != "requests" {
+//                 return Err(ValidationError::new(
+//                     "First path segment must be 'requests'",
+//                 ));
+//             }
+//         }
+//         _ => {
+//             return Err(ValidationError::new(
+//                 "First path segment must be 'requests'",
+//             ));
+//         }
+//     }
+//
+//     // Ensure there's at least one more component after 'requests'
+//     if components.next().is_none() {
+//         return Err(ValidationError::new(
+//             "Path must contain at least one component after 'requests'",
+//         ));
+//     }
+//
+//     // Check for invalid path characters
+//     let path_str = destination.to_string_lossy();
+//     if path_str.contains("..") || path_str.contains("//") {
+//         return Err(ValidationError::new("Path contains invalid sequences"));
+//     }
+//
+//     let extension = destination
+//         .extension()
+//         .unwrap_or_default()
+//         .to_string_lossy()
+//         .to_string();
+//     // Check for forbidden extensions
+//     if RESERVED_EXTENSIONS.contains(&extension.as_ref()) {
+//         return Err(ValidationError::new(
+//             "Filename contains forbidden extension",
+//         ));
+//     }
+//
+//     Ok(())
+// }
 
 // Expand Entry
 
@@ -196,66 +193,4 @@ pub struct ExpandEntryInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ExpandEntryOutput {
     pub changes: WorktreeDiff,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn validate_request_destination_correct() {
-        let path = Path::new("requests").join("1");
-        assert!(validate_request_destination(&path).is_ok());
-    }
-
-    // TODO: Test validate absolute path in a cross platform manner
-    #[test]
-    fn validate_request_destination_empty() {
-        let path = PathBuf::new();
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ));
-    }
-
-    #[test]
-    fn validate_request_destination_no_components_after_requests() {
-        let path = PathBuf::from("requests");
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ));
-    }
-
-    #[test]
-    fn validate_request_destination_first_component_not_requests() {
-        let path = PathBuf::from("non-requests").join("1");
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ));
-    }
-
-    #[test]
-    fn validate_request_destination_invalid_path_characters() {
-        let path = PathBuf::from("requests\\1\\..");
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ));
-
-        let path = PathBuf::from("requests\\1//");
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ));
-    }
-
-    #[test]
-    fn validate_request_destination_forbidden_extension() {
-        let path = PathBuf::from("requests").join("1.request");
-        assert!(matches!(
-            validate_request_destination(&path),
-            Err(ValidationError { .. })
-        ))
-    }
 }

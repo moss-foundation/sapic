@@ -3,7 +3,7 @@ use std::{ops::Deref, path::Path, sync::Arc};
 use ts_rs::TS;
 use uuid::Uuid;
 
-#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(tag = "type")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum WorktreeChange {
@@ -26,6 +26,25 @@ pub enum WorktreeChange {
         id: Uuid,
         path: Arc<Path>,
     },
+}
+
+impl WorktreeChange {
+    pub fn id(&self) -> Uuid {
+        match self {
+            WorktreeChange::Loaded { id, .. } => *id,
+            WorktreeChange::Created { id, .. } => *id,
+            WorktreeChange::Moved { id, .. } => *id,
+            WorktreeChange::Deleted { id, .. } => *id,
+        }
+    }
+    pub fn path(&self) -> Option<Arc<Path>> {
+        match self {
+            WorktreeChange::Loaded { path, .. } => Some(path.clone()),
+            WorktreeChange::Created { path, .. } => Some(path.clone()),
+            WorktreeChange::Moved { new_path, .. } => Some(new_path.clone()),
+            WorktreeChange::Deleted { path, .. } => Some(path.clone()),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]

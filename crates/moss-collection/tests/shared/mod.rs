@@ -1,6 +1,6 @@
 use moss_collection::{
     collection::{Collection, CreateParams},
-    models::primitives::{ChangesDiffSet, EntryId},
+    models::primitives::WorktreeDiff,
 };
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
@@ -23,7 +23,7 @@ fn random_collection_path() -> PathBuf {
         .join(Uuid::new_v4().to_string())
 }
 
-pub async fn create_test_collection() -> (PathBuf, Collection) {
+pub async fn setup_test_collection() -> (PathBuf, Collection) {
     let fs = Arc::new(RealFileSystem::new());
     let internal_abs_path = random_collection_path();
 
@@ -32,7 +32,6 @@ pub async fn create_test_collection() -> (PathBuf, Collection) {
     let next_entry_id = Arc::new(AtomicUsize::new(0));
     let collection = Collection::create(
         fs,
-        next_entry_id,
         CreateParams {
             name: Some(random_collection_name()),
             external_abs_path: None,
@@ -45,18 +44,11 @@ pub async fn create_test_collection() -> (PathBuf, Collection) {
     (internal_abs_path, collection)
 }
 
-#[allow(dead_code)]
-/// Generate the encoded request folder name
-pub fn request_folder_name(request_name: &str) -> String {
-    let sanitized_name = SanitizedName::new(request_name);
-    format!("{}.request", &sanitized_name)
-}
-
-#[allow(dead_code)]
-/// Find the entry id by path
-pub fn find_id_by_path(changes_diff_set: &ChangesDiffSet, path: &Path) -> Option<EntryId> {
-    changes_diff_set
-        .iter()
-        .find(|(entry_path, _id, _kind)| entry_path.as_ref() == path)
-        .map(|item| item.1.clone())
-}
+// #[allow(dead_code)]
+// /// Find the entry id by path
+// pub fn find_id_by_path(changes_diff_set: &WorktreeDiff, path: &Path) -> Option<EntryId> {
+//     changes_diff_set
+//         .iter()
+//         .find(|change| entry_path.as_ref() == path)
+//         .map(|item| item.1.clone())
+// }
