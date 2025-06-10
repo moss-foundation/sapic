@@ -166,7 +166,6 @@ impl Worktree {
         let current_entry = UnloadedEntry::Dir {
             id: current_entry_id,
             path: Arc::clone(&path),
-            abs_path: Arc::clone(&scanned_abs_path),
         };
 
         // Root entry has no parent, others will get parent assigned by caller
@@ -222,13 +221,11 @@ impl Worktree {
                         unloaded_entry = UnloadedEntry::Dir {
                             id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
                             path: Arc::clone(&child_path),
-                            abs_path: Arc::clone(&child_abs_path),
                         };
                     } else if child_abs_path.join(CONFIG_FILE_NAME_ITEM).exists() {
                         unloaded_entry = UnloadedEntry::Item {
                             id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
                             path: Arc::clone(&child_path),
-                            abs_path: Arc::clone(&child_abs_path),
                         };
                     } else {
                         continue;
@@ -422,8 +419,14 @@ impl Worktree {
             }
         } else {
             let config_path = match unloaded_entry {
-                UnloadedEntry::Item { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_ITEM),
-                UnloadedEntry::Dir { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_DIR),
+                UnloadedEntry::Item { path, .. } => Self::absolutize(
+                    self.abs_path.as_ref(),
+                    path.join(CONFIG_FILE_NAME_ITEM).as_path(),
+                )?,
+                UnloadedEntry::Dir { path, .. } => Self::absolutize(
+                    self.abs_path.as_ref(),
+                    path.join(CONFIG_FILE_NAME_DIR).as_path(),
+                )?,
             };
 
             let config = EditableInPlaceFileHandle::<ConfigurationModel>::load(
