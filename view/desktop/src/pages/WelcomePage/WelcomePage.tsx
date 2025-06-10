@@ -15,7 +15,7 @@ export const WelcomePage = () => {
         <div className="flex flex-col gap-0.5">
           <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
 
-          <p className="text-lg text-(--moss-secondary-text)">Design APIs, Send Requests, Unmatched Git Integration</p>
+          <p className="text-lg text-(--moss-secondary-texxt)">Design APIs, Send Requests, Unmatched Git Integration</p>
         </div>
 
         <div className="flex flex-col gap-7.5">

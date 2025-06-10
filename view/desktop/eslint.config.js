@@ -11,7 +11,7 @@ export default [
     ignores: ["**/moss-tabs/"],
   },
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["*.ts", "*.tsx"],
     settings: {
       "import/resolver": {
         node: {
