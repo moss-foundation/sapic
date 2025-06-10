@@ -1,12 +1,15 @@
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import lintConfig from "@repo/eslint-config/eslint.config.js";
+import defaultConfig from "@repo/eslint-config/eslint.config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default [
-  ...lintConfig,
+  ...defaultConfig,
+  {
+    ignores: ["**/moss-tabs/"],
+  },
   {
     files: ["**/*.ts", "**/*.tsx"],
     settings: {
@@ -15,6 +18,7 @@ export default [
           paths: ["src"],
           extensions: [".js", ".jsx", ".ts", ".d.ts", ".tsx"],
         },
+
         typescript: {
           project: "./tsconfig.json",
         },
@@ -29,5 +33,6 @@ export default [
         },
       },
     },
+    ignores: ["moss-tabs/**/*"],
   },
 ];
