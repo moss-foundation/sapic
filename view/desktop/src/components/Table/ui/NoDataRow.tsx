@@ -59,7 +59,7 @@ export const NoDataRow = ({ setData, tableId, table }: NoDataRowProps) => {
         },
       })
     );
-  }, [setData, tableId]);
+  }, [setData, table.options.meta?.tableType, tableId]);
 
   return (
     <div role="row" className="flex" ref={ref} key={`empty-row-${tableId}`}>

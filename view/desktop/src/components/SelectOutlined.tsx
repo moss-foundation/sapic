@@ -40,7 +40,7 @@ export interface OutlinedSelectTriggerProps extends SelectTriggerProps {
 }
 
 const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedSelectTriggerProps>(
-  ({ placeholder, disabled = false, className, children, size = "md", ...props }, forwardedRef) => {
+  ({ placeholder, disabled = false, className, size = "md", ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Trigger
         {...props}

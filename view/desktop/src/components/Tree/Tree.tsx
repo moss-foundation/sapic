@@ -68,7 +68,7 @@ export const Tree = ({
 
   useEffect(() => {
     setTree(prepareCollectionForTree(initialTree, sortBy));
-  }, [initialTree]);
+  }, [initialTree, sortBy]);
 
   useCreateNewCollectionFromTreeNodeEvent({
     treeId,

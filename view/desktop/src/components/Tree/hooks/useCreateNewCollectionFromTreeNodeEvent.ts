@@ -48,5 +48,5 @@ export const useCreateNewCollectionFromTreeNodeEvent = ({
         handleCreateNewCollectionFromTreeNode as EventListener
       );
     };
-  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, treeId]);
+  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, setTree, treeId]);
 };

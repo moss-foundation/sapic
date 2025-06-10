@@ -106,5 +106,5 @@ export const useTableDragAndDrop = ({
         return;
       },
     });
-  }, [table, tableId]);
+  }, [setData, setRowSelection, setSorting, table, tableId]);
 };

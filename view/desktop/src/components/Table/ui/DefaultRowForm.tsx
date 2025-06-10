@@ -10,7 +10,7 @@ interface DefaultRowFormProps extends Omit<HTMLAttributes<HTMLFormElement>, "onI
   onInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const DefaultAddNewRowForm = ({ children, className, table, onInput, ...props }: DefaultRowFormProps) => {
+export const DefaultAddNewRowForm = ({ className, table, onInput, ...props }: DefaultRowFormProps) => {
   return (
     <form
       id={`${table.options.meta?.tableId}-AddNewRowForm`}
