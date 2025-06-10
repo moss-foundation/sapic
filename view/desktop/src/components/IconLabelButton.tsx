@@ -171,7 +171,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
         };
       }
       return () => {};
-    }, [editable, ref, isEditing]);
+    }, [editable, ref, isEditing, handleStartEdit]);
 
     return (
       <button
