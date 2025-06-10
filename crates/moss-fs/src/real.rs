@@ -1,8 +1,9 @@
 use anyhow::{Result, anyhow};
 use async_stream::stream;
 use futures::{StreamExt, stream::BoxStream};
+use moss_app::context::{Global, GlobalProvider as _};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{io, path::Path, time::Duration};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tokio::{
     fs::ReadDir,
     io::AsyncWriteExt,
@@ -13,12 +14,14 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 
-pub struct RealFileSystem;
+pub struct RealFileSystem(Arc<dyn FileSystem>);
+
+impl Global for RealFileSystem {}
 
 impl RealFileSystem {
-    pub fn new() -> Self {
-        Self
-    }
+    // pub fn new() -> Self {
+    //     Self
+    // }
 }
 
 #[async_trait::async_trait]

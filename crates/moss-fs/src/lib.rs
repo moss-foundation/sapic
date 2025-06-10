@@ -2,11 +2,12 @@ pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
+use moss_app::context::Context;
 pub use real::*;
 
 use anyhow::Result;
 use futures::stream::BoxStream;
-use std::{io, path::Path, time::Duration};
+use std::{io, path::Path, sync::Arc, time::Duration};
 use tokio::fs::ReadDir;
 
 // TODO: Rename to RemoveParams
@@ -74,4 +75,10 @@ pub trait FileSystem: Send + Sync {
         BoxStream<'static, Vec<notify::Event>>,
         notify::RecommendedWatcher,
     )>;
+}
+
+impl dyn FileSystem {
+    pub fn global(ctx: Context) -> Arc<Self> {
+        RealFileSystem::global(ctx).0.clone()
+    }
 }
