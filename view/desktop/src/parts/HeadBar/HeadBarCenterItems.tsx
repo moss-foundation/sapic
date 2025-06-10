@@ -34,7 +34,7 @@ export const HeadBarCenterItems = ({
   return (
     <div
       className={cn(
-        "flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] bg-[var(--moss-headBar-primary-background)] px-0.5",
+        "background-(--moss-headBar-primary-background) flex h-[26px] items-center rounded border border-[var(--moss-headBar-border-color)] px-0.5",
         isXLarge ? "" : os === "macos" ? "relative" : ""
       )}
       data-tauri-drag-region
@@ -45,8 +45,8 @@ export const HeadBarCenterItems = ({
         leftIconClassName="text-(--moss-headBar-icon-primary-text)"
         className={
           isMedium
-            ? "mr-[3px] h-[22px] w-[10vw] hover:bg-[var(--moss-headBar-primary-background-hover)]"
-            : "mr-[30px] h-[22px] w-[10vw] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            ? "hover:background-(--moss-headBar-primary-background-hover) mr-[3px] h-[22px] w-[10vw]"
+            : "hover:background-(--moss-headBar-primary-background-hover) mr-[30px] h-[22px] w-[10vw]"
         }
         title={collectionName}
         editable={true}
@@ -55,7 +55,7 @@ export const HeadBarCenterItems = ({
       <ActionButton
         icon="Refresh"
         iconClassName="text-(--moss-headBar-icon-primary-text)"
-        customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+        customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
         title="Reload"
       />
       <ActionMenu.Root>
@@ -63,7 +63,7 @@ export const HeadBarCenterItems = ({
           <ActionButton
             icon="MoreHorizontal"
             iconClassName="text-(--moss-headBar-icon-primary-text)"
-            customHoverBackground="hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            customHoverBackground="hover:background-(--moss-headBar-primary-background-hover)"
             className="mr-[-4px]"
             title="Collection Actions"
           />
@@ -81,7 +81,7 @@ export const HeadBarCenterItems = ({
             leftIcon="VCS"
             leftIconClassName="text-(--moss-headBar-icon-primary-text)"
             rightIcon="ChevronDown"
-            className="ml-[-2px] h-[22px] hover:bg-[var(--moss-headBar-primary-background-hover)]"
+            className="hover:background-(--moss-headBar-primary-background-hover) ml-[-2px] h-[22px]"
             title={selectedBranch || "main"}
             placeholder="No branch selected"
             showPlaceholder={!selectedBranch}

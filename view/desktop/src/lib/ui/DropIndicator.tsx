@@ -1,3 +1,4 @@
+/* eslint-disable mossLint/only-valid-token-names */
 import type { CSSProperties, HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
