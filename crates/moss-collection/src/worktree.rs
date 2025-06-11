@@ -33,7 +33,7 @@ use moss_file::toml::EditableInPlaceFileHandle;
 use moss_fs::{FileSystem, RenameOptions};
 use snapshot::{Entry, Snapshot, UnloadedEntry};
 use std::{
-    collections::{BTreeSet, HashSet},
+    collections::BTreeSet,
     path::{Path, PathBuf},
     sync::{
         Arc,
@@ -58,8 +58,8 @@ pub mod constants {
 
     use crate::worktree::snapshot::UnloadedId;
 
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
+    pub const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
+    pub const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
 
     pub(crate) const ROOT_PATH: &str = "";
     pub(crate) const ROOT_ID: Uuid = Uuid::nil();
@@ -166,7 +166,6 @@ impl Worktree {
         let current_entry = UnloadedEntry::Dir {
             id: current_entry_id,
             path: Arc::clone(&path),
-            abs_path: Arc::clone(&scanned_abs_path),
         };
 
         // Root entry has no parent, others will get parent assigned by caller
@@ -222,13 +221,11 @@ impl Worktree {
                         unloaded_entry = UnloadedEntry::Dir {
                             id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
                             path: Arc::clone(&child_path),
-                            abs_path: Arc::clone(&child_abs_path),
                         };
                     } else if child_abs_path.join(CONFIG_FILE_NAME_ITEM).exists() {
                         unloaded_entry = UnloadedEntry::Item {
                             id: next_unloaded_id.fetch_add(1, Ordering::Relaxed),
                             path: Arc::clone(&child_path),
-                            abs_path: Arc::clone(&child_abs_path),
                         };
                     } else {
                         continue;
@@ -422,8 +419,14 @@ impl Worktree {
             }
         } else {
             let config_path = match unloaded_entry {
-                UnloadedEntry::Item { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_ITEM),
-                UnloadedEntry::Dir { abs_path, .. } => abs_path.join(CONFIG_FILE_NAME_DIR),
+                UnloadedEntry::Item { path, .. } => Self::absolutize(
+                    self.abs_path.as_ref(),
+                    path.join(CONFIG_FILE_NAME_ITEM).as_path(),
+                )?,
+                UnloadedEntry::Dir { path, .. } => Self::absolutize(
+                    self.abs_path.as_ref(),
+                    path.join(CONFIG_FILE_NAME_DIR).as_path(),
+                )?,
             };
 
             let config = EditableInPlaceFileHandle::<ConfigurationModel>::load(
@@ -614,47 +617,110 @@ impl Worktree {
 
         let from_path = entry.path.clone();
 
-        // Get parent ID using the new method
-        let from_parent_id = self
-            .snapshot
-            .entry_parent_id(entry_id)
-            .unwrap_or(Uuid::nil());
-
         let new_parent = self
             .snapshot
             .entry_by_id(new_parent_id)
             .ok_or_else(|| WorktreeError::NotFound(new_parent_id.to_string()))?;
 
         let to_path = new_parent.path.join(entry.path.file_name().unwrap());
+        let to_abs_path = self.abs_path.join(&to_path);
+        if to_abs_path.exists() {
+            return Err(WorktreeError::AlreadyExists(
+                to_abs_path.to_string_lossy().to_string(),
+            ));
+        }
+        let from_abs_path = self.abs_path.join(&from_path);
 
         let mut changes = vec![];
 
-        // We need to load children of the parent since on the frontend we will expand the destination
+        // We need to load children of the new parent since on the frontend we will expand the destination
         // folder and a user needs to see the children of the destination folder.
-        changes.extend(self.load_children(&to_path).await?);
-
-        let from_abs_path = self.abs_path.join(&from_path);
-        let to_abs_path = self.abs_path.join(&to_path);
+        changes.extend(self.load_children(new_parent.path.clone().as_ref()).await?);
 
         self.fs
             .rename(&from_abs_path, &to_abs_path, RenameOptions::default())
             .await?;
+
         self.snapshot
             .entry_by_id_mut_unchecked(entry_id)
             .config_mut()
-            .reset_path(&to_abs_path);
+            .reset_path(to_abs_path);
 
+        let old_parent_id = self
+            .snapshot
+            .entry_parent_id(entry_id)
+            .expect("Non-root nodes must have a parent");
         self.snapshot.move_entry(entry_id, new_parent_id)?;
 
         changes.push(WorktreeChange::Moved {
             id: entry_id,
-            from_id: from_parent_id,
+            from_id: old_parent_id,
             to_id: new_parent_id,
-            old_path: from_path,
-            new_path: to_path.into(),
+            old_path: from_path.clone(),
+            new_path: to_path.clone().into(),
         });
 
-        // TODO: collect children of the moved entry
+        // Update the loaded children of the moving entry
+        let loaded_descendents_to_update = self.snapshot.collect_loaded_descendants(entry_id);
+
+        for id in loaded_descendents_to_update {
+            let loaded_entry = self.snapshot.entry_by_id_mut_unchecked(id);
+            let old_loaded_path = loaded_entry.path.clone();
+            let relative_path = old_loaded_path
+                .strip_prefix(&from_path)
+                .expect("Children's path must have a prefix of parent's path")
+                .to_path_buf();
+            let new_loaded_path: Arc<Path> = to_path.join(relative_path).into();
+            let new_loaded_abs_path = self.abs_path.join(&new_loaded_path);
+
+            // Update the entry path and entry config path
+            loaded_entry.path = new_loaded_path.clone().into();
+            loaded_entry
+                .config_mut()
+                .reset_path(new_loaded_abs_path.clone());
+
+            // Update the path in Snapshot's hashmap
+            self.snapshot
+                .reset_loaded_entry_path(old_loaded_path.clone(), new_loaded_path.clone())?;
+
+            let parent_id = self
+                .snapshot
+                .entry_parent_id(id)
+                .expect("Non-root nodes must have a parent");
+            changes.push(WorktreeChange::Moved {
+                id,
+                // The children's parents won't change
+                from_id: parent_id,
+                to_id: parent_id,
+                old_path: old_loaded_path,
+                new_path: new_loaded_path,
+            })
+        }
+
+        // Update all unloaded entries that are children of the entry being moved
+        let unloaded_descendants_to_update = self
+            .snapshot
+            .collect_unloaded_descendants(from_path.clone());
+
+        for id in unloaded_descendants_to_update {
+            let unloaded_entry = self
+                .snapshot
+                .unloaded_entry_by_id_mut(id)
+                .expect("Unloaded descendent must exist");
+            let old_unloaded_path = unloaded_entry.path().clone();
+            let relative_path = old_unloaded_path
+                .strip_prefix(&from_path)
+                .expect("Children's path must have a prefix of parent's path")
+                .to_path_buf();
+            let new_unloaded_path: Arc<Path> = to_path.join(relative_path).into();
+
+            // Update the unloaded entry path
+            unloaded_entry.reset_path(&new_unloaded_path);
+
+            // Update the path in Snapshot's hashmap
+            self.snapshot
+                .reset_unloaded_entry_path(old_unloaded_path, new_unloaded_path)?;
+        }
 
         Ok(WorktreeDiff::from(changes))
     }
@@ -691,14 +757,11 @@ impl Worktree {
 
         let mut changes = Vec::new();
 
-        // Move the root entry to a temporary directory for deletion
-
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // FIXME: the path is not correct, we need to rename the target entry only
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        let root_entry_abs_path = self.abs_path.join(&entry_path);
+        // Move the target entry to a temporary directory for deletion
+        let target_entry_abs_path = self.abs_path.join(&entry_path);
+        dbg!(&target_entry_abs_path);
         let temp_dir = self.abs_path.join(format!(".{}.deleted", entry_id));
-        let root_entry_name = entry.name.clone();
+        let target_entry_name = entry.name.clone();
 
         if let Err(e) = self.fs.create_dir(&temp_dir).await {
             eprintln!("Failed to create temp directory: {}", e);
@@ -708,8 +771,8 @@ impl Worktree {
         if let Err(e) = self
             .fs
             .rename(
-                &root_entry_abs_path,
-                &temp_dir.join(&root_entry_name),
+                &target_entry_abs_path,
+                &temp_dir.join(&target_entry_name),
                 RenameOptions::default(),
             )
             .await
@@ -794,9 +857,6 @@ impl Worktree {
         Ok(WorktreeDiff::from(changes))
     }
 
-    /// Walks through the worktree starting from the specified entry ID,
-    /// sending resolved entries through the provided channel.
-    /// The walk is performed in depth-first order and does not include the starting entry.
     /// Walks through the worktree starting from the specified entry ID,
     /// sending resolved entries with their parent IDs through the provided channel.
     /// The walk is performed in depth-first order and does not include the starting entry.
@@ -1273,6 +1333,267 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_move_entry_should_load_children_of_destination() {
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let item_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: item_id },
+        });
+        worktree
+            .create_entry(Path::new("item"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        let another_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: another_id },
+        });
+        worktree
+            .create_entry(Path::new("dest/another"), config)
+            .await
+            .unwrap();
+
+        drop(worktree);
+
+        // Load a fresh worktree
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(fs, temp_dir.as_path().into()).await.unwrap();
+
+        // Load the children of root entry
+        worktree.load_children(Path::new(ROOT_PATH)).await.unwrap();
+
+        // Move `entry` to `dest\entry`
+        let changes = worktree.move_entry(item_id, dest_id).await.unwrap();
+
+        // Verify move
+        assert!(!worktree.snapshot.is_loaded(Path::new("item")));
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/item")));
+
+        // Verify that the children of `dest` are also loaded
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/another")));
+
+        // Check that te move and load changes are recorded
+        assert_eq!(changes.len(), 2);
+        assert!(
+            changes
+                .iter()
+                .any(|change| matches!(change, WorktreeChange::Moved { .. }))
+        );
+        assert!(
+            changes
+                .iter()
+                .any(|change| matches!(change, WorktreeChange::Loaded { .. }))
+        );
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
+    async fn test_move_entry_with_unloaded_children() {
+        // moveme
+        // moveme/child
+        // dest
+
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let moveme_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: moveme_id },
+        });
+        worktree
+            .create_entry(Path::new("moveme"), config)
+            .await
+            .unwrap();
+
+        let moveme_child_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata {
+                id: moveme_child_id,
+            },
+        });
+        worktree
+            .create_entry(Path::new("moveme/child"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        drop(worktree);
+
+        // Load a fresh worktree
+        let fs = Arc::new(RealFileSystem::new());
+        let mut worktree = Worktree::new(fs, temp_dir.as_path().into()).await.unwrap();
+
+        // Load the children of root entry (`moveme` and `dest`, not `moveme/child`)
+        worktree.load_children(Path::new(ROOT_PATH)).await.unwrap();
+
+        // Move `moveme` to `dest/moveme`
+        let changes = worktree.move_entry(moveme_id, dest_id).await.unwrap();
+
+        // Verify move
+        assert!(!worktree.snapshot.is_loaded(Path::new("moveme")));
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/moveme")));
+
+        // Verify that the unloaded child of moveme is updated
+        assert!(
+            worktree
+                .snapshot
+                .unloaded_entry_by_path(Path::new("moveme/child"))
+                .is_none()
+        );
+        assert!(
+            worktree
+                .snapshot
+                .unloaded_entry_by_path(Path::new("dest/moveme/child"))
+                .is_some()
+        );
+
+        // Verify that all changes to the loaded entries are tracked
+        // moveme => dest/moveme
+        dbg!(&changes);
+        assert_eq!(changes.len(), 1);
+        assert_eq!(
+            changes[0],
+            WorktreeChange::Moved {
+                id: moveme_id,
+                from_id: Uuid::nil(),
+                to_id: dest_id,
+                old_path: Path::new("moveme").into(),
+                new_path: Path::new("dest/moveme").into(),
+            }
+        );
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
+    async fn test_move_entry_with_loaded_children() {
+        // moveme
+        // moveme/child
+        // dest
+
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let moveme_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: moveme_id },
+        });
+        worktree
+            .create_entry(Path::new("moveme"), config)
+            .await
+            .unwrap();
+
+        let moveme_child_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata {
+                id: moveme_child_id,
+            },
+        });
+        worktree
+            .create_entry(Path::new("moveme/child"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        // Move `moveme` to `dest/moveme`
+        let changes = worktree.move_entry(moveme_id, dest_id).await.unwrap();
+
+        // Verify moving both `moveme` and `moveme/child`
+        assert!(!worktree.snapshot.is_loaded(Path::new("moveme")));
+        assert!(!worktree.snapshot.is_loaded(Path::new("moveme/child")));
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/moveme")));
+        assert!(worktree.snapshot.is_loaded(Path::new("dest/moveme/child")));
+
+        // Verify that all changes to the loaded entries are tracked
+        // moveme => dest/moveme
+        // moveme/child => dest/moveme/child
+        assert_eq!(changes.len(), 2);
+        assert!(changes.iter().any(|change| change
+            == &WorktreeChange::Moved {
+                id: moveme_id,
+                from_id: Uuid::nil(),
+                to_id: dest_id,
+                old_path: Path::new("moveme").into(),
+                new_path: Path::new("dest/moveme").into(),
+            }));
+        assert!(changes.iter().any(|change| change
+            == &WorktreeChange::Moved {
+                id: moveme_child_id,
+                from_id: moveme_id,
+                to_id: moveme_id,
+                old_path: Path::new("moveme/child").into(),
+                new_path: Path::new("dest/moveme/child").into(),
+            }));
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
+    async fn test_move_entry_already_exists() {
+        let (mut worktree, temp_dir) = create_test_worktree().await;
+
+        let item_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: item_id },
+        });
+        worktree
+            .create_entry(Path::new("item"), config)
+            .await
+            .unwrap();
+
+        let dest_id = Uuid::new_v4();
+        let config = ConfigurationModel::Dir(DirConfigurationModel {
+            metadata: SpecificationMetadata { id: dest_id },
+        });
+        worktree
+            .create_entry(Path::new("dest"), config)
+            .await
+            .unwrap();
+
+        let existing_id = Uuid::new_v4();
+        let config = ConfigurationModel::Item(ItemConfigurationModel {
+            metadata: SpecificationMetadata { id: existing_id },
+        });
+        worktree
+            .create_entry(Path::new("dest/item"), config)
+            .await
+            .unwrap();
+
+        let move_entry_result = worktree.move_entry(item_id, dest_id).await;
+        assert!(matches!(
+            move_entry_result,
+            Err(WorktreeError::AlreadyExists { .. })
+        ));
+
+        cleanup_test_dir(&temp_dir);
+    }
+
+    #[tokio::test]
     async fn test_remove_entry_basic() {
         let (mut worktree, temp_dir) = create_test_worktree().await;
 
@@ -1445,19 +1766,25 @@ mod tests {
 
     #[tokio::test]
     async fn test_absolutize_path() {
-        let abs_path = Path::new("/project/root");
-        let rel_path = Path::new("src/module");
+        let abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let rel_path = Path::new("src").join("module");
 
-        let result = Worktree::absolutize(abs_path, rel_path).unwrap();
-        assert_eq!(result, PathBuf::from("/project/root/src/module"));
+        let result = Worktree::absolutize(&abs_path, &rel_path).unwrap();
+
+        assert_eq!(
+            result,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("src")
+                .join("module")
+        );
     }
 
     #[tokio::test]
     async fn test_absolutize_path_with_parent_dir_fails() {
-        let abs_path = Path::new("/project/root");
+        let abs_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let rel_path = Path::new("../outside");
 
-        let result = Worktree::absolutize(abs_path, rel_path);
+        let result = Worktree::absolutize(&abs_path, rel_path);
         assert!(matches!(result, Err(WorktreeError::InvalidInput(_))));
     }
 
@@ -1587,13 +1914,15 @@ mod tests {
         // Collect all received entries
         let mut received_data: Vec<(snapshot::ParentId, String)> = Vec::new();
         while let Ok((parent_id, path)) = receiver.try_recv() {
-            received_data.push((parent_id, path));
+            // Make the test work on Windows by normalizing the path separator
+            received_data.push((parent_id, path.replace('\\', "/")));
         }
 
         let received_paths: Vec<String> =
             received_data.iter().map(|(_, path)| path.clone()).collect();
 
         // Should receive all descendants of parent (but not parent itself)
+        dbg!(&received_paths);
         assert_eq!(received_paths.len(), 3);
         assert!(received_paths.contains(&"parent/child1".to_string()));
         assert!(received_paths.contains(&"parent/child2".to_string()));

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use moss_file::toml;
 use petgraph::{
     graph::{DiGraph, NodeIndex},
@@ -7,7 +7,7 @@ use petgraph::{
 };
 use std::{
     collections::{HashMap, HashSet},
-    fmt::{self, Display, Formatter},
+    fmt::{self, Debug, Display, Formatter},
     path::Path,
     sync::Arc,
 };
@@ -15,6 +15,7 @@ use uuid::Uuid;
 
 use crate::{
     configuration::ConfigurationModel,
+    models::primitives::{WorktreeChange, WorktreeDiff},
     worktree::constants::{ROOT_ID, ROOT_PATH, ROOT_UNLOADED_ID},
 };
 
@@ -24,16 +25,8 @@ pub type ParentId = Uuid;
 
 #[derive(Debug, Clone)]
 pub enum UnloadedEntry {
-    Item {
-        id: UnloadedId,
-        abs_path: Arc<Path>,
-        path: Arc<Path>,
-    },
-    Dir {
-        id: UnloadedId,
-        abs_path: Arc<Path>,
-        path: Arc<Path>,
-    },
+    Item { id: UnloadedId, path: Arc<Path> },
+    Dir { id: UnloadedId, path: Arc<Path> },
 }
 
 impl UnloadedEntry {
@@ -54,6 +47,19 @@ impl UnloadedEntry {
     pub fn is_root(&self) -> bool {
         self.id() == ROOT_UNLOADED_ID
     }
+
+    pub fn reset_path(&mut self, path: impl AsRef<Path>) {
+        let new_path: Arc<Path> = path.as_ref().into();
+
+        match *self {
+            UnloadedEntry::Item { ref mut path, .. } => {
+                *path = new_path;
+            }
+            UnloadedEntry::Dir { ref mut path, .. } => {
+                *path = new_path;
+            }
+        }
+    }
 }
 
 pub struct Entry {
@@ -62,9 +68,21 @@ pub struct Entry {
     pub path: Arc<Path>,
     pub is_dir: bool,
 
+    // TODO: Just storing an Arc<ConfigurationModel> here?
     /// The configuration file for the entry.
     /// Should always be present for non-root entries.
     pub config: Option<toml::EditableInPlaceFileHandle<ConfigurationModel>>,
+}
+
+impl Debug for Entry {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Entry")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .field("path", &self.path)
+            .field("is_dir", &self.is_dir)
+            .finish()
+    }
 }
 
 impl Entry {
@@ -153,6 +171,14 @@ impl Snapshot {
         self.unloaded_entries_by_path
             .get(path)
             .and_then(|id| self.unloaded_entries_by_id.get(id))
+    }
+
+    pub fn unloaded_entry_by_id(&self, id: UnloadedId) -> Option<&UnloadedEntry> {
+        self.unloaded_entries_by_id.get(&id)
+    }
+
+    pub fn unloaded_entry_by_id_mut(&mut self, id: UnloadedId) -> Option<&mut UnloadedEntry> {
+        self.unloaded_entries_by_id.get_mut(&id)
     }
 
     pub fn unloaded_entry_children_by_path(&self, parent_path: &Path) -> Vec<UnloadedEntry> {
@@ -251,15 +277,19 @@ impl Snapshot {
     }
 
     pub fn move_entry(&mut self, entry_id: Uuid, new_parent_id: Uuid) -> Result<()> {
+        // Move the target entry
+
+        let old_parent_id = self.entry_parent_id(entry_id).unwrap_or(Uuid::nil());
+
         let entry_idx = *self
             .entries_by_id
             .get(&entry_id)
-            .ok_or_else(|| anyhow::anyhow!("Entry not found"))?;
+            .ok_or_else(|| anyhow::anyhow!("Entry {} not found", entry_id))?;
 
         let parent_idx = *self
             .entries_by_id
             .get(&new_parent_id)
-            .ok_or_else(|| anyhow::anyhow!("New parent not found"))?;
+            .ok_or_else(|| anyhow::anyhow!("New parent {} not found", new_parent_id))?;
 
         let old_path = self.entries[entry_idx].path.clone();
         let parent_path = self.entries[parent_idx].path.clone();
@@ -269,12 +299,14 @@ impl Snapshot {
 
         self.entries_by_path.remove(&old_path);
 
-        let entry = &mut self.entries[entry_idx];
-        entry.path = new_path.clone();
+        {
+            let entry = &mut self.entries[entry_idx];
+            entry.path = new_path.clone();
+        }
 
         self.entries_by_path.insert(new_path.clone(), entry_idx);
         self.known_paths.remove(&old_path);
-        self.known_paths.insert(new_path);
+        self.known_paths.insert(new_path.clone());
 
         let old_edges: Vec<_> = self
             .entries
@@ -369,6 +401,14 @@ impl Snapshot {
         descendants
     }
 
+    pub fn collect_unloaded_descendants(&self, parent_path: Arc<Path>) -> Vec<UnloadedId> {
+        self.unloaded_entries_by_path
+            .iter()
+            .filter(|(path, _)| path.starts_with(&parent_path))
+            .map(|(_, id)| *id)
+            .collect()
+    }
+
     pub fn entry_children(&self, entry_id: Uuid) -> Vec<Uuid> {
         if let Some(entry_idx) = self.entries_by_id.get(&entry_id) {
             self.entries
@@ -378,6 +418,46 @@ impl Snapshot {
         } else {
             Vec::new()
         }
+    }
+
+    pub fn reset_loaded_entry_path(
+        &mut self,
+        old_path: Arc<Path>,
+        new_path: Arc<Path>,
+    ) -> Result<()> {
+        // Update `entries_by_path`
+        let idx = self.entries_by_path.remove(&old_path).ok_or(anyhow!(
+            "Loaded entry {} not found",
+            old_path.to_string_lossy()
+        ))?;
+        self.entries_by_path.insert(new_path.clone(), idx);
+
+        // Update `known_paths`
+        self.known_paths.remove(&old_path);
+        self.known_paths.insert(new_path);
+        Ok(())
+    }
+
+    pub fn reset_unloaded_entry_path(
+        &mut self,
+        old_path: Arc<Path>,
+        new_path: Arc<Path>,
+    ) -> Result<()> {
+        // Update `unloaded_entries_by_path`
+        let id = self
+            .unloaded_entries_by_path
+            .remove(&old_path)
+            .ok_or(anyhow!(
+                "Unloaded entry {} not found",
+                old_path.to_string_lossy()
+            ))?;
+        self.unloaded_entries_by_path
+            .insert(new_path.clone().into(), id);
+
+        // Update `known_paths`
+        self.known_paths.remove(&old_path);
+        self.known_paths.insert(new_path.clone().into());
+        Ok(())
     }
 }
 
@@ -476,7 +556,6 @@ mod tests {
             (
                 UnloadedEntry::Dir {
                     id: ROOT_UNLOADED_ID,
-                    abs_path: Path::new("/test").into(),
                     path: Path::new("").into(),
                 },
                 None,
@@ -484,7 +563,6 @@ mod tests {
             (
                 UnloadedEntry::Dir {
                     id: 1,
-                    abs_path: Path::new("/test/foo").into(),
                     path: Path::new("foo").into(),
                 },
                 Some(ROOT_UNLOADED_ID),
@@ -492,7 +570,6 @@ mod tests {
             (
                 UnloadedEntry::Item {
                     id: 2,
-                    abs_path: Path::new("/test/foo/bar").into(),
                     path: Path::new("foo/bar").into(),
                 },
                 Some(1),
@@ -500,7 +577,6 @@ mod tests {
             (
                 UnloadedEntry::Dir {
                     id: 3,
-                    abs_path: Path::new("/test/baz").into(),
                     path: Path::new("baz").into(),
                 },
                 Some(ROOT_UNLOADED_ID),
@@ -587,7 +663,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -618,7 +693,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -659,7 +733,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -708,7 +781,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -781,7 +853,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -816,7 +887,6 @@ mod tests {
         let mut snapshot = Snapshot::from(vec![(
             UnloadedEntry::Dir {
                 id: ROOT_UNLOADED_ID,
-                abs_path: Path::new("/test").into(),
                 path: Path::new("").into(),
             },
             None,
@@ -906,19 +976,16 @@ mod tests {
     fn test_unloaded_entry_methods() {
         let entry_item = UnloadedEntry::Item {
             id: 1,
-            abs_path: Path::new("/test/item").into(),
             path: Path::new("item").into(),
         };
 
         let entry_dir = UnloadedEntry::Dir {
             id: 2,
-            abs_path: Path::new("/test/dir").into(),
             path: Path::new("dir").into(),
         };
 
         let entry_root = UnloadedEntry::Dir {
             id: ROOT_UNLOADED_ID,
-            abs_path: Path::new("/test").into(),
             path: Path::new("").into(),
         };
 

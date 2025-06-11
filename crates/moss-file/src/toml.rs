@@ -182,9 +182,9 @@ where
     }
 
     pub fn reset_path(&mut self, path: impl AsRef<Path>) {
-        let path: Arc<Path> = path.as_ref().into();
+        let path = path.as_ref();
         debug_assert!(path.is_absolute());
-
-        self.abs_path = path;
+        let config_name = self.abs_path.file_name().unwrap();
+        self.abs_path = path.join(config_name).into();
     }
 }

@@ -1,8 +1,12 @@
 use moss_common::api::OperationResult;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     collection::Collection,
+    configuration::{
+        ConfigurationModel, DirConfigurationModel, ItemConfigurationModel, SpecificationMetadata,
+    },
     models::operations::{CreateEntryInput, CreateEntryOutput},
 };
 
@@ -13,31 +17,20 @@ impl Collection {
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        // TODO: validate specification
-
-        let content = if let Some(value) = input.specification {
-            Some(serde_json::to_vec(&value)?)
+        let id = Uuid::new_v4();
+        let config = if input.is_dir {
+            ConfigurationModel::Dir(DirConfigurationModel {
+                metadata: SpecificationMetadata { id },
+            })
         } else {
-            None
+            ConfigurationModel::Item(ItemConfigurationModel {
+                metadata: SpecificationMetadata { id },
+            })
         };
 
-        // let worktree = self.worktree_mut().await?;
-        // let changes = worktree
-        //     .create_entry(
-        //         input.destination,
-        //         input.order,
-        //         input.protocol,
-        //         content,
-        //         input.classification,
-        //         input.is_dir,
-        //     )
-        //     .await?;
+        let mut worktree = self.worktree().await?.write().await;
+        let changes = worktree.create_entry(&input.destination, config).await?;
 
-        // Ok(CreateEntryOutput {
-        //     physical_changes: changes.physical_changes,
-        //     virtual_changes: changes.virtual_changes,
-        // })
-
-        todo!()
+        Ok(CreateEntryOutput { changes })
     }
 }

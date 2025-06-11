@@ -9,15 +9,8 @@ impl Collection {
         &mut self,
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
-        // let worktree = self.worktree_mut().await?;
-
-        // let changes = worktree.delete_entry_by_virtual_id(input.id).await?;
-
-        // Ok(DeleteEntryOutput {
-        //     physical_changes: changes.physical_changes,
-        //     virtual_changes: changes.virtual_changes,
-        // })
-
-        todo!()
+        let mut worktree = self.worktree().await?.write().await;
+        let changes = worktree.remove_entry(input.id).await?;
+        Ok(DeleteEntryOutput { changes })
     }
 }
