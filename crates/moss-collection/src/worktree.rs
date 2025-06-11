@@ -646,7 +646,81 @@ impl Worktree {
             .config_mut()
             .reset_path(to_abs_path);
 
-        changes.extend(self.snapshot.move_entry(entry_id, new_parent_id)?);
+        let old_parent_id = self
+            .snapshot
+            .entry_parent_id(entry_id)
+            .expect("Non-root nodes must have a parent");
+        self.snapshot.move_entry(entry_id, new_parent_id)?;
+
+        changes.push(WorktreeChange::Moved {
+            id: entry_id,
+            from_id: old_parent_id,
+            to_id: new_parent_id,
+            old_path: from_path.clone(),
+            new_path: to_path.clone().into(),
+        });
+
+        // Update the loaded children of the moving entry
+        let loaded_descendents_to_update = self.snapshot.collect_loaded_descendants(entry_id);
+
+        for id in loaded_descendents_to_update {
+            let loaded_entry = self.snapshot.entry_by_id_mut_unchecked(id);
+            let old_loaded_path = loaded_entry.path.clone();
+            let relative_path = old_loaded_path
+                .strip_prefix(&from_path)
+                .expect("Children's path must have a prefix of parent's path")
+                .to_path_buf();
+            let new_loaded_path: Arc<Path> = to_path.join(relative_path).into();
+            let new_loaded_abs_path = self.abs_path.join(&new_loaded_path);
+
+            // Update the entry path and entry config path
+            loaded_entry.path = new_loaded_path.clone().into();
+            loaded_entry
+                .config_mut()
+                .reset_path(new_loaded_abs_path.clone());
+
+            // Update the path in Snapshot's hashmap
+            self.snapshot
+                .reset_loaded_entry_path(old_loaded_path.clone(), new_loaded_path.clone())?;
+
+            let parent_id = self
+                .snapshot
+                .entry_parent_id(id)
+                .expect("Non-root nodes must have a parent");
+            changes.push(WorktreeChange::Moved {
+                id,
+                // The children's parents won't change
+                from_id: parent_id,
+                to_id: parent_id,
+                old_path: old_loaded_path,
+                new_path: new_loaded_path,
+            })
+        }
+
+        // Update all unloaded entries that are children of the entry being moved
+        let unloaded_descendants_to_update = self
+            .snapshot
+            .collect_unloaded_descendants(from_path.clone());
+
+        for id in unloaded_descendants_to_update {
+            let unloaded_entry = self
+                .snapshot
+                .unloaded_entry_by_id_mut(id)
+                .expect("Unloaded descendent must exist");
+            let old_unloaded_path = unloaded_entry.path().clone();
+            let relative_path = old_unloaded_path
+                .strip_prefix(&from_path)
+                .expect("Children's path must have a prefix of parent's path")
+                .to_path_buf();
+            let new_unloaded_path: Arc<Path> = to_path.join(relative_path).into();
+
+            // Update the unloaded entry path
+            unloaded_entry.reset_path(&new_unloaded_path);
+
+            // Update the path in Snapshot's hashmap
+            self.snapshot
+                .reset_unloaded_entry_path(old_unloaded_path, new_unloaded_path)?;
+        }
 
         Ok(WorktreeDiff::from(changes))
     }
@@ -1393,6 +1467,7 @@ mod tests {
 
         // Verify that all changes to the loaded entries are tracked
         // moveme => dest/moveme
+        dbg!(&changes);
         assert_eq!(changes.len(), 1);
         assert_eq!(
             changes[0],
