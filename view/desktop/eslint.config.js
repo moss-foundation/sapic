@@ -18,7 +18,6 @@ export default [
           paths: ["src"],
           extensions: [".js", ".jsx", ".ts", ".d.ts", ".tsx"],
         },
-
         typescript: {
           project: "./tsconfig.json",
         },
@@ -33,6 +32,5 @@ export default [
         },
       },
     },
-    ignores: ["moss-tabs/**/*"],
   },
 ];
