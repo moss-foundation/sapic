@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use moss_app::manager::AppManager;
+use moss_app::{context::AppContext, manager::AppManager};
 use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::{
     locale_service::LocaleService,

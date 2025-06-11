@@ -41,7 +41,7 @@ pub struct OpenWorkspaceOutput {
 
 // Create Workspace
 
-#[derive(Debug, Validate, Deserialize, TS)]
+#[derive(Debug, Validate, Deserialize, TS, Clone)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceInput {

@@ -159,7 +159,6 @@ fn workspace_manager<R: tauri::Runtime>(
     move |_, app_handle| {
         Workbench::new(
             app_handle.clone(),
-            fs,
             global_storage,
             WorkbenchOptions { abs_path },
         )

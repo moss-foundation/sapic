@@ -1,4 +1,5 @@
 use anyhow::Context;
+use moss_app::context::AppContext;
 use moss_common::api::{OperationResult, OperationResultExt};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
@@ -7,10 +8,14 @@ use validator::Validate;
 use crate::{models::operations::UpdateWorkspaceInput, workbench::Workbench};
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn update_workspace(&self, input: &UpdateWorkspaceInput) -> OperationResult<()> {
+    pub async fn update_workspace(
+        &self,
+        ctx: &AppContext<R>,
+        input: &UpdateWorkspaceInput,
+    ) -> OperationResult<()> {
         input.validate()?;
 
-        let workspaces = self.workspaces().await?;
+        let workspaces = self.workspaces(ctx).await?;
         let workspace = self
             .active_workspace()
             .context("No active workspace")

@@ -3128,6 +3128,7 @@ dependencies = [
  "moss_text",
  "notify",
  "regex",
+ "tauri",
  "tokio",
  "tokio-stream",
 ]

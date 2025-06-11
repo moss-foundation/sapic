@@ -1,7 +1,9 @@
 use anyhow::Context as _;
 use chrono::Utc;
+use moss_app::context::{AppContext, Context};
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
+use moss_fs::FileSystem;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::{Workspace, workspace::CreateParams};
 use std::{
@@ -20,8 +22,9 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn create_workspace(
+    pub async fn create_workspace<C: Context>(
         &self,
+        ctx: &C,
         input: &CreateWorkspaceInput,
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
@@ -36,22 +39,22 @@ impl<R: TauriRuntime> Workbench<R> {
             ));
         }
 
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let workspaces = self
-            .workspaces()
+            .workspaces(ctx)
             .await
             .context("Failed to get known workspaces")
             .map_err_as_internal()?;
 
-        self.fs
-            .create_dir(&abs_path)
+        fs.create_dir(&abs_path)
             .await
             .context("Failed to create workspace")
             .map_err_as_internal()?;
 
         let new_workspace = Workspace::create(
-            self.app_handle.clone(),
+            ctx,
             &abs_path,
-            Arc::clone(&self.fs),
+            // Arc::clone(&self.fs),
             self.activity_indicator.clone(),
             CreateParams {
                 name: Some(input.name.clone()),

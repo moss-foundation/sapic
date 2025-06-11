@@ -2,12 +2,13 @@ pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
-use moss_app::context::Context;
+use moss_app::context::{AppContext, AppContextBuilder, Context, Global};
 pub use real::*;
 
 use anyhow::Result;
 use futures::stream::BoxStream;
 use std::{io, path::Path, sync::Arc, time::Duration};
+use tauri::Runtime as TauriRuntime;
 use tokio::fs::ReadDir;
 
 // TODO: Rename to RemoveParams
@@ -77,8 +78,16 @@ pub trait FileSystem: Send + Sync {
     )>;
 }
 
+pub struct GlobalFileSystem(Arc<dyn FileSystem>);
+
+impl Global for GlobalFileSystem {}
+
 impl dyn FileSystem {
-    pub fn global(ctx: Context) -> Arc<Self> {
-        RealFileSystem::global(ctx).0.clone()
+    pub fn global<R: TauriRuntime, C: Context>(ctx: &C) -> Arc<Self> {
+        ctx.global::<GlobalFileSystem>().0.clone()
+    }
+
+    pub fn set_global<R: TauriRuntime>(fs: Arc<Self>, builder: &mut AppContextBuilder<R>) {
+        builder.set_global(GlobalFileSystem(fs));
     }
 }

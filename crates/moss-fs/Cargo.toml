@@ -16,3 +16,4 @@ notify.workspace = true
 futures.workspace = true
 async-stream.workspace = true
 tokio-stream.workspace = true
+tauri.workspace = true

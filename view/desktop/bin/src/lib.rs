@@ -9,9 +9,10 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::manager::AppManager;
-use moss_fs::RealFileSystem;
+use moss_app::{context::AppContextBuilder, manager::AppManager};
+use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::global_storage::GlobalStorageImpl;
+use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use services::service_pool;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
@@ -48,9 +49,25 @@ pub async fn run<R: TauriRuntime>() {
                 GlobalStorageImpl::new(&app_dir).expect("Failed to create global storage"),
             );
 
-            let service_pool = service_pool(app_handle, &app_dir, fs.clone(), global_storage);
+            let workbench = Workbench::new(
+                app_handle.clone(),
+                global_storage,
+                WorkbenchOptions {
+                    abs_path: app_dir.clone().into(),
+                },
+            );
+
+            app_handle.manage(workbench);
+
+            let service_pool = service_pool(&app_handle, &app_dir, fs.clone(), global_storage);
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
             app_handle.manage(app_manager);
+
+            let mut context_builder = AppContextBuilder::new();
+            <dyn FileSystem>::set_global(fs, &mut context_builder);
+            let ctx = context_builder.build(app_handle.clone());
+
+            app_handle.manage(ctx);
 
             Ok(())
         })

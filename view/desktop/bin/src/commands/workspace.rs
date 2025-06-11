@@ -1,4 +1,4 @@
-use moss_app::manager::AppManager;
+use moss_app::{context::AppContext, manager::AppManager};
 use moss_tauri::{TauriError, TauriResult};
 use moss_workbench::workbench::Workbench;
 use moss_workspace::models::{
@@ -10,6 +10,7 @@ use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
 pub async fn update_workspace_state<R: TauriRuntime>(
+    _: State<'_, AppContext<R>>,
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
     input: UpdateStateInput,
@@ -53,8 +54,9 @@ pub async fn describe_workspace_state<R: TauriRuntime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager), fields(window = window.label(), channel = channel.id()))]
+#[instrument(level = "trace", skip(app_manager, ctx), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_workspace_environments<R: TauriRuntime>(
+    ctx: State<'_, AppContext<R>>,
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
@@ -69,7 +71,7 @@ pub async fn stream_workspace_environments<R: TauriRuntime>(
         .active_workspace()
         .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
 
-    current_workspace.stream_environments(channel).await?;
+    current_workspace.stream_environments(&ctx, channel).await?;
 
     Ok(())
 }
