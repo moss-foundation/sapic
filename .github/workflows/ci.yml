@@ -257,7 +257,7 @@ jobs:
         run: pnpm install
 
       - name: Install Dependencies for desktop # TODO: This is a hack to get around eslint issues
-        run: cd desktop && pnpm install --force
+        run: cd view/desktop && pnpm install --force
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
