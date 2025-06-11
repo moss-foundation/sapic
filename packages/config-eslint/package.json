@@ -3,6 +3,9 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
+  "exports": {
+    ".": "./index.js"
+  },
   "devDependencies": {
     "@typescript-eslint/rule-tester": "^8.34.0",
     "eslint": "^9.28.0",
@@ -10,5 +13,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "typescript-eslint": "^8.34.0"
+  },
+  "peerDependencies": {
+    "eslint": ">= 9"
   }
 }
