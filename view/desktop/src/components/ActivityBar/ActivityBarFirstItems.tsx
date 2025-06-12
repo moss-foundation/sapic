@@ -49,7 +49,7 @@ export const ActivityBarFirstItems = () => {
             key={item.id}
             className={cn("relative flex flex-col", {
               "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-              "py-1.5": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+              "py-[3px]": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
             })}
           >
             <ActivityBarButton key={item.id} {...item} />
