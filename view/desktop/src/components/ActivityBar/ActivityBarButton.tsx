@@ -123,7 +123,7 @@ export const ActivityBarButton = ({
       <Icon
         icon={isActive && visible ? iconActive : icon}
         className={cn({
-          "size-5": position === ACTIVITYBAR_POSITION.DEFAULT,
+          "size-4.5": position === ACTIVITYBAR_POSITION.DEFAULT,
         })}
       />
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
