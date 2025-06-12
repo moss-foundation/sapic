@@ -9,24 +9,30 @@ use crate::shared::setup_test_workspace_manager;
 
 #[tokio::test]
 async fn rename_workspace_success() {
-    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: old_workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: old_workspace_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: true,
+            },
+        )
         .await
         .unwrap();
     let id = create_workspace_output.id;
 
     let new_workspace_name = random_workspace_name();
     let update_workspace_result = workspace_manager
-        .update_workspace(&UpdateWorkspaceInput {
-            name: Some(new_workspace_name.clone()),
-        })
+        .update_workspace(
+            &ctx,
+            &UpdateWorkspaceInput {
+                name: Some(new_workspace_name.clone()),
+            },
+        )
         .await;
     assert!(update_workspace_result.is_ok());
 
@@ -36,7 +42,7 @@ async fn rename_workspace_success() {
     assert_eq!(active_workspace.manifest().await.name, new_workspace_name);
 
     // Check updating known_workspaces
-    let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+    let list_workspaces_output = workspace_manager.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces_output.len(), 1);
     assert_eq!(list_workspaces_output[0].id, id);
     assert_eq!(list_workspaces_output[0].display_name, new_workspace_name);
@@ -46,23 +52,29 @@ async fn rename_workspace_success() {
 
 #[tokio::test]
 async fn rename_workspace_empty_name() {
-    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let old_workspace_name = random_workspace_name();
     workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: old_workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: old_workspace_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: true,
+            },
+        )
         .await
         .unwrap();
 
     let new_workspace_name = "";
     let update_workspace_result = workspace_manager
-        .update_workspace(&UpdateWorkspaceInput {
-            name: Some(new_workspace_name.to_string()),
-        })
+        .update_workspace(
+            &ctx,
+            &UpdateWorkspaceInput {
+                name: Some(new_workspace_name.to_string()),
+            },
+        )
         .await;
 
     assert!(update_workspace_result.is_err());
@@ -76,24 +88,30 @@ async fn rename_workspace_empty_name() {
 
 #[tokio::test]
 async fn rename_workspace_unchanged() {
-    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let create_workspace_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: workspace_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: true,
+            },
+        )
         .await
         .unwrap();
     let id = create_workspace_output.id;
 
     // Rename to same name
     let update_workspace_result = workspace_manager
-        .update_workspace(&UpdateWorkspaceInput {
-            name: Some(workspace_name.clone()),
-        })
+        .update_workspace(
+            &ctx,
+            &UpdateWorkspaceInput {
+                name: Some(workspace_name.clone()),
+            },
+        )
         .await;
 
     // This should be a no-op
@@ -104,7 +122,7 @@ async fn rename_workspace_unchanged() {
     assert_eq!(active_workspace.id, id);
 
     // Check known_workspaces unchanged
-    let list_workspaces_output = workspace_manager.list_workspaces().await.unwrap();
+    let list_workspaces_output = workspace_manager.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces_output.len(), 1);
     assert_eq!(list_workspaces_output[0].id, id);
     assert_eq!(list_workspaces_output[0].display_name, workspace_name);
@@ -114,13 +132,16 @@ async fn rename_workspace_unchanged() {
 
 #[tokio::test]
 async fn rename_workspace_not_opened() {
-    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     // Try renaming a workspace with a non-existent ID
     let update_workspace_result = workspace_manager
-        .update_workspace(&UpdateWorkspaceInput {
-            name: Some(random_workspace_name()),
-        })
+        .update_workspace(
+            &ctx,
+            &UpdateWorkspaceInput {
+                name: Some(random_workspace_name()),
+            },
+        )
         .await;
 
     assert!(update_workspace_result.is_err());

@@ -1,10 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::{
-    context::{AppContext, Context},
-    service::prelude::AppService,
-};
+use moss_app::{context::Context, service::prelude::AppService};
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -13,7 +10,6 @@ use moss_storage::{
 use moss_workspace::Workspace;
 use std::{
     collections::HashMap,
-    marker::PhantomData,
     ops::Deref,
     path::{Path, PathBuf},
     sync::Arc,
@@ -93,7 +89,7 @@ impl<R: TauriRuntime> Workbench<R> {
         })));
     }
 
-    pub(super) async fn workspaces<C: Context>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
+    pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {

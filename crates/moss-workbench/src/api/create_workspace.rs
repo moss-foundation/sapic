@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use chrono::Utc;
-use moss_app::context::{AppContext, Context};
+use moss_app::context::Context;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
@@ -22,7 +22,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn create_workspace<C: Context>(
+    pub async fn create_workspace<C: Context<R>>(
         &self,
         ctx: &C,
         input: &CreateWorkspaceInput,

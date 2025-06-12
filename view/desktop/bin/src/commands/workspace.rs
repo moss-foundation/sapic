@@ -1,77 +1,97 @@
-use moss_app::{context::AppContext, manager::AppManager};
+use moss_app::context::Context;
 use moss_tauri::{TauriError, TauriResult};
-use moss_workbench::workbench::Workbench;
 use moss_workspace::models::{
     events::StreamEnvironmentsEvent,
     operations::{DescribeStateOutput, UpdateStateInput},
 };
-use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
+use tauri::{Runtime as TauriRuntime, Window, ipc::Channel as TauriChannel};
+
+use crate::{commands::ReadWorkbench, primitives::AppState};
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
+#[instrument(level = "trace", skip(state), fields(window = window.label()))]
 pub async fn update_workspace_state<R: TauriRuntime>(
-    _: State<'_, AppContext<R>>,
-    app_manager: State<'_, AppManager<R>>,
+    state: AppState<'_, R>,
     window: Window<R>,
     input: UpdateStateInput,
 ) -> TauriResult<()> {
-    let app_handle = app_manager.app_handle();
-    let workbench = app_manager
-        .services()
-        .get_by_type::<Workbench<R>>(&app_handle)
-        .await?;
+    let task = state.spawn::<(), TauriError, _, _>(
+        move |ctx| async move {
+            let workbench = ctx.workbench();
+            let current_workspace = workbench
+                .active_workspace()
+                .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
+            current_workspace.update_state(input).await?;
+            Ok(())
+        },
+        None, // TODO: add timeout
+    );
 
-    let current_workspace = workbench
-        .active_workspace()
-        .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
-    current_workspace.update_state(input).await?;
-
-    Ok(())
+    match task.await {
+        moss_app::context::TaskResult::Ok(result) => Ok(result),
+        moss_app::context::TaskResult::Err(err) => Err(err),
+        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
+        moss_app::context::TaskResult::Cancelled => {
+            Err(TauriError("Task was cancelled".to_string()))
+        }
+    }
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
+#[instrument(level = "trace", skip(state), fields(window = window.label()))]
 pub async fn describe_workspace_state<R: TauriRuntime>(
-    app_manager: State<'_, AppManager<R>>,
+    state: AppState<'_, R>,
     window: Window<R>,
 ) -> TauriResult<DescribeStateOutput> {
-    let app_handle = app_manager.app_handle();
-    let workbench = app_manager
-        .services()
-        .get_by_type::<Workbench<R>>(&app_handle)
-        .await?;
+    let task = state.spawn::<DescribeStateOutput, TauriError, _, _>(
+        move |ctx| async move {
+            let workbench = ctx.workbench();
+            let current_workspace = workbench
+                .active_workspace()
+                .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
+            let output = current_workspace.describe_state().await?;
+            Ok(output)
+        },
+        None, // TODO: add timeout
+    );
 
-    let current_workspace = workbench
-        .active_workspace()
-        .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
-
-    let output = current_workspace
-        .describe_state()
-        .await
-        .map_err(|err| TauriError(format!("Failed to describe layout parts state: {}", err)))?;
-
-    Ok(output)
+    match task.await {
+        moss_app::context::TaskResult::Ok(result) => Ok(result),
+        moss_app::context::TaskResult::Err(err) => Err(err),
+        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
+        moss_app::context::TaskResult::Cancelled => {
+            Err(TauriError("Task was cancelled".to_string()))
+        }
+    }
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager, ctx), fields(window = window.label(), channel = channel.id()))]
+#[instrument(level = "trace", skip(state), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_workspace_environments<R: TauriRuntime>(
-    ctx: State<'_, AppContext<R>>,
-    app_manager: State<'_, AppManager<R>>,
+    state: AppState<'_, R>,
     window: Window<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
 ) -> TauriResult<()> {
-    let app_handle = app_manager.app_handle();
-    let workbench = app_manager
-        .services()
-        .get_by_type::<Workbench<R>>(&app_handle)
-        .await?;
+    let task = state.spawn::<(), TauriError, _, _>(
+        move |ctx| async move {
+            let workbench = ctx.workbench();
+            let current_workspace = workbench
+                .active_workspace()
+                .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
+            current_workspace
+                .stream_environments(&*ctx, channel)
+                .await?;
+            Ok(())
+        },
+        None, // TODO: add timeout
+    );
 
-    let current_workspace = workbench
-        .active_workspace()
-        .ok_or_else(|| TauriError("No active workspace".to_string()))?; // TODO: improve error handling
-
-    current_workspace.stream_environments(&ctx, channel).await?;
-
-    Ok(())
+    match task.await {
+        moss_app::context::TaskResult::Ok(result) => Ok(result),
+        moss_app::context::TaskResult::Err(err) => Err(err),
+        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
+        moss_app::context::TaskResult::Cancelled => {
+            Err(TauriError("Task was cancelled".to_string()))
+        }
+    }
 }

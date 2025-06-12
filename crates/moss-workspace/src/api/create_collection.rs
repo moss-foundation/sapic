@@ -25,7 +25,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn create_collection<C: Context>(
+    pub async fn create_collection<C: Context<R>>(
         &self,
         ctx: &C,
         input: CreateCollectionInput,

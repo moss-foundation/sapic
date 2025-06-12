@@ -11,7 +11,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn delete_workspace<C: Context>(
+    pub async fn delete_workspace<C: Context<R>>(
         &self,
         ctx: &C,
         input: &DeleteWorkspaceInput,

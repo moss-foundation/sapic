@@ -1,8 +1,9 @@
 mod commands;
-pub mod constants;
+mod constants;
 mod mem;
 mod menu;
 mod plugins;
+mod primitives;
 mod services;
 mod window;
 
@@ -20,7 +21,7 @@ use tauri_plugin_os;
 
 use window::{CreateWindowInput, create_window};
 
-use crate::{constants::*, plugins::*};
+use crate::{commands::StateContext, constants::*, plugins::*};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
@@ -59,7 +60,7 @@ pub async fn run<R: TauriRuntime>() {
 
             app_handle.manage(workbench);
 
-            let service_pool = service_pool(&app_handle, &app_dir, fs.clone(), global_storage);
+            let service_pool = service_pool(&app_handle, fs.clone());
             let app_manager = AppManager::new(app_handle.clone(), service_pool);
             app_handle.manage(app_manager);
 
@@ -67,7 +68,7 @@ pub async fn run<R: TauriRuntime>() {
             <dyn FileSystem>::set_global(fs, &mut context_builder);
             let ctx = context_builder.build(app_handle.clone());
 
-            app_handle.manage(ctx);
+            app_handle.manage(StateContext::from(ctx));
 
             Ok(())
         })

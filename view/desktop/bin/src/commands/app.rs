@@ -1,6 +1,5 @@
 use anyhow::anyhow;
-use moss_app::{context::AppContext, manager::AppManager};
-use moss_logging::{LogPayload, LogScope, LoggingService};
+use moss_app::manager::AppManager;
 use moss_nls::{
     locale_service::LocaleService,
     models::operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
@@ -22,7 +21,6 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
-use moss_workbench::workbench::Workbench;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
@@ -102,24 +100,6 @@ pub async fn describe_app_state<R: TauriRuntime>(
         .get_by_type::<StateService<R>>(&app_handle)
         .await?;
 
-    let workspace_manager = app_manager
-        .services()
-        .get_by_type::<Workbench<R>>(&app_handle)
-        .await?;
-
-    // HACK: This is a hack to get the last workspace name
-    let last_workspace_name = workspace_manager
-        .active_workspace()
-        .map(|active_workspace| {
-            active_workspace
-                .inner
-                .abs_path()
-                .file_name()
-                .unwrap()
-                .to_string_lossy()
-                .to_string()
-        });
-
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
             theme: state_service.preferences().theme.read().clone(),
@@ -129,7 +109,7 @@ pub async fn describe_app_state<R: TauriRuntime>(
             theme: state_service.defaults().theme.clone(),
             locale: state_service.defaults().locale.clone(),
         },
-        last_workspace: last_workspace_name, // Some("TestWorkspace".to_string())
+        last_workspace: None, // Some("TestWorkspace".to_string())
     })
 }
 

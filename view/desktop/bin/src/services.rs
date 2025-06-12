@@ -4,21 +4,13 @@ use moss_logging::LoggingService;
 use moss_nls::locale_service::LocaleService;
 use moss_session::SessionService;
 use moss_state::service::{AppDefaults, StateService};
-use moss_storage::GlobalStorage;
 use moss_theme::theme_service::ThemeService;
-use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
-use std::{
-    marker::PhantomData,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
+use std::{marker::PhantomData, path::PathBuf, sync::Arc};
+use tauri::{AppHandle, Runtime as TauriRuntime};
 
 pub fn service_pool<R: TauriRuntime>(
     app_handle: &AppHandle<R>,
-    app_dir: &PathBuf,
     fs: Arc<dyn FileSystem>,
-    global_storage: Arc<dyn GlobalStorage>,
 ) -> ServicePool<R> {
     let mut builder = ServicePoolBuilder::new();
 
@@ -45,13 +37,6 @@ pub fn service_pool<R: TauriRuntime>(
     builder.register(
         Instantiation::Instant(
             logging_service(session_service_key, fs.clone()),
-            PhantomData,
-        ),
-        app_handle,
-    );
-    builder.register(
-        Instantiation::Instant(
-            workspace_manager(fs.clone(), global_storage.clone(), app_dir),
             PhantomData,
         ),
         app_handle,
@@ -146,21 +131,5 @@ fn logging_service<R: TauriRuntime>(
             session_service.get_session_uuid(),
         )
         .unwrap()
-    }
-}
-
-fn workspace_manager<R: tauri::Runtime>(
-    fs: Arc<dyn FileSystem>,
-    global_storage: Arc<dyn GlobalStorage>,
-    app_dir: &PathBuf,
-) -> impl FnOnce(&ServicePool<R>, &AppHandle<R>) -> Workbench<R> + Send + Sync + 'static {
-    let abs_path: Arc<Path> = app_dir.clone().into();
-
-    move |_, app_handle| {
-        Workbench::new(
-            app_handle.clone(),
-            global_storage,
-            WorkbenchOptions { abs_path },
-        )
     }
 }

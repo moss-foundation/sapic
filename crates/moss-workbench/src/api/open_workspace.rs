@@ -1,5 +1,5 @@
 use chrono::Utc;
-use moss_app::context::AppContext;
+use moss_app::context::Context;
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
@@ -14,9 +14,9 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn open_workspace(
+    pub async fn open_workspace<C: Context<R>>(
         &self,
-        ctx: &AppContext<R>,
+        ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspaces = self.workspaces(ctx).await?;

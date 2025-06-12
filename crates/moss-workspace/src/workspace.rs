@@ -1,6 +1,6 @@
 use anyhow::{Context as _, Result};
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::context::{AppContext, Context};
+use moss_app::context::Context;
 use moss_collection::collection::Collection;
 use moss_environment::environment::{self, Environment};
 use moss_file::toml::EditableInPlaceFileHandle;
@@ -20,7 +20,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
-use tauri::{AppHandle, Runtime as TauriRuntime};
+use tauri::Runtime as TauriRuntime;
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
@@ -100,7 +100,7 @@ pub struct ModifyParams {
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn load<C: Context>(
+    pub async fn load<C: Context<R>>(
         ctx: &C,
         // app_handle: AppHandle<R>,
         abs_path: &Path,
@@ -137,7 +137,7 @@ impl<R: TauriRuntime> Workspace<R> {
         })
     }
 
-    pub async fn create<C: Context>(
+    pub async fn create<C: Context<R>>(
         ctx: &C,
         abs_path: &Path,
         // fs: Arc<dyn FileSystem>,
@@ -194,7 +194,7 @@ impl<R: TauriRuntime> Workspace<R> {
         Ok(())
     }
 
-    pub async fn summary<C: Context>(ctx: &C, abs_path: &Path) -> Result<WorkspaceSummary> {
+    pub async fn summary<C: Context<R>>(ctx: &C, abs_path: &Path) -> Result<WorkspaceSummary> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
 
         let manifest =
@@ -216,7 +216,7 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
-    pub async fn environments<C: Context>(&self, ctx: &C) -> Result<&RwLock<EnvironmentMap>> {
+    pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<EnvironmentMap>> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .environments
@@ -272,7 +272,7 @@ impl<R: TauriRuntime> Workspace<R> {
         Ok(result)
     }
 
-    pub async fn collections<C: Context>(&self, ctx: &C) -> Result<&RwLock<CollectionMap>> {
+    pub async fn collections<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<CollectionMap>> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .collections

@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::Context as _;
-use moss_app::context::{AppContext, Context};
+use moss_app::context::Context;
 use moss_common::api::OperationResult;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::storage::operations::RemoveItem;
@@ -18,7 +18,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn delete_collection<C: Context>(
+    pub async fn delete_collection<C: Context<R>>(
         &self,
         ctx: &C,
         input: DeleteCollectionInput,

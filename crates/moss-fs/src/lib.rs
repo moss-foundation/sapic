@@ -2,7 +2,7 @@ pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
-use moss_app::context::{AppContext, AppContextBuilder, Context, Global};
+use moss_app::context::{AppContextBuilder, Context, Global};
 pub use real::*;
 
 use anyhow::Result;
@@ -83,7 +83,7 @@ pub struct GlobalFileSystem(Arc<dyn FileSystem>);
 impl Global for GlobalFileSystem {}
 
 impl dyn FileSystem {
-    pub fn global<R: TauriRuntime, C: Context>(ctx: &C) -> Arc<Self> {
+    pub fn global<R: TauriRuntime, C: Context<R>>(ctx: &C) -> Arc<Self> {
         ctx.global::<GlobalFileSystem>().0.clone()
     }
 

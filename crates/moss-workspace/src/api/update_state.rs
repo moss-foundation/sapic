@@ -48,7 +48,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let mut txn = self.storage.begin_write()?;
 
         let value = AnyValue::serialize(&EditorGridStateEntity::from(part_state.grid))?;
-        dbg!(&value);
+
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,

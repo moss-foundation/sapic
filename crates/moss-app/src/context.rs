@@ -13,11 +13,11 @@ use tokio::{sync::oneshot, time::Instant};
 
 pub trait Global: 'static {}
 
-pub trait ReadGlobal<R: TauriRuntime> {
-    fn global(cx: &AppContext<R>) -> &Self;
+pub trait ReadGlobal<R: TauriRuntime, C: Context<R>> {
+    fn global(ctx: &C) -> &Self;
 }
 
-pub trait Context: Send + Sync {
+pub trait Context<R: TauriRuntime>: Send + Sync {
     fn global<T>(&self) -> Arc<T>
     where
         T: Global + Any + Send + Sync;
@@ -130,7 +130,7 @@ pub struct AppContext<R: TauriRuntime> {
     globals_by_type: Arc<FxHashMap<TypeId, Arc<dyn Any + Send + Sync>>>,
 }
 
-impl<R: TauriRuntime> Context for AppContext<R> {
+impl<R: TauriRuntime> Context<R> for AppContext<R> {
     fn global<T>(&self) -> Arc<T>
     where
         T: Global + Any + Send + Sync,
