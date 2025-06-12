@@ -37,7 +37,7 @@ export const ActivityBarFirstItems = () => {
 
   return (
     <div
-      className={cn("flex gap-1.5", {
+      className={cn("flex gap-3", {
         "flex-col": position === ACTIVITYBAR_POSITION.DEFAULT,
         "flex-row": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
       })}
