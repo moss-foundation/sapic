@@ -1,6 +1,6 @@
 use chrono::Utc;
 use moss_common::api::{OperationError, OperationResult};
-use moss_db::primitives::AnyValue;
+use moss_db::anyvalue_enum::AnyValueEnum;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
 use std::sync::Arc;
@@ -74,7 +74,7 @@ impl<R: TauriRuntime> Workbench<R> {
             let id_str = descriptor.id.to_string();
             let item_store = self.global_storage.item_store();
             let segkey = WORKSPACE_SEGKEY.join(id_str);
-            let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
+            let value = AnyValueEnum::serialize(&WorkspaceInfoEntity { last_opened_at })?;
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 

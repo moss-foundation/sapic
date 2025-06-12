@@ -1,4 +1,6 @@
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
+use moss_db::{
+    DatabaseClient, DatabaseResult, ReDbClient, Transaction, anyvalue_enum::AnyValueEnum,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -26,7 +28,7 @@ impl GlobalItemStoreImpl {
 
 impl ListByPrefix for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         let read_txn = self.client.begin_read()?;
@@ -36,7 +38,7 @@ impl ListByPrefix for GlobalItemStoreImpl {
 
 impl TransactionalListByPrefix for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn list_by_prefix(
         &self,
@@ -49,7 +51,7 @@ impl TransactionalListByPrefix for GlobalItemStoreImpl {
 
 impl PutItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
         let mut txn = self.client.begin_write()?;
@@ -60,7 +62,7 @@ impl PutItem for GlobalItemStoreImpl {
 
 impl TransactionalPutItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn put(
         &self,
@@ -73,7 +75,7 @@ impl TransactionalPutItem for GlobalItemStoreImpl {
 }
 impl RemoveItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut txn = self.client.begin_write()?;
@@ -85,7 +87,7 @@ impl RemoveItem for GlobalItemStoreImpl {
 
 impl TransactionalRemoveItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.remove(txn, key)
@@ -94,7 +96,7 @@ impl TransactionalRemoveItem for GlobalItemStoreImpl {
 
 impl GetItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let read_txn = self.client.begin_read()?;
@@ -104,7 +106,7 @@ impl GetItem for GlobalItemStoreImpl {
 
 impl TransactionalGetItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.read(&txn, key)

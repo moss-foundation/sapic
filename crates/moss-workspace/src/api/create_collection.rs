@@ -1,7 +1,7 @@
 use anyhow::Context as _;
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
-use moss_db::primitives::AnyValue;
+use moss_db::anyvalue_enum::AnyValueEnum;
 use moss_storage::{
     storage::operations::PutItem,
     workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
@@ -80,7 +80,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         {
             let key = COLLECTION_SEGKEY.join(&id_str);
-            let value = AnyValue::serialize(&CollectionCacheEntity {
+            let value = AnyValueEnum::serialize(&CollectionCacheEntity {
                 order: order.clone(),
                 external_abs_path: None,
             })?;

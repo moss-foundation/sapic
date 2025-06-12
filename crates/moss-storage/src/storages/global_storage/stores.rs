@@ -1,4 +1,4 @@
-use moss_db::primitives::AnyValue;
+use moss_db::anyvalue_enum::AnyValueEnum;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
@@ -11,14 +11,14 @@ use crate::{
 pub mod item_store;
 
 pub trait GlobalItemStore:
-    ListByPrefix<Key = SegKeyBuf, Entity = AnyValue>
-    + TransactionalListByPrefix<Key = SegKeyBuf, Entity = AnyValue>
-    + PutItem<Key = SegKeyBuf, Entity = AnyValue>
-    + TransactionalPutItem<Key = SegKeyBuf, Entity = AnyValue>
-    + RemoveItem<Key = SegKeyBuf, Entity = AnyValue>
-    + TransactionalRemoveItem<Key = SegKeyBuf, Entity = AnyValue>
-    + GetItem<Key = SegKeyBuf, Entity = AnyValue>
-    + TransactionalGetItem<Key = SegKeyBuf, Entity = AnyValue>
+    ListByPrefix<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + TransactionalListByPrefix<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + PutItem<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + TransactionalPutItem<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + RemoveItem<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + TransactionalRemoveItem<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + GetItem<Key = SegKeyBuf, Entity = AnyValueEnum>
+    + TransactionalGetItem<Key = SegKeyBuf, Entity = AnyValueEnum>
     + Send
     + Sync
 {

@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
 use moss_common::api::OperationResult;
-use moss_db::primitives::AnyValue;
+use moss_db::anyvalue_enum::AnyValueEnum;
 use moss_storage::{
     storage::operations::TransactionalPutItem,
     workspace_storage::entities::state_store_entities::{
         EditorGridStateEntity, EditorPanelStateEntity,
     },
 };
+use std::collections::HashMap;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -47,7 +46,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let item_store = self.storage.item_store();
         let mut txn = self.storage.begin_write()?;
 
-        let value = AnyValue::serialize(&EditorGridStateEntity::from(part_state.grid))?;
+        let value = AnyValueEnum::serialize(&EditorGridStateEntity::from(part_state.grid))?;
         dbg!(&value);
         TransactionalPutItem::put(
             item_store.as_ref(),
@@ -56,7 +55,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize::<HashMap<String, EditorPanelStateEntity>>(
+        let value = AnyValueEnum::serialize::<HashMap<String, EditorPanelStateEntity>>(
             &part_state
                 .panels
                 .into_iter()
@@ -70,7 +69,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.active_group)?;
+        let value = AnyValueEnum::serialize(&part_state.active_group)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -85,7 +84,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let item_store = self.storage.item_store();
         let mut txn = self.storage.begin_write()?;
 
-        let value = AnyValue::serialize(&part_state.position)?;
+        let value = AnyValueEnum::serialize(&part_state.position)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -93,7 +92,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.size)?;
+        let value = AnyValueEnum::serialize(&part_state.size)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -101,7 +100,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.visible)?;
+        let value = AnyValueEnum::serialize(&part_state.visible)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -116,7 +115,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let item_store = self.storage.item_store();
         let mut txn = self.storage.begin_write()?;
 
-        let value = AnyValue::serialize(&part_state.visible)?;
+        let value = AnyValueEnum::serialize(&part_state.visible)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -124,7 +123,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.size)?;
+        let value = AnyValueEnum::serialize(&part_state.size)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -142,7 +141,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let item_store = self.storage.item_store();
         let mut txn = self.storage.begin_write()?;
 
-        let value = AnyValue::serialize(&part_state.last_active_container_id)?;
+        let value = AnyValueEnum::serialize(&part_state.last_active_container_id)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
@@ -150,7 +149,7 @@ impl<R: TauriRuntime> Workspace<R> {
             value,
         )?;
 
-        let value = AnyValue::serialize(&part_state.position)?;
+        let value = AnyValueEnum::serialize(&part_state.position)?;
         TransactionalPutItem::put(
             item_store.as_ref(),
             &mut txn,
