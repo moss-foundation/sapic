@@ -2,11 +2,12 @@ import { create } from "zustand";
 
 import { Icons } from "@/lib/ui/Icon";
 import {
+  ActivitybarPartStateInfo,
+  ActivitybarPosition,
   TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
 } from "@repo/moss-workspace";
-import { ActivitybarPartStateInfo, ActivitybarPosition } from "@repo/moss-workspace";
 
 export interface ActivityBarItem {
   id: string;
@@ -37,8 +38,8 @@ const defaultItems: ActivityBarItem[] = [
     "id": TREE_VIEW_GROUP_COLLECTIONS,
     "title": "Collections",
     "order": 1,
-    "icon": "Folder",
-    "iconActive": "FolderActive",
+    "icon": "Home",
+    "iconActive": "HomeActive",
     "isActive": true,
     "visible": true,
   },
@@ -46,8 +47,8 @@ const defaultItems: ActivityBarItem[] = [
     "id": TREE_VIEW_GROUP_ENVIRONMENTS,
     "title": "Environments",
     "order": 2,
-    "icon": "Env",
-    "iconActive": "EnvActive",
+    "icon": "JsonPath",
+    "iconActive": "JsonPathActive",
     "isActive": false,
     "visible": true,
   },
@@ -57,6 +58,15 @@ const defaultItems: ActivityBarItem[] = [
     "order": 3,
     "icon": "WebServer",
     "iconActive": "WebServerActive",
+    "isActive": false,
+    "visible": true,
+  },
+  {
+    "id": "4",
+    "title": "Preferences",
+    "order": 4,
+    "icon": "Wrench",
+    "iconActive": "WrenchActive",
     "isActive": false,
     "visible": true,
   },

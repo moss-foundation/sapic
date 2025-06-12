@@ -1,19 +1,18 @@
 import { useTranslation } from "react-i18next";
 
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
-
 import SelectOutlined from "@/components/SelectOutlined";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useDescribeAppState } from "@/hooks/appState/useDescribeAppState";
 import { useListColorThemes } from "@/hooks/colorTheme/useListColorThemes";
 import { useSetColorTheme } from "@/hooks/colorTheme/useSetColorTheme";
 import { useListLocales } from "@/hooks/locales/useListLocales";
 import { useSetLocale } from "@/hooks/locales/useSetLocale";
-import { useActivityBarStore } from "@/store/activityBar";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
-import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
+import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ColorThemeInfo } from "@repo/moss-theme";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
 
 export const Settings = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
