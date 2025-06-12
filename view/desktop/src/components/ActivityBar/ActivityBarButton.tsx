@@ -25,7 +25,6 @@ export const ActivityBarButton = ({
   ...props
 }: ActivityBarItem & ComponentPropsWithoutRef<"button">) => {
   const ref = useRef<HTMLButtonElement | null>(null);
-
   const { position, setActiveItem } = useActivityBarStore();
   const { setVisible, visible } = useAppResizableLayoutStore((state) => state.sideBar);
 
@@ -121,7 +120,12 @@ export const ActivityBarButton = ({
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      <Icon icon={isActive && visible ? iconActive : icon} className="size-5" />
+      <Icon
+        icon={isActive && visible ? iconActive : icon}
+        className={cn({
+          "size-5": position === ACTIVITYBAR_POSITION.DEFAULT,
+        })}
+      />
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
       {preview &&
         createPortal(
