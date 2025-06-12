@@ -10,9 +10,9 @@ export const ActivityBarLastItems = () => {
   const { position } = useActivityBarStore();
   return (
     <div
-      className={cn("flex gap-3", {
-        "flex-col": position === ACTIVITYBAR_POSITION.DEFAULT,
-        "flex-row": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+      className={cn("flex", {
+        "flex-col gap-3": position === ACTIVITYBAR_POSITION.DEFAULT,
+        "flex-row gap-1": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
       <ActivityBarButton
