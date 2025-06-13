@@ -11,33 +11,33 @@ export const useTabbedPaneDropTarget = (
   const [canDrop, setCanDrop] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
 
-  const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
-    setIsDragging(true);
-
-    const sourceTarget = getActualDropSourceTarget(source);
-
-    if (sourceTarget?.node?.type === "TreeNode" || sourceTarget?.node?.uniqueId) {
-      setCanDrop(true);
-    } else {
-      setCanDrop(false);
-      return;
-    }
-
-    if (source) setPragmaticDropElement(sourceTarget);
-    else {
-      setPragmaticDropElement(null);
-      setCanDrop(false);
-    }
-  };
-
-  const clearDropTarget = () => {
-    setIsDragging(false);
-    setPragmaticDropElement(null);
-    setCanDrop(false);
-  };
-
   React.useEffect(() => {
     if (!dockviewRef.current) return;
+
+    const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
+      setIsDragging(true);
+
+      const sourceTarget = getActualDropSourceTarget(source);
+
+      if (sourceTarget?.node?.type === "TreeNode" || sourceTarget?.node?.uniqueId) {
+        setCanDrop(true);
+      } else {
+        setCanDrop(false);
+        return;
+      }
+
+      if (source) setPragmaticDropElement(sourceTarget);
+      else {
+        setPragmaticDropElement(null);
+        setCanDrop(false);
+      }
+    };
+
+    const clearDropTarget = () => {
+      setIsDragging(false);
+      setPragmaticDropElement(null);
+      setCanDrop(false);
+    };
 
     return dropTargetForElements({
       element: dockviewRef.current,
@@ -46,7 +46,7 @@ export const useTabbedPaneDropTarget = (
       onDragLeave: clearDropTarget,
       onDrop: clearDropTarget,
     });
-  }, [setPragmaticDropElement]);
+  }, [dockviewRef, setPragmaticDropElement]);
 
   return { canDrop, isDragging };
 };

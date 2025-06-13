@@ -88,6 +88,7 @@ run-desktop:
 .PHONY: ready
 ready: gen-icons export-css-variables
 	$(PNPM) i
+	cd $(DESKTOP_DIR) && $(PNPM) i --force
 
 ## Icon generator tool
 .PHONY: gen-icons
@@ -164,6 +165,7 @@ gen-bindings: \
 export-css-variables:
 	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
+	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
 
 ## Count Lines of Code
 .PHONY: loc

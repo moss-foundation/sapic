@@ -50,7 +50,9 @@ export const Tree = ({
   onNodeClick,
   onNodeDoubleClick,
 }: TreeProps) => {
-  const treeId = id || useId();
+  const reactId = useId();
+  const treeId = id || reactId;
+
   const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree, sortBy));
 
   const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
@@ -66,7 +68,7 @@ export const Tree = ({
 
   useEffect(() => {
     setTree(prepareCollectionForTree(initialTree, sortBy));
-  }, [initialTree]);
+  }, [initialTree, sortBy]);
 
   useCreateNewCollectionFromTreeNodeEvent({
     treeId,
