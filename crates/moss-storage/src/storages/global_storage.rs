@@ -1,6 +1,6 @@
 use moss_db::{
-    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
-    primitives::AnyValue,
+    DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, anyvalue_enum::AnyValueEnum,
+    bincode_table::BincodeTable,
 };
 use redb::TableHandle;
 use serde_json::{Value as JsonValue, json};
@@ -16,7 +16,7 @@ use crate::{
 pub mod entities;
 pub mod stores;
 
-pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
+pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValueEnum> = BincodeTable::new("items");
 pub struct GlobalStorageImpl {
     client: ReDbClient,
     tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
@@ -46,10 +46,7 @@ impl Storage for GlobalStorageImpl {
             let name = table.table_definition().name().to_string();
             let mut table_entries = HashMap::new();
             for (k, v) in table.scan(&read_txn)? {
-                table_entries.insert(
-                    k.to_string(),
-                    serde_json::from_slice::<JsonValue>(v.as_bytes())?,
-                );
+                table_entries.insert(k.to_string(), serde_json::to_value(&v)?);
             }
             result.insert(format!("table:{}", name), json!(table_entries));
         }

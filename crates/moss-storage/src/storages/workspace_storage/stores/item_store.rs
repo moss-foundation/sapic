@@ -1,4 +1,6 @@
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
+use moss_db::{
+    DatabaseClient, DatabaseResult, ReDbClient, Transaction, anyvalue_enum::AnyValueEnum,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -26,7 +28,7 @@ impl WorkspaceItemStoreImpl {
 
 impl ListByPrefix for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         let read_txn = self.client.begin_read()?;
@@ -36,7 +38,7 @@ impl ListByPrefix for WorkspaceItemStoreImpl {
 
 impl TransactionalListByPrefix for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn list_by_prefix(
         &self,
@@ -49,7 +51,7 @@ impl TransactionalListByPrefix for WorkspaceItemStoreImpl {
 
 impl PutItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn put(&self, key: Self::Key, entity: Self::Entity) -> DatabaseResult<()> {
         let mut write_txn = self.client.begin_write()?;
@@ -60,7 +62,7 @@ impl PutItem for WorkspaceItemStoreImpl {
 
 impl TransactionalPutItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn put(
         &self,
@@ -74,7 +76,7 @@ impl TransactionalPutItem for WorkspaceItemStoreImpl {
 
 impl GetItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn get(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let read_txn = self.client.begin_read()?;
@@ -84,7 +86,7 @@ impl GetItem for WorkspaceItemStoreImpl {
 
 impl TransactionalGetItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn get(&self, txn: &Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.read(txn, key)
@@ -93,7 +95,7 @@ impl TransactionalGetItem for WorkspaceItemStoreImpl {
 
 impl RemoveItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn remove(&self, key: Self::Key) -> DatabaseResult<Self::Entity> {
         let mut write_txn = self.client.begin_write()?;
@@ -105,7 +107,7 @@ impl RemoveItem for WorkspaceItemStoreImpl {
 
 impl TransactionalRemoveItem for WorkspaceItemStoreImpl {
     type Key = SegKeyBuf;
-    type Entity = AnyValue;
+    type Entity = AnyValueEnum;
 
     fn remove(&self, txn: &mut Transaction, key: Self::Key) -> DatabaseResult<Self::Entity> {
         self.table.remove(txn, key)

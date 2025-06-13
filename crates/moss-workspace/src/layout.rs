@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_db::{Transaction, primitives::AnyValue};
+use moss_db::{Transaction, anyvalue_enum::AnyValueEnum};
 use moss_storage::{
     WorkspaceStorage,
     primitives::segkey::SegKeyBuf,
@@ -157,7 +157,7 @@ impl LayoutService {
         )?
         .into_iter()
         .map(|(segkey, value)| (segkey, value))
-        .collect::<HashMap<SegKeyBuf, AnyValue>>();
+        .collect::<HashMap<SegKeyBuf, AnyValueEnum>>();
 
         Ok(SidebarPartStateInfo {
             position: get_from_cache::<SidebarPosition>(
@@ -194,7 +194,7 @@ impl LayoutService {
         )?
         .into_iter()
         .map(|(segkey, value)| (segkey, value))
-        .collect::<HashMap<SegKeyBuf, AnyValue>>();
+        .collect::<HashMap<SegKeyBuf, AnyValueEnum>>();
 
         Ok(ActivitybarPartStateInfo {
             last_active_container_id: get_from_cache::<String>(
@@ -256,7 +256,7 @@ impl LayoutService {
         )?
         .into_iter()
         .map(|(segkey, value)| (segkey, value))
-        .collect::<HashMap<SegKeyBuf, AnyValue>>();
+        .collect::<HashMap<SegKeyBuf, AnyValueEnum>>();
 
         Ok(PanelPartStateInfo {
             size: get_from_cache::<usize>(&mut panel_cache, PART_PANEL_SEGKEY.join("size"))
@@ -281,7 +281,7 @@ impl LayoutService {
         )?
         .into_iter()
         .map(|(segkey, value)| (segkey, value))
-        .collect::<HashMap<SegKeyBuf, AnyValue>>();
+        .collect::<HashMap<SegKeyBuf, AnyValueEnum>>();
 
         let grid = get_from_cache::<EditorGridStateEntity>(
             &mut editor_cache,
@@ -315,7 +315,7 @@ impl LayoutService {
 }
 
 fn get_from_cache<T: DeserializeOwned>(
-    cache: &mut HashMap<SegKeyBuf, AnyValue>,
+    cache: &mut HashMap<SegKeyBuf, AnyValueEnum>,
     key: SegKeyBuf,
 ) -> Option<T> {
     cache
