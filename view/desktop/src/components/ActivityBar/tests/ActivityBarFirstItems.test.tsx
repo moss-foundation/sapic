@@ -88,7 +88,6 @@ describe("ActivityBarFirstItems", () => {
   };
 
   const createDropPayload = (sourceData?: any, targetData?: any) => {
-    const symbol = Symbol("closestEdge");
     return {
       location: {
         current: {
@@ -96,7 +95,6 @@ describe("ActivityBarFirstItems", () => {
             ? [
                 {
                   data: targetData,
-                  [symbol]: targetData?.edge,
                 },
               ]
             : [],
@@ -147,6 +145,22 @@ describe("ActivityBarFirstItems", () => {
     expect(setItemsMock).toHaveBeenCalledTimes(1);
     const updatedItems = setItemsMock.mock.calls[0][0];
     expect(updatedItems.map((item: ActivityBarItem) => item.id)).toEqual(["1", "4", "2", "3"]);
+  });
+
+  it("valid: should reorder item when dropped successfully with bottom edge", () => {
+    render(<ActivityBarFirstItems />);
+
+    extractClosestEdgeMock.mockReturnValue("bottom");
+
+    const sourceData = createActivityBarButtonData(MOCK_ITEMS[3]);
+    const targetData = createActivityBarButtonData(MOCK_ITEMS[1]);
+    const dropPayload = createDropPayload(sourceData, targetData);
+
+    onDropHandler?.(dropPayload);
+
+    expect(setItemsMock).toHaveBeenCalledTimes(1);
+    const updatedItems = setItemsMock.mock.calls[0][0];
+    expect(updatedItems.map((item: ActivityBarItem) => item.id)).toEqual(["1", "2", "4", "3"]);
   });
 
   it("invalid: should not reorder when no drop target is provided", () => {
