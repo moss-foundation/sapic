@@ -16,7 +16,7 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tracing::{Level, debug, error, info, subscriber::DefaultGuard, trace, warn};
+use tracing::{Level, debug, error, info, trace, warn};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::filter_fn,
@@ -65,7 +65,6 @@ pub struct LoggingService {
     _applog_writerguard: WorkerGuard,
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
-    _subscriber_guard: DefaultGuard,
 }
 
 impl LoggingService {
@@ -154,7 +153,7 @@ impl LoggingService {
                     })),
             );
 
-        let _subscriber_guard = tracing::subscriber::set_default(subscriber);
+        tracing::subscriber::set_global_default(subscriber)?;
         Ok(Self {
             fs,
             applog_path: applog_path.to_path_buf(),
@@ -164,7 +163,6 @@ impl LoggingService {
             _applog_writerguard,
             _sessionlog_writerguard,
             _taurilog_writerguard,
-            _subscriber_guard,
         })
     }
 }
