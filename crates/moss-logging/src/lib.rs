@@ -16,7 +16,7 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tracing::{Level, debug, error, info, subscriber::DefaultGuard, trace, warn};
+use tracing::{Level, debug, error, info, trace, warn};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{
     filter::filter_fn,
