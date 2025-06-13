@@ -88,6 +88,7 @@ run-desktop:
 .PHONY: ready
 ready: gen-icons export-css-variables
 	$(PNPM) i
+	cd $(DESKTOP_DIR) && $(PNPM) i --force
 
 ## Icon generator tool
 .PHONY: gen-icons

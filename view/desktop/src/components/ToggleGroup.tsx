@@ -1,12 +1,13 @@
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
-import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
+
 import { cn } from "@/utils";
+import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 
 interface ToggleGroupRootProps {
   className?: string;
 }
 
-const toggleGroupStyles = "flex items-center rounded bg-[var(--moss-headBar-primary-background)]";
+const toggleGroupStyles = "flex items-center rounded background-(--moss-headBar-primary-background)";
 
 const Root = forwardRef<
   ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -46,7 +47,7 @@ const Item = forwardRef<
 
 Item.displayName = "ToggleGroup.Item";
 
-export { Root, Item };
+export { Item, Root };
 
 const ToggleGroup = { Root, Item };
 export default ToggleGroup;

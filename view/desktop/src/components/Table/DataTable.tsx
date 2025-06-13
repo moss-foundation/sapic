@@ -73,6 +73,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
       colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
     }
     return colSizes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -143,7 +144,7 @@ export function DataTable({ columns, data: initialData, onTableApiSet }: DataTab
         >
           <div role="rowgroup">
             {table.getHeaderGroups().map((headerGroup) => (
-              <div role="row" key={headerGroup.id} className="flex bg-(--moss-table-header-bg)">
+              <div role="row" key={headerGroup.id} className="background-(--moss-table-header-bg) flex">
                 {headerGroup.headers.map((header) => (
                   <DefaultHeader tableHeight={tableHeight} key={header.id} header={header} />
                 ))}

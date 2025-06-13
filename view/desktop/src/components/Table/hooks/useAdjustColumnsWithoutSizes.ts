@@ -18,6 +18,7 @@ export const useAdjustColumnsWithoutSizes = ({ table, tableContainerRef }: Adjus
       const initialColumnSizing = calculateTableSizing(headers, tableContainerRef.current?.clientWidth);
       table.setColumnSizing(initialColumnSizing);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
 
