@@ -1,6 +1,7 @@
 use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
+    future::Future,
     marker::PhantomData,
     ops::Deref,
     pin::Pin,
@@ -60,15 +61,14 @@ impl<R: TauriRuntime> AppContextBuilder<R> {
     }
 }
 
-pub enum TaskResult<T, E> {
-    Ok(T),
+pub enum TaskError<E> {
     Err(E),
     Timeout,
     Cancelled,
 }
 
 pub struct Task<T, E> {
-    inner: Pin<Box<dyn Future<Output = TaskResult<T, E>> + Send>>,
+    inner: Pin<Box<dyn Future<Output = Result<T, TaskError<E>>> + Send>>,
     cancel: Option<oneshot::Sender<()>>,
 }
 
@@ -84,20 +84,20 @@ impl<T: Send + 'static, E: Send + 'static> Task<T, E> {
                     let deadline = Instant::now() + duration;
                     tokio::select! {
                         res = future => match res {
-                            Ok(val) => TaskResult::Ok(val),
-                            Err(e) => TaskResult::Err(e),
+                            Ok(val) => Ok(val),
+                            Err(e) => Err(TaskError::Err(e)),
                         },
-                        _ = &mut rx => TaskResult::Cancelled,
-                        _ = tokio::time::sleep(deadline.saturating_duration_since(Instant::now())) => TaskResult::Timeout,
+                        _ = &mut rx => Err(TaskError::Cancelled),
+                        _ = tokio::time::sleep(deadline.saturating_duration_since(Instant::now())) => Err(TaskError::Timeout),
                     }
                 }
                 None => {
                     tokio::select! {
                         res = future => match res {
-                            Ok(val) => TaskResult::Ok(val),
-                            Err(e) => TaskResult::Err(e),
+                            Ok(val) => Ok(val),
+                            Err(e) => Err(TaskError::Err(e)),
                         },
-                        _ = &mut rx => TaskResult::Cancelled,
+                        _ = &mut rx => Err(TaskError::Cancelled),
                     }
                 }
             }
@@ -117,7 +117,7 @@ impl<T: Send + 'static, E: Send + 'static> Task<T, E> {
 }
 
 impl<T: Send + 'static, E: Send + 'static> Future for Task<T, E> {
-    type Output = TaskResult<T, E>;
+    type Output = Result<T, TaskError<E>>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut TaskContext<'_>) -> Poll<Self::Output> {
         self.inner.as_mut().poll(cx)

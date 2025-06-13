@@ -28,4 +28,14 @@ impl From<moss_common::api::OperationError> for TauriError {
     }
 }
 
+impl<E: std::fmt::Display> From<moss_app::context::TaskError<E>> for TauriError {
+    fn from(err: moss_app::context::TaskError<E>) -> Self {
+        match err {
+            moss_app::context::TaskError::Err(e) => TauriError(e.to_string()),
+            moss_app::context::TaskError::Timeout => TauriError("Task timed out".to_string()),
+            moss_app::context::TaskError::Cancelled => TauriError("Task was cancelled".to_string()),
+        }
+    }
+}
+
 pub type TauriResult<T> = Result<T, TauriError>;

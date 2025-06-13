@@ -1,6 +1,7 @@
 use moss_app::context::Context;
 use moss_tauri::{TauriError, TauriResult};
 use moss_workbench::models::operations::*;
+use std::time::Duration;
 use tauri::{Runtime as TauriRuntime, Window};
 
 use crate::{commands::ReadWorkbench, primitives::AppState};
@@ -22,17 +23,10 @@ pub async fn create_workspace<R: TauriRuntime>(
 
             Ok(workspace_output)
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }
 
 #[tauri::command(async)]
@@ -47,17 +41,10 @@ pub async fn list_workspaces<R: TauriRuntime>(
             let workspaces = workbench.list_workspaces(&ctx).await?;
             Ok(workspaces)
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }
 
 #[tauri::command(async)]
@@ -73,17 +60,10 @@ pub async fn delete_workspace<R: TauriRuntime>(
             workbench.delete_workspace(&ctx, &input).await?;
             Ok(())
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }
 
 #[tauri::command(async)]
@@ -99,17 +79,10 @@ pub async fn open_workspace<R: TauriRuntime>(
             let workspace_output = workbench.open_workspace(&ctx, &input).await?;
             Ok(workspace_output)
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }
 
 #[tauri::command(async)]
@@ -125,17 +98,10 @@ pub async fn update_workspace<R: TauriRuntime>(
             workbench.update_workspace(&ctx, &input).await?;
             Ok(())
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }
 
 #[tauri::command(async)]
@@ -150,15 +116,8 @@ pub async fn describe_workbench_state<R: TauriRuntime>(
             let state = workbench.describe_state().await?;
             Ok(state)
         },
-        None, // TODO: add timeout
+        Some(Duration::from_secs(30)),
     );
 
-    match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
-        moss_app::context::TaskResult::Err(err) => Err(err),
-        moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
-        moss_app::context::TaskResult::Cancelled => {
-            Err(TauriError("Task was cancelled".to_string()))
-        }
-    }
+    Ok(task.await?)
 }

@@ -3007,7 +3007,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "fnv",
- "moss_tauri",
  "parking_lot",
  "rustc-hash",
  "slotmap",
@@ -3253,6 +3252,7 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_app",
  "moss_common",
  "serde",
  "serde_json",

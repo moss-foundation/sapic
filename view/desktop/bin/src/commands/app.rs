@@ -22,7 +22,6 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
-use moss_workbench::workbench::Workbench;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
@@ -40,7 +39,8 @@ pub async fn set_color_theme<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(&app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     for (label, _) in app_handle.webview_windows() {
         if window.label() == &label {
@@ -72,7 +72,8 @@ pub async fn get_color_theme<R: TauriRuntime>(
     let theme_service = app_manager
         .services()
         .get_by_type::<ThemeService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
 
     Ok(theme_service.get_color_theme(input).await?)
 }
@@ -87,7 +88,8 @@ pub async fn list_color_themes<R: TauriRuntime>(
     let theme_service = app_manager
         .services()
         .get_by_type::<ThemeService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
 
     Ok(theme_service.list_color_themes().await?)
 }
@@ -103,7 +105,8 @@ pub async fn describe_app_state<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(&app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     let workbench = state.workbench();
 
@@ -142,7 +145,8 @@ pub async fn set_locale<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     state_service.set_locale(input);
 
@@ -159,7 +163,8 @@ pub async fn list_locales<R: TauriRuntime>(
     let locale_service = app_manager
         .services()
         .get_by_type::<LocaleService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get locale service: {}", err))?;
 
     Ok(locale_service.list_locales().await?)
 }
@@ -175,7 +180,8 @@ pub async fn get_translations<R: TauriRuntime>(
     let locale_service = app_manager
         .services()
         .get_by_type::<LocaleService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get locale service: {}", err))?;
 
     Ok(locale_service.get_translations(&input).await?)
 }
@@ -192,7 +198,8 @@ pub async fn execute_command<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     match state_service.get_command(&cmd) {
         Some(command_handler) => {
