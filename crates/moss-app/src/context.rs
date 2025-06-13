@@ -88,7 +88,7 @@ impl<T: Send + 'static, E: Send + 'static> Task<T, E> {
                             Err(e) => Err(TaskError::Err(e)),
                         },
                         _ = &mut rx => Err(TaskError::Cancelled),
-                        _ = tokio::time::sleep(deadline.saturating_duration_since(Instant::now())) => Err(TaskError::Timeout),
+                        _ = tokio::time::sleep_until(deadline) => Err(TaskError::Timeout),
                     }
                 }
                 None => {
