@@ -10,6 +10,6 @@ fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
 slotmap.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["full"] }
 parking_lot.workspace = true
 rustc-hash.workspace = true
