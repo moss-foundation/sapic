@@ -2,11 +2,12 @@ import { create } from "zustand";
 
 import { Icons } from "@/lib/ui/Icon";
 import {
+  ActivitybarPartStateInfo,
+  ActivitybarPosition,
   TREE_VIEW_GROUP_COLLECTIONS,
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
 } from "@repo/moss-workspace";
-import { ActivitybarPartStateInfo, ActivitybarPosition } from "@repo/moss-workspace";
 
 export interface ActivityBarItem {
   id: string;

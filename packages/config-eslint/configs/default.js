@@ -1,11 +1,16 @@
+import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
+import importX, { createNodeResolver } from "eslint-plugin-import-x";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
-import reactRefreshPlugin from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+
+import tseslintParser from "@typescript-eslint/parser";
 
 import mossLintPlugin from "../moss-lint-plugin/index.js";
 
 export default tseslint.config(
   ...tseslint.configs.recommended,
+  importX.flatConfigs.recommended,
+  importX.flatConfigs.typescript,
   {
     ignores: [
       "node_modules/",
@@ -21,19 +26,43 @@ export default tseslint.config(
     ],
   },
   {
-    languageOptions: {},
-    settings: {},
+    languageOptions: {
+      parser: tseslintParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+    },
+    settings: {
+      "import-x/resolver-next": [
+        createTypeScriptImportResolver({
+          project: ["tsconfig.json"],
+        }),
+        createNodeResolver({
+          "extensions": [".js", ".jsx", ".ts", ".tsx", ".json"],
+        }),
+      ],
+      react: {
+        version: "detect",
+      },
+    },
+    rules: {
+      "import-x/default": "off",
+      "import-x/no-named-as-default": "off",
+      "import-x/no-named-as-default-member": "off",
+      "import-x/namespace": [1, { allowComputed: true }],
+    },
+  },
+  {
     files: ["**/*.{ts,tsx,js,jsx}"],
     plugins: {
       "react-hooks": reactHooksPlugin,
-      "react-refresh": reactRefreshPlugin,
       "@typescript-eslint": tseslint.plugin,
       mossLint: mossLintPlugin,
     },
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {
