@@ -116,7 +116,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   }, [
     workspaceId,
     activityBarState.position,
-    activityBarState.topItems,
+    activityBarState.items,
     activityBarState.lastActiveContainerId,
     updateActivitybarPartState,
     toWorkspaceState,
