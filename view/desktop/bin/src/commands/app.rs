@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
+use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::{
     locale_service::LocaleService,
     models::operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
@@ -21,9 +22,12 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
+use moss_workbench::workbench::Workbench;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
+
+use crate::{commands::ReadWorkbench, primitives::AppState};
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
@@ -89,8 +93,9 @@ pub async fn list_color_themes<R: TauriRuntime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
+#[instrument(level = "trace", skip(app_manager, state), fields(window = window.label()))]
 pub async fn describe_app_state<R: TauriRuntime>(
+    state: AppState<'_, R>,
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
 ) -> TauriResult<DescribeAppStateOutput> {
@@ -99,6 +104,19 @@ pub async fn describe_app_state<R: TauriRuntime>(
         .services()
         .get_by_type::<StateService<R>>(&app_handle)
         .await?;
+
+    let workbench = state.workbench();
+
+    // HACK: This is a hack to get the last workspace name
+    let last_workspace_name = workbench.active_workspace().map(|active_workspace| {
+        active_workspace
+            .inner
+            .abs_path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_string()
+    });
 
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
@@ -109,7 +127,7 @@ pub async fn describe_app_state<R: TauriRuntime>(
             theme: state_service.defaults().theme.clone(),
             locale: state_service.defaults().locale.clone(),
         },
-        last_workspace: None, // Some("TestWorkspace".to_string())
+        last_workspace: last_workspace_name, // Some("TestWorkspace".to_string())
     })
 }
 

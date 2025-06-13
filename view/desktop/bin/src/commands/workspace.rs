@@ -56,7 +56,10 @@ pub async fn describe_workspace_state<R: TauriRuntime>(
     );
 
     match task.await {
-        moss_app::context::TaskResult::Ok(result) => Ok(result),
+        moss_app::context::TaskResult::Ok(result) => {
+            dbg!(&result);
+            Ok(result)
+        }
         moss_app::context::TaskResult::Err(err) => Err(err),
         moss_app::context::TaskResult::Timeout => Err(TauriError("Task timed out".to_string())),
         moss_app::context::TaskResult::Cancelled => {
