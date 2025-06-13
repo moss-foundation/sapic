@@ -16,6 +16,9 @@ export const ActivityBarFirstItems = () => {
 
   useEffect(() => {
     return monitorForElements({
+      canMonitor({ source }) {
+        return source.data.type === "ActivityBarButton";
+      },
       onDrop({ location, source }) {
         const target = location.current.dropTargets[0];
         if (!target) return;

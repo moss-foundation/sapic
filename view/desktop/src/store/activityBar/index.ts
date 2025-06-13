@@ -19,7 +19,7 @@ export interface ActivityBarItem {
   visible?: boolean;
 }
 
-interface ActivityBarStore {
+export interface ActivityBarStore {
   items: ActivityBarItem[];
   position: ActivitybarPosition;
   lastActiveContainerId: string | null;
