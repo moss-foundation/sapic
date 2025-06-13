@@ -9,6 +9,13 @@ use crate::shared::set_up_logging_service;
 
 mod shared;
 
+/// These tests can work one at a time, but cannot be executed together using `cargo test`.
+/// This is because LoggingService will set a global default subscriber.
+/// However, it can only be set once per a program,
+/// While the `cargo test` model will run every test as part of the same program.
+/// Thus, they are marked as ignored.
+
+#[ignore]
 #[tokio::test]
 async fn test_delete_log_from_queue() {
     let (logging_service, applog_path) = set_up_logging_service().await;
@@ -54,6 +61,7 @@ async fn test_delete_log_from_queue() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_delete_log_from_file() {
     let (logging_service, applog_path) = set_up_logging_service().await;
@@ -110,6 +118,7 @@ async fn test_delete_log_from_file() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_delete_log_nonexistent() {
     let (logging_service, applog_path) = set_up_logging_service().await;
