@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -82,7 +82,6 @@ jobs:
         uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
         with:
           workspaces: ".github/cache"
-
 
       - name: Workspace Audit
         run: |
@@ -234,6 +233,9 @@ jobs:
 
           - name: Test Moss-Tabs
             command: pnpm run test --project moss-tabs
+
+          - name: Test Desktop
+            command: pnpm run test --project desktop
 
     timeout-minutes: 30
     steps:
