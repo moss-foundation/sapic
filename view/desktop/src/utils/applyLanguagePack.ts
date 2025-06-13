@@ -1,6 +1,6 @@
 import i18n from "@/app/i18n";
-import { LocaleDescriptor } from "@repo/moss-desktop";
+import { LocaleInfo } from "@repo/moss-nls";
 
-export const applyLanguagePack = (languagePack: LocaleDescriptor) => {
+export const applyLanguagePack = (languagePack: LocaleInfo) => {
   i18n.changeLanguage(languagePack.code);
 };
