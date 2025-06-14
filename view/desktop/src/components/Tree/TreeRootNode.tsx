@@ -174,7 +174,7 @@ const TreeRootNodeButton = ({
           })}
         />
         {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-        <div className="h-full w-full rounded outline-1 outline-(--moss-border-color) group-hover/treeRootNodeTrigger:hidden">
+        <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
           <img src={TestMossImage} className="h-full w-full" />
         </div>
       </span>
