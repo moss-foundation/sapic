@@ -169,14 +169,18 @@ const TreeRootNodeButton = ({
       <span className="flex size-5 shrink-0 items-center justify-center">
         <Icon
           icon="ChevronRight"
-          className={cn("hidden text-(--moss-icon-primary-text) group-hover/treeRootNodeTrigger:block", {
+          className={cn("text-(--moss-icon-primary-text)", {
             "rotate-90": shouldRenderChildNodes,
+            "hidden group-hover/treeRootNodeTrigger:block": TestMossImage,
           })}
         />
+
         {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-        <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
-          <img src={TestMossImage} className="h-full w-full" />
-        </div>
+        {TestMossImage && (
+          <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
+            <img src={TestMossImage} className="h-full w-full" />
+          </div>
+        )}
       </span>
       <NodeLabel label={node.id} searchInput={searchInput} />
     </button>
