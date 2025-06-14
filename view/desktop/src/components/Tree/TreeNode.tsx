@@ -280,6 +280,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   "opacity-0": !node.isFolder,
                 })}
               />
+
               <TestCollectionIcon type={node.type} />
               <NodeLabel label={node.id} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />

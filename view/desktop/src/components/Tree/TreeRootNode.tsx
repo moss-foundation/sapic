@@ -4,6 +4,7 @@ import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import { ActionButton, ActionMenu, DropIndicator, TreeContext } from "..";
+import TestMossImage from "../../assets/images/TestMossImage.webp";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useDropTargetRootNode } from "./hooks/useDropTargetRootNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
@@ -136,10 +137,13 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           >
             <Icon
               icon="ChevronRight"
-              className={cn("text-(--moss-icon-primary-text)", {
+              className={cn("hidden text-(--moss-icon-primary-text) group-hover:block", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
+            {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
+            <img src={TestMossImage} className="size-4 group-hover:hidden" />
+
             <NodeLabel label={node.id} searchInput={searchInput} />
           </button>
         )}
