@@ -22,6 +22,9 @@ const selectTriggerStyles = cva(`
 
     data-[valid]:border-(--moss-success)
     focus:data-[valid]:outline-(--moss-success) 
+
+    disabled:background-(--moss-select-disabled-bg)
+    disabled:cursor-not-allowed
  `,
   {
     variants: {
@@ -43,10 +46,10 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
   ({ placeholder, disabled = false, className, size = "md", ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Trigger
-        {...props}
         ref={forwardedRef}
         disabled={disabled}
         className={cn(selectTriggerStyles({ size }), className)}
+        {...props}
       >
         <span className="truncate">
           <SelectPrimitive.Value placeholder={placeholder} />
