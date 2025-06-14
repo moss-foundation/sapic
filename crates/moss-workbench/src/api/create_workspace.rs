@@ -54,7 +54,6 @@ impl<R: TauriRuntime> Workbench<R> {
         let new_workspace = Workspace::create(
             ctx,
             &abs_path,
-            // Arc::clone(&self.fs),
             self.activity_indicator.clone(),
             CreateParams {
                 name: Some(input.name.clone()),

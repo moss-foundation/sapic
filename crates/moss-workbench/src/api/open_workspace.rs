@@ -47,13 +47,8 @@ impl<R: TauriRuntime> Workbench<R> {
             });
         }
 
-        let workspace = Workspace::load(
-            ctx,
-            &descriptor.abs_path,
-            // Arc::clone(&self.fs),
-            self.activity_indicator.clone(),
-        )
-        .await?;
+        let workspace =
+            Workspace::load(ctx, &descriptor.abs_path, self.activity_indicator.clone()).await?;
 
         let last_opened_at = Utc::now().timestamp();
 

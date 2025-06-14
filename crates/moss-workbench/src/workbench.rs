@@ -50,8 +50,6 @@ pub struct Options {
 }
 
 pub struct Workbench<R: TauriRuntime> {
-    // pub(super) app_handle: AppHandle<R>,
-    // pub(super) fs: Arc<dyn FileSystem>,
     pub(super) activity_indicator: ActivityIndicator<R>,
     pub(super) active_workspace: ArcSwapOption<ActiveWorkspace<R>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
@@ -68,8 +66,6 @@ impl<R: TauriRuntime> Workbench<R> {
         options: Options,
     ) -> Self {
         Self {
-            // app_handle: app_handle.clone(),
-            // fs,
             activity_indicator: ActivityIndicator::new(app_handle),
             active_workspace: ArcSwapOption::new(None),
             known_workspaces: OnceCell::new(),

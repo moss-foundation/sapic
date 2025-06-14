@@ -22,7 +22,7 @@ use moss_theme::{
     theme_service::ThemeService,
 };
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
 
 use crate::{commands::ReadWorkbench, primitives::AppState};
@@ -67,14 +67,20 @@ pub async fn get_color_theme<R: TauriRuntime>(
     window: Window<R>,
     input: GetColorThemeInput,
 ) -> TauriResult<GetColorThemeOutput> {
-    let app_handle = app_manager.app_handle();
-    let theme_service = app_manager
-        .services()
-        .get_by_type::<ThemeService>(app_handle)
-        .await
-        .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
+    let r = tokio::time::timeout(Duration::from_secs(30), async move {
+        let app_handle = app_manager.app_handle();
+        let theme_service = app_manager
+            .services()
+            .get_by_type::<ThemeService>(app_handle)
+            .await
+            .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
 
-    Ok(theme_service.get_color_theme(input).await?)
+        Ok(theme_service.get_color_theme(input).await?)
+    })
+    .await
+    .unwrap();
+
+    r
 }
 
 #[tauri::command(async)]

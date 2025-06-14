@@ -102,9 +102,7 @@ pub struct ModifyParams {
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn load<C: Context<R>>(
         ctx: &C,
-        // app_handle: AppHandle<R>,
         abs_path: &Path,
-        // fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
         let storage = {
@@ -122,9 +120,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            // app_handle,
             abs_path,
-            // fs,
             storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
@@ -140,7 +136,6 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn create<C: Context<R>>(
         ctx: &C,
         abs_path: &Path,
-        // fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
         params: CreateParams,
     ) -> Result<Self> {
@@ -167,9 +162,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            // app_handle,
             abs_path,
-            // fs,
             storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
