@@ -199,6 +199,7 @@ interface TreeRootNodeActionsProps {
   handleCollapseAll: () => void;
   handleExpandAll: () => void;
 }
+
 const TreeRootNodeActions = ({
   node,
   searchInput,
@@ -217,13 +218,25 @@ const TreeRootNodeActions = ({
         <div
           className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
         >
-          <ActionButton icon="Add" onClick={() => setIsAddingRootFileNode(true)} />
-          <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
+          <ActionButton
+            customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+            icon="Add"
+            onClick={() => setIsAddingRootFileNode(true)}
+          />
+          <ActionButton
+            customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+            icon="CollapseAll"
+            disabled={allFoldersAreCollapsed}
+            onClick={handleCollapseAll}
+          />
         </div>
       )}
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
-          <ActionButton icon="MoreHorizontal" />
+          <ActionButton
+            customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+            icon="MoreHorizontal"
+          />
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content className="z-30" align="center">
