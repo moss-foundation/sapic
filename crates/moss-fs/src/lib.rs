@@ -3,6 +3,7 @@ pub mod real;
 pub mod utils;
 
 pub use real::*;
+pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
 use anyhow::Result;
 use futures::stream::BoxStream;
