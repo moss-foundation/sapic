@@ -304,18 +304,9 @@ const TreeRootNodeChildren = ({
 }: TreeRootNodeChildrenProps) => {
   const { searchInput, nodeOffset, onRootAddCallback } = useContext(TreeContext);
 
-  const { isDragging: isRootDragging } = useDraggableRootNode(
-    useRef<HTMLDivElement>(null),
-    node,
-    useContext(TreeContext).treeId,
-    false
-  );
-
   const filteredChildNodes = searchInput
     ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
     : node.childNodes;
-
-  if (isRootDragging) return null;
 
   return (
     <ul className={cn("h-full w-full", { "pb-2": node.childNodes.length > 0 && node.isExpanded })}>

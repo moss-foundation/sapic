@@ -46,10 +46,10 @@ const Trigger = forwardRef<ElementRef<typeof SelectPrimitive.Trigger>, OutlinedS
   ({ placeholder, disabled = false, className, size = "md", ...props }, forwardedRef) => {
     return (
       <SelectPrimitive.Trigger
+        {...props}
         ref={forwardedRef}
         disabled={disabled}
         className={cn(selectTriggerStyles({ size }), className)}
-        {...props}
       >
         <span className="truncate">
           <SelectPrimitive.Value placeholder={placeholder} />
