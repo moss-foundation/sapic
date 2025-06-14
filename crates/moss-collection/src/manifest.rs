@@ -12,7 +12,7 @@ pub struct ManifestModel {
 
 #[derive(Debug)]
 pub struct ManifestModelDiff {
-    /// A new name for the collection, if provided,  the collection
+    /// A new name for the collection, if provided, the collection
     /// will be renamed to this name.
     pub name: Option<String>,
 }

@@ -3,18 +3,14 @@ use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
-use std::{
-    collections::HashMap,
-    path::Path,
-    sync::{Arc, atomic::AtomicUsize},
-};
+use std::{collections::HashMap, path::Path, sync::Arc};
 use uuid::Uuid;
 
 use tokio::sync::OnceCell;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
-    defaults,
+    defaults, dirs,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
     worktree::Worktree,
 };
@@ -28,14 +24,16 @@ pub struct EnvironmentItem {
 type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct Collection {
+    #[allow(dead_code)]
     fs: Arc<dyn FileSystem>,
-    worktree: OnceCell<Worktree>,
+    worktree: Arc<Worktree>,
     abs_path: Arc<Path>,
+    #[allow(dead_code)]
     storage: Arc<dyn CollectionStorage>,
-    next_entry_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     environments: OnceCell<EnvironmentMap>,
     manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
+    #[allow(dead_code)]
     config: TomlFileHandle<ConfigModel>,
 }
 
@@ -50,11 +48,8 @@ pub struct ModifyParams {
 }
 
 impl Collection {
-    pub async fn load(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        next_entry_id: Arc<AtomicUsize>,
-    ) -> Result<Self> {
+    pub async fn load(abs_path: &Path, fs: Arc<dyn FileSystem>) -> Result<Self> {
+        let abs_path: Arc<Path> = abs_path.to_owned().into();
         debug_assert!(abs_path.is_absolute());
 
         let storage = CollectionStorageImpl::new(&abs_path).context(format!(
@@ -67,26 +62,22 @@ impl Collection {
                 .await?;
 
         let config = TomlFileHandle::load(fs.clone(), &abs_path.join(CONFIG_FILE_NAME)).await?;
+        let worktree = Worktree::new(fs.clone(), abs_path.clone());
 
         // TODO: Load environments
 
         Ok(Self {
             fs,
-            abs_path: abs_path.to_owned().into(),
-            worktree: OnceCell::new(),
+            abs_path,
+            worktree: Arc::new(worktree),
             storage: Arc::new(storage),
-            next_entry_id,
             environments: OnceCell::new(),
             manifest,
             config,
         })
     }
 
-    pub async fn create<'a>(
-        fs: Arc<dyn FileSystem>,
-        next_entry_id: Arc<AtomicUsize>,
-        params: CreateParams<'a>,
-    ) -> Result<Self> {
+    pub async fn create<'a>(fs: Arc<dyn FileSystem>, params: CreateParams<'a>) -> Result<Self> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
@@ -94,15 +85,26 @@ impl Collection {
             params.internal_abs_path.display()
         ))?;
 
-        let manifest_abs_path = if let Some(external_abs_path) = params.external_abs_path {
-            external_abs_path.join(MANIFEST_FILE_NAME)
-        } else {
-            params.internal_abs_path.join(MANIFEST_FILE_NAME)
-        };
+        let abs_path: Arc<Path> = params
+            .external_abs_path
+            .unwrap_or(params.internal_abs_path)
+            .to_owned()
+            .into();
 
+        for dir in &[
+            dirs::REQUESTS_DIR,
+            dirs::ENDPOINTS_DIR,
+            dirs::COMPONENTS_DIR,
+            dirs::SCHEMAS_DIR,
+            dirs::ENVIRONMENTS_DIR,
+        ] {
+            fs.create_dir(&abs_path.join(dir)).await?;
+        }
+
+        let worktree = Worktree::new(fs.clone(), abs_path.clone());
         let manifest = toml::EditableInPlaceFileHandle::create(
             fs.clone(),
-            manifest_abs_path,
+            abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
                 name: params
                     .name
@@ -125,9 +127,8 @@ impl Collection {
         Ok(Self {
             fs: Arc::clone(&fs),
             abs_path: params.internal_abs_path.to_owned().into(),
-            worktree: OnceCell::new(),
+            worktree: Arc::new(worktree),
             storage: Arc::new(storage),
-            next_entry_id,
             environments: OnceCell::new(),
             manifest,
             config,
@@ -150,42 +151,15 @@ impl Collection {
         self.manifest.model().await
     }
 
-    pub async fn worktree(&self) -> Result<&Worktree> {
-        let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path {
-            external_abs_path
-        } else {
-            self.abs_path.clone()
-        };
-
-        self.worktree
-            .get_or_try_init(|| async move {
-                let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
-
-                Ok(worktree)
-            })
-            .await
-    }
-
-    pub async fn worktree_mut(&mut self) -> Result<&mut Worktree> {
-        if !self.worktree.initialized() {
-            let abs_path = if let Some(external_abs_path) = self.config.model().await.external_path
-            {
-                external_abs_path
-            } else {
-                self.abs_path.clone()
-            };
-
-            let worktree = Worktree::new(self.fs.clone(), abs_path, self.next_entry_id.clone());
-            let _ = self.worktree.set(worktree);
-        }
-
-        Ok(self.worktree.get_mut().unwrap())
+    pub fn worktree(&self) -> Arc<Worktree> {
+        self.worktree.clone()
     }
 
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
 
+    #[allow(dead_code)]
     pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
         &self.storage
     }

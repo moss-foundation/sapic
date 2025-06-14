@@ -1,31 +1,24 @@
-pub mod physical_snapshot;
-pub mod physical_worktree;
-pub mod util;
-pub mod virtual_snapshot;
-pub mod virtual_worktree;
-
-use moss_common::api::OperationError;
-use moss_fs::FileSystem;
-use moss_text::sanitized;
-use physical_worktree::PhysicalWorktree;
-use serde_json::Value as JsonValue;
+use anyhow::Result;
+use moss_common::{api::OperationError, continue_if_err, continue_if_none};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path};
+use moss_text::sanitized::desanitize;
 use std::{
-    path::{Component, Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    path::{Path, PathBuf},
+    sync::Arc,
 };
 use thiserror::Error;
-use util::names::dir_name_from_classification;
-use virtual_worktree::VirtualWorktree;
+use tokio::{fs, sync::mpsc};
+use uuid::Uuid;
 
-use crate::{
-    models::{
-        primitives::{ChangesDiffSet, EntryId},
-        types::{Classification, RequestProtocol},
-    },
-    worktree::virtual_snapshot::VirtualEntry,
+use crate::models::{
+    primitives::{EntryClass, EntryKind, EntryProtocol},
+    types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
 };
 
-pub(crate) const ROOT_PATH: &str = "";
+pub mod constants {
+    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
+    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
+}
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
@@ -38,6 +31,9 @@ pub enum WorktreeError {
     #[error("worktree entry is not found: {0}")]
     NotFound(String),
 
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
 }
@@ -49,396 +45,313 @@ impl From<WorktreeError> for OperationError {
             WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
             WorktreeError::NotFound(err) => OperationError::NotFound(err),
             WorktreeError::Unknown(err) => OperationError::Unknown(err),
+            WorktreeError::Io(err) => OperationError::Internal(err.to_string()),
         }
     }
 }
 
 pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
-pub struct WorktreeDiff {
-    pub physical_changes: ChangesDiffSet,
-    pub virtual_changes: ChangesDiffSet,
-}
-
-impl Default for WorktreeDiff {
-    fn default() -> Self {
-        Self {
-            physical_changes: Arc::new([]),
-            virtual_changes: Arc::new([]),
-        }
-    }
+pub struct WorktreeEntry {
+    pub id: Uuid,
+    pub name: String,
+    pub path: Arc<Path>,
+    pub class: EntryClass,
+    pub kind: EntryKind,
+    pub protocol: Option<EntryProtocol>,
 }
 
 pub struct Worktree {
-    pwt: PhysicalWorktree,
-    vwt: VirtualWorktree,
+    fs: Arc<dyn FileSystem>,
+    abs_path: Arc<Path>,
+}
+
+struct ScanJob {
+    abs_path: Arc<Path>,
+    path: Arc<Path>,
+    scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
 impl Worktree {
-    pub fn new(
-        fs: Arc<dyn FileSystem>,
-        abs_path: Arc<Path>,
-        next_entry_id: Arc<AtomicUsize>, // TODO: replace with IdRegistry
-    ) -> Self {
-        debug_assert!(abs_path.is_absolute());
-
-        let next_virtual_entry_id = Arc::new(AtomicUsize::new(0)); // TODO: replace with IdRegistry
-        Self {
-            pwt: PhysicalWorktree::new(fs, abs_path, next_entry_id),
-            vwt: VirtualWorktree::new(next_virtual_entry_id),
-        }
+    pub fn new(fs: Arc<dyn FileSystem>, abs_path: Arc<Path>) -> Self {
+        Self { fs, abs_path }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.vwt.is_empty()
+    pub fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
+        debug_assert!(path.is_relative());
+
+        if path
+            .components()
+            .any(|c| c == std::path::Component::ParentDir)
+        {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Path cannot contain '..' components: {}",
+                path.display()
+            )));
+        }
+
+        if path.file_name().is_some() {
+            Ok(self.abs_path.join(path))
+        } else {
+            Ok(self.abs_path.to_path_buf())
+        }
     }
 
     pub async fn create_entry(
-        &mut self,
-        destination: PathBuf,
-        order: Option<usize>,
-        protocol: Option<RequestProtocol>,
-        specification: Option<Vec<u8>>,
-        classification: Classification,
+        &self,
+        path: &Path,
         is_dir: bool,
-    ) -> WorktreeResult<WorktreeDiff> {
-        // Check if an entry with the same virtual path already exists
-        if self.vwt.entry_by_path(&destination).is_some() {
-            return WorktreeResult::Err(WorktreeError::AlreadyExists(
-                destination.to_string_lossy().to_string(),
-            ));
+        content: &[u8],
+    ) -> WorktreeResult<()> {
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let abs_path = self.absolutize(&encoded_path)?;
+
+        if abs_path.exists() {
+            return Err(WorktreeError::AlreadyExists(format!(
+                "Entry already exists: {}",
+                abs_path.display()
+            )));
         }
 
-        let (parent, name) = split_last_segment(&destination)
-            .ok_or_else(|| {
-                WorktreeError::InvalidInput(format!(
-                    "Invalid destination path: {}",
-                    destination.display()
-                ))
-            })
-            .map(|(parent, name)| (parent.unwrap_or_default(), name))?;
+        self.fs.create_dir(&abs_path).await?;
 
         if is_dir {
-            self.create_dir(parent, name, order, classification, specification)
-                .await
+            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
+            self.fs
+                .create_file_with(
+                    &file_path,
+                    content,
+                    CreateOptions {
+                        overwrite: false,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
         } else {
-            self.create_item(parent, name, classification, specification, order, protocol)
-                .await
+            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+            self.fs
+                .create_file_with(
+                    &file_path,
+                    content,
+                    CreateOptions {
+                        overwrite: false,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await?;
         }
+
+        Ok(())
     }
 
-    async fn create_dir(
-        &mut self,
-        parent: PathBuf,
-        name: String,
-        order: Option<usize>,
-        classification: Classification,
-        specification: Option<Vec<u8>>,
-    ) -> WorktreeResult<WorktreeDiff> {
-        let mut physical_changes = vec![];
-        let mut virtual_changes = vec![];
+    pub async fn rename_entry(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
+        let encoded_from = moss_fs::utils::sanitize_path(from, None)?;
+        let encoded_to = moss_fs::utils::sanitize_path(to, None)?;
 
-        {
-            let encoded_path = {
-                let encoded_name = sanitized::sanitize(&name);
-                let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
+        let abs_from = self.absolutize(&encoded_from)?;
+        let abs_to = self.absolutize(&encoded_to)?;
 
-                encoded_path.join(encoded_name)
-            };
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&encoded_path, true, None)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
-
-            let specfile_path = encoded_path.join("folder.sapic");
-            physical_changes.extend(
-                self.pwt
-                    .create_entry(&specfile_path, false, specification)
-                    .await?
-                    .into_iter()
-                    .cloned(),
-            );
+        if !abs_from.exists() {
+            return Err(WorktreeError::NotFound(format!(
+                "Entry not found: {}",
+                from.display()
+            )));
         }
 
-        {
-            virtual_changes.extend(
-                self.vwt
-                    .create_entry(parent.join(name), order, classification.clone(), None, true)?
-                    .into_iter()
-                    .cloned(),
-            );
+        if abs_to.exists() {
+            return Err(WorktreeError::AlreadyExists(format!(
+                "Entry already exists: {}",
+                to.display()
+            )));
         }
 
-        Ok(WorktreeDiff {
-            physical_changes: ChangesDiffSet::from(physical_changes),
-            virtual_changes: ChangesDiffSet::from(virtual_changes),
-        })
-    }
-
-    async fn create_item(
-        &mut self,
-        parent: PathBuf,
-        name: String,
-        classification: Classification,
-        specification: Option<Vec<u8>>,
-        order: Option<usize>,
-        protocol: Option<RequestProtocol>,
-    ) -> WorktreeResult<WorktreeDiff> {
-        let mut physical_changes = vec![];
-        let mut virtual_changes = vec![];
-
-        let encoded_path = {
-            let encoded_name = sanitized::sanitize(&name);
-            let encoded_path = moss_fs::utils::sanitize_path(&parent, None)?;
-
-            encoded_path.join(dir_name_from_classification(&encoded_name, &classification))
-        };
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&encoded_path, true, None)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
-
-        // TODO: Handling protocol for non-request entities?
-        let protocol = protocol.unwrap_or_default();
-        let file_name = protocol.to_filename();
-        let file_path = encoded_path.join(file_name);
-        physical_changes.extend(
-            self.pwt
-                .create_entry(&file_path, false, specification)
-                .await?
-                .into_iter()
-                .cloned(),
-        );
-
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    &parent,
-                    None,
-                    classification.clone(),
-                    Some(protocol.clone()),
-                    true,
-                )?
-                .into_iter()
-                .cloned(),
-        );
-        virtual_changes.extend(
-            self.vwt
-                .create_entry(
-                    parent.join(name),
-                    order,
-                    classification,
-                    Some(protocol),
-                    false,
-                )?
-                .into_iter()
-                .cloned(),
-        );
-
-        Ok(WorktreeDiff {
-            physical_changes: ChangesDiffSet::from(physical_changes),
-            virtual_changes: ChangesDiffSet::from(virtual_changes),
-        })
-    }
-
-    pub async fn delete_entry_by_virtual_id(
-        &mut self,
-        id: EntryId,
-    ) -> WorktreeResult<WorktreeDiff> {
-        // Find the physical and virtual path from the virtual ID
-        let virtual_entry = self
-            .vwt
-            .entry_by_id(id)
-            .ok_or(WorktreeError::NotFound(format!(
-                "Virtual ID {} is not found",
-                id.to_usize()
-            )))?
-            .clone();
-
-        let physical_path = virtual_entry.physical_path()?;
-        let virtual_path = virtual_entry.path();
-
-        let physical_changes = self.pwt.remove_entry(&physical_path).await?;
-        let virtual_changes = self.vwt.remove_entry(virtual_path)?;
-
-        Ok(WorktreeDiff {
-            physical_changes,
-            virtual_changes,
-        })
-    }
-
-    pub async fn update_entry_by_virtual_id(
-        &mut self,
-        id: EntryId,
-        name: Option<String>,
-        classification: Option<Classification>,
-        specification: Option<JsonValue>,
-        protocol: Option<RequestProtocol>,
-        order: Option<usize>,
-    ) -> WorktreeResult<WorktreeDiff> {
-        if let Some(new_name) = name {
-            self.rename_entry_by_virtual_id(id, &new_name).await
-        } else {
-            Ok(WorktreeDiff::default())
-        }
-        // TODO: Handle updating of other fields
-    }
-
-    async fn rename_entry_by_virtual_id(
-        &mut self,
-        id: EntryId,
-        new_name: &str,
-    ) -> WorktreeResult<WorktreeDiff> {
-        // Find the physical and virtual path from the virtual ID
-        let virtual_entry = Arc::unwrap_or_clone(
-            self.vwt
-                .entry_by_id(id)
-                .ok_or(WorktreeError::NotFound(format!(
-                    "Virtual ID {} is not found",
-                    id.to_usize()
-                )))?
-                .clone(),
-        );
-
-        let old_physical_path = virtual_entry.physical_path()?;
-        let old_virtual_path = virtual_entry.path();
-        let new_virtual_path = old_virtual_path
-            .parent()
-            .expect("Virtual path should have a parent")
-            .join(&new_name);
-        if old_virtual_path.to_path_buf() == new_virtual_path {
-            return Ok(WorktreeDiff::default());
-        }
-        if self.vwt.entry_by_path(&new_virtual_path).is_some() {
-            return Err(WorktreeError::AlreadyExists(
-                new_virtual_path.to_string_lossy().to_string(),
-            ));
-        }
-        let virtual_changes = self
-            .vwt
-            .rename_entry(&old_virtual_path, &new_virtual_path)?;
-
-        let parent = old_physical_path
-            .parent()
-            .expect("Physical path should have a parent");
-
-        let new_filename = match virtual_entry {
-            VirtualEntry::Item { class, .. } => {
-                dir_name_from_classification(&sanitized::sanitize(&new_name), &class)
-            }
-            VirtualEntry::Dir { .. } => sanitized::sanitize(&new_name),
-        };
-        let new_physical_path = parent.join(&new_filename);
-        let physical_changes = self
-            .pwt
-            .rename_entry(&old_physical_path, &new_physical_path)
+        self.fs
+            .rename(
+                &abs_from,
+                &abs_to,
+                moss_fs::RenameOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
             .await?;
 
-        Ok(WorktreeDiff {
-            physical_changes,
-            virtual_changes,
-        })
+        Ok(())
     }
 
-    pub fn iter_entries_by_prefix<'a>(
-        &'a self,
-        prefix: PathBuf,
-    ) -> impl Iterator<Item = (&'a EntryId, &'a Arc<VirtualEntry>)> + 'a {
-        self.vwt.iter_entries_by_prefix(prefix)
-    }
-}
+    pub async fn remove_entry(&self, path: &Path) -> WorktreeResult<()> {
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let abs_path = self.absolutize(&encoded_path)?;
 
-/// Splits the given path into its parent directory (if any) and the last segment.
-///
-/// Returns:
-/// - `None` if the input path is empty or contains no segments.
-/// - `Some((parent, segment))` where:
-///     - `parent` is:
-///         - `Some(PathBuf)` if the path has a non-empty parent,
-///         - `None` if the path consists of a single segment.
-///     - `segment` is the last path component as a `String`.
-fn split_last_segment(path: &Path) -> Option<(Option<PathBuf>, String)> {
-    if path.as_os_str().is_empty() {
-        return None;
-    }
-
-    // Collect normalized components (ignores redundant separators)
-    let mut comps: Vec<Component> = path.components().collect();
-    if comps.is_empty() {
-        return None;
-    }
-
-    let last_comp = comps.pop().unwrap();
-
-    // Determine the string for the last segment
-    let last_os = match last_comp {
-        Component::Normal(os) => os,
-        Component::RootDir => std::ffi::OsStr::new("/"),
-        Component::Prefix(pref) => pref.as_os_str(),
-        _ => return None, // ignore CurDir, ParentDir, etc.
-    };
-    let last = last_os.to_string_lossy().into_owned();
-
-    // Build the parent PathBuf if there are remaining components
-    let parent = if comps.is_empty() {
-        None
-    } else {
-        let mut parent_pb = PathBuf::new();
-        for comp in comps {
-            parent_pb.push(comp.as_os_str());
+        if !abs_path.exists() {
+            return Err(WorktreeError::NotFound(format!(
+                "Entry not found: {}",
+                path.display()
+            )));
         }
-        Some(parent_pb)
-    };
 
-    Some((parent, last))
+        self.fs
+            .remove_dir(
+                &abs_path,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    pub async fn scan(
+        &self,
+        path: &Path,
+        sender: mpsc::UnboundedSender<WorktreeEntry>,
+    ) -> WorktreeResult<()> {
+        debug_assert!(path.is_relative());
+
+        let path: Arc<Path> = path.into();
+        let abs_path = self.absolutize(&path)?;
+
+        let (job_tx, mut job_rx) = mpsc::unbounded_channel();
+
+        let initial_job = ScanJob {
+            abs_path: abs_path.into(),
+            path: Arc::clone(&path),
+            scan_queue: job_tx.clone(),
+        };
+        job_tx.send(initial_job).unwrap();
+
+        drop(job_tx);
+
+        let mut handles = Vec::new();
+        while let Some(job) = job_rx.recv().await {
+            let sender = sender.clone();
+            let fs = self.fs.clone();
+            let handle = tokio::spawn(async move {
+                let mut new_jobs = Vec::new();
+
+                let mut read_dir = match fs::read_dir(&job.abs_path).await {
+                    Ok(dir) => dir,
+                    Err(_) => return,
+                };
+
+                let mut child_paths = Vec::new();
+                while let Ok(Some(dir_entry)) = read_dir.next_entry().await {
+                    child_paths.push(dir_entry);
+                }
+
+                for child_entry in child_paths {
+                    let child_file_type = continue_if_err!(child_entry.file_type().await);
+                    let child_abs_path: Arc<Path> = child_entry.path().into();
+                    let child_name = continue_if_none!(child_abs_path.file_name())
+                        .to_string_lossy()
+                        .to_string();
+                    let child_path: Arc<Path> = job.path.join(&child_name).into();
+
+                    let maybe_entry = if child_file_type.is_dir() {
+                        continue_if_err!(
+                            process_dir_entry(&child_name, &child_path, &fs, &child_abs_path).await
+                        )
+                    } else {
+                        continue_if_err!(
+                            process_file_entry(&child_name, &child_path, &fs, &child_abs_path)
+                                .await
+                        )
+                    };
+
+                    let entry = continue_if_none!(maybe_entry, || {
+                        // TODO: Probably should log here since we should not be able to get here
+                    });
+
+                    continue_if_err!(sender.send(entry), |_err| {
+                        // TODO: log error
+                    });
+
+                    new_jobs.push(ScanJob {
+                        abs_path: Arc::clone(&child_abs_path),
+                        path: child_path,
+                        scan_queue: job.scan_queue.clone(),
+                    });
+                }
+
+                for new_job in new_jobs {
+                    continue_if_err!(job.scan_queue.send(new_job), |_| {
+                        // TODO: log error
+                    });
+                }
+            });
+
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            if let Err(_err) = handle.await {
+                // TODO: log error
+            }
+        }
+
+        Ok(())
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::{Path, PathBuf};
+async fn process_dir_entry(
+    name: &str,
+    path: &Arc<Path>,
+    fs: &Arc<dyn FileSystem>,
+    abs_path: &Path,
+) -> WorktreeResult<Option<WorktreeEntry>> {
+    let dir_config_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
+    let item_config_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
 
-    #[test]
-    fn test_split_last_segment_with_parent() {
-        // Splitting a normal absolute path returns the parent directory and last segment
-        let path = Path::new("/test/foo/bar");
-        let result = split_last_segment(path);
-        assert_eq!(
-            result,
-            Some((Some(PathBuf::from("/test/foo")), "bar".to_string()))
-        );
+    if dir_config_path.exists() {
+        let config =
+            parse_configuration::<CompositeDirConfigurationModel>(&fs, &dir_config_path).await?;
+
+        return Ok(Some(WorktreeEntry {
+            id: config.metadata.id,
+            name: desanitize(name),
+            path: desanitize_path(path, None)?.into(),
+            class: config.classification(),
+            kind: EntryKind::Dir,
+            protocol: None,
+        }));
     }
 
-    #[test]
-    fn test_split_last_segment_with_trailing_slash() {
-        // A path ending with a slash should still return the correct parent and segment
-        let path = Path::new("/test/foo/bar/");
-        let result = split_last_segment(path);
-        assert_eq!(
-            result,
-            Some((Some(PathBuf::from("/test/foo")), "bar".to_string()))
-        );
+    if item_config_path.exists() {
+        let config =
+            parse_configuration::<CompositeItemConfigurationModel>(&fs, &item_config_path).await?;
+
+        return Ok(Some(WorktreeEntry {
+            id: config.metadata.id,
+            name: desanitize(name),
+            path: desanitize_path(path, None)?.into(),
+            class: config.classification(),
+            kind: EntryKind::Item,
+            protocol: config.protocol(),
+        }));
     }
 
-    #[test]
-    fn test_split_last_segment_single_segment() {
-        // A single-segment relative path returns None for parent and the segment itself
-        let path = Path::new("bar");
-        let result = split_last_segment(path);
-        assert_eq!(result, Some((None, "bar".to_string())));
-    }
+    Ok(None)
+}
 
-    #[test]
-    fn test_split_last_segment_empty_path() {
-        // An empty path should return None
-        let path = Path::new("");
-        let result = split_last_segment(path);
-        assert_eq!(result, None);
-    }
+async fn process_file_entry(
+    _name: &str,
+    _path: &Arc<Path>,
+    _fs: &Arc<dyn FileSystem>,
+    _abs_path: &Path,
+) -> WorktreeResult<Option<WorktreeEntry>> {
+    // TODO: implement
+    Ok(None)
+}
+
+async fn parse_configuration<T>(fs: &Arc<dyn FileSystem>, path: &Path) -> WorktreeResult<T>
+where
+    T: for<'de> serde::Deserialize<'de>,
+{
+    let mut reader = fs.open_file(path).await?;
+    let mut buf = String::new();
+    reader.read_to_string(&mut buf)?;
+
+    Ok(toml::from_str(&buf).map_err(anyhow::Error::from)?)
 }

@@ -47,7 +47,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to get collections")?;
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_all(&abs_path)
             .await
             .context("Failed to create the collection directory")?;
 
@@ -55,7 +55,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let order = input.order.to_owned();
         let collection = Collection::create(
             self.fs.clone(),
-            self.next_collection_entry_id.clone(),
             collection::CreateParams {
                 name: Some(name.clone()),
                 internal_abs_path: &abs_path,

@@ -43,7 +43,7 @@ impl<R: TauriRuntime> Workbench<R> {
             .map_err_as_internal()?;
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_all(&abs_path)
             .await
             .context("Failed to create workspace")
             .map_err_as_internal()?;
