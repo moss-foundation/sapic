@@ -2,14 +2,11 @@ use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
 use uuid::Uuid;
-use validator::{Validate, ValidationError, ValidationErrors};
+use validator::{Validate, ValidationErrors};
 
 use crate::models::{
     primitives::EntryProtocol,
-    types::{
-        ExpandMode,
-        configuration::{DirConfigurationModel, ItemConfigurationModel},
-    },
+    types::configuration::{DirConfigurationModel, ItemConfigurationModel},
 };
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -127,28 +124,6 @@ pub enum UpdateEntryInput {
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEntryOutput {}
-
-// Stream Entries By Prefixes
-
-#[derive(Debug, Serialize, TS, Validate)]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamWorktreeEntriesInput {
-    #[validate(custom(function = "validate_stream_worktree_entries_prefixes"))]
-    pub prefixes: Vec<&'static str>,
-}
-
-const ALLOWED_PREFIXES: [&str; 4] = ["requests", "endpoints", "components", "schemas"];
-fn validate_stream_worktree_entries_prefixes(
-    prefixes: &Vec<&'static str>,
-) -> Result<(), ValidationError> {
-    for prefix in prefixes {
-        if !ALLOWED_PREFIXES.contains(prefix) {
-            return Err(ValidationError::new("Invalid prefix"));
-        }
-    }
-
-    Ok(())
-}
 
 // Stream Entries
 

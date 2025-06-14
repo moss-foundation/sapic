@@ -263,7 +263,10 @@ impl Worktree {
                     let entry = continue_if_none!(maybe_entry, || {
                         // TODO: Probably should log here since we should not be able to get here
                     });
-                    sender.send(entry).is_ok();
+
+                    continue_if_err!(sender.send(entry), |_err| {
+                        // TODO: log error
+                    });
 
                     new_jobs.push(ScanJob {
                         abs_path: Arc::clone(&child_abs_path),
@@ -333,10 +336,10 @@ async fn process_dir_entry(
 }
 
 async fn process_file_entry(
-    name: &str,
-    path: &Arc<Path>,
-    fs: &Arc<dyn FileSystem>,
-    abs_path: &Path,
+    _name: &str,
+    _path: &Arc<Path>,
+    _fs: &Arc<dyn FileSystem>,
+    _abs_path: &Path,
 ) -> WorktreeResult<Option<WorktreeEntry>> {
     // TODO: implement
     Ok(None)

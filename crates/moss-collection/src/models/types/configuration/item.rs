@@ -5,22 +5,8 @@ use ts_rs::TS;
 
 use crate::models::{
     primitives::{EntryClass, EntryProtocol},
-    types::configuration::ConfigurationMetadata,
+    types::configuration::common::ConfigurationMetadata,
 };
-
-// #[derive(Clone, Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub enum CreateRequestProtocolSpecificPayload {
-//     Http {
-//         method: HttpMethod,
-//         query_params: Vec<QueryParamItem>,
-//         path_params: Vec<PathParamItem>,
-//         headers: Vec<HeaderParamItem>,
-//         #[ts(optional)]
-//         body: Option<RequestBody>,
-//     },
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]

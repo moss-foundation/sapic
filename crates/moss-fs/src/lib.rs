@@ -51,6 +51,7 @@ impl Default for RenameOptions {
 
 #[async_trait::async_trait]
 pub trait FileSystem: Send + Sync {
+    async fn create_dir_all(&self, path: &Path) -> Result<()>;
     async fn create_dir(&self, path: &Path) -> Result<()>;
     async fn read_dir(&self, path: &Path) -> Result<ReadDir>;
     async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> Result<()>;
