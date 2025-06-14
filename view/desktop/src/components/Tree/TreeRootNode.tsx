@@ -95,7 +95,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
       >
         <span
           className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute h-[calc(100%-8px)] w-[calc(100%-16px)] rounded-sm"
+            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-8px)] w-[calc(100%-8px)] rounded-sm"
           )}
         />
 
