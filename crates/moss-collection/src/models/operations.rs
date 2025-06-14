@@ -11,29 +11,23 @@ use crate::models::{
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateItemEntryInput {
     pub path: PathBuf,
     pub name: String,
-
-    #[ts(optional)]
     pub order: Option<usize>,
-
-    #[serde(flatten)]
     pub configuration: ItemConfigurationModel,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateDirEntryInput {
     pub path: PathBuf,
     pub name: String,
-
-    #[ts(optional)]
     pub order: Option<usize>,
-
-    #[serde(flatten)]
     pub configuration: DirConfigurationModel,
 }
 
@@ -85,30 +79,22 @@ pub struct DeleteEntryOutput {}
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateItemEntryInput {
     pub id: Uuid,
-
-    #[ts(optional)]
     pub name: Option<String>,
-
-    #[ts(optional)]
     pub protocol: Option<EntryProtocol>,
-
-    #[ts(optional)]
     pub order: Option<usize>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateDirEntryInput {
     pub id: Uuid,
-
-    #[ts(optional)]
     pub name: Option<String>,
-
-    #[ts(optional)]
     pub order: Option<usize>,
 }
 

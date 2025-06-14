@@ -38,7 +38,6 @@ pub enum RequestDirConfigurationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(untagged)]
 #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {

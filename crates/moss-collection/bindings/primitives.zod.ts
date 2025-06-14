@@ -19,31 +19,3 @@ export const entryProtocolSchema = z.union([
   z.literal("Graphql"),
   z.literal("Grpc"),
 ]);
-
-export const worktreeChangeSchema = z.union([
-  z.object({
-    "type": z.literal("Loaded"),
-    id: z.string(),
-    path: z.string(),
-  }),
-  z.object({
-    "type": z.literal("Created"),
-    id: z.string(),
-    path: z.string(),
-  }),
-  z.object({
-    "type": z.literal("Moved"),
-    id: z.string(),
-    from_id: z.string(),
-    to_id: z.string(),
-    old_path: z.string(),
-    new_path: z.string(),
-  }),
-  z.object({
-    "type": z.literal("Deleted"),
-    id: z.string(),
-    path: z.string(),
-  }),
-]);
-
-export const worktreeDiffSchema = z.array(worktreeChangeSchema);

@@ -105,8 +105,8 @@ export const entryInfoSchema = z.object({
   path: z.string(),
   class: entryClassSchema,
   kind: entryKindSchema,
-  protocol: entryProtocolSchema.nullable(),
-  order: z.number().nullable(),
+  protocol: entryProtocolSchema.optional(),
+  order: z.number().optional(),
   expanded: z.boolean(),
 });
 

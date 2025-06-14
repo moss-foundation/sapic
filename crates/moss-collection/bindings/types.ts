@@ -23,8 +23,8 @@ export type EntryInfo = {
   path: string;
   class: EntryClass;
   kind: EntryKind;
-  protocol: EntryProtocol | null;
-  order: number | null;
+  protocol?: EntryProtocol;
+  order?: number;
   expanded: boolean;
 };
 
