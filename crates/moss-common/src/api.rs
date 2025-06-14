@@ -60,6 +60,18 @@ impl From<serde_json::Error> for OperationError {
     }
 }
 
+impl From<toml::ser::Error> for OperationError {
+    fn from(error: toml::ser::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
+impl From<toml::de::Error> for OperationError {
+    fn from(error: toml::de::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
 
 pub trait OperationResultExt<T> {

@@ -3067,6 +3067,7 @@ dependencies = [
  "thiserror 2.0.12",
  "tokio",
  "tokio-stream",
+ "toml",
  "toml_edit 0.22.26",
  "ts-rs",
  "uuid",
@@ -3086,6 +3087,7 @@ dependencies = [
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "toml",
  "ts-rs",
  "validator",
 ]

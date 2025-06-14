@@ -5,19 +5,22 @@ pub use dir::*;
 pub use item::*;
 
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
-pub struct SpecificationMetadata {
+#[ts(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ConfigurationMetadata {
     pub id: Uuid,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConfigurationModel {
-    Item(ItemConfigurationModel),
-    Dir(DirConfigurationModel),
+    Item(CompositeItemConfigurationModel),
+    Dir(CompositeDirConfigurationModel),
 }
 
 impl ConfigurationModel {
