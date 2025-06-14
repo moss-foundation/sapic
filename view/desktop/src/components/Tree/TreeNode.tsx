@@ -7,6 +7,7 @@ import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { ActionMenu, TreeContext } from "..";
+import { DragHandleButton } from "../DragHandleButton";
 import { AddingFormDivider } from "./AddingFormDivider";
 import { DropIndicatorWithInstruction } from "./DropIndicatorWithInstruction";
 import { useAddNodeWithDivider } from "./hooks/useAddNodeWithDivider";
@@ -256,6 +257,11 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               })}
               style={{ paddingLeft: nodePaddingLeft }}
             >
+              <DragHandleButton
+                className="absolute top-1/2 left-[1px] hidden -translate-y-1/2 group-hover/treeNode:block"
+                slim
+              />
+
               {!node.isFolder && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
