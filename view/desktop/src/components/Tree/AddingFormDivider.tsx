@@ -59,7 +59,7 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
       onClick={visible ? handleClick : undefined}
     >
       <div className="relative h-full w-full">
-        <div className="background-(--moss-primary) absolute -top-[8px] right-0 rounded-sm p-px">
+        <div className="background-(--moss-drag-handle-bg) absolute -top-[8px] left-0 flex size-4 items-center justify-center rounded-sm p-px shadow">
           <DividerButtonIcon />
         </div>
       </div>
@@ -69,14 +69,8 @@ export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top",
 
 const DividerButtonIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
-      <path fill="#fff" fillOpacity=".01" d="M0 0h24v24H0z" />
-      <path
-        fill="white"
-        fillRule="evenodd"
-        d="M13 11V7.00195c0-.26521-.1054-.51957-.2929-.7071-.1876-.18754-.4419-.2929-.7071-.2929-.2653 0-.5196.10536-.7072.2929-.1875.18753-.2928.44189-.2928.7071V11H7.00195c-.26521 0-.51957.1053-.7071.2928-.18754.1876-.2929.4419-.2929.7072 0 .2652.10536.5195.2929.7071.18753.1875.44189.2929.7071.2929H11v3.998c0 .2652.1053.5195.2928.7071.1876.1875.4419.2929.7072.2929.2652 0 .5195-.1054.7071-.2929.1875-.1876.2929-.4419.2929-.7071V13h3.998c.2652 0 .5195-.1054.7071-.2929.1875-.1876.2929-.4419.2929-.7071 0-.2653-.1054-.5196-.2929-.7072-.1876-.1875-.4419-.2928-.7071-.2928H13Z"
-        clipRule="evenodd"
-      />
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4.5 3.5V0H3.5V3.5H0V4.5H3.5V8H4.5V4.5H8V3.5H4.5Z" fill="#525252" />
     </svg>
   );
 };

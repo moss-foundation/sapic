@@ -106,7 +106,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
-        className="flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
+        className="hover:background-(--moss-secondary-background-hover) flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
         style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
         {isRenamingRootNode ? (
@@ -143,7 +143,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
                 })}
               />
               {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-              <div className="h-full w-full group-hover/treeRootNodeTrigger:hidden">
+              <div className="h-full w-full rounded outline-1 outline-(--moss-border-color) group-hover/treeRootNodeTrigger:hidden">
                 <img src={TestMossImage} className="h-full w-full" />
               </div>
             </span>
