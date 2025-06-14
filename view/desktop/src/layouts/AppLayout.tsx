@@ -6,13 +6,13 @@ import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef, useState } from "react";
 
 import { ActivityBar, BottomPane, Sidebar } from "@/components";
-import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 import { useUpdateActivitybarPartState } from "@/hooks/appState/useUpdateActivitybarPartState";
-import { useActivityBarStore } from "@/store/activityBar";
+import { useUpdatePanelPartState } from "@/hooks/appState/useUpdatePanelPartState";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";

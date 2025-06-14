@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { SidebarPosition } from "@repo/moss-workspace";
+
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { SidebarPosition } from "@repo/moss-workspace";
 
 //TODO this type should be imported from backend in the future
 export interface AppResizableLayoutStore {

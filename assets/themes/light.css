@@ -132,10 +132,10 @@
   --separator-border: var(--moss-border-color);
 
   /* Icons */
-  --moss-icon-primary-background: transparent;
+  --moss-icon-primary-background: var(--moss-gray-12);
   --moss-icon-primary-text: var(--moss-gray-6);
-  --moss-icon-primary-background-hover: var(--moss-gray-12);
-  --moss-icon-primary-background-active: var(--moss-blue-12);
+  --moss-icon-primary-background-hover: var(--moss-gray-10);
+  --moss-icon-primary-background-active: var(--moss-blue-11);
 
   --moss-icon-secondary-background: transparent;
   --moss-icon-secondary-text: var(--moss-gray-6);

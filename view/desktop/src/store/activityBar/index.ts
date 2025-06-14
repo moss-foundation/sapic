@@ -19,7 +19,7 @@ export interface ActivityBarItem {
   visible?: boolean;
 }
 
-interface ActivityBarStore {
+export interface ActivityBarStore {
   items: ActivityBarItem[];
   position: ActivitybarPosition;
   lastActiveContainerId: string | null;
@@ -38,8 +38,8 @@ const defaultItems: ActivityBarItem[] = [
     "id": TREE_VIEW_GROUP_COLLECTIONS,
     "title": "Collections",
     "order": 1,
-    "icon": "Folder",
-    "iconActive": "FolderActive",
+    "icon": "Home",
+    "iconActive": "HomeActive",
     "isActive": true,
     "visible": true,
   },
@@ -47,8 +47,8 @@ const defaultItems: ActivityBarItem[] = [
     "id": TREE_VIEW_GROUP_ENVIRONMENTS,
     "title": "Environments",
     "order": 2,
-    "icon": "Env",
-    "iconActive": "EnvActive",
+    "icon": "JsonPath",
+    "iconActive": "JsonPathActive",
     "isActive": false,
     "visible": true,
   },
@@ -58,6 +58,15 @@ const defaultItems: ActivityBarItem[] = [
     "order": 3,
     "icon": "WebServer",
     "iconActive": "WebServerActive",
+    "isActive": false,
+    "visible": true,
+  },
+  {
+    "id": "4",
+    "title": "Preferences",
+    "order": 4,
+    "icon": "Wrench",
+    "iconActive": "WrenchActive",
     "isActive": false,
     "visible": true,
   },

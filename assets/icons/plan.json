@@ -110,10 +110,22 @@
   "History": {
     "identical": true
   },
+  "Home": {
+    "identical": true
+  },
+  "HomeActive": {
+    "identical": true
+  },
   "Import": {
     "identical": true
   },
   "Info": {
+    "identical": true
+  },
+  "JsonPath": {
+    "identical": true
+  },
+  "JsonPathActive": {
     "identical": true
   },
   "Key": {
@@ -167,6 +179,12 @@
   "PersistenceRelationship": {
     "identical": true
   },
+  "Person": {
+    "identical": true
+  },
+  "PersonActive": {
+    "identical": true
+  },
   "Placeholder": {
     "identical": true
   },
@@ -183,6 +201,9 @@
     "identical": false
   },
   "Settings": {
+    "identical": true
+  },
+  "SettingsActive": {
     "identical": true
   },
   "SortAlphabeticallyAsc": {
@@ -243,6 +264,12 @@
     "identical": true
   },
   "WorkspaceActive": {
+    "identical": true
+  },
+  "Wrench": {
+    "identical": true
+  },
+  "WrenchActive": {
     "identical": true
   }
 }
