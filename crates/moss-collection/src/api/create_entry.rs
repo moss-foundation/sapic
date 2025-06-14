@@ -1,9 +1,16 @@
 use moss_common::api::OperationResult;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     collection::Collection,
-    models::operations::{CreateEntryInput, CreateEntryOutput},
+    models::{
+        operations::{CreateEntryInput, CreateEntryOutput},
+        types::configuration::{
+            CompositeDirConfigurationModel, CompositeItemConfigurationModel, ConfigurationMetadata,
+            ConfigurationModel,
+        },
+    },
 };
 
 impl Collection {
@@ -13,31 +20,31 @@ impl Collection {
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        // TODO: validate specification
-
-        let content = if let Some(value) = input.specification {
-            Some(serde_json::to_vec(&value)?)
-        } else {
-            None
+        let id = Uuid::new_v4();
+        let path = input.path().clone();
+        let configuration = match input {
+            CreateEntryInput::Item(item) => {
+                ConfigurationModel::Item(CompositeItemConfigurationModel {
+                    metadata: ConfigurationMetadata { id },
+                    inner: item.configuration,
+                })
+            }
+            CreateEntryInput::Dir(dir) => ConfigurationModel::Dir(CompositeDirConfigurationModel {
+                metadata: ConfigurationMetadata { id },
+                inner: dir.configuration,
+            }),
         };
 
-        // let worktree = self.worktree_mut().await?;
-        // let changes = worktree
-        //     .create_entry(
-        //         input.destination,
-        //         input.order,
-        //         input.protocol,
-        //         content,
-        //         input.classification,
-        //         input.is_dir,
-        //     )
-        //     .await?;
+        self.worktree()
+            .create_entry(
+                &path,
+                matches!(input, CreateEntryInput::Dir(_)),
+                toml::to_string(&configuration)?.as_bytes(),
+            )
+            .await?;
 
-        // Ok(CreateEntryOutput {
-        //     physical_changes: changes.physical_changes,
-        //     virtual_changes: changes.virtual_changes,
-        // })
+        // TODO: db operations
 
-        todo!()
+        Ok(CreateEntryOutput { id })
     }
 }

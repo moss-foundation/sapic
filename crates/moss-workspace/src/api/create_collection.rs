@@ -47,7 +47,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to get collections")?;
 
         self.fs
-            .create_dir(&abs_path)
+            .create_dir_all(&abs_path)
             .await
             .context("Failed to create the collection directory")?;
 

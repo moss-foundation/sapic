@@ -1,6 +1,8 @@
+pub mod common;
 pub mod dir;
 pub mod item;
 
+pub use common::*;
 pub use dir::*;
 pub use item::*;
 
@@ -8,16 +10,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub struct SpecificationMetadata {
-    pub id: Uuid,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ConfigurationModel {
-    Item(ItemConfigurationModel),
-    Dir(DirConfigurationModel),
+    Item(CompositeItemConfigurationModel),
+    Dir(CompositeDirConfigurationModel),
 }
 
 impl ConfigurationModel {
