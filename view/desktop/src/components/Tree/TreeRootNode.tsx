@@ -135,15 +135,18 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
             }}
             onDoubleClick={() => onRootDoubleClickCallback?.(node)}
           >
-            <Icon
-              icon="ChevronRight"
-              className={cn("hidden text-(--moss-icon-primary-text) group-hover/treeRootNodeTrigger:block", {
-                "rotate-90": shouldRenderChildNodes,
-              })}
-            />
-            {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-            <img src={TestMossImage} className="size-4 group-hover/treeRootNodeTrigger:hidden" />
-
+            <span className="flex size-5 shrink-0 items-center justify-center">
+              <Icon
+                icon="ChevronRight"
+                className={cn("hidden text-(--moss-icon-primary-text) group-hover/treeRootNodeTrigger:block", {
+                  "rotate-90": shouldRenderChildNodes,
+                })}
+              />
+              {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
+              <div className="h-full w-full group-hover/treeRootNodeTrigger:hidden">
+                <img src={TestMossImage} className="h-full w-full" />
+              </div>
+            </span>
             <NodeLabel label={node.id} searchInput={searchInput} />
           </button>
         )}
