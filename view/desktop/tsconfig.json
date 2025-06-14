@@ -36,6 +36,7 @@
       "@/hooks": ["src/hooks"],
       "@/utils": ["src/utils"],
       "@/assets": ["src/assets"],
+      "@/constants": ["src/constants"],
       "@/components": ["src/components"],
       "@/store": ["src/store"]
     }

@@ -42,7 +42,7 @@ export const HeadBarLeftItems = ({
       {isWindowsOrLinux && (
         <>
           <ActionMenu.Root>
-            <ActionMenu.Trigger className="rounded p-1 hover:bg-(--moss-secondary-background-hover)">
+            <ActionMenu.Trigger className="hover:background-(--moss-secondary-background-hover) rounded p-1">
               <Icon icon="WindowsMenu" className="size-4.5 cursor-pointer text-(--moss-headBar-icon-primary-text)" />
             </ActionMenu.Trigger>
             <ActionMenu.Content>
@@ -75,7 +75,7 @@ export const HeadBarLeftItems = ({
       </ActionMenu.Root>
 
       {selectedWorkspace && (
-        <button className="flex h-[24px] cursor-pointer items-center gap-1 rounded px-1 hover:bg-[var(--moss-icon-primary-background-hover)]">
+        <button className="hover:background-(--moss-icon-primary-background-hover) flex h-[24px] cursor-pointer items-center gap-1 rounded px-1">
           <Icon icon="Key" className="size-4.5 text-(--moss-headBar-icon-primary-text)" />
           <span className="text-md">Vault</span>
         </button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import LangchainAgent from "@/ai/LangchainAgent";
+
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
 import { LogEntry, LOGGING_SERVICE_CHANNEL } from "@repo/moss-logging";
@@ -33,9 +34,7 @@ export const Logs = () => {
   };
 
   return (
-    <main className="p-4">
-      <h1 className="mb-4 text-2xl">{t("logs")}</h1>
-
+    <div className="space-y-6">
       <section className="mb-6">
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
@@ -112,7 +111,7 @@ export const Logs = () => {
           <ul>
             {logs.map((log, index) => (
               <li key={index}>
-                {log.timestamp} {log.level} {log.resource} {log.message}
+                {log.id} {log.timestamp} {log.level} {log.resource} {log.message}
               </li>
             ))}
           </ul>
@@ -120,6 +119,6 @@ export const Logs = () => {
           <p className="text-secondary">{t("noLogs")}...</p>
         )}
       </section>
-    </main>
+    </div>
   );
 };

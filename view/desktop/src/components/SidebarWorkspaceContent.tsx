@@ -1,5 +1,4 @@
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { useGetViewGroup } from "@/hooks/viewGroups/useGetViewGroup";
 import CollectionTreeView from "./CollectionTreeView";
 import {
   TREE_VIEW_GROUP_COLLECTIONS,
@@ -16,10 +15,8 @@ interface SidebarWorkspaceContentProps {
 export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: SidebarWorkspaceContentProps) => {
   const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState({});
 
-  const { data: viewGroup, isLoading: isLoadingViewGroup } = useGetViewGroup(groupId);
-
-  // Show loading state while any critical data is loading
-  if (isLoadingWorkspace || isLoadingViewGroup) {
+  // Show loading state while workspace data is loading
+  if (isLoadingWorkspace) {
     return <div className="flex h-full w-full items-center justify-center p-4">Loading...</div>;
   }
 
@@ -49,11 +46,6 @@ export const SidebarWorkspaceContent = ({ workspaceName, groupId = "default" }: 
         </div>
       </div>
     );
-  }
-
-  // If view group doesn't exist for this groupId and it's not default, show an error
-  if (groupId !== "default" && !viewGroup) {
-    return <div className="p-4">No view group found for "{groupId}"</div>;
   }
 
   // Handle different sidebar views based on groupId

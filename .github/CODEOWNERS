@@ -1,1 +1,9 @@
 @g10z3r @jevgenis33
+
+.github/workflows/* @brutusyhy @g10z3r @jevgenis33
+
+**/Cargo.toml      @brutusyhy
+**/Cargo.lock      @brutusyhy
+
+**/package.json    @Enthceph @jevgenis33
+**/pnpm-lock.yaml  @Enthceph @jevgenis33

@@ -1,4 +1,5 @@
 import { RefObject } from "react";
+
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
@@ -58,7 +59,7 @@ export const useGitMenuActions = (props: HeadBarActionProps) => {
 /**
  * Windows menu action handler
  */
-export const useWindowsMenuActions = (props: HeadBarActionProps) => {
+export const useWindowsMenuActions = () => {
   return (action: string) => {
     console.log(`Windows menu action: ${action}`);
   };
@@ -143,7 +144,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       const [, workspaceId, actionType] = workspaceAction;
       console.log(`Workspace action for ${workspaceId}: ${actionType}`);
 
-      const generalActions = ["new", "open", "home", "logs", "debug", "separator"];
+      const generalActions = ["new", "open", "kitchensink", "logs", "debug", "separator"];
       if (generalActions.includes(workspaceId)) {
         console.log(`Skipping false match - "${workspaceId}" is a general action keyword`);
       } else {
@@ -200,8 +201,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         });
         setShowRenameWorkspaceModal(true);
       }
-    } else if (action === "home") {
-      openPanel("Home");
+    } else if (action === "kitchensink") {
+      openPanel("KitchenSink");
     } else if (action === "logs") {
       openPanel("Logs");
     } else if (action === "debug") {

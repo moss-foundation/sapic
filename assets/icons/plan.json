@@ -8,6 +8,9 @@
   "AddCircleActive": {
     "identical": true
   },
+  "AddToVcs": {
+    "identical": true
+  },
   "Bell": {
     "identical": false
   },
@@ -45,6 +48,9 @@
     "identical": false
   },
   "CollapseAll": {
+    "identical": true
+  },
+  "ConfigMap": {
     "identical": true
   },
   "Console": {
@@ -104,10 +110,22 @@
   "History": {
     "identical": true
   },
+  "Home": {
+    "identical": true
+  },
+  "HomeActive": {
+    "identical": true
+  },
   "Import": {
     "identical": true
   },
   "Info": {
+    "identical": true
+  },
+  "JsonPath": {
+    "identical": true
+  },
+  "JsonPathActive": {
     "identical": true
   },
   "Key": {
@@ -161,6 +179,12 @@
   "PersistenceRelationship": {
     "identical": true
   },
+  "Person": {
+    "identical": true
+  },
+  "PersonActive": {
+    "identical": true
+  },
   "Placeholder": {
     "identical": true
   },
@@ -170,10 +194,34 @@
   "Refresh": {
     "identical": true
   },
+  "RemoveCircle": {
+    "identical": true
+  },
   "Send": {
     "identical": false
   },
   "Settings": {
+    "identical": true
+  },
+  "SettingsActive": {
+    "identical": true
+  },
+  "SortAlphabeticallyAsc": {
+    "identical": true
+  },
+  "SortAlphabeticallyDesc": {
+    "identical": true
+  },
+  "SortByDurationAsc": {
+    "identical": true
+  },
+  "SortByDurationDesc": {
+    "identical": true
+  },
+  "SortByTypeAsc": {
+    "identical": true
+  },
+  "SortByTypeDesc": {
     "identical": true
   },
   "Success": {
@@ -216,6 +264,12 @@
     "identical": true
   },
   "WorkspaceActive": {
+    "identical": true
+  },
+  "Wrench": {
+    "identical": true
+  },
+  "WrenchActive": {
     "identical": true
   }
 }

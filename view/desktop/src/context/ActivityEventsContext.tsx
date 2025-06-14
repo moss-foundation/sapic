@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+
 import { ActivityEvent } from "@repo/moss-workbench";
 import { listen } from "@tauri-apps/api/event";
 
@@ -88,9 +89,9 @@ function activityReducer(state: ActivityState, action: ActivityAction): Activity
       }
 
       let newOneshotEvents = state.oneshotEvents;
-      let newActiveActivities = new Set(state.activeActivities);
-      let newStartTitles = new Map(state.startTitles);
-      let newActiveProgressEvents = new Map(state.activeProgressEvents);
+      const newActiveActivities = new Set(state.activeActivities);
+      const newStartTitles = new Map(state.startTitles);
+      const newActiveProgressEvents = new Map(state.activeProgressEvents);
 
       if (eventType === "oneshot") {
         newOneshotEvents = [...state.oneshotEvents, event];
