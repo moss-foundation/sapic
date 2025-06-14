@@ -16,3 +16,18 @@ scripts:
 
 enhancement:
   - title: "feat\\(.*\\):.*"
+
+fix:
+  - title: "fix\\(.*\\):.*"
+
+refactor:
+  - title: "refactor\\(.*\\):.*"
+
+docs:
+  - title: "docs\\(.*\\):.*"
+
+chore:
+  - title: "chore\\(.*\\):.*"
+
+ci:
+  - title: "ci\\(.*\\):.*"
