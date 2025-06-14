@@ -38,7 +38,7 @@ pub enum RequestDirConfigurationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
+// #[serde(untagged)]
 #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {
@@ -52,6 +52,7 @@ pub enum DirConfigurationModel {
 #[serde(rename_all = "snake_case")]
 pub struct CompositeDirConfigurationModel {
     pub metadata: ConfigurationMetadata,
+    #[serde(flatten)]
     pub inner: DirConfigurationModel,
 }
 

@@ -33,7 +33,6 @@ pub enum ComponentItemConfigurationModel {}
 pub enum SchemaItemConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
 #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ItemConfigurationModel {
@@ -47,6 +46,7 @@ pub enum ItemConfigurationModel {
 #[serde(rename_all = "snake_case")]
 pub struct CompositeItemConfigurationModel {
     pub metadata: ConfigurationMetadata,
+    #[serde(flatten)]
     pub inner: ItemConfigurationModel,
 }
 

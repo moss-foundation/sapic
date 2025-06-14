@@ -86,7 +86,7 @@ pub struct HeaderParamItem {
 // Body
 
 #[derive(Clone, Debug, Serialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "types.ts")]
 pub enum RawBodyType {
     Text(String),
@@ -134,12 +134,11 @@ pub struct UrlEncodedOptions {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
+#[ts(optional_fields)]
 pub struct UrlEncodedItem {
     pub key: String,
     pub value: String,
-    #[ts(optional)]
     pub order: Option<usize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: UrlEncodedOptions,
