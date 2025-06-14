@@ -154,8 +154,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
               className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
             >
               <ActionButton icon="Add" onClick={() => setIsAddingRootFileNode(true)} />
-              <ActionButton icon="Refresh" />
-              <ActionButton icon="ExpandAll" disabled={allFoldersAreExpanded} onClick={handleExpandAll} />
               <ActionButton icon="CollapseAll" disabled={allFoldersAreCollapsed} onClick={handleCollapseAll} />
             </div>
           )}
@@ -168,6 +166,10 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
                 <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
                 <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
                 <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
+                <ActionMenu.Item>Refresh</ActionMenu.Item>
+                <ActionMenu.Item disabled={allFoldersAreExpanded} onClick={handleExpandAll}>
+                  ExpandAll
+                </ActionMenu.Item>
               </ActionMenu.Content>
             </ActionMenu.Portal>
           </ActionMenu.Root>
