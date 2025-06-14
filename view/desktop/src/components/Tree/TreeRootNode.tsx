@@ -128,7 +128,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </div>
         ) : (
           <button
-            className="flex grow cursor-pointer items-center gap-1 overflow-hidden font-medium"
+            className="flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
             onClick={() => {
               handleFolderClick();
               onRootClickCallback?.(node);
