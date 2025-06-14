@@ -90,9 +90,15 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
     <div ref={dropTargetFolderRef} className={cn("group relative w-full")}>
       <div
         ref={draggableRootRef}
-        className="hover:background-(--moss-secondary-background-hover) flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
+        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
         style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
+        <span
+          className={cn(
+            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute h-[calc(100%-8px)] w-[calc(100%-16px)] rounded-sm"
+          )}
+        />
+
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm
             node={node}
@@ -120,7 +126,6 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           handleCollapseAll={handleCollapseAll}
           handleExpandAll={handleExpandAll}
         />
-
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>
 
@@ -154,7 +159,7 @@ const TreeRootNodeButton = ({
 
   return (
     <button
-      className="group/treeRootNodeTrigger flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
+      className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
       onClick={() => {
         handleFolderClick();
         onRootClickCallback?.(node);
@@ -203,7 +208,7 @@ const TreeRootNodeActions = ({
   handleExpandAll,
 }: TreeRootNodeActionsProps) => {
   return (
-    <div className="flex items-center">
+    <div className="z-10 flex items-center">
       {node.isExpanded && !searchInput && !isRenamingRootNode && (
         <div
           className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
