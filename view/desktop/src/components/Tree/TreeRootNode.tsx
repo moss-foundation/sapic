@@ -128,7 +128,7 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           </div>
         ) : (
           <button
-            className="flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
+            className="group/treeRootNodeTrigger flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
             onClick={() => {
               handleFolderClick();
               onRootClickCallback?.(node);
@@ -137,12 +137,12 @@ export const TreeRootNode = ({ node, onNodeUpdate }: TreeRootNodeProps) => {
           >
             <Icon
               icon="ChevronRight"
-              className={cn("hidden text-(--moss-icon-primary-text) group-hover:block", {
+              className={cn("hidden text-(--moss-icon-primary-text) group-hover/treeRootNodeTrigger:block", {
                 "rotate-90": shouldRenderChildNodes,
               })}
             />
             {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-            <img src={TestMossImage} className="size-4 group-hover:hidden" />
+            <img src={TestMossImage} className="size-4 group-hover/treeRootNodeTrigger:hidden" />
 
             <NodeLabel label={node.id} searchInput={searchInput} />
           </button>
