@@ -201,6 +201,7 @@
   "--moss-select-hover-bg",
   "--moss-select-item-bg-outlined-hover",
   "--moss-select-item-bg-outlined-selected",
+  "--moss-select-disabled-bg",
   "--moss-input-bg-plain",
   "--moss-input-bg-outlined",
   "--moss-stepCard-text",
