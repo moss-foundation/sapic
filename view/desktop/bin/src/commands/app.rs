@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use moss_app::manager::AppManager;
-use moss_logging::{LogPayload, LogScope, LoggingService};
 use moss_nls::{
     locale_service::LocaleService,
     models::operations::{GetTranslationsInput, GetTranslationsOutput, ListLocalesOutput},
@@ -22,10 +21,11 @@ use moss_theme::{
     },
     theme_service::ThemeService,
 };
-use moss_workbench::workbench::Workbench;
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
+
+use crate::{commands::ReadWorkbench, primitives::AppState};
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
@@ -38,7 +38,8 @@ pub async fn set_color_theme<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(&app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     for (label, _) in app_handle.webview_windows() {
         if window.label() == &label {
@@ -66,13 +67,20 @@ pub async fn get_color_theme<R: TauriRuntime>(
     window: Window<R>,
     input: GetColorThemeInput,
 ) -> TauriResult<GetColorThemeOutput> {
-    let app_handle = app_manager.app_handle();
-    let theme_service = app_manager
-        .services()
-        .get_by_type::<ThemeService>(app_handle)
-        .await?;
+    let r = tokio::time::timeout(Duration::from_secs(30), async move {
+        let app_handle = app_manager.app_handle();
+        let theme_service = app_manager
+            .services()
+            .get_by_type::<ThemeService>(app_handle)
+            .await
+            .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
 
-    Ok(theme_service.get_color_theme(input).await?)
+        Ok(theme_service.get_color_theme(input).await?)
+    })
+    .await
+    .unwrap();
+
+    r
 }
 
 #[tauri::command(async)]
@@ -85,14 +93,16 @@ pub async fn list_color_themes<R: TauriRuntime>(
     let theme_service = app_manager
         .services()
         .get_by_type::<ThemeService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get theme service: {}", err))?;
 
     Ok(theme_service.list_color_themes().await?)
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_manager), fields(window = window.label()))]
+#[instrument(level = "trace", skip(app_manager, state), fields(window = window.label()))]
 pub async fn describe_app_state<R: TauriRuntime>(
+    state: AppState<'_, R>,
     app_manager: State<'_, AppManager<R>>,
     window: Window<R>,
 ) -> TauriResult<DescribeAppStateOutput> {
@@ -100,25 +110,21 @@ pub async fn describe_app_state<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(&app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
-    let workspace_manager = app_manager
-        .services()
-        .get_by_type::<Workbench<R>>(&app_handle)
-        .await?;
+    let workbench = state.workbench();
 
     // HACK: This is a hack to get the last workspace name
-    let last_workspace_name = workspace_manager
-        .active_workspace()
-        .map(|active_workspace| {
-            active_workspace
-                .inner
-                .abs_path()
-                .file_name()
-                .unwrap()
-                .to_string_lossy()
-                .to_string()
-        });
+    let last_workspace_name = workbench.active_workspace().map(|active_workspace| {
+        active_workspace
+            .inner
+            .abs_path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_string()
+    });
 
     Ok(DescribeAppStateOutput {
         preferences: Preferences {
@@ -144,7 +150,8 @@ pub async fn set_locale<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     state_service.set_locale(input);
 
@@ -161,7 +168,8 @@ pub async fn list_locales<R: TauriRuntime>(
     let locale_service = app_manager
         .services()
         .get_by_type::<LocaleService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get locale service: {}", err))?;
 
     Ok(locale_service.list_locales().await?)
 }
@@ -177,7 +185,8 @@ pub async fn get_translations<R: TauriRuntime>(
     let locale_service = app_manager
         .services()
         .get_by_type::<LocaleService>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get locale service: {}", err))?;
 
     Ok(locale_service.get_translations(&input).await?)
 }
@@ -194,7 +203,8 @@ pub async fn execute_command<R: TauriRuntime>(
     let state_service = app_manager
         .services()
         .get_by_type::<StateService<R>>(app_handle)
-        .await?;
+        .await
+        .map_err(|err| anyhow!("Failed to get state service: {}", err))?;
 
     match state_service.get_command(&cmd) {
         Some(command_handler) => {

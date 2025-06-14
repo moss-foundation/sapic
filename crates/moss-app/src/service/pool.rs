@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use fnv::FnvHashMap;
-use moss_tauri::TauriError;
 use parking_lot::Mutex;
 use slotmap::{SecondaryMap, SlotMap};
 use std::{
@@ -30,12 +29,6 @@ pub enum ServicePoolError {
 
     #[error("Failed to get service")]
     Unknown(#[from] anyhow::Error),
-}
-
-impl From<ServicePoolError> for TauriError {
-    fn from(error: ServicePoolError) -> Self {
-        TauriError(error.to_string())
-    }
 }
 
 type AnyService = Arc<dyn Any + Send + Sync>;

@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 /*!
  * # Hic Sunt Dracones 🐉
  *
@@ -15,7 +17,7 @@
 use crate::MAIN_WINDOW_PREFIX;
 use rand::{Rng, distr::Alphanumeric};
 use tauri::{
-    Emitter, Runtime, Window, WindowEvent, Wry,
+    Emitter, Runtime, Window, WindowEvent,
     plugin::{Builder, TauriPlugin},
 };
 

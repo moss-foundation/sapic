@@ -1,5 +1,6 @@
 use moss_activity_indicator::ActivityIndicator;
-use moss_fs::RealFileSystem;
+use moss_app::context::{AppContext, AppContextBuilder};
+use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
@@ -27,9 +28,18 @@ use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
+pub async fn setup_test_workspace() -> (
+    AppContext<MockRuntime>,
+    Arc<Path>,
+    Workspace<MockRuntime>,
+    CleanupFn,
+) {
+    let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
+    let mut context_builder = AppContextBuilder::new();
+    <dyn FileSystem>::set_global(fs, &mut context_builder);
+    let ctx = context_builder.build(app_handle.clone());
 
     let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -39,12 +49,11 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
         .into();
     fs::create_dir_all(&workspace_path).unwrap();
 
-    let fs = Arc::new(RealFileSystem::new());
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
     let workspace = Workspace::create(
-        app_handle.clone(),
+        &ctx,
         &workspace_path,
-        fs,
+        // fs,
         activity_indicator,
         CreateParams {
             name: Some(random_workspace_name()),
@@ -63,7 +72,7 @@ pub async fn setup_test_workspace() -> (Arc<Path>, Workspace<MockRuntime>, Clean
         }) as Pin<Box<dyn Future<Output = ()> + Send>>
     });
 
-    (workspace_path, workspace, cleanup_fn)
+    (ctx, workspace_path, workspace, cleanup_fn)
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {

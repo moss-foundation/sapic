@@ -16,7 +16,7 @@ pub enum BuiltInMenuEvent {
 
 pub fn handle_event<R: TauriRuntime>(_window: &Window<R>, event: &MenuEvent) {
     let event_id = event.id().0.as_str();
-    let app_handle = _window.app_handle().clone();
+    let _app_handle = _window.app_handle().clone();
     match event_id {
         // "file.newWindow" => handle_new_window(app_handle),
         _ => {}

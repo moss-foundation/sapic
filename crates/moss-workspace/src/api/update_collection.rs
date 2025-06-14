@@ -1,4 +1,5 @@
 use anyhow::Context as _;
+use moss_app::context::AppContext;
 use moss_collection::collection::{self};
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 
@@ -13,12 +14,13 @@ use crate::{
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection(
         &self,
+        ctx: &AppContext<R>,
         input: UpdateCollectionEntryInput,
     ) -> OperationResult<UpdateCollectionEntryOutput> {
         input.validate()?;
 
         let collections = self
-            .collections()
+            .collections(ctx)
             .await
             .context("Failed to get collections")?;
 

@@ -4,12 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_tauri.workspace = true
 
 anyhow.workspace = true
 fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
 slotmap.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["full"] }
 parking_lot.workspace = true
+rustc-hash.workspace = true

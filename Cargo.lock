@@ -3007,8 +3007,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "fnv",
- "moss_tauri",
  "parking_lot",
+ "rustc-hash",
  "slotmap",
  "tauri",
  "thiserror 2.0.12",
@@ -3122,10 +3122,12 @@ dependencies = [
  "async-stream",
  "async-trait",
  "futures",
+ "moss_app",
  "moss_common",
  "moss_text",
  "notify",
  "regex",
+ "tauri",
  "tokio",
  "tokio-stream",
 ]
@@ -3250,6 +3252,7 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "moss_app",
  "moss_common",
  "serde",
  "serde_json",
