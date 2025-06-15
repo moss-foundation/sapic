@@ -106,7 +106,7 @@ pub async fn describe_workbench_state<R: TauriRuntime>(
     window: Window<R>,
 ) -> TauriResult<DescribeWorkbenchStateOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let ctx = AppContext::from(&app);
+        let _ctx = AppContext::from(&app);
         let workbench = app.workbench();
         workbench
             .describe_state()
