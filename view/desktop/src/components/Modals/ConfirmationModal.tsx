@@ -39,7 +39,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Modal
       showModal={showModal}
       onBackdropClick={handleCancel}
-      className="background-(--moss-primary-background) h-52 w-[27rem] border border-(--moss-border-color) text-(--moss-primary-text)"
+      className="background-(--moss-primary-background) h-52 w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
     >
       <div className="flex h-full flex-col">
         <div className="pt-2 pb-1.5">

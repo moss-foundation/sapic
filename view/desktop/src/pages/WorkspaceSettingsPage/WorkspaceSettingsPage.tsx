@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useUpdateWorkspace } from "@/hooks/workbench/useUpdateWorkspace";
+import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
 import { WorkspaceNameSection } from "./WorkspaceNameSection";
@@ -11,11 +13,13 @@ import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 export const WorkspaceSettings = () => {
   const workspace = useActiveWorkspace();
   const { mutate: updateWorkspace, isPending } = useUpdateWorkspace();
+  const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
   const [name, setName] = useState(workspace?.displayName || "");
   const [hasChanges, setHasChanges] = useState(false);
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   useEffect(() => {
     if (workspace) {
@@ -58,6 +62,22 @@ export const WorkspaceSettings = () => {
     }
   };
 
+  // Delete workspace handlers
+  const handleDeleteClick = () => {
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleDeleteWorkspace = () => {
+    if (workspace) {
+      deleteWorkspace({ id: workspace.id });
+      setShowDeleteConfirmModal(false);
+    }
+  };
+
+  const closeDeleteConfirmModal = () => {
+    setShowDeleteConfirmModal(false);
+  };
+
   if (!workspace) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
@@ -70,29 +90,43 @@ export const WorkspaceSettings = () => {
   }
 
   return (
-    <div className="flex h-full justify-center">
-      <div className="w-full max-w-2xl space-y-6 px-6 py-5">
-        <WorkspaceNameSection
-          name={name}
-          setName={setName}
-          hasChanges={hasChanges}
-          isPending={isPending}
-          onSave={handleSave}
-          onReset={handleReset}
-          onBlur={handleBlur}
-        />
+    <>
+      <ConfirmationModal
+        showModal={showDeleteConfirmModal}
+        closeModal={closeDeleteConfirmModal}
+        title="Delete"
+        message={`Delete "${workspace?.displayName}"?`}
+        description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+        confirmLabel="Delete"
+        cancelLabel="Close"
+        onConfirm={handleDeleteWorkspace}
+        variant="danger"
+      />
 
-        <WorkspaceStartupSection
-          reopenOnNextSession={reopenOnNextSession}
-          setReopenOnNextSession={setReopenOnNextSession}
-          openPreviousWindows={openPreviousWindows}
-          setOpenPreviousWindows={setOpenPreviousWindows}
-        />
+      <div className="flex h-full justify-center">
+        <div className="w-full max-w-2xl space-y-6 px-6 py-5">
+          <WorkspaceNameSection
+            name={name}
+            setName={setName}
+            hasChanges={hasChanges}
+            isPending={isPending}
+            onSave={handleSave}
+            onReset={handleReset}
+            onBlur={handleBlur}
+          />
 
-        <WorkspaceDataSection />
+          <WorkspaceStartupSection
+            reopenOnNextSession={reopenOnNextSession}
+            setReopenOnNextSession={setReopenOnNextSession}
+            openPreviousWindows={openPreviousWindows}
+            setOpenPreviousWindows={setOpenPreviousWindows}
+          />
 
-        <WorkspaceDangerZoneSection />
+          <WorkspaceDataSection />
+
+          <WorkspaceDangerZoneSection onDeleteClick={handleDeleteClick} />
+        </div>
       </div>
-    </div>
+    </>
   );
 };

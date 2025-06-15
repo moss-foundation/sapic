@@ -1,7 +1,11 @@
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { SectionTitle } from "./SectionTitle";
 
-export const WorkspaceDangerZoneSection = () => {
+interface WorkspaceDangerZoneSectionProps {
+  onDeleteClick: () => void;
+}
+
+export const WorkspaceDangerZoneSection = ({ onDeleteClick }: WorkspaceDangerZoneSectionProps) => {
   return (
     <div className="mt-6 text-(--moss-primary-text)">
       <SectionTitle>Danger Zone</SectionTitle>
@@ -14,6 +18,7 @@ export const WorkspaceDangerZoneSection = () => {
         </div>
         <ButtonNeutralOutlined
           size="md"
+          onClick={onDeleteClick}
           className="!h-7 !bg-(--moss-button-background-delete) !text-(--moss-button-text-delete) hover:!bg-(--moss-button-background-delete-hover)"
         >
           Delete
