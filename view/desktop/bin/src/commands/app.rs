@@ -17,6 +17,8 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::{Emitter, EventTarget, Manager, Runtime as TauriRuntime, State, Window};
 
+use crate::constants::DEFAULT_COMMAND_TIMEOUT;
+
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn set_color_theme<R: TauriRuntime>(
@@ -24,22 +26,26 @@ pub async fn set_color_theme<R: TauriRuntime>(
     window: Window<R>,
     input: SetColorThemeInput,
 ) -> TauriResult<()> {
-    for (label, _) in app.webview_windows() {
-        if window.label() == &label {
-            continue;
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        for (label, _) in app.webview_windows() {
+            if window.label() == &label {
+                continue;
+            }
+
+            app.emit_to(
+                EventTarget::webview_window(&label),
+                "core://color-theme-changed",
+                ColorThemeChangeEventPayload::new(&input.theme_info.identifier),
+            )
+            .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
         }
 
-        app.emit_to(
-            EventTarget::webview_window(&label),
-            "core://color-theme-changed",
-            ColorThemeChangeEventPayload::new(&input.theme_info.identifier),
-        )
-        .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
-    }
-
-    app.set_color_theme(input).await?;
-
-    Ok(())
+        app.set_color_theme(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -49,7 +55,13 @@ pub async fn get_color_theme<R: TauriRuntime>(
     window: Window<R>,
     input: GetColorThemeInput,
 ) -> TauriResult<GetColorThemeOutput> {
-    Ok(app.get_color_theme(input).await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.get_color_theme(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -58,7 +70,13 @@ pub async fn list_color_themes<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
 ) -> TauriResult<ListColorThemesOutput> {
-    Ok(app.list_color_themes().await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.list_color_themes()
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -67,7 +85,13 @@ pub async fn describe_app_state<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
 ) -> TauriResult<DescribeAppStateOutput> {
-    Ok(app.describe_state().await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.describe_state()
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command]
@@ -77,7 +101,13 @@ pub async fn set_locale<R: TauriRuntime>(
     window: Window<R>,
     input: SetLocaleInput,
 ) -> TauriResult<()> {
-    Ok(app.set_locale(input).await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.set_locale(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -86,7 +116,11 @@ pub async fn list_locales<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
 ) -> TauriResult<ListLocalesOutput> {
-    Ok(app.list_locales().await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.list_locales().await.map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -96,7 +130,13 @@ pub async fn get_translations<R: TauriRuntime>(
     window: Window<R>,
     input: GetTranslationsInput,
 ) -> TauriResult<GetTranslationsOutput> {
-    Ok(app.get_translations(input).await?)
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        app.get_translations(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -107,14 +147,18 @@ pub async fn execute_command<R: TauriRuntime>(
     cmd: ReadOnlyStr,
     args: HashMap<String, JsonValue>,
 ) -> TauriResult<JsonValue> {
-    let app_handle = app.app_handle();
-    match app.command(&cmd) {
-        Some(command_handler) => {
-            command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        let app_handle = app.app_handle();
+        match app.command(&cmd) {
+            Some(command_handler) => {
+                command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
+            }
+            _ => Err(TauriError::Other(anyhow!(
+                "command with id {} is not found",
+                quote!(cmd)
+            ))),
         }
-        _ => Err(TauriError(format!(
-            "command with id {} is not found",
-            quote!(cmd)
-        ))),
-    }
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
 }
