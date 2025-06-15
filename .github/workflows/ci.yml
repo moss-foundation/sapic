@@ -108,11 +108,7 @@ jobs:
           - moss_fs
           - moss_keyring
           - moss_vault
-          - moss_theme
-          - moss_state
-          - moss_nls
           - moss_logging
-          - moss_session
           - moss_workspace
           - moss_environment
           - moss_testutils
@@ -172,11 +168,7 @@ jobs:
           - moss_fs
           - moss_keyring
           # - moss_vault
-          - moss_theme
-          - moss_state
-          - moss_nls
           - moss_logging
-          - moss_session
           - moss_workspace
           - moss_environment
           - moss_testutils
