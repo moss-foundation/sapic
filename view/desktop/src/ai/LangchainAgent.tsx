@@ -51,11 +51,9 @@ async function setupAgent() {
 }
 
 function useAgent() {
-  const [agent, setAgent] = useState<any>(null);
+  const [agent, setAgent] = useState<Awaited<ReturnType<typeof setupAgent>> | null>(null);
   useEffect(() => {
-    setupAgent().then((agent) => {
-      setAgent(agent);
-    });
+    setupAgent().then(setAgent);
   }, []);
   return agent;
 }
@@ -66,7 +64,7 @@ const LangchainAgent = () => {
   function handleClick() {
     const prompt = `Please create a workspace with the following name: TestWorkspace`;
     agent
-      .invoke({
+      ?.invoke({
         messages: [{ role: "user", content: prompt }],
       })
       .then((response) => console.log(response));

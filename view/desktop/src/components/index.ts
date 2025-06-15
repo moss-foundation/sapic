@@ -4,7 +4,7 @@ export * from "../parts/SideBar/Sidebar";
 export * from "../parts/SideBar/SidebarHeader";
 export * from "./ActionButton";
 export * as ActionMenu from "./ActionMenu";
-export * from "./ActivityBar";
+export * from "./ActivityBar/ActivityBar";
 export * from "./Breadcrumbs/Breadcrumbs";
 export * as Checkbox from "./CheckboxWithLabel";
 export * from "./Divider";
@@ -21,6 +21,6 @@ export * from "./SelectOutlined";
 export * from "./ToggleGroup";
 export * from "./Tree/Tree";
 
-export * from "./Workbench";
 export * from "./EmptyWorkspace";
+export * from "./Workbench";
 export * from "./Workspace";

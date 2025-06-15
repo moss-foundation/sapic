@@ -37,7 +37,7 @@ const buttonStyles = `
   h-[22px] min-w-0  
   cursor-pointer rounded p-[3px]
   text-[var(--moss-icon-primary-text)] 
-  hover:bg-[var(--moss-icon-primary-background-hover)] 
+  hover:background-(--moss-icon-primary-background-hover) 
   disabled:cursor-default 
   disabled:opacity-50
   truncate
@@ -87,7 +87,7 @@ const ButtonLabel: React.FC<LabelProps> = ({
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        className="text-md h-[18px] min-w-[80px] bg-[var(--moss-input-background)] px-1 text-[var(--moss-primary-text)] outline-none"
+        className="text-md background-(--moss-input-bg-outlined) h-[18px] min-w-[80px] px-1 text-[var(--moss-primary-text)] outline-none"
       />
     );
   }
@@ -171,7 +171,7 @@ export const IconLabelButton = forwardRef<HTMLButtonElement, IconLabelButtonProp
         };
       }
       return () => {};
-    }, [editable, ref, isEditing]);
+    }, [editable, ref, isEditing, handleStartEdit]);
 
     return (
       <button

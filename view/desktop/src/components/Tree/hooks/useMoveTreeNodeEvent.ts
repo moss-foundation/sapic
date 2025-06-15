@@ -69,5 +69,5 @@ export const useMoveTreeNodeEvent = ({
     return () => {
       window.removeEventListener("moveTreeNode", handleMoveTreeNode as EventListener);
     };
-  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, treeId]);
+  }, [onNodeAdd, onNodeRemove, onRootAdd, onRootRemove, onTreeUpdate, setTree, treeId]);
 };

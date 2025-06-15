@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-import Icon from "../lib/ui/Icon";
-
 // FIXME:
 // The statically created array `tips` is a temporary solution.
 // In the future, this data will be fetched from the backend.

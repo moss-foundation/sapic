@@ -4,14 +4,19 @@ import { cn } from "@/utils";
 
 interface DragHandleButtonProps {
   className?: string;
+  slim?: boolean;
 }
 
-const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ className }, ref) => {
+const DragHandleButton = forwardRef<HTMLDivElement, DragHandleButtonProps>(({ className, slim }, ref) => {
   return (
     <div
       ref={ref}
       className={cn(
-        "background-(--moss-drag-handle-bg) flex size-4 cursor-grab items-center justify-center rounded shadow",
+        "background-(--moss-drag-handle-bg) flex cursor-grab items-center justify-center rounded shadow",
+        {
+          "px-1 py-0.5": slim,
+          "size-4": !slim,
+        },
         className
       )}
     >

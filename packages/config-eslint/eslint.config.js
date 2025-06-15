@@ -1,4 +1,5 @@
+import tseslint from "typescript-eslint";
+
 import defaultConfig from "./configs/default.js";
 
-/** @type {import('eslint').Linter.Config} */
-export default [...defaultConfig];
+export default tseslint.config(defaultConfig);

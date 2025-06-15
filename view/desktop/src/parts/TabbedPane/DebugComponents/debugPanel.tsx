@@ -102,7 +102,7 @@ export function usePanelApiMetadata(api: DockviewPanelApi): PanelApiMetadata {
         },
       }));
     });
-    const d4 = api.onDidFocusChange((event) => {
+    const d4 = api.onDidFocusChange(() => {
       setState((_) => ({
         ..._,
         didFocus: {
@@ -110,7 +110,7 @@ export function usePanelApiMetadata(api: DockviewPanelApi): PanelApiMetadata {
         },
       }));
     });
-    const d5 = api.onDidGroupChange((event) => {
+    const d5 = api.onDidGroupChange(() => {
       setState((_) => ({
         ..._,
         groupChanged: {

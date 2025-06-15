@@ -92,22 +92,23 @@ const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProp
     const { __scopeActionMenu, disabled = false, openOnRightClick = false, ...triggerProps } = props;
     const context = useActionMenuContext(TRIGGER_NAME, __scopeActionMenu);
 
+    //Hooks only for right click
+    const menuScope = useMenuScope(__scopeActionMenu);
+    const pointRef = React.useRef<Point>({ x: 0, y: 0 });
+    const virtualRef = React.useRef({
+      getBoundingClientRect: () => DOMRect.fromRect({ width: 0, height: 0, ...pointRef.current }),
+    });
+    const longPressTimerRef = React.useRef(0);
+    const clearLongPress = React.useCallback(() => window.clearTimeout(longPressTimerRef.current), []);
+    const handleOpen = (event: React.MouseEvent | React.PointerEvent) => {
+      pointRef.current = { x: event.clientX, y: event.clientY };
+      context.onOpenChange(true);
+    };
+
+    React.useEffect(() => clearLongPress, [clearLongPress]);
+    React.useEffect(() => void (disabled && clearLongPress()), [disabled, clearLongPress]);
+
     if (openOnRightClick) {
-      const menuScope = useMenuScope(__scopeActionMenu);
-      const pointRef = React.useRef<Point>({ x: 0, y: 0 });
-      const virtualRef = React.useRef({
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 0, height: 0, ...pointRef.current }),
-      });
-      const longPressTimerRef = React.useRef(0);
-      const clearLongPress = React.useCallback(() => window.clearTimeout(longPressTimerRef.current), []);
-      const handleOpen = (event: React.MouseEvent | React.PointerEvent) => {
-        pointRef.current = { x: event.clientX, y: event.clientY };
-        context.onOpenChange(true);
-      };
-
-      React.useEffect(() => clearLongPress, [clearLongPress]);
-      React.useEffect(() => void (disabled && clearLongPress()), [disabled, clearLongPress]);
-
       return (
         <>
           <MenuPrimitive.Anchor {...menuScope} virtualRef={virtualRef} />

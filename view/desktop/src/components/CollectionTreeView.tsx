@@ -116,15 +116,13 @@ export const CollectionTreeView = () => {
 
           <div className="flex grow flex-col">
             {collections.map((collection) => (
-              <div key={`${collection.id}`}>
-                <Tree
-                  onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
-                  tree={collection.tree}
-                  id={collection.id}
-                  searchInput={searchInput}
-                />
-                <div className="background-(--moss-border-color) h-[1px] w-full" />
-              </div>
+              <Tree
+                key={`${collection.id}`}
+                onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
+                tree={collection.tree}
+                id={collection.id}
+                searchInput={searchInput}
+              />
             ))}
           </div>
 

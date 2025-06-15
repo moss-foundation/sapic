@@ -7,8 +7,14 @@ use std::fs::remove_dir_all;
 
 mod shared;
 
-// We can't test dates filter now since we can't generate logs with custom dates
+/// These tests can work one at a time, but cannot be executed together using `cargo test`.
+/// This is because LoggingService will set a global default subscriber.
+/// However, it can only be set once per a program,
+/// While the `cargo test` model will run every test as part of the same program.
+/// Thus, they are marked as ignored.
 
+// We can't test dates filter now since we can't generate logs with custom dates
+#[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
     let (logging_service, applog_path) = set_up_logging_service().await;
@@ -28,6 +34,7 @@ async fn test_list_logs_empty() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_list_logs_no_filter() {
     let (logging_service, applog_path) = set_up_logging_service().await;
@@ -76,6 +83,7 @@ async fn test_list_logs_no_filter() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_list_logs_filter_by_levels() {
     let (logging_service, applog_path) = set_up_logging_service().await;
@@ -137,6 +145,7 @@ async fn test_list_logs_filter_by_levels() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_list_logs_filter_by_resource() {
     let (logging_service, applog_path) = set_up_logging_service().await;
