@@ -22,29 +22,32 @@ export const WorkspaceName = ({
   onBlur,
 }: WorkspaceNameProps) => {
   return (
-    <div className="mt-4">
-      <h3 className="mb-2 font-medium text-[var(--moss-select-text-outlined)]">Name:</h3>
-      <div className="w-[400px]">
-        <InputOutlined
-          size="md"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={onBlur}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              onSave();
-            } else if (e.key === "Escape") {
-              e.preventDefault();
-              onReset();
-            }
-          }}
-          placeholder="Enter workspace name..."
-        />
+    <div>
+      <div className="flex items-start gap-4">
+        <label className="mt-2 text-sm font-medium text-[var(--moss-select-text-outlined)]">Name:</label>
+        <div>
+          <InputOutlined
+            size="md"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={onBlur}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onSave();
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                onReset();
+              }
+            }}
+            placeholder="Enter workspace name..."
+            className="w-72"
+          />
+          <p className="mt-1 w-72 text-xs text-gray-500">
+            Invalid filename characters (e.g. / \ : * ? " &lt; &gt; |) will be escaped
+          </p>
+        </div>
       </div>
-      <p className="mt-1 text-xs text-gray-500">
-        Invalid filename characters (e.g. / \ : * ? " &lt; &gt; |) will be escaped
-      </p>
       {hasChanges && (
         <div className="mt-3 flex items-center gap-2">
           <ButtonPrimary onClick={onSave} disabled={isPending || !name.trim()} size="md">
