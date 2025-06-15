@@ -175,58 +175,10 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-nls:
-    dependencies:
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      zod:
-        specifier: ^3.24.4
-        version: 3.25.51
-    devDependencies:
-      '@repo/bindings-utils':
-        specifier: workspace:*
-        version: link:../../packages/bindings-utils
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
-  crates/moss-state:
-    dependencies:
-      typescript:
-        specifier: ^5.7.2
-        version: 5.8.3
-      zod:
-        specifier: ^3.24.4
-        version: 3.25.51
-    devDependencies:
-      '@repo/moss-nls':
-        specifier: workspace:*
-        version: link:../moss-nls
-      '@repo/moss-theme':
-        specifier: workspace:*
-        version: link:../moss-theme
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
   crates/moss-text:
     dependencies:
       typescript:
         specifier: ^5.8.2
-        version: 5.8.3
-      zod:
-        specifier: ^3.24.4
-        version: 3.25.51
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
-  crates/moss-theme:
-    dependencies:
-      typescript:
-        specifier: ^5.7.2
         version: 5.8.3
       zod:
         specifier: ^3.24.4
@@ -399,21 +351,15 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.1.0
         version: 1.2.2(@types/react@18.3.23)(react@18.3.1)
+      '@repo/moss-app':
+        specifier: workspace:*
+        version: link:../../crates/moss-app
       '@repo/moss-logging':
         specifier: workspace:*
         version: link:../../crates/moss-logging
-      '@repo/moss-nls':
-        specifier: workspace:*
-        version: link:../../crates/moss-nls
-      '@repo/moss-state':
-        specifier: workspace:*
-        version: link:../../crates/moss-state
       '@repo/moss-tabs':
         specifier: workspace:*
         version: link:src/lib/moss-tabs
-      '@repo/moss-theme':
-        specifier: workspace:*
-        version: link:../../crates/moss-theme
       '@repo/moss-workbench':
         specifier: workspace:*
         version: link:../../crates/moss-workbench

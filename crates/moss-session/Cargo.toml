@@ -1,8 +1,0 @@
-[package]
-name = "moss_session"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-uuid = { workspace = true, features = ["v4"] }
-moss_app.workspace = true

@@ -1,5 +1,5 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
-import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-theme";
+import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-app";
 
 export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResult<GetColorThemeOutput, string>> => {
   return await invokeTauriIpc("get_color_theme", {

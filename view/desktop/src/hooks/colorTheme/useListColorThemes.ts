@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { ListColorThemesOutput } from "@repo/moss-theme";
+import { ListColorThemesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_COLOR_THEMES_QUERY_KEY = "listColorThemes";
