@@ -31,7 +31,6 @@
     "@radix-ui/react-use-callback-ref": "^1.1.0",
     "@radix-ui/react-use-controllable-state": "^1.1.0",
     "@repo/moss-app": "workspace:*",
-    "@repo/moss-logging": "workspace:*",
     "@repo/moss-tabs": "workspace:*",
     "@repo/moss-workbench": "workspace:*",
     "@repo/moss-workspace": "workspace:*",

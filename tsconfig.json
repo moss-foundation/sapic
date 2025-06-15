@@ -11,9 +11,6 @@
       "path": "crates/moss-collection"
     },
     {
-      "path": "crates/moss-logging"
-    },
-    {
       "path": "crates/moss-environment"
     },
     {

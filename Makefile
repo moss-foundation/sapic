@@ -54,7 +54,6 @@ SCRIPTS_DIR := scripts
 # ---- Crate Directories ----
 APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
-LOGGING_MODELS_DIR := crates/moss-logging
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
@@ -131,7 +130,6 @@ endef
 # Apply the gen_bindings function to each crate
 $(eval $(call gen_bindings,app,APP_MODELS_DIR))
 $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
-$(eval $(call gen_bindings,logging,LOGGING_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
@@ -143,7 +141,6 @@ $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 gen-bindings: \
 	gen-app-bindings \
 	gen-collection-bindings \
-	gen-logging-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
 	gen-common-bindings \

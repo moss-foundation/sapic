@@ -30,4 +30,5 @@ tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "a
 tracing-appender.workspace = true
 
 [dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
