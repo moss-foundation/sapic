@@ -40,9 +40,14 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       className="background-(--moss-primary-background) h-52 w-[27rem] border border-(--moss-border-color)"
       content={
         <div>
-          <div className="px-6 pt-6 pb-4">
-            <h2 className="mb-4 text-center text-lg font-semibold text-(--moss-primary-text)">{title}</h2>
-            <div className="mb-3 text-sm text-(--moss-primary-text)">
+          <div className="px-6 pb-1.5">
+            <h2 className="text-center text-base font-semibold text-(--moss-primary-text)">{title}</h2>
+          </div>
+
+          <div className="border-t border-(--moss-border-color)"></div>
+
+          <div className="px-6 py-4">
+            <div className="text-sm text-(--moss-primary-text)">
               {message.split("\n").map((line, index) => (
                 <p key={index} className={index > 0 ? "mt-3" : ""}>
                   {line}
@@ -50,6 +55,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               ))}
             </div>
           </div>
+
+          <div className="border-t border-(--moss-border-color)"></div>
         </div>
       }
       footer={
