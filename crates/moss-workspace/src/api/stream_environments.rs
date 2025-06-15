@@ -30,7 +30,8 @@ impl<R: TauriRuntime> Workspace<R> {
         // Create a stream from collection environments
         let collection_environments_stream = stream::iter(collections_data)
             .map(|(collection_id, collection)| async move {
-                let events: Vec<_> = collection
+                let collection_lock = collection.read().await;
+                let events: Vec<_> = collection_lock
                     .list_environments()
                     .await?
                     .iter()

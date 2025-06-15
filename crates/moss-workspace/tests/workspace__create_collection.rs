@@ -1,7 +1,5 @@
 pub mod shared;
 
-use std::sync::atomic::Ordering;
-
 use moss_common::api::OperationError;
 use moss_storage::{
     storage::operations::{GetItem, ListByPrefix},
@@ -158,14 +156,7 @@ async fn create_collection_with_order() {
 
     assert_eq!(collections.len(), 1);
     // Verify the order is correctly stored
-    let order = collections
-        .iter()
-        .next()
-        .unwrap()
-        .1
-        .order
-        .as_ref()
-        .map(|o| o.load(Ordering::Relaxed));
+    let order = collections.iter().next().unwrap().1.read().await.order;
     assert_eq!(order, Some(42));
 
     // Verify the directory was created

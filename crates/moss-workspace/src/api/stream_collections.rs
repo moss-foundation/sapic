@@ -1,5 +1,3 @@
-use std::sync::atomic::Ordering;
-
 use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
@@ -15,11 +13,12 @@ impl<R: TauriRuntime> Workspace<R> {
         let collections = self.collections(ctx).await?;
 
         for collection in collections.values() {
-            let manifest = collection.manifest().await;
+            let collection_lock = collection.read().await;
+            let manifest = collection_lock.manifest().await;
             if let Err(e) = channel.send(StreamCollectionsEvent {
-                id: collection.id,
+                id: collection_lock.id,
                 name: manifest.name.clone(),
-                order: collection.order.as_ref().map(|o| o.load(Ordering::Relaxed)),
+                order: collection_lock.order,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error
             }
