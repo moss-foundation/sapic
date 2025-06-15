@@ -9,7 +9,7 @@ import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -159,6 +159,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Logs: {
       title: "Logs",
       component: Logs,
+    },
+    WorkspaceSettings: {
+      title: "Workspace Settings",
+      component: WorkspaceSettings,
     },
     Welcome: {
       component: WelcomePage,

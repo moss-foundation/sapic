@@ -9,7 +9,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
     {
       id: `${idPrefix}rename`,
       type: "action",
-      label: "Rename...",
+      label: "Edit",
       icon: "Edit" as Icons,
       shortcut: "⌘⏎",
     },
