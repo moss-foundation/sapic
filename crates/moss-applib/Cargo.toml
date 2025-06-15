@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 tauri.workspace = true
 tokio.workspace = true
+
+[features]
+test = ["tauri/test"]

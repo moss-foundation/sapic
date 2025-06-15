@@ -27,7 +27,6 @@ moss_collection.workspace = true
 moss_app.workspace = true
 moss_fs.workspace = true
 moss_logging.workspace = true
-moss_session.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true

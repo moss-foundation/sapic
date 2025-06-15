@@ -30,5 +30,6 @@ uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 
 [dev-dependencies]
+moss_applib = { workspace = true, features = ["test"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

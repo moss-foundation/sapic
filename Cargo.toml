@@ -12,11 +12,7 @@ members = [
     "crates/moss-fs",
     "crates/moss-keyring",
     "crates/moss-vault",
-    "crates/moss-theme",
-    "crates/moss-state",
-    "crates/moss-nls",
     "crates/moss-logging",
-    "crates/moss-session",
     "crates/moss-workspace",
     "crates/moss-environment",
     "crates/moss-testutils",
@@ -42,10 +38,6 @@ moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
 moss_logging = { path = "crates/moss-logging" }
-moss_session = { path = "crates/moss-session" }
-moss_theme = { path = "crates/moss-theme" }
-moss_state = { path = "crates/moss-state" }
-moss_nls = { path = "crates/moss-nls" }
 moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }

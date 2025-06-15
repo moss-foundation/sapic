@@ -1,5 +1,5 @@
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::context::Context;
+use moss_applib::context::{Context, test::MockContext};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
@@ -28,18 +28,14 @@ use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (
-    AppContext<MockRuntime>,
-    Arc<Path>,
-    Workspace<MockRuntime>,
-    CleanupFn,
-) {
+pub async fn setup_test_workspace() -> (MockContext, Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
-    let mut context_builder = AppContextBuilder::new();
-    <dyn FileSystem>::set_global(fs, &mut context_builder);
-    let ctx = context_builder.build(app_handle.clone());
+
+    <dyn FileSystem>::set_global(fs, &app_handle);
+
+    let ctx = MockContext::new(app_handle.clone());
 
     let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")

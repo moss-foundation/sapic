@@ -1,4 +1,4 @@
-use moss_app::context::{AppContext, AppContextBuilder};
+use moss_applib::context::test::MockContext;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
@@ -24,19 +24,16 @@ pub fn random_app_dir_path() -> PathBuf {
         .join(random_string(10))
 }
 
-pub async fn setup_test_workspace_manager() -> (
-    AppContext<MockRuntime>,
-    Arc<Path>,
-    Workbench<MockRuntime>,
-    CleanupFn,
-) {
+pub async fn setup_test_workspace_manager()
+-> (MockContext, Arc<Path>, Workbench<MockRuntime>, CleanupFn) {
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
     let fs = Arc::new(RealFileSystem::new());
-    let mut context_builder = AppContextBuilder::new();
-    <dyn FileSystem>::set_global(fs.clone(), &mut context_builder);
-    let ctx = context_builder.build(app_handle.clone());
+
+    <dyn FileSystem>::set_global(fs, &app_handle);
+
+    let ctx = MockContext::new(app_handle.clone());
 
     let random_abs_app_path: Arc<Path> = random_app_dir_path().into();
     let workspaces_abs_path: Arc<Path> = random_abs_app_path.join("workspaces").into();

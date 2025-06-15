@@ -45,11 +45,33 @@ impl DerefMut for AppServices {
     }
 }
 
+pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
+
+impl<R: TauriRuntime> Default for AppCommands<R> {
+    fn default() -> Self {
+        Self(FxHashMap::default())
+    }
+}
+
+impl<R: TauriRuntime> Deref for AppCommands<R> {
+    type Target = FxHashMap<ReadOnlyStr, CommandCallback<R>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<R: TauriRuntime> DerefMut for AppCommands<R> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 pub struct App<R: TauriRuntime> {
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) app_handle: AppHandle<R>,
     pub(crate) workbench: Workbench<R>,
-    pub(crate) commands: FxHashMap<ReadOnlyStr, CommandCallback<R>>,
+    pub(crate) commands: AppCommands<R>,
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
     pub(crate) services: AppServices,
@@ -70,8 +92,7 @@ pub struct AppBuilder<R: TauriRuntime> {
     services: AppServices,
     defaults: AppDefaults,
     preferences: AppPreferences,
-    commands: FxHashMap<ReadOnlyStr, CommandCallback<R>>,
-    globals_by_type: Arc<FxHashMap<TypeId, Arc<dyn Any + Send + Sync>>>,
+    commands: AppCommands<R>,
 }
 
 impl<R: TauriRuntime> AppBuilder<R> {
@@ -90,8 +111,7 @@ impl<R: TauriRuntime> AppBuilder<R> {
                 theme: RwLock::new(None),
                 locale: RwLock::new(None),
             },
-            commands: FxHashMap::default(),
-            globals_by_type: Arc::new(FxHashMap::default()),
+            commands: Default::default(),
             services: Default::default(),
         }
     }

@@ -3,7 +3,6 @@ mod constants;
 mod mem;
 mod menu;
 mod plugins;
-mod primitives;
 mod services;
 mod window;
 
@@ -11,8 +10,10 @@ mod window;
 extern crate tracing;
 
 use moss_app::{
-    app::{App, AppBuilder, AppDefaults},
-    services::{locale_service::LocaleService, theme_service::ThemeService},
+    app::{AppBuilder, AppDefaults},
+    services::{
+        locale_service::LocaleService, session_service::SessionService, theme_service::ThemeService,
+    },
 };
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::global_storage::GlobalStorageImpl;
@@ -70,6 +71,7 @@ pub async fn run<R: TauriRuntime>() {
 
             let theme_service = ThemeService::new(fs.clone(), themes_dir);
             let locale_service = LocaleService::new(fs.clone(), locales_dir);
+            let session_service = SessionService::new();
 
             let default_theme = {
                 let fut = theme_service.default_theme();
@@ -93,6 +95,7 @@ pub async fn run<R: TauriRuntime>() {
             let app = AppBuilder::new(app_handle.clone(), workbench, defaults, fs)
                 .with_service(theme_service)
                 .with_service(locale_service)
+                .with_service(session_service)
                 .build();
             app_handle.manage(app);
 
