@@ -12,7 +12,9 @@ use crate::GitAuthAgent;
 
 pub struct RepoHandle {
     // FIXME: Is it necessary to store the url of the repo?
+    #[allow(dead_code)]
     url: Option<String>,
+    #[allow(dead_code)]
     path: PathBuf,
     auth_agent: Arc<dyn GitAuthAgent>,
     // public for easier testing
@@ -147,7 +149,7 @@ impl RepoHandle {
 
     pub fn pull(&self, remote_name: Option<&str>) -> Result<()> {
         // Pull = Fetch + Merge FETCH_HEAD
-        let mut remote = self.repo.find_remote(remote_name.unwrap_or("origin"))?;
+        let remote = self.repo.find_remote(remote_name.unwrap_or("origin"))?;
         let mut callbacks = RemoteCallbacks::new();
         self.auth_agent.generate_callback(&mut callbacks)?;
 
@@ -289,7 +291,7 @@ mod tests {
             let private_key = dotenv::var("GITHUB_SSH_PRIVATE")?;
             let password = dotenv::var("GITHUB_SSH_PASSWORD")?;
 
-            cb.credentials(move |_url, username_from_url, _allowed_types| {
+            cb.credentials(move |_url, _username_from_url, _allowed_types| {
                 Cred::ssh_key(
                     "git",
                     Some(public_key.as_ref()),
@@ -311,7 +313,7 @@ mod tests {
         let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent {});
+        let auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::clone(&repo_url, &repo_path, auth_agent).unwrap();
 
@@ -338,10 +340,10 @@ mod tests {
     #[test]
     #[ignore]
     fn manual_open_fetch_pull() {
-        let repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
+        let _repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");
 
-        let mut auth_agent = Arc::new(TestAuthAgent {});
+        let auth_agent = Arc::new(TestAuthAgent {});
 
         let repo = RepoHandle::open(repo_path, auth_agent).unwrap();
 
