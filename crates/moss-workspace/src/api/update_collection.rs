@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_app::context::AppContext;
+use moss_applib::context::Context;
 use moss_collection::collection::{self};
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 
@@ -12,9 +12,9 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn update_collection(
+    pub async fn update_collection<C: Context<R>>(
         &self,
-        ctx: &AppContext<R>,
+        ctx: &C,
         input: UpdateCollectionEntryInput,
     ) -> OperationResult<UpdateCollectionEntryOutput> {
         input.validate()?;

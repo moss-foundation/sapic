@@ -1,5 +1,5 @@
 use chrono::Utc;
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};

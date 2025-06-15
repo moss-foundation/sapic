@@ -1,5 +1,5 @@
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::context::{AppContext, AppContextBuilder};
+use moss_applib::context::Context;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;

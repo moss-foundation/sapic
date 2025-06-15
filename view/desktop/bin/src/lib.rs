@@ -10,18 +10,20 @@ mod window;
 #[macro_use]
 extern crate tracing;
 
-use moss_app::{context::AppContextBuilder, manager::AppManager};
+use moss_app::{
+    app::{App, AppBuilder, AppDefaults},
+    services::{locale_service::LocaleService, theme_service::ThemeService},
+};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::global_storage::GlobalStorageImpl;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
-use services::service_pool;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
 
 use window::{CreateWindowInput, create_window};
 
-use crate::{commands::StateContext, constants::*, plugins::*};
+use crate::{constants::*, plugins::*};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
@@ -39,9 +41,9 @@ pub async fn run<R: TauriRuntime>() {
     }
 
     builder
-        .setup(|app| {
+        .setup(|tao| {
             let fs = Arc::new(RealFileSystem::new());
-            let app_handle = app.app_handle();
+            let app_handle = tao.app_handle();
 
             let app_dir =
                 PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
@@ -58,17 +60,41 @@ pub async fn run<R: TauriRuntime>() {
                 },
             );
 
-            app_handle.manage(workbench);
+            let themes_dir: PathBuf = std::env::var("THEMES_DIR")
+                .expect("Environment variable THEMES_DIR is not set")
+                .into();
 
-            let service_pool = service_pool(&app_handle, fs.clone());
-            let app_manager = AppManager::new(app_handle.clone(), service_pool);
-            app_handle.manage(app_manager);
+            let locales_dir: PathBuf = std::env::var("LOCALES_DIR")
+                .expect("Environment variable LOCALES_DIR is not set")
+                .into();
 
-            let mut context_builder = AppContextBuilder::new();
-            <dyn FileSystem>::set_global(fs, &mut context_builder);
-            let ctx = context_builder.build(app_handle.clone());
+            let theme_service = ThemeService::new(fs.clone(), themes_dir);
+            let locale_service = LocaleService::new(fs.clone(), locales_dir);
 
-            app_handle.manage(StateContext::from(ctx));
+            let default_theme = {
+                let fut = theme_service.default_theme();
+                let result = futures::executor::block_on(async move { fut.await.cloned() });
+                result.expect("Failed to get default theme")
+            };
+
+            let default_locale = {
+                let fut = locale_service.default_locale();
+                let result = futures::executor::block_on(async move { fut.await.cloned() });
+                result.expect("Failed to get default locale")
+            };
+
+            let defaults = AppDefaults {
+                theme: default_theme,
+                locale: default_locale,
+            };
+
+            <dyn FileSystem>::set_global(fs.clone(), &app_handle);
+
+            let app = AppBuilder::new(app_handle.clone(), workbench, defaults, fs)
+                .with_service(theme_service)
+                .with_service(locale_service)
+                .build();
+            app_handle.manage(app);
 
             Ok(())
         })

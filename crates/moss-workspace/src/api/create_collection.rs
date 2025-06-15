@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;

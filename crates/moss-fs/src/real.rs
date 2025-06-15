@@ -1,7 +1,8 @@
 use anyhow::{Result, anyhow};
 use async_stream::stream;
 use futures::{StreamExt, stream::BoxStream};
-use moss_app::context::Global;
+
+use moss_applib::Global;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
 use tokio::{

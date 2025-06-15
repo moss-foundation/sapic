@@ -7,6 +7,7 @@ members = [
     "crates/moss-text",
     "crates/moss-collection",
     "crates/moss-app",
+    "crates/moss-applib",
     "crates/moss-db",
     "crates/moss-fs",
     "crates/moss-keyring",
@@ -34,6 +35,7 @@ moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
+moss_applib = { path = "crates/moss-applib" }
 moss_git = { path = "crates/moss-git" }
 moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }

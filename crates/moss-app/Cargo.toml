@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+moss_common.workspace = true
+moss_fs.workspace = true
+moss_applib.workspace = true
+moss_tauri.workspace = true
+moss_text.workspace = true
+moss_workbench.workspace = true
 
 anyhow.workspace = true
 fnv.workspace = true
@@ -13,3 +19,6 @@ slotmap.workspace = true
 tokio = { workspace = true, features = ["full"] }
 parking_lot.workspace = true
 rustc-hash.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+ts-rs.workspace = true

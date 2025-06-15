@@ -3,7 +3,6 @@ use crate::{
     models::operations::{SetColorThemeInput, SetLocaleInput},
 };
 use dashmap::DashMap;
-use moss_app::service::prelude::AppService;
 use moss_nls::models::types::LocaleInfo;
 use moss_text::ReadOnlyStr;
 use moss_theme::models::types::ColorThemeInfo;
@@ -69,5 +68,3 @@ impl<R: TauriRuntime> StateService<R> {
         self.commands.get(id).map(|cmd| Arc::clone(&cmd))
     }
 }
-
-impl<R: TauriRuntime> AppService for StateService<R> {}

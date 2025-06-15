@@ -1,5 +1,4 @@
 use anyhow::{Result, anyhow};
-use moss_app::service::prelude::AppService;
 use moss_fs::FileSystem;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -118,5 +117,3 @@ impl LocaleService {
         Ok(GetTranslationsOutput(translations))
     }
 }
-
-impl AppService for LocaleService {}

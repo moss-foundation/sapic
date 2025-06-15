@@ -1,4 +1,4 @@
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 

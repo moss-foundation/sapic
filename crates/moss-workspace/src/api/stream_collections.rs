@@ -1,13 +1,13 @@
-use moss_app::context::AppContext;
+use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::{Runtime as TauriRuntime, ipc::Channel as TauriChannel};
 
 use crate::{models::events::StreamCollectionsEvent, workspace::Workspace};
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn stream_collections(
+    pub async fn stream_collections<C: Context<R>>(
         &self,
-        ctx: &AppContext<R>,
+        ctx: &C,
         channel: TauriChannel<StreamCollectionsEvent>,
     ) -> OperationResult<()> {
         let collections = self.collections(ctx).await?;

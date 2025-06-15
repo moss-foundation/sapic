@@ -5,7 +5,6 @@ pub mod models;
 mod writers;
 
 use anyhow::Result;
-use moss_app::service::prelude::AppService;
 use moss_fs::FileSystem;
 use nanoid::nanoid;
 use parking_lot::Mutex;
@@ -277,8 +276,6 @@ impl LoggingService {
         }
     }
 }
-
-impl AppService for LoggingService {}
 
 #[cfg(test)]
 mod tests {

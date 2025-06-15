@@ -1,4 +1,3 @@
-use moss_app::service::prelude::AppService;
 use uuid::Uuid;
 
 pub struct SessionService {
@@ -16,5 +15,3 @@ impl SessionService {
         &self.session_id
     }
 }
-
-impl AppService for SessionService {}

@@ -1,0 +1,8 @@
+[package]
+name = "moss_applib"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tauri.workspace = true
+tokio.workspace = true

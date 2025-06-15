@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::Context as _;
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::storage::operations::RemoveItem;

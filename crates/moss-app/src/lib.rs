@@ -1,3 +1,6 @@
+pub mod api;
+pub mod app;
+pub mod command;
 pub mod context;
-pub mod manager;
-pub mod service;
+pub mod models;
+pub mod services;

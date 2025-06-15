@@ -1,6 +1,6 @@
 use anyhow::{Context as _, Result};
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_collection::collection::Collection;
 use moss_environment::environment::{self, Environment};
 use moss_file::toml::EditableInPlaceFileHandle;

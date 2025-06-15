@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use moss_app::context::Context;
+use moss_applib::context::Context;
 use moss_common::api::{OperationResult, OperationResultExt};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;

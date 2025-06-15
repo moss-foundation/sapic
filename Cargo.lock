@@ -1217,13 +1217,10 @@ dependencies = [
  "moss_db",
  "moss_fs",
  "moss_logging",
- "moss_nls",
  "moss_session",
- "moss_state",
  "moss_storage",
  "moss_tauri",
  "moss_text",
- "moss_theme",
  "moss_workbench",
  "moss_workspace",
  "objc",
@@ -3007,11 +3004,28 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "fnv",
+ "moss_applib",
+ "moss_common",
+ "moss_fs",
+ "moss_tauri",
+ "moss_text",
+ "moss_workbench",
  "parking_lot",
  "rustc-hash",
+ "serde",
+ "serde_json",
  "slotmap",
  "tauri",
  "thiserror 2.0.12",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
+name = "moss_applib"
+version = "0.1.0"
+dependencies = [
+ "tauri",
  "tokio",
 ]
 
@@ -3122,7 +3136,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "futures",
- "moss_app",
+ "moss_applib",
  "moss_common",
  "moss_text",
  "notify",
@@ -3200,7 +3214,6 @@ name = "moss_nls"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "moss_app",
  "moss_fs",
  "serde",
  "serde_json",
@@ -3222,7 +3235,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dashmap",
- "moss_app",
  "moss_nls",
  "moss_tauri",
  "moss_text",
@@ -3252,7 +3264,6 @@ name = "moss_tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "moss_app",
  "moss_common",
  "serde",
  "serde_json",
@@ -3280,7 +3291,6 @@ name = "moss_theme"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "moss_app",
  "moss_fs",
  "serde",
  "serde_json",
@@ -3307,7 +3317,7 @@ dependencies = [
  "arc-swap",
  "chrono",
  "moss_activity_indicator",
- "moss_app",
+ "moss_applib",
  "moss_common",
  "moss_db",
  "moss_fs",
@@ -3332,7 +3342,7 @@ dependencies = [
  "chrono",
  "futures",
  "moss_activity_indicator",
- "moss_app",
+ "moss_applib",
  "moss_collection",
  "moss_common",
  "moss_db",
