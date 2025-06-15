@@ -44,7 +44,6 @@ pub struct ActiveWorkspaceReadGuard<'a, R: TauriRuntime> {
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspaceWriteGuard<'a, R: TauriRuntime> {
-    #[deref_mut]
     guard: RwLockWriteGuard<'a, Option<ActiveWorkspace<R>>>,
 }
 

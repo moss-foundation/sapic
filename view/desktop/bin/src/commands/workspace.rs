@@ -114,9 +114,9 @@ pub async fn create_collection<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let workspace_guard = workbench.active_workspace().await;
+        let mut workspace_guard = workbench.active_workspace_mut().await;
         let workspace = workspace_guard
-            .as_ref()
+            .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
         workspace
             .create_collection(&ctx, &input)
@@ -137,9 +137,9 @@ pub async fn delete_collection<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let workspace_guard = workbench.active_workspace().await;
+        let mut workspace_guard = workbench.active_workspace_mut().await;
         let workspace = workspace_guard
-            .as_ref()
+            .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
         workspace
             .delete_collection(&ctx, &input)

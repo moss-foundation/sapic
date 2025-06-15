@@ -59,14 +59,10 @@ pub struct WorkspaceSummary {
 }
 
 pub struct Workspace<R: TauriRuntime> {
-    #[allow(dead_code)]
-    // pub(super) app_handle: AppHandle<R>,
     pub(super) abs_path: Arc<Path>,
-    // pub(super) fs: Arc<dyn FileSystem>,
     pub(super) storage: Arc<dyn WorkspaceStorage>,
-    pub(super) collections: OnceCell<RwLock<CollectionMap>>,
-    #[allow(dead_code)]
-    pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
+    pub(super) collections: OnceCell<CollectionMap>,
+    pub(super) environments: OnceCell<EnvironmentMap>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
     #[allow(dead_code)]
@@ -136,6 +132,11 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let abs_path: Arc<Path> = abs_path.to_owned().into();
+
+        for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
+            fs.create_dir(&abs_path.join(dir)).await?;
+        }
+
         let manifest = EditableInPlaceFileHandle::create(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
@@ -196,7 +197,7 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
-    pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<EnvironmentMap>> {
+    pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&EnvironmentMap> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .environments
@@ -205,7 +206,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
                 let abs_path = self.abs_path.join(dirs::ENVIRONMENTS_DIR);
                 if !abs_path.exists() {
-                    return Ok(RwLock::new(environments));
+                    return Ok(environments);
                 }
 
                 // TODO: restore environments cache from the database
@@ -245,14 +246,22 @@ impl<R: TauriRuntime> Workspace<R> {
                     environments.insert(id, Arc::new(entry));
                 }
 
-                Ok::<_, anyhow::Error>(RwLock::new(environments))
+                Ok::<_, anyhow::Error>(environments)
             })
             .await?;
 
         Ok(result)
     }
 
-    pub async fn collections<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<CollectionMap>> {
+    pub async fn collections_mut<C: Context<R>>(&mut self, ctx: &C) -> Result<&mut CollectionMap> {
+        if !self.collections.initialized() {
+            self.collections(ctx).await?;
+        }
+
+        Ok(self.collections.get_mut().unwrap())
+    }
+
+    pub async fn collections<C: Context<R>>(&self, ctx: &C) -> Result<&CollectionMap> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .collections
@@ -261,7 +270,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 let mut collections = HashMap::new();
 
                 if !dir_abs_path.exists() {
-                    return Ok(RwLock::new(collections));
+                    return Ok(collections);
                 }
 
                 let restored_items = ListByPrefix::list_by_prefix(
@@ -333,7 +342,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     );
                 }
 
-                Ok::<_, anyhow::Error>(RwLock::new(collections))
+                Ok::<_, anyhow::Error>(collections)
             })
             .await?;
 

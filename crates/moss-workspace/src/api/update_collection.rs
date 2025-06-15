@@ -13,19 +13,18 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
-        &self,
+        &mut self,
         ctx: &C,
         input: UpdateCollectionEntryInput,
     ) -> OperationResult<UpdateCollectionEntryOutput> {
         input.validate()?;
 
         let collections = self
-            .collections(ctx)
+            .collections_mut(ctx)
             .await
             .context("Failed to get collections")?;
 
-        let collections_lock = collections.write().await;
-        let item = collections_lock
+        let item = collections
             .get(&input.id)
             .context("Collection not found")
             .map_err_as_not_found()?

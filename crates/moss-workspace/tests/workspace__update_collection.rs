@@ -8,7 +8,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn rename_collection_success() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -43,7 +43,7 @@ async fn rename_collection_success() {
 
 #[tokio::test]
 async fn rename_collection_empty_name() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -81,7 +81,7 @@ async fn rename_collection_empty_name() {
 
 #[tokio::test]
 async fn rename_collection_unchanged() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let old_collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -116,7 +116,7 @@ async fn rename_collection_unchanged() {
 
 #[tokio::test]
 async fn rename_collection_nonexistent_id() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
     let nonexistent_id = uuid::Uuid::new_v4();

@@ -26,7 +26,7 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection<C: Context<R>>(
-        &self,
+        &mut self,
         ctx: &C,
         input: &CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {
@@ -46,7 +46,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let collections = self
-            .collections(ctx)
+            .collections_mut(ctx)
             .await
             .context("Failed to get collections")?;
 
@@ -67,18 +67,15 @@ impl<R: TauriRuntime> Workspace<R> {
         .await
         .map_err(|e| OperationError::Internal(e.to_string()))?;
 
-        {
-            let mut collections_lock = collections.write().await;
-            collections_lock.insert(
+        collections.insert(
+            id,
+            Arc::new(RwLock::new(CollectionItem {
                 id,
-                Arc::new(RwLock::new(CollectionItem {
-                    id,
-                    name,
-                    order: order.clone(),
-                    inner: collection,
-                })),
-            );
-        }
+                name,
+                order: order.clone(),
+                inner: collection,
+            })),
+        );
 
         {
             let key = COLLECTION_SEGKEY.join(&id_str);
