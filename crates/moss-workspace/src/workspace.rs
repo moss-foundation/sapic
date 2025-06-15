@@ -34,7 +34,6 @@ use crate::{
 #[derive(Deref, DerefMut)]
 pub struct CollectionItem {
     pub id: Uuid,
-    pub name: String,
     pub order: Option<usize>,
     #[deref]
     #[deref_mut]
@@ -329,13 +328,10 @@ impl<R: TauriRuntime> Workspace<R> {
                     };
 
                     let collection = Collection::load(&entry.path(), fs.clone()).await?;
-                    let manifest = collection.manifest().await;
-
                     collections.insert(
                         id,
                         Arc::new(RwLock::new(CollectionItem {
                             id,
-                            name: manifest.name,
                             order: cache.map(|v| v.order).flatten(),
                             inner: collection,
                         })),

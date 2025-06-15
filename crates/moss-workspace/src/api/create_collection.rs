@@ -54,12 +54,11 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to create the collection directory")?;
 
-        let name = input.name.to_owned();
         let order = input.order.to_owned();
         let collection = Collection::create(
             fs.clone(),
             collection::CreateParams {
-                name: Some(name.clone()),
+                name: Some(input.name.to_owned()),
                 internal_abs_path: &abs_path,
                 external_abs_path: input.external_path.as_deref(),
             },
@@ -71,7 +70,6 @@ impl<R: TauriRuntime> Workspace<R> {
             id,
             Arc::new(RwLock::new(CollectionItem {
                 id,
-                name,
                 order: order.clone(),
                 inner: collection,
             })),

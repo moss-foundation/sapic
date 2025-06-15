@@ -14,9 +14,10 @@ impl<R: TauriRuntime> Workspace<R> {
 
         for collection in collections.values() {
             let collection_lock = collection.read().await;
+            let manifest = collection_lock.manifest().await;
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection_lock.id,
-                name: collection_lock.name.clone(),
+                name: manifest.name.clone(),
                 order: collection_lock.order,
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error
