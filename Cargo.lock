@@ -1176,6 +1176,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "derive_more"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "093242cf7570c207c83073cf82f79706fe7b8317e98620a47d5be7c3d8497678"
+dependencies = [
+ "derive_more-impl",
+]
+
+[[package]]
+name = "derive_more-impl"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bda628edc44c4bb645fbe0f758797143e4e07926f7ebf4e9bdfbd3d2ce621df3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.101",
+]
+
+[[package]]
 name = "desktop"
 version = "0.1.0"
 dependencies = [
@@ -1208,6 +1228,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -3149,6 +3170,7 @@ dependencies = [
  "anyhow",
  "arc-swap",
  "chrono",
+ "derive_more 2.0.1",
  "futures",
  "moss_activity_indicator",
  "moss_applib",
@@ -4782,7 +4804,7 @@ checksum = "df320f1889ac4ba6bc0cdc9c9af7af4bd64bb927bccdf32d81140dc1f9be12fe"
 dependencies = [
  "bitflags 1.3.2",
  "cssparser",
- "derive_more",
+ "derive_more 0.99.20",
  "fxhash",
  "log",
  "matches",

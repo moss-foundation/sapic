@@ -26,7 +26,12 @@ export type TauriIpcCommand =
   | "describe_workbench_state"
   | "create_collection"
   | "delete_collection"
-  | "stream_collections";
+  | "stream_collections"
+
+  // Collection
+  | "create_collection_entry"
+  | "delete_collection_entry"
+  | "stream_collection_entries";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

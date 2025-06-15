@@ -115,6 +115,9 @@ pub async fn run<R: TauriRuntime>() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            //
+            // App
+            //
             commands::execute_command,
             commands::set_color_theme,
             commands::get_color_theme,
@@ -125,13 +128,25 @@ pub async fn run<R: TauriRuntime>() {
             commands::get_translations,
             commands::open_workspace,
             commands::update_workspace,
-            commands::update_workspace_state,
-            commands::describe_workspace_state,
             commands::create_workspace,
             commands::list_workspaces,
             commands::delete_workspace,
             commands::describe_workbench_state,
+            //
+            // Workspace
+            //
             commands::stream_workspace_environments,
+            commands::update_workspace_state,
+            commands::describe_workspace_state,
+            commands::stream_collections,
+            commands::create_collection,
+            commands::delete_collection,
+            //
+            // Collection
+            //
+            commands::create_collection_entry,
+            commands::delete_collection_entry,
+            commands::stream_collection_entries,
         ])
         .on_window_event(|_window, event| match event {
             // #[cfg(target_os = "macos")]
