@@ -16,7 +16,7 @@ import {
   runSelectorItems,
 } from "@/data/actionMenuMockData";
 import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
-import { Icon, Icons, Scrollbar } from "@/lib/ui";
+import { Icon, Icons } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 import { createColumnHelper, Table } from "@tanstack/react-table";
 
@@ -26,20 +26,7 @@ import testData2 from "../../components/Table/testData2.json";
 import { KitchenSinkSection } from "./KitchenSinkSection";
 
 export const KitchenSink = () => {
-  const { t } = useTranslation(["ns1", "ns2"]);
-
-  return (
-    <div className="flex h-full flex-col bg-gray-50 dark:bg-stone-900">
-      <header className="border-b border-gray-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-950">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t("home")}</h1>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">Component Gallery & Storybook</p>
-      </header>
-
-      <Scrollbar className="flex-1 overflow-auto p-6">
-        <ComponentGallery />
-      </Scrollbar>
-    </div>
-  );
+  return <ComponentGallery />;
 };
 
 const ComponentGallery = () => {

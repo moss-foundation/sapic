@@ -22,6 +22,9 @@ const selectTriggerStyles = cva(`
 
     data-[valid]:border-(--moss-success)
     focus:data-[valid]:outline-(--moss-success) 
+
+    disabled:background-(--moss-select-disabled-bg)
+    disabled:cursor-not-allowed
  `,
   {
     variants: {

@@ -1,5 +1,6 @@
-use anyhow::{Context, Result};
+use anyhow::{Context as _, Result};
 use moss_activity_indicator::ActivityIndicator;
+use moss_applib::context::Context;
 use moss_collection::collection::Collection;
 use moss_environment::environment::{self, Environment};
 use moss_file::toml::EditableInPlaceFileHandle;
@@ -19,7 +20,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
-use tauri::{AppHandle, Runtime as TauriRuntime};
+use tauri::Runtime as TauriRuntime;
 use tokio::sync::{OnceCell, RwLock};
 use uuid::Uuid;
 
@@ -69,9 +70,9 @@ pub struct WorkspaceSummary {
 
 pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
-    pub(super) app_handle: AppHandle<R>,
+    // pub(super) app_handle: AppHandle<R>,
     pub(super) abs_path: Arc<Path>,
-    pub(super) fs: Arc<dyn FileSystem>,
+    // pub(super) fs: Arc<dyn FileSystem>,
     pub(super) storage: Arc<dyn WorkspaceStorage>,
     pub(super) collections: OnceCell<RwLock<CollectionMap>>,
     #[allow(dead_code)]
@@ -98,10 +99,9 @@ pub struct ModifyParams {
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn load(
-        app_handle: AppHandle<R>,
+    pub async fn load<C: Context<R>>(
+        ctx: &C,
         abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
         let storage = {
@@ -111,6 +111,7 @@ impl<R: TauriRuntime> Workspace<R> {
             Arc::new(storage)
         };
 
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest =
             EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
@@ -118,9 +119,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            app_handle,
             abs_path,
-            fs,
             storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
@@ -132,10 +131,9 @@ impl<R: TauriRuntime> Workspace<R> {
         })
     }
 
-    pub async fn create(
-        app_handle: AppHandle<R>,
+    pub async fn create<C: Context<R>>(
+        ctx: &C,
         abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
         activity_indicator: ActivityIndicator<R>,
         params: CreateParams,
     ) -> Result<Self> {
@@ -146,6 +144,7 @@ impl<R: TauriRuntime> Workspace<R> {
             Arc::new(storage)
         };
 
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest = EditableInPlaceFileHandle::create(
             fs.clone(),
@@ -161,9 +160,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            app_handle,
             abs_path,
-            fs,
             storage,
             collections: OnceCell::new(),
             environments: OnceCell::new(),
@@ -187,9 +184,11 @@ impl<R: TauriRuntime> Workspace<R> {
         Ok(())
     }
 
-    pub async fn summary(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
+    pub async fn summary<C: Context<R>>(ctx: &C, abs_path: &Path) -> Result<WorkspaceSummary> {
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
+
         let manifest =
-            EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+            EditableInPlaceFileHandle::load(fs, abs_path.join(MANIFEST_FILE_NAME)).await?;
         Ok(WorkspaceSummary {
             manifest: manifest.model().await,
         })
@@ -207,7 +206,8 @@ impl<R: TauriRuntime> Workspace<R> {
         self.abs_path.join(path)
     }
 
-    pub async fn environments(&self) -> Result<&RwLock<EnvironmentMap>> {
+    pub async fn environments<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<EnvironmentMap>> {
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .environments
             .get_or_try_init(|| async move {
@@ -219,7 +219,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 }
 
                 // TODO: restore environments cache from the database
-                let mut read_dir = self.fs.read_dir(&abs_path).await?;
+                let mut read_dir = fs.read_dir(&abs_path).await?;
                 while let Some(entry) = read_dir.next_entry().await? {
                     if entry.file_type().await?.is_dir() {
                         continue;
@@ -235,7 +235,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
                     let environment = Environment::load(
                         &entry_abs_path,
-                        self.fs.clone(),
+                        fs.clone(),
                         self.storage.variable_store().clone(),
                         self.next_variable_id.clone(),
                         environment::LoadParams {
@@ -262,7 +262,8 @@ impl<R: TauriRuntime> Workspace<R> {
         Ok(result)
     }
 
-    pub async fn collections(&self) -> Result<&RwLock<CollectionMap>> {
+    pub async fn collections<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<CollectionMap>> {
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let result = self
             .collections
             .get_or_try_init(|| async move {
@@ -301,7 +302,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     restored_entities.insert(id_str, value);
                 }
 
-                let mut read_dir = self.fs.read_dir(&dir_abs_path).await?;
+                let mut read_dir = fs.read_dir(&dir_abs_path).await?;
                 while let Some(entry) = read_dir.next_entry().await? {
                     if !entry.file_type().await?.is_dir() {
                         continue;
@@ -328,7 +329,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
-                    let collection = Collection::load(&entry.path(), self.fs.clone()).await?;
+                    let collection = Collection::load(&entry.path(), fs.clone()).await?;
                     let manifest = collection.manifest().await;
 
                     collections.insert(

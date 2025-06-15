@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
 import { applyColorTheme } from "@/utils/applyTheme";
-import { ColorThemeChangeEventPayload } from "@repo/moss-theme";
+import { ColorThemeChangeEventPayload } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 

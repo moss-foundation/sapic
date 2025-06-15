@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { ListLocalesOutput } from "@repo/moss-nls";
+import { ListLocalesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_LOCALES_QUERY_KEY = "listLocales";

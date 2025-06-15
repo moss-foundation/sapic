@@ -267,6 +267,8 @@
   --moss-select-item-bg-outlined-hover: var(--moss-gray-12);
   --moss-select-item-bg-outlined-selected: var(--moss-blue-11);
 
+  --moss-select-disabled-bg: var(--moss-gray-10);
+
   /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);
   --moss-input-bg-outlined: var(--moss-gray-14);
