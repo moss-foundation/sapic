@@ -1,3 +1,4 @@
+import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import { SectionTitle } from "./SectionTitle";
 
 interface WorkspaceStartupProps {
@@ -14,27 +15,19 @@ export const WorkspaceStartupSection = ({
   setOpenPreviousWindows,
 }: WorkspaceStartupProps) => {
   return (
-    <div className="mt-6">
-      <SectionTitle className="text-[var(--moss-select-text-outlined)]">Startup</SectionTitle>
-      <div className="space-y-3 pl-6">
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={reopenOnNextSession}
-            onChange={(e) => setReopenOnNextSession(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm text-[var(--moss-select-text-outlined)]">Reopen this workspace on next session</span>
-        </label>
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={openPreviousWindows}
-            onChange={(e) => setOpenPreviousWindows(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm text-[var(--moss-select-text-outlined)]">Open previous windows and tabs</span>
-        </label>
+    <div className="mt-6 text-(--moss-primary-text)">
+      <SectionTitle>Startup</SectionTitle>
+      <div className="space-y-3 pl-5">
+        <CheckboxWithLabel
+          checked={reopenOnNextSession}
+          onCheckedChange={(checked) => setReopenOnNextSession(checked === true)}
+          label="Reopen this workspace on next session"
+        />
+        <CheckboxWithLabel
+          checked={openPreviousWindows}
+          onCheckedChange={(checked) => setOpenPreviousWindows(checked === true)}
+          label="Open previous windows and tabs"
+        />
       </div>
     </div>
   );
