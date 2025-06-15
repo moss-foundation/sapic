@@ -16,7 +16,7 @@ export const WorkspaceStartup = ({
   return (
     <div className="mt-6">
       <SectionTitle className="text-[var(--moss-select-text-outlined)]">Startup</SectionTitle>
-      <div className="space-y-3">
+      <div className="space-y-3 pl-6">
         <label className="flex items-center gap-3">
           <input
             type="checkbox"
