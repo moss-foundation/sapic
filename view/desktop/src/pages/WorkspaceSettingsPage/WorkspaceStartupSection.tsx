@@ -15,7 +15,7 @@ export const WorkspaceStartupSection = ({
   setOpenPreviousWindows,
 }: WorkspaceStartupProps) => {
   return (
-    <div className="mt-6 text-(--moss-primary-text)">
+    <div className="mt-8 text-(--moss-primary-text)">
       <SectionTitle>Startup</SectionTitle>
       <div className="space-y-3 pl-5">
         <CheckboxWithLabel

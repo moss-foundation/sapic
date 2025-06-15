@@ -23,7 +23,7 @@ export const WorkspaceNameSection = ({
 }: WorkspaceNameProps) => {
   return (
     <div>
-      <div className="mb-8 flex items-start gap-3.5 text-(--moss-primary-text)">
+      <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
         <label className="mt-1 font-medium">Name:</label>
         <div>
           <InputOutlined

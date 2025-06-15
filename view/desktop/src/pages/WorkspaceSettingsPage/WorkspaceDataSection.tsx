@@ -3,7 +3,7 @@ import { SectionTitle } from "./SectionTitle";
 
 export const WorkspaceDataSection = () => {
   return (
-    <div className="mt-6 text-(--moss-primary-text)">
+    <div className="mt-8 text-(--moss-primary-text)">
       <SectionTitle>Data and Storage</SectionTitle>
       <div className="flex w-[36rem] items-center justify-between">
         <div>

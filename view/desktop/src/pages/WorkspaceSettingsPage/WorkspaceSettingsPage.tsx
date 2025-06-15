@@ -17,7 +17,6 @@ export const WorkspaceSettings = () => {
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
 
-  // Update local state when workspace changes
   useEffect(() => {
     if (workspace) {
       setName(workspace.displayName);
@@ -25,7 +24,6 @@ export const WorkspaceSettings = () => {
     }
   }, [workspace]);
 
-  // Track changes
   useEffect(() => {
     setHasChanges(name !== (workspace?.displayName || ""));
   }, [name, workspace?.displayName]);
@@ -62,12 +60,10 @@ export const WorkspaceSettings = () => {
 
   if (!workspace) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
         <div className="text-center">
-          <h2 className="text-lg font-semibold text-[var(--moss-select-text-outlined)]">No Active Workspace</h2>
-          <p className="text-sm text-[var(--moss-select-text-outlined)]">
-            Please select a workspace to view its settings.
-          </p>
+          <h2 className="text-lg font-semibold">No Active Workspace</h2>
+          <p className="text-sm">Please select a workspace to view its settings.</p>
         </div>
       </div>
     );
@@ -75,7 +71,7 @@ export const WorkspaceSettings = () => {
 
   return (
     <div className="flex h-full justify-center">
-      <div className="w-full max-w-2xl space-y-6 px-6 py-6">
+      <div className="w-full max-w-2xl space-y-6 px-6 py-5">
         <WorkspaceNameSection
           name={name}
           setName={setName}
