@@ -1,9 +1,10 @@
 import ButtonPrimary from "@/components/ButtonPrimary";
+import { SectionTitle } from "./SectionTitle";
 
 export const WorkspaceDangerZone = () => {
   return (
     <div className="mt-6">
-      <h3 className="mb-4 font-medium text-red-600">Danger Zone</h3>
+      <SectionTitle className="text-red-600">Danger Zone</SectionTitle>
       <div className="space-y-3">
         <div>
           <p className="text-sm font-medium text-[var(--moss-select-text-outlined)]">Delete this workspace</p>

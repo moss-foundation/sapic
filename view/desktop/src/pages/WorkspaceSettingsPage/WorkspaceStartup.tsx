@@ -1,3 +1,5 @@
+import { SectionTitle } from "./SectionTitle";
+
 interface WorkspaceStartupProps {
   reopenOnNextSession: boolean;
   setReopenOnNextSession: (value: boolean) => void;
@@ -13,7 +15,7 @@ export const WorkspaceStartup = ({
 }: WorkspaceStartupProps) => {
   return (
     <div className="mt-6">
-      <h3 className="mb-4 font-medium text-[var(--moss-select-text-outlined)]">Startup</h3>
+      <SectionTitle className="text-[var(--moss-select-text-outlined)]">Startup</SectionTitle>
       <div className="space-y-3">
         <label className="flex items-center gap-3">
           <input
