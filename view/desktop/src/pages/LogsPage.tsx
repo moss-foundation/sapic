@@ -2,20 +2,19 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import LangchainAgent from "@/ai/LangchainAgent";
-
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
 import { useActivityEvents } from "@/context/ActivityEventsContext";
-import { LogEntry, LOGGING_SERVICE_CHANNEL } from "@repo/moss-logging";
+import { LogEntryInfo, LOGGING_SERVICE_CHANNEL } from "@repo/moss-app";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 export const Logs = () => {
   const { t } = useTranslation(["ns1", "ns2"]);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { activityEvents } = useActivityEvents();
 
   useEffect(() => {
-    const unlistenLogsStream = listen<LogEntry>(LOGGING_SERVICE_CHANNEL, (event) => {
+    const unlistenLogsStream = listen<LogEntryInfo>(LOGGING_SERVICE_CHANNEL, (event) => {
       setLogs((prevLogs) => [...prevLogs, event.payload]);
     });
 

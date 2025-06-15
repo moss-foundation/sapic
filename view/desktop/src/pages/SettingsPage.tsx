@@ -11,7 +11,7 @@ import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
-import { ColorThemeInfo } from "@repo/moss-theme";
+import { ColorThemeInfo } from "@repo/moss-app";
 import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
 
 export const Settings = () => {

@@ -1,4 +1,5 @@
 use chrono::Utc;
+use moss_applib::context::Context;
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
@@ -13,11 +14,12 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn open_workspace(
+    pub async fn open_workspace<C: Context<R>>(
         &self,
+        ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let workspaces = self.workspaces().await?;
+        let workspaces = self.workspaces(ctx).await?;
         let descriptor = if let Some(d) = workspaces.read().await.get(&input.id) {
             Arc::clone(d)
         } else {
@@ -45,13 +47,8 @@ impl<R: TauriRuntime> Workbench<R> {
             });
         }
 
-        let workspace = Workspace::load(
-            self.app_handle.clone(),
-            &descriptor.abs_path,
-            Arc::clone(&self.fs),
-            self.activity_indicator.clone(),
-        )
-        .await?;
+        let workspace =
+            Workspace::load(ctx, &descriptor.abs_path, self.activity_indicator.clone()).await?;
 
         let last_opened_at = Utc::now().timestamp();
 
@@ -63,7 +60,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 last_opened_at: Some(last_opened_at),
             };
 
-            let known_workspaces = self.workspaces().await?;
+            let known_workspaces = self.workspaces(ctx).await?;
             known_workspaces
                 .write()
                 .await

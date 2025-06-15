@@ -1,6 +1,7 @@
 use anyhow::Context as _;
+use moss_applib::context::Context;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-use moss_fs::RemoveOptions;
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;
 
@@ -10,8 +11,13 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn delete_workspace(&self, input: &DeleteWorkspaceInput) -> OperationResult<()> {
-        let workspaces = self.workspaces().await?;
+    pub async fn delete_workspace<C: Context<R>>(
+        &self,
+        ctx: &C,
+        input: &DeleteWorkspaceInput,
+    ) -> OperationResult<()> {
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
+        let workspaces = self.workspaces(ctx).await?;
 
         let workspace_entry = workspaces
             .read()
@@ -28,15 +34,14 @@ impl<R: TauriRuntime> Workbench<R> {
             ));
         }
 
-        self.fs
-            .remove_dir(
-                &workspace_entry.abs_path,
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await?;
+        fs.remove_dir(
+            &workspace_entry.abs_path,
+            RemoveOptions {
+                recursive: true,
+                ignore_if_not_exists: true,
+            },
+        )
+        .await?;
 
         {
             let item_store = self.global_storage.item_store();

@@ -1,7 +1,9 @@
 use anyhow::Context as _;
+use moss_applib::context::Context;
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
+use moss_fs::FileSystem;
 use moss_storage::{
     storage::operations::PutItem,
     workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
@@ -23,8 +25,9 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn create_collection(
+    pub async fn create_collection<C: Context<R>>(
         &self,
+        ctx: &C,
         input: CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
@@ -41,20 +44,20 @@ impl<R: TauriRuntime> Workspace<R> {
             ));
         }
 
+        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let collections = self
-            .collections()
+            .collections(ctx)
             .await
             .context("Failed to get collections")?;
 
-        self.fs
-            .create_dir(&abs_path)
+        fs.create_dir(&abs_path)
             .await
             .context("Failed to create the collection directory")?;
 
         let name = input.name.to_owned();
         let order = input.order.to_owned();
         let collection = Collection::create(
-            self.fs.clone(),
+            fs,
             self.next_collection_entry_id.clone(),
             collection::CreateParams {
                 name: Some(name.clone()),

@@ -1,2 +1,21 @@
-pub mod manager;
-pub mod service;
+pub mod api;
+pub mod app;
+pub mod command;
+pub mod context;
+pub mod models;
+pub mod services;
+
+pub mod constants {
+
+    // ##################################################################
+    // ###                                                            ###
+    // ### !!! PLEASE UPDATE THE TYPESCRIPT CONSTANTS IN index.ts !!! ###
+    // ###                                                            ###
+    // ##################################################################
+
+    // When adding/removing/modifying any constants here,
+    // you must also update the corresponding TypeScript constants
+    // in moss-app/index.ts to match your changes.
+
+    pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
+}

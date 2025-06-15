@@ -1,7 +1,7 @@
 use anyhow::Result;
 use arc_swap::ArcSwapOption;
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::service::prelude::AppService;
+use moss_applib::context::Context;
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -50,8 +50,6 @@ pub struct Options {
 }
 
 pub struct Workbench<R: TauriRuntime> {
-    pub(super) app_handle: AppHandle<R>,
-    pub(super) fs: Arc<dyn FileSystem>,
     pub(super) activity_indicator: ActivityIndicator<R>,
     pub(super) active_workspace: ArcSwapOption<ActiveWorkspace<R>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
@@ -59,18 +57,13 @@ pub struct Workbench<R: TauriRuntime> {
     pub(crate) options: Options,
 }
 
-impl<R: tauri::Runtime> AppService for Workbench<R> {}
-
 impl<R: TauriRuntime> Workbench<R> {
     pub fn new(
         app_handle: AppHandle<R>,
-        fs: Arc<dyn FileSystem>,
         global_storage: Arc<dyn GlobalStorage>,
         options: Options,
     ) -> Self {
         Self {
-            app_handle: app_handle.clone(),
-            fs,
             activity_indicator: ActivityIndicator::new(app_handle),
             active_workspace: ArcSwapOption::new(None),
             known_workspaces: OnceCell::new(),
@@ -90,7 +83,7 @@ impl<R: TauriRuntime> Workbench<R> {
         })));
     }
 
-    pub(super) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {
+    pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
@@ -128,7 +121,9 @@ impl<R: TauriRuntime> Workbench<R> {
                     restored_entities.insert(encoded_name, value);
                 }
 
-                let mut read_dir = self.fs.read_dir(&dir_abs_path).await?;
+                let fs = <dyn FileSystem>::global::<R, C>(ctx);
+
+                let mut read_dir = fs.read_dir(&dir_abs_path).await?;
                 while let Some(entry) = read_dir.next_entry().await? {
                     if !entry.file_type().await?.is_dir() {
                         continue;
@@ -144,7 +139,7 @@ impl<R: TauriRuntime> Workbench<R> {
                         }
                     };
 
-                    let summary = Workspace::<R>::summary(&self.fs, &entry.path()).await?;
+                    let summary = Workspace::<R>::summary(ctx, &entry.path()).await?;
 
                     let restored_entity =
                         match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
