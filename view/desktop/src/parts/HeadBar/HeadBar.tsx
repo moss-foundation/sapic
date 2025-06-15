@@ -127,13 +127,12 @@ export const HeadBar = () => {
       <ConfirmationModal
         showModal={showDeleteConfirmModal}
         closeModal={closeDeleteConfirmModal}
-        title="Delete Workspace"
-        message={`Are you sure you want to delete the workspace "${workspaceToDelete?.name}"? This action cannot be undone.`}
+        title="Delete"
+        message={`Delete "${workspaceToDelete?.name}"?\n\nThis will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace.`}
         confirmLabel="Delete"
-        cancelLabel="Cancel"
+        cancelLabel="Close"
         onConfirm={handleDeleteWorkspace}
         variant="danger"
-        icon="Delete"
       />
 
       <header
