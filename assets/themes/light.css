@@ -277,6 +277,7 @@
   /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);
   --moss-input-bg-outlined: var(--moss-gray-14);
+  --moss-input-border: var(--moss-gray-9);
 
   --moss-stepCard-text: var(--moss-blue-2);
   --moss-stepCard-bg: var(--moss-blue-11);

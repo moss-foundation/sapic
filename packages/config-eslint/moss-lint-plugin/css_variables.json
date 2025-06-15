@@ -207,6 +207,7 @@
   "--moss-select-disabled-bg",
   "--moss-input-bg-plain",
   "--moss-input-bg-outlined",
+  "--moss-input-border",
   "--moss-stepCard-text",
   "--moss-stepCard-bg",
   "--moss-checkbox-border",

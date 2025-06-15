@@ -277,6 +277,7 @@
   --moss-select-hover-bg: rgb(39, 39, 42);
 
   /* Input Fields */
-  --moss-input-bg-plain: transparent;
-  --moss-input-bg-outlined: #ffffff;
+  --moss-input-bg-plain: var(--moss-gray-14);
+  --moss-input-bg-outlined: var(--moss-gray-14);
+  --moss-input-border: var(--moss-gray-9);
 }
