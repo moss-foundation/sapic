@@ -203,8 +203,9 @@
   --moss-button-primary-outlined-background: rgba(59, 130, 246, 0.05);
   --moss-button-primary-outlined-border: rgba(59, 130, 246, 0.05);
   --moss-button-primary-outlined-text: rgb(147, 197, 253);
-  --moss-button-primary-outlined-boxShadow: rgba(255, 255, 255, 0) 0px 1px 0px 0px inset,
-    rgba(59, 130, 246, 0.3) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-primary-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(59, 130, 246, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-primary-soft-background: rgba(59, 130, 246, 0.1);
   --moss-button-primary-soft-border: null;
   --moss-button-primary-soft-text: rgb(147, 197, 253);
@@ -218,13 +219,14 @@
   --moss-button-danger-solid-background: linear-gradient(rgb(239, 68, 68), rgb(220, 38, 38) 0%);
   --moss-button-danger-solid-border: rgb(241 95 95);
   --moss-button-danger-solid-text: white;
-  --moss-button-danger-solid-boxShadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-    rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
+  --moss-button-danger-solid-boxShadow:
+    rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(255, 255, 255, 0.1) 0px 2px 4px 0px inset;
   --moss-button-danger-outlined-background: rgba(239, 68, 68, 0.05);
   --moss-button-danger-outlined-border: null;
   --moss-button-danger-outlined-text: rgb(252, 165, 165);
-  --moss-button-danger-outlined-boxShadow: rgba(255, 255, 255, 0) 0px 1px 0px 0px inset,
-    rgba(239, 68, 68, 0.3) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-danger-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(239, 68, 68, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-danger-soft-background: rgba(239, 68, 68, 0.1);
   --moss-button-danger-soft-border: null;
   --moss-button-danger-soft-text: rgb(252, 165, 165);
@@ -242,8 +244,9 @@
   --moss-button-neutral-outlined-background: rgba(113, 113, 122, 0.05);
   --moss-button-neutral-outlined-border: null;
   --moss-button-neutral-outlined-text: rgb(212, 212, 216);
-  --moss-button-neutral-outlined-boxShadow: rgba(255, 255, 255, 0) 0px 1px 0px 0px inset,
-    rgba(113, 113, 122, 0.3) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+  --moss-button-neutral-outlined-boxShadow:
+    rgba(255, 255, 255, 0) 0px 1px 0px 0px inset, rgba(113, 113, 122, 0.3) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
   --moss-button-neutral-soft-background: rgba(113, 113, 122, 0.1);
   --moss-button-neutral-soft-border: null;
   --moss-button-neutral-soft-text: rgb(212, 212, 216);
@@ -252,6 +255,11 @@
   --moss-button-neutral-ghost-border: null;
   --moss-button-neutral-ghost-text: rgb(212, 212, 216);
   --moss-button-neutral-ghost-boxShadow: null;
+
+  /* --- Delete buttons */
+  --moss-button-background-delete: var(--moss-red-5);
+  --moss-button-background-delete-hover: var(--moss-red-3);
+  --moss-button-text-delete: var(--moss-gray-14);
 
   /* Form Controls */
   --moss-controls-plain-bg: transparent;
