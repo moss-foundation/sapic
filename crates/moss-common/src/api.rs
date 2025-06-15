@@ -81,6 +81,31 @@ pub trait OperationResultExt<T> {
     fn map_err_as_failed_precondition(self) -> OperationResult<T>;
 }
 
+pub trait OperationOptionExt<T> {
+    fn map_err_as_internal(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_not_found(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_validation(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_failed_precondition(self, err: impl Into<String>) -> OperationResult<T>;
+}
+
+impl<T> OperationOptionExt<T> for Option<T> {
+    fn map_err_as_internal(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::Internal(err.into()))
+    }
+
+    fn map_err_as_not_found(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::NotFound(err.into()))
+    }
+
+    fn map_err_as_validation(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::InvalidInput(err.into()))
+    }
+
+    fn map_err_as_failed_precondition(self, error: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::FailedPrecondition(error.into()))
+    }
+}
+
 impl<T> OperationResultExt<T> for Result<T, anyhow::Error> {
     fn map_err_as_internal(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::Internal(e.to_string()))

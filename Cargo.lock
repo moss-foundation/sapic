@@ -1207,6 +1207,7 @@ dependencies = [
  "mimalloc",
  "moss_app",
  "moss_collection",
+ "moss_common",
  "moss_db",
  "moss_fs",
  "moss_storage",
@@ -3144,8 +3145,8 @@ name = "moss_workbench"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "arc-swap",
  "chrono",
+ "derive_more 2.0.1",
  "moss_activity_indicator",
  "moss_applib",
  "moss_common",

@@ -38,6 +38,8 @@ impl<R: TauriRuntime> Workbench<R> {
         // Check if the workspace is already active
         if self
             .active_workspace()
+            .await
+            .as_ref()
             .map(|active_workspace| active_workspace.id == descriptor.id)
             .unwrap_or(false)
         {
@@ -75,7 +77,7 @@ impl<R: TauriRuntime> Workbench<R> {
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 
-        self.set_active_workspace(descriptor.id, workspace);
+        self.activate_workspace(descriptor.id, workspace).await;
 
         Ok(OpenWorkspaceOutput {
             id: descriptor.id,

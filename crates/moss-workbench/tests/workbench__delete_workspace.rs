@@ -37,7 +37,7 @@ async fn delete_workspace_success() {
 
     // Check removing active workspace
     let active_workspace = workspace_manager.active_workspace();
-    assert!(active_workspace.is_none());
+    assert!(active_workspace.await.is_none());
 
     // Check updating known_workspaces
     let list_workspaces_output = workspace_manager.list_workspaces(&ctx).await.unwrap();

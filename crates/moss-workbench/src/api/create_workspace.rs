@@ -80,7 +80,7 @@ impl<R: TauriRuntime> Workbench<R> {
 
         match (last_opened_at, input.open_on_creation) {
             (Some(last_opened_at), true) => {
-                self.set_active_workspace(id, new_workspace);
+                self.activate_workspace(id, new_workspace).await;
 
                 let item_store = self.global_storage.item_store();
                 let segkey = WORKSPACE_SEGKEY.join(id_str);

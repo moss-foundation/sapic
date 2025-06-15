@@ -33,7 +33,8 @@ async fn create_workspace_success() {
     let id = create_output.id;
 
     // Check active workspace
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, id);
     assert_eq!(active_workspace.abs_path(), &expected_path);
     assert_eq!(active_workspace.manifest().await.name, workspace_name);
@@ -74,7 +75,13 @@ async fn create_workspace_empty_name() {
     // Ensure no workspace was created or activated
     let list_workspaces = workspace_manager.list_workspaces(&ctx).await.unwrap();
     assert!(list_workspaces.is_empty());
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check database
     let item_store = workspace_manager.__storage().item_store();
@@ -132,7 +139,8 @@ async fn create_workspace_same_name() {
     assert_ne!(first_output.id, second_output.id);
 
     // Check active workspace is the second one
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, second_output.id);
     assert_eq!(active_workspace.abs_path(), &second_path);
     assert_eq!(active_workspace.manifest().await.name, workspace_name);
@@ -191,7 +199,8 @@ async fn create_workspace_special_chars() {
         assert!(expected_path.exists());
 
         // Check active workspace
-        let active_workspace = workspace_manager.active_workspace().unwrap();
+        let active_workspace = workspace_manager.active_workspace().await;
+        let active_workspace = active_workspace.as_ref().unwrap();
         assert_eq!(active_workspace.id, create_output.id);
         assert_eq!(active_workspace.abs_path(), &expected_path);
         assert_eq!(active_workspace.manifest().await.name, name);
@@ -235,7 +244,13 @@ async fn create_workspace_not_open_on_creation() {
     assert!(expected_path.exists());
 
     // Check that no workspace is active
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check workspace is in list
     let list_workspaces = workspace_manager.list_workspaces(&ctx).await.unwrap();

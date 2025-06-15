@@ -54,9 +54,9 @@ impl<R: TauriRuntime> Workbench<R> {
             workspaces_lock.remove(&workspace_entry.id);
         }
 
-        if let Some(active_workspace) = self.active_workspace.load().as_ref() {
+        if let Some(active_workspace) = self.active_workspace_mut().await.as_mut() {
             if active_workspace.id == input.id {
-                self.active_workspace.store(None);
+                self.deactivate_workspace().await;
             }
         }
 

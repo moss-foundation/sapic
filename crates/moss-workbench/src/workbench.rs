@@ -1,5 +1,5 @@
 use anyhow::Result;
-use arc_swap::ArcSwapOption;
+use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
 use moss_fs::FileSystem;
@@ -10,12 +10,11 @@ use moss_storage::{
 use moss_workspace::Workspace;
 use std::{
     collections::HashMap,
-    ops::Deref,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
 
 use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
@@ -30,17 +29,23 @@ pub struct WorkspaceDescriptor {
 
 type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
+#[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: TauriRuntime> {
     pub id: Uuid,
+    #[deref]
+    #[deref_mut]
     pub inner: Workspace<R>,
 }
 
-impl<R: TauriRuntime> Deref for ActiveWorkspace<R> {
-    type Target = Workspace<R>;
+#[derive(Deref)]
+pub struct ActiveWorkspaceReadGuard<'a, R: TauriRuntime> {
+    guard: RwLockReadGuard<'a, Option<ActiveWorkspace<R>>>,
+}
 
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
+#[derive(Deref, DerefMut)]
+pub struct ActiveWorkspaceWriteGuard<'a, R: TauriRuntime> {
+    #[deref_mut]
+    guard: RwLockWriteGuard<'a, Option<ActiveWorkspace<R>>>,
 }
 
 #[derive(Debug)]
@@ -51,7 +56,7 @@ pub struct Options {
 
 pub struct Workbench<R: TauriRuntime> {
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) active_workspace: ArcSwapOption<ActiveWorkspace<R>>,
+    pub(super) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(super) global_storage: Arc<dyn GlobalStorage>,
     pub(crate) options: Options,
@@ -65,22 +70,36 @@ impl<R: TauriRuntime> Workbench<R> {
     ) -> Self {
         Self {
             activity_indicator: ActivityIndicator::new(app_handle),
-            active_workspace: ArcSwapOption::new(None),
+            active_workspace: RwLock::new(None),
             known_workspaces: OnceCell::new(),
             global_storage,
             options,
         }
     }
 
-    pub fn active_workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
-        self.active_workspace.load_full()
+    pub async fn active_workspace_mut(&self) -> ActiveWorkspaceWriteGuard<'_, R> {
+        ActiveWorkspaceWriteGuard {
+            guard: self.active_workspace.write().await,
+        }
     }
 
-    pub(super) fn set_active_workspace(&self, id: Uuid, workspace: Workspace<R>) {
-        self.active_workspace.store(Some(Arc::new(ActiveWorkspace {
+    pub async fn active_workspace(&self) -> ActiveWorkspaceReadGuard<'_, R> {
+        ActiveWorkspaceReadGuard {
+            guard: self.active_workspace.read().await,
+        }
+    }
+
+    pub async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = Some(ActiveWorkspace {
             id,
             inner: workspace,
-        })));
+        });
+    }
+
+    pub async fn deactivate_workspace(&self) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = None;
     }
 
     pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {

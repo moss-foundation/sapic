@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_common::api::{OperationResult, OperationResultExt};
+use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -16,8 +16,9 @@ impl<R: TauriRuntime> Workbench<R> {
         input.validate()?;
 
         let workspaces = self.workspaces(ctx).await?;
-        let workspace = self
-            .active_workspace()
+        let mut workspace_guard = self.active_workspace_mut().await;
+        let workspace = workspace_guard
+            .as_mut()
             .context("No active workspace")
             .map_err_as_failed_precondition()?;
 
