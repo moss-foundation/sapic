@@ -8,26 +8,27 @@ makefile:
 
 bindings:
   - changed-files:
-      - any-glob-to-any-file: "bindings/**"
+      - any-glob-to-any-file: "packages/bindings-utils/**"
+      - any-glob-to-any-file: "crates/*/bindings/**"
 
 scripts:
   - changed-files:
       - any-glob-to-any-file: "scripts/**"
 
 enhancement:
-  - title: "feat\\(.*\\):.*"
+  - title: "feat\\([^)]*\\):.*"
 
 fix:
-  - title: "fix\\(.*\\):.*"
+  - title: "fix\\([^)]*\\):.*"
 
 refactor:
-  - title: "refactor\\(.*\\):.*"
+  - title: "refactor\\([^)]*\\):.*"
 
 docs:
-  - title: "docs\\(.*\\):.*"
+  - title: "docs\\([^)]*\\):.*"
 
 chore:
-  - title: "chore\\(.*\\):.*"
+  - title: "chore\\([^)]*\\):.*"
 
 ci:
-  - title: "ci\\(.*\\):.*"
+  - title: "ci\\([^)]*\\):.*"
