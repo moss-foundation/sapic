@@ -55,7 +55,8 @@ async fn open_workspace_success() {
     assert_eq!(open_output.abs_path, first_output.abs_path);
 
     // Check active workspace
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, first_output.id);
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
@@ -76,7 +77,13 @@ async fn open_workspace_not_found() {
     assert!(open_result.is_err());
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check database not creating any entry
     let item_store = workspace_manager.__storage().item_store();
@@ -119,7 +126,8 @@ async fn open_workspace_already_active() {
     assert_eq!(open_output.abs_path, create_output.abs_path);
 
     // Check active workspace is still the same
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, create_output.id);
     assert_eq!(active_workspace.manifest().await.name, workspace_name);
 
@@ -159,7 +167,13 @@ async fn open_workspace_directory_deleted() {
     assert!(open_result.is_err());
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check database not creating any entry
     let item_store = workspace_manager.__storage().item_store();

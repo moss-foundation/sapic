@@ -1,3 +1,4 @@
+pub mod close_workspace;
 pub mod create_workspace;
 pub mod delete_workspace;
 pub mod describe_state;

@@ -1,5 +1,5 @@
-use anyhow::anyhow;
 use moss_app::{app::App, context::AppContext};
+use moss_common::api::OperationOptionExt;
 use moss_tauri::{TauriError, TauriResult};
 use moss_workspace::models::{
     events::{StreamCollectionsEvent, StreamEnvironmentsEvent},
@@ -22,10 +22,12 @@ pub async fn update_workspace_state<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let _ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+
+        workspace
             .update_state(input)
             .await
             .map_err(TauriError::OperationError)
@@ -43,10 +45,11 @@ pub async fn describe_workspace_state<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let _ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+        workspace
             .describe_state()
             .await
             .map_err(TauriError::OperationError)
@@ -65,10 +68,11 @@ pub async fn stream_workspace_environments<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+        workspace
             .stream_environments(&ctx, channel)
             .await
             .map_err(TauriError::OperationError)
@@ -87,10 +91,11 @@ pub async fn stream_collections<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+        workspace
             .stream_collections(&ctx, channel)
             .await
             .map_err(TauriError::OperationError)
@@ -109,10 +114,11 @@ pub async fn create_collection<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+        workspace
             .create_collection(&ctx, &input)
             .await
             .map_err(TauriError::OperationError)
@@ -131,10 +137,11 @@ pub async fn delete_collection<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let current_workspace = workbench
-            .active_workspace()
-            .ok_or_else(|| TauriError::Other(anyhow!("No active workspace")))?; // TODO: improve error handling
-        current_workspace
+        let workspace_guard = workbench.active_workspace().await;
+        let workspace = workspace_guard
+            .as_ref()
+            .map_err_as_failed_precondition("No active workspace")?;
+        workspace
             .delete_collection(&ctx, &input)
             .await
             .map_err(TauriError::OperationError)

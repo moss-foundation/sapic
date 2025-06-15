@@ -18,10 +18,10 @@ anyhow.workspace = true
 tauri.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs = { workspace = true, features = ["uuid-impl"] }
-arc-swap.workspace = true
 validator.workspace = true
 chrono.workspace = true
 uuid = { workspace = true, features = ["serde"] }
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 
 [dev-dependencies]
 moss_applib = { workspace = true, features = ["test"] }

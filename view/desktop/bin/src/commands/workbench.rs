@@ -26,6 +26,24 @@ pub async fn create_workspace<R: TauriRuntime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn close_workspace<R: TauriRuntime>(
+    app: State<'_, App<R>>,
+    window: Window<R>,
+    input: CloseWorkspaceInput,
+) -> TauriResult<CloseWorkspaceOutput> {
+    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+        let workbench = app.workbench();
+        workbench
+            .close_workspace(&input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+    .map_err(|_| TauriError::Timeout)?
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn list_workspaces<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,

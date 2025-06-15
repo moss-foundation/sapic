@@ -1,6 +1,5 @@
-use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
+use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;
@@ -24,8 +23,7 @@ impl<R: TauriRuntime> Workbench<R> {
             .await
             .get(&input.id)
             .cloned()
-            .context("Failed to remove the workspace")
-            .map_err_as_not_found()?;
+            .map_err_as_not_found("Failed to delete the workspace")?;
 
         if !workspace_entry.abs_path.exists() {
             // TODO: if a path is not found, we also need to remove the workspace from the database and clean up other caches
@@ -54,9 +52,9 @@ impl<R: TauriRuntime> Workbench<R> {
             workspaces_lock.remove(&workspace_entry.id);
         }
 
-        if let Some(active_workspace) = self.active_workspace.load().as_ref() {
+        if let Some(active_workspace) = self.active_workspace_mut().await.as_mut() {
             if active_workspace.id == input.id {
-                self.active_workspace.store(None);
+                self.deactivate_workspace().await;
             }
         }
 

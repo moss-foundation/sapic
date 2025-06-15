@@ -2,6 +2,22 @@
 import { WorkspaceMode } from "@repo/moss-workspace";
 import type { WorkspaceInfo } from "./types";
 
+export type CloseWorkspaceInput = {
+  /**
+   * The ID of the workspace to close.
+   * We require the workspace id so the workspace close function
+   * can't be called when there's no workspace open yet.
+   */
+  id: string;
+};
+
+export type CloseWorkspaceOutput = {
+  /**
+   * The ID of the workspace that was closed.
+   */
+  id: string;
+};
+
 export type CreateWorkspaceInput = { name: string; mode: WorkspaceMode; openOnCreation: boolean };
 
 export type CreateWorkspaceOutput = { id: string };

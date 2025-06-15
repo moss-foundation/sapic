@@ -37,7 +37,8 @@ async fn rename_workspace_success() {
     assert!(update_workspace_result.is_ok());
 
     // Check updating active workspace
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, id);
     assert_eq!(active_workspace.manifest().await.name, new_workspace_name);
 
@@ -118,7 +119,8 @@ async fn rename_workspace_unchanged() {
     assert!(update_workspace_result.is_ok());
 
     // Check active workspace unchanged
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, id);
 
     // Check known_workspaces unchanged

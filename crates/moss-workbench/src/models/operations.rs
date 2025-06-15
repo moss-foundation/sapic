@@ -121,3 +121,23 @@ pub struct DescribeWorkbenchStateOutput {
     #[ts(skip)]
     pub abs_path: Arc<Path>,
 }
+
+// Close Workspace
+
+#[derive(Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CloseWorkspaceInput {
+    /// The ID of the workspace to close.
+    /// We require the workspace id so the workspace close function
+    /// can't be called when there's no workspace open yet.
+    pub id: Uuid,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct CloseWorkspaceOutput {
+    /// The ID of the workspace that was closed.
+    pub id: Uuid,
+}
