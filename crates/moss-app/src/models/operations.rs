@@ -40,7 +40,6 @@ pub struct DescribeAppStateOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct SetColorThemeInput {
-    #[ts(type = "ColorThemeInfo")]
     pub theme_info: ColorThemeInfo,
 }
 
@@ -48,7 +47,6 @@ pub struct SetColorThemeInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct SetLocaleInput {
-    #[ts(type = "LocaleInfo")]
     pub locale_info: LocaleInfo,
 }
 

@@ -40,10 +40,7 @@ pub struct ColorThemeInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct Preferences {
-    #[ts(optional, type = "ColorThemeInfo")]
     pub theme: Option<ColorThemeInfo>,
-
-    #[ts(optional, type = "LocaleInfo")]
     pub locale: Option<LocaleInfo>,
 }
 
@@ -51,9 +48,6 @@ pub struct Preferences {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct Defaults {
-    #[ts(type = "ColorThemeInfo")]
     pub theme: ColorThemeInfo,
-
-    #[ts(type = "LocaleInfo")]
     pub locale: LocaleInfo,
 }

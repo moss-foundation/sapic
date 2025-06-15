@@ -5,16 +5,10 @@
       "path": "packages/bindings-utils"
     },
     {
-      "path": "crates/moss-nls"
-    },
-    {
-      "path": "crates/moss-state"
+      "path": "crates/moss-app"
     },
     {
       "path": "crates/moss-collection"
-    },
-    {
-      "path": "crates/moss-theme"
     },
     {
       "path": "crates/moss-logging"
