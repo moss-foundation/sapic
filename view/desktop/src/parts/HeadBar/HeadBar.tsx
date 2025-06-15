@@ -128,7 +128,8 @@ export const HeadBar = () => {
         showModal={showDeleteConfirmModal}
         closeModal={closeDeleteConfirmModal}
         title="Delete"
-        message={`Delete "${workspaceToDelete?.name}"?\n\nThis will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace.`}
+        message={`Delete "${workspaceToDelete?.name}"?`}
+        description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
         confirmLabel="Delete"
         cancelLabel="Close"
         onConfirm={handleDeleteWorkspace}
