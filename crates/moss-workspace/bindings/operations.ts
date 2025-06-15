@@ -30,9 +30,9 @@ export type DescribeStateOutput = {
 
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
-export type UpdateCollectionEntryInput = { id: string; newName: string | null; order?: number; pinned?: boolean };
+export type UpdateCollectionInput = { id: string; newName: string | null; order?: number; pinned?: boolean };
 
-export type UpdateCollectionEntryOutput = { id: string };
+export type UpdateCollectionOutput = { id: string };
 
 export type UpdateStateInput =
   | { "updateEditorPartState": EditorPartStateInfo }

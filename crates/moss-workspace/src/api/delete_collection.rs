@@ -19,12 +19,11 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn delete_collection<C: Context<R>>(
-        &self,
+        &mut self,
         ctx: &C,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
-        let collections = self.collections(ctx).await?;
 
         let id_str = input.id.to_string();
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
@@ -42,9 +41,9 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to delete collection from file system")?;
         }
 
+        let collections = self.collections_mut(ctx).await?;
         let removed_id = {
-            let mut collections_lock = collections.write().await;
-            if let Some(v) = collections_lock.remove(&input.id) {
+            if let Some(v) = collections.remove(&input.id) {
                 let lock = v.read().await;
                 let id = lock.id;
                 Some(id)

@@ -18,20 +18,14 @@ impl<R: TauriRuntime> Workspace<R> {
 
         // Collect data upfront to avoid lifetime issues
 
-        let collections_data: Vec<_> = {
-            let collections_lock = collections.read().await;
-            collections_lock
-                .iter()
-                .map(|(&id, collection)| (id, collection.clone()))
-                .collect()
-        };
-        let environments_data: Vec<_> = {
-            let environments_lock = environments.read().await;
-            environments_lock
-                .iter()
-                .map(|(&id, env)| (id, env.name.clone()))
-                .collect()
-        };
+        let collections_data: Vec<_> = collections
+            .iter()
+            .map(|(&id, collection)| (id, collection.clone()))
+            .collect();
+        let environments_data: Vec<_> = environments
+            .iter()
+            .map(|(&id, env)| (id, env.name.clone()))
+            .collect();
 
         // Create a stream from collection environments
         let collection_environments_stream = stream::iter(collections_data)
