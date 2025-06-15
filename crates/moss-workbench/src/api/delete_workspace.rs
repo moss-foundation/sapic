@@ -1,6 +1,5 @@
-use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_common::api::{OperationError, OperationOptionExt, OperationResult, OperationResultExt};
+use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;

@@ -20,10 +20,12 @@ impl<R: TauriRuntime> Workbench<R> {
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspaces = self.workspaces(ctx).await?;
-        let workspaces_lock = workspaces.read().await;
-        let descriptor = workspaces_lock
+        let descriptor = workspaces
+            .read()
+            .await
             .get(&input.id)
-            .map_err_as_not_found(format!("workspace with name {}", input.id))?;
+            .map_err_as_not_found(format!("workspace with name {}", input.id))?
+            .clone();
 
         if !descriptor.abs_path.exists() {
             return Err(OperationError::NotFound(
