@@ -1,3 +1,4 @@
+pub mod batch_delete_log;
 pub mod describe_state;
 pub mod get_color_theme;
 pub mod get_translations;

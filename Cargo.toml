@@ -12,7 +12,6 @@ members = [
     "crates/moss-fs",
     "crates/moss-keyring",
     "crates/moss-vault",
-    "crates/moss-logging",
     "crates/moss-workspace",
     "crates/moss-environment",
     "crates/moss-testutils",
@@ -37,7 +36,6 @@ moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
-moss_logging = { path = "crates/moss-logging" }
 moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }

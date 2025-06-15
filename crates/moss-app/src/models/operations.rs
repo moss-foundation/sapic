@@ -1,8 +1,13 @@
+use std::{ops::Deref, path::PathBuf};
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
-use crate::models::primitives::ThemeId;
+use crate::models::{
+    primitives::{LogLevel, ThemeId},
+    types::{LogDate, LogEntryInfo, LogEntryRef, LogItemSourceInfo},
+};
 
 use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 
@@ -69,3 +74,41 @@ pub struct GetColorThemeOutput {
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
+
+// Log
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListLogsInput {
+    pub dates: Vec<LogDate>,
+    pub levels: Vec<LogLevel>,
+    #[ts(optional)]
+    pub resource: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListLogsOutput {
+    pub contents: Vec<LogEntryInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchDeleteLogInput(pub Vec<LogEntryRef>);
+
+impl Deref for BatchDeleteLogInput {
+    type Target = Vec<LogEntryRef>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchDeleteLogOutput {
+    pub deleted_entries: Vec<LogItemSourceInfo>,
+}

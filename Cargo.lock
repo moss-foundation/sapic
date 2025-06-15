@@ -1202,7 +1202,6 @@ dependencies = [
  "moss_collection",
  "moss_db",
  "moss_fs",
- "moss_logging",
  "moss_storage",
  "moss_tauri",
  "moss_text",
@@ -2982,13 +2981,16 @@ name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "fnv",
  "moss_applib",
  "moss_common",
  "moss_fs",
  "moss_tauri",
+ "moss_testutils",
  "moss_text",
  "moss_workbench",
+ "nanoid",
  "parking_lot",
  "rustc-hash",
  "serde",
@@ -2997,6 +2999,9 @@ dependencies = [
  "tauri",
  "thiserror 2.0.12",
  "tokio",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
  "ts-rs",
  "uuid",
 ]
@@ -3164,29 +3169,6 @@ version = "0.1.0"
 dependencies = [
  "keyring",
  "whoami",
-]
-
-[[package]]
-name = "moss_logging"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "moss_app",
- "moss_common",
- "moss_fs",
- "moss_testutils",
- "nanoid",
- "parking_lot",
- "serde",
- "serde_json",
- "tauri",
- "tokio",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "ts-rs",
- "uuid",
 ]
 
 [[package]]

@@ -14,7 +14,7 @@ impl SessionService {
         }
     }
 
-    pub fn get_session_uuid(&self) -> &Uuid {
+    pub fn session_id(&self) -> &Uuid {
         &self.session_id
     }
 }

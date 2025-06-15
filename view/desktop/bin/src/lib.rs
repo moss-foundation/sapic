@@ -12,7 +12,8 @@ extern crate tracing;
 use moss_app::{
     app::{AppBuilder, AppDefaults},
     services::{
-        locale_service::LocaleService, session_service::SessionService, theme_service::ThemeService,
+        locale_service::LocaleService, log_service::LogService, session_service::SessionService,
+        theme_service::ThemeService,
     },
 };
 use moss_fs::{FileSystem, RealFileSystem};
@@ -69,9 +70,20 @@ pub async fn run<R: TauriRuntime>() {
                 .expect("Environment variable LOCALES_DIR is not set")
                 .into();
 
+            let logs_dir: PathBuf = std::env::var("APP_LOG_DIR")
+                .expect("Environment variable APP_LOG_DIR is not set")
+                .into();
+
             let theme_service = ThemeService::new(fs.clone(), themes_dir);
             let locale_service = LocaleService::new(fs.clone(), locales_dir);
             let session_service = SessionService::new();
+            let log_service = LogService::new(
+                fs.clone(),
+                app_handle.clone(),
+                &logs_dir,
+                session_service.session_id(),
+            )
+            .expect("Failed to create log service");
 
             let default_theme = {
                 let fut = theme_service.default_theme();
@@ -96,6 +108,7 @@ pub async fn run<R: TauriRuntime>() {
                 .with_service(theme_service)
                 .with_service(locale_service)
                 .with_service(session_service)
+                .with_service(log_service)
                 .build();
             app_handle.manage(app);
 
