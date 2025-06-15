@@ -1,6 +1,6 @@
 use chrono::Utc;
 use moss_applib::context::Context;
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
@@ -20,14 +20,10 @@ impl<R: TauriRuntime> Workbench<R> {
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspaces = self.workspaces(ctx).await?;
-        let descriptor = if let Some(d) = workspaces.read().await.get(&input.id) {
-            Arc::clone(d)
-        } else {
-            return Err(OperationError::NotFound(format!(
-                "workspace with name {}",
-                input.id
-            )));
-        };
+        let workspaces_lock = workspaces.read().await;
+        let descriptor = workspaces_lock
+            .get(&input.id)
+            .map_err_as_not_found(format!("workspace with name {}", input.id))?;
 
         if !descriptor.abs_path.exists() {
             return Err(OperationError::NotFound(

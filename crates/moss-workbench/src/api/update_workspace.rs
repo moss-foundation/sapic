@@ -1,6 +1,5 @@
-use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
+use moss_common::api::{OperationOptionExt, OperationResult};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -19,16 +18,14 @@ impl<R: TauriRuntime> Workbench<R> {
         let mut workspace_guard = self.active_workspace_mut().await;
         let workspace = workspace_guard
             .as_mut()
-            .context("No active workspace")
-            .map_err_as_failed_precondition()?;
+            .map_err_as_failed_precondition("No active workspace")?;
 
         let mut descriptor = {
             let workspaces_lock = workspaces.read().await;
 
             workspaces_lock
                 .get(&workspace.id)
-                .context("Workspace not found")
-                .map_err_as_internal()? // This should never happen, if it does, there is a bug
+                .map_err_as_internal("Workspace not found")? // This should never happen, if it does, there is a bug
                 .as_ref()
                 .clone()
         };
