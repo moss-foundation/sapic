@@ -4,7 +4,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -161,7 +160,7 @@ jobs:
           # - moss_git_hosting_provider
           - moss_tauri
           - moss_text
-          # - moss_collection
+          - moss_collection
           - moss_app
           - moss_db
           - moss_fs

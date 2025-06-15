@@ -15,7 +15,6 @@ anyhow.workspace = true
 fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
-slotmap.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
 parking_lot.workspace = true
 rustc-hash.workspace = true

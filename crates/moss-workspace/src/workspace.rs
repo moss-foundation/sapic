@@ -79,7 +79,6 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) environments: OnceCell<RwLock<EnvironmentMap>>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) next_collection_entry_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     pub(super) next_variable_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
@@ -125,7 +124,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
@@ -167,7 +165,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_collection_entry_id: Arc::new(AtomicUsize::new(0)),
             next_variable_id: Arc::new(AtomicUsize::new(0)),
             next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
@@ -332,12 +329,7 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
-                    let collection = Collection::load(
-                        &entry.path(),
-                        fs.clone(),
-                        self.next_collection_entry_id.clone(),
-                    )
-                    .await?;
+                    let collection = Collection::load(&entry.path(), fs.clone()).await?;
                     let manifest = collection.manifest().await;
 
                     collections.insert(

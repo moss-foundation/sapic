@@ -1,7 +1,33 @@
 github_actions:
   - changed-files:
-      - any-glob-to-any-file: '.github/**'
+      - any-glob-to-any-file: ".github/**"
 
 makefile:
   - changed-files:
-      - any-glob-to-any-file: 'Makefile'
+      - any-glob-to-any-file: "Makefile"
+
+bindings:
+  - changed-files:
+      - any-glob-to-any-file: "bindings/**"
+
+scripts:
+  - changed-files:
+      - any-glob-to-any-file: "scripts/**"
+
+enhancement:
+  - title: "feat\\(.*\\):.*"
+
+fix:
+  - title: "fix\\(.*\\):.*"
+
+refactor:
+  - title: "refactor\\(.*\\):.*"
+
+docs:
+  - title: "docs\\(.*\\):.*"
+
+chore:
+  - title: "chore\\(.*\\):.*"
+
+ci:
+  - title: "ci\\(.*\\):.*"

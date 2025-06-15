@@ -57,8 +57,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let name = input.name.to_owned();
         let order = input.order.to_owned();
         let collection = Collection::create(
-            fs,
-            self.next_collection_entry_id.clone(),
+            fs.clone(),
             collection::CreateParams {
                 name: Some(name.clone()),
                 internal_abs_path: &abs_path,

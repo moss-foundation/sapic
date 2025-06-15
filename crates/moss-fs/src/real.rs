@@ -27,8 +27,12 @@ impl Global for RealFileSystem {}
 
 #[async_trait::async_trait]
 impl FileSystem for RealFileSystem {
-    async fn create_dir(&self, path: &Path) -> Result<()> {
+    async fn create_dir_all(&self, path: &Path) -> Result<()> {
         Ok(tokio::fs::create_dir_all(path).await?)
+    }
+
+    async fn create_dir(&self, path: &Path) -> Result<()> {
+        Ok(tokio::fs::create_dir(path).await?)
     }
 
     async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> Result<()> {
