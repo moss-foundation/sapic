@@ -10,10 +10,9 @@ use moss_storage::{
 };
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::Runtime as TauriRuntime;
-use tokio::sync::RwLock;
 use uuid::Uuid;
 use validator::Validate;
 
@@ -54,7 +53,6 @@ impl<R: TauriRuntime> Workspace<R> {
             .await
             .context("Failed to create the collection directory")?;
 
-        let order = input.order.to_owned();
         let collection = Collection::create(
             fs.clone(),
             collection::CreateParams {
@@ -68,17 +66,17 @@ impl<R: TauriRuntime> Workspace<R> {
 
         collections.insert(
             id,
-            Arc::new(RwLock::new(CollectionItem {
+            Arc::new(CollectionItem {
                 id,
-                order: order.clone(),
+                order: input.order.map(AtomicUsize::new),
                 inner: collection,
-            })),
+            }),
         );
 
         {
             let key = COLLECTION_SEGKEY.join(&id_str);
             let value = AnyValue::serialize(&CollectionCacheEntity {
-                order: order.clone(),
+                order: input.order.clone(),
                 external_abs_path: None,
             })?;
             PutItem::put(self.storage.item_store().as_ref(), key, value)?;

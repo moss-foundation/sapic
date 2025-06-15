@@ -43,10 +43,8 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let collections = self.collections_mut(ctx).await?;
         let removed_id = {
-            if let Some(v) = collections.remove(&input.id) {
-                let lock = v.read().await;
-                let id = lock.id;
-                Some(id)
+            if let Some(item) = collections.remove(&input.id) {
+                Some(item.id)
             } else {
                 None
             }

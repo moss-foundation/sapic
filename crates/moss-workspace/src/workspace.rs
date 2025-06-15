@@ -21,7 +21,7 @@ use std::{
     sync::{Arc, atomic::AtomicUsize},
 };
 use tauri::Runtime as TauriRuntime;
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::OnceCell;
 use uuid::Uuid;
 
 use crate::{
@@ -34,7 +34,7 @@ use crate::{
 #[derive(Deref, DerefMut)]
 pub struct CollectionItem {
     pub id: Uuid,
-    pub order: Option<usize>,
+    pub order: Option<AtomicUsize>,
     #[deref]
     #[deref_mut]
     pub inner: Collection,
@@ -50,7 +50,7 @@ pub struct EnvironmentItem {
     pub inner: Environment,
 }
 
-type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
+type CollectionMap = HashMap<Uuid, Arc<CollectionItem>>;
 type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
 pub struct WorkspaceSummary {
@@ -330,11 +330,11 @@ impl<R: TauriRuntime> Workspace<R> {
                     let collection = Collection::load(&entry.path(), fs.clone()).await?;
                     collections.insert(
                         id,
-                        Arc::new(RwLock::new(CollectionItem {
+                        Arc::new(CollectionItem {
                             id,
-                            order: cache.map(|v| v.order).flatten(),
+                            order: cache.map(|v| v.order).flatten().map(AtomicUsize::new),
                             inner: collection,
-                        })),
+                        }),
                     );
                 }
 
