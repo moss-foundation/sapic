@@ -14,7 +14,7 @@ async fn delete_collection_success() {
     let create_collection_output = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -25,7 +25,7 @@ async fn delete_collection_success() {
 
     let id = create_collection_output.id;
     let delete_collection_result = workspace
-        .delete_collection(&ctx, DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await;
     assert!(delete_collection_result.is_ok());
 
@@ -49,7 +49,7 @@ async fn delete_collection_nonexistent_id() {
     let id = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -60,13 +60,13 @@ async fn delete_collection_nonexistent_id() {
         .id;
 
     workspace
-        .delete_collection(&ctx, DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await
         .unwrap();
 
     // Delete the collection again
     let delete_collection_result = workspace
-        .delete_collection(&ctx, DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await;
 
     assert!(delete_collection_result.is_err());
@@ -82,7 +82,7 @@ async fn delete_collection_fs_already_deleted() {
     let create_collection_output = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -100,7 +100,7 @@ async fn delete_collection_fs_already_deleted() {
     let delete_collection_result = workspace
         .delete_collection(
             &ctx,
-            DeleteCollectionInput {
+            &DeleteCollectionInput {
                 id: create_collection_output.id,
             },
         )

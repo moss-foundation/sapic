@@ -10,7 +10,7 @@ use crate::{
 impl<R: TauriRuntime> App<R> {
     pub async fn get_color_theme(
         &self,
-        input: GetColorThemeInput,
+        input: &GetColorThemeInput,
     ) -> OperationResult<GetColorThemeOutput> {
         let theme_service = self.service::<ThemeService>();
         let themes = theme_service.themes().await?;

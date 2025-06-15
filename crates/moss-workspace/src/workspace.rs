@@ -1,4 +1,5 @@
 use anyhow::{Context as _, Result};
+use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
 use moss_collection::collection::Collection;
@@ -16,7 +17,6 @@ use moss_storage::{
 use moss_text::sanitized::desanitize;
 use std::{
     collections::HashMap,
-    ops::Deref,
     path::{Path, PathBuf},
     sync::{Arc, atomic::AtomicUsize},
 };
@@ -31,34 +31,24 @@ use crate::{
     storage::segments::COLLECTION_SEGKEY,
 };
 
+#[derive(Deref, DerefMut)]
 pub struct CollectionItem {
     pub id: Uuid,
     pub name: String,
     pub order: Option<usize>,
+    #[deref]
+    #[deref_mut]
     pub inner: Collection,
 }
 
-impl Deref for CollectionItem {
-    type Target = Collection;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
+#[derive(Deref, DerefMut)]
 pub struct EnvironmentItem {
     pub id: Uuid,
     pub name: String,
     pub display_name: String,
+    #[deref]
+    #[deref_mut]
     pub inner: Environment,
-}
-
-impl Deref for EnvironmentItem {
-    type Target = Environment;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
 }
 
 type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;

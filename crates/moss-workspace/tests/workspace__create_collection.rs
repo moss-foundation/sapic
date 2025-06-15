@@ -18,7 +18,7 @@ async fn create_collection_success() {
     let create_collection_result = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -63,7 +63,7 @@ async fn create_collection_empty_name() {
     let create_collection_result = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -97,7 +97,7 @@ async fn create_collection_special_chars() {
         let create_collection_result = workspace
             .create_collection(
                 &ctx,
-                CreateCollectionInput {
+                &CreateCollectionInput {
                     name: collection_name.clone(),
                     order: None,
                     external_path: None,
@@ -141,7 +141,7 @@ async fn create_collection_with_order() {
     let create_collection_result = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: collection_name.clone(),
                 order: Some(42),
                 external_path: None,

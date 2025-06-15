@@ -14,7 +14,7 @@ async fn rename_collection_success() {
     let create_collection_output = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: old_collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -49,7 +49,7 @@ async fn rename_collection_empty_name() {
     let create_collection_output = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: old_collection_name.clone(),
                 order: None,
                 external_path: None,
@@ -87,7 +87,7 @@ async fn rename_collection_unchanged() {
     let create_collection_output = workspace
         .create_collection(
             &ctx,
-            CreateCollectionInput {
+            &CreateCollectionInput {
                 name: old_collection_name.clone(),
                 order: None,
                 external_path: None,

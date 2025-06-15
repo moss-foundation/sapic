@@ -28,7 +28,7 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection<C: Context<R>>(
         &self,
         ctx: &C,
-        input: CreateCollectionInput,
+        input: &CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 

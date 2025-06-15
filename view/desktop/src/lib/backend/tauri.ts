@@ -4,6 +4,7 @@ import { listen as listenTauri } from "@tauri-apps/api/event";
 
 // Define all possible Tauri IPC commands as string literals
 export type TauriIpcCommand =
+  // App
   | "set_color_theme"
   | "set_locale"
   | "execute_command"
@@ -17,10 +18,20 @@ export type TauriIpcCommand =
   | "list_workspaces"
   | "delete_workspace"
   | "update_workspace"
+
+  // Workspace
   | "update_workspace_state"
   | "describe_workspace_state"
   | "list_collections"
-  | "describe_workbench_state";
+  | "describe_workbench_state"
+  | "create_collection"
+  | "delete_collection"
+  | "stream_collections"
+
+  // Collection
+  | "create_collection_entry"
+  | "delete_collection_entry"
+  | "stream_collection_entries";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 

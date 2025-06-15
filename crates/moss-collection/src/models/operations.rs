@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 use uuid::Uuid;
@@ -9,7 +9,7 @@ use crate::models::{
     types::configuration::{DirConfigurationModel, ItemConfigurationModel},
 };
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
@@ -20,7 +20,7 @@ pub struct CreateItemEntryInput {
     pub configuration: ItemConfigurationModel,
 }
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
@@ -31,7 +31,7 @@ pub struct CreateDirEntryInput {
     pub configuration: DirConfigurationModel,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub enum CreateEntryInput {
@@ -63,7 +63,7 @@ pub struct CreateEntryOutput {
     pub id: Uuid,
 }
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {

@@ -10,7 +10,7 @@ use crate::{
 impl<R: TauriRuntime> App<R> {
     pub async fn get_translations(
         &self,
-        input: GetTranslationsInput,
+        input: &GetTranslationsInput,
     ) -> OperationResult<GetTranslationsOutput> {
         let locale_service = self.service::<LocaleService>();
         let translations = locale_service

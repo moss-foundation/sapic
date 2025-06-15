@@ -21,7 +21,7 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn delete_collection<C: Context<R>>(
         &self,
         ctx: &C,
-        input: DeleteCollectionInput,
+        input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let collections = self.collections(ctx).await?;

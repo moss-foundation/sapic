@@ -28,6 +28,7 @@ chrono.workspace = true
 toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 
 [dev-dependencies]
 moss_applib = { workspace = true, features = ["test"] }

@@ -40,7 +40,7 @@ pub async fn set_color_theme<R: TauriRuntime>(
             .map_err(|err| anyhow!("Failed to emit event to webview '{}': {}", label, err))?;
         }
 
-        app.set_color_theme(input)
+        app.set_color_theme(&input)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -56,7 +56,7 @@ pub async fn get_color_theme<R: TauriRuntime>(
     input: GetColorThemeInput,
 ) -> TauriResult<GetColorThemeOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        app.get_color_theme(input)
+        app.get_color_theme(&input)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -102,7 +102,7 @@ pub async fn set_locale<R: TauriRuntime>(
     input: SetLocaleInput,
 ) -> TauriResult<()> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        app.set_locale(input)
+        app.set_locale(&input)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -131,7 +131,7 @@ pub async fn get_translations<R: TauriRuntime>(
     input: GetTranslationsInput,
 ) -> TauriResult<GetTranslationsOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        app.get_translations(input)
+        app.get_translations(&input)
             .await
             .map_err(TauriError::OperationError)
     })
