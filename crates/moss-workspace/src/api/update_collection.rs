@@ -7,7 +7,7 @@ use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    models::operations::{UpdateCollectionEntryInput, UpdateCollectionEntryOutput},
+    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
     workspace::Workspace,
 };
 
@@ -15,8 +15,8 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
         &mut self,
         ctx: &C,
-        input: UpdateCollectionEntryInput,
-    ) -> OperationResult<UpdateCollectionEntryOutput> {
+        input: UpdateCollectionInput,
+    ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
 
         let collections = self
@@ -40,6 +40,6 @@ impl<R: TauriRuntime> Workspace<R> {
                 .map_err(|e| OperationError::Internal(e.to_string()))?;
         }
 
-        Ok(UpdateCollectionEntryOutput { id: input.id })
+        Ok(UpdateCollectionOutput { id: input.id })
     }
 }

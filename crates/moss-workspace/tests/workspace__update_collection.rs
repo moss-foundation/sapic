@@ -2,7 +2,7 @@ pub mod shared;
 
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
-use moss_workspace::models::operations::{CreateCollectionInput, UpdateCollectionEntryInput};
+use moss_workspace::models::operations::{CreateCollectionInput, UpdateCollectionInput};
 
 use crate::shared::setup_test_workspace;
 
@@ -27,7 +27,7 @@ async fn rename_collection_success() {
     let result = workspace
         .update_collection(
             &ctx,
-            UpdateCollectionEntryInput {
+            UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 order: None,
@@ -62,7 +62,7 @@ async fn rename_collection_empty_name() {
     let rename_collection_result = workspace
         .update_collection(
             &ctx,
-            UpdateCollectionEntryInput {
+            UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 order: None,
@@ -100,7 +100,7 @@ async fn rename_collection_unchanged() {
     let rename_collection_result = workspace
         .update_collection(
             &ctx,
-            UpdateCollectionEntryInput {
+            UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name),
                 order: None,
@@ -124,7 +124,7 @@ async fn rename_collection_nonexistent_id() {
     let result = workspace
         .update_collection(
             &ctx,
-            UpdateCollectionEntryInput {
+            UpdateCollectionInput {
                 id: nonexistent_id,
                 new_name: Some(random_collection_name()),
                 order: None,
