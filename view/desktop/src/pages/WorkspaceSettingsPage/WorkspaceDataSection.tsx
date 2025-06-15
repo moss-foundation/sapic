@@ -1,7 +1,7 @@
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { SectionTitle } from "./SectionTitle";
 
-export const WorkspaceData = () => {
+export const WorkspaceDataSection = () => {
   return (
     <div className="mt-6">
       <SectionTitle className="text-[var(--moss-select-text-outlined)]">Data and Storage</SectionTitle>

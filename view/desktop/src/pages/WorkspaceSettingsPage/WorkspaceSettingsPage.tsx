@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { useUpdateWorkspace } from "@/hooks/workbench/useUpdateWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
-import { WorkspaceName } from "./WorkspaceName";
-import { WorkspaceStartup } from "./WorkspaceStartup";
-import { WorkspaceData } from "./WorkspaceData";
-import { WorkspaceDangerZone } from "./WorkspaceDangerZone";
+import { WorkspaceNameSection } from "./WorkspaceNameSection";
+import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
+import { WorkspaceDataSection } from "./WorkspaceDataSection";
+import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 
 export const WorkspaceSettings = () => {
   const workspace = useActiveWorkspace();
@@ -76,7 +76,7 @@ export const WorkspaceSettings = () => {
   return (
     <div className="flex h-full justify-center">
       <div className="w-full max-w-2xl space-y-6 px-6 py-6">
-        <WorkspaceName
+        <WorkspaceNameSection
           name={name}
           setName={setName}
           hasChanges={hasChanges}
@@ -86,16 +86,16 @@ export const WorkspaceSettings = () => {
           onBlur={handleBlur}
         />
 
-        <WorkspaceStartup
+        <WorkspaceStartupSection
           reopenOnNextSession={reopenOnNextSession}
           setReopenOnNextSession={setReopenOnNextSession}
           openPreviousWindows={openPreviousWindows}
           setOpenPreviousWindows={setOpenPreviousWindows}
         />
 
-        <WorkspaceData />
+        <WorkspaceDataSection />
 
-        <WorkspaceDangerZone />
+        <WorkspaceDangerZoneSection />
       </div>
     </div>
   );

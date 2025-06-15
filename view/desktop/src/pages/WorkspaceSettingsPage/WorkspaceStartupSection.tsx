@@ -7,7 +7,7 @@ interface WorkspaceStartupProps {
   setOpenPreviousWindows: (value: boolean) => void;
 }
 
-export const WorkspaceStartup = ({
+export const WorkspaceStartupSection = ({
   reopenOnNextSession,
   setReopenOnNextSession,
   openPreviousWindows,

@@ -1,7 +1,7 @@
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import { SectionTitle } from "./SectionTitle";
 
-export const WorkspaceDangerZone = () => {
+export const WorkspaceDangerZoneSection = () => {
   return (
     <div className="mt-6">
       <SectionTitle className="text-black">Danger Zone</SectionTitle>

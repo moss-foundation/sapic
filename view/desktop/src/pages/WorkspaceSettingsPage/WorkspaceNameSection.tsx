@@ -12,7 +12,7 @@ interface WorkspaceNameProps {
   onBlur: () => void;
 }
 
-export const WorkspaceName = ({
+export const WorkspaceNameSection = ({
   name,
   setName,
   hasChanges,
