@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_app.workspace = true
+moss_applib.workspace = true
 moss_db.workspace = true
 moss_fs.workspace = true
 moss_collection.workspace = true
@@ -28,7 +28,9 @@ chrono.workspace = true
 toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 
 [dev-dependencies]
+moss_applib = { workspace = true, features = ["test"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

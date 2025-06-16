@@ -180,4 +180,11 @@ where
     pub fn path(&self) -> &Arc<Path> {
         &self.abs_path
     }
+
+    pub fn reset_path(&mut self, path: impl AsRef<Path>) {
+        let path: Arc<Path> = path.as_ref().into();
+        debug_assert!(path.is_absolute());
+
+        self.abs_path = path;
+    }
 }

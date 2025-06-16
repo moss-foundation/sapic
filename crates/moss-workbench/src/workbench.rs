@@ -1,7 +1,7 @@
 use anyhow::Result;
-use arc_swap::ArcSwapOption;
+use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
-use moss_app::service::prelude::AppService;
+use moss_applib::context::Context;
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
@@ -10,12 +10,11 @@ use moss_storage::{
 use moss_workspace::Workspace;
 use std::{
     collections::HashMap,
-    ops::Deref,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock};
+use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
 
 use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
@@ -30,17 +29,23 @@ pub struct WorkspaceDescriptor {
 
 type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
+#[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: TauriRuntime> {
     pub id: Uuid,
+    #[deref]
+    #[deref_mut]
     pub inner: Workspace<R>,
 }
 
-impl<R: TauriRuntime> Deref for ActiveWorkspace<R> {
-    type Target = Workspace<R>;
+#[derive(Deref)]
+pub struct ActiveWorkspaceReadGuard<'a, R: TauriRuntime> {
+    guard: RwLockReadGuard<'a, Option<ActiveWorkspace<R>>>,
+}
 
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
+#[derive(Deref, DerefMut)]
+pub struct ActiveWorkspaceWriteGuard<'a, R: TauriRuntime> {
+    #[deref_mut]
+    guard: RwLockWriteGuard<'a, Option<ActiveWorkspace<R>>>,
 }
 
 #[derive(Debug)]
@@ -50,47 +55,54 @@ pub struct Options {
 }
 
 pub struct Workbench<R: TauriRuntime> {
-    pub(super) app_handle: AppHandle<R>,
-    pub(super) fs: Arc<dyn FileSystem>,
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) active_workspace: ArcSwapOption<ActiveWorkspace<R>>,
+    pub(super) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(super) global_storage: Arc<dyn GlobalStorage>,
     pub(crate) options: Options,
 }
 
-impl<R: tauri::Runtime> AppService for Workbench<R> {}
-
 impl<R: TauriRuntime> Workbench<R> {
     pub fn new(
         app_handle: AppHandle<R>,
-        fs: Arc<dyn FileSystem>,
         global_storage: Arc<dyn GlobalStorage>,
         options: Options,
     ) -> Self {
         Self {
-            app_handle: app_handle.clone(),
-            fs,
             activity_indicator: ActivityIndicator::new(app_handle),
-            active_workspace: ArcSwapOption::new(None),
+            active_workspace: RwLock::new(None),
             known_workspaces: OnceCell::new(),
             global_storage,
             options,
         }
     }
 
-    pub fn active_workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
-        self.active_workspace.load_full()
+    pub async fn active_workspace_mut(&self) -> ActiveWorkspaceWriteGuard<'_, R> {
+        ActiveWorkspaceWriteGuard {
+            guard: self.active_workspace.write().await,
+        }
     }
 
-    pub(super) fn set_active_workspace(&self, id: Uuid, workspace: Workspace<R>) {
-        self.active_workspace.store(Some(Arc::new(ActiveWorkspace {
+    pub async fn active_workspace(&self) -> ActiveWorkspaceReadGuard<'_, R> {
+        ActiveWorkspaceReadGuard {
+            guard: self.active_workspace.read().await,
+        }
+    }
+
+    pub async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = Some(ActiveWorkspace {
             id,
             inner: workspace,
-        })));
+        });
     }
 
-    pub(super) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {
+    pub async fn deactivate_workspace(&self) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = None;
+    }
+
+    pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
         Ok(self
             .known_workspaces
             .get_or_try_init(|| async move {
@@ -128,7 +140,9 @@ impl<R: TauriRuntime> Workbench<R> {
                     restored_entities.insert(encoded_name, value);
                 }
 
-                let mut read_dir = self.fs.read_dir(&dir_abs_path).await?;
+                let fs = <dyn FileSystem>::global::<R, C>(ctx);
+
+                let mut read_dir = fs.read_dir(&dir_abs_path).await?;
                 while let Some(entry) = read_dir.next_entry().await? {
                     if !entry.file_type().await?.is_dir() {
                         continue;
@@ -144,7 +158,7 @@ impl<R: TauriRuntime> Workbench<R> {
                         }
                     };
 
-                    let summary = Workspace::<R>::summary(&self.fs, &entry.path()).await?;
+                    let summary = Workspace::<R>::summary(ctx, &entry.path()).await?;
 
                     let restored_entity =
                         match restored_entities.remove(&id_str).map_or(Ok(None), |v| {

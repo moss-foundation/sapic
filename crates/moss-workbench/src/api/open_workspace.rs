@@ -1,5 +1,6 @@
 use chrono::Utc;
-use moss_common::api::{OperationError, OperationResult};
+use moss_applib::context::Context;
+use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
 use moss_workspace::Workspace;
@@ -13,19 +14,18 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn open_workspace(
+    pub async fn open_workspace<C: Context<R>>(
         &self,
+        ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let workspaces = self.workspaces().await?;
-        let descriptor = if let Some(d) = workspaces.read().await.get(&input.id) {
-            Arc::clone(d)
-        } else {
-            return Err(OperationError::NotFound(format!(
-                "workspace with name {}",
-                input.id
-            )));
-        };
+        let workspaces = self.workspaces(ctx).await?;
+        let descriptor = workspaces
+            .read()
+            .await
+            .get(&input.id)
+            .map_err_as_not_found(format!("workspace with name {}", input.id))?
+            .clone();
 
         if !descriptor.abs_path.exists() {
             return Err(OperationError::NotFound(
@@ -36,6 +36,8 @@ impl<R: TauriRuntime> Workbench<R> {
         // Check if the workspace is already active
         if self
             .active_workspace()
+            .await
+            .as_ref()
             .map(|active_workspace| active_workspace.id == descriptor.id)
             .unwrap_or(false)
         {
@@ -45,13 +47,8 @@ impl<R: TauriRuntime> Workbench<R> {
             });
         }
 
-        let workspace = Workspace::load(
-            self.app_handle.clone(),
-            &descriptor.abs_path,
-            Arc::clone(&self.fs),
-            self.activity_indicator.clone(),
-        )
-        .await?;
+        let workspace =
+            Workspace::load(ctx, &descriptor.abs_path, self.activity_indicator.clone()).await?;
 
         let last_opened_at = Utc::now().timestamp();
 
@@ -63,7 +60,7 @@ impl<R: TauriRuntime> Workbench<R> {
                 last_opened_at: Some(last_opened_at),
             };
 
-            let known_workspaces = self.workspaces().await?;
+            let known_workspaces = self.workspaces(ctx).await?;
             known_workspaces
                 .write()
                 .await
@@ -78,7 +75,7 @@ impl<R: TauriRuntime> Workbench<R> {
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 
-        self.set_active_workspace(descriptor.id, workspace);
+        self.activate_workspace(descriptor.id, workspace).await;
 
         Ok(OpenWorkspaceOutput {
             id: descriptor.id,

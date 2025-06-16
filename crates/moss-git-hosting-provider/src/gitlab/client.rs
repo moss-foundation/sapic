@@ -7,7 +7,9 @@ use crate::{GitHostingProvider, common::SSHAuthAgent};
 pub trait GitLabAuthAgent: GitAuthAgent {}
 
 pub struct GitLabClient {
+    #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitAuthAgent>,
+    #[allow(dead_code)]
     ssh_auth_agent: Option<Arc<dyn SSHAuthAgent>>,
 }
 

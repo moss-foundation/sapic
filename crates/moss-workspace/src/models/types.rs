@@ -10,7 +10,7 @@ use super::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]
 #[ts(export, export_to = "types.ts")]
 pub enum WorkspaceMode {
     #[serde(rename = "DESIGN_FIRST")]

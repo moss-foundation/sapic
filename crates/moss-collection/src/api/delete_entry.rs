@@ -3,19 +3,19 @@ use crate::{
     models::operations::{DeleteEntryInput, DeleteEntryOutput},
 };
 use moss_common::api::OperationResult;
+use validator::Validate;
 
 impl Collection {
     pub async fn delete_entry(
         &mut self,
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
-        let worktree = self.worktree_mut().await?;
+        input.validate()?;
 
-        let changes = worktree.delete_entry_by_virtual_id(input.id).await?;
+        self.worktree().remove_entry(&input.path).await?;
 
-        Ok(DeleteEntryOutput {
-            physical_changes: changes.physical_changes,
-            virtual_changes: changes.virtual_changes,
-        })
+        // TODO: db operations
+
+        Ok(DeleteEntryOutput {})
     }
 }

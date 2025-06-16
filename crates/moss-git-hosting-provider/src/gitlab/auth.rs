@@ -252,6 +252,6 @@ mod tests {
             client_secret,
         ));
 
-        let repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
+        let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 }

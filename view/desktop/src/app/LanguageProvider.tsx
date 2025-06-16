@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "@/hooks/appState/useDescribeAppState";
 import { applyLanguagePack } from "@/utils/applyLanguagePack";
-import { LocaleInfo } from "@repo/moss-nls";
+import { LocaleInfo } from "@repo/moss-app";
 import { useQueryClient } from "@tanstack/react-query";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 

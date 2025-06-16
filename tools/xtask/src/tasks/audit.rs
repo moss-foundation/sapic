@@ -67,14 +67,14 @@ pub async fn check_dependencies_job(
     while let Some(result) = task_set.join_next().await {
         match result {
             Ok(Ok(())) => {}
-            Ok(Err(e)) => {
+            Ok(Err(_)) => {
                 failure_count += 1;
                 if fail_fast {
                     task_set.abort_all();
                     return Err(anyhow!("Failing Fast"));
                 }
             }
-            Err(e) => {
+            Err(_) => {
                 failure_count += 1;
                 if fail_fast {
                     task_set.abort_all();

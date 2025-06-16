@@ -1,3 +1,4 @@
+use moss_applib::context::Context;
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
@@ -7,8 +8,11 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn list_workspaces(&self) -> OperationResult<ListWorkspacesOutput> {
-        let workspaces = self.workspaces().await?;
+    pub async fn list_workspaces<C: Context<R>>(
+        &self,
+        ctx: &C,
+    ) -> OperationResult<ListWorkspacesOutput> {
+        let workspaces = self.workspaces(ctx).await?;
         let workspaces_lock = workspaces.read().await;
 
         Ok(ListWorkspacesOutput(

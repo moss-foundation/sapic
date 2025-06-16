@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DescribeAppStateOutput } from "@repo/moss-state";
+import { DescribeAppStateOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_DESCRIBE_APP_STATE_QUERY_KEY = "describeAppState";

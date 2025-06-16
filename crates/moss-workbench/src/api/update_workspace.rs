@@ -1,5 +1,5 @@
-use anyhow::Context;
-use moss_common::api::{OperationResult, OperationResultExt};
+use moss_applib::context::Context;
+use moss_common::api::{OperationOptionExt, OperationResult};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
@@ -7,22 +7,25 @@ use validator::Validate;
 use crate::{models::operations::UpdateWorkspaceInput, workbench::Workbench};
 
 impl<R: TauriRuntime> Workbench<R> {
-    pub async fn update_workspace(&self, input: &UpdateWorkspaceInput) -> OperationResult<()> {
+    pub async fn update_workspace<C: Context<R>>(
+        &self,
+        ctx: &C,
+        input: &UpdateWorkspaceInput,
+    ) -> OperationResult<()> {
         input.validate()?;
 
-        let workspaces = self.workspaces().await?;
-        let workspace = self
-            .active_workspace()
-            .context("No active workspace")
-            .map_err_as_failed_precondition()?;
+        let workspaces = self.workspaces(ctx).await?;
+        let mut workspace_guard = self.active_workspace_mut().await;
+        let workspace = workspace_guard
+            .as_mut()
+            .map_err_as_failed_precondition("No active workspace")?;
 
         let mut descriptor = {
             let workspaces_lock = workspaces.read().await;
 
             workspaces_lock
                 .get(&workspace.id)
-                .context("Workspace not found")
-                .map_err_as_internal()? // This should never happen, if it does, there is a bug
+                .map_err_as_internal("Workspace not found")? // This should never happen, if it does, there is a bug
                 .as_ref()
                 .clone()
         };

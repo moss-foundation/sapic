@@ -60,6 +60,18 @@ impl From<serde_json::Error> for OperationError {
     }
 }
 
+impl From<toml::ser::Error> for OperationError {
+    fn from(error: toml::ser::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
+impl From<toml::de::Error> for OperationError {
+    fn from(error: toml::de::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
 
 pub trait OperationResultExt<T> {
@@ -67,6 +79,31 @@ pub trait OperationResultExt<T> {
     fn map_err_as_not_found(self) -> OperationResult<T>;
     fn map_err_as_validation(self) -> OperationResult<T>;
     fn map_err_as_failed_precondition(self) -> OperationResult<T>;
+}
+
+pub trait OperationOptionExt<T> {
+    fn map_err_as_internal(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_not_found(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_validation(self, err: impl Into<String>) -> OperationResult<T>;
+    fn map_err_as_failed_precondition(self, err: impl Into<String>) -> OperationResult<T>;
+}
+
+impl<T> OperationOptionExt<T> for Option<T> {
+    fn map_err_as_internal(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::Internal(err.into()))
+    }
+
+    fn map_err_as_not_found(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::NotFound(err.into()))
+    }
+
+    fn map_err_as_validation(self, err: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::InvalidInput(err.into()))
+    }
+
+    fn map_err_as_failed_precondition(self, error: impl Into<String>) -> OperationResult<T> {
+        self.ok_or_else(|| OperationError::FailedPrecondition(error.into()))
+    }
 }
 
 impl<T> OperationResultExt<T> for Result<T, anyhow::Error> {
