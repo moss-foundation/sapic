@@ -82,7 +82,6 @@ webbrowser = "1.0.3"
 zeroize = "1.7"
 aes-gcm = "0.10.3"
 argon2 = "0.5.1"
-arc-swap = "1.7.1"
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }

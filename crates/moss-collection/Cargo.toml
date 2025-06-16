@@ -21,7 +21,6 @@ ts-rs = { workspace = true, features = ["serde-json-impl", "uuid-impl"] }
 serde_json.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
-arc-swap.workspace = true
 async-trait.workspace = true
 futures.workspace = true
 notify.workspace = true

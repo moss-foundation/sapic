@@ -16,7 +16,6 @@ moss_text.workspace = true
 moss_file.workspace = true
 
 anyhow.workspace = true
-arc-swap.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs = { workspace = true, features = ["uuid-impl"] }
 tokio.workspace = true
