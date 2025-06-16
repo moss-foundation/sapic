@@ -46,7 +46,6 @@ export const handleTauriIpcError = (cmd: TauriIpcCommand, error: unknown) => {
   // TODO: dispatch to a global error handler or show user notifications
 };
 
-//TODO: fix invokeTauriIpc typescript input and output types inheriting
 export const invokeTauriIpc = async <T, E = unknown>(
   cmd: TauriIpcCommand,
   args?: InvokeArgs
