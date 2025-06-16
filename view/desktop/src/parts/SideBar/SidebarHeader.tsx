@@ -89,13 +89,13 @@ const ExampleDropdownMenu = () => {
 
   const handleCreateCollectionEntry = async () => {
     await createCollectionEntry({
-      collectionId: "d8bb1244-e552-42e9-be25-1184a370f32a",
+      collectionId: "14e13201-c337-4cbe-9d46-156fc141221b",
       input: {
         dir: {
           path: "/requests",
           name: "this should have been a test request",
           configuration: {
-            Request: {
+            "request": {
               http: {},
             },
           },
