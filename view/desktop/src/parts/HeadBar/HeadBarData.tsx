@@ -162,6 +162,12 @@ export const baseSelectedWorkspaceMenuItems: MenuItemProps[] = [
     id: "separator-3",
     type: "separator",
   },
+  {
+    id: "exit-workspace",
+    type: "action",
+    label: "Exit Workspace",
+    alignWithIcons: true,
+  },
 ];
 
 export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [

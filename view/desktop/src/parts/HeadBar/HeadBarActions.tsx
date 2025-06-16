@@ -1,6 +1,7 @@
 import { RefObject } from "react";
 
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
@@ -121,6 +122,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   } = props;
 
   const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
   const activeWorkspace = useActiveWorkspace();
 
@@ -195,6 +197,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       openPanel("Logs");
     } else if (action === "debug") {
       setShowDebugPanels(!showDebugPanels);
+    } else if (action === "exit-workspace") {
+      if (activeWorkspace) {
+        closeWorkspace(activeWorkspace.id);
+      }
     }
   };
 };
