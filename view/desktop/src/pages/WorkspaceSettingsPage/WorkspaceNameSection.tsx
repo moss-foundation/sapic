@@ -1,26 +1,13 @@
 import { InputOutlined } from "@/components";
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
 
 interface WorkspaceNameProps {
   name: string;
   setName: (name: string) => void;
-  hasChanges: boolean;
-  isPending: boolean;
-  onSave: () => void;
-  onReset: () => void;
   onBlur: () => void;
+  onSave: () => void;
 }
 
-export const WorkspaceNameSection = ({
-  name,
-  setName,
-  hasChanges,
-  isPending,
-  onSave,
-  onReset,
-  onBlur,
-}: WorkspaceNameProps) => {
+export const WorkspaceNameSection = ({ name, setName, onBlur, onSave }: WorkspaceNameProps) => {
   return (
     <div>
       <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
@@ -35,9 +22,6 @@ export const WorkspaceNameSection = ({
               if (e.key === "Enter") {
                 e.preventDefault();
                 onSave();
-              } else if (e.key === "Escape") {
-                e.preventDefault();
-                onReset();
               }
             }}
             placeholder="Enter workspace name..."
@@ -48,16 +32,6 @@ export const WorkspaceNameSection = ({
           </p>
         </div>
       </div>
-      {hasChanges && (
-        <div className="mt-3 flex items-center gap-2">
-          <ButtonPrimary onClick={onSave} disabled={isPending || !name.trim()} size="md">
-            {isPending ? "Saving..." : "Save"}
-          </ButtonPrimary>
-          <ButtonNeutralOutlined onClick={onReset} size="md">
-            Cancel
-          </ButtonNeutralOutlined>
-        </div>
-      )}
     </div>
   );
 };

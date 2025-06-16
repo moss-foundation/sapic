@@ -16,7 +16,6 @@ export const WorkspaceSettings = () => {
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
   const [name, setName] = useState(workspace?.displayName || "");
-  const [hasChanges, setHasChanges] = useState(false);
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
@@ -24,22 +23,14 @@ export const WorkspaceSettings = () => {
   useEffect(() => {
     if (workspace) {
       setName(workspace.displayName);
-      setHasChanges(false);
     }
   }, [workspace]);
-
-  useEffect(() => {
-    setHasChanges(name !== (workspace?.displayName || ""));
-  }, [name, workspace?.displayName]);
 
   const handleSave = () => {
     if (name.trim() && name.trim() !== workspace?.displayName) {
       updateWorkspace(
         { name: name.trim() },
         {
-          onSuccess: () => {
-            setHasChanges(false);
-          },
           onError: (error) => {
             console.error("Failed to update workspace:", error.message);
           },
@@ -48,18 +39,9 @@ export const WorkspaceSettings = () => {
     }
   };
 
-  const handleReset = () => {
-    if (workspace) {
-      setName(workspace.displayName);
-      setHasChanges(false);
-    }
-  };
-
   // Auto-save when input loses focus
   const handleBlur = () => {
-    if (hasChanges) {
-      handleSave();
-    }
+    handleSave();
   };
 
   // Delete workspace handlers
@@ -105,15 +87,7 @@ export const WorkspaceSettings = () => {
 
       <div className="flex h-full justify-center">
         <div className="w-full max-w-2xl space-y-6 px-6 py-5">
-          <WorkspaceNameSection
-            name={name}
-            setName={setName}
-            hasChanges={hasChanges}
-            isPending={isPending}
-            onSave={handleSave}
-            onReset={handleReset}
-            onBlur={handleBlur}
-          />
+          <WorkspaceNameSection name={name} setName={setName} onSave={handleSave} onBlur={handleBlur} />
 
           <WorkspaceStartupSection
             reopenOnNextSession={reopenOnNextSession}
