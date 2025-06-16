@@ -12,7 +12,6 @@ moss_text.workspace = true
 moss_workbench.workspace = true
 
 anyhow.workspace = true
-fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }

@@ -1216,7 +1216,6 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-fs",
- "tauri-plugin-global-shortcut",
  "tauri-plugin-log",
  "tauri-plugin-os",
  "tauri-plugin-single-instance",
@@ -1985,23 +1984,6 @@ name = "glob"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
-
-[[package]]
-name = "global-hotkey"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41fbb3a4e56c901ee66c190fdb3fa08344e6d09593cc6c61f8eb9add7144b271"
-dependencies = [
- "crossbeam-channel",
- "keyboard-types",
- "objc2 0.6.1",
- "objc2-app-kit",
- "once_cell",
- "serde",
- "thiserror 2.0.12",
- "windows-sys 0.59.0",
- "x11-dl",
-]
 
 [[package]]
 name = "gobject-sys"
@@ -2898,7 +2880,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "fnv",
  "moss_applib",
  "moss_common",
  "moss_fs",
@@ -2933,7 +2914,6 @@ name = "moss_collection"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "futures",
  "moss_activity_indicator",
  "moss_common",
@@ -2944,13 +2924,10 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
- "notify",
  "serde",
- "serde_json",
  "tauri",
  "thiserror 2.0.12",
  "tokio",
- "tokio-stream",
  "toml",
  "toml_edit 0.22.26",
  "ts-rs",
@@ -2999,11 +2976,8 @@ dependencies = [
  "moss_file",
  "moss_fs",
  "moss_storage",
- "rand 0.9.1",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
- "tokio",
  "ts-rs",
  "uuid",
 ]
@@ -3034,7 +3008,6 @@ dependencies = [
  "moss_common",
  "moss_text",
  "notify",
- "regex",
  "tauri",
  "tokio",
  "tokio-stream",
@@ -3098,7 +3071,6 @@ dependencies = [
  "anyhow",
  "moss_common",
  "serde",
- "serde_json",
  "thiserror 2.0.12",
 ]
 
@@ -3123,10 +3095,8 @@ dependencies = [
 name = "moss_vault"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "moss_app",
  "moss_db",
- "redb",
  "serde",
 ]
 
@@ -3159,7 +3129,6 @@ name = "moss_workspace"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "chrono",
  "derive_more 2.0.1",
  "futures",
  "moss_activity_indicator",
@@ -3176,7 +3145,6 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
- "thiserror 2.0.12",
  "tokio",
  "toml_edit 0.22.26",
  "ts-rs",
@@ -5523,21 +5491,6 @@ dependencies = [
  "thiserror 2.0.12",
  "toml",
  "url",
-]
-
-[[package]]
-name = "tauri-plugin-global-shortcut"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00f646a09511e8d283267dcdaa08c2ef27c4116bf271d9114849d9ca215606c3"
-dependencies = [
- "global-hotkey",
- "log",
- "serde",
- "serde_json",
- "tauri",
- "tauri-plugin",
- "thiserror 2.0.12",
 ]
 
 [[package]]
