@@ -9,7 +9,7 @@ import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { Channel, invoke } from "@tauri-apps/api/core";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  const { collapseAll, setCollections, collections } = useCollectionsStore();
+  const { collapseAll } = useCollectionsStore();
 
   const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
