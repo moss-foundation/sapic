@@ -53,24 +53,25 @@ const DynamicPageWrapper = ({
 }) => {
   const PageComponent = config.component;
 
-  // Special case for full-page components (no title)
-  if (!config.title) {
-    return <PageComponent />;
-  }
-
-  // Get fresh workspace data for dynamic title
+  // Get fresh workspace data for dynamic title - must be called before any returns
   const currentWorkspace = useActiveWorkspace();
-  let displayTitle = config.title;
-  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
-    displayTitle = currentWorkspace.displayName;
-  }
 
-  // Update panel title dynamically for WorkspaceSettings
+  // Update panel title dynamically for WorkspaceSettings - must be called before any returns
   React.useEffect(() => {
     if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
       props.api.setTitle(currentWorkspace.displayName);
     }
   }, [currentWorkspace?.displayName, props.api, pageKey]);
+
+  // Special case for full-page components (no title)
+  if (!config.title) {
+    return <PageComponent />;
+  }
+
+  let displayTitle = config.title;
+  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
+    displayTitle = currentWorkspace.displayName;
+  }
 
   // Standard page structure with header and content
   return (
