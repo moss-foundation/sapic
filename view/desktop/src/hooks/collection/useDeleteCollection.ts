@@ -6,7 +6,7 @@ import { USE_LIST_COLLECTIONS_QUERY_KEY } from "./useListCollections";
 export const USE_DELETE_COLLECTION_MUTATION_KEY = "deleteCollection";
 
 const deleteCollectionFn = async (input: DeleteCollectionInput): Promise<DeleteCollectionOutput> => {
-  const result = await invokeTauriIpc<DeleteCollectionInput>("delete_collection", { input });
+  const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));
