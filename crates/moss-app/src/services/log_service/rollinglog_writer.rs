@@ -2,10 +2,7 @@ use chrono::DateTime;
 use parking_lot::Mutex;
 use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
 
-use crate::{
-    models::types::LogEntryInfo,
-    services::log_service::constants::{FILE_TIME_FORMAT, TIMESTAMP_FORMAT},
-};
+use crate::{models::types::LogEntryInfo, services::log_service::constants::TIMESTAMP_FORMAT};
 
 pub struct RollingLogWriter {
     pub log_path: PathBuf,
@@ -37,7 +34,7 @@ impl<'a> std::io::Write for RollingLogWriter {
             if let Ok(datetime) =
                 DateTime::parse_from_str(queue_lock[0].timestamp.as_ref(), TIMESTAMP_FORMAT)
             {
-                let file_name = datetime.format(FILE_TIME_FORMAT).to_string();
+                let file_name = datetime.format(TIMESTAMP_FORMAT).to_string();
 
                 let file = OpenOptions::new()
                     .create(true)

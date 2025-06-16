@@ -1,10 +1,7 @@
 use moss_common::api::OperationResult;
 
 use crate::{
-    models::{
-        operations::{BatchDeleteLogInput, BatchDeleteLogOutput},
-        types::LogItemSourceInfo,
-    },
+    models::operations::{BatchDeleteLogInput, BatchDeleteLogOutput},
     services::log_service::LogService,
 };
 
@@ -13,11 +10,11 @@ impl LogService {
         &self,
         input: &BatchDeleteLogInput,
     ) -> OperationResult<BatchDeleteLogOutput> {
-        let mut deleted_entries: Vec<LogItemSourceInfo> = Vec::new();
-        for input in input.iter() {
-            deleted_entries.push(self.delete_log(input).await?);
+        match self.delete_logs(input.0.iter().collect()).await {
+            Ok(output) => Ok(BatchDeleteLogOutput {
+                deleted_entries: output,
+            }),
+            Err(e) => Err(e.into()),
         }
-
-        Ok(BatchDeleteLogOutput { deleted_entries })
     }
 }
