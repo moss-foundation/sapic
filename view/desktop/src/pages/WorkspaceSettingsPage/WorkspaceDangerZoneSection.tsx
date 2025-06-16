@@ -19,7 +19,7 @@ export const WorkspaceDangerZoneSection = ({ onDeleteClick }: WorkspaceDangerZon
         <ButtonNeutralOutlined
           size="md"
           onClick={onDeleteClick}
-          className="!h-7 !bg-(--moss-button-background-delete) !text-(--moss-button-text-delete) hover:!bg-(--moss-button-background-delete-hover)"
+          className="!background-(--moss-button-background-delete) hover:!background--(--moss-button-background-delete-hover) !h-7 !text-(--moss-button-text-delete)"
         >
           Delete
         </ButtonNeutralOutlined>

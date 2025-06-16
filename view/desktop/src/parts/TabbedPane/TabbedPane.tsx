@@ -35,6 +35,57 @@ import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);
 
+type PageConfig = {
+  title?: string;
+  icon?: Icons;
+  component: React.ComponentType;
+};
+
+// Wrapper component for pages with dynamic titles
+const DynamicPageWrapper = ({
+  pageKey,
+  config,
+  props,
+}: {
+  pageKey: string;
+  config: PageConfig;
+  props: IDockviewPanelProps;
+}) => {
+  const PageComponent = config.component;
+
+  // Special case for full-page components (no title)
+  if (!config.title) {
+    return <PageComponent />;
+  }
+
+  // Get fresh workspace data for dynamic title
+  const currentWorkspace = useActiveWorkspace();
+  let displayTitle = config.title;
+  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
+    displayTitle = currentWorkspace.displayName;
+  }
+
+  // Update panel title dynamically for WorkspaceSettings
+  React.useEffect(() => {
+    if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
+      props.api.setTitle(currentWorkspace.displayName);
+    }
+  }, [currentWorkspace?.displayName, props.api, pageKey]);
+
+  // Standard page structure with header and content
+  return (
+    <PageView>
+      <PageHeader
+        title={displayTitle}
+        icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
+      />
+      <PageContent>
+        <PageComponent />
+      </PageContent>
+    </PageView>
+  );
+};
+
 const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   const { api } = useTabbedPaneStore();
   const panelId = props.group.activePanel?.api.id;
@@ -141,12 +192,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     return () => event.dispose();
   }, [api, updateEditorPartState]);
-
-  type PageConfig = {
-    title?: string;
-    icon?: Icons;
-    component: React.ComponentType;
-  };
 
   const pageConfigs: Record<string, PageConfig> = {
     KitchenSink: {
@@ -260,41 +305,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     },
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
-        acc[key] = (props: IDockviewPanelProps) => {
-          const PageComponent = config.component;
-
-          // Special case for full-page components (no title)
-          if (!config.title) {
-            return <PageComponent />;
-          }
-
-          // Get fresh workspace data for dynamic title
-          const currentWorkspace = useActiveWorkspace();
-          let displayTitle = config.title;
-          if (key === "WorkspaceSettings" && currentWorkspace?.displayName) {
-            displayTitle = currentWorkspace.displayName;
-          }
-
-          // Update panel title dynamically for WorkspaceSettings
-          React.useEffect(() => {
-            if (key === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
-              props.api.setTitle(currentWorkspace.displayName);
-            }
-          }, [currentWorkspace?.displayName, props.api]);
-
-          // Standard page structure with header and content
-          return (
-            <PageView>
-              <PageHeader
-                title={displayTitle}
-                icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
-              />
-              <PageContent>
-                <PageComponent />
-              </PageContent>
-            </PageView>
-          );
-        };
+        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
         return acc;
       },
       {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>

@@ -67,7 +67,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <ButtonNeutralOutlined onClick={handleCancel}>{cancelLabel}</ButtonNeutralOutlined>
           <ButtonPrimary
             onClick={handleConfirm}
-            className="!bg-(--moss-button-background-delete) !text-(--moss-button-text-delete) hover:!bg-(--moss-button-background-delete-hover)"
+            className="!background-(--moss-button-background-delete) hover:!background-(--moss-button-background-delete-hover) !text-(--moss-button-text-delete)"
           >
             {confirmLabel}
           </ButtonPrimary>
