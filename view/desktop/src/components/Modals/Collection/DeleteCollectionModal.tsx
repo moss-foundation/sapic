@@ -18,6 +18,7 @@ export const DeleteCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
       id,
     });
     closeModal();
+    resetForm();
   };
 
   const handleCancel = () => {
