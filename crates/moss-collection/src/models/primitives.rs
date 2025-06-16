@@ -1,34 +1,31 @@
 use serde::{Deserialize, Serialize};
-use std::{
-    path::Path,
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering::SeqCst},
-    },
-};
 use ts_rs::TS;
 
-use super::types::PathChangeKind;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, TS)]
-#[serde(transparent)]
-#[ts(export, export_to = "types.ts")]
-pub struct EntryId(usize);
-
-impl EntryId {
-    pub fn new(counter: &AtomicUsize) -> Self {
-        Self(counter.fetch_add(1, SeqCst))
-    }
-
-    pub fn to_usize(&self) -> usize {
-        self.0
-    }
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "primitives.ts")]
+pub enum EntryClass {
+    Request,
+    Endpoint,
+    Component,
+    Schema,
 }
 
-impl std::fmt::Display for EntryId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "primitives.ts")]
+pub enum EntryKind {
+    Dir,
+    Item,
+    Case,
 }
 
-pub type ChangesDiffSet = Arc<[(Arc<Path>, EntryId, PathChangeKind)]>;
+#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[ts(export, export_to = "primitives.ts")]
+pub enum EntryProtocol {
+    Get,
+    Post,
+    Put,
+    Delete,
+    WebSocket,
+    Graphql,
+    Grpc,
+}

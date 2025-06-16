@@ -3,6 +3,14 @@ import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
 import { workspaceInfoSchema } from "./types.zod";
 
+export const closeWorkspaceInputSchema = z.object({
+  id: z.string(),
+});
+
+export const closeWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
 export const createWorkspaceOutputSchema = z.object({
   id: z.string(),
 });

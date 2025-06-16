@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-moss_app.workspace = true
+moss_applib.workspace = true
 moss_workspace.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
@@ -18,11 +18,12 @@ anyhow.workspace = true
 tauri.workspace = true
 serde = { workspace = true, features = ["derive"] }
 ts-rs = { workspace = true, features = ["uuid-impl"] }
-arc-swap.workspace = true
 validator.workspace = true
 chrono.workspace = true
 uuid = { workspace = true, features = ["serde"] }
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 
 [dev-dependencies]
+moss_applib = { workspace = true, features = ["test"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

@@ -7,7 +7,9 @@ use crate::{GitHostingProvider, common::SSHAuthAgent};
 pub trait GitHubAuthAgent: GitAuthAgent {}
 
 pub struct GitHubClient {
+    #[allow(dead_code)]
     client_auth_agent: Arc<dyn GitHubAuthAgent>,
+    #[allow(dead_code)]
     ssh_auth_agent: Option<Arc<dyn SSHAuthAgent>>,
 }
 

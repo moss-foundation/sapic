@@ -1,6 +1,6 @@
 import { BackendModule, ReadCallback } from "i18next";
 
-import { GetTranslationsInput, GetTranslationsOutput } from "@repo/moss-nls";
+import { GetTranslationsInput, GetTranslationsOutput } from "@repo/moss-app";
 
 import { invokeTauriIpc, IpcResult } from "./tauri";
 

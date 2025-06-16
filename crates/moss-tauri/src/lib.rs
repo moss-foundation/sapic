@@ -1,30 +1,24 @@
 use serde::Serialize;
+use thiserror::Error;
 
-#[derive(Debug, Serialize)]
-#[serde(transparent)]
-pub struct TauriError(pub String);
+#[derive(Debug, Error)]
+pub enum TauriError {
+    #[error(transparent)]
+    OperationError(#[from] moss_common::api::OperationError),
 
-impl std::fmt::Display for TauriError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+
+    #[error("Operation timed out")]
+    Timeout,
 }
 
-impl From<anyhow::Error> for TauriError {
-    fn from(e: anyhow::Error) -> Self {
-        TauriError(e.to_string())
-    }
-}
-
-impl From<serde_json::Error> for TauriError {
-    fn from(e: serde_json::Error) -> Self {
-        TauriError(e.to_string())
-    }
-}
-
-impl From<moss_common::api::OperationError> for TauriError {
-    fn from(e: moss_common::api::OperationError) -> Self {
-        TauriError(e.to_string())
+impl Serialize for TauriError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_str())
     }
 }
 

@@ -8,26 +8,29 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(CreateCollectionInput {
-            name: collection_name.clone(),
-            order: None,
-            external_path: None,
-        })
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+            },
+        )
         .await
         .unwrap();
 
     let id = create_collection_output.id;
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await;
     assert!(delete_collection_result.is_ok());
 
     // Check updating collections
-    let collections = workspace.collections().await.unwrap().read().await;
+    let collections = workspace.collections(&ctx).await.unwrap().read().await;
     assert!(collections.is_empty());
 
     // Check updating database
@@ -40,27 +43,30 @@ async fn delete_collection_success() {
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
-        .create_collection(CreateCollectionInput {
-            name: collection_name.clone(),
-            order: None,
-            external_path: None,
-        })
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+            },
+        )
         .await
         .unwrap()
         .id;
 
     workspace
-        .delete_collection(DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await
         .unwrap();
 
     // Delete the collection again
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await;
 
     assert!(delete_collection_result.is_err());
@@ -70,15 +76,18 @@ async fn delete_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (_workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
-        .create_collection(CreateCollectionInput {
-            name: collection_name.clone(),
-            order: None,
-            external_path: None,
-        })
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+            },
+        )
         .await
         .unwrap();
 
@@ -89,14 +98,17 @@ async fn delete_collection_fs_already_deleted() {
 
     // Even though filesystem is already deleted, deletion should succeed
     let delete_collection_result = workspace
-        .delete_collection(DeleteCollectionInput {
-            id: create_collection_output.id,
-        })
+        .delete_collection(
+            &ctx,
+            &DeleteCollectionInput {
+                id: create_collection_output.id,
+            },
+        )
         .await;
     assert!(delete_collection_result.is_ok());
 
     // Check collections are updated
-    let collections = workspace.collections().await.unwrap().read().await;
+    let collections = workspace.collections(&ctx).await.unwrap().read().await;
     assert!(collections.is_empty());
 
     // TODO: Check database after implementing self-healing mechanism?

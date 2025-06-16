@@ -52,11 +52,8 @@ MISC_DIR := misc
 SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
+APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
-THEME_MODELS_DIR := crates/moss-theme
-STATE_MODELS_DIR := crates/moss-state
-NLS_MODELS_DIR := crates/moss-nls
-LOGGING_MODELS_DIR := crates/moss-logging
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
@@ -131,11 +128,8 @@ gen-$(1)-bindings:
 endef
 
 # Apply the gen_bindings function to each crate
+$(eval $(call gen_bindings,app,APP_MODELS_DIR))
 $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
-$(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
-$(eval $(call gen_bindings,state,STATE_MODELS_DIR))
-$(eval $(call gen_bindings,nls,NLS_MODELS_DIR))
-$(eval $(call gen_bindings,logging,LOGGING_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
@@ -145,11 +139,8 @@ $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
+	gen-app-bindings \
 	gen-collection-bindings \
-	gen-theme-bindings \
-	gen-state-bindings \
-	gen-nls-bindings \
-	gen-logging-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
 	gen-common-bindings \

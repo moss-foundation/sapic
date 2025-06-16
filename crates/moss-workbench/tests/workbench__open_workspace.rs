@@ -11,33 +11,42 @@ use crate::shared::{setup_test_workspace_manager, workspace_key};
 
 #[tokio::test]
 async fn open_workspace_success() {
-    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let first_name = random_workspace_name();
     let first_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: first_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: false,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: first_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: false,
+            },
+        )
         .await
         .unwrap();
 
     let second_name = random_workspace_name();
     workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: second_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: false,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: second_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: false,
+            },
+        )
         .await
         .unwrap();
 
     // Open the first workspace
     let open_result = workspace_manager
-        .open_workspace(&OpenWorkspaceInput {
-            id: first_output.id,
-        })
+        .open_workspace(
+            &ctx,
+            &OpenWorkspaceInput {
+                id: first_output.id,
+            },
+        )
         .await;
     assert!(open_result.is_ok());
     let open_output = open_result.unwrap();
@@ -46,7 +55,8 @@ async fn open_workspace_success() {
     assert_eq!(open_output.abs_path, first_output.abs_path);
 
     // Check active workspace
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, first_output.id);
     assert_eq!(active_workspace.manifest().await.name, first_name);
 
@@ -59,15 +69,21 @@ async fn open_workspace_success() {
 
 #[tokio::test]
 async fn open_workspace_not_found() {
-    let (_, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let open_result = workspace_manager
-        .open_workspace(&OpenWorkspaceInput { id: Uuid::new_v4() })
+        .open_workspace(&ctx, &OpenWorkspaceInput { id: Uuid::new_v4() })
         .await;
     assert!(open_result.is_err());
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check database not creating any entry
     let item_store = workspace_manager.__storage().item_store();
@@ -79,23 +95,29 @@ async fn open_workspace_not_found() {
 
 #[tokio::test]
 async fn open_workspace_already_active() {
-    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let workspace_name = random_workspace_name();
     let create_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: workspace_name.clone(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: true,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: workspace_name.clone(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: true,
+            },
+        )
         .await
         .unwrap();
 
     // Try to open the same workspace again
     let open_result = workspace_manager
-        .open_workspace(&OpenWorkspaceInput {
-            id: create_output.id,
-        })
+        .open_workspace(
+            &ctx,
+            &OpenWorkspaceInput {
+                id: create_output.id,
+            },
+        )
         .await;
     assert!(open_result.is_ok());
     let open_output = open_result.unwrap();
@@ -104,7 +126,8 @@ async fn open_workspace_already_active() {
     assert_eq!(open_output.abs_path, create_output.abs_path);
 
     // Check active workspace is still the same
-    let active_workspace = workspace_manager.active_workspace().unwrap();
+    let active_workspace = workspace_manager.active_workspace().await;
+    let active_workspace = active_workspace.as_ref().unwrap();
     assert_eq!(active_workspace.id, create_output.id);
     assert_eq!(active_workspace.manifest().await.name, workspace_name);
 
@@ -113,14 +136,17 @@ async fn open_workspace_already_active() {
 
 #[tokio::test]
 async fn open_workspace_directory_deleted() {
-    let (_workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
+    let (ctx, _workspaces_path, workspace_manager, cleanup) = setup_test_workspace_manager().await;
 
     let create_output = workspace_manager
-        .create_workspace(&CreateWorkspaceInput {
-            name: random_workspace_name(),
-            mode: WorkspaceMode::default(),
-            open_on_creation: false,
-        })
+        .create_workspace(
+            &ctx,
+            &CreateWorkspaceInput {
+                name: random_workspace_name(),
+                mode: WorkspaceMode::default(),
+                open_on_creation: false,
+            },
+        )
         .await
         .unwrap();
 
@@ -131,14 +157,23 @@ async fn open_workspace_directory_deleted() {
 
     // Try to open the deleted workspace
     let open_result = workspace_manager
-        .open_workspace(&OpenWorkspaceInput {
-            id: create_output.id,
-        })
+        .open_workspace(
+            &ctx,
+            &OpenWorkspaceInput {
+                id: create_output.id,
+            },
+        )
         .await;
     assert!(open_result.is_err());
     assert!(matches!(open_result, Err(OperationError::NotFound { .. })));
 
-    assert!(workspace_manager.active_workspace().is_none());
+    assert!(
+        workspace_manager
+            .active_workspace()
+            .await
+            .as_ref()
+            .is_none()
+    );
 
     // Check database not creating any entry
     let item_store = workspace_manager.__storage().item_store();
