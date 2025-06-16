@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 
 import { TestCollectionIcon } from "@/components/Tree/TestCollectionIcon";
 import { Icon } from "@/lib/ui/Icon";
@@ -18,10 +18,23 @@ export const CustomTab: React.FC<CustomTabProps> = ({
   closeActionOverride,
   ...rest
 }) => {
-  // Get title from the API
-  const title = api.title || "";
+  // Get title from the API and subscribe to changes
+  const [title, setTitle] = useState(api.title || "");
   const iconType = params?.iconType as string;
   const [isCloseHovered, setIsCloseHovered] = useState(false);
+
+  // Subscribe to title changes
+  useEffect(() => {
+    setTitle(api.title || "");
+
+    const disposable = api.onDidTitleChange?.((event) => {
+      setTitle(event.title);
+    });
+
+    return () => {
+      disposable?.dispose();
+    };
+  }, [api]);
 
   const onClose = useCallback(
     (event: React.MouseEvent<HTMLSpanElement>) => {

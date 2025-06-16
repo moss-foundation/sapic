@@ -249,6 +249,11 @@
   --moss-button-border-disabled-active: transparent;
   --moss-button-text-disabled: var(--moss-gray-8);
 
+  /* --- Delete buttons */
+  --moss-button-background-delete: var(--moss-red-4);
+  --moss-button-background-delete-hover: var(--moss-red-2);
+  --moss-button-text-delete: var(--moss-gray-14);
+
   /* Form Controls */
   --moss-controls-plain-bg: transparent;
   --moss-controls-plain-border: none;
@@ -272,6 +277,7 @@
   /* Input Fields */
   --moss-input-bg-plain: var(--moss-gray-14);
   --moss-input-bg-outlined: var(--moss-gray-14);
+  --moss-input-border: var(--moss-gray-9);
 
   --moss-stepCard-text: var(--moss-blue-2);
   --moss-stepCard-bg: var(--moss-blue-11);
