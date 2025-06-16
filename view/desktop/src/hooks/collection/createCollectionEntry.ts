@@ -4,12 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 
 export const USE_CREATE_COLLECTION_ENTRY_MUTATION_KEY = "createCollectionEntry" as const;
 
-export interface CreateCollectionEntryInput {
-  collectionId: string;
-  input: CreateEntryInput;
-}
-
-const createCollectionEntryFn = async ({ collectionId, input }: CreateCollectionEntryInput) => {
+const createCollectionEntryFn = async ({ collectionId, input }: { collectionId: string; input: CreateEntryInput }) => {
   const result = await invokeTauriIpc<CreateEntryOutput>("create_collection_entry", {
     collectionId,
     input,
@@ -23,7 +18,7 @@ const createCollectionEntryFn = async ({ collectionId, input }: CreateCollection
 };
 
 export const useCreateCollectionEntry = () => {
-  return useMutation<CreateEntryOutput, Error, CreateCollectionEntryInput>({
+  return useMutation<CreateEntryOutput, Error, { collectionId: string; input: CreateEntryInput }>({
     mutationKey: [USE_CREATE_COLLECTION_ENTRY_MUTATION_KEY],
     mutationFn: createCollectionEntryFn,
   });
