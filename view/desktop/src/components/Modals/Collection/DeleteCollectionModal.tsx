@@ -17,6 +17,7 @@ export const DeleteCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     await deleteCollection({
       id,
     });
+    closeModal();
   };
 
   const handleCancel = () => {

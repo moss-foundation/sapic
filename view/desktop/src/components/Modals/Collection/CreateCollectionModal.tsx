@@ -19,6 +19,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     await createCollection({
       name,
     });
+    closeModal();
   };
 
   const handleCancel = () => {
