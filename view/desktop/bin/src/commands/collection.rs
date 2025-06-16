@@ -24,14 +24,13 @@ pub async fn create_collection_entry<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let workspace_guard = workbench.active_workspace().await;
+        let mut workspace_guard = workbench.active_workspace_mut().await;
         let workspace = workspace_guard
-            .as_ref()
+            .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
 
-        let collections = workspace.collections(&ctx).await?;
-        let collections_lock = collections.write().await;
-        let collection_item = collections_lock
+        let collections = workspace.collections_mut(&ctx).await?;
+        let collection_item = collections
             .get(&collection_id)
             .map_err_as_not_found("Collection not found")?;
         let mut collection_item_lock = collection_item.write().await;
@@ -55,14 +54,13 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
         let ctx = AppContext::from(&app);
         let workbench = app.workbench();
-        let workspace_guard = workbench.active_workspace().await;
+        let mut workspace_guard = workbench.active_workspace_mut().await;
         let workspace = workspace_guard
-            .as_ref()
+            .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
 
-        let collections = workspace.collections(&ctx).await?;
-        let collections_lock = collections.write().await;
-        let collection_item = collections_lock
+        let collections = workspace.collections_mut(&ctx).await?;
+        let collection_item = collections
             .get(&collection_id)
             .map_err_as_not_found("Collection not found")?;
         let mut collection_item_lock = collection_item.write().await;
@@ -92,10 +90,10 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
             .map_err_as_failed_precondition("No active workspace")?;
 
         let collections = workspace.collections(&ctx).await?;
-        let collections_lock = collections.read().await;
-        let collection_item = collections_lock
+        let collection_item = collections
             .get(&collection_id)
             .map_err_as_not_found("Collection not found")?;
+
         let collection_item_lock = collection_item.read().await;
         collection_item_lock
             .stream_entries(channel)
