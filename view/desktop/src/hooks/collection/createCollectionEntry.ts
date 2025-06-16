@@ -10,7 +10,6 @@ export interface CreateCollectionEntryInput {
 }
 
 const createCollectionEntryFn = async ({ collectionId, input }: CreateCollectionEntryInput) => {
-  console.log("createCollectionEntryFn", { collectionId, input });
   const result = await invokeTauriIpc<CreateEntryOutput>("create_collection_entry", {
     collectionId,
     input,

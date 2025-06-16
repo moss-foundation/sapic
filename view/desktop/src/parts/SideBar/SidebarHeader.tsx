@@ -5,12 +5,51 @@ import { CreateCollectionModal } from "@/components/Modals/Collection/CreateColl
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 import { useCreateCollectionEntry } from "@/hooks/collection/createCollectionEntry";
 import { useCollectionsStore } from "@/store/collections";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
 
   const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
+
+  const appWebview = getCurrentWebviewWindow();
+  appWebview.listen("stream_collections", (event) => {
+    console.log(event.payload);
+  });
+
+  // useEffect(() => {
+  //   const listenCollections = async () => {
+  //     return await listen("stream_collections", (event) => {
+  //       console.log(event.payload);
+  //     });
+  //   };
+
+  //   const unlisten = listenCollections();
+
+  //   return unlisten;
+  // }, []);
+
+  // useEffect(() => {
+  //   let unlisten: UnlistenFn | undefined;
+  //   const setupListener = async () => {
+  //     try {
+  //       unlisten = await listen("stream_collections", (event) => {
+  //         console.log(event.payload);
+  //       });
+  //     } catch (error) {
+  //       console.error("Failed to set up theme change listener:", error);
+  //     }
+  //   };
+
+  //   setupListener();
+
+  //   return () => {
+  //     if (unlisten) {
+  //       unlisten();
+  //     }
+  //   };
+  // }, []);
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
@@ -53,8 +92,8 @@ const ExampleDropdownMenu = () => {
       collectionId: "d8bb1244-e552-42e9-be25-1184a370f32a",
       input: {
         dir: {
-          path: ".",
-          name: "test",
+          path: "/requests",
+          name: "this should have been a test request",
           configuration: {
             Request: {
               http: {},
