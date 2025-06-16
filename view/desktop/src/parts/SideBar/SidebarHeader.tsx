@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { useCreateCollectionEntry } from "@/hooks/collection/createCollectionEntry";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -45,8 +46,24 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 export default SidebarHeader;
 
 const ExampleDropdownMenu = () => {
-  const [isChecked, setIsChecked] = useState(false);
-  const [radioValue, setRadioValue] = useState("option1");
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+
+  const handleCreateCollectionEntry = async () => {
+    await createCollectionEntry({
+      collectionId: "d8bb1244-e552-42e9-be25-1184a370f32a",
+      input: {
+        dir: {
+          path: ".",
+          name: "test",
+          configuration: {
+            Request: {
+              http: {},
+            },
+          },
+        },
+      },
+    });
+  };
 
   return (
     <ActionMenu.Root>
@@ -56,35 +73,8 @@ const ExampleDropdownMenu = () => {
 
       <ActionMenu.Portal>
         <ActionMenu.Content align="center">
-          <ActionMenu.Item onSelect={() => console.log("Item 1 selected")}>Item 1</ActionMenu.Item>
+          <ActionMenu.Item onSelect={handleCreateCollectionEntry}>createCollectionEntry</ActionMenu.Item>
           <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
-
-          <ActionMenu.Separator />
-
-          <ActionMenu.CheckboxItem checked={isChecked} onCheckedChange={setIsChecked}>
-            Check me
-          </ActionMenu.CheckboxItem>
-
-          <ActionMenu.Separator />
-
-          <ActionMenu.RadioGroup value={radioValue} onValueChange={setRadioValue}>
-            <ActionMenu.RadioItem checked={radioValue === "option1"} value="option1">
-              Option 1
-            </ActionMenu.RadioItem>
-            <ActionMenu.RadioItem checked={radioValue === "option2"} value="option2">
-              Option 2
-            </ActionMenu.RadioItem>
-          </ActionMenu.RadioGroup>
-
-          <ActionMenu.Separator />
-
-          <ActionMenu.Sub>
-            <ActionMenu.SubTrigger>Submenu</ActionMenu.SubTrigger>
-            <ActionMenu.SubContent>
-              <ActionMenu.Item onSelect={() => console.log("Sub Item 1 selected")}>Sub Item 1</ActionMenu.Item>
-              <ActionMenu.Item onSelect={() => console.log("Sub Item 2 selected")}>Sub Item 2</ActionMenu.Item>
-            </ActionMenu.SubContent>
-          </ActionMenu.Sub>
         </ActionMenu.Content>
       </ActionMenu.Portal>
     </ActionMenu.Root>
