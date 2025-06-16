@@ -7,6 +7,7 @@ import { DropNodeElement } from "@/components/Tree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
@@ -161,7 +162,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       component: Logs,
     },
     WorkspaceSettings: {
-      title: "Workspace Settings",
+      title: "WorkspaceSettings", // This will be dynamically replaced
       component: WorkspaceSettings,
     },
     Welcome: {
@@ -259,7 +260,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     },
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
-        acc[key] = () => {
+        acc[key] = (props: IDockviewPanelProps) => {
           const PageComponent = config.component;
 
           // Special case for full-page components (no title)
@@ -267,11 +268,25 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             return <PageComponent />;
           }
 
+          // Get fresh workspace data for dynamic title
+          const currentWorkspace = useActiveWorkspace();
+          let displayTitle = config.title;
+          if (key === "WorkspaceSettings" && currentWorkspace?.displayName) {
+            displayTitle = currentWorkspace.displayName;
+          }
+
+          // Update panel title dynamically for WorkspaceSettings
+          React.useEffect(() => {
+            if (key === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
+              props.api.setTitle(currentWorkspace.displayName);
+            }
+          }, [currentWorkspace?.displayName, props.api]);
+
           // Standard page structure with header and content
           return (
             <PageView>
               <PageHeader
-                title={config.title}
+                title={displayTitle}
                 icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
               />
               <PageContent>
@@ -282,7 +297,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         };
         return acc;
       },
-      {} as Record<string, () => JSX.Element>
+      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
     ),
   };
 
