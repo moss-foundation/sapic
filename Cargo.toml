@@ -1,8 +1,8 @@
 [workspace]
 resolver = "1"
 members = [
-    "crates/moss-git",
-    "crates/moss-git-hosting-provider",
+    # "crates/moss-git",
+    # "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
@@ -31,8 +31,8 @@ moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }
-moss_git = { path = "crates/moss-git" }
-moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
+# moss_git = { path = "crates/moss-git" }
+# moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
