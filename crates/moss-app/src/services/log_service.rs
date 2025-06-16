@@ -288,7 +288,6 @@ impl LogService {
             for line in reader.lines() {
                 let line = line?;
                 let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
-                dbg!(&log_entry);
                 if log_entry.id == id {
                     // Splice this line from the output content
                     deleted = true;

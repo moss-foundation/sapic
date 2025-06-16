@@ -6,8 +6,8 @@ level: error
 ```grit
 language rust
 
-`dbg!($args)` where {
-    $args <: not within `fn test_$_() {$_}`
+`dbg!($_)` as $dbg where {
+    $dbg <: not within `fn $name($_) {$_}`
 }
 ```
 
