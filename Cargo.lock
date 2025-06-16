@@ -2783,7 +2783,6 @@ checksum = "07af8b9cdd281b7915f413fa73f29ebd5d55d0d3f0155584dade1ff18cea1b17"
 dependencies = [
  "autocfg",
  "scopeguard",
- "serde",
 ]
 
 [[package]]
@@ -2914,7 +2913,6 @@ dependencies = [
  "moss_text",
  "moss_workbench",
  "nanoid",
- "parking_lot",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -3072,7 +3070,6 @@ dependencies = [
  "moss_keyring",
  "oauth2",
  "openssl",
- "parking_lot",
  "reqwest",
  "serde",
  "serde_json",

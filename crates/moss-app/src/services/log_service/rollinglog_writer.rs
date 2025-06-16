@@ -1,10 +1,14 @@
-use chrono::DateTime;
-use parking_lot::Mutex;
-use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
-
 use crate::{
     models::types::LogEntryInfo,
     services::log_service::constants::{FILE_TIME_FORMAT, TIMESTAMP_FORMAT},
+};
+use chrono::DateTime;
+use std::{
+    collections::VecDeque,
+    fs::OpenOptions,
+    io::BufWriter,
+    path::PathBuf,
+    sync::{Arc, Mutex},
 };
 
 pub struct RollingLogWriter {
@@ -31,7 +35,7 @@ impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.log_queue.lock();
+        let mut queue_lock = self.log_queue.lock().expect("Mutex poisoned");
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =

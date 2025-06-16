@@ -7,7 +7,6 @@ edition = "2024"
 moss_git.workspace = true
 moss_keyring.workspace = true
 anyhow.workspace = true
-parking_lot = { workspace = true, features = ["serde"] }
 git2.workspace = true
 url.workspace = true
 dotenv.workspace = true

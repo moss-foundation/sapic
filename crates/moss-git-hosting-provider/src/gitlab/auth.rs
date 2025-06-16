@@ -1,3 +1,4 @@
+use crate::common::utils;
 use anyhow::Result;
 use git2::{Cred, RemoteCallbacks};
 use moss_git::GitAuthAgent;
@@ -6,15 +7,12 @@ use oauth2::{
     AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl, RefreshToken,
     Scope, TokenResponse, TokenUrl, basic::BasicClient,
 };
-use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::{
     net::TcpListener,
-    sync::Arc,
+    sync::{Arc, RwLock},
     time::{Duration, Instant},
 };
-
-use crate::common::utils;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct KeyringCredEntry {
@@ -69,7 +67,7 @@ impl GitLabAuthAgentImpl {
 
 impl GitLabAuthAgentImpl {
     fn credentials(&self) -> Result<GitLabCred> {
-        if let Some(cached) = self.cred.read().clone() {
+        if let Some(cached) = self.cred.read().expect("RwLock poisoned").clone() {
             if Instant::now() <= cached.time_to_refresh {
                 return Ok(cached);
             }
@@ -107,7 +105,7 @@ impl GitLabAuthAgentImpl {
             Err(err) => return Err(err.into()),
         };
 
-        *self.cred.write() = Some(updated_cred.clone());
+        *self.cred.write().expect("RwLock poisoned") = Some(updated_cred.clone());
         Ok(updated_cred)
     }
 

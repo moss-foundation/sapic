@@ -7,13 +7,12 @@ use moss_applib::Service;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::{CreateOptions, FileSystem};
 use nanoid::nanoid;
-use parking_lot::Mutex;
 use std::{
     collections::VecDeque,
     fs,
     io::{self, BufRead, BufReader},
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tracing::{Level, debug, error, info, trace, warn};
@@ -184,7 +183,7 @@ impl LogService {
                 OperationError::InvalidInput("The input timestamp is invalid".to_string())
             })?;
         {
-            let mut applog_queue_lock = self.applog_queue.lock();
+            let mut applog_queue_lock = self.applog_queue.lock().expect("Mutex poisoned");
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -195,7 +194,7 @@ impl LogService {
             }
         }
         {
-            let mut sessionlog_queue_lock = self.sessionlog_queue.lock();
+            let mut sessionlog_queue_lock = self.sessionlog_queue.lock().expect("Mutex poisoned");
             let idx = sessionlog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
