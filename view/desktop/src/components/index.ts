@@ -14,12 +14,12 @@ export * from "./InputOutlined";
 export * from "./InputPlain";
 export * from "./Modals/ConfirmationModal";
 
+export * from "./CollectionTree/Tree";
 export * from "./PageLoader";
 export * from "./PageView/";
 export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 export * from "./ToggleGroup";
-export * from "./Tree/Tree";
 
 export * from "./EmptyWorkspace";
 export * from "./Workbench";

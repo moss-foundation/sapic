@@ -2,9 +2,9 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import NodeLabel from "../Tree/NodeLabel";
-import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
-import { TreeNodeProps } from "../Tree/types";
+import NodeLabel from "../CollectionTree/NodeLabel";
+import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
+import { TreeNodeProps } from "../CollectionTree/types";
 
 interface BreadcrumbNodeProps {
   node: TreeNodeProps;

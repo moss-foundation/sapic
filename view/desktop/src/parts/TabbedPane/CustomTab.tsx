@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { TestCollectionIcon } from "@/components/Tree/TestCollectionIcon";
+import { TestCollectionIcon } from "@/components/CollectionTree/TestCollectionIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { IDockviewPanelHeaderProps } from "@repo/moss-tabs";
 

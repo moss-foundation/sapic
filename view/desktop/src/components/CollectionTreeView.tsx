@@ -2,15 +2,15 @@ import "@repo/moss-tabs/assets/styles.css";
 
 import { useEffect, useRef, useState } from "react";
 
-import { InputPlain, Tree } from "@/components";
+import { CollectionTree, InputPlain } from "@/components";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { CreateNewCollectionFromTreeNodeEvent } from "./Tree/types";
-import { getActualDropSourceTarget } from "./Tree/utils";
+import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
+import { getActualDropSourceTarget } from "./CollectionTree/utils";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
@@ -116,7 +116,7 @@ export const CollectionTreeView = () => {
 
           <div className="flex grow flex-col">
             {collections.map((collection) => (
-              <Tree
+              <CollectionTree
                 key={`${collection.id}`}
                 onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
                 tree={collection.tree}

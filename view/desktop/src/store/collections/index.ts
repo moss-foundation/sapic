@@ -1,12 +1,12 @@
 import { create } from "zustand";
 
-import { Collection } from "@/components/Tree/types";
+import { Collection } from "@/components/CollectionTree/types";
 import {
   checkIfTreeIsCollapsed,
   checkIfTreeIsExpanded,
   collapseAllNodes,
   expandAllNodes,
-} from "@/components/Tree/utils";
+} from "@/components/CollectionTree/utils";
 
 import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
 import SapicTestCollection from "../../assets/SapicTestCollection.json";
