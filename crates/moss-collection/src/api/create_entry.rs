@@ -22,6 +22,7 @@ impl Collection {
 
         let id = Uuid::new_v4();
         let path = input.path().clone();
+        let name = input.name().to_owned();
         let configuration = match input {
             CreateEntryInput::Item(item) => {
                 ConfigurationModel::Item(CompositeItemConfigurationModel {
@@ -37,7 +38,7 @@ impl Collection {
 
         self.worktree()
             .create_entry(
-                &path,
+                &path.join(&name),
                 matches!(input, CreateEntryInput::Dir(_)),
                 toml::to_string(&configuration)?.as_bytes(),
             )
