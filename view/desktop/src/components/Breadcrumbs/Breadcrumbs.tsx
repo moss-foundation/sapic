@@ -105,6 +105,7 @@ const findPath = (node: NodeProps, target: string): string[] | null => {
 
 export default Breadcrumbs;
 
+// TODO: Remove this when the notifications are implemented
 const TestBreadcrumbsNotifications = () => {
   return (
     <div className="flex items-center">

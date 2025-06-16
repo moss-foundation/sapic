@@ -56,7 +56,7 @@ export const BreadcrumbNode = ({
 
           onNodeClickCallback?.(node);
         }}
-        className="hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-64 cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
+        className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
         <TestCollectionIcon type={node.type} />
         <NodeLabel label={node.id} />
