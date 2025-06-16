@@ -161,12 +161,13 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         if (actionType === "rename") {
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            // Switch to target workspace first (backend only supports updating active workspace)
             openWorkspace(workspaceId);
 
             setTimeout(() => {
               openPanel("WorkspaceSettings");
-            }, 100);
+            }, 500);
+          } else {
+            console.error(`Workspace not found for ID: ${workspaceId}`);
           }
           return;
         }
@@ -201,6 +202,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       if (activeWorkspace) {
         closeWorkspace(activeWorkspace.id);
       }
+    } else {
+      console.log(`Unhandled workspace action: ${action}`);
     }
   };
 };

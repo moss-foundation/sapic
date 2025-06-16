@@ -7,7 +7,7 @@ interface WorkspaceDangerZoneSectionProps {
 
 export const WorkspaceDangerZoneSection = ({ onDeleteClick }: WorkspaceDangerZoneSectionProps) => {
   return (
-    <div className="mt-10 text-(--moss-primary-text)">
+    <div className="mt-8 text-(--moss-primary-text)">
       <SectionTitle>Danger Zone</SectionTitle>
       <div className="flex w-[36rem] items-center justify-between">
         <div>
