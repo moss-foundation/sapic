@@ -1,4 +1,4 @@
-use moss_applib::Service;
+use moss_applib::{Service, context::Event};
 use moss_fs::FileSystem;
 use moss_text::ReadOnlyStr;
 use moss_workbench::workbench::Workbench;
@@ -67,6 +67,8 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
+type Listener = Arc<dyn Fn(&dyn Any) -> bool + Send + Sync + 'static>;
+
 pub struct App<R: TauriRuntime> {
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) app_handle: AppHandle<R>,
@@ -75,6 +77,8 @@ pub struct App<R: TauriRuntime> {
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
     pub(crate) services: AppServices,
+    pub(crate) event_listeners: Arc<std::sync::RwLock<FxHashMap<TypeId, Vec<(usize, Listener)>>>>,
+    pub(crate) pending_events: Arc<std::sync::RwLock<Vec<(TypeId, Box<dyn Event>)>>>,
 }
 
 impl<R: TauriRuntime> Deref for App<R> {
@@ -82,6 +86,17 @@ impl<R: TauriRuntime> Deref for App<R> {
 
     fn deref(&self) -> &Self::Target {
         &self.app_handle
+    }
+}
+
+pub struct Subscription {
+    subscriber_id: usize,
+    unsubscribe: Arc<dyn Fn() + Send + Sync + 'static>,
+}
+
+impl Subscription {
+    pub fn unsubscribe(&self) {
+        (self.unsubscribe)();
     }
 }
 
@@ -135,6 +150,8 @@ impl<R: TauriRuntime> AppBuilder<R> {
             preferences: self.preferences,
             defaults: self.defaults,
             services: self.services,
+            event_listeners: Default::default(),
+            pending_events: Default::default(),
         }
     }
 }
@@ -166,5 +183,63 @@ impl<R: TauriRuntime> App<R> {
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
+    }
+
+    pub fn subscribe<T: Event, F>(&mut self, listener: F) -> Subscription
+    where
+        F: Fn(&T) -> bool + Send + Sync + 'static,
+    {
+        let type_id = TypeId::of::<T>();
+
+        let erased_listener: Listener =
+            Arc::new(
+                move |event_any: &dyn Any| match event_any.downcast_ref::<T>() {
+                    Some(event) => listener(event),
+                    None => {
+                        eprintln!(
+                            "Type mismatch in event listener for {}",
+                            std::any::type_name::<T>()
+                        );
+                        false
+                    }
+                },
+            );
+
+        let mut event_listeners = self.event_listeners.write().unwrap();
+        let subscriber_id = event_listeners.len();
+
+        event_listeners
+            .entry(type_id)
+            .or_default()
+            .push((subscriber_id, erased_listener));
+
+        let event_listeners_clone = self.event_listeners.clone();
+        Subscription {
+            subscriber_id,
+            unsubscribe: Arc::new(move || {
+                let mut event_listeners = event_listeners_clone.write().unwrap();
+                event_listeners
+                    .get_mut(&type_id)
+                    .unwrap()
+                    .remove(subscriber_id);
+            }),
+        }
+    }
+
+    pub fn emit<T: Event>(&self, event: T) {
+        let type_id = TypeId::of::<T>();
+        let mut pending_events = self.pending_events.write().unwrap();
+        pending_events.push((type_id, Box::new(event)));
+    }
+
+    pub fn notify(&self) {
+        let mut pending_events = self.pending_events.write().unwrap();
+        while let Some((type_id, event)) = pending_events.pop() {
+            if let Some(listeners) = self.event_listeners.read().unwrap().get(&type_id) {
+                for (_, listener) in listeners {
+                    listener(&*event as &dyn Any);
+                }
+            }
+        }
     }
 }

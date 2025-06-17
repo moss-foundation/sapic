@@ -1206,6 +1206,7 @@ dependencies = [
  "macos-trampoline",
  "mimalloc",
  "moss_app",
+ "moss_applib",
  "moss_collection",
  "moss_common",
  "moss_db",
@@ -2932,6 +2933,7 @@ dependencies = [
 name = "moss_applib"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "tauri",
  "tokio",
 ]
