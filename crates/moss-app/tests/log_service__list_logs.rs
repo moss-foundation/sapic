@@ -4,7 +4,7 @@ use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
     services::log_service::{LogPayload, LogScope},
 };
-use std::{fs::remove_dir_all, str::FromStr};
+use std::{fs::remove_dir_all, str::FromStr, thread::sleep, time::Duration};
 
 mod shared;
 
@@ -57,6 +57,9 @@ async fn test_list_logs_from_both_files_and_queue() {
             },
         );
     }
+
+    // Wait for all writes to finish
+    tokio::time::sleep(Duration::from_millis(500)).await;
 
     let list_logs_output = log_service
         .list_logs(&ListLogsInput {

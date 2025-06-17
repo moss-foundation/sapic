@@ -2908,6 +2908,7 @@ dependencies = [
  "fnv",
  "moss_applib",
  "moss_common",
+ "moss_db",
  "moss_fs",
  "moss_storage",
  "moss_tauri",
