@@ -1,3 +1,4 @@
+use arc_swap::ArcSwapOption;
 use moss_applib::{Service, context::Event};
 use moss_fs::FileSystem;
 use moss_text::ReadOnlyStr;
@@ -6,7 +7,10 @@ use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
     ops::{Deref, DerefMut},
-    sync::Arc,
+    sync::{
+        Arc, Mutex, Weak,
+        atomic::{AtomicBool, AtomicUsize, Ordering},
+    },
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
@@ -67,7 +71,79 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-type Listener = Arc<dyn Fn(&dyn Any) -> bool + Send + Sync + 'static>;
+type Listener<T> = Arc<dyn Fn(&T) + Send + Sync + 'static>;
+
+pub struct Subscriber<Callback> {
+    callback: Callback,
+    active: AtomicBool,
+}
+
+pub struct Subscription<T> {
+    emitter: Weak<Mutex<EmitterState<T>>>,
+    id: ArcSwapOption<usize>,
+}
+
+impl<T> Subscription<T> {
+    pub fn unsubscribe(&self) {
+        if let Some(id) = self.id.swap(None) {
+            if let Some(inner) = self.emitter.upgrade() {
+                inner.lock().unwrap().listeners.remove(&id);
+            }
+        }
+    }
+}
+
+impl<T> Drop for Subscription<T> {
+    fn drop(&mut self) {
+        self.unsubscribe();
+    }
+}
+
+struct EmitterState<T> {
+    listeners: FxHashMap<usize, Listener<T>>,
+    next_id: AtomicUsize,
+}
+
+pub struct Emitter<T> {
+    state: Arc<Mutex<EmitterState<T>>>,
+}
+
+impl<T> Emitter<T> {
+    pub fn new() -> Self {
+        Self {
+            state: Arc::new(Mutex::new(EmitterState {
+                listeners: FxHashMap::default(),
+                next_id: AtomicUsize::new(0),
+            })),
+        }
+    }
+
+    pub fn subscribe<F>(&self, f: F) -> Subscription<T>
+    where
+        F: Fn(&T) + Send + Sync + 'static,
+    {
+        let mut guard = self.state.lock().unwrap();
+        let id = guard.next_id.fetch_add(1, Ordering::Relaxed);
+        guard.listeners.insert(id, Arc::new(f));
+        drop(guard);
+
+        Subscription {
+            emitter: Arc::downgrade(&self.state),
+            id: ArcSwapOption::new(Some(Arc::new(id))),
+        }
+    }
+
+    pub fn fire(&self, value: T) {
+        let listeners = {
+            let guard = self.state.lock().unwrap();
+            guard.listeners.values().cloned().collect::<Vec<_>>()
+        };
+
+        for listener in listeners {
+            listener(&value);
+        }
+    }
+}
 
 pub struct App<R: TauriRuntime> {
     pub(crate) fs: Arc<dyn FileSystem>,
@@ -77,8 +153,8 @@ pub struct App<R: TauriRuntime> {
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
     pub(crate) services: AppServices,
-    pub(crate) event_listeners: Arc<std::sync::RwLock<FxHashMap<TypeId, Vec<(usize, Listener)>>>>,
-    pub(crate) pending_events: Arc<std::sync::RwLock<Vec<(TypeId, Box<dyn Event>)>>>,
+    // pub(crate) event_listeners: Arc<std::sync::RwLock<FxHashMap<TypeId, Vec<(usize, Listener)>>>>,
+    // pub(crate) pending_events: Arc<std::sync::RwLock<Vec<(TypeId, Box<dyn Event>)>>>,
 }
 
 impl<R: TauriRuntime> Deref for App<R> {
@@ -86,17 +162,6 @@ impl<R: TauriRuntime> Deref for App<R> {
 
     fn deref(&self) -> &Self::Target {
         &self.app_handle
-    }
-}
-
-pub struct Subscription {
-    subscriber_id: usize,
-    unsubscribe: Arc<dyn Fn() + Send + Sync + 'static>,
-}
-
-impl Subscription {
-    pub fn unsubscribe(&self) {
-        (self.unsubscribe)();
     }
 }
 
@@ -150,8 +215,8 @@ impl<R: TauriRuntime> AppBuilder<R> {
             preferences: self.preferences,
             defaults: self.defaults,
             services: self.services,
-            event_listeners: Default::default(),
-            pending_events: Default::default(),
+            // event_listeners: Default::default(),
+            // pending_events: Default::default(),
         }
     }
 }
@@ -185,61 +250,89 @@ impl<R: TauriRuntime> App<R> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 
-    pub fn subscribe<T: Event, F>(&mut self, listener: F) -> Subscription
-    where
-        F: Fn(&T) -> bool + Send + Sync + 'static,
-    {
-        let type_id = TypeId::of::<T>();
+    // pub fn subscribe<T: Event, F>(&mut self, listener: F) -> Subscription
+    // where
+    //     F: Fn(&T) -> bool + Send + Sync + 'static,
+    // {
+    //     let type_id = TypeId::of::<T>();
 
-        let erased_listener: Listener =
-            Arc::new(
-                move |event_any: &dyn Any| match event_any.downcast_ref::<T>() {
-                    Some(event) => listener(event),
-                    None => {
-                        eprintln!(
-                            "Type mismatch in event listener for {}",
-                            std::any::type_name::<T>()
-                        );
-                        false
-                    }
-                },
-            );
+    //     let erased_listener: Listener =
+    //         Arc::new(
+    //             move |event_any: &dyn Any| match event_any.downcast_ref::<T>() {
+    //                 Some(event) => listener(event),
+    //                 None => {
+    //                     eprintln!(
+    //                         "Type mismatch in event listener for {}",
+    //                         std::any::type_name::<T>()
+    //                     );
+    //                     false
+    //                 }
+    //             },
+    //         );
 
-        let mut event_listeners = self.event_listeners.write().unwrap();
-        let subscriber_id = event_listeners.len();
+    //     let mut event_listeners = self.event_listeners.write().unwrap();
+    //     let subscriber_id = event_listeners.len();
 
-        event_listeners
-            .entry(type_id)
-            .or_default()
-            .push((subscriber_id, erased_listener));
+    //     event_listeners
+    //         .entry(type_id)
+    //         .or_default()
+    //         .push((subscriber_id, erased_listener));
 
-        let event_listeners_clone = self.event_listeners.clone();
-        Subscription {
-            subscriber_id,
-            unsubscribe: Arc::new(move || {
-                let mut event_listeners = event_listeners_clone.write().unwrap();
-                event_listeners
-                    .get_mut(&type_id)
-                    .unwrap()
-                    .remove(subscriber_id);
-            }),
-        }
+    //     let event_listeners_clone = self.event_listeners.clone();
+    //     Subscription {
+    //         subscriber_id,
+    //         unsubscribe: Arc::new(move || {
+    //             let mut event_listeners = event_listeners_clone.write().unwrap();
+    //             event_listeners
+    //                 .get_mut(&type_id)
+    //                 .unwrap()
+    //                 .remove(subscriber_id);
+    //         }),
+    //     }
+    // }
+
+    // pub fn emit<T: Event>(&self, event: T) {
+    //     let type_id = TypeId::of::<T>();
+    //     let mut pending_events = self.pending_events.write().unwrap();
+    //     pending_events.push((type_id, Box::new(event)));
+    // }
+
+    // pub fn notify(&self) {
+    //     let mut pending_events = self.pending_events.write().unwrap();
+    //     while let Some((type_id, event)) = pending_events.pop() {
+    //         if let Some(listeners) = self.event_listeners.read().unwrap().get(&type_id) {
+    //             for (_, listener) in listeners {
+    //                 listener(&*event as &dyn Any);
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    pub struct TestEvent {
+        pub value: String,
     }
 
-    pub fn emit<T: Event>(&self, event: T) {
-        let type_id = TypeId::of::<T>();
-        let mut pending_events = self.pending_events.write().unwrap();
-        pending_events.push((type_id, Box::new(event)));
-    }
+    #[test]
+    fn test_emitter() {
+        let emitter: Emitter<TestEvent> = Emitter::new();
 
-    pub fn notify(&self) {
-        let mut pending_events = self.pending_events.write().unwrap();
-        while let Some((type_id, event)) = pending_events.pop() {
-            if let Some(listeners) = self.event_listeners.read().unwrap().get(&type_id) {
-                for (_, listener) in listeners {
-                    listener(&*event as &dyn Any);
-                }
-            }
-        }
+        let subscription = emitter.subscribe(|event: &TestEvent| {
+            println!("Received event: {}", event.value);
+        });
+
+        emitter.fire(TestEvent {
+            value: "Hello, world!".to_string(),
+        });
+
+        drop(subscription);
+
+        emitter.fire(TestEvent {
+            value: "2nd event!".to_string(),
+        });
     }
 }

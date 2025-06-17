@@ -27,6 +27,7 @@ nanoid.workspace = true
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
 tracing-appender.workspace = true
+arc-swap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
