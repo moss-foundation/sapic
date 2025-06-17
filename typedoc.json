@@ -20,5 +20,5 @@
   "excludeExternals": true,
   "useTsLinkResolution": true,
   "alwaysCreateEntryPointModule": true,
-  "plugin": ["./typedoc-rename-plugin.js"]
+  "plugin": ["./misc/typedoc/typedoc-rename-plugin.js"]
 }
