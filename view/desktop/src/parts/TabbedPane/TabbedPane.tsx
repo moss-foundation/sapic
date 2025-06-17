@@ -7,9 +7,10 @@ import { DropNodeElement } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -33,6 +34,58 @@ import ToolBar from "./ToolBar";
 import Watermark from "./Watermark";
 
 const DebugContext = React.createContext<boolean>(false);
+
+type PageConfig = {
+  title?: string;
+  icon?: Icons;
+  component: React.ComponentType;
+};
+
+// Wrapper component for pages with dynamic titles
+const DynamicPageWrapper = ({
+  pageKey,
+  config,
+  props,
+}: {
+  pageKey: string;
+  config: PageConfig;
+  props: IDockviewPanelProps;
+}) => {
+  const PageComponent = config.component;
+
+  // Get fresh workspace data for dynamic title - must be called before any returns
+  const currentWorkspace = useActiveWorkspace();
+
+  // Update panel title dynamically for WorkspaceSettings - must be called before any returns
+  React.useEffect(() => {
+    if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
+      props.api.setTitle(currentWorkspace.displayName);
+    }
+  }, [currentWorkspace?.displayName, props.api, pageKey]);
+
+  // Special case for full-page components (no title)
+  if (!config.title) {
+    return <PageComponent />;
+  }
+
+  let displayTitle = config.title;
+  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
+    displayTitle = currentWorkspace.displayName;
+  }
+
+  // Standard page structure with header and content
+  return (
+    <PageView>
+      <PageHeader
+        title={displayTitle}
+        icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
+      />
+      <PageContent>
+        <PageComponent />
+      </PageContent>
+    </PageView>
+  );
+};
 
 const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
   const { api } = useTabbedPaneStore();
@@ -141,12 +194,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     return () => event.dispose();
   }, [api, updateEditorPartState]);
 
-  type PageConfig = {
-    title?: string;
-    icon?: Icons;
-    component: React.ComponentType;
-  };
-
   const pageConfigs: Record<string, PageConfig> = {
     KitchenSink: {
       title: "KitchenSink",
@@ -159,6 +206,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Logs: {
       title: "Logs",
       component: Logs,
+    },
+    WorkspaceSettings: {
+      title: "WorkspaceSettings", // This will be dynamically replaced
+      component: WorkspaceSettings,
     },
     Welcome: {
       component: WelcomePage,
@@ -255,30 +306,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     },
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
-        acc[key] = () => {
-          const PageComponent = config.component;
-
-          // Special case for full-page components (no title)
-          if (!config.title) {
-            return <PageComponent />;
-          }
-
-          // Standard page structure with header and content
-          return (
-            <PageView>
-              <PageHeader
-                title={config.title}
-                icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
-              />
-              <PageContent>
-                <PageComponent />
-              </PageContent>
-            </PageView>
-          );
-        };
+        acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;
         return acc;
       },
-      {} as Record<string, () => JSX.Element>
+      {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
     ),
   };
 

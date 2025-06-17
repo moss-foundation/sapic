@@ -9,7 +9,7 @@ const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
     {
       id: `${idPrefix}rename`,
       type: "action",
-      label: "Rename...",
+      label: "Edit",
       icon: "Edit" as Icons,
       shortcut: "⌘⏎",
     },
@@ -196,6 +196,16 @@ export const additionalSelectedWorkspaceMenuItems: MenuItemProps[] = [
     type: "action",
     label: "Edit Configurations...",
     shortcut: "^⌥E",
+    alignWithIcons: true,
+  },
+  {
+    id: "separator-6",
+    type: "separator",
+  },
+  {
+    id: "exit-workspace",
+    type: "action",
+    label: "Exit Workspace",
     alignWithIcons: true,
   },
 ];

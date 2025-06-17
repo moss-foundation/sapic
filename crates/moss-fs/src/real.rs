@@ -80,6 +80,7 @@ impl FileSystem for RealFileSystem {
 
         let mut file = open_options.open(path).await?;
         file.write_all(content).await?;
+        file.flush().await?;
         Ok(())
     }
 
