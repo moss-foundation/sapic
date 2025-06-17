@@ -1,18 +1,16 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
-use crate::{
-    models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
-    services::log_service::{
-        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-    },
-};
 use anyhow::Result;
-use chrono::{DateTime, Days, FixedOffset, Local, NaiveDate, NaiveDateTime, TimeZone};
+use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::Service;
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::OperationError;
+use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
-use moss_storage::GlobalStorage;
+use moss_storage::{
+    GlobalStorage,
+    storage::operations::{GetItem, TransactionalRemoveItem},
+};
 use nanoid::nanoid;
 use parking_lot::Mutex;
 use std::{
@@ -36,6 +34,15 @@ use tracing_subscriber::{
     prelude::*,
 };
 use uuid::Uuid;
+
+use crate::{
+    models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
+    services::log_service::{
+        constants::*,
+        rollinglog_writer::{LOG_SEGKEY, RollingLogWriter},
+        taurilog_writer::TauriLogWriter,
+    },
+};
 
 pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
@@ -269,12 +276,6 @@ impl LogService {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
         for entry_ref in input {
-            let datetime = DateTime::parse_from_str(&entry_ref.timestamp, TIMESTAMP_FORMAT);
-            if let Err(_e) = datetime {
-                // TODO: Notify the frontend that an error occured in parsing the timestamp
-                continue;
-            }
-
             // Try deleting from applog queue
             let mut applog_queue_lock = self.applog_queue.lock();
             let idx = applog_queue_lock.iter().position(|x| x.id == entry_ref.id);
@@ -304,15 +305,14 @@ impl LogService {
             drop(sessionlog_queue_lock);
 
             // Try deleting the entry from the log files
-            file_entries.push((entry_ref.id.clone(), datetime.expect("Already checked")))
+            file_entries.push(entry_ref);
         }
-        file_entries.sort_by(|a, b| a.1.cmp(&b.1));
         if file_entries.is_empty() {
             return Ok(result);
         }
 
         // Deleting the remaining entries from the files
-        result.extend(self.delete_logs_from_files(file_entries).await?);
+        result.extend(self.delete_logs_from_files(&file_entries).await?);
         // TODO: Reporting entries that were not found during deletion?
         Ok(result)
     }
@@ -426,100 +426,31 @@ impl LogService {
     }
 }
 
-impl LogService {
-    async fn find_log_files_by_range(
-        &self,
-        path: &Path,
-        start: Option<&DateTime<FixedOffset>>,
-        end: Option<&DateTime<FixedOffset>>,
-    ) -> Result<Vec<PathBuf>> {
-        // Find log files that cover the entire range of logs to delete
-        let mut file_list = Vec::new();
-
-        let mut read_dir = self.fs.read_dir(path).await?;
-        while let Some(entry) = read_dir.next_entry().await? {
-            let path = entry.path();
-            if !path.is_file()
-                || path.file_stem().is_none()
-                || path.extension() != Some(OsStr::new("log"))
-            {
-                continue;
-            }
-            let stem = path.file_stem().unwrap().to_string_lossy().to_string();
-            if let Ok(dt) = DateTime::parse_from_str(&stem, FILE_TIMESTAMP_FORMAT) {
-                file_list.push((path, dt));
-            }
-            // Skip a log file if its name is not well-formatted
-            // TODO: Delete invalid log files?
-        }
-
-        if file_list.is_empty() {
-            return Ok(Vec::new());
-        }
-        // Sort the log files chronologically and find all log files that might cover the entries
-        file_list.sort_by(|a, b| a.1.cmp(&b.1));
-
-        // If the start datetime coincides with a logfile's timestamp, we start from that file
-        // Otherwise, we start from the latest file that began before the start timestamp
-        // Similarly, we end at the file with the end_dt, or the latest file before it
-        // Both start_idx and end_idx are inclusive
-
-        let start_idx = if let Some(start) = start {
-            file_list
-                    .binary_search_by(|(_, dt)| dt.cmp(&start))
-                    .unwrap_or_else(|idx|
-                        // Clamp to the oldest file
-                        if idx == 0 { 0 } else { idx - 1 })
-        } else {
-            0
-        };
-
-        let end_idx = if let Some(end) = end {
-            file_list
-                .binary_search_by(|(_, dt)| dt.cmp(&end))
-                .unwrap_or_else(|idx| idx - 1)
-        } else {
-            file_list.len() - 1
-        };
-
-        let files = file_list[start_idx..=end_idx]
-            .into_iter()
-            .map(|(path, _)| path.to_path_buf())
-            .collect();
-        Ok(files)
-    }
-}
-
 /// Helper methods for delete_logs
 impl LogService {
-    async fn delete_logs_from_files(
-        &self,
-        entries: Vec<(String, DateTime<FixedOffset>)>,
-    ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
-        let start = entries.first().unwrap().1.clone();
-        let end = entries.last().unwrap().1.clone();
-
-        let mut deleted_entries = Vec::new();
-        let mut ids_to_delete = entries.iter().map(|x| x.0.clone()).collect::<HashSet<_>>();
-
-        // Deleting entries from app log files
-        {
-            let log_files = self
-                .find_log_files_by_range(&self.applog_path, Some(&start), Some(&end))
-                .await?;
-            for file in log_files {
-                deleted_entries.extend(self.update_log_file(&file, &mut ids_to_delete).await?);
-            }
+    fn find_files_to_update(&self, entries: &[&LogEntryRef]) -> Result<HashSet<PathBuf>> {
+        let mut files = HashSet::new();
+        for entry in entries {
+            let segkey = LOG_SEGKEY.join(entry.id.clone());
+            let item_store = self.storage.item_store();
+            let value = GetItem::get(item_store.as_ref(), segkey)?;
+            let path: PathBuf = AnyValue::deserialize(&value)?;
+            files.insert(path);
         }
 
-        // Deleting entries from session log files
-        {
-            let log_files = self
-                .find_log_files_by_range(&self.sessionlog_path, Some(&start), Some(&end))
-                .await?;
-            for file in log_files {
-                deleted_entries.extend(self.update_log_file(&file, &mut ids_to_delete).await?);
-            }
+        Ok(files)
+    }
+
+    async fn delete_logs_from_files(
+        &self,
+        entries: &[&LogEntryRef],
+    ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
+        let mut deleted_entries = Vec::new();
+        let mut ids_to_delete = entries.iter().map(|x| x.id.clone()).collect::<HashSet<_>>();
+
+        let log_files = self.find_files_to_update(entries)?;
+        for file in log_files {
+            deleted_entries.extend(self.update_log_file(&file, &mut ids_to_delete).await?);
         }
 
         Ok(deleted_entries)
@@ -535,6 +466,10 @@ impl LogService {
 
         let f = self.fs.open_file(path).await?;
         let reader = BufReader::new(f);
+
+        let mut write_txn = self.storage.begin_write()?;
+        let item_store = self.storage.item_store();
+
         for line in reader.lines() {
             let line = line?;
             let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
@@ -544,6 +479,9 @@ impl LogService {
                     id: log_entry.id.clone(),
                     file_path: Some(path.to_path_buf()),
                 });
+                // Remove the entry from the database
+                let segkey = LOG_SEGKEY.join(log_entry.id.clone());
+                TransactionalRemoveItem::remove(item_store.as_ref(), &mut write_txn, segkey)?;
             } else {
                 new_content.push_str(&line);
                 new_content.push('\n');
@@ -562,6 +500,7 @@ impl LogService {
                 )
                 .await?;
         }
+        write_txn.commit()?;
 
         // TODO: Should we delete a file if all entries in it are deleted?
         Ok(removed_entries)
@@ -570,6 +509,43 @@ impl LogService {
 
 /// Helper methods for list_logs
 impl LogService {
+    async fn find_files_by_dates(
+        &self,
+        path: &Path,
+        dates_filter: &HashSet<NaiveDate>,
+    ) -> Result<Vec<PathBuf>> {
+        // Find log files with the given dates
+        let mut file_list = Vec::new();
+        let mut read_dir = self.fs.read_dir(path).await?;
+
+        while let Some(entry) = read_dir.next_entry().await? {
+            let path = entry.path();
+            if !path.is_file()
+                || path.file_stem().is_none()
+                || path.extension() != Some(OsStr::new("log"))
+            {
+                continue;
+            }
+            let stem = path.file_stem().unwrap().to_string_lossy().to_string();
+
+            let parse_result = DateTime::parse_from_str(&stem, FILE_TIMESTAMP_FORMAT);
+            if parse_result.is_err() {
+                // Ignore files with invalid timestamp name
+                continue;
+            }
+            let dt = parse_result?;
+            let naive_date = dt.date_naive();
+            // Either we have no dates filter, or the filter contains the file date
+            if dates_filter.is_empty() || dates_filter.contains(&naive_date) {
+                file_list.push((path, dt));
+            }
+        }
+
+        // Sort the log files chronologically
+        file_list.sort_by_key(|(_, dt)| *dt);
+
+        Ok(file_list.into_iter().map(|(path, _)| path).collect())
+    }
     async fn parse_file_with_filter(
         &self,
         records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
@@ -585,6 +561,7 @@ impl LogService {
             let log_entry: LogEntryInfo = serde_json::from_str(&line)?;
 
             if filter.check_entry(&log_entry)? {
+                // FIXME: Should we simply skip the line if the timestamp is invalid?
                 let timestamp =
                     NaiveDateTime::parse_from_str(&log_entry.timestamp, TIMESTAMP_FORMAT)?;
                 records.push((timestamp, log_entry));
@@ -600,32 +577,21 @@ impl LogService {
         queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     ) -> Result<Vec<(NaiveDateTime, LogEntryInfo)>> {
         // Combine all log entries in a log folder according to a certain filter
-        // And append the current log queue at the end
+        // And append the current log queue at the end if they pass the filter
         let mut result = Vec::new();
 
-        let mut dates = filter.dates.iter().collect::<Vec<_>>();
-        dates.sort();
-        let start = dates
-            .first()
-            .and_then(|date| date.and_hms_milli_opt(0, 0, 0, 0))
-            .map(|dt| naive_to_local_fixed(&dt));
-        let end = dates
-            .last()
-            .and_then(|date| date.and_hms_milli_opt(0, 0, 0, 0))
-            .and_then(|dt|
-            // Ensure that the records on the last day in the filter is also checked
-            dt.checked_add_days(Days::new(1)))
-            .map(|dt| naive_to_local_fixed(&dt));
+        let dates = filter.dates.iter().cloned().collect::<HashSet<_>>();
+        let files = self.find_files_by_dates(path, &dates).await?;
 
-        let files = self
-            .find_log_files_by_range(path, start.as_ref(), end.as_ref())
-            .await?;
-
+        // The files are sorted chronologically, so are the log entries within a file
+        // This will produce a vec of sorted LogEntryInfo
         for file in files {
-            self.parse_file_with_filter(&mut result, &file, filter)
-                .await?
+            self.parse_file_with_filter(&mut result, &file, &filter)
+                .await?;
         }
 
+        // The logs in the queue must be more recent than the logs in files
+        // So we append them to the end
         result.extend({
             let lock = queue.lock();
 
@@ -680,22 +646,6 @@ impl LogService {
 
         merged
     }
-}
-
-// TODO: Maybe there's a better way to do this
-/// Convert a NaiveDateTime to a DateTime<FixedOffset>
-fn naive_to_local_fixed(naive: &NaiveDateTime) -> DateTime<FixedOffset> {
-    // Grab the current local offset (in seconds east of UTC)
-    let offset_seconds = Local::now().offset().local_minus_utc();
-
-    // Build a FixedOffset from it
-    let fixed_offset =
-        FixedOffset::east_opt(offset_seconds).expect("The offset seconds must be valid");
-
-    // Attach it to your NaiveDateTime
-    //    from_local_datetime returns a LocalResult — unwrap() here
-    //    since you know your naive is “valid” in that offset.
-    fixed_offset.from_local_datetime(naive).unwrap()
 }
 
 #[cfg(test)]

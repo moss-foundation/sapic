@@ -16,6 +16,7 @@ mod shared;
 /// While the `cargo test` model will run every test as part of the same program.
 /// Thus, they are marked as ignored.
 
+#[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_queue() {
     let (log_service, applog_path) = set_up_log_service().await;
@@ -42,10 +43,7 @@ async fn test_delete_logs_from_queue() {
 
     let input = BatchDeleteLogInput(
         logs.into_iter()
-            .map(|log| LogEntryRef {
-                timestamp: log.timestamp,
-                id: log.id,
-            })
+            .map(|log| LogEntryRef { id: log.id })
             .collect(),
     );
 
@@ -68,6 +66,7 @@ async fn test_delete_logs_from_queue() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_file() {
     let (log_service, applog_path) = set_up_log_service().await;
@@ -94,7 +93,6 @@ async fn test_delete_logs_from_file() {
         .contents;
 
     let input = BatchDeleteLogInput(vec![LogEntryRef {
-        timestamp: logs[0].timestamp.clone(),
         id: logs[0].id.clone(),
     }]);
 
@@ -132,6 +130,9 @@ async fn test_delete_all_logs() {
         );
     }
 
+    // Wait for all writes to finish
+    tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+
     let logs = log_service
         .list_logs(&ListLogsInput {
             dates: vec![],
@@ -144,10 +145,7 @@ async fn test_delete_all_logs() {
 
     let input = BatchDeleteLogInput(
         logs.into_iter()
-            .map(|log| LogEntryRef {
-                id: log.id,
-                timestamp: log.timestamp,
-            })
+            .map(|log| LogEntryRef { id: log.id })
             .collect(),
     );
     let output = log_service.batch_delete_log(&input).await.unwrap();

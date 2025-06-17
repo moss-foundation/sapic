@@ -58,8 +58,6 @@ pub struct Defaults {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct LogEntryRef {
-    /// This helps us to narrow down the scope of search
-    pub timestamp: String,
     pub id: String,
 }
 

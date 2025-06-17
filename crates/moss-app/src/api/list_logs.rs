@@ -3,7 +3,7 @@ use crate::{
         operations::{ListLogsInput, ListLogsOutput},
         primitives::LogLevel,
     },
-    services::log_service::{LogFilter, LogService, LogServiceResult},
+    services::log_service::{LogFilter, LogService},
 };
 use chrono::NaiveDate;
 use moss_common::api::OperationResult;

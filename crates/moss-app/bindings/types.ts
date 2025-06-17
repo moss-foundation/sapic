@@ -22,12 +22,6 @@ export type LocaleInfo = {
 
 export type LogDate = { year: number; month: number; day: number };
 
-export type LogEntryRef = {
-  /**
-   * This helps us to narrow down the scope of search
-   */
-  timestamp: string;
-  id: string;
-};
+export type LogEntryRef = { id: string };
 
 export type Preferences = { theme: ColorThemeInfo | null; locale: LocaleInfo | null };

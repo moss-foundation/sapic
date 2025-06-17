@@ -1,9 +1,7 @@
 use chrono::DateTime;
 use moss_db::{DatabaseError, primitives::AnyValue};
 use moss_storage::{
-    GlobalStorage,
-    primitives::segkey::SegKey,
-    storage::operations::{ListByPrefix, TransactionalPutItem},
+    GlobalStorage, primitives::segkey::SegKey, storage::operations::TransactionalPutItem,
 };
 use parking_lot::Mutex;
 use std::{
@@ -96,20 +94,6 @@ impl<'a> std::io::Write for RollingLogWriter {
             }
         }
         queue_lock.push_back(log_entry);
-
-        let item_store = self.storage.item_store();
-        // let x = ListByPrefix::list_by_prefix(item_store.as_ref(), "log")
-        //     .map_err(map_database_error_to_io_error)?
-        //     .into_iter()
-        //     .map(|(key, value)| {
-        //         (
-        //             key.to_string(),
-        //             AnyValue::deserialize::<PathBuf>(&value).unwrap(),
-        //         )
-        //     })
-        //     .collect::<Vec<(_, _)>>();
-
-        // dbg!(x);
 
         Ok(buf.len())
     }

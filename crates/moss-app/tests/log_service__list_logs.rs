@@ -4,7 +4,7 @@ use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
     services::log_service::{LogPayload, LogScope},
 };
-use std::{fs::remove_dir_all, str::FromStr, thread::sleep, time::Duration};
+use std::{fs::remove_dir_all, str::FromStr, time::Duration};
 
 mod shared;
 
@@ -35,6 +35,7 @@ async fn test_list_logs_empty() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log

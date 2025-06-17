@@ -17,7 +17,6 @@ export const logDateSchema = z.object({
 });
 
 export const logEntryRefSchema = z.object({
-  timestamp: z.string(),
   id: z.string(),
 });
 export const colorThemeInfoSchema = z.object({
