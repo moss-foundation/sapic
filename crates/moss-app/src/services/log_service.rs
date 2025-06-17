@@ -9,6 +9,7 @@ use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
     GlobalStorage,
+    primitives::segkey::SegKey,
     storage::operations::{GetItem, TransactionalRemoveItem},
 };
 use nanoid::nanoid;
@@ -38,9 +39,7 @@ use uuid::Uuid;
 use crate::{
     models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
     services::log_service::{
-        constants::*,
-        rollinglog_writer::{LOG_SEGKEY, RollingLogWriter},
-        taurilog_writer::TauriLogWriter,
+        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
     },
 };
 
@@ -272,6 +271,7 @@ impl LogService {
     pub(crate) async fn delete_logs(
         &self,
         input: Vec<&LogEntryRef>,
+        //impl Iterator<Item = LogEntryRef>,
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
@@ -431,9 +431,9 @@ impl LogService {
     fn find_files_to_update(&self, entries: &[&LogEntryRef]) -> Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
         for entry in entries {
-            let segkey = LOG_SEGKEY.join(entry.id.clone());
-            let item_store = self.storage.item_store();
-            let value = GetItem::get(item_store.as_ref(), segkey)?;
+            let segkey = SegKey::new(&entry.id).to_segkey_buf();
+            let log_store = self.storage.log_store();
+            let value = GetItem::get(log_store.as_ref(), segkey)?;
             let path: PathBuf = AnyValue::deserialize(&value)?;
             files.insert(path);
         }
@@ -468,7 +468,7 @@ impl LogService {
         let reader = BufReader::new(f);
 
         let mut write_txn = self.storage.begin_write()?;
-        let item_store = self.storage.item_store();
+        let log_store = self.storage.log_store();
 
         for line in reader.lines() {
             let line = line?;
@@ -480,8 +480,8 @@ impl LogService {
                     file_path: Some(path.to_path_buf()),
                 });
                 // Remove the entry from the database
-                let segkey = LOG_SEGKEY.join(log_entry.id.clone());
-                TransactionalRemoveItem::remove(item_store.as_ref(), &mut write_txn, segkey)?;
+                let segkey = SegKey::new(&log_entry.id).to_segkey_buf();
+                TransactionalRemoveItem::remove(log_store.as_ref(), &mut write_txn, segkey)?;
             } else {
                 new_content.push_str(&line);
                 new_content.push('\n');

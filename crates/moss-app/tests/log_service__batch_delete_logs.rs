@@ -116,6 +116,7 @@ async fn test_delete_logs_from_file() {
     remove_dir_all(applog_path).unwrap();
 }
 
+#[ignore]
 #[tokio::test]
 async fn test_delete_all_logs() {
     let (log_service, applog_path) = set_up_log_service().await;

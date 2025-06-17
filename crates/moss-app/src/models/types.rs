@@ -73,7 +73,7 @@ pub struct LogDate {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogItemSourceInfo {
     pub id: String,
     #[serde(skip)]
@@ -83,7 +83,7 @@ pub struct LogItemSourceInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogEntryInfo {
     pub id: String,
     /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"

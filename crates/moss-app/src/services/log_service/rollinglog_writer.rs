@@ -18,8 +18,6 @@ use crate::{
 };
 // log:{log_id}: log_entry_path
 
-pub static LOG_SEGKEY: SegKey = SegKey::new("log");
-
 pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
@@ -74,17 +72,17 @@ impl<'a> std::io::Write for RollingLogWriter {
                     .begin_write()
                     .map_err(map_database_error_to_io_error)?;
 
-                let item_store = self.storage.item_store();
+                let log_store = self.storage.log_store();
 
                 while let Some(entry) = queue_lock.pop_front() {
                     serde_json::to_writer(&mut writer, &entry)?;
                     writer.write(b"\n")?;
                     writer.flush()?;
                     // Record the file to which the log entry is written
-                    let segkey = LOG_SEGKEY.join(&entry.id);
+                    let segkey = SegKey::new(&entry.id).to_segkey_buf();
                     let value = AnyValue::serialize(&file_path)?;
 
-                    TransactionalPutItem::put(item_store.as_ref(), &mut write_txn, segkey, value)
+                    TransactionalPutItem::put(log_store.as_ref(), &mut write_txn, segkey, value)
                         .map_err(map_database_error_to_io_error)?;
                 }
                 write_txn.commit().map_err(map_database_error_to_io_error)?;

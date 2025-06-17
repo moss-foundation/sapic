@@ -5,6 +5,7 @@ use crate::{
     services::log_service::LogService,
 };
 
+// TODO: impl App
 impl LogService {
     pub async fn batch_delete_log(
         &self,

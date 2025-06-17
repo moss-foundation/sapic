@@ -1,24 +1,12 @@
-use crate::{
-    models::{
-        operations::{ListLogsInput, ListLogsOutput},
-        primitives::LogLevel,
-    },
-    services::log_service::{LogFilter, LogService},
-};
 use chrono::NaiveDate;
 use moss_common::api::OperationResult;
-use tracing::Level;
 
-fn get_level(level: &LogLevel) -> Level {
-    match level {
-        LogLevel::TRACE => Level::TRACE,
-        LogLevel::DEBUG => Level::DEBUG,
-        LogLevel::INFO => Level::INFO,
-        LogLevel::WARN => Level::WARN,
-        LogLevel::ERROR => Level::ERROR,
-    }
-}
+use crate::{
+    models::operations::{ListLogsInput, ListLogsOutput},
+    services::log_service::{LogFilter, LogService},
+};
 
+// TODO: impl App
 impl LogService {
     pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
         let filter = LogFilter {
@@ -28,7 +16,7 @@ impl LogService {
                 .iter()
                 .filter_map(|date| NaiveDate::from_ymd_opt(date.year as i32, date.month, date.day))
                 .collect(),
-            levels: input.levels.iter().map(get_level).collect(),
+            levels: input.levels.iter().map(|level| (*level).into()).collect(),
             resource: input.resource.clone(),
         };
 
