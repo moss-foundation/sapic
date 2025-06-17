@@ -44,6 +44,8 @@ pub mod constants {
     pub const ID_LENGTH: usize = 10;
 
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
+
+    pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
 }
 
 fn new_id() -> String {
@@ -439,13 +441,16 @@ impl LogService {
                 continue;
             }
             let stem = path.file_stem().unwrap().to_string_lossy().to_string();
-            if let Ok(dt) = DateTime::parse_from_str(&stem, TIMESTAMP_FORMAT) {
+            if let Ok(dt) = DateTime::parse_from_str(&stem, FILE_TIMESTAMP_FORMAT) {
                 file_list.push((path, dt));
             }
             // Skip a log file if its name is not well-formatted
             // TODO: Delete invalid log files?
         }
 
+        if file_list.is_empty() {
+            return Ok(Vec::new());
+        }
         // Sort the log files chronologically and find all log files that might cover the entries
         file_list.sort_by(|a, b| a.1.cmp(&b.1));
 
@@ -469,7 +474,7 @@ impl LogService {
                 .binary_search_by(|(_, dt)| dt.cmp(&end))
                 .unwrap_or_else(|idx| idx - 1)
         } else {
-            file_list.len()
+            file_list.len() - 1
         };
 
         let files = file_list[start_idx..=end_idx]
