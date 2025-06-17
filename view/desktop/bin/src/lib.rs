@@ -171,9 +171,7 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
-            RunEvent::Exit => {
-                dbg!("Exit");
-            }
+            RunEvent::Exit => {}
 
             _ => {}
         });

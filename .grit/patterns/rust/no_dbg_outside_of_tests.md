@@ -7,18 +7,25 @@ level: error
 language rust
 
 `dbg!($_)` as $dbg where {
-    $dbg <: not within `fn $name($_) {$_}`
+    $dbg <: not within `fn $_($_) {$_}` as $fn where {
+        $fn <: after or {
+            `#[test]`,
+            `#[tokio::test]`,
+        }
+    }
 }
 ```
 
 ## Test Cases
 
 ```rust
-fn non_test() {
-    dbg!("Incorrect");
+#[test]
+fn test_case() {
+    dbg!("Correct");
 }
 
-fn test() {
-    dbg!("Correct");
+
+fn non_test_case() {
+    dbg!("Incorrect");
 }
 ```
