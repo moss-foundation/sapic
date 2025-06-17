@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Sapic",
+  "out": "./autodocs",
+  "entryPoints": [
+    "crates/moss-app",
+    "crates/moss-activity-indicator",
+    "crates/moss-collection",
+    "crates/moss-environment",
+    "crates/moss-workspace",
+    "crates/moss-workbench"
+  ],
+  "entryPointStrategy": "packages",
+  "packageOptions": {
+    "includeVersion": false
+  },
+  "categorizeByGroup": false,
+  "hideGenerator": true,
+  "sort": ["kind", "alphabetical"],
+  "excludeExternals": true,
+  "useTsLinkResolution": true,
+  "alwaysCreateEntryPointModule": true,
+  "plugin": ["./misc/typedoc/typedoc-rename-plugin.js"]
+}
