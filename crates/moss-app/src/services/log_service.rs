@@ -557,6 +557,8 @@ impl LogService {
                 )
                 .await?;
         }
+
+        // TODO: Should we delete a file if all entries in it are deleted?
         Ok(removed_entries)
     }
 }
@@ -675,15 +677,17 @@ impl LogService {
     }
 }
 
+// TODO: Maybe there's a better way to do this
 /// Convert a NaiveDateTime to a DateTime<FixedOffset>
 fn naive_to_local_fixed(naive: &NaiveDateTime) -> DateTime<FixedOffset> {
-    // 1. Grab your current local offset (in seconds east of UTC)
+    // Grab the current local offset (in seconds east of UTC)
     let offset_seconds = Local::now().offset().local_minus_utc();
 
-    // 2. Build a FixedOffset from it
-    let fixed_offset = FixedOffset::east(offset_seconds);
+    // Build a FixedOffset from it
+    let fixed_offset =
+        FixedOffset::east_opt(offset_seconds).expect("The offset seconds must be valid");
 
-    // 3. Attach it to your NaiveDateTime
+    // Attach it to your NaiveDateTime
     //    from_local_datetime returns a LocalResult — unwrap() here
     //    since you know your naive is “valid” in that offset.
     fixed_offset.from_local_datetime(naive).unwrap()

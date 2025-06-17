@@ -1,10 +1,10 @@
+use crate::shared::set_up_log_service;
+use chrono::{DateTime, FixedOffset};
 use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
     services::log_service::{LogPayload, LogScope},
 };
-use std::fs::remove_dir_all;
-
-use crate::shared::set_up_log_service;
+use std::{fs::remove_dir_all, str::FromStr};
 
 mod shared;
 
@@ -35,15 +35,13 @@ async fn test_list_logs_empty() {
     remove_dir_all(applog_path).unwrap();
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
     let (log_service, applog_path) = set_up_log_service().await;
 
-    for i in 0..25 {
-        dbg!(i);
+    for _ in 0..25 {
         log_service.warn(
             LogScope::App,
             LogPayload {
@@ -69,7 +67,12 @@ async fn test_list_logs_from_both_files_and_queue() {
         .await
         .unwrap();
 
-    assert_eq!(list_logs_output.contents.len(), 50);
+    let logs = list_logs_output.contents;
+    assert_eq!(logs.len(), 50);
+    // Check that the output logs are sorted chronologically
+    assert!(
+        logs.is_sorted_by_key(|log| DateTime::<FixedOffset>::from_str(&log.timestamp).unwrap())
+    );
     remove_dir_all(applog_path).unwrap();
 }
 
