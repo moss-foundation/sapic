@@ -1,4 +1,5 @@
 use chrono::DateTime;
+use moss_storage::GlobalStorage;
 use parking_lot::Mutex;
 use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
 
@@ -11,6 +12,7 @@ pub struct RollingLogWriter {
     pub log_path: PathBuf,
     pub dump_threshold: usize,
     pub log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    pub storage: Arc<dyn GlobalStorage>,
 }
 
 impl RollingLogWriter {
@@ -18,11 +20,13 @@ impl RollingLogWriter {
         log_path: PathBuf,
         dump_threshold: usize,
         log_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+        storage: Arc<dyn GlobalStorage>,
     ) -> Self {
         Self {
             log_path,
             dump_threshold,
             log_queue,
+            storage,
         }
     }
 }

@@ -1,11 +1,18 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
+use crate::{
+    models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
+    services::log_service::{
+        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+    },
+};
 use anyhow::Result;
 use chrono::{DateTime, Days, FixedOffset, Local, NaiveDate, NaiveDateTime, TimeZone};
 use moss_applib::Service;
 use moss_common::api::{OperationError, OperationResult};
 use moss_fs::{CreateOptions, FileSystem};
+use moss_storage::GlobalStorage;
 use nanoid::nanoid;
 use parking_lot::Mutex;
 use std::{
@@ -29,13 +36,6 @@ use tracing_subscriber::{
     prelude::*,
 };
 use uuid::Uuid;
-
-use crate::{
-    models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
-    services::log_service::{
-        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
-    },
-};
 
 pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
@@ -132,6 +132,7 @@ pub struct LogService {
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
+    storage: Arc<dyn GlobalStorage>,
     _applog_writerguard: WorkerGuard,
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
@@ -145,6 +146,7 @@ impl LogService {
         app_handle: AppHandle<R>,
         applog_path: &Path,
         session_id: &Uuid,
+        storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
@@ -175,6 +177,7 @@ impl LogService {
                 applog_path.to_path_buf(),
                 DUMP_THRESHOLD,
                 applog_queue.clone(),
+                storage.clone(),
             ));
 
         let sessionlog_queue = Arc::new(Mutex::new(VecDeque::new()));
@@ -183,6 +186,7 @@ impl LogService {
                 sessionlog_path.clone(),
                 DUMP_THRESHOLD,
                 sessionlog_queue.clone(),
+                storage.clone(),
             ));
 
         let (taurilog_writer, _taurilog_writerguard) =
@@ -232,6 +236,7 @@ impl LogService {
             sessionlog_path,
             applog_queue,
             sessionlog_queue,
+            storage,
             _applog_writerguard,
             _sessionlog_writerguard,
             _taurilog_writerguard,
@@ -695,14 +700,14 @@ fn naive_to_local_fixed(naive: &NaiveDateTime) -> DateTime<FixedOffset> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_fs::RealFileSystem;
+    use moss_storage::global_storage::GlobalStorageImpl;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
-
-    use super::*;
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
 
     fn random_app_log_path() -> PathBuf {
         Path::new("tests").join("data").join(random_string(10))
@@ -716,11 +721,13 @@ mod tests {
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
         let session_id = Uuid::new_v4();
+        let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
             &session_id,
+            storage.clone(),
         )
         .unwrap();
 
