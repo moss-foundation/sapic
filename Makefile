@@ -10,6 +10,7 @@ export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
+export TYPEDOC_DIR = ${CURDIR}/autodocs
 
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
@@ -83,9 +84,14 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons export-css-variables
+ready: gen-icons export-css-variables gen-typedoc
 	$(PNPM) i
 	cd $(DESKTOP_DIR) && $(PNPM) i --force
+
+## Generate TypeDoc documentation
+.PHONY: gen-typedoc
+gen-typedoc:
+	$(PNPM) typedoc
 
 ## Icon generator tool
 .PHONY: gen-icons
@@ -157,6 +163,17 @@ export-css-variables:
 	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
+
+## Open TypeDoc documentation in browser
+.PHONY: open-docs
+open-docs:
+ifeq ($(DETECTED_OS),Windows)
+	@start "" "$(TYPEDOC_DIR)/index.html"
+else ifeq ($(DETECTED_OS),Darwin)
+	@open "$(TYPEDOC_DIR)/index.html"
+else
+	@xdg-open "$(TYPEDOC_DIR)/index.html"
+endif
 
 ## Count Lines of Code
 .PHONY: loc
