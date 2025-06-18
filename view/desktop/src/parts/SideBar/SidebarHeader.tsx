@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
-import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
@@ -59,25 +58,6 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 export default SidebarHeader;
 
 const ExampleDropdownMenu = () => {
-  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-
-  const handleCreateCollectionEntry = async () => {
-    await createCollectionEntry({
-      collectionId: "14e13201-c337-4cbe-9d46-156fc141221b",
-      input: {
-        dir: {
-          path: "/requests",
-          name: "this should have been a test request",
-          configuration: {
-            "request": {
-              http: {},
-            },
-          },
-        },
-      },
-    });
-  };
-
   return (
     <ActionMenu.Root>
       <ActionMenu.Trigger asChild>
@@ -86,7 +66,6 @@ const ExampleDropdownMenu = () => {
 
       <ActionMenu.Portal>
         <ActionMenu.Content align="center">
-          <ActionMenu.Item onSelect={handleCreateCollectionEntry}>createCollectionEntry</ActionMenu.Item>
           <ActionMenu.Item onSelect={() => console.log("Item 2 selected")}>Item 2</ActionMenu.Item>
         </ActionMenu.Content>
       </ActionMenu.Portal>

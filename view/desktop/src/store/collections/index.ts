@@ -9,6 +9,7 @@ import {
 } from "@/components/CollectionTree/utils";
 
 import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { EntryInfo } from "@repo/moss-collection";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
 import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
@@ -25,6 +26,10 @@ interface CollectionsStoreState {
   refreshCollections: () => void;
   streamedCollections: StreamCollectionsEvent[];
   isBeingStreamed: boolean;
+
+  streamedCollectionEntries: EntryInfo[];
+  isBeingStreamedCollectionEntries: boolean;
+  getCollectionEntries: (collectionId: string) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -71,23 +76,24 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   },
   refreshCollections: async () => {
     try {
-      set({ isBeingStreamed: true });
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      set({
+        isBeingStreamed: true,
+        streamedCollections: [],
+        streamedCollectionEntries: [],
+      });
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
-      onCollectionEvent.onmessage = (message) => {
-        set((state) => {
-          console.log("refreshCollections onCollectionEvent set");
-          const existingIndex = state.streamedCollections.findIndex((col) => col.id === message.id);
 
-          if (existingIndex >= 0) {
-            const updated = [...state.streamedCollections];
-            updated[existingIndex] = message;
-            return { ...state, streamedCollections: updated };
-          } else {
-            return { ...state, streamedCollections: [...state.streamedCollections, message] };
+      onCollectionEvent.onmessage = (collection) => {
+        set((state) => {
+          const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
+          if (existingCollection) {
+            return state;
           }
+          return { ...state, streamedCollections: [...state.streamedCollections, collection] };
         });
+
+        get().getCollectionEntries(collection.id);
       };
 
       await invokeTauriIpc("stream_collections", {
@@ -101,4 +107,25 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   },
   streamedCollections: [],
   isBeingStreamed: false,
+
+  streamedCollectionEntries: [],
+  isBeingStreamedCollectionEntries: false,
+  getCollectionEntries: async (collectionId: string) => {
+    try {
+      const onCollectionEntryEvent = new Channel<EntryInfo>();
+
+      onCollectionEntryEvent.onmessage = (collectionEntry) => {
+        set((state) => {
+          return { ...state, streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry] };
+        });
+      };
+
+      await invokeTauriIpc("stream_collection_entries", {
+        collectionId,
+        channel: onCollectionEntryEvent,
+      });
+    } catch (error) {
+      console.error("Failed to get collection entries:", error);
+    }
+  },
 }));

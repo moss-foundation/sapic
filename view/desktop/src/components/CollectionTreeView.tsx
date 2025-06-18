@@ -1,6 +1,6 @@
 import "@repo/moss-tabs/assets/styles.css";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
 import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
@@ -20,7 +20,7 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollection, streamedCollections, isBeingStreamed } = useCollectionsStore();
+  const { collections, setCollections, updateCollection } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -144,14 +144,15 @@ export const CollectionTreeView = () => {
 const TestStreamedCollections = () => {
   const { streamedCollections, isBeingStreamed } = useCollectionsStore();
   const { mutate: createCollectionEntry } = useCreateCollectionEntry();
+  const [name, setName] = useState<string>("");
 
   const handleClick = (id: string) => {
     createCollectionEntry({
       collectionId: id,
       input: {
         item: {
-          name: "New Collection",
-          path: `${id}/testPath`,
+          name,
+          path: `/requests/Plugin`,
           configuration: {
             request: {
               http: {
@@ -165,15 +166,40 @@ const TestStreamedCollections = () => {
       },
     });
   };
+  const handleClickToDir = (id: string) => {
+    createCollectionEntry({
+      collectionId: id,
+      input: {
+        dir: {
+          name,
+          path: `/requests`,
+          configuration: {
+            request: {
+              http: {},
+            },
+          },
+        },
+      },
+    });
+  };
 
   return (
     <div className="flex flex-col gap-2">
+      <input
+        className="w-full border-2 border-dashed border-gray-300"
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <div>loading: {isBeingStreamed.toString()}</div>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {streamedCollections?.map((collection) => (
-          <ButtonPrimary key={collection.id} onClick={() => handleClick(collection.id)}>
-            add to "{collection.name}"
-          </ButtonPrimary>
+          <React.Fragment key={collection.id}>
+            <ButtonPrimary onClick={() => handleClick(collection.id)}>add to "{collection.name}"</ButtonPrimary>
+            <ButtonPrimary onClick={() => handleClickToDir(collection.id)}>
+              add dir to "{collection.name}"
+            </ButtonPrimary>
+          </React.Fragment>
         ))}
       </div>
 
