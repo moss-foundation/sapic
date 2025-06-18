@@ -7,6 +7,7 @@ edition = "2024"
 tauri.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
+rustc-hash.workspace = true
 
 [features]
 test = ["tauri/test"]

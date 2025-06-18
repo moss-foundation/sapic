@@ -2935,6 +2935,7 @@ name = "moss_applib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "rustc-hash",
  "tauri",
  "tokio",
 ]
@@ -2948,6 +2949,7 @@ dependencies = [
  "async-trait",
  "futures",
  "moss_activity_indicator",
+ "moss_applib",
  "moss_common",
  "moss_db",
  "moss_environment",

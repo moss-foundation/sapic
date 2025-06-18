@@ -1,5 +1,9 @@
 use anyhow::Context as _;
-use moss_applib::context::Context;
+use moss_applib::{
+    Event,
+    context::Context,
+    subscription::{Subscription, SubscriptionSet},
+};
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
@@ -23,6 +27,16 @@ use crate::{
     storage::segments::COLLECTION_SEGKEY,
     workspace::{CollectionItem, Workspace},
 };
+
+pub struct WorkspaceContext {
+    subscriptions: SubscriptionSet<Uuid>,
+}
+
+impl WorkspaceContext {
+    pub fn subscribe<T: Event>(&self, s: Subscription<T>) {
+        self.subscriptions.insert(s);
+    }
+}
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection<C: Context<R>>(
@@ -65,6 +79,10 @@ impl<R: TauriRuntime> Workspace<R> {
         )
         .await
         .map_err(|e| OperationError::Internal(e.to_string()))?;
+
+        collection.on_did_change(|event| {
+            dbg!(event);
+        });
 
         collections.insert(
             id,

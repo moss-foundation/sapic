@@ -5,8 +5,6 @@ use tokio::time::Duration;
 
 use crate::{Global, task::Task};
 
-pub trait Event: Any + Send + Sync + 'static {}
-
 pub trait Context<R: TauriRuntime>: Send + Sync {
     fn global<T>(&self) -> State<'_, T>
     where
@@ -19,10 +17,6 @@ pub trait Context<R: TauriRuntime>: Send + Sync {
         E: Send + 'static,
         Fut: Future<Output = Result<T, E>> + Send + 'static,
         F: FnOnce(Self) -> Fut + Send + 'static;
-
-    // fn subscribe<T>(&self, event: T) -> Result<()>
-    // where
-    //     T: Event + Send + Sync;
 }
 
 #[cfg(any(test, feature = "test"))]

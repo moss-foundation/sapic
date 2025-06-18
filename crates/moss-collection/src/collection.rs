@@ -1,4 +1,8 @@
 use anyhow::{Context, Result};
+use moss_applib::{
+    Event,
+    subscription::{Emitter, Subscription},
+};
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
@@ -23,6 +27,12 @@ pub struct EnvironmentItem {
 
 type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
+pub enum OnDidChangeEvent {
+    Toggled(bool),
+}
+
+impl Event for OnDidChangeEvent {}
+
 pub struct Collection {
     #[allow(dead_code)]
     fs: Arc<dyn FileSystem>,
@@ -35,6 +45,8 @@ pub struct Collection {
     manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
     #[allow(dead_code)]
     config: TomlFileHandle<ConfigModel>,
+
+    on_did_change: Emitter<OnDidChangeEvent>,
 }
 
 pub struct CreateParams<'a> {
@@ -45,6 +57,15 @@ pub struct CreateParams<'a> {
 
 pub struct ModifyParams {
     pub name: Option<String>,
+}
+
+impl Collection {
+    pub fn on_did_change(
+        &self,
+        callback: impl Fn(&OnDidChangeEvent) + Send + Sync + 'static,
+    ) -> Subscription<OnDidChangeEvent> {
+        self.on_did_change.subscribe(callback)
+    }
 }
 
 impl Collection {
@@ -74,6 +95,7 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
+            on_did_change: Emitter::new(),
         })
     }
 
@@ -132,6 +154,7 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
+            on_did_change: Emitter::new(),
         })
     }
 

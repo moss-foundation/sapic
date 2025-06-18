@@ -102,29 +102,14 @@ pub async fn run<R: TauriRuntime>() {
                 locale: default_locale,
             };
 
-            struct TestEvent {
-                a: i32,
-                b: i32,
-            }
-
-            impl moss_applib::context::Event for TestEvent {}
-
             <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
-            let mut app = AppBuilder::new(app_handle.clone(), workbench, defaults, fs)
+            let app = AppBuilder::new(app_handle.clone(), workbench, defaults, fs)
                 .with_service(theme_service)
                 .with_service(locale_service)
                 .with_service(session_service)
                 .with_service(log_service)
                 .build();
-
-            app.subscribe::<TestEvent, _>(|event| {
-                dbg!(event.a);
-                true
-            });
-
-            app.emit(TestEvent { a: 1, b: 2 });
-            app.notify();
 
             app_handle.manage(app);
 
