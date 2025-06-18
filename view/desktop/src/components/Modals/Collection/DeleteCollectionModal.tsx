@@ -4,19 +4,17 @@ import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
-import { useDeleteCollection } from "@/hooks/collection/useDeleteCollection";
+import { useCollectionsStore } from "@/store/collections";
 
 import { ModalWrapperProps } from "../types";
 
 export const DeleteCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { mutateAsync: deleteCollection, isPending } = useDeleteCollection();
+  const { deleteCollection, isDeleteCollectionLoading } = useCollectionsStore();
 
   const [id, setId] = useState("");
 
   const handleSubmit = async () => {
-    await deleteCollection({
-      id,
-    });
+    await deleteCollection(id);
     closeModal();
     resetForm();
   };
@@ -32,7 +30,7 @@ export const DeleteCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     }, 200);
   };
 
-  const isSubmitDisabled = id.length === 0 || isPending;
+  const isSubmitDisabled = id.length === 0 || isDeleteCollectionLoading;
 
   return (
     <ModalForm

@@ -5,12 +5,12 @@ import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
-import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
+import { useCollectionsStore } from "@/store/collections";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { mutateAsync: createCollection, isPending } = useCreateCollection();
+  const { createCollection, isCreateCollectionLoading } = useCollectionsStore();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"Radio 1" | "Radio 2">("Radio 1");
@@ -33,7 +33,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     }, 200);
   };
 
-  const isSubmitDisabled = name.length === 0 || isPending;
+  const isSubmitDisabled = name.length === 0 || isCreateCollectionLoading;
 
   return (
     <ModalForm

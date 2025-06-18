@@ -7,7 +7,7 @@ import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
-  const { streamedCollections, areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
+  const { streamedCollectionEntries, areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
 
   useEffect(() => {
     startCollectionsStream();
@@ -24,7 +24,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
       <div className="flex grow justify-end">
         <div>{areCollectionsStreaming.toString()}</div>
-        <div>{streamedCollections?.length}</div>
+        <div>{streamedCollectionEntries?.length}</div>
         <ActionButton icon="Add" onClick={() => setShowCreateCollectionModal(true)} />
         <ActionButton icon="Trash" onClick={() => setShowDeleteCollectionModal(true)} />
         <ActionButton icon="CollapseAll" onClick={collapseAll} />

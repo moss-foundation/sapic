@@ -3,7 +3,6 @@ import "@repo/moss-tabs/assets/styles.css";
 import React, { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
-import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
@@ -142,8 +141,14 @@ export const CollectionTreeView = () => {
 };
 
 const TestStreamedCollections = () => {
-  const { streamedCollections, areCollectionsStreaming, areCollectionEntriesStreaming } = useCollectionsStore();
-  const { mutate: createCollectionEntry } = useCreateCollectionEntry();
+  const {
+    streamedCollections,
+    streamedCollectionEntries,
+    areCollectionsStreaming,
+    areCollectionEntriesStreaming,
+    createCollectionEntry,
+    deleteCollectionEntry,
+  } = useCollectionsStore();
   const [name, setName] = useState<string>("");
 
   const handleClick = (id: string) => {
@@ -206,8 +211,22 @@ const TestStreamedCollections = () => {
         ))}
       </div>
 
-      {/* <div>{streamedCollections?.map((collection) => <div key={collection.id}>{collection.name}</div>)}</div> */}
-      <code>{JSON.stringify(streamedCollections, null, 2)}</code>
+      <div>
+        {streamedCollectionEntries?.map((entry) => (
+          <ButtonPrimary
+            key={entry.id}
+            onClick={() => {
+              deleteCollectionEntry({
+                collectionId: "7e353d76-8894-4007-a6da-2c96d9951eb7",
+                input: { id: entry.id, path: entry.path },
+              });
+            }}
+          >
+            delete {entry.path}
+          </ButtonPrimary>
+        ))}
+      </div>
+      {/* <code>{JSON.stringify(streamedCollectionEntries, null, 2)}</code> */}
     </div>
   );
 };
