@@ -52,10 +52,14 @@ impl<R: TauriRuntime> Workbench<R> {
             workspaces_lock.remove(&workspace_entry.id);
         }
 
-        if let Some(active_workspace) = self.active_workspace_mut().await.as_mut() {
-            if active_workspace.id == input.id {
-                self.deactivate_workspace().await;
-            }
+        if self
+            .active_workspace()
+            .await
+            .as_ref()
+            .map(|workspace| workspace.id)
+            == Some(input.id)
+        {
+            self.deactivate_workspace().await;
         }
 
         Ok(())

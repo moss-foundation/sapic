@@ -12,7 +12,7 @@ use crate::shared::{collection_key, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -29,7 +29,7 @@ async fn create_collection_success() {
     assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
-    let collections = workspace.collections(&ctx).await.unwrap().read().await;
+    let collections = workspace.collections(&ctx).await.unwrap();
 
     assert_eq!(collections.len(), 1);
 
@@ -57,7 +57,7 @@ async fn create_collection_success() {
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
@@ -86,7 +86,7 @@ async fn create_collection_empty_name() {
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -107,7 +107,7 @@ async fn create_collection_special_chars() {
         assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
-        let collections = workspace.collections(&ctx).await.unwrap().read().await;
+        let collections = workspace.collections(&ctx).await.unwrap();
 
         assert!(collections.contains_key(&create_collection_output.id));
 
@@ -135,7 +135,7 @@ async fn create_collection_special_chars() {
 
 #[tokio::test]
 async fn create_collection_with_order() {
-    let (ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -152,7 +152,7 @@ async fn create_collection_with_order() {
     assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
-    let collections = workspace.collections(&ctx).await.unwrap().read().await;
+    let collections = workspace.collections(&ctx).await.unwrap();
 
     assert_eq!(collections.len(), 1);
     // Verify the order is correctly stored

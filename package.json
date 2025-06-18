@@ -45,6 +45,7 @@
     "tailwindcss": "^4.1.0",
     "ts-node": "^10.9.2",
     "turbo": "^2.4.2",
+    "typedoc": "^0.28.5",
     "typescript": "^5.8.2",
     "vite": "^6.2.0",
     "vitest": "^3.2.3"

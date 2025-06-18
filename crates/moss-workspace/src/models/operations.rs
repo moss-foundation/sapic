@@ -41,7 +41,7 @@ pub struct CreateCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateCollectionEntryInput {
+pub struct UpdateCollectionInput {
     pub id: Uuid,
 
     #[validate(length(min = 1))]
@@ -57,7 +57,7 @@ pub struct UpdateCollectionEntryInput {
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateCollectionEntryOutput {
+pub struct UpdateCollectionOutput {
     pub id: Uuid,
 }
 

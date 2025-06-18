@@ -32,14 +32,14 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
-export const updateCollectionEntryInputSchema = z.object({
+export const updateCollectionInputSchema = z.object({
   id: z.string(),
   newName: z.string().nullable(),
   order: z.number().optional(),
   pinned: z.boolean().optional(),
 });
 
-export const updateCollectionEntryOutputSchema = z.object({
+export const updateCollectionOutputSchema = z.object({
   id: z.string(),
 });
 export const describeEnvironmentOutputSchema = z.object({
