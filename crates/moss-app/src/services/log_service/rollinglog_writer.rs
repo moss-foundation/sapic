@@ -35,7 +35,10 @@ impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.log_queue.lock().expect("Mutex poisoned");
+        let mut queue_lock = self
+            .log_queue
+            .lock()
+            .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Mutex poisoned"))?;
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =

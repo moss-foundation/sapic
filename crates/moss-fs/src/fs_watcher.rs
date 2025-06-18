@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use notify::Watcher;
 use std::{
     path::PathBuf,
@@ -61,7 +61,9 @@ impl FsWatcher {
                     .collect::<Vec<_>>();
 
                 if !path_events.is_empty() {
-                    let pending_paths = pending_path_events.lock().unwrap();
+                    let pending_paths = pending_path_events
+                        .lock()
+                        .map_err(|_| anyhow!("Mutex poisoned"))?;
                     if pending_paths.is_empty() {
                         tx.send(()).unwrap();
                     }
