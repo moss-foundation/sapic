@@ -11,7 +11,7 @@ impl LogService {
         &self,
         input: &BatchDeleteLogInput,
     ) -> OperationResult<BatchDeleteLogOutput> {
-        match self.delete_logs(input.0.iter().collect()).await {
+        match self.delete_logs(input.0.iter().map(|s| s.as_str())).await {
             Ok(output) => Ok(BatchDeleteLogOutput {
                 deleted_entries: output,
             }),

@@ -37,7 +37,7 @@ use tracing_subscriber::{
 use uuid::Uuid;
 
 use crate::{
-    models::types::{LogEntryInfo, LogEntryRef, LogItemSourceInfo},
+    models::types::{LogEntryInfo, LogItemSourceInfo},
     services::log_service::{
         constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
     },
@@ -270,19 +270,18 @@ impl LogService {
 
     pub(crate) async fn delete_logs(
         &self,
-        input: Vec<&LogEntryRef>,
-        //impl Iterator<Item = LogEntryRef>,
+        input: impl Iterator<Item = &str>,
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
-        for entry_ref in input {
+        for entry_id in input {
             // Try deleting from applog queue
             let mut applog_queue_lock = self.applog_queue.lock();
-            let idx = applog_queue_lock.iter().position(|x| x.id == entry_ref.id);
+            let idx = applog_queue_lock.iter().position(|x| x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_ref.id.clone(),
+                    id: entry_id.to_string(),
                     file_path: None,
                 });
                 continue;
@@ -291,13 +290,11 @@ impl LogService {
 
             // Try deleting from sessionlog queue
             let mut sessionlog_queue_lock = self.sessionlog_queue.lock();
-            let idx = sessionlog_queue_lock
-                .iter()
-                .position(|x| x.id == entry_ref.id);
+            let idx = sessionlog_queue_lock.iter().position(|x| x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_ref.id.clone(),
+                    id: entry_id.to_string(),
                     file_path: None,
                 });
                 continue;
@@ -305,7 +302,7 @@ impl LogService {
             drop(sessionlog_queue_lock);
 
             // Try deleting the entry from the log files
-            file_entries.push(entry_ref);
+            file_entries.push(entry_id);
         }
         if file_entries.is_empty() {
             return Ok(result);
@@ -428,10 +425,10 @@ impl LogService {
 
 /// Helper methods for delete_logs
 impl LogService {
-    fn find_files_to_update(&self, entries: &[&LogEntryRef]) -> Result<HashSet<PathBuf>> {
+    fn find_files_to_update(&self, entries: &[&str]) -> Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
-        for entry in entries {
-            let segkey = SegKey::new(&entry.id).to_segkey_buf();
+        for entry_id in entries {
+            let segkey = SegKey::new(&entry_id).to_segkey_buf();
             let log_store = self.storage.log_store();
             let value = GetItem::get(log_store.as_ref(), segkey)?;
             let path: PathBuf = AnyValue::deserialize(&value)?;
@@ -443,10 +440,13 @@ impl LogService {
 
     async fn delete_logs_from_files(
         &self,
-        entries: &[&LogEntryRef],
+        entries: &[&str],
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut deleted_entries = Vec::new();
-        let mut ids_to_delete = entries.iter().map(|x| x.id.clone()).collect::<HashSet<_>>();
+        let mut ids_to_delete = entries
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<HashSet<_>>();
 
         let log_files = self.find_files_to_update(entries)?;
         for file in log_files {

@@ -54,13 +54,6 @@ pub struct Defaults {
 
 // Log
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct LogEntryRef {
-    pub id: String,
-}
-
 // FIXME: Is this the best way to handle date type?
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
