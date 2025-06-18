@@ -7,7 +7,7 @@ import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
-  const { streamedCollections, isBeingStreamed, refreshCollections } = useCollectionsStore();
+  const { streamedCollections, areCollectionsStreaming: isBeingStreamed, refreshCollections } = useCollectionsStore();
 
   useEffect(() => {
     refreshCollections();

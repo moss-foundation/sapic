@@ -142,7 +142,7 @@ export const CollectionTreeView = () => {
 };
 
 const TestStreamedCollections = () => {
-  const { streamedCollections, isBeingStreamed } = useCollectionsStore();
+  const { streamedCollections, areCollectionsStreaming, areCollectionEntriesStreaming } = useCollectionsStore();
   const { mutate: createCollectionEntry } = useCreateCollectionEntry();
   const [name, setName] = useState<string>("");
 
@@ -191,7 +191,10 @@ const TestStreamedCollections = () => {
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
-      <div>loading: {isBeingStreamed.toString()}</div>
+      <div className={cn("flex gap-2")}>
+        <div>loading: {areCollectionsStreaming.toString()}</div>
+        <div>Entries loading: {areCollectionEntriesStreaming.toString()}</div>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         {streamedCollections?.map((collection) => (
           <React.Fragment key={collection.id}>

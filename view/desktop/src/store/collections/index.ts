@@ -25,10 +25,10 @@ interface CollectionsStoreState {
 
   refreshCollections: () => void;
   streamedCollections: StreamCollectionsEvent[];
-  isBeingStreamed: boolean;
+  areCollectionsStreaming: boolean;
 
   streamedCollectionEntries: EntryInfo[];
-  isBeingStreamedCollectionEntries: boolean;
+  areCollectionEntriesStreaming: boolean;
   getCollectionEntries: (collectionId: string) => void;
 }
 
@@ -74,10 +74,13 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
     }));
   },
+
+  areCollectionsStreaming: false,
+  streamedCollections: [],
   refreshCollections: async () => {
     try {
       set({
-        isBeingStreamed: true,
+        areCollectionsStreaming: true,
         streamedCollections: [],
         streamedCollectionEntries: [],
       });
@@ -102,16 +105,16 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {
-      set({ isBeingStreamed: false });
+      set({ areCollectionsStreaming: false });
     }
   },
-  streamedCollections: [],
-  isBeingStreamed: false,
 
+  areCollectionEntriesStreaming: false,
   streamedCollectionEntries: [],
-  isBeingStreamedCollectionEntries: false,
   getCollectionEntries: async (collectionId: string) => {
     try {
+      set({ areCollectionEntriesStreaming: true });
+
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
@@ -126,6 +129,8 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       });
     } catch (error) {
       console.error("Failed to get collection entries:", error);
+    } finally {
+      set({ areCollectionEntriesStreaming: false });
     }
   },
 }));
