@@ -1,8 +1,8 @@
 [workspace]
 resolver = "1"
 members = [
-    # "crates/moss-git",
-    # "crates/moss-git-hosting-provider",
+    "crates/moss-git",
+    "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
     "crates/moss-text",
     "crates/moss-collection",
@@ -31,8 +31,8 @@ moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
 moss_app = { path = "crates/moss-app" }
 moss_applib = { path = "crates/moss-applib" }
-# moss_git = { path = "crates/moss-git" }
-# moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
+moss_git = { path = "crates/moss-git" }
+moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
@@ -54,8 +54,12 @@ serde = "1.0.217"
 anyhow = "1.0.95"
 arcstr = "1.2.0"
 bstr = "1.11.3"
+git2 = "0.20.0"
 log = "0.4.25"
+oauth2 = "5.0.0"
+reqwest = "0.12.12"
 serde_json = "1.0"
+ssh2 = "0.9.5"
 strum = "0.27.0"
 tokio = "1.45.1"
 tokio-stream = "0.1.17"
@@ -65,10 +69,13 @@ tracing-subscriber = { version = "0.3.18", default-features = false }
 ts-rs = "11.0.1"
 thiserror = "2.0.11"
 async-trait = "0.1.86"
+url = "2.5.4"
+dotenv = "0.15.0"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
 uuid = { version = "1.17.0", default-features = false }
+webbrowser = "1.0.3"
 zeroize = "1.7"
 aes-gcm = "0.10.3"
 argon2 = "0.5.1"
@@ -80,12 +87,3 @@ toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
-
-# Git related dependencies
-# git2 = "0.20.0"
-# oauth2 = "5.0.0"
-# reqwest = "0.12.12"
-# ssh2 = "0.9.5"
-# url = "2.5.4"
-# dotenv = "0.15.0"
-# webbrowser = "1.0.3"
