@@ -7,7 +7,6 @@ import {
   collapseAllNodes,
   expandAllNodes,
 } from "@/components/CollectionTree/utils";
-
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
   CreateEntryInput,
@@ -23,6 +22,7 @@ import {
   StreamCollectionsEvent,
 } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
+
 import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
 import SapicTestCollection from "../../assets/SapicTestCollection.json";
 import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
@@ -107,6 +107,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input: collection });
 
     if (result.status === "error") {
+      set(() => ({
+        isCreateCollectionLoading: false,
+      }));
       throw new Error(String(result.error));
     }
 
@@ -159,6 +162,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     });
 
     if (result.status === "error") {
+      set(() => ({
+        isCreateCollectionEntryLoading: false,
+      }));
       throw new Error(String(result.error));
     }
 
@@ -244,6 +250,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     });
 
     if (result.status === "error") {
+      set(() => ({
+        isDeleteCollectionEntryLoading: false,
+      }));
       throw new Error(String(result.error));
     }
 
