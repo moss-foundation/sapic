@@ -14,17 +14,6 @@ export const useAddNodeWithDivider = (
   const [isAddingDividerNode, setIsAddingDividerNode] = useState(false);
 
   const handleAddDividerFormSubmit = (newNode: NodeProps) => {
-    console.log(
-      updateNodeOrder({
-        ...node,
-        isExpanded: true,
-        childNodes: [
-          ...node.childNodes.slice(0, order),
-          prepareCollectionForTree(newNode, sortBy, false),
-          ...node.childNodes.slice(order),
-        ],
-      })
-    );
     onNodeUpdateCallback(
       updateNodeOrder({
         ...node,
