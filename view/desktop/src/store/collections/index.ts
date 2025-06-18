@@ -23,13 +23,13 @@ interface CollectionsStoreState {
   collapseAll: () => void;
   updateCollection: (collection: Collection) => void;
 
-  refreshCollections: () => void;
+  startCollectionsStream: () => void;
   streamedCollections: StreamCollectionsEvent[];
   areCollectionsStreaming: boolean;
 
   streamedCollectionEntries: EntryInfo[];
   areCollectionEntriesStreaming: boolean;
-  getCollectionEntries: (collectionId: string) => void;
+  startCollectionEntriesStream: (collectionId: string) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -77,7 +77,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
   areCollectionsStreaming: false,
   streamedCollections: [],
-  refreshCollections: async () => {
+  startCollectionsStream: async () => {
     try {
       set({
         areCollectionsStreaming: true,
@@ -86,7 +86,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       });
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
-
+      
       onCollectionEvent.onmessage = (collection) => {
         set((state) => {
           const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
@@ -96,7 +96,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           return { ...state, streamedCollections: [...state.streamedCollections, collection] };
         });
 
-        get().getCollectionEntries(collection.id);
+        get().startCollectionEntriesStream(collection.id);
       };
 
       await invokeTauriIpc("stream_collections", {
@@ -111,12 +111,12 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
   areCollectionEntriesStreaming: false,
   streamedCollectionEntries: [],
-  getCollectionEntries: async (collectionId: string) => {
+  startCollectionEntriesStream: async (collectionId: string) => {
     try {
       set({ areCollectionEntriesStreaming: true });
 
       const onCollectionEntryEvent = new Channel<EntryInfo>();
-
+     
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
         set((state) => {
           return { ...state, streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry] };
@@ -134,3 +134,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     }
   },
 }));
+
+export function getRandomInt(min: number, max: number) {
+	const minCeiled = Math.ceil(min)
+	const maxFloored = Math.floor(max)
+	return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled) // The maximum is exclusive and the minimum is inclusive
+}

@@ -7,10 +7,10 @@ import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
-  const { streamedCollections, areCollectionsStreaming: isBeingStreamed, refreshCollections } = useCollectionsStore();
+  const { streamedCollections, areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
 
   useEffect(() => {
-    refreshCollections();
+    startCollectionsStream();
   }, []);
 
   const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
@@ -23,7 +23,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
       </div>
 
       <div className="flex grow justify-end">
-        <div>{isBeingStreamed.toString()}</div>
+        <div>{areCollectionsStreaming.toString()}</div>
         <div>{streamedCollections?.length}</div>
         <ActionButton icon="Add" onClick={() => setShowCreateCollectionModal(true)} />
         <ActionButton icon="Trash" onClick={() => setShowDeleteCollectionModal(true)} />
@@ -31,9 +31,9 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <ActionButton icon="Import" />
         <ActionButton
           icon="Refresh"
-          onClick={() => refreshCollections()}
+          onClick={startCollectionsStream}
           title="Refresh Collections"
-          disabled={isBeingStreamed}
+          disabled={areCollectionsStreaming}
         />
         <ExampleDropdownMenu />
       </div>
