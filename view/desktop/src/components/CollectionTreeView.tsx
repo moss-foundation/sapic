@@ -153,7 +153,13 @@ const TestStreamedCollections = () => {
           name: "New Collection",
           path: `${id}/testPath`,
           configuration: {
-            Request: {},
+            request: {
+              http: {
+                requestParts: {
+                  method: "GET",
+                },
+              },
+            },
           },
         },
       },

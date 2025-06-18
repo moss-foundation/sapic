@@ -21,6 +21,7 @@ impl Collection {
         input.validate()?;
 
         let id = Uuid::new_v4();
+        let is_dir = matches!(input, CreateEntryInput::Dir(_));
         let path = input.path().clone();
         let name = input.name().to_owned();
         let configuration = match input {
@@ -39,7 +40,7 @@ impl Collection {
         self.worktree()
             .create_entry(
                 &path.join(&name),
-                matches!(input, CreateEntryInput::Dir(_)),
+                is_dir,
                 toml::to_string(&configuration)?.as_bytes(),
             )
             .await?;
