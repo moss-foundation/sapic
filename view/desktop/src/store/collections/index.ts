@@ -86,7 +86,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       });
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
-      
+
       onCollectionEvent.onmessage = (collection) => {
         set((state) => {
           const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
@@ -116,7 +116,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       set({ areCollectionEntriesStreaming: true });
 
       const onCollectionEntryEvent = new Channel<EntryInfo>();
-     
+
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
         set((state) => {
           return { ...state, streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry] };
@@ -134,9 +134,3 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     }
   },
 }));
-
-export function getRandomInt(min: number, max: number) {
-	const minCeiled = Math.ceil(min)
-	const maxFloored = Math.floor(max)
-	return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled) // The maximum is exclusive and the minimum is inclusive
-}
