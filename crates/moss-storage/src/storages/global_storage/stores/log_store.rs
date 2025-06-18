@@ -2,7 +2,6 @@ use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitive
 use std::sync::Arc;
 
 use crate::{
-    GlobalStorage,
     global_storage::stores::GlobalLogStore,
     primitives::segkey::SegKeyBuf,
     storage::{

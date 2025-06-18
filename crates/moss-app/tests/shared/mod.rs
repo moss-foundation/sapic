@@ -4,14 +4,14 @@ use moss_app::{
         primitives::ThemeMode,
         types::{ColorThemeInfo, LocaleInfo},
     },
-    services::{log_service, log_service::LogService},
+    services::log_service::LogService,
 };
 use moss_fs::RealFileSystem;
 use moss_storage::global_storage::GlobalStorageImpl;
 use moss_testutils::random_name::random_string;
 use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
 use std::{fs::create_dir_all, path::PathBuf, sync::Arc};
-use tauri::{Manager, test::MockRuntime};
+use tauri::test::MockRuntime;
 use uuid::Uuid;
 
 fn random_test_app_path() -> PathBuf {
