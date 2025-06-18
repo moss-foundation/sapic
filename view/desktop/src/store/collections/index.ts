@@ -181,7 +181,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             id: result.data.id,
             name: input.dir.name,
             order: input.dir.order ?? undefined,
-            path: input.dir.path,
+            path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
             class: entryClass,
             kind: "Dir" as const,
             expanded: false,
@@ -217,7 +217,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             id: result.data.id,
             name: input.item.name,
             order: input.item.order ?? undefined,
-            path: input.item.path,
+            path: `${input.item.path.replaceAll("/", "")}\\${input.item.name}`,
             class: entryClass,
             kind: "Item" as const,
             protocol,
@@ -297,6 +297,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
+        console.log("onCollectionEntryEvent", collectionEntry);
         set((state) => {
           const existingCollectionEntry = state.streamedCollectionEntries.find((c) => c.id === collectionEntry.id);
           if (existingCollectionEntry) {

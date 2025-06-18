@@ -157,7 +157,7 @@ const TestStreamedCollections = () => {
       input: {
         item: {
           name,
-          path: `/requests/Plugin`,
+          path: `/requests`,
           configuration: {
             request: {
               http: {
