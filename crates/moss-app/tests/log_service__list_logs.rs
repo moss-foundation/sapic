@@ -1,10 +1,11 @@
-use crate::shared::set_up_log_service;
 use chrono::{DateTime, FixedOffset};
 use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
-    services::log_service::{LogPayload, LogScope},
+    services::log_service::{LogPayload, LogScope, LogService},
 };
 use std::{fs::remove_dir_all, str::FromStr, time::Duration};
+
+use crate::shared::set_up_test_app;
 
 mod shared;
 
@@ -15,12 +16,14 @@ mod shared;
 /// Thus, they are marked as ignored.
 
 // We can't test dates filter now since we can't generate logs with custom dates
+
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
-    let (log_service, applog_path) = set_up_log_service().await;
+    let (app, app_path) = set_up_test_app().await;
+    let _log_service = app.service::<LogService>();
 
-    let list_logs_result = log_service
+    let list_logs_result = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![],
@@ -32,7 +35,7 @@ async fn test_list_logs_empty() {
     let logs = list_logs_result.unwrap().contents;
     assert!(logs.is_empty());
 
-    remove_dir_all(applog_path).unwrap();
+    remove_dir_all(app_path).unwrap();
 }
 
 #[ignore]
@@ -40,7 +43,8 @@ async fn test_list_logs_empty() {
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
-    let (log_service, applog_path) = set_up_log_service().await;
+    let (app, app_path) = set_up_test_app().await;
+    let log_service = app.service::<LogService>();
 
     for _ in 0..25 {
         log_service.warn(
@@ -62,7 +66,7 @@ async fn test_list_logs_from_both_files_and_queue() {
     // Wait for all writes to finish
     tokio::time::sleep(Duration::from_millis(500)).await;
 
-    let list_logs_output = log_service
+    let list_logs_output = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![],
@@ -77,13 +81,15 @@ async fn test_list_logs_from_both_files_and_queue() {
     assert!(
         logs.is_sorted_by_key(|log| DateTime::<FixedOffset>::from_str(&log.timestamp).unwrap())
     );
-    remove_dir_all(applog_path).unwrap();
+    remove_dir_all(app_path).unwrap();
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_level() {
-    let (log_service, applog_path) = set_up_log_service().await;
+    let (app, app_path) = set_up_test_app().await;
+    let log_service = app.service::<LogService>();
+
     log_service.debug(
         LogScope::App,
         LogPayload {
@@ -106,7 +112,7 @@ async fn test_list_logs_by_level() {
         },
     );
 
-    let debug_logs = log_service
+    let debug_logs = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![LogLevel::DEBUG],
@@ -117,7 +123,7 @@ async fn test_list_logs_by_level() {
         .contents;
     assert_eq!(debug_logs.len(), 1);
 
-    let warn_logs = log_service
+    let warn_logs = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![LogLevel::WARN],
@@ -128,7 +134,7 @@ async fn test_list_logs_by_level() {
         .contents;
     assert_eq!(warn_logs.len(), 1);
 
-    let error_logs = log_service
+    let error_logs = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![LogLevel::ERROR],
@@ -138,13 +144,15 @@ async fn test_list_logs_by_level() {
         .unwrap()
         .contents;
     assert_eq!(error_logs.len(), 1);
-    remove_dir_all(applog_path).unwrap();
+    remove_dir_all(app_path).unwrap();
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_resource() {
-    let (log_service, applog_path) = set_up_log_service().await;
+    let (app, app_path) = set_up_test_app().await;
+    let log_service = app.service::<LogService>();
+
     log_service.debug(
         LogScope::App,
         LogPayload {
@@ -167,7 +175,7 @@ async fn test_list_logs_by_resource() {
         },
     );
 
-    let resource_logs = log_service
+    let resource_logs = app
         .list_logs(&ListLogsInput {
             dates: vec![],
             levels: vec![],
@@ -178,5 +186,5 @@ async fn test_list_logs_by_resource() {
         .contents;
 
     assert_eq!(resource_logs.len(), 1);
-    remove_dir_all(applog_path).unwrap();
+    remove_dir_all(app_path).unwrap();
 }

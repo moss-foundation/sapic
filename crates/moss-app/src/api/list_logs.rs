@@ -1,14 +1,18 @@
 use chrono::NaiveDate;
 use moss_common::api::OperationResult;
+use tauri::Runtime as TauriRuntime;
 
 use crate::{
+    app::App,
     models::operations::{ListLogsInput, ListLogsOutput},
     services::log_service::{LogFilter, LogService},
 };
 
 // TODO: impl App
-impl LogService {
+impl<R: TauriRuntime> App<R> {
     pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
+        let log_service = self.service::<LogService>();
+
         let filter = LogFilter {
             // Skip invalid dates
             dates: input
@@ -20,7 +24,7 @@ impl LogService {
             resource: input.resource.clone(),
         };
 
-        match self.list_logs_with_filter(&filter).await {
+        match log_service.list_logs_with_filter(&filter).await {
             Ok(contents) => Ok(ListLogsOutput { contents }),
             Err(e) => Err(e.into()),
         }
