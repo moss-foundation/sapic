@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
-import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
-  const { streamedCollectionEntries, areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
+  const { areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
 
   useEffect(() => {
     startCollectionsStream();
   }, []);
 
   const [showCreateCollectionModal, setShowCreateCollectionModal] = useState(false);
-  const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
@@ -23,10 +21,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
       </div>
 
       <div className="flex grow justify-end">
-        <div>{areCollectionsStreaming.toString()}</div>
-        <div>{streamedCollectionEntries?.length}</div>
         <ActionButton icon="Add" onClick={() => setShowCreateCollectionModal(true)} />
-        <ActionButton icon="Trash" onClick={() => setShowDeleteCollectionModal(true)} />
         <ActionButton icon="CollapseAll" onClick={collapseAll} />
         <ActionButton icon="Import" />
         <ActionButton
@@ -42,13 +37,6 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <CreateCollectionModal
           showModal={showCreateCollectionModal}
           closeModal={() => setShowCreateCollectionModal(false)}
-        />
-      )}
-
-      {showDeleteCollectionModal && (
-        <DeleteCollectionModal
-          showModal={showDeleteCollectionModal}
-          closeModal={() => setShowDeleteCollectionModal(false)}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 import "@repo/moss-tabs/assets/styles.css";
 
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
 import { Icon, Scrollbar } from "@/lib/ui";
@@ -9,7 +9,6 @@ import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import ButtonPrimary from "./ButtonPrimary";
 import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
 import { getActualDropSourceTarget } from "./CollectionTree/utils";
 
@@ -127,8 +126,6 @@ export const CollectionTreeView = () => {
             ))}
           </div>
 
-          <TestStreamedCollections />
-
           {showCollectionCreationZone && (
             <div className="flex justify-end p-2">
               <CollectionCreationZone />
@@ -136,97 +133,6 @@ export const CollectionTreeView = () => {
           )}
         </div>
       </Scrollbar>
-    </div>
-  );
-};
-
-const TestStreamedCollections = () => {
-  const {
-    streamedCollections,
-    streamedCollectionEntries,
-    areCollectionsStreaming,
-    areCollectionEntriesStreaming,
-    createCollectionEntry,
-    deleteCollectionEntry,
-  } = useCollectionsStore();
-  const [name, setName] = useState<string>("");
-
-  const handleClick = (id: string) => {
-    createCollectionEntry({
-      collectionId: id,
-      input: {
-        item: {
-          name,
-          path: `/requests`,
-          configuration: {
-            request: {
-              http: {
-                requestParts: {
-                  method: "GET",
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  };
-  const handleClickToDir = (id: string) => {
-    createCollectionEntry({
-      collectionId: id,
-      input: {
-        dir: {
-          name,
-          path: `/requests`,
-          configuration: {
-            request: {
-              http: {},
-            },
-          },
-        },
-      },
-    });
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <input
-        className="w-full border-2 border-dashed border-gray-300"
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <div className={cn("flex gap-2")}>
-        <div>loading: {areCollectionsStreaming.toString()}</div>
-        <div>Entries loading: {areCollectionEntriesStreaming.toString()}</div>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {streamedCollections?.map((collection) => (
-          <React.Fragment key={collection.id}>
-            <ButtonPrimary onClick={() => handleClick(collection.id)}>add to "{collection.name}"</ButtonPrimary>
-            <ButtonPrimary onClick={() => handleClickToDir(collection.id)}>
-              add dir to "{collection.name}"
-            </ButtonPrimary>
-          </React.Fragment>
-        ))}
-      </div>
-
-      <div>
-        {streamedCollectionEntries?.map((entry) => (
-          <ButtonPrimary
-            key={entry.id}
-            onClick={() => {
-              deleteCollectionEntry({
-                collectionId: "7e353d76-8894-4007-a6da-2c96d9951eb7",
-                input: { id: entry.id, path: entry.path },
-              });
-            }}
-          >
-            delete {entry.path}
-          </ButtonPrimary>
-        ))}
-      </div>
-      {/* <code>{JSON.stringify(streamedCollectionEntries, null, 2)}</code> */}
     </div>
   );
 };
