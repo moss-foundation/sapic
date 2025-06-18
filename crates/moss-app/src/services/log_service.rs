@@ -183,7 +183,10 @@ impl LogService {
                 OperationError::InvalidInput("The input timestamp is invalid".to_string())
             })?;
         {
-            let mut applog_queue_lock = self.applog_queue.lock().expect("Mutex poisoned");
+            let mut applog_queue_lock = self
+                .applog_queue
+                .lock()
+                .map_err(|_| OperationError::Internal("Mutex poisoned".to_string()))?;
             let idx = applog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -194,7 +197,10 @@ impl LogService {
             }
         }
         {
-            let mut sessionlog_queue_lock = self.sessionlog_queue.lock().expect("Mutex poisoned");
+            let mut sessionlog_queue_lock = self
+                .sessionlog_queue
+                .lock()
+                .map_err(|_| OperationError::Internal("Mutex poisoned".to_string()))?;
             let idx = sessionlog_queue_lock.iter().position(|x| x.id == input.id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
