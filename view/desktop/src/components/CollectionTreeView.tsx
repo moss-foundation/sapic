@@ -3,12 +3,14 @@ import "@repo/moss-tabs/assets/styles.css";
 import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
+import { useCreateCollectionEntry } from "@/hooks/collection/useCreateCollectionEntry";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { cn, swapListById } from "@/utils";
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import ButtonPrimary from "./ButtonPrimary";
 import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
 import { getActualDropSourceTarget } from "./CollectionTree/utils";
 
@@ -18,7 +20,7 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollection } = useCollectionsStore();
+  const { collections, setCollections, updateCollection, streamedCollections, isBeingStreamed } = useCollectionsStore();
 
   useEffect(() => {
     const element = dropTargetToggleRef.current;
@@ -126,6 +128,8 @@ export const CollectionTreeView = () => {
             ))}
           </div>
 
+          <TestStreamedCollections />
+
           {showCollectionCreationZone && (
             <div className="flex justify-end p-2">
               <CollectionCreationZone />
@@ -133,6 +137,42 @@ export const CollectionTreeView = () => {
           )}
         </div>
       </Scrollbar>
+    </div>
+  );
+};
+
+const TestStreamedCollections = () => {
+  const { streamedCollections, isBeingStreamed } = useCollectionsStore();
+  const { mutate: createCollectionEntry } = useCreateCollectionEntry();
+
+  const handleClick = (id: string) => {
+    createCollectionEntry({
+      collectionId: id,
+      input: {
+        item: {
+          name: "New Collection",
+          path: `${id}/testPath`,
+          configuration: {
+            Request: {},
+          },
+        },
+      },
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div>loading: {isBeingStreamed.toString()}</div>
+      <div className="flex flex-col gap-2">
+        {streamedCollections?.map((collection) => (
+          <ButtonPrimary key={collection.id} onClick={() => handleClick(collection.id)}>
+            add to "{collection.name}"
+          </ButtonPrimary>
+        ))}
+      </div>
+
+      {/* <div>{streamedCollections?.map((collection) => <div key={collection.id}>{collection.name}</div>)}</div> */}
+      <code>{JSON.stringify(streamedCollections, null, 2)}</code>
     </div>
   );
 };
