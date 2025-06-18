@@ -9,14 +9,14 @@ use crate::models::{
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct HttpRequestParts {
     pub method: HttpMethod,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct HttpRequestItemConfiguration {
     pub request_parts: HttpRequestParts,
@@ -31,19 +31,19 @@ pub enum RequestItemConfigurationModel {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum EndpointItemConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ComponentItemConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum SchemaItemConfigurationModel {}
 
@@ -58,7 +58,7 @@ pub enum ItemConfigurationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub struct CompositeItemConfigurationModel {
     pub metadata: ConfigurationMetadata,
     #[serde(flatten)]
