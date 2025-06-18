@@ -23,8 +23,7 @@ pub struct HttpRequestItemConfiguration {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum RequestItemConfigurationModel {
     Http(HttpRequestItemConfiguration),
@@ -49,7 +48,7 @@ pub enum ComponentItemConfigurationModel {}
 pub enum SchemaItemConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ItemConfigurationModel {
     Request(RequestItemConfigurationModel),
