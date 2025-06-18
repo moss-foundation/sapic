@@ -41,10 +41,12 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
+    pub repo: Option<String>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
+    pub repo: Option<String>,
 }
 
 impl Collection {
@@ -109,6 +111,7 @@ impl Collection {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+                repo: params.repo,
             },
         )
         .await?;
@@ -136,10 +139,11 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() {
+        if params.name.is_some() || params.repo.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
-                    name: params.name.to_owned(),
+                    name: params.name,
+                    repo: params.repo,
                 })
                 .await?;
         }

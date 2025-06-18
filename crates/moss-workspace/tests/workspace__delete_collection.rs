@@ -18,6 +18,7 @@ async fn delete_collection_success() {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
+                repo: None,
             },
         )
         .await
@@ -53,6 +54,7 @@ async fn delete_collection_nonexistent_id() {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
+                repo: None,
             },
         )
         .await
@@ -86,6 +88,7 @@ async fn delete_collection_fs_already_deleted() {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
+                repo: None,
             },
         )
         .await

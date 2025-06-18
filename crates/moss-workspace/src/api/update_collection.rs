@@ -30,11 +30,12 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        if let Some(new_name) = input.new_name {
+        if input.new_name.is_some() || input.new_repo.is_some() {
             let item_lock = item.write().await;
             item_lock
                 .modify(collection::ModifyParams {
-                    name: Some(new_name.clone()),
+                    name: input.new_name,
+                    repo: input.new_repo,
                 })
                 .await
                 .map_err(|e| OperationError::Internal(e.to_string()))?;

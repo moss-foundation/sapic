@@ -61,6 +61,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 name: Some(input.name.to_owned()),
                 internal_abs_path: &abs_path,
                 external_abs_path: input.external_path.as_deref(),
+                repo: input.repo.to_owned(),
             },
         )
         .await

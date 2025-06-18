@@ -22,6 +22,7 @@ async fn create_collection_success() {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
+                repo: None,
             },
         )
         .await;
@@ -67,6 +68,7 @@ async fn create_collection_empty_name() {
                 name: collection_name.clone(),
                 order: None,
                 external_path: None,
+                repo: None,
             },
         )
         .await;
@@ -101,6 +103,7 @@ async fn create_collection_special_chars() {
                     name: collection_name.clone(),
                     order: None,
                     external_path: None,
+                    repo: None,
                 },
             )
             .await;
@@ -145,6 +148,7 @@ async fn create_collection_with_order() {
                 name: collection_name.clone(),
                 order: Some(42),
                 external_path: None,
+                repo: None,
             },
         )
         .await;
@@ -176,6 +180,41 @@ async fn create_collection_with_order() {
             external_abs_path: None
         }
     );
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_collection_with_repo() {
+    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+
+    let collection_name = random_collection_name();
+    let repo = "https://github.com/moss-foundation/sapic.git".to_string();
+    let create_collection_result = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+                repo: Some(repo.clone()),
+            },
+        )
+        .await;
+
+    assert!(create_collection_result.is_ok());
+
+    let create_collection_output = create_collection_result.unwrap();
+    let collections = workspace.collections(&ctx).await.unwrap();
+
+    assert_eq!(collections.len(), 1);
+
+    // Verify the directory was created
+    assert!(create_collection_output.abs_path.exists());
+
+    // Verify that the repo is stored in the manifest model
+    let collection = collections.iter().next().unwrap().1.read().await;
+    assert_eq!(collection.manifest().await.repo, Some(repo.clone()));
 
     cleanup().await;
 }

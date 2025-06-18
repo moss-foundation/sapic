@@ -25,6 +25,9 @@ pub struct CreateCollectionInput {
 
     #[ts(optional)]
     pub external_path: Option<PathBuf>,
+
+    #[ts(optional)]
+    pub repo: Option<String>,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -32,7 +35,6 @@ pub struct CreateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub id: Uuid,
-
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,
@@ -46,6 +48,8 @@ pub struct UpdateCollectionInput {
 
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
+
+    pub new_repo: Option<String>,
 
     #[ts(optional)]
     pub order: Option<usize>,
