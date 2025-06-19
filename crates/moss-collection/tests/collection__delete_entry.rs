@@ -63,7 +63,7 @@ async fn delete_entry_success() {
     };
 
     let result = collection.delete_entry(delete_input).await;
-    assert!(result.is_ok());
+    let _ = result.unwrap();
 
     // Verify the directory was removed
     assert!(!expected_dir.exists());
@@ -127,7 +127,7 @@ async fn delete_entry_with_subdirectories() {
     };
 
     let result = collection.delete_entry(delete_input).await;
-    assert!(result.is_ok());
+    let _ = result.unwrap();
 
     // Verify the entire directory tree was removed
     assert!(!entry_dir.exists());
@@ -163,7 +163,7 @@ async fn delete_multiple_entries() {
     };
 
     let result1 = collection.delete_entry(delete_input1).await;
-    assert!(result1.is_ok());
+    let _ = result1.unwrap();
 
     // Verify first entry was removed, second still exists
     assert!(!expected_dir1.exists());
@@ -176,7 +176,7 @@ async fn delete_multiple_entries() {
     };
 
     let result2 = collection.delete_entry(delete_input2).await;
-    assert!(result2.is_ok());
+    let _ = result2.unwrap();
 
     // Verify both entries are now removed
     assert!(!expected_dir1.exists());
@@ -205,7 +205,7 @@ async fn delete_entry_twice() {
     };
 
     let result1 = collection.delete_entry(delete_input.clone()).await;
-    assert!(result1.is_ok());
+    let _ = result1.unwrap();
 
     // Verify the directory was removed
     assert!(!expected_dir.exists());
@@ -265,7 +265,7 @@ async fn delete_entries_from_different_directories() {
         };
 
         let result = collection.delete_entry(delete_input).await;
-        assert!(result.is_ok(), "Failed to delete entry at {:?}", entry_path);
+        let _ = result.expect(&format!("Failed to delete entry at {:?}", entry_path));
 
         // Verify the directory was removed
         let expected_dir = collection_path.join(entry_path);

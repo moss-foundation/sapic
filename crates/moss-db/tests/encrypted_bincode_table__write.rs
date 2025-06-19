@@ -13,7 +13,7 @@ fn write_success() {
     {
         let mut write = client.begin_write().unwrap();
         let result = table.write(&mut write, "1".to_string(), &1, TEST_PASSWORD_1, TEST_AAD_1);
-        assert!(result.is_ok());
+        let _ = result.unwrap();
         write.commit().unwrap();
     }
 
@@ -46,7 +46,7 @@ fn write_overwrite() {
         // Overwrite existing key
         let mut write = client.begin_write().unwrap();
         let result = table.write(&mut write, "1".to_string(), &2, TEST_PASSWORD_1, TEST_AAD_1);
-        assert!(result.is_ok());
+        let _ = result.unwrap();
         write.commit().unwrap();
     }
 

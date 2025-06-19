@@ -88,8 +88,6 @@ async fn create_dir_entry_with_order() {
     });
 
     let result = collection.create_entry(input).await;
-    assert!(result.is_ok());
-
     let output = result.unwrap();
     assert!(!output.id.is_nil());
 
@@ -117,7 +115,7 @@ async fn create_dir_entry_already_exists() {
 
     // Create the entry first time - should succeed
     let first_result = collection.create_entry(input.clone()).await;
-    assert!(first_result.is_ok());
+    let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
     let second_result = collection.create_entry(input).await;

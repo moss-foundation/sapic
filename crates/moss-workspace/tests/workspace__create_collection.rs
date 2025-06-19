@@ -26,8 +26,6 @@ async fn create_collection_success() {
         )
         .await;
 
-    assert!(create_collection_result.is_ok());
-
     let create_collection_output = create_collection_result.unwrap();
     let collections = workspace.collections(&ctx).await.unwrap();
 
@@ -104,7 +102,6 @@ async fn create_collection_special_chars() {
                 },
             )
             .await;
-        assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
         let collections = workspace.collections(&ctx).await.unwrap();
@@ -148,8 +145,6 @@ async fn create_collection_with_order() {
             },
         )
         .await;
-
-    assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
     let collections = workspace.collections(&ctx).await.unwrap();

@@ -36,7 +36,7 @@ async fn rename_collection_success() {
         )
         .await;
 
-    assert!(result.is_ok());
+    let _ = result.unwrap();
 
     cleanup().await;
 }
@@ -109,7 +109,7 @@ async fn rename_collection_unchanged() {
         )
         .await;
 
-    assert!(rename_collection_result.is_ok());
+    let _ = rename_collection_result.unwrap();
 
     cleanup().await;
 }

@@ -27,7 +27,7 @@ async fn delete_collection_success() {
     let delete_collection_result = workspace
         .delete_collection(&ctx, &DeleteCollectionInput { id })
         .await;
-    assert!(delete_collection_result.is_ok());
+    let _ = delete_collection_result.unwrap();
 
     // Check updating collections
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -105,7 +105,7 @@ async fn delete_collection_fs_already_deleted() {
             },
         )
         .await;
-    assert!(delete_collection_result.is_ok());
+    let _ = delete_collection_result.unwrap();
 
     // Check collections are updated
     let collections = workspace.collections(&ctx).await.unwrap();
