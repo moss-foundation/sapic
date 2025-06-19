@@ -74,7 +74,7 @@ impl<R: TauriRuntime> Workbench<R> {
         Self {
             activity_indicator: ActivityIndicator::new(app_handle),
             active_workspace: RwLock::new(None),
-            known_workspaces: OnceCell::new(),
+            known_workspaces: OnceCell::new().take(),
             global_storage,
             options,
         }
@@ -92,7 +92,12 @@ impl<R: TauriRuntime> Workbench<R> {
         }
     }
 
-    pub async fn workspace(&self) -> RwLockReadGuard<'_, Workspace<R>> {
+    pub async fn workspace(
+        &self,
+    ) -> (
+        RwLockReadGuard<'_, Workspace<R>>,
+        RwLockReadGuard<'_, WorkspaceContextState>,
+    ) {
         let r = self.active_workspace.as_ref().unwrap();
         r.inner.read().await
     }
