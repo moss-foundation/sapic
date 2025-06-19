@@ -11,6 +11,16 @@ r"#\[.*test\]" as $directive where {
         $decl <: not `$_ fn $_($_) {$_}`
     }
 }
+```
 
+## Test Cases
+
+```rust
+#[test]
+fn correct_case() {}
+
+#[test]
+// Nothing allowed here
+fn incorrect_case() {}
 
 ```
