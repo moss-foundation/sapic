@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useActivityEvents, ONESHOT_CLEANUP_DELAY, DEFAULT_DISPLAY_DURATION } from "@/context/ActivityEventsContext";
-import { ActivityEvent } from "@repo/moss-workbench";
+import React, { useEffect, useRef, useState } from "react";
+
+import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY, useActivityEvents } from "@/context/ActivityEventsContext";
+import { ActivityEvent } from "@repo/moss-activity-indicator";
 
 interface ActivityEventSimulatorProps {
   className?: string;

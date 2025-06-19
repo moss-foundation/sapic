@@ -1,6 +1,6 @@
 import { getAllInvalidTokens } from "../utils/getAllInvalidTokens.js";
 
-const ANY_TW_CLASS_WITH_ARBITRARY_VALUE_AND_SQUARE_BRACKETS = /\b[a-zA-Z-]+-\[--[a-zA-Z-]+\]/g;
+const ANY_TW_CLASS_WITH_ARBITRARY_VALUE_AND_SQUARE_BRACKETS = /\b[\p{L}\-:]+-\[--[\p{L}\-]+\]/gu;
 
 const fixArbitraryValue = (className) => {
   return className.replace("-[", "-(").replace("]", ")");
