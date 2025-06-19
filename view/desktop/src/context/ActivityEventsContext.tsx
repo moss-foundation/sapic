@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 
-import { ActivityEvent } from "@repo/moss-workbench";
+import { ActivityEvent } from "@repo/moss-activity-indicator";
 import { listen } from "@tauri-apps/api/event";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events

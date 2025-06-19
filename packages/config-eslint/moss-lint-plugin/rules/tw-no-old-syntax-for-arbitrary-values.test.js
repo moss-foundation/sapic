@@ -42,5 +42,29 @@ ruleTester.run("tw-no-old-syntax-for-arbitrary-values", rule, {
       errors: [{ messageId: "replaceOldSyntax" }],
       output: `<div className="hover:bg-(--custom-bg)"></div>`,
     },
+    {
+      name: "Invalid selector in string with cyrillic letters",
+      code: `<div className="bg-[--custom-Юг]"></div>`,
+      errors: [{ messageId: "replaceOldSyntax" }],
+      output: `<div className="bg-(--custom-Юг)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with arabic letters",
+      code: `<div className="bg-[--custom-رائيل]"></div>`,
+      errors: [{ messageId: "replaceOldSyntax" }],
+      output: `<div className="bg-(--custom-رائيل)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with chinese letters",
+      code: `<div className="bg-[--custom-北京市]"></div>`,
+      errors: [{ messageId: "replaceOldSyntax" }],
+      output: `<div className="bg-(--custom-北京市)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with german letters",
+      code: `<div className="bg-[--custom-Düsseldorf]"></div>`,
+      errors: [{ messageId: "replaceOldSyntax" }],
+      output: `<div className="bg-(--custom-Düsseldorf)"></div>`,
+    },
   ],
 });
