@@ -5,9 +5,15 @@ edition = "2024"
 
 [dependencies]
 tauri.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["full"] }
 anyhow.workspace = true
 rustc-hash.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+futures.workspace = true
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
 
 [features]
+default = []
 test = ["tauri/test"]

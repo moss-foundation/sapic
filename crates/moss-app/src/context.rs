@@ -1,4 +1,5 @@
 use moss_applib::{Global, context::Context, task::Task};
+use moss_workspace::context::WorkspaceContext;
 use std::{any::Any, future::Future, ops::Deref, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 

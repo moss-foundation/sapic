@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use moss_applib::{
-    Event,
-    subscription::{Emitter, Subscription},
+    AnyEvent,
+    subscription::{Event, EventEmitter, ListenerFuture, Subscription},
 };
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
@@ -27,11 +27,12 @@ pub struct EnvironmentItem {
 
 type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
 
+#[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
     Toggled(bool),
 }
 
-impl Event for OnDidChangeEvent {}
+impl AnyEvent for OnDidChangeEvent {}
 
 pub struct Collection {
     #[allow(dead_code)]
@@ -46,7 +47,7 @@ pub struct Collection {
     #[allow(dead_code)]
     config: TomlFileHandle<ConfigModel>,
 
-    on_did_change: Emitter<OnDidChangeEvent>,
+    on_did_change: EventEmitter<OnDidChangeEvent>,
 }
 
 pub struct CreateParams<'a> {
@@ -59,13 +60,9 @@ pub struct ModifyParams {
     pub name: Option<String>,
 }
 
+#[rustfmt::skip]
 impl Collection {
-    pub fn on_did_change(
-        &self,
-        callback: impl Fn(&OnDidChangeEvent) + Send + Sync + 'static,
-    ) -> Subscription<OnDidChangeEvent> {
-        self.on_did_change.subscribe(callback)
-    }
+    pub fn on_did_change(&self) -> Event<OnDidChangeEvent> { self.on_did_change.event() }
 }
 
 impl Collection {
@@ -95,7 +92,7 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
-            on_did_change: Emitter::new(),
+            on_did_change: EventEmitter::new(),
         })
     }
 
@@ -154,7 +151,7 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
-            on_did_change: Emitter::new(),
+            on_did_change: EventEmitter::new(),
         })
     }
 

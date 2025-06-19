@@ -1,13 +1,16 @@
 use anyhow::Result;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::context::Context;
+use moss_applib::context::{AnyAppContext, Context};
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
 };
-use moss_workspace::Workspace;
+use moss_workspace::{
+    Workspace,
+    context::{WorkspaceContext, WorkspaceContextState},
+};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -34,7 +37,7 @@ pub struct ActiveWorkspace<R: TauriRuntime> {
     pub id: Uuid,
     #[deref]
     #[deref_mut]
-    pub inner: Workspace<R>,
+    inner: RwLock<(Workspace<R>, WorkspaceContextState)>,
 }
 
 #[derive(Deref)]
@@ -54,8 +57,9 @@ pub struct Options {
 }
 
 pub struct Workbench<R: TauriRuntime> {
+    app_handle: AppHandle<R>,
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
+    pub(super) active_workspace: Option<ActiveWorkspace<R>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(super) global_storage: Arc<dyn GlobalStorage>,
     pub(crate) options: Options,
@@ -88,15 +92,26 @@ impl<R: TauriRuntime> Workbench<R> {
         }
     }
 
-    pub async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+    pub async fn workspace(&self) -> RwLockReadGuard<'_, Workspace<R>> {
+        let r = self.active_workspace.as_ref().unwrap();
+        r.inner.read().await
+    }
+
+    pub(super) async fn activate_workspace<C: AnyAppContext<R>>(
+        &self,
+        ctx: &C,
+        id: Uuid,
+        workspace: Workspace<R>,
+    ) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
             id,
             inner: workspace,
+            context: WorkspaceContext::new(ctx.app_handle()),
         });
     }
 
-    pub async fn deactivate_workspace(&self) {
+    pub(super) async fn deactivate_workspace(&self) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = None;
     }

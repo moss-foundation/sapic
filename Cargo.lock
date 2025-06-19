@@ -2915,6 +2915,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "moss_workbench",
+ "moss_workspace",
  "nanoid",
  "parking_lot",
  "rustc-hash",
@@ -2935,6 +2936,8 @@ name = "moss_applib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "derive_more 2.0.1",
+ "futures",
  "rustc-hash",
  "tauri",
  "tokio",
@@ -3175,6 +3178,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "arc-swap",
+ "async-trait",
  "chrono",
  "derive_more 2.0.1",
  "futures",
@@ -3189,6 +3193,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tauri",

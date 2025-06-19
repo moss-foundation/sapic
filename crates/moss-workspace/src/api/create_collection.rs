@@ -1,9 +1,4 @@
 use anyhow::Context as _;
-use moss_applib::{
-    Event,
-    context::Context,
-    subscription::{Subscription, SubscriptionSet},
-};
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
@@ -22,24 +17,15 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
+    context::{AnyWorkspaceContext, Subscribe},
     dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
     storage::segments::COLLECTION_SEGKEY,
     workspace::{CollectionItem, Workspace},
 };
 
-pub struct WorkspaceContext {
-    subscriptions: SubscriptionSet<Uuid>,
-}
-
-impl WorkspaceContext {
-    pub fn subscribe<T: Event>(&self, s: Subscription<T>) {
-        self.subscriptions.insert(s);
-    }
-}
-
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn create_collection<C: Context<R>>(
+    pub async fn create_collection<C: AnyWorkspaceContext<R>>(
         &mut self,
         ctx: &C,
         input: &CreateCollectionInput,
@@ -80,9 +66,11 @@ impl<R: TauriRuntime> Workspace<R> {
         .await
         .map_err(|e| OperationError::Internal(e.to_string()))?;
 
-        collection.on_did_change(|event| {
-            dbg!(event);
+        let on_did_change = collection.on_did_change().subscribe(|_event| async move {
+            // TODO: Save in the database whether the collection was collapsed/expanded
         });
+        ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
+            .await;
 
         collections.insert(
             id,

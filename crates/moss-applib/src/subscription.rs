@@ -1,18 +1,22 @@
+use derive_more::{Deref, DerefMut};
+use futures::{FutureExt, future::BoxFuture};
 use rustc_hash::FxHashMap;
 use std::{
     any::TypeId,
     hash::Hash,
-    sync::{Arc, Mutex, RwLock, Weak},
+    panic::AssertUnwindSafe,
+    sync::{Arc, Mutex, Weak},
 };
+use tauri::Runtime;
 
-use crate::Event;
+use crate::AnyEvent;
 
 pub trait AnySubscription {
     fn type_id(&self) -> TypeId;
     fn unsubscribe(&self);
 }
 
-impl<T: Event> AnySubscription for Subscription<T> {
+impl<T: AnyEvent> AnySubscription for Subscription<T> {
     fn type_id(&self) -> TypeId {
         TypeId::of::<T>()
     }
@@ -22,45 +26,40 @@ impl<T: Event> AnySubscription for Subscription<T> {
     }
 }
 
-pub struct SubscriptionSet<Key>
+#[derive(Default, Deref, DerefMut)]
+pub struct SubscriptionSet<Key, E>
 where
     Key: Hash + Eq,
+    E: AnyEvent,
 {
-    subscriptions: RwLock<FxHashMap<Key, Vec<Box<dyn AnySubscription>>>>,
+    inner: FxHashMap<Key, Subscription<E>>,
 }
 
-impl<Key> SubscriptionSet<Key>
+impl<Key, E> SubscriptionSet<Key, E>
 where
     Key: Hash + Eq,
+    E: AnyEvent,
 {
-    pub fn insert(&self, key: Key, s: impl AnySubscription + 'static) {
-        let mut subscriptions_lock = self.subscriptions.write().unwrap();
-        subscriptions_lock
-            .entry(key)
-            .or_insert_with(Vec::new)
-            .push(Box::new(s));
-    }
-
-    pub fn remove(&self, key: Key, type_id: Option<TypeId>) {
-        let mut subscriptions_lock = self.subscriptions.write().unwrap();
-        if let Some(type_id) = type_id {
-            if let Some(subscriptions) = subscriptions_lock.get_mut(&key) {
-                subscriptions.retain(|s| s.type_id() != type_id);
-            }
-        } else {
-            subscriptions_lock.remove(&key);
+    pub fn new() -> Self {
+        Self {
+            inner: FxHashMap::default(),
         }
     }
 }
 
-type Listener<T> = Arc<dyn Fn(&T) + Send + Sync + 'static>;
+pub type ListenerFuture = BoxFuture<'static, ()>;
+type Listener<T> = Arc<dyn Fn(T) -> ListenerFuture + Send + Sync + 'static>;
 
-pub struct Subscription<T: Event> {
-    emitter: Weak<Mutex<EmitterState<T>>>,
+pub struct Subscription<T: AnyEvent> {
+    emitter: Weak<Mutex<EventEmitterState<T>>>,
     id: usize,
 }
 
-impl<T: Event> Subscription<T> {
+impl<T: AnyEvent> Subscription<T> {
+    pub fn type_id(&self) -> TypeId {
+        TypeId::of::<T>()
+    }
+
     pub fn unsubscribe(&self) {
         if let Some(state) = self.emitter.upgrade() {
             state.lock().unwrap().listeners.remove(&self.id);
@@ -68,39 +67,74 @@ impl<T: Event> Subscription<T> {
     }
 }
 
-impl<T: Event> Drop for Subscription<T> {
+impl<T: AnyEvent> Drop for Subscription<T> {
     fn drop(&mut self) {
         self.unsubscribe();
     }
 }
 
-struct EmitterState<T> {
+pub struct Event<T> {
+    state: Arc<Mutex<EventEmitterState<T>>>,
+}
+
+impl<T: AnyEvent> Event<T> {
+    pub fn subscribe<F, Fut>(&self, f: F) -> Subscription<T>
+    where
+        F: Fn(T) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = ()> + Send + 'static,
+        T: Clone,
+    {
+        let mut state_lock = self.state.lock().unwrap();
+        let id = state_lock.next_id;
+        state_lock.next_id += 1;
+        state_lock
+            .listeners
+            .insert(id, Arc::new(move |event| Box::pin(f(event))));
+
+        Subscription {
+            emitter: Arc::downgrade(&self.state),
+            id,
+        }
+    }
+}
+
+struct EventEmitterState<T> {
     listeners: FxHashMap<usize, Listener<T>>,
     next_id: usize,
 }
 
-pub struct Emitter<T: Event> {
-    state: Arc<Mutex<EmitterState<T>>>,
+pub struct EventEmitter<T: AnyEvent> {
+    state: Arc<Mutex<EventEmitterState<T>>>,
 }
 
-impl<T: Event> Emitter<T> {
+impl<T: AnyEvent> EventEmitter<T> {
     pub fn new() -> Self {
         Self {
-            state: Arc::new(Mutex::new(EmitterState {
+            state: Arc::new(Mutex::new(EventEmitterState {
                 listeners: FxHashMap::default(),
                 next_id: 0,
             })),
         }
     }
 
-    pub fn subscribe<F>(&self, f: F) -> Subscription<T>
+    pub fn event(&self) -> Event<T> {
+        Event {
+            state: self.state.clone(),
+        }
+    }
+
+    pub fn subscribe<F, Fut>(&self, f: F) -> Subscription<T>
     where
-        F: Fn(&T) + Send + Sync + 'static,
+        F: Fn(T) -> Fut + Send + Sync + 'static,
+        Fut: std::future::Future<Output = ()> + Send + 'static,
+        T: Clone,
     {
         let mut state_lock = self.state.lock().unwrap();
         let id = state_lock.next_id;
         state_lock.next_id += 1;
-        state_lock.listeners.insert(id, Arc::new(f));
+        state_lock
+            .listeners
+            .insert(id, Arc::new(move |event| Box::pin(f(event))));
 
         Subscription {
             emitter: Arc::downgrade(&self.state),
@@ -108,14 +142,21 @@ impl<T: Event> Emitter<T> {
         }
     }
 
-    pub fn fire(&self, value: T) {
+    pub async fn fire(&self, value: T)
+    where
+        T: Clone,
+    {
         let listeners = {
             let state_lock = self.state.lock().unwrap();
             state_lock.listeners.values().cloned().collect::<Vec<_>>()
         };
 
         for listener in listeners {
-            listener(&value);
+            let future = listener(value.clone());
+            let wrapped_future = AssertUnwindSafe(future);
+            if let Err(err) = wrapped_future.catch_unwind().await {
+                eprintln!("Listener panicked: {:?}", err);
+            }
         }
     }
 }
@@ -124,28 +165,33 @@ impl<T: Event> Emitter<T> {
 mod tests {
     use super::*;
 
+    #[derive(Clone)]
     pub struct TestEvent {
         pub value: String,
     }
 
-    impl Event for TestEvent {}
+    impl AnyEvent for TestEvent {}
 
-    #[test]
-    fn test_emitter() {
-        let emitter: Emitter<TestEvent> = Emitter::new();
+    #[tokio::test]
+    async fn test_emitter() {
+        let emitter: EventEmitter<TestEvent> = EventEmitter::new();
 
-        let subscription = emitter.subscribe(|event: &TestEvent| {
+        let subscription = emitter.subscribe(|event: TestEvent| async move {
             println!("Received event: {}", event.value);
         });
 
-        emitter.fire(TestEvent {
-            value: "Hello, world!".to_string(),
-        });
+        emitter
+            .fire(TestEvent {
+                value: "Hello, world!".to_string(),
+            })
+            .await;
 
         drop(subscription);
 
-        emitter.fire(TestEvent {
-            value: "2nd event!".to_string(),
-        });
+        emitter
+            .fire(TestEvent {
+                value: "2nd event!".to_string(),
+            })
+            .await;
     }
 }

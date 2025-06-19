@@ -1,11 +1,14 @@
 use moss_app::{app::App, context::AppContext};
 use moss_common::api::OperationOptionExt;
 use moss_tauri::{TauriError, TauriResult};
-use moss_workspace::models::{
-    events::{StreamCollectionsEvent, StreamEnvironmentsEvent},
-    operations::{
-        CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
-        DeleteCollectionOutput, DescribeStateOutput, UpdateStateInput,
+use moss_workspace::{
+    context::WorkspaceContext,
+    models::{
+        events::{StreamCollectionsEvent, StreamEnvironmentsEvent},
+        operations::{
+            CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
+            DeleteCollectionOutput, DescribeStateOutput, UpdateStateInput,
+        },
     },
 };
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
@@ -119,7 +122,7 @@ pub async fn create_collection<R: TauriRuntime>(
             .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
         workspace
-            .create_collection(&ctx, &input)
+            .create_collection(&WorkspaceContext::from(ctx), &input)
             .await
             .map_err(TauriError::OperationError)
     })
