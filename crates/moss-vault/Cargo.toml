@@ -7,6 +7,4 @@ edition = "2024"
 moss_app.workspace = true
 moss_db.workspace = true
 
-redb.workspace = true
-anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
