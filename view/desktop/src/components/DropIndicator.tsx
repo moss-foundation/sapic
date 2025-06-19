@@ -16,7 +16,7 @@ export const DropIndicator = ({
       gap={gap}
       strokeSize={strokeSize}
       terminalSize={terminalSize}
-      className={cn("text-(--moss-primary)", className)}
+      className={cn("text-(--moss-primarxy)", className)}
     />
   );
 };
