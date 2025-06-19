@@ -39,7 +39,8 @@ impl Collection {
 
         self.worktree()
             .create_entry(
-                &path.join(&name),
+                &path,
+                &name,
                 is_dir,
                 toml::to_string(&configuration)?.as_bytes(),
             )

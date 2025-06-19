@@ -31,7 +31,7 @@ async fn create_test_entry(
     entry_name: &str,
     dir_name: &str,
 ) -> (Uuid, PathBuf) {
-    let entry_path = PathBuf::from(dir_name).join(entry_name);
+    let entry_path = PathBuf::from(dir_name);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
