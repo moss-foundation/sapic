@@ -1,15 +1,17 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::collection::{self};
+use moss_collection::collection::{self, IconModification};
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 
-use tauri::Runtime as TauriRuntime;
-use validator::Validate;
-
 use crate::{
-    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
+    models::operations::{UpdateCollectionInput, UpdateCollectionOutput, UpdateIconInput},
     workspace::Workspace,
 };
+use moss_collection::{
+    ICON_NAME, ICON_SIZE, dirs::ASSETS_DIR, services::image_upload::ImageUploadService,
+};
+use tauri::Runtime as TauriRuntime;
+use validator::Validate;
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
@@ -30,12 +32,20 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        if input.new_name.is_some() || input.new_repo.is_some() {
+        if input.new_name.is_some()
+            || input.new_repo.is_some()
+            || !matches!(input.new_icon, UpdateIconInput::Nochange)
+        {
             let item_lock = item.write().await;
             item_lock
                 .modify(collection::ModifyParams {
                     name: input.new_name,
                     repo: input.new_repo,
+                    icon: match input.new_icon {
+                        UpdateIconInput::Nochange => IconModification::Nochange,
+                        UpdateIconInput::Update(path) => IconModification::Update(path),
+                        UpdateIconInput::Remove => IconModification::Remove,
+                    },
                 })
                 .await
                 .map_err(|e| OperationError::Internal(e.to_string()))?;

@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
     collections::HashMap,
@@ -52,9 +52,16 @@ pub struct CreateParams<'a> {
     pub icon_path: Option<PathBuf>,
 }
 
+pub enum IconModification {
+    Nochange,
+    Update(PathBuf),
+    Remove,
+}
+
 pub struct ModifyParams {
     pub name: Option<String>,
     pub repo: Option<String>,
+    pub icon: IconModification,
 }
 
 impl Collection {
@@ -164,6 +171,28 @@ impl Collection {
                     repo: params.repo,
                 })
                 .await?;
+        }
+
+        match params.icon {
+            IconModification::Nochange => {}
+            IconModification::Update(new_icon_path) => {
+                ImageUploadService::upload_icon(
+                    &new_icon_path,
+                    &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                    ICON_SIZE,
+                )?;
+            }
+            IconModification::Remove => {
+                self.fs
+                    .remove_file(
+                        &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                        RemoveOptions {
+                            recursive: false,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
+            }
         }
 
         Ok(())

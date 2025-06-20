@@ -1,5 +1,6 @@
 pub mod shared;
 
+use moss_collection::{ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_storage::{
     storage::operations::{GetItem, ListByPrefix},
@@ -8,7 +9,7 @@ use moss_storage::{
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
 
-use crate::shared::{collection_key, setup_test_workspace};
+use crate::shared::{collection_key, generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -23,11 +24,10 @@ async fn create_collection_success() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await;
-
-    assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -69,6 +69,7 @@ async fn create_collection_empty_name() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await;
@@ -104,10 +105,10 @@ async fn create_collection_special_chars() {
                     order: None,
                     external_path: None,
                     repo: None,
+                    icon_path: None,
                 },
             )
             .await;
-        assert!(create_collection_result.is_ok());
 
         let create_collection_output = create_collection_result.unwrap();
         let collections = workspace.collections(&ctx).await.unwrap();
@@ -149,11 +150,10 @@ async fn create_collection_with_order() {
                 order: Some(42),
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await;
-
-    assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -198,11 +198,10 @@ async fn create_collection_with_repo() {
                 order: None,
                 external_path: None,
                 repo: Some(repo.clone()),
+                icon_path: None,
             },
         )
         .await;
-
-    assert!(create_collection_result.is_ok());
 
     let create_collection_output = create_collection_result.unwrap();
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -216,5 +215,40 @@ async fn create_collection_with_repo() {
     let collection = collections.iter().next().unwrap().1.read().await;
     assert_eq!(collection.manifest().await.repo, Some(repo.clone()));
 
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn create_collection_with_icon() {
+    let (ctx, workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+
+    let collection_name = random_collection_name();
+    let input_icon_path = workspace_path.join("test_icon.png");
+    generate_random_icon(&input_icon_path);
+
+    let create_collection_result = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+                repo: None,
+                icon_path: Some(input_icon_path.clone()),
+            },
+        )
+        .await;
+
+    let create_collection_output = create_collection_result.unwrap();
+    let collections = workspace.collections(&ctx).await.unwrap();
+
+    assert_eq!(collections.len(), 1);
+
+    let collection_path = create_collection_output.abs_path;
+    // Verify the directory was created
+    assert!(collection_path.exists());
+
+    // Verify that the icon is stored in the assets folder
+    assert!(collection_path.join(ASSETS_DIR).join(ICON_NAME).exists());
     cleanup().await;
 }

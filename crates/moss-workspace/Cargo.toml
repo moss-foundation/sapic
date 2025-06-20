@@ -29,6 +29,8 @@ toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+image.workspace = true
+rand.workspace = true
 
 [dev-dependencies]
 moss_applib = { workspace = true, features = ["test"] }

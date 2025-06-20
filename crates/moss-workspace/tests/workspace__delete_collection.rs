@@ -19,16 +19,17 @@ async fn delete_collection_success() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
         .unwrap();
 
     let id = create_collection_output.id;
-    let delete_collection_result = workspace
+    let _ = workspace
         .delete_collection(&ctx, &DeleteCollectionInput { id })
-        .await;
-    assert!(delete_collection_result.is_ok());
+        .await
+        .unwrap();
 
     // Check updating collections
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -55,6 +56,7 @@ async fn delete_collection_nonexistent_id() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
@@ -89,6 +91,7 @@ async fn delete_collection_fs_already_deleted() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
@@ -100,15 +103,15 @@ async fn delete_collection_fs_already_deleted() {
         .unwrap();
 
     // Even though filesystem is already deleted, deletion should succeed
-    let delete_collection_result = workspace
+    let _ = workspace
         .delete_collection(
             &ctx,
             &DeleteCollectionInput {
                 id: create_collection_output.id,
             },
         )
-        .await;
-    assert!(delete_collection_result.is_ok());
+        .await
+        .unwrap();
 
     // Check collections are updated
     let collections = workspace.collections(&ctx).await.unwrap();

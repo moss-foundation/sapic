@@ -43,6 +43,15 @@ pub struct CreateCollectionOutput {
     pub abs_path: Arc<Path>,
 }
 
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum UpdateIconInput {
+    Nochange,
+    Update(PathBuf),
+    Remove,
+}
+
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -50,9 +59,13 @@ pub struct UpdateCollectionInput {
     pub id: Uuid,
 
     #[validate(length(min = 1))]
+    #[ts(optional)]
     pub new_name: Option<String>,
 
+    #[ts(optional)]
     pub new_repo: Option<String>,
+
+    pub new_icon: UpdateIconInput,
 
     #[ts(optional)]
     pub order: Option<usize>,

@@ -1,10 +1,13 @@
 pub mod shared;
 
+use moss_collection::{ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
-use moss_workspace::models::operations::{CreateCollectionInput, UpdateCollectionInput};
+use moss_workspace::models::operations::{
+    CreateCollectionInput, UpdateCollectionInput, UpdateIconInput,
+};
 
-use crate::shared::setup_test_workspace;
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_collection_success() {
@@ -19,26 +22,27 @@ async fn rename_collection_success() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
         .unwrap();
 
     let new_collection_name = random_collection_name();
-    let result = workspace
+    let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 new_repo: None,
+                new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
             },
         )
-        .await;
-
-    assert!(result.is_ok());
+        .await
+        .unwrap();
 
     // Verify the manifest is updated
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -61,6 +65,7 @@ async fn rename_collection_empty_name() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
@@ -74,6 +79,7 @@ async fn rename_collection_empty_name() {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 new_repo: None,
+                new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
             },
@@ -101,26 +107,27 @@ async fn rename_collection_unchanged() {
                 order: None,
                 external_path: None,
                 repo: None,
+                icon_path: None,
             },
         )
         .await
         .unwrap();
 
     let new_collection_name = old_collection_name;
-    let rename_collection_result = workspace
+    let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name),
                 new_repo: None,
+                new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
             },
         )
-        .await;
-
-    assert!(rename_collection_result.is_ok());
+        .await
+        .unwrap();
 
     cleanup().await;
 }
@@ -139,6 +146,7 @@ async fn rename_collection_nonexistent_id() {
                 id: nonexistent_id,
                 new_name: Some(random_collection_name()),
                 new_repo: None,
+                new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
             },
@@ -165,25 +173,26 @@ async fn update_collection_repo() {
                 order: None,
                 external_path: None,
                 repo: Some(old_repo.to_string()),
+                icon_path: None,
             },
         )
         .await
         .unwrap();
 
-    let result = workspace
+    let _ = workspace
         .update_collection(
             &ctx,
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: Some(new_repo.to_string()),
+                new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
             },
         )
-        .await;
-
-    assert!(result.is_ok());
+        .await
+        .unwrap();
 
     // Verify the manifest is updated
     let collections = workspace.collections(&ctx).await.unwrap();
@@ -191,5 +200,91 @@ async fn update_collection_repo() {
 
     assert_eq!(collection.manifest().await.repo, Some(new_repo.to_string()));
 
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_collection_new_icon() {
+    let (ctx, workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+    let collection_name = random_collection_name();
+    let create_collection_output = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.to_string(),
+                order: None,
+                external_path: None,
+                repo: None,
+                icon_path: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    let icon_path = workspace_path.join("test_icon.png");
+    generate_random_icon(&icon_path);
+
+    let collection_path = create_collection_output.abs_path;
+
+    let _ = workspace
+        .update_collection(
+            &ctx,
+            UpdateCollectionInput {
+                id: create_collection_output.id,
+                new_name: None,
+                new_repo: None,
+                new_icon: UpdateIconInput::Update(icon_path.clone()),
+                order: None,
+                pinned: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    // Verify the icon is generated
+    assert!(collection_path.join(ASSETS_DIR).join(ICON_NAME).exists());
+
+    cleanup().await;
+}
+
+#[tokio::test]
+async fn update_collection_remove_icon() {
+    let (ctx, workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+    let collection_name = random_collection_name();
+
+    let icon_path = workspace_path.join("test_icon.png");
+    generate_random_icon(&icon_path);
+
+    let create_collection_output = workspace
+        .create_collection(
+            &ctx,
+            &CreateCollectionInput {
+                name: collection_name.clone(),
+                order: None,
+                external_path: None,
+                repo: None,
+                icon_path: Some(icon_path.clone()),
+            },
+        )
+        .await
+        .unwrap();
+
+    let _ = workspace
+        .update_collection(
+            &ctx,
+            UpdateCollectionInput {
+                id: create_collection_output.id,
+                new_name: None,
+                new_repo: None,
+                new_icon: UpdateIconInput::Remove,
+                order: None,
+                pinned: None,
+            },
+        )
+        .await
+        .unwrap();
+
+    // Verify the icon is removed
+    assert!(!workspace_path.join(ASSETS_DIR).join(ICON_NAME).exists());
     cleanup().await;
 }
