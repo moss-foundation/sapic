@@ -31,15 +31,15 @@ impl KeyringClient for KeyringClientImpl {
 mod tests {
     use keyring::Entry;
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_set() {
         let entry = Entry::new("my-service", "my-name").unwrap();
         entry.set_secret("topS3cr3tP4$$w0rd".as_bytes()).unwrap();
     }
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_get() {
         let entry = Entry::new("gitlab_auth_agent", &whoami::username()).unwrap();
         entry.delete_credential().unwrap();

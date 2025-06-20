@@ -7,10 +7,15 @@ level: error
 language rust
 
 `dbg!($_)` as $dbg where {
-    $dbg <: not within `$_ fn $_($_) {$_}` as $fn where {
+    $dbg <: not within $fn where {
         $fn <: after or {
             `#[test]`,
             `#[tokio::test]`,
+        },
+        $fn <: or {
+            `$_ fn $_($_) {$_}`,
+            // Make it handle tests with return type
+            `$_ fn $_($_) -> $_ {$_}`,
         }
     }
 }

@@ -8,7 +8,11 @@ language rust
 
 r"#\[.*test\]" as $directive where {
     $directive <: before $decl where {
-        $decl <: not `$_ fn $_($_) {$_}`
+        $decl <: not or {
+            `$_ fn $_($_) {$_}`,
+            // Make it handle tests with return type
+            `$_ fn $_($_) -> $_ {$_}`,
+        }
     }
 }
 ```
