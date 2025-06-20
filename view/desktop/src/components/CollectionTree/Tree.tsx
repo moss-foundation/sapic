@@ -2,7 +2,7 @@ import { createContext, useEffect, useId, useState } from "react";
 
 import { useCreateNewCollectionFromTreeNodeEvent } from "./hooks/useCreateNewCollectionFromTreeNodeEvent.ts";
 import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
-import { TreeRootNode } from "./TreeRootNode.tsx";
+import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
 import {
   checkIfAllFoldersAreCollapsed,
