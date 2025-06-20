@@ -8,7 +8,6 @@ use crate::{
     services::log_service::{LogFilter, LogService},
 };
 
-// TODO: impl App
 impl<R: TauriRuntime> App<R> {
     pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
         let log_service = self.service::<LogService>();

@@ -1,16 +1,10 @@
 use chrono::DateTime;
-use moss_db::{DatabaseError, primitives::AnyValue};
+use moss_db::primitives::AnyValue;
 use moss_storage::{
     GlobalStorage, primitives::segkey::SegKey, storage::operations::TransactionalPutItem,
 };
 use parking_lot::Mutex;
-use std::{
-    collections::VecDeque,
-    fs::OpenOptions,
-    io::{BufWriter, ErrorKind},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
 
 use crate::{
     models::types::LogEntryInfo,
@@ -41,13 +35,6 @@ impl RollingLogWriter {
     }
 }
 
-fn map_database_error_to_io_error(error: DatabaseError) -> std::io::Error {
-    std::io::Error::new(
-        ErrorKind::Other,
-        format!("Database operation failed: {}", error),
-    )
-}
-
 impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
@@ -67,10 +54,7 @@ impl<'a> std::io::Write for RollingLogWriter {
                     .open(&file_path)?;
                 let mut writer = BufWriter::new(file);
 
-                let mut write_txn = self
-                    .storage
-                    .begin_write()
-                    .map_err(map_database_error_to_io_error)?;
+                let mut txn = self.storage.begin_write()?;
 
                 let log_store = self.storage.log_store();
 
@@ -82,10 +66,9 @@ impl<'a> std::io::Write for RollingLogWriter {
                     let segkey = SegKey::new(&entry.id).to_segkey_buf();
                     let value = AnyValue::serialize(&file_path)?;
 
-                    TransactionalPutItem::put(log_store.as_ref(), &mut write_txn, segkey, value)
-                        .map_err(map_database_error_to_io_error)?;
+                    TransactionalPutItem::put(log_store.as_ref(), &mut txn, segkey, value)?;
                 }
-                write_txn.commit().map_err(map_database_error_to_io_error)?;
+                txn.commit()?;
             } else {
                 // Skip the first entry since its timestamp is invalid
                 queue_lock.pop_front();
