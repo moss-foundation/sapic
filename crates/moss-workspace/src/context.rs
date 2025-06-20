@@ -1,18 +1,18 @@
 use async_trait::async_trait;
 use moss_applib::{
+    Global,
     context::Context,
     subscription::{Subscription, SubscriptionSet},
     task::Task,
 };
 use moss_collection::collection::OnDidChangeEvent;
-use std::{sync::Arc, time::Duration};
+use std::{any::Any, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
 
 use crate::models::primitives::CollectionId;
 
 pub struct WorkspaceContextState {
-    // collection_contexts: FxHashMap<Uuid, CollectionContext>,
     on_collection_did_change: SubscriptionSet<CollectionId, OnDidChangeEvent>,
 }
 
@@ -38,7 +38,7 @@ impl<R: TauriRuntime> WorkspaceContext<R> {
 impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
     fn global<T>(&self) -> tauri::State<'_, T>
     where
-        T: moss_applib::Global + std::any::Any + Send + Sync,
+        T: Global + Any + Send + Sync,
     {
         self.app_handle.state::<T>()
     }
@@ -48,7 +48,7 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         Self: Sized,
         T: Send + 'static,
         E: Send + 'static,
-        Fut: Future<Output = anyhow::Result<T, E>> + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
         F: FnOnce(Self) -> Fut + Send + 'static,
     {
         let fut = callback(WorkspaceContext {
