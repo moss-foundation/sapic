@@ -16,25 +16,22 @@ pub struct WorkspaceContextState {
     on_collection_did_change: SubscriptionSet<CollectionId, OnDidChangeEvent>,
 }
 
-pub struct NewWorkspaceContext<'a, R: TauriRuntime> {
-    app_handle: AppHandle<R>,
-    state: &'a WorkspaceContextState,
+impl WorkspaceContextState {
+    pub fn new() -> Self {
+        Self {
+            on_collection_did_change: SubscriptionSet::new(),
+        }
+    }
 }
 
 pub struct WorkspaceContext<R: TauriRuntime> {
     app_handle: AppHandle<R>,
-    // state: Arc<RwLock<WorkspaceContextState>>,
-    state: WorkspaceContextState,
+    state: Arc<RwLock<WorkspaceContextState>>,
 }
 
 impl<R: TauriRuntime> WorkspaceContext<R> {
-    pub fn new(app_handle: AppHandle<R>) -> Self {
-        Self {
-            app_handle,
-            state: WorkspaceContextState {
-                on_collection_did_change: SubscriptionSet::new(),
-            },
-        }
+    pub fn new(app_handle: AppHandle<R>, state: Arc<RwLock<WorkspaceContextState>>) -> Self {
+        Self { app_handle, state }
     }
 }
 

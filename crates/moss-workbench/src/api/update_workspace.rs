@@ -15,7 +15,7 @@ impl<R: TauriRuntime> Workbench<R> {
         input.validate()?;
 
         let workspaces = self.workspaces(ctx).await?;
-        let mut workspace_guard = self.active_workspace_mut().await;
+        let mut workspace_guard = self.active_workspace.write().await;
         let workspace = workspace_guard
             .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;

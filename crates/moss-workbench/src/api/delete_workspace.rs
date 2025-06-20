@@ -18,22 +18,22 @@ impl<R: TauriRuntime> Workbench<R> {
         let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let workspaces = self.workspaces(ctx).await?;
 
-        let workspace_entry = workspaces
+        let workspace_desc = workspaces
             .read()
             .await
             .get(&input.id)
             .cloned()
             .map_err_as_not_found("Failed to delete the workspace")?;
 
-        if !workspace_entry.abs_path.exists() {
+        if !workspace_desc.abs_path.exists() {
             // TODO: if a path is not found, we also need to remove the workspace from the database and clean up other caches
             return Err(OperationError::NotFound(
-                workspace_entry.abs_path.to_string_lossy().to_string(),
+                workspace_desc.abs_path.to_string_lossy().to_string(),
             ));
         }
 
         fs.remove_dir(
-            &workspace_entry.abs_path,
+            &workspace_desc.abs_path,
             RemoveOptions {
                 recursive: true,
                 ignore_if_not_exists: true,
@@ -49,17 +49,13 @@ impl<R: TauriRuntime> Workbench<R> {
 
         {
             let mut workspaces_lock = workspaces.write().await;
-            workspaces_lock.remove(&workspace_entry.id);
+            workspaces_lock.remove(&workspace_desc.id);
         }
 
-        if self
-            .active_workspace()
-            .await
-            .as_ref()
-            .map(|workspace| workspace.id)
-            == Some(input.id)
-        {
-            self.deactivate_workspace().await;
+        if let Some(active_workspace_id) = self.active_workspace_id().await {
+            if active_workspace_id == input.id {
+                self.deactivate_workspace().await;
+            }
         }
 
         Ok(())

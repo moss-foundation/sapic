@@ -33,18 +33,13 @@ impl<R: TauriRuntime> Workbench<R> {
             ));
         }
 
-        // Check if the workspace is already active
-        if self
-            .active_workspace()
-            .await
-            .as_ref()
-            .map(|active_workspace| active_workspace.id == descriptor.id)
-            .unwrap_or(false)
-        {
-            return Ok(OpenWorkspaceOutput {
-                id: descriptor.id,
-                abs_path: Arc::clone(&descriptor.abs_path),
-            });
+        if let Some(active_workspace_id) = self.active_workspace_id().await {
+            if active_workspace_id == descriptor.id {
+                return Ok(OpenWorkspaceOutput {
+                    id: descriptor.id,
+                    abs_path: Arc::clone(&descriptor.abs_path),
+                });
+            }
         }
 
         let workspace =

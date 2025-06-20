@@ -7,7 +7,6 @@ use std::{
     panic::AssertUnwindSafe,
     sync::{Arc, Mutex, Weak},
 };
-use tauri::Runtime;
 
 use crate::AnyEvent;
 

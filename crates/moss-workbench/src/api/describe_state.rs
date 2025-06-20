@@ -7,11 +7,7 @@ use crate::{models::operations::DescribeWorkbenchStateOutput, workbench::Workben
 
 impl<R: TauriRuntime> Workbench<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeWorkbenchStateOutput> {
-        let active_workspace_id = self
-            .active_workspace()
-            .await
-            .as_ref()
-            .map(|workspace| workspace.id);
+        let active_workspace_id = self.active_workspace_id().await;
 
         Ok(DescribeWorkbenchStateOutput {
             active_workspace_id,
