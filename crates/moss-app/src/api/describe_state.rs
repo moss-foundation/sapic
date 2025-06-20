@@ -14,21 +14,17 @@ use crate::{
 impl<R: TauriRuntime> App<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeAppStateOutput> {
         // HACK: This is a hack to get the last workspace name
-        let last_workspace_name =
-            &self
-                .workbench
-                .active_workspace()
-                .await
-                .as_ref()
-                .map(|active_workspace| {
-                    active_workspace
-                        .inner
-                        .abs_path()
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .to_string()
-                });
+        let active_workspace_lock = self.workbench.active_workspace.read().await;
+
+        let last_workspace_name = &active_workspace_lock.as_ref().map(|active_workspace| {
+            active_workspace
+                .this
+                .abs_path()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string()
+        });
 
         Ok(DescribeAppStateOutput {
             preferences: Preferences {

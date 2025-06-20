@@ -1,4 +1,4 @@
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -11,16 +11,10 @@ impl<R: TauriRuntime> Workbench<R> {
         &self,
         input: &CloseWorkspaceInput,
     ) -> OperationResult<CloseWorkspaceOutput> {
-        let active_workspace_id = {
-            let active_workspace = self.active_workspace().await;
-            if let Some(workspace) = active_workspace.as_ref() {
-                workspace.id
-            } else {
-                return Err(OperationError::InvalidInput(
-                    "No active workspace to close".to_string(),
-                ));
-            }
-        };
+        let active_workspace_id = self
+            .active_workspace_id()
+            .await
+            .map_err_as_failed_precondition("No active workspace to close")?;
 
         if active_workspace_id != input.id {
             return Err(OperationError::InvalidInput(format!(

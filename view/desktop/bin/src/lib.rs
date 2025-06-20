@@ -111,6 +111,7 @@ pub async fn run<R: TauriRuntime>() {
                 .with_service(session_service)
                 .with_service(log_service)
                 .build();
+
             app_handle.manage(app);
 
             Ok(())

@@ -55,9 +55,10 @@ async fn open_workspace_success() {
 
     // Check active workspace
     let active_workspace = workspace_manager.active_workspace().await;
-    let active_workspace = active_workspace.as_ref().unwrap();
-    assert_eq!(active_workspace.id, first_output.id);
-    assert_eq!(active_workspace.manifest().await.name, first_name);
+    let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
+    let active_workspace_id = workspace_manager.active_workspace_id().await.unwrap();
+    assert_eq!(active_workspace_id, first_output.id);
+    assert_eq!(workspace_guard.manifest().await.name, first_name);
 
     // Check database creating first workspace entry
     let item_store = workspace_manager.__storage().item_store();
@@ -125,9 +126,10 @@ async fn open_workspace_already_active() {
 
     // Check active workspace is still the same
     let active_workspace = workspace_manager.active_workspace().await;
-    let active_workspace = active_workspace.as_ref().unwrap();
-    assert_eq!(active_workspace.id, create_output.id);
-    assert_eq!(active_workspace.manifest().await.name, workspace_name);
+    let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
+    let active_workspace_id = workspace_manager.active_workspace_id().await.unwrap();
+    assert_eq!(active_workspace_id, create_output.id);
+    assert_eq!(workspace_guard.manifest().await.name, workspace_name);
 
     cleanup().await;
 }

@@ -303,7 +303,6 @@ impl LogService {
 
             // Try deleting the entry from the log files
             file_entries.push(entry_id);
-
         }
         if file_entries.is_empty() {
             return Ok(result);
