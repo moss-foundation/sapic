@@ -6,7 +6,7 @@ use ts_rs::TS;
 
 use crate::models::{
     primitives::{LogLevel, ThemeId},
-    types::{LogDate, LogEntryInfo, LogEntryRef, LogItemSourceInfo},
+    types::{LogDate, LogEntryInfo, LogItemSourceInfo},
 };
 
 use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
@@ -96,10 +96,10 @@ pub struct ListLogsOutput {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchDeleteLogInput(pub Vec<LogEntryRef>);
+pub struct BatchDeleteLogInput(pub Vec<String>);
 
 impl Deref for BatchDeleteLogInput {
-    type Target = Vec<LogEntryRef>;
+    type Target = Vec<String>;
 
     fn deref(&self) -> &Self::Target {
         &self.0

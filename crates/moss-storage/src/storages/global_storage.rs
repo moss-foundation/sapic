@@ -8,7 +8,10 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     GlobalStorage,
-    global_storage::stores::{GlobalItemStore, item_store::GlobalItemStoreImpl},
+    global_storage::stores::{
+        GlobalItemStore, GlobalLogStore, item_store::GlobalItemStoreImpl,
+        log_store::GlobalLogStoreImpl,
+    },
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
@@ -17,6 +20,7 @@ pub mod entities;
 pub mod stores;
 
 pub const TABLE_ITEMS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("items");
+pub const TABLE_LOGS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("logs");
 pub struct GlobalStorageImpl {
     client: ReDbClient,
     tables: HashMap<StoreTypeId, Arc<SegBinTable>>,
@@ -29,7 +33,10 @@ impl GlobalStorageImpl {
         let mut client = ReDbClient::new(path.as_ref().join(DB_NAME))?;
 
         let mut tables = HashMap::new();
-        for (type_id, table) in [(TypeId::of::<GlobalItemStoreImpl>(), TABLE_ITEMS)] {
+        for (type_id, table) in [
+            (TypeId::of::<GlobalItemStoreImpl>(), TABLE_ITEMS),
+            (TypeId::of::<GlobalLogStoreImpl>(), TABLE_LOGS),
+        ] {
             client = client.with_table(&table)?;
             tables.insert(type_id, Arc::new(table));
         }
@@ -76,5 +83,15 @@ impl GlobalStorage for GlobalStorageImpl {
             .unwrap()
             .clone();
         Arc::new(GlobalItemStoreImpl::new(client, table))
+    }
+
+    fn log_store(&self) -> Arc<dyn GlobalLogStore> {
+        let client = self.client.clone();
+        let table = self
+            .tables
+            .get(&TypeId::of::<GlobalLogStoreImpl>())
+            .unwrap()
+            .clone();
+        Arc::new(GlobalLogStoreImpl::new(client, table))
     }
 }

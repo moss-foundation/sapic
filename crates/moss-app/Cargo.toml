@@ -10,6 +10,8 @@ moss_applib.workspace = true
 moss_tauri.workspace = true
 moss_text.workspace = true
 moss_workbench.workspace = true
+moss_storage.workspace = true
+moss_db.workspace = true
 
 anyhow.workspace = true
 fnv.workspace = true

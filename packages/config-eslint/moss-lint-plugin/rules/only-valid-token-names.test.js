@@ -91,6 +91,43 @@ ruleTester.run("only-valid-token-names", rule, {
       ],
     },
     {
+      name: "Invalid selector with german letters",
+      code: `<div className={\`background-(--moss-Düsseldorf)\`}></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--moss-Düsseldorf",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid selector with chinese letters",
+      code: `<div className={\`background-(--moss-北京市)\`}></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--moss-北京市",
+          },
+        },
+      ],
+    },
+    {
+      name: "Invalid selector with arabic letters",
+      code: `<div className={\`background-(--moss-رائيل)\`}></div>`,
+      errors: [
+        {
+          messageId: "invalidTokenName",
+          data: {
+            tokenName: "--moss-رائيل",
+          },
+        },
+      ],
+    },
+
+    {
       name: "Invalid selector in template string",
       code: `<div className={\`background-[--invalid-value]\`}></div>`,
       errors: [

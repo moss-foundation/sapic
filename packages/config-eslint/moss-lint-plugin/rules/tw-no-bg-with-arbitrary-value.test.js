@@ -99,6 +99,30 @@ ruleTester.run("tw-no-bg-with-arbitrary-value", rule, {
       output: `<div className="background-(--custom-bg)"></div>`,
     },
     {
+      name: "Invalid selector in string with cyrillic letters",
+      code: `<div className="bg-[--custom-Юг]"></div>`,
+      errors: [{ messageId: "replaceBg" }],
+      output: `<div className="background-(--custom-Юг)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with arabic letters",
+      code: `<div className="bg-[--custom-رائيل]"></div>`,
+      errors: [{ messageId: "replaceBg" }],
+      output: `<div className="background-(--custom-رائيل)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with chinese letters",
+      code: `<div className="bg-[--custom-北京市]"></div>`,
+      errors: [{ messageId: "replaceBg" }],
+      output: `<div className="background-(--custom-北京市)"></div>`,
+    },
+    {
+      name: "Invalid selector in string with german letters",
+      code: `<div className="bg-[--custom-Düsseldorf]"></div>`,
+      errors: [{ messageId: "replaceBg" }],
+      output: `<div className="background-(--custom-Düsseldorf)"></div>`,
+    },
+    {
       name: "Invalid selector in string with var()",
       code: `<div className="bg-[var(--custom-bg)]"></div>`,
       errors: [{ messageId: "replaceBg" }],
