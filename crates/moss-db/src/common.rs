@@ -1,5 +1,5 @@
 use redb::{ReadTransaction as InnerReadTransaction, WriteTransaction as InnerWriteTransaction};
-use std::io::{Error, ErrorKind};
+use std::io::ErrorKind;
 use thiserror::Error;
 
 pub type AnyEntity = Vec<u8>;
