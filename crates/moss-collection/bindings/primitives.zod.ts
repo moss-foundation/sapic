@@ -19,3 +19,5 @@ export const entryProtocolSchema = z.union([
   z.literal("Graphql"),
   z.literal("Grpc"),
 ]);
+
+export const httpMethodSchema = z.union([z.literal("GET"), z.literal("POST"), z.literal("PUT"), z.literal("DELETE")]);

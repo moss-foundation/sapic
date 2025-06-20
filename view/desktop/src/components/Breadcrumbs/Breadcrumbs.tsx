@@ -5,9 +5,9 @@ import { Icon } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
-import { NodeProps } from "../Tree/types";
-import { findNodeById } from "../Tree/utils";
+import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
+import { NodeProps } from "../CollectionTree/types";
+import { findNodeById } from "../CollectionTree/utils";
 import { BreadcrumbTree } from "./BreadcrumbTree";
 
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
@@ -105,6 +105,7 @@ const findPath = (node: NodeProps, target: string): string[] | null => {
 
 export default Breadcrumbs;
 
+// TODO: Remove this when the notifications are implemented
 const TestBreadcrumbsNotifications = () => {
   return (
     <div className="flex items-center">

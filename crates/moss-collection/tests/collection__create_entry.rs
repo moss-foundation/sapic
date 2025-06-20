@@ -1,5 +1,6 @@
 pub mod shared;
 
+use crate::shared::create_test_collection;
 use moss_collection::{
     dirs,
     models::{
@@ -12,9 +13,8 @@ use moss_collection::{
 };
 use moss_common::api::OperationError;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_string};
+use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
-
-use crate::shared::create_test_collection;
 
 fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))
@@ -40,7 +40,7 @@ async fn create_dir_entry_success() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&entry_name);
+    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
@@ -50,13 +50,12 @@ async fn create_dir_entry_success() {
     });
 
     let result = collection.create_entry(input).await;
-    assert!(result.is_ok());
 
     let output = result.unwrap();
     assert!(!output.id.is_nil());
 
     // Verify the directory was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
     assert!(expected_dir.is_dir());
 
@@ -78,7 +77,7 @@ async fn create_dir_entry_with_order() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&entry_name);
+    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
     let order_value = 42;
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
@@ -89,13 +88,11 @@ async fn create_dir_entry_with_order() {
     });
 
     let result = collection.create_entry(input).await;
-    assert!(result.is_ok());
-
     let output = result.unwrap();
     assert!(!output.id.is_nil());
 
     // Verify the directory was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Cleanup
@@ -107,7 +104,7 @@ async fn create_dir_entry_already_exists() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&entry_name);
+    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
@@ -118,7 +115,7 @@ async fn create_dir_entry_already_exists() {
 
     // Create the entry first time - should succeed
     let first_result = collection.create_entry(input.clone()).await;
-    assert!(first_result.is_ok());
+    let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
     let second_result = collection.create_entry(input).await;
@@ -144,13 +141,8 @@ async fn create_dir_entry_special_chars_in_name() {
     let base_name = random_entry_name();
 
     for special_char in FILENAME_SPECIAL_CHARS {
-        // Skip backslash as it's particularly problematic on various filesystems
-        if special_char == "\\" {
-            continue;
-        }
-
         let entry_name = format!("{}{}", base_name, special_char);
-        let entry_path = PathBuf::from(dirs::COMPONENTS_DIR).join(&entry_name);
+        let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
         let input = CreateEntryInput::Dir(CreateDirEntryInput {
             path: entry_path.clone(),
@@ -176,6 +168,11 @@ async fn create_dir_entry_special_chars_in_name() {
 
         // The exact directory name might be sanitized, but some directory should exist
         // We just verify that the operation completed successfully
+        let expected_dir = collection_path
+            .join(&entry_path)
+            .join(sanitize(&entry_name));
+        assert!(expected_dir.exists());
+        assert!(expected_dir.is_dir());
     }
 
     // Cleanup

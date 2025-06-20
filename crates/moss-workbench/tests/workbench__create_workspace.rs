@@ -23,7 +23,6 @@ async fn create_workspace_success() {
             },
         )
         .await;
-    assert!(create_result.is_ok());
 
     let create_output = create_result.unwrap();
     let expected_path: Arc<Path> = workspaces_path.join(&create_output.id.to_string()).into();
@@ -47,7 +46,7 @@ async fn create_workspace_success() {
 
     // Check database
     let item_store = workspace_manager.__storage().item_store();
-    assert!(GetItem::get(item_store.as_ref(), workspace_key(id)).is_ok());
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(id)).unwrap();
 
     cleanup().await;
 }
@@ -108,7 +107,6 @@ async fn create_workspace_same_name() {
             },
         )
         .await;
-    assert!(first_result.is_ok());
     let first_output = first_result.unwrap();
 
     let first_path: Arc<Path> = workspaces_path.join(&first_output.id.to_string()).into();
@@ -131,7 +129,6 @@ async fn create_workspace_same_name() {
             },
         )
         .await;
-    assert!(second_result.is_ok());
     let second_output = second_result.unwrap();
 
     let second_path: Arc<Path> = workspaces_path.join(&second_output.id.to_string()).into();
@@ -165,7 +162,7 @@ async fn create_workspace_same_name() {
 
     let _global_storage = workspace_manager.__storage();
     let item_store = workspace_manager.__storage().item_store();
-    assert!(GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).is_ok());
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).unwrap();
     assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_err());
 
     cleanup().await;
@@ -191,7 +188,6 @@ async fn create_workspace_special_chars() {
                 },
             )
             .await;
-        assert!(create_result.is_ok());
         let create_output = create_result.unwrap();
         created_count += 1;
 
@@ -216,7 +212,7 @@ async fn create_workspace_special_chars() {
         assert_eq!(matching_workspace.display_name, name);
         // Check database
         let item_store = workspace_manager.__storage().item_store();
-        assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_ok());
+        let _ = GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).unwrap();
     }
 
     cleanup().await;
@@ -237,7 +233,6 @@ async fn create_workspace_not_open_on_creation() {
             },
         )
         .await;
-    assert!(create_result.is_ok());
     let create_output = create_result.unwrap();
 
     let expected_path: Arc<Path> = workspaces_path.join(&create_output.id.to_string()).into();

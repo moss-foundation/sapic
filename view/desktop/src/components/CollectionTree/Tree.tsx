@@ -24,7 +24,7 @@ export const TreeContext = createContext<TreeContextProps>({
   sortBy: "none",
 });
 
-export const Tree = ({
+export const CollectionTree = ({
   id,
   tree: initialTree,
   paddingLeft = 8,
@@ -125,4 +125,4 @@ export const Tree = ({
   );
 };
 
-export default Tree;
+export default CollectionTree;

@@ -362,6 +362,9 @@ importers:
       '@repo/moss-app':
         specifier: workspace:*
         version: link:../../crates/moss-app
+      '@repo/moss-collection':
+        specifier: workspace:*
+        version: link:../../crates/moss-collection
       '@repo/moss-tabs':
         specifier: workspace:*
         version: link:src/lib/moss-tabs
