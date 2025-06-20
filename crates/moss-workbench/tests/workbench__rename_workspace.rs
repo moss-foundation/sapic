@@ -34,7 +34,7 @@ async fn rename_workspace_success() {
             },
         )
         .await;
-    assert!(update_workspace_result.is_ok());
+    let _ = update_workspace_result.unwrap();
 
     // Check updating active workspace
     let active_workspace = workspace_manager.active_workspace().await;
@@ -117,7 +117,7 @@ async fn rename_workspace_unchanged() {
         .await;
 
     // This should be a no-op
-    assert!(update_workspace_result.is_ok());
+    let _ = update_workspace_result.unwrap();
 
     // Check active workspace unchanged
     let active_workspace = workspace_manager.active_workspace().await;

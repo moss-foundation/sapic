@@ -48,7 +48,6 @@ async fn open_workspace_success() {
             },
         )
         .await;
-    assert!(open_result.is_ok());
     let open_output = open_result.unwrap();
 
     assert_eq!(open_output.id, first_output.id);
@@ -63,7 +62,7 @@ async fn open_workspace_success() {
 
     // Check database creating first workspace entry
     let item_store = workspace_manager.__storage().item_store();
-    assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_ok());
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).unwrap();
 
     cleanup().await;
 }
@@ -120,7 +119,6 @@ async fn open_workspace_already_active() {
             },
         )
         .await;
-    assert!(open_result.is_ok());
     let open_output = open_result.unwrap();
 
     assert_eq!(open_output.id, create_output.id);

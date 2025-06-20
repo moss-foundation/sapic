@@ -11,7 +11,7 @@ fn truncate_empty() {
     {
         let mut write = client.begin_write().unwrap();
         let result = table.truncate(&mut write);
-        assert!(result.is_ok());
+        let _ = result.unwrap();
         write.commit().unwrap();
     }
 
@@ -39,7 +39,7 @@ fn truncate_non_empty() {
     {
         let mut write = client.begin_write().unwrap();
         let result = table.truncate(&mut write);
-        assert!(result.is_ok());
+        let _ = result.unwrap();
     }
 
     {

@@ -11,9 +11,10 @@ moss_tauri.workspace = true
 moss_text.workspace = true
 moss_workbench.workspace = true
 moss_workspace.workspace = true
+moss_storage.workspace = true
+moss_db.workspace = true
 
 anyhow.workspace = true
-fnv.workspace = true
 tauri = { workspace = true, features = ["wry"] }
 thiserror.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
@@ -28,7 +29,6 @@ nanoid.workspace = true
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
 tracing-appender.workspace = true
-arc-swap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

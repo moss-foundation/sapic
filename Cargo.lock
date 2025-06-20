@@ -2905,12 +2905,12 @@ name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "arc-swap",
  "chrono",
- "fnv",
  "moss_applib",
  "moss_common",
+ "moss_db",
  "moss_fs",
+ "moss_storage",
  "moss_tauri",
  "moss_testutils",
  "moss_text",

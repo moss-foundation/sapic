@@ -7,19 +7,19 @@ use crate::models::{primitives::EntryClass, types::configuration::common::Config
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum EndpointDirConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ComponentDirConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum SchemaDirConfigurationModel {}
 
@@ -30,15 +30,14 @@ pub enum SchemaDirConfigurationModel {}
 pub struct HttpDirConfigurationModel {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "snake_case")]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum RequestDirConfigurationModel {
     Http(HttpDirConfigurationModel),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {
     Request(RequestDirConfigurationModel),
@@ -48,7 +47,7 @@ pub enum DirConfigurationModel {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub struct CompositeDirConfigurationModel {
     pub metadata: ConfigurationMetadata,
     #[serde(flatten)]

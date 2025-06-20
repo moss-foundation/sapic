@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
 
 concurrency:
@@ -142,12 +142,13 @@ jobs:
       - name: Run Tests - ${{ matrix.package }}
         run: cargo test -p ${{ matrix.package }}
 
-  # Checks for Rust compiler warnings in each package individually.
+  # Run Rust Lint Check in each package individually.
+  # Right now it includes warnings check and grit check
   # This job is skipped for draft pull requests to allow developers to work
   # without being blocked by warnings during the development process.
   # Warnings checks will run when the PR is marked as ready for review.
-  rust-warnings-check:
-    name: Rust Warnings Check
+  rust-lint-check:
+    name: Rust Lint Check
     needs: check-modified-files
     if: ${{ needs.check-modified-files.outputs.rust == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
     runs-on: ubuntu-latest
@@ -199,12 +200,23 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
 
+      - name: Install Grit
+        run: |
+          curl -fsSL https://docs.grit.io/install | bash
+
+      - name: Init Grit
+        run: |
+          grit init
+
       - name: Clean cargo cache for warnings check
         run: cargo clean -p ${{ matrix.package }}
 
-      - name: Check Rust Warnings - ${{ matrix.package }}
-        run: python3 .github/scripts/warnings_check.py -p ${{ matrix.package }}
+      - name: Rust Warnings Check - ${{ matrix.package }}
+        run: python3 .github/scripts/rust_warnings_check.py -p ${{ matrix.package }}
 
+      - name: Rust Grit Check - ${{ matrix.package }}
+        run: python3 .github/scripts/rust_grit_check.py -p ${{ matrix.package }}
+  
   node-workflows:
     name: Node.js Workflows - ${{ matrix.task.name }}
     needs: check-modified-files
@@ -216,8 +228,6 @@ jobs:
         task:
           - name: Lint
             command: |
-              pnpm -g i eslint-cli
-              pnpm -w i eslint --save-dev
               pnpm run lint -- --quiet
 
           - name: Test Packages

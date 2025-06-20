@@ -27,8 +27,7 @@ async fn test_diagnostic_create_workspace_only() {
         )
         .await;
 
-    assert!(create_result.is_ok());
-    let _create_output = create_result.unwrap();
+    let _ = create_result.unwrap();
 
     cleanup().await;
 }
@@ -51,7 +50,6 @@ async fn test_diagnostic_create_and_open_workspace() {
         )
         .await;
 
-    assert!(create_result.is_ok());
     let create_output = create_result.unwrap();
 
     // Now try to open it
@@ -64,7 +62,7 @@ async fn test_diagnostic_create_and_open_workspace() {
         )
         .await;
 
-    assert!(open_result.is_ok());
+    let _ = open_result.unwrap();
 
     cleanup().await;
 }
@@ -86,7 +84,6 @@ async fn close_workspace_success() {
             },
         )
         .await;
-    assert!(create_result.is_ok());
     let create_output = create_result.unwrap();
 
     // Manually open the workspace
@@ -98,7 +95,7 @@ async fn close_workspace_success() {
             },
         )
         .await;
-    assert!(open_result.is_ok());
+    let _ = open_result.unwrap();
 
     // Verify workspace is active (in a block to release the read lock)
     {
@@ -114,8 +111,6 @@ async fn close_workspace_success() {
             id: create_output.id,
         })
         .await;
-
-    assert!(close_result.is_ok());
 
     let close_output = close_result.unwrap();
     assert_eq!(close_output.id, create_output.id);
@@ -168,7 +163,6 @@ async fn close_workspace_wrong_id() {
             },
         )
         .await;
-    assert!(create_result.is_ok());
     let create_output = create_result.unwrap();
 
     // Open the workspace
@@ -180,7 +174,7 @@ async fn close_workspace_wrong_id() {
             },
         )
         .await;
-    assert!(open_result.is_ok());
+    let _ = open_result.unwrap();
 
     // Verify workspace is active
     let active_workspace = workspace_manager.active_workspace().await;

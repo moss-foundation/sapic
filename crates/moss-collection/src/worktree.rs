@@ -1,7 +1,7 @@
 use anyhow::Result;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path};
-use moss_text::sanitized::desanitize;
+use moss_text::sanitized::{desanitize, sanitize};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -100,10 +100,11 @@ impl Worktree {
     pub async fn create_entry(
         &self,
         path: &Path,
+        name: &str,
         is_dir: bool,
         content: &[u8],
     ) -> WorktreeResult<()> {
-        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?.join(sanitize(name));
         let abs_path = self.absolutize(&encoded_path)?;
 
         if abs_path.exists() {

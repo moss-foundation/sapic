@@ -13,7 +13,6 @@ async fn describe_layout_parts_state_empty() {
     let (_ctx, _workspace_path, workspace, cleanup) = setup_test_workspace().await;
 
     let describe_state_result = workspace.describe_state().await;
-    assert!(describe_state_result.is_ok());
 
     let describe_state_output = describe_state_result.unwrap();
 
@@ -42,7 +41,7 @@ async fn describe_layout_parts_state_sidebar_only() {
     let update_state_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
         .await;
-    assert!(update_state_result.is_ok());
+    let _ = update_state_result.unwrap();
 
     // Check the describe_state operation
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -77,7 +76,7 @@ async fn describe_layout_parts_state_panel_only() {
     let update_state_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
         .await;
-    assert!(update_state_result.is_ok());
+    let _ = update_state_result.unwrap();
 
     // Check the describe_state operation
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -136,12 +135,12 @@ async fn describe_layout_parts_state_all() {
     let update_sidebar_result = workspace
         .update_state(UpdateStateInput::UpdateSidebarPartState(sidebar_state))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(panel_state))
         .await;
-    assert!(update_panel_result.is_ok());
+    let _ = update_panel_result.unwrap();
 
     // Check the describe_state operation
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -187,12 +186,12 @@ async fn describe_layout_parts_state_after_update() {
             initial_sidebar_state,
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(initial_panel_state))
         .await;
-    assert!(update_panel_result.is_ok());
+    let _ = update_panel_result.unwrap();
 
     // Now update only the sidebar
     let updated_sidebar_state = SidebarPartStateInfo {
@@ -205,7 +204,7 @@ async fn describe_layout_parts_state_after_update() {
             updated_sidebar_state,
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     // Check the describe_state operation after update
     let describe_state_output = workspace.describe_state().await.unwrap();

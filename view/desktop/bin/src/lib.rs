@@ -56,7 +56,7 @@ pub async fn run<R: TauriRuntime>() {
 
             let workbench = Workbench::new(
                 app_handle.clone(),
-                global_storage,
+                global_storage.clone(),
                 WorkbenchOptions {
                     abs_path: app_dir.clone().into(),
                 },
@@ -82,6 +82,7 @@ pub async fn run<R: TauriRuntime>() {
                 app_handle.clone(),
                 &logs_dir,
                 session_service.session_id(),
+                global_storage.clone(),
             )
             .expect("Failed to create log service");
 
@@ -172,9 +173,7 @@ pub async fn run<R: TauriRuntime>() {
                     .on_menu_event(move |window, event| menu::handle_event(window, &event));
             }
 
-            RunEvent::Exit => {
-                dbg!("Exit");
-            }
+            RunEvent::Exit => {}
 
             _ => {}
         });

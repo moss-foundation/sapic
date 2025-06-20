@@ -30,7 +30,7 @@ async fn delete_workspace_success() {
     let delete_workspace_result = workspace_manager
         .delete_workspace(&ctx, &DeleteWorkspaceInput { id })
         .await;
-    assert!(delete_workspace_result.is_ok());
+    let _ = delete_workspace_result.unwrap();
 
     // Check folder is removed
     assert!(!expected_path.exists());
