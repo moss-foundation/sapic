@@ -71,13 +71,15 @@ impl<R: TauriRuntime> Workbench<R> {
         global_storage: Arc<dyn GlobalStorage>,
         options: Options,
     ) -> Self {
-        Self {
-            activity_indicator: ActivityIndicator::new(app_handle),
-            active_workspace: RwLock::new(None),
-            known_workspaces: OnceCell::new().take(),
-            global_storage,
-            options,
-        }
+        // Self {
+        //     activity_indicator: ActivityIndicator::new(app_handle),
+        //     active_workspace: RwLock::new(None),
+        //     known_workspaces: OnceCell::new().take(),
+        //     global_storage,
+        //     options,
+        // }
+
+        todo!()
     }
 
     pub async fn active_workspace_mut(&self) -> ActiveWorkspaceWriteGuard<'_, R> {
@@ -92,14 +94,13 @@ impl<R: TauriRuntime> Workbench<R> {
         }
     }
 
-    pub async fn workspace(
-        &self,
-    ) -> (
-        RwLockReadGuard<'_, Workspace<R>>,
-        RwLockReadGuard<'_, WorkspaceContextState>,
-    ) {
+    pub async fn workspace(&self) -> RwLockReadGuard<'_, (Workspace<R>, WorkspaceContextState)> {
         let r = self.active_workspace.as_ref().unwrap();
-        r.inner.read().await
+        let (t, v) = *r.inner.read().await;
+
+        // tokio::spawn(async move { b });
+
+        todo!()
     }
 
     pub(super) async fn activate_workspace<C: AnyAppContext<R>>(
@@ -108,17 +109,21 @@ impl<R: TauriRuntime> Workbench<R> {
         id: Uuid,
         workspace: Workspace<R>,
     ) {
-        let mut active_workspace = self.active_workspace.write().await;
-        *active_workspace = Some(ActiveWorkspace {
-            id,
-            inner: workspace,
-            context: WorkspaceContext::new(ctx.app_handle()),
-        });
+        // let mut active_workspace = self.active_workspace.write().await;
+        // *active_workspace = Some(ActiveWorkspace {
+        //     id,
+        //     inner: workspace,
+        //     context: WorkspaceContext::new(ctx.app_handle()),
+        // });
+
+        todo!()
     }
 
     pub(super) async fn deactivate_workspace(&self) {
-        let mut active_workspace = self.active_workspace.write().await;
-        *active_workspace = None;
+        // let mut active_workspace = self.active_workspace.write().await;
+        // *active_workspace = None;
+
+        todo!()
     }
 
     pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
