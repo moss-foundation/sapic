@@ -304,8 +304,8 @@ mod tests {
     }
 
     // cargo test test_clone_add_commit_push -- --nocapture
-    #[test]
     #[ignore]
+    #[test]
     fn manual_clone_add_commit_push() {
         // TODO: Support verified signed commits using `gpg`
         // From example: https://github.com/ramosbugs/oauth2-rs/blob/main/examples/github.rs
@@ -337,8 +337,8 @@ mod tests {
             .expect("Failed to push");
     }
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_open_fetch_pull() {
         let _repo_url = dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
         let repo_path = Path::new("test-repo");

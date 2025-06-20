@@ -2,9 +2,9 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
-import NodeLabel from "../Tree/NodeLabel";
-import { TestCollectionIcon } from "../Tree/TestCollectionIcon";
-import { TreeNodeProps } from "../Tree/types";
+import NodeLabel from "../CollectionTree/NodeLabel";
+import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
+import { TreeNodeProps } from "../CollectionTree/types";
 
 interface BreadcrumbNodeProps {
   node: TreeNodeProps;
@@ -56,7 +56,7 @@ export const BreadcrumbNode = ({
 
           onNodeClickCallback?.(node);
         }}
-        className="hover:background-(--moss-secondary-background-hover) relative flex w-full min-w-64 cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
+        className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
         <TestCollectionIcon type={node.type} />
         <NodeLabel label={node.id} />

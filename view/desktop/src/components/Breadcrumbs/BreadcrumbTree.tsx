@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { NodeProps, TreeNodeProps } from "../Tree/types";
-import { collapseAllNodes, prepareCollectionForTree, updateTreeNode } from "../Tree/utils";
+import { NodeProps, TreeNodeProps } from "../CollectionTree/types";
+import { collapseAllNodes, prepareCollectionForTree, updateTreeNode } from "../CollectionTree/utils";
 import BreadcrumbNode from "./BreadcrumbNode";
 
 interface BreadcrumbTreeProps {

@@ -35,6 +35,7 @@
     "@repo/moss-tabs": "workspace:*",
     "@repo/moss-workbench": "workspace:*",
     "@repo/moss-workspace": "workspace:*",
+    "@repo/moss-collection": "workspace:*",
     "@tanstack/react-pacer": "^0.8.0",
     "@tanstack/react-query": "^5.67.1",
     "@tanstack/react-query-devtools": "^5.67.1",

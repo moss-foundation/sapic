@@ -46,6 +46,13 @@ impl CreateEntryInput {
             CreateEntryInput::Dir(dir) => &dir.path,
         }
     }
+
+    pub fn name(&self) -> &str {
+        match self {
+            CreateEntryInput::Item(item) => &item.name,
+            CreateEntryInput::Dir(dir) => &dir.name,
+        }
+    }
 }
 impl Validate for CreateEntryInput {
     fn validate(&self) -> Result<(), ValidationErrors> {

@@ -13,7 +13,7 @@ import { NodeAddForm } from "./NodeAddForm";
 import NodeLabel from "./NodeLabel";
 import { NodeRenamingForm } from "./NodeRenamingForm";
 import { TestCollectionIcon } from "./TestCollectionIcon";
-import TreeNode from "./TreeNode";
+import TreeNode from "./TreeNode/TreeNode";
 import { NodeProps, TreeNodeProps, TreeRootNodeProps } from "./types";
 import { collapseAllNodes, expandAllNodes, hasDescendantWithSearchInput } from "./utils";
 

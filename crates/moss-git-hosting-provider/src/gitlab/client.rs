@@ -78,8 +78,8 @@ mod tests {
         assert_eq!(client.base_url(), expected_url);
     }
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_gitlab_client_with_ssh_auth_agent() {
         let client_auth_agent = DummyGitLabAuthAgent;
         let ssh_agent = DummySSHAuthAgent;
