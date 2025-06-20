@@ -7,13 +7,12 @@ import {
   defaultsSchema,
   localeInfoSchema,
   logDateSchema,
-  logEntryRefSchema,
+  logEntryInfoSchema,
+  logItemSourceInfoSchema,
   preferencesSchema,
 } from "./types.zod";
 
-export const logItemSourceInfoSchema = z.object({
-  id: z.string(),
-});
+export const batchDeleteLogInputSchema = z.array(z.string());
 
 export const getColorThemeInputSchema = z.object({
   id: z.string(),
@@ -27,8 +26,6 @@ export const getTranslationsInputSchema = z.object({
   language: z.string(),
   namespace: z.string(),
 });
-export const batchDeleteLogInputSchema = z.array(logEntryRefSchema);
-
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
 });
@@ -51,12 +48,8 @@ export const listLogsInputSchema = z.object({
   resource: z.string().optional(),
 });
 
-export const logEntryInfoSchema = z.object({
-  id: z.string(),
-  timestamp: z.string(),
-  level: logLevelSchema,
-  resource: z.string().optional(),
-  message: z.string(),
+export const listLogsOutputSchema = z.object({
+  contents: z.array(logEntryInfoSchema),
 });
 
 export const setColorThemeInputSchema = z.object({
@@ -65,8 +58,4 @@ export const setColorThemeInputSchema = z.object({
 
 export const setLocaleInputSchema = z.object({
   localeInfo: localeInfoSchema,
-});
-
-export const listLogsOutputSchema = z.object({
-  contents: z.array(logEntryInfoSchema),
 });

@@ -54,15 +54,6 @@ pub struct Defaults {
 
 // Log
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct LogEntryRef {
-    /// This helps us to narrow down the scope of search
-    pub timestamp: String,
-    pub id: String,
-}
-
 // FIXME: Is this the best way to handle date type?
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -75,7 +66,7 @@ pub struct LogDate {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogItemSourceInfo {
     pub id: String,
     #[serde(skip)]
@@ -85,7 +76,7 @@ pub struct LogItemSourceInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogEntryInfo {
     pub id: String,
     /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"
