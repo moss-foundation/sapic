@@ -4,9 +4,9 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use uuid::Uuid;
-
 use ts_rs::TS;
+use url::Url;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::types::{CollectionInfo, EditorPartStateInfo, EnvironmentInfo};
@@ -27,7 +27,7 @@ pub struct CreateCollectionInput {
     pub external_path: Option<PathBuf>,
 
     #[ts(optional)]
-    pub repo: Option<String>,
+    pub repo: Option<Url>,
 
     #[ts(optional)]
     pub icon_path: Option<PathBuf>,
@@ -63,7 +63,7 @@ pub struct UpdateCollectionInput {
     pub new_name: Option<String>,
 
     #[ts(optional)]
-    pub new_repo: Option<String>,
+    pub new_repo: Option<Url>,
 
     pub new_icon: UpdateIconInput,
 

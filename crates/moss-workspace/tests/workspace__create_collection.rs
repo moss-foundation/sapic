@@ -8,6 +8,7 @@ use moss_storage::{
 };
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::models::operations::CreateCollectionInput;
+use url::Url;
 
 use crate::shared::{collection_key, generate_random_icon, setup_test_workspace};
 
@@ -189,7 +190,7 @@ async fn create_collection_with_repo() {
     let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let repo = "https://github.com/moss-foundation/sapic.git".to_string();
+    let repo = Url::parse("https://github.com/moss-foundation/sapic.git").unwrap();
     let create_collection_result = workspace
         .create_collection(
             &ctx,

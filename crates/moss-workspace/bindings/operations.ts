@@ -9,7 +9,13 @@ import type {
   SidebarPartStateInfo,
 } from "./types";
 
-export type CreateCollectionInput = { name: string; order?: number; externalPath?: string };
+export type CreateCollectionInput = {
+  name: string;
+  order?: number;
+  externalPath?: string;
+  repo?: string;
+  iconPath?: string;
+};
 
 export type CreateCollectionOutput = { id: string };
 
@@ -30,9 +36,18 @@ export type DescribeStateOutput = {
 
 export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; environments: Array<EnvironmentInfo> };
 
-export type UpdateCollectionInput = { id: string; newName: string | null; order?: number; pinned?: boolean };
+export type UpdateCollectionInput = {
+  id: string;
+  newName?: string;
+  newRepo?: string;
+  newIcon: UpdateIconInput;
+  order?: number;
+  pinned?: boolean;
+};
 
 export type UpdateCollectionOutput = { id: string };
+
+export type UpdateIconInput = "nochange" | { "update": string } | "remove";
 
 export type UpdateStateInput =
   | { "updateEditorPartState": EditorPartStateInfo }

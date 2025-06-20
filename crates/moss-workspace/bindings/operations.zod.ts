@@ -14,6 +14,8 @@ export const createCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   externalPath: z.string().optional(),
+  repo: z.string().optional(),
+  iconPath: z.string().optional(),
 });
 
 export const createCollectionOutputSchema = z.object({
@@ -32,12 +34,13 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
-export const updateCollectionInputSchema = z.object({
-  id: z.string(),
-  newName: z.string().nullable(),
-  order: z.number().optional(),
-  pinned: z.boolean().optional(),
-});
+export const updateIconInputSchema = z.union([
+  z.literal("nochange"),
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
 
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
@@ -56,6 +59,15 @@ export const describeStateOutputSchema = z.object({
 export const describeWorkspaceOutputSchema = z.object({
   collections: z.array(collectionInfoSchema),
   environments: z.array(environmentInfoSchema),
+});
+
+export const updateCollectionInputSchema = z.object({
+  id: z.string(),
+  newName: z.string().optional(),
+  newRepo: z.string().optional(),
+  newIcon: updateIconInputSchema,
+  order: z.number().optional(),
+  pinned: z.boolean().optional(),
 });
 
 export const updateStateInputSchema = z.union([

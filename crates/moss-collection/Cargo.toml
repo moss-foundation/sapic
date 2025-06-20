@@ -17,7 +17,7 @@ anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
 thiserror.workspace = true
 tokio = { workspace = true, features = ["sync"] }
-ts-rs = { workspace = true, features = ["serde-json-impl", "uuid-impl"] }
+ts-rs = { workspace = true, features = ["serde-json-impl", "uuid-impl", "url-impl"] }
 serde_json.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
@@ -30,6 +30,7 @@ toml.workspace = true
 toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 image.workspace = true
+url.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

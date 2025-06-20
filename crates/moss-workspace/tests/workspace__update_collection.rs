@@ -6,6 +6,7 @@ use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
     CreateCollectionInput, UpdateCollectionInput, UpdateIconInput,
 };
+use url::Url;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 
@@ -163,8 +164,8 @@ async fn update_collection_repo() {
     let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let old_repo = "https://github.com/xxx/1.git";
-    let new_repo = "https://github.com/xxx/2.git";
+    let old_repo = Url::parse("https://github.com/xxx/1.git").unwrap();
+    let new_repo = Url::parse("https://github.com/xxx/2.git").unwrap();
     let create_collection_output = workspace
         .create_collection(
             &ctx,
@@ -172,7 +173,7 @@ async fn update_collection_repo() {
                 name: collection_name,
                 order: None,
                 external_path: None,
-                repo: Some(old_repo.to_string()),
+                repo: Some(old_repo),
                 icon_path: None,
             },
         )
@@ -185,7 +186,7 @@ async fn update_collection_repo() {
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: None,
-                new_repo: Some(new_repo.to_string()),
+                new_repo: Some(new_repo.clone()),
                 new_icon: UpdateIconInput::Nochange,
                 order: None,
                 pinned: None,
@@ -198,7 +199,7 @@ async fn update_collection_repo() {
     let collections = workspace.collections(&ctx).await.unwrap();
     let collection = collections.iter().next().unwrap().1.read().await;
 
-    assert_eq!(collection.manifest().await.repo, Some(new_repo.to_string()));
+    assert_eq!(collection.manifest().await.repo, Some(new_repo));
 
     cleanup().await;
 }

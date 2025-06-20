@@ -8,9 +8,9 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use uuid::Uuid;
-
 use tokio::sync::OnceCell;
+use url::Url;
+use uuid::Uuid;
 
 use crate::{
     ICON_NAME, ICON_SIZE,
@@ -48,7 +48,7 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
-    pub repo: Option<String>,
+    pub repo: Option<Url>,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -60,7 +60,7 @@ pub enum IconModification {
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repo: Option<String>,
+    pub repo: Option<Url>,
     pub icon: IconModification,
 }
 

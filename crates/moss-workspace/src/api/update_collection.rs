@@ -7,9 +7,7 @@ use crate::{
     models::operations::{UpdateCollectionInput, UpdateCollectionOutput, UpdateIconInput},
     workspace::Workspace,
 };
-use moss_collection::{
-    ICON_NAME, ICON_SIZE, dirs::ASSETS_DIR, services::image_upload::ImageUploadService,
-};
+
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
