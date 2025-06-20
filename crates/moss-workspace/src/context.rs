@@ -51,27 +51,23 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         Fut: Future<Output = anyhow::Result<T, E>> + Send + 'static,
         F: FnOnce(Self) -> Fut + Send + 'static,
     {
-        // let fut = callback(WorkspaceContext {
-        //     app_handle: self.app_handle.clone(),
-        //     state: self.state.clone(),
-        // });
-        // Task::new(fut, timeout)
-
-        todo!()
+        let fut = callback(WorkspaceContext {
+            app_handle: self.app_handle.clone(),
+            state: self.state.clone(),
+        });
+        Task::new(fut, timeout)
     }
 }
 
 #[async_trait]
 impl<R: TauriRuntime> AnyWorkspaceContext<R> for WorkspaceContext<R> {
     async fn subscribe(&self, s: Subscribe) {
-        // match s {
-        //     Subscribe::OnCollectionDidChange(key, s) => {
-        //         let mut state_lock = self.state.write().await;
-        //         state_lock.on_collection_did_change.insert(key, s);
-        //     }
-        // }
-
-        todo!()
+        match s {
+            Subscribe::OnCollectionDidChange(key, s) => {
+                let mut state_lock = self.state.write().await;
+                state_lock.on_collection_did_change.insert(key, s);
+            }
+        }
     }
 }
 
