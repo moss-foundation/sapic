@@ -235,8 +235,8 @@ mod tests {
 
     use crate::gitlab::auth::GitLabAuthAgentImpl;
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_cloning_with_oauth() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_HTTPS").unwrap();
