@@ -1,1 +1,1 @@
-mod image_upload;
+pub mod image_upload;

@@ -62,6 +62,7 @@ impl<R: TauriRuntime> Workspace<R> {
                 internal_abs_path: &abs_path,
                 external_abs_path: input.external_path.as_deref(),
                 repo: input.repo.to_owned(),
+                icon_path: input.icon_path.to_owned(),
             },
         )
         .await

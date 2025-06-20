@@ -1,10 +1,11 @@
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
+use std::path::Path;
 
-struct ImageUploadService {}
+pub struct ImageUploadService {}
 
 impl ImageUploadService {
-    fn upload_icon(img_path: &str, output_path: &str, icon_size: u32) -> Result<()> {
+    pub fn upload_icon(img_path: &Path, output_path: &Path, icon_size: u32) -> Result<()> {
         // Load the image
         let img = image::open(img_path)?;
         let (w, h) = img.dimensions();

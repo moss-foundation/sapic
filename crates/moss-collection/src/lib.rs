@@ -23,4 +23,8 @@ pub mod dirs {
     pub const COMPONENTS_DIR: &str = "components";
     pub const SCHEMAS_DIR: &str = "schemas";
     pub const ENVIRONMENTS_DIR: &str = "environments";
+    pub const ASSETS_DIR: &str = "assets";
 }
+
+pub const ICON_NAME: &str = "icon.png";
+pub const ICON_SIZE: u32 = 128;

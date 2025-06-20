@@ -3,15 +3,22 @@ use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::FileSystem;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use uuid::Uuid;
 
 use tokio::sync::OnceCell;
 
 use crate::{
+    ICON_NAME, ICON_SIZE,
     config::{CONFIG_FILE_NAME, ConfigModel},
     defaults, dirs,
+    dirs::ASSETS_DIR,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    services::image_upload::ImageUploadService,
     worktree::Worktree,
 };
 
@@ -42,6 +49,7 @@ pub struct CreateParams<'a> {
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
     pub repo: Option<String>,
+    pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
@@ -99,6 +107,7 @@ impl Collection {
             dirs::COMPONENTS_DIR,
             dirs::SCHEMAS_DIR,
             dirs::ENVIRONMENTS_DIR,
+            dirs::ASSETS_DIR,
         ] {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
@@ -124,6 +133,15 @@ impl Collection {
             },
         )
         .await?;
+
+        // If the user provides an icon, transform it and save it to assets/icon.png
+        if let Some(icon_path) = params.icon_path {
+            ImageUploadService::upload_icon(
+                &icon_path,
+                &abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                ICON_SIZE,
+            )?;
+        }
 
         // TODO: Load environments
 

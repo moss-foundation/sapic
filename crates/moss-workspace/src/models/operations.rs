@@ -28,6 +28,9 @@ pub struct CreateCollectionInput {
 
     #[ts(optional)]
     pub repo: Option<String>,
+
+    #[ts(optional)]
+    pub icon_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, TS)]
