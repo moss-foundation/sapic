@@ -86,7 +86,6 @@ run-desktop:
 .PHONY: ready
 ready: gen-icons export-css-variables gen-typedoc
 	$(PNPM) i
-	cd $(DESKTOP_DIR) && $(PNPM) i --force
 
 ## Generate TypeDoc documentation
 .PHONY: gen-typedoc

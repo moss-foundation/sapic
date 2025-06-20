@@ -1,7 +1,7 @@
 import { getAllInvalidTokens } from "../utils/getAllInvalidTokens.js";
 
 const ANY_TW_BG_WITH_ARBITRARY_VALUE =
-  /\b[\w\-:]*bg-(?:\[(?:var\((--[\w-]+)\)|(--[\w-]+))\]|\((?:var\((--[\w-]+)\)|(--[\w-]+))\))/g;
+  /\b[\p{L}\p{N}\-:]*bg-(?:\[(?:(?:var\((--[\p{L}\p{N}\-]+)\))|(--[\p{L}\p{N}\-]+))\]|\((?:(?:var\((--[\p{L}\p{N}\-]+)\))|(--[\p{L}\p{N}\-]+))\))/gu;
 
 const fixArbitraryValue = (className) => {
   return className

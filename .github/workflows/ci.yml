@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
 
 concurrency:
@@ -228,8 +228,6 @@ jobs:
         task:
           - name: Lint
             command: |
-              pnpm -g i eslint-cli
-              pnpm -w i eslint --save-dev
               pnpm run lint -- --quiet
 
           - name: Test Packages

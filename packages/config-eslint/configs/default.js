@@ -36,6 +36,7 @@ export default tseslint.config(
     settings: {
       "import-x/resolver-next": [
         createTypeScriptImportResolver({
+          alwaysTryTypes: true,
           project: ["tsconfig.json"],
         }),
         createNodeResolver({
@@ -47,6 +48,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      "import-x/named": "error",
       "import-x/default": "off",
       "import-x/no-named-as-default": "off",
       "import-x/no-named-as-default-member": "off",

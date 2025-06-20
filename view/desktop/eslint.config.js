@@ -1,8 +1,8 @@
-import { defaultConfig, defineConfig } from "@repo/eslint-config";
+import defaultConfig from "@repo/eslint-config";
 
-export default defineConfig([
+export default [
   ...defaultConfig,
   {
     ignores: ["**/moss-tabs/"],
   },
-]);
+];
