@@ -103,6 +103,11 @@ export const HeadBar = () => {
     return false;
   };
 
+  // Open Collection Settings handler
+  const handleOpenCollectionSettings = () => {
+    openPanel("CollectionSettings");
+  };
+
   // Delete workspace confirmation handler
   const handleDeleteWorkspace = () => {
     if (workspaceToDelete) {
@@ -186,6 +191,7 @@ export const HeadBar = () => {
                   selectedBranch={selectedBranch}
                   collectionName={collectionName}
                   onRenameCollection={handleRenameCollection}
+                  onCollectionClick={handleOpenCollectionSettings}
                   collectionButtonRef={collectionButtonRef}
                   os={os}
                 />
