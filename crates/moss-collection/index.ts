@@ -1,13 +1,3 @@
-type RequestItemConfiguration = {
-  url: string;
-};
-
-export class RequestItem extends RequestItemConfiguration {
-  constructor(configuration: RequestItemConfiguration) {
-    super(configuration);
-  }
-}
-
 export * from "./bindings/events";
 export * from "./bindings/events.zod";
 export * from "./bindings/operations";
