@@ -1,4 +1,5 @@
 use anyhow::Result;
+use moss_common::api::Change;
 use moss_file::toml::InPlaceEditor;
 use serde::{Deserialize, Serialize};
 use toml_edit::DocumentMut;
@@ -13,19 +14,13 @@ pub struct ManifestModel {
 }
 
 #[derive(Debug)]
-pub enum ManifestChange<T> {
-    Update(T),
-    Remove,
-}
-
-#[derive(Debug)]
 pub struct ManifestModelDiff {
     /// A new name for the collection, if provided, the collection
     /// will be renamed to this name.
     pub name: Option<String>,
     /// An update to the repository url, if provided, the collection
     /// will be either updated or removed.
-    pub repository: Option<ManifestChange<Url>>,
+    pub repository: Option<Change<Url>>,
 }
 
 impl InPlaceEditor for ManifestModelDiff {
@@ -35,10 +30,10 @@ impl InPlaceEditor for ManifestModelDiff {
         }
         match &self.repository {
             None => {}
-            Some(ManifestChange::Remove) => {
+            Some(Change::Remove) => {
                 doc.remove("repository");
             }
-            Some(ManifestChange::Update(new_repo)) => {
+            Some(Change::Update(new_repo)) => {
                 doc["repository"] = new_repo.to_string().into();
             }
         }

@@ -1,7 +1,7 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::{collection, collection::Change};
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
+use moss_collection::collection;
+use moss_common::api::{Change, OperationError, OperationResult, OperationResultExt};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 

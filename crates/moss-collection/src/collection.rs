@@ -3,6 +3,7 @@ use moss_applib::{
     AnyEvent,
     subscription::{Event, EventEmitter},
 };
+use moss_common::api::Change;
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
 use moss_fs::{FileSystem, RemoveOptions};
@@ -21,7 +22,7 @@ use crate::{
     constants::{ICON_NAME, ICON_SIZE},
     defaults, dirs,
     dirs::ASSETS_DIR,
-    manifest::{MANIFEST_FILE_NAME, ManifestChange, ManifestModel, ManifestModelDiff},
+    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
     services::set_icon::SetIconService,
     worktree::Worktree,
 };
@@ -63,11 +64,6 @@ pub struct CreateParams<'a> {
     pub external_abs_path: Option<&'a Path>,
     pub repository: Option<Url>,
     pub icon_path: Option<PathBuf>,
-}
-
-pub enum Change<T> {
-    Update(T),
-    Remove,
 }
 
 pub struct ModifyParams {
@@ -187,11 +183,7 @@ impl Collection {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repository: match params.repository {
-                        None => None,
-                        Some(Change::Update(new_repo)) => Some(ManifestChange::Update(new_repo)),
-                        Some(Change::Remove) => Some(ManifestChange::Remove),
-                    },
+                    repository: params.repository,
                 })
                 .await?;
         }
