@@ -1,3 +1,4 @@
+use image::{ImageBuffer, Rgb};
 mod context;
 pub use context::*;
 
@@ -17,6 +18,7 @@ use moss_workspace::{
     storage::segments::COLLECTION_SEGKEY,
     workspace::CreateParams,
 };
+use rand::Rng;
 use std::{
     collections::HashMap,
     fs,
@@ -147,4 +149,20 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
 
 pub fn collection_key(id: Uuid) -> SegKeyBuf {
     COLLECTION_SEGKEY.join(id.to_string())
+}
+
+pub fn generate_random_icon(output_path: &Path) {
+    // Create an empty RGB image buffer
+    let mut img = ImageBuffer::new(128, 128);
+    let mut rng = rand::rng();
+
+    // Fill each pixel with random values [0..255]
+    for pixel in img.pixels_mut() {
+        let r: u8 = rng.random();
+        let g: u8 = rng.random();
+        let b: u8 = rng.random();
+        *pixel = Rgb([r, g, b]);
+    }
+
+    img.save(output_path).unwrap();
 }
