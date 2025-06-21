@@ -1,17 +1,16 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::collection;
+use moss_collection::{collection, collection::Change};
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-
-use crate::{
-    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
-    workspace::Workspace,
-};
-
-use crate::models::operations::ChangeInput;
-use moss_collection::collection::Change;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
+
+use crate::{
+    models::operations::{
+        ChangeIconInput, ChangeRepositoryInput, UpdateCollectionInput, UpdateCollectionOutput,
+    },
+    workspace::Workspace,
+};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
@@ -39,13 +38,15 @@ impl<R: TauriRuntime> Workspace<R> {
                     name: input.new_name,
                     repository: match input.new_repo {
                         None => None,
-                        Some(ChangeInput::Update(repo_url)) => Some(Change::Update(repo_url)),
-                        Some(ChangeInput::Remove) => Some(Change::Remove),
+                        Some(ChangeRepositoryInput::Update(repo_url)) => {
+                            Some(Change::Update(repo_url))
+                        }
+                        Some(ChangeRepositoryInput::Remove) => Some(Change::Remove),
                     },
                     icon: match input.new_icon {
                         None => None,
-                        Some(ChangeInput::Update(icon_path)) => Some(Change::Update(icon_path)),
-                        Some(ChangeInput::Remove) => Some(Change::Remove),
+                        Some(ChangeIconInput::Update(icon_path)) => Some(Change::Update(icon_path)),
+                        Some(ChangeIconInput::Remove) => Some(Change::Remove),
                     },
                 })
                 .await

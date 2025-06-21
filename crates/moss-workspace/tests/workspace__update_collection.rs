@@ -1,13 +1,14 @@
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_collection::{constants::ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
-    ChangeInput, CreateCollectionInput, UpdateCollectionInput,
+    ChangeIconInput, ChangeRepositoryInput, CreateCollectionInput, UpdateCollectionInput,
 };
 use url::Url;
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_collection_success() {
@@ -185,7 +186,7 @@ async fn update_collection_repo() {
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: None,
-                new_repo: Some(ChangeInput::Update(new_repo.clone())),
+                new_repo: Some(ChangeRepositoryInput::Update(new_repo.clone())),
                 new_icon: None,
                 order: None,
                 pinned: None,
@@ -233,7 +234,7 @@ async fn update_collection_new_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: Some(ChangeInput::Update(icon_path.clone())),
+                new_icon: Some(ChangeIconInput::Update(icon_path.clone())),
                 order: None,
                 pinned: None,
             },
@@ -276,7 +277,7 @@ async fn update_collection_remove_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: Some(ChangeInput::Remove),
+                new_icon: Some(ChangeIconInput::Remove),
                 order: None,
                 pinned: None,
             },

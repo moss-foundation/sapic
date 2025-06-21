@@ -10,6 +10,20 @@ import {
   sidebarPartStateInfoSchema,
 } from "./types.zod";
 
+export const changeIconInputSchema = z.union([
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
+
+export const changeRepositoryInputSchema = z.union([
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
+
 export const createCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
@@ -34,13 +48,14 @@ export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
-export const updateIconInputSchema = z.union([
-  z.literal("nochange"),
-  z.object({
-    "update": z.string(),
-  }),
-  z.literal("remove"),
-]);
+export const updateCollectionInputSchema = z.object({
+  id: z.string(),
+  newName: z.string().optional(),
+  newRepo: changeRepositoryInputSchema.optional(),
+  newIcon: changeIconInputSchema.optional(),
+  order: z.number().optional(),
+  pinned: z.boolean().optional(),
+});
 
 export const updateCollectionOutputSchema = z.object({
   id: z.string(),
@@ -59,15 +74,6 @@ export const describeStateOutputSchema = z.object({
 export const describeWorkspaceOutputSchema = z.object({
   collections: z.array(collectionInfoSchema),
   environments: z.array(environmentInfoSchema),
-});
-
-export const updateCollectionInputSchema = z.object({
-  id: z.string(),
-  newName: z.string().optional(),
-  newRepo: z.string().optional(),
-  newIcon: updateIconInputSchema,
-  order: z.number().optional(),
-  pinned: z.boolean().optional(),
 });
 
 export const updateStateInputSchema = z.union([
