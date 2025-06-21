@@ -3,19 +3,29 @@ use moss_applib::{
     AnyEvent,
     subscription::{Event, EventEmitter},
 };
+use moss_common::api::Change;
 use moss_environment::environment::Environment;
 use moss_file::toml::{self, TomlFileHandle};
-use moss_fs::FileSystem;
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
-use std::{collections::HashMap, path::Path, sync::Arc};
-use uuid::Uuid;
-
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::sync::OnceCell;
+use url::Url;
+use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
     defaults, dirs,
+    dirs::ASSETS_DIR,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    services::set_icon::{
+        SetIconService,
+        constants::{ICON_NAME, ICON_SIZE},
+    },
     worktree::Worktree,
 };
 
@@ -54,10 +64,14 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
+    pub repository: Option<Url>,
+    pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
+    pub repository: Option<Change<Url>>,
+    pub icon: Option<Change<PathBuf>>,
 }
 
 #[rustfmt::skip]
@@ -116,6 +130,7 @@ impl Collection {
             dirs::COMPONENTS_DIR,
             dirs::SCHEMAS_DIR,
             dirs::ENVIRONMENTS_DIR,
+            dirs::ASSETS_DIR,
         ] {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
@@ -128,6 +143,7 @@ impl Collection {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+                repository: params.repository,
             },
         )
         .await?;
@@ -140,6 +156,15 @@ impl Collection {
             },
         )
         .await?;
+
+        if let Some(icon_path) = params.icon_path {
+            // TODO: Log the error here
+            let _ = SetIconService::set_icon(
+                &icon_path,
+                &abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                ICON_SIZE,
+            );
+        }
 
         // TODO: Load environments
 
@@ -156,12 +181,35 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() {
+        if params.name.is_some() || params.repository.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
-                    name: params.name.to_owned(),
+                    name: params.name,
+                    repository: params.repository,
                 })
                 .await?;
+        }
+
+        match params.icon {
+            None => {}
+            Some(Change::Update(new_icon_path)) => {
+                SetIconService::set_icon(
+                    &new_icon_path,
+                    &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                    ICON_SIZE,
+                )?;
+            }
+            Some(Change::Remove) => {
+                self.fs
+                    .remove_file(
+                        &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                        RemoveOptions {
+                            recursive: false,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
+            }
         }
 
         Ok(())
