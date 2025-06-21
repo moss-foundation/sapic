@@ -21,7 +21,7 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
 
-use crate::{context::AnyAppContext, dirs, storage::segments::WORKSPACE_SEGKEY};
+use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {
@@ -144,18 +144,22 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         ))
     }
 
-    pub(crate) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+    pub(crate) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) -> Uuid {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
             id,
             this: workspace,
             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });
+
+        id
     }
 
-    pub(crate) async fn deactivate_workspace(&self) {
+    pub(crate) async fn deactivate_workspace(&self) -> Option<Uuid> {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = None;
+
+        active_workspace.take().map(|v| v.id)
     }
 
     pub(crate) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {

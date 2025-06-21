@@ -1,9 +1,29 @@
 use async_trait::async_trait;
-use moss_applib::{Global, context::Context, task::Task};
-use std::{any::Any, future::Future, ops::Deref, time::Duration};
+use moss_applib::{
+    Global,
+    context::{Context, ContextValue, ContextValueSet},
+    task::Task,
+};
+use std::{
+    any::{Any, TypeId},
+    future::Future,
+    sync::Arc,
+    time::Duration,
+};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 
 use crate::app::App;
+
+pub mod keys {
+    use moss_applib::context::ContextValue;
+    use uuid::Uuid;
+
+    /// The id of the workspace that is currently active.
+    #[derive(Deref, From)]
+    pub struct WorkspaceId(Uuid);
+
+    impl ContextValue for WorkspaceId {}
+}
 
 #[async_trait]
 pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
@@ -13,6 +33,13 @@ pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
 #[derive(Clone)]
 pub struct AppContext<R: TauriRuntime> {
     app_handle: AppHandle<R>,
+    values: ContextValueSet,
+}
+
+impl<R: TauriRuntime> AnyAppContext<R> for AppContext<R> {
+    fn app_handle(&self) -> AppHandle<R> {
+        self.app_handle.clone()
+    }
 }
 
 impl<R: TauriRuntime> Context<R> for AppContext<R> {
@@ -32,16 +59,19 @@ impl<R: TauriRuntime> Context<R> for AppContext<R> {
     {
         let fut = callback(AppContext {
             app_handle: self.app_handle.clone(),
+            values: self.values.clone(),
         });
         Task::new(fut, timeout)
     }
-}
 
-impl<R: TauriRuntime> Deref for AppContext<R> {
-    type Target = AppHandle<R>;
+    fn set_value<T: ContextValue>(&self, value: T) {
+        self.values.insert(TypeId::of::<T>(), Arc::new(value));
+    }
 
-    fn deref(&self) -> &Self::Target {
-        &self.app_handle
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
+        self.values
+            .get(&TypeId::of::<T>())
+            .and_then(|v| Arc::downcast(v.clone()).ok())
     }
 }
 
@@ -49,6 +79,7 @@ impl<R: TauriRuntime> From<App<R>> for AppContext<R> {
     fn from(app: App<R>) -> Self {
         AppContext {
             app_handle: app.app_handle().clone(),
+            values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
 }
@@ -57,6 +88,7 @@ impl<R: TauriRuntime> From<State<'_, App<R>>> for AppContext<R> {
     fn from(app: State<'_, App<R>>) -> Self {
         AppContext {
             app_handle: app.app_handle().clone(),
+            values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
 }
@@ -65,6 +97,7 @@ impl<R: TauriRuntime> From<&State<'_, App<R>>> for AppContext<R> {
     fn from(app: &State<'_, App<R>>) -> Self {
         AppContext {
             app_handle: app.app_handle().clone(),
+            values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
 }

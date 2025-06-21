@@ -1,11 +1,25 @@
 use anyhow::Result;
-use std::{any::Any, future::Future};
+use dashmap::DashMap;
+use derive_more::{Deref, DerefMut};
+use std::{
+    any::{Any, TypeId},
+    future::Future,
+    sync::Arc,
+};
 use tauri::{Runtime as TauriRuntime, State};
 use tokio::time::Duration;
 
 use crate::{Global, task::Task};
 
+pub trait ContextValue: Any + Send + Sync + 'static {}
+
+#[derive(Deref, DerefMut, Default, Clone)]
+pub struct ContextValueSet(Arc<DashMap<TypeId, Arc<dyn ContextValue>>>);
+
 pub trait Context<R: TauriRuntime>: Send + Sync {
+    fn set_value<T: ContextValue>(&self, value: T);
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>>;
+
     fn global<T>(&self) -> State<'_, T>
     where
         T: Global + Any + Send + Sync;
@@ -29,15 +43,29 @@ pub mod test {
     #[derive(Clone)]
     pub struct MockContext {
         app_handle: AppHandle<MockRuntime>,
+        values: ContextValueSet,
     }
 
     impl MockContext {
         pub fn new(app_handle: AppHandle<MockRuntime>) -> Self {
-            Self { app_handle }
+            Self {
+                app_handle,
+                values: ContextValueSet::default(),
+            }
         }
     }
 
     impl<R: TauriRuntime> Context<R> for MockContext {
+        fn set_value<T: ContextValue>(&self, value: T) {
+            self.values.insert(TypeId::of::<T>(), Arc::new(value));
+        }
+
+        fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
+            self.values
+                .get(&TypeId::of::<T>())
+                .and_then(|v| Arc::downcast(v.clone()).ok())
+        }
+
         fn global<T>(&self) -> State<'_, T>
         where
             T: Global + Any + Send + Sync,
@@ -55,6 +83,7 @@ pub mod test {
         {
             let fut = callback(MockContext {
                 app_handle: self.app_handle.clone(),
+                values: self.values.clone(),
             });
             let task = Task::new(fut, timeout);
             task

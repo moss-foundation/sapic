@@ -1,6 +1,11 @@
 pub mod shared;
 
-use moss_app::models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput};
+use moss_app::{
+    context::keys,
+    models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
+    services::workspace_service::WorkspaceService,
+};
+use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
@@ -38,7 +43,7 @@ async fn close_workspace_success() {
     assert_eq!(close_output.id, create_output.id);
 
     // Check that no workspace is active
-    assert!(app.active_workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     cleanup().await;
 }
@@ -120,7 +125,8 @@ async fn close_workspace_after_another_opened() {
         .unwrap();
 
     // Check that the second workspace is active
-    let active_id = app.active_workspace_id().await.unwrap();
+    assert!(ctx.value::<keys::WorkspaceId>().is_some());
+    let active_id = ctx.value::<keys::WorkspaceId>().unwrap();
     assert_eq!(active_id, create_output2.id);
 
     // Attempt to close the first workspace (should fail because it's not active)

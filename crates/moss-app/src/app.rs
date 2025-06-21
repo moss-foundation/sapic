@@ -84,9 +84,11 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
+#[derive(Deref)]
 pub struct App<R: TauriRuntime> {
-    pub(crate) fs: Arc<dyn FileSystem>,
+    #[deref]
     pub(crate) app_handle: AppHandle<R>,
+    pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) commands: AppCommands<R>,
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
@@ -98,14 +100,6 @@ pub struct App<R: TauriRuntime> {
 
     // TODO: Not sure this the best place for this, and do we even need it
     pub(crate) abs_path: Arc<Path>,
-}
-
-impl<R: TauriRuntime> Deref for App<R> {
-    type Target = AppHandle<R>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.app_handle
-    }
 }
 
 pub struct AppBuilder<R: TauriRuntime> {

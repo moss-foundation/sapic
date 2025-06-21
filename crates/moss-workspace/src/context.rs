@@ -62,6 +62,14 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         });
         Task::new(fut, timeout)
     }
+
+    fn set_value<T: moss_applib::context::ContextValue>(&self, value: T) {
+        todo!()
+    }
+
+    fn value<T: moss_applib::context::ContextValue>(&self) -> Option<Arc<T>> {
+        todo!()
+    }
 }
 
 #[async_trait]

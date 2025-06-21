@@ -1,3 +1,7 @@
+mod context;
+
+pub use context::*;
+
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     app::{App, AppBuilder, AppDefaults},
@@ -8,7 +12,6 @@ use moss_app::{
     services::log_service::LogService,
     storage::segments::WORKSPACE_SEGKEY,
 };
-use moss_applib::context::test::MockContext;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
@@ -29,7 +32,7 @@ pub fn workspace_key(id: Uuid) -> SegKeyBuf {
     WORKSPACE_SEGKEY.join(id.to_string())
 }
 
-pub async fn set_up_test_app() -> (App<MockRuntime>, MockContext, CleanupFn, PathBuf) {
+pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, PathBuf) {
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
@@ -74,7 +77,7 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockContext, CleanupFn, Pat
 
     // FIXME: This is a hack, should be a mock
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let ctx = MockContext::new(app_handle.clone());
+    let ctx = MockAppContext::new(app_handle.clone());
     let app_builder = AppBuilder::new(
         app_handle.clone(),
         global_storage,
@@ -101,5 +104,10 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockContext, CleanupFn, Pat
     )
     .with_service(log_service);
 
-    (app_builder.build(), ctx, cleanup_fn, app_path)
+    (
+        app_builder.build().await.unwrap(),
+        ctx,
+        cleanup_fn,
+        app_path,
+    )
 }

@@ -1,5 +1,4 @@
 use chrono::Utc;
-use moss_applib::context::Context;
 use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
@@ -9,15 +8,16 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
+    context::{AnyAppContext, keys},
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
     services::workspace_service::{WorkspaceDescriptor, WorkspaceService},
     storage::segments::WORKSPACE_SEGKEY,
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn open_workspace<C: Context<R>>(
+    pub async fn open_workspace<C: AnyAppContext<R>>(
         &self,
-        _ctx: &C,
+        ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspace_service = self.service::<WorkspaceService<R>>();
@@ -75,9 +75,11 @@ impl<R: TauriRuntime> App<R> {
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 
-        workspace_service
+        let workspace_id: keys::WorkspaceId = workspace_service
             .activate_workspace(descriptor.id, workspace)
-            .await;
+            .await
+            .into();
+        ctx.set_value(workspace_id);
 
         Ok(OpenWorkspaceOutput {
             id: descriptor.id,
