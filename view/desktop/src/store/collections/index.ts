@@ -305,6 +305,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
+        console.log("collectionEntry", collectionEntry);
         set((state) => {
           const existingCollectionEntry = state.streamedCollectionEntries.find((c) => c.id === collectionEntry.id);
           if (existingCollectionEntry) {

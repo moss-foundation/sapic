@@ -52,6 +52,7 @@ impl From<WorktreeError> for OperationError {
 
 pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
+#[derive(Debug)]
 pub struct WorktreeEntry {
     pub id: Uuid,
     pub name: String,
@@ -99,11 +100,14 @@ impl Worktree {
 
     pub async fn create_entry(
         &self,
-        path: &Path,
+        path: impl AsRef<Path>,
         name: &str,
         is_dir: bool,
         content: &[u8],
     ) -> WorktreeResult<()> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
         let encoded_path = moss_fs::utils::sanitize_path(path, None)?.join(sanitize(name));
         let abs_path = self.absolutize(&encoded_path)?;
 
@@ -232,6 +236,26 @@ impl Worktree {
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
+                let dir_name = job
+                    .path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_else(|| job.path.to_string_lossy().to_string());
+
+                match process_dir_entry(&dir_name, &job.path, &fs, &job.abs_path).await {
+                    Ok(Some(dir_entry)) => {
+                        let _ = sender.send(dir_entry);
+                    }
+                    Ok(None) => {
+                        // TODO: log error
+                        return;
+                    }
+                    Err(_err) => {
+                        // TODO: log error
+                        return;
+                    }
+                }
+
                 let mut read_dir = match fs::read_dir(&job.abs_path).await {
                     Ok(dir) => dir,
                     Err(_) => return,
@@ -265,15 +289,20 @@ impl Worktree {
                         // TODO: Probably should log here since we should not be able to get here
                     });
 
-                    continue_if_err!(sender.send(entry), |_err| {
-                        // TODO: log error
-                    });
-
-                    new_jobs.push(ScanJob {
-                        abs_path: Arc::clone(&child_abs_path),
-                        path: child_path,
-                        scan_queue: job.scan_queue.clone(),
-                    });
+                    if child_file_type.is_dir() {
+                        // For directories, don't send here - they will be sent when their ScanJob is processed
+                        // This avoids duplicate directory entries
+                        new_jobs.push(ScanJob {
+                            abs_path: Arc::clone(&child_abs_path),
+                            path: child_path,
+                            scan_queue: job.scan_queue.clone(),
+                        });
+                    } else {
+                        // For files, send immediately since they won't have their own ScanJob
+                        continue_if_err!(sender.send(entry), |_err| {
+                            // TODO: log error
+                        });
+                    }
                 }
 
                 for new_job in new_jobs {
