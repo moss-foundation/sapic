@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use moss_applib::{
     Global,
-    context::Context,
+    context::{Context, ContextValue},
     subscription::{Subscription, SubscriptionSet},
     task::Task,
 };
@@ -11,6 +11,11 @@ use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
 
 use crate::models::primitives::CollectionId;
+
+#[async_trait]
+pub trait AnyWorkspaceContext<R: TauriRuntime>: Context<R> {
+    async fn subscribe(&self, subscription: Subscribe);
+}
 
 pub struct WorkspaceContextState {
     on_collection_did_change: SubscriptionSet<CollectionId, OnDidChangeEvent>,
@@ -57,6 +62,18 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         });
         Task::new(fut, timeout)
     }
+
+    fn set_value<T: ContextValue>(&self, value: T) {
+        todo!()
+    }
+
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
+        todo!()
+    }
+
+    fn remove_value<T: ContextValue>(&self) {
+        todo!()
+    }
 }
 
 #[async_trait]
@@ -73,9 +90,4 @@ impl<R: TauriRuntime> AnyWorkspaceContext<R> for WorkspaceContext<R> {
 
 pub enum Subscribe {
     OnCollectionDidChange(CollectionId, Subscription<OnDidChangeEvent>),
-}
-
-#[async_trait]
-pub trait AnyWorkspaceContext<R: TauriRuntime>: Context<R> {
-    async fn subscribe(&self, subscription: Subscribe);
 }

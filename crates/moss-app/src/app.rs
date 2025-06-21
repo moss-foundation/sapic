@@ -1,19 +1,36 @@
-use moss_applib::Service;
+use anyhow::{Context as _, Result};
+use derive_more::{Deref, DerefMut};
+use moss_activity_indicator::ActivityIndicator;
+use moss_applib::{Service, context::Context};
 use moss_fs::FileSystem;
+use moss_storage::{
+    GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
+    storage::operations::ListByPrefix,
+};
 use moss_text::ReadOnlyStr;
-use moss_workbench::workbench::Workbench;
+use moss_workspace::{
+    Workspace,
+    context::{WorkspaceContext, WorkspaceContextState},
+};
 use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
+    collections::HashMap,
     ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::RwLock;
+use tokio::sync::{
+    OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard, futures,
+};
+use uuid::Uuid;
 
 use crate::{
     command::{CommandCallback, CommandDecl},
+    dirs,
     models::types::{ColorThemeInfo, LocaleInfo},
+    services::workspace_service::{WorkspaceReadGuard, WorkspaceService, WorkspaceWriteGuard},
 };
 
 pub struct AppPreferences {
@@ -67,45 +84,48 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
+#[derive(Deref)]
 pub struct App<R: TauriRuntime> {
-    pub(crate) fs: Arc<dyn FileSystem>,
+    #[deref]
     pub(crate) app_handle: AppHandle<R>,
-    pub(crate) workbench: Workbench<R>,
+    pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) commands: AppCommands<R>,
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
     pub(crate) services: AppServices,
-}
 
-impl<R: TauriRuntime> Deref for App<R> {
-    type Target = AppHandle<R>;
+    // TODO: This is also might be better to be a service
+    pub(crate) activity_indicator: ActivityIndicator<R>,
+    pub(super) global_storage: Arc<dyn GlobalStorage>,
 
-    fn deref(&self) -> &Self::Target {
-        &self.app_handle
-    }
+    // TODO: Not sure this the best place for this, and do we even need it
+    pub(crate) abs_path: Arc<Path>,
 }
 
 pub struct AppBuilder<R: TauriRuntime> {
     fs: Arc<dyn FileSystem>,
     app_handle: AppHandle<R>,
-    workbench: Workbench<R>,
     services: AppServices,
     defaults: AppDefaults,
     preferences: AppPreferences,
     commands: AppCommands<R>,
+    activity_indicator: ActivityIndicator<R>,
+    global_storage: Arc<dyn GlobalStorage>,
+    abs_path: Arc<Path>,
 }
 
 impl<R: TauriRuntime> AppBuilder<R> {
     pub fn new(
         app_handle: AppHandle<R>,
-        workbench: Workbench<R>,
+        global_storage: Arc<dyn GlobalStorage>,
+        activity_indicator: ActivityIndicator<R>,
         defaults: AppDefaults,
         fs: Arc<dyn FileSystem>,
+        abs_path: PathBuf,
     ) -> Self {
         Self {
             fs,
             app_handle,
-            workbench,
             defaults,
             preferences: AppPreferences {
                 theme: RwLock::new(None),
@@ -113,6 +133,9 @@ impl<R: TauriRuntime> AppBuilder<R> {
             },
             commands: Default::default(),
             services: Default::default(),
+            activity_indicator,
+            global_storage,
+            abs_path: abs_path.into(),
         }
     }
 
@@ -126,23 +149,33 @@ impl<R: TauriRuntime> AppBuilder<R> {
         self
     }
 
-    pub fn build(self) -> App<R> {
-        App {
+    pub async fn build(self) -> Result<App<R>> {
+        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR] {
+            let dir_path = self.abs_path.join(dir);
+            if dir_path.exists() {
+                continue;
+            }
+
+            self.fs
+                .create_dir(&dir_path)
+                .await
+                .context("Failed to create app directories")?;
+        }
+
+        Ok(App {
             fs: self.fs,
             app_handle: self.app_handle,
-            workbench: self.workbench,
             commands: self.commands,
             preferences: self.preferences,
             defaults: self.defaults,
             services: self.services,
-        }
+            activity_indicator: self.activity_indicator,
+            global_storage: self.global_storage,
+            abs_path: self.abs_path,
+        })
     }
 }
 impl<R: TauriRuntime> App<R> {
-    pub fn workbench(&self) -> &Workbench<R> {
-        &self.workbench
-    }
-
     pub fn preferences(&self) -> &AppPreferences {
         &self.preferences
     }
@@ -166,5 +199,22 @@ impl<R: TauriRuntime> App<R> {
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
+    }
+
+    pub async fn workspace(&self) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
+        self.service::<WorkspaceService<R>>()
+            .active_workspace(self.app_handle.clone())
+            .await
+    }
+
+    pub async fn workspace_mut(&self) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
+        self.service::<WorkspaceService<R>>()
+            .active_workspace_mut(self.app_handle.clone())
+            .await
+    }
+
+    /// Test only utility, not feature-flagged for easier CI setup
+    pub fn __storage(&self) -> Arc<dyn GlobalStorage> {
+        self.global_storage.clone()
     }
 }

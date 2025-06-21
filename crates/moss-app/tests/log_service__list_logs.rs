@@ -1,13 +1,13 @@
+pub mod shared;
+
 use chrono::{DateTime, FixedOffset};
 use moss_app::{
     models::{operations::ListLogsInput, primitives::LogLevel},
     services::log_service::{LogPayload, LogScope, LogService},
 };
-use std::{fs::remove_dir_all, str::FromStr, time::Duration};
+use std::{str::FromStr, time::Duration};
 
 use crate::shared::set_up_test_app;
-
-mod shared;
 
 /// These tests can work one at a time, but cannot be executed together using `cargo test`.
 /// This is because LoggingService will set a global default subscriber.
@@ -20,7 +20,7 @@ mod shared;
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let _log_service = app.service::<LogService>();
 
     let list_logs_result = app
@@ -35,7 +35,7 @@ async fn test_list_logs_empty() {
     let logs = list_logs_result.unwrap().contents;
     assert!(logs.is_empty());
 
-    remove_dir_all(app_path).unwrap();
+    cleanup().await;
 }
 
 #[ignore]
@@ -43,7 +43,7 @@ async fn test_list_logs_empty() {
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let log_service = app.service::<LogService>();
 
     for _ in 0..25 {
@@ -81,13 +81,14 @@ async fn test_list_logs_from_both_files_and_queue() {
     assert!(
         logs.is_sorted_by_key(|log| DateTime::<FixedOffset>::from_str(&log.timestamp).unwrap())
     );
-    remove_dir_all(app_path).unwrap();
+
+    cleanup().await;
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_level() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let log_service = app.service::<LogService>();
 
     log_service.debug(
@@ -144,13 +145,14 @@ async fn test_list_logs_by_level() {
         .unwrap()
         .contents;
     assert_eq!(error_logs.len(), 1);
-    remove_dir_all(app_path).unwrap();
+
+    cleanup().await;
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_resource() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let log_service = app.service::<LogService>();
 
     log_service.debug(
@@ -186,5 +188,6 @@ async fn test_list_logs_by_resource() {
         .contents;
 
     assert_eq!(resource_logs.len(), 1);
-    remove_dir_all(app_path).unwrap();
+
+    cleanup().await;
 }
