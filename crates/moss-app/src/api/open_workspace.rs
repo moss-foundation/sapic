@@ -8,18 +8,20 @@ use std::sync::Arc;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    app::{App, WorkspaceDescriptor},
+    app::App,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
+    services::workspace_service::{WorkspaceDescriptor, WorkspaceService},
     storage::segments::WORKSPACE_SEGKEY,
 };
 
 impl<R: TauriRuntime> App<R> {
     pub async fn open_workspace<C: Context<R>>(
         &self,
-        ctx: &C,
+        _ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let workspaces = self.workspaces(ctx).await?;
+        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspaces = workspace_service.workspaces().await?;
         let descriptor = workspaces
             .read()
             .await
@@ -33,7 +35,7 @@ impl<R: TauriRuntime> App<R> {
             ));
         }
 
-        if let Some(active_workspace_id) = self.active_workspace_id().await {
+        if let Some(active_workspace_id) = workspace_service.active_workspace_id().await {
             if active_workspace_id == descriptor.id {
                 return Ok(OpenWorkspaceOutput {
                     id: descriptor.id,
@@ -42,8 +44,12 @@ impl<R: TauriRuntime> App<R> {
             }
         }
 
-        let workspace =
-            Workspace::load(ctx, &descriptor.abs_path, self.activity_indicator.clone()).await?;
+        let workspace = Workspace::load(
+            self.fs.clone(),
+            &descriptor.abs_path,
+            self.activity_indicator.clone(),
+        )
+        .await?;
 
         let last_opened_at = Utc::now().timestamp();
 
@@ -55,8 +61,7 @@ impl<R: TauriRuntime> App<R> {
                 last_opened_at: Some(last_opened_at),
             };
 
-            let known_workspaces = self.workspaces(ctx).await?;
-            known_workspaces
+            workspaces
                 .write()
                 .await
                 .insert(descriptor.id, Arc::new(updated_workspace_entry));
@@ -70,7 +75,9 @@ impl<R: TauriRuntime> App<R> {
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 
-        self.activate_workspace(descriptor.id, workspace).await;
+        workspace_service
+            .activate_workspace(descriptor.id, workspace)
+            .await;
 
         Ok(OpenWorkspaceOutput {
             id: descriptor.id,

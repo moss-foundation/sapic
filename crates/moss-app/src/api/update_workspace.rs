@@ -4,18 +4,22 @@ use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
-use crate::{app::App, models::operations::UpdateWorkspaceInput};
+use crate::{
+    app::App, models::operations::UpdateWorkspaceInput,
+    services::workspace_service::WorkspaceService,
+};
 
 impl<R: TauriRuntime> App<R> {
     pub async fn update_workspace<C: Context<R>>(
         &self,
-        ctx: &C,
+        _ctx: &C,
         input: &UpdateWorkspaceInput,
     ) -> OperationResult<()> {
         input.validate()?;
 
-        let workspaces = self.workspaces(ctx).await?;
-        let mut workspace_guard = self.active_workspace.write().await;
+        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspaces = workspace_service.workspaces().await?;
+        let mut workspace_guard = workspace_service.active_workspace.write().await;
         let workspace = workspace_guard
             .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;

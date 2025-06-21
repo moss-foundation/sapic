@@ -7,14 +7,17 @@ use crate::{
         operations::DescribeAppStateOutput,
         types::{Defaults, Preferences},
     },
+    services::workspace_service::WorkspaceService,
 };
 
 // TODO: We must rewrite this crap later, it's a mess
 
 impl<R: TauriRuntime> App<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeAppStateOutput> {
+        let workspace_service = self.service::<WorkspaceService<R>>();
+
         // HACK: This is a hack to get the last workspace name
-        let active_workspace_lock = self.active_workspace.read().await;
+        let active_workspace_lock = workspace_service.active_workspace.read().await;
 
         let last_workspace_name = &active_workspace_lock.as_ref().map(|active_workspace| {
             active_workspace

@@ -31,6 +31,7 @@ tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "a
 tracing-appender.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 validator.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

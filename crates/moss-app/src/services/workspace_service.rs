@@ -1,28 +1,27 @@
+pub mod collection_provider;
+
 use anyhow::Result;
 use derive_more::{Deref, DerefMut};
-use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{Service, context::Context};
+use moss_applib::Service;
 use moss_fs::FileSystem;
 use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
 };
-use moss_text::ReadOnlyStr;
 use moss_workspace::{
     Workspace,
     context::{WorkspaceContext, WorkspaceContextState},
 };
-use rustc_hash::FxHashMap;
 use std::{
-    any::{Any, TypeId},
     collections::HashMap,
-    ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
+
+use crate::{context::AnyAppContext, dirs, storage::segments::WORKSPACE_SEGKEY};
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {
@@ -54,85 +53,188 @@ pub struct ActiveWorkspace<R: TauriRuntime> {
 }
 
 pub struct WorkspaceService<R: TauriRuntime> {
+    /// The absolute path to the workspaces directory
+    abs_path: Arc<Path>,
+    fs: Arc<dyn FileSystem>,
+    global_storage: Arc<dyn GlobalStorage>,
+    known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(crate) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
-    pub(crate) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
 }
 
-// impl<R: TauriRuntime> WorkspaceService<R> {
-//     pub fn new(app_handle: AppHandle<R>) -> Self {
-//         Self {
-//             active_workspace: RwLock::new(None),
-//             known_workspaces: OnceCell::new(),
-//         }
-//     }
+impl<R: TauriRuntime> Service for WorkspaceService<R> {}
 
-//     pub async fn active_workspace_id(&self) -> Option<Uuid> {
-//         let guard = self.active_workspace.read().await;
-//         if guard.is_none() {
-//             return None;
-//         }
+impl<R: TauriRuntime> WorkspaceService<R> {
+    pub fn new(
+        global_storage: Arc<dyn GlobalStorage>,
+        fs: Arc<dyn FileSystem>,
+        abs_path: &Path,
+    ) -> Self {
+        debug_assert!(abs_path.is_absolute());
+        let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
+        debug_assert!(abs_path.exists());
 
-//         let active = guard.as_ref()?;
-//         Some(active.id)
-//     }
+        Self {
+            fs,
+            global_storage,
+            abs_path,
+            known_workspaces: OnceCell::new(),
+            active_workspace: RwLock::new(None),
+        }
+    }
 
-//     pub async fn active_workspace(
-//         &self,
-//     ) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
-//         let guard = self.active_workspace.read().await;
-//         if guard.is_none() {
-//             return None;
-//         }
+    pub fn absolutize(&self, path: impl AsRef<Path>) -> PathBuf {
+        self.abs_path.join(path)
+    }
 
-//         let context_state = guard.as_ref()?.context.clone();
-//         let workspace_guard = RwLockReadGuard::map(guard, |opt| match opt.as_ref() {
-//             Some(active) => &active.this,
-//             None => unreachable!("Already checked for None above"),
-//         });
+    pub(crate) async fn active_workspace_id(&self) -> Option<Uuid> {
+        let guard = self.active_workspace.read().await;
+        if guard.is_none() {
+            return None;
+        }
 
-//         let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
-//         Some((
-//             WorkspaceReadGuard {
-//                 guard: workspace_guard,
-//             },
-//             context,
-//         ))
-//     }
+        let active = guard.as_ref()?;
+        Some(active.id)
+    }
 
-//     pub async fn active_workspace_mut(
-//         &self,
-//     ) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
-//         let guard = self.active_workspace.write().await;
-//         if guard.is_none() {
-//             return None;
-//         }
+    pub(crate) async fn active_workspace(
+        &self,
+        app_handle: AppHandle<R>,
+    ) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
+        let guard = self.active_workspace.read().await;
+        if guard.is_none() {
+            return None;
+        }
 
-//         let context_state = guard.as_ref()?.context.clone();
-//         let workspace_guard = RwLockWriteGuard::map(guard, |opt| match opt.as_mut() {
-//             Some(active) => &mut active.this,
-//             None => unreachable!("Already checked for None above"),
-//         });
+        let context_state = guard.as_ref()?.context.clone();
+        let workspace_guard = RwLockReadGuard::map(guard, |opt| match opt.as_ref() {
+            Some(active) => &active.this,
+            None => unreachable!("Already checked for None above"),
+        });
 
-//         let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
-//         Some((
-//             WorkspaceWriteGuard {
-//                 guard: workspace_guard,
-//             },
-//             context,
-//         ))
-//     }
+        let context = WorkspaceContext::new(app_handle, context_state);
+        Some((
+            WorkspaceReadGuard {
+                guard: workspace_guard,
+            },
+            context,
+        ))
+    }
 
-//     pub(super) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
-//         let mut active_workspace = self.active_workspace.write().await;
-//         *active_workspace = Some(ActiveWorkspace {
-//             id,
-//             this: workspace,
-//             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
-//         });
-//     }
+    pub(crate) async fn active_workspace_mut(
+        &self,
+        app_handle: AppHandle<R>,
+    ) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
+        let guard = self.active_workspace.write().await;
+        if guard.is_none() {
+            return None;
+        }
 
-//     pub(super) async fn deactivate_workspace(&self) {
-//         let mut active_workspace = self.active_workspace.write().await;
-//         *active_workspace = None;
-//     }
-// }
+        let context_state = guard.as_ref()?.context.clone();
+        let workspace_guard = RwLockWriteGuard::map(guard, |opt| match opt.as_mut() {
+            Some(active) => &mut active.this,
+            None => unreachable!("Already checked for None above"),
+        });
+
+        let context = WorkspaceContext::new(app_handle, context_state);
+        Some((
+            WorkspaceWriteGuard {
+                guard: workspace_guard,
+            },
+            context,
+        ))
+    }
+
+    pub(crate) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = Some(ActiveWorkspace {
+            id,
+            this: workspace,
+            context: Arc::new(RwLock::new(WorkspaceContextState::new())),
+        });
+    }
+
+    pub(crate) async fn deactivate_workspace(&self) {
+        let mut active_workspace = self.active_workspace.write().await;
+        *active_workspace = None;
+    }
+
+    pub(crate) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {
+        Ok(self
+            .known_workspaces
+            .get_or_try_init(|| async move {
+                let mut workspaces: WorkspaceMap = HashMap::new();
+
+                let restored_items = ListByPrefix::list_by_prefix(
+                    self.global_storage.item_store().as_ref(),
+                    WORKSPACE_SEGKEY.as_str().expect("invalid utf-8"),
+                )?;
+                let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
+                    let path = k.after(&WORKSPACE_SEGKEY);
+                    if let Some(path) = path {
+                        Some((path, v))
+                    } else {
+                        None
+                    }
+                });
+
+                let mut restored_entities = HashMap::with_capacity(restored_items.len());
+                for (segkey, value) in filtered_restored_items {
+                    let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
+                        Ok(name) => name,
+                        Err(_) => {
+                            // TODO: logging
+                            println!("failed to get the workspace {:?} name", segkey);
+                            continue;
+                        }
+                    };
+
+                    restored_entities.insert(encoded_name, value);
+                }
+
+                let mut read_dir = self.fs.read_dir(&self.abs_path).await?;
+                while let Some(entry) = read_dir.next_entry().await? {
+                    if !entry.file_type().await?.is_dir() {
+                        continue;
+                    }
+
+                    let id_str = entry.file_name().to_string_lossy().to_string();
+                    let id = match Uuid::parse_str(&id_str) {
+                        Ok(id) => id,
+                        Err(_) => {
+                            // TODO: logging
+                            println!("failed to get the collection {:?} name", id_str);
+                            continue;
+                        }
+                    };
+
+                    let summary = Workspace::<R>::summary(self.fs.clone(), &entry.path()).await?;
+
+                    let restored_entity =
+                        match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
+                            v.deserialize::<WorkspaceInfoEntity>().map(Some)
+                        }) {
+                            Ok(value) => value,
+                            Err(_err) => {
+                                // TODO: logging
+                                println!("failed to get the workspace {:?} info", id_str);
+                                continue;
+                            }
+                        };
+
+                    workspaces.insert(
+                        id,
+                        WorkspaceDescriptor {
+                            id,
+                            name: summary.manifest.name,
+                            abs_path: entry.path().into(),
+                            last_opened_at: restored_entity.map(|v| v.last_opened_at),
+                        }
+                        .into(),
+                    );
+                }
+
+                Ok::<_, anyhow::Error>(RwLock::new(workspaces))
+            })
+            .await?)
+    }
+}

@@ -1,8 +1,14 @@
+use async_trait::async_trait;
 use moss_applib::{Global, context::Context, task::Task};
 use std::{any::Any, future::Future, ops::Deref, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 
 use crate::app::App;
+
+#[async_trait]
+pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
+    fn app_handle(&self) -> AppHandle<R>;
+}
 
 #[derive(Clone)]
 pub struct AppContext<R: TauriRuntime> {

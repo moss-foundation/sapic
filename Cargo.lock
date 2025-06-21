@@ -1205,6 +1205,7 @@ dependencies = [
  "log",
  "macos-trampoline",
  "mimalloc",
+ "moss_activity_indicator",
  "moss_app",
  "moss_applib",
  "moss_collection",
@@ -1214,7 +1215,6 @@ dependencies = [
  "moss_storage",
  "moss_tauri",
  "moss_text",
- "moss_workbench",
  "moss_workspace",
  "objc",
  "rand 0.9.1",
@@ -2905,6 +2905,7 @@ name = "moss_app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "chrono",
  "derive_more 2.0.1",
  "moss_activity_indicator",
@@ -3148,30 +3149,6 @@ dependencies = [
  "moss_db",
  "redb",
  "serde",
-]
-
-[[package]]
-name = "moss_workbench"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "derive_more 2.0.1",
- "moss_activity_indicator",
- "moss_applib",
- "moss_common",
- "moss_db",
- "moss_fs",
- "moss_storage",
- "moss_testutils",
- "moss_text",
- "moss_workspace",
- "serde",
- "tauri",
- "tokio",
- "ts-rs",
- "uuid",
- "validator",
 ]
 
 [[package]]

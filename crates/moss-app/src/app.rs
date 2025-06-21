@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context as _, Result};
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{Service, context::Context};
@@ -21,14 +21,16 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
+use tokio::sync::{
+    OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard, futures,
+};
 use uuid::Uuid;
 
 use crate::{
     command::{CommandCallback, CommandDecl},
     dirs,
     models::types::{ColorThemeInfo, LocaleInfo},
-    storage::segments::WORKSPACE_SEGKEY,
+    services::workspace_service::{WorkspaceReadGuard, WorkspaceService, WorkspaceWriteGuard},
 };
 
 pub struct AppPreferences {
@@ -82,36 +84,6 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct WorkspaceDescriptor {
-    pub id: Uuid,
-    pub name: String,
-    pub abs_path: Arc<Path>,
-    pub last_opened_at: Option<i64>,
-}
-
-type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
-
-// TODO: Might be better to create a service for this
-#[derive(Deref, DerefMut)]
-pub struct ActiveWorkspace<R: TauriRuntime> {
-    pub id: Uuid,
-    #[deref]
-    #[deref_mut]
-    pub this: Workspace<R>,
-    pub context: Arc<RwLock<WorkspaceContextState>>,
-}
-
-#[derive(Deref)]
-pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
-    guard: RwLockReadGuard<'a, Workspace<R>>,
-}
-
-#[derive(Deref, DerefMut)]
-pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
-    guard: RwLockMappedWriteGuard<'a, Workspace<R>>,
-}
-
 pub struct App<R: TauriRuntime> {
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) app_handle: AppHandle<R>,
@@ -122,8 +94,6 @@ pub struct App<R: TauriRuntime> {
 
     // TODO: This is also might be better to be a service
     pub(crate) activity_indicator: ActivityIndicator<R>,
-    pub(crate) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
-    pub(crate) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(super) global_storage: Arc<dyn GlobalStorage>,
 
     // TODO: Not sure this the best place for this, and do we even need it
@@ -185,8 +155,20 @@ impl<R: TauriRuntime> AppBuilder<R> {
         self
     }
 
-    pub fn build(self) -> App<R> {
-        App {
+    pub async fn build(self) -> Result<App<R>> {
+        for dir in &[dirs::WORKSPACES_DIR, dirs::GLOBALS_DIR] {
+            let dir_path = self.abs_path.join(dir);
+            if dir_path.exists() {
+                continue;
+            }
+
+            self.fs
+                .create_dir(&dir_path)
+                .await
+                .context("Failed to create app directories")?;
+        }
+
+        Ok(App {
             fs: self.fs,
             app_handle: self.app_handle,
             commands: self.commands,
@@ -194,11 +176,9 @@ impl<R: TauriRuntime> AppBuilder<R> {
             defaults: self.defaults,
             services: self.services,
             activity_indicator: self.activity_indicator,
-            active_workspace: RwLock::new(None),
-            known_workspaces: OnceCell::new(),
             global_storage: self.global_storage,
             abs_path: self.abs_path,
-        }
+        })
     }
 }
 impl<R: TauriRuntime> App<R> {
@@ -227,165 +207,16 @@ impl<R: TauriRuntime> App<R> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 
-    pub async fn active_workspace_id(&self) -> Option<Uuid> {
-        let guard = self.active_workspace.read().await;
-        if guard.is_none() {
-            return None;
-        }
-
-        let active = guard.as_ref()?;
-        Some(active.id)
+    pub async fn workspace(&self) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
+        self.service::<WorkspaceService<R>>()
+            .active_workspace(self.app_handle.clone())
+            .await
     }
 
-    pub async fn active_workspace(
-        &self,
-    ) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
-        let guard = self.active_workspace.read().await;
-        if guard.is_none() {
-            return None;
-        }
-
-        let context_state = guard.as_ref()?.context.clone();
-        let workspace_guard = RwLockReadGuard::map(guard, |opt| match opt.as_ref() {
-            Some(active) => &active.this,
-            None => unreachable!("Already checked for None above"),
-        });
-
-        let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
-        Some((
-            WorkspaceReadGuard {
-                guard: workspace_guard,
-            },
-            context,
-        ))
-    }
-
-    pub async fn active_workspace_mut(
-        &self,
-    ) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
-        let guard = self.active_workspace.write().await;
-        if guard.is_none() {
-            return None;
-        }
-
-        let context_state = guard.as_ref()?.context.clone();
-        let workspace_guard = RwLockWriteGuard::map(guard, |opt| match opt.as_mut() {
-            Some(active) => &mut active.this,
-            None => unreachable!("Already checked for None above"),
-        });
-
-        let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
-        Some((
-            WorkspaceWriteGuard {
-                guard: workspace_guard,
-            },
-            context,
-        ))
-    }
-
-    pub(super) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
-        let mut active_workspace = self.active_workspace.write().await;
-        *active_workspace = Some(ActiveWorkspace {
-            id,
-            this: workspace,
-            context: Arc::new(RwLock::new(WorkspaceContextState::new())),
-        });
-    }
-
-    pub(super) async fn deactivate_workspace(&self) {
-        let mut active_workspace = self.active_workspace.write().await;
-        *active_workspace = None;
-    }
-
-    pub(super) async fn workspaces<C: Context<R>>(&self, ctx: &C) -> Result<&RwLock<WorkspaceMap>> {
-        Ok(self
-            .known_workspaces
-            .get_or_try_init(|| async move {
-                let mut workspaces: WorkspaceMap = HashMap::new();
-
-                let dir_abs_path = self.absolutize(dirs::WORKSPACES_DIR);
-                if !dir_abs_path.exists() {
-                    return Ok(RwLock::new(workspaces));
-                }
-
-                let restored_items = ListByPrefix::list_by_prefix(
-                    self.global_storage.item_store().as_ref(),
-                    WORKSPACE_SEGKEY.as_str().expect("invalid utf-8"),
-                )?;
-                let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
-                    let path = k.after(&WORKSPACE_SEGKEY);
-                    if let Some(path) = path {
-                        Some((path, v))
-                    } else {
-                        None
-                    }
-                });
-
-                let mut restored_entities = HashMap::with_capacity(restored_items.len());
-                for (segkey, value) in filtered_restored_items {
-                    let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
-                        Ok(name) => name,
-                        Err(_) => {
-                            // TODO: logging
-                            println!("failed to get the workspace {:?} name", segkey);
-                            continue;
-                        }
-                    };
-
-                    restored_entities.insert(encoded_name, value);
-                }
-
-                let fs = <dyn FileSystem>::global::<R, C>(ctx);
-
-                let mut read_dir = fs.read_dir(&dir_abs_path).await?;
-                while let Some(entry) = read_dir.next_entry().await? {
-                    if !entry.file_type().await?.is_dir() {
-                        continue;
-                    }
-
-                    let id_str = entry.file_name().to_string_lossy().to_string();
-                    let id = match Uuid::parse_str(&id_str) {
-                        Ok(id) => id,
-                        Err(_) => {
-                            // TODO: logging
-                            println!("failed to get the collection {:?} name", id_str);
-                            continue;
-                        }
-                    };
-
-                    let summary = Workspace::<R>::summary(ctx, &entry.path()).await?;
-
-                    let restored_entity =
-                        match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
-                            v.deserialize::<WorkspaceInfoEntity>().map(Some)
-                        }) {
-                            Ok(value) => value,
-                            Err(_err) => {
-                                // TODO: logging
-                                println!("failed to get the workspace {:?} info", id_str);
-                                continue;
-                            }
-                        };
-
-                    workspaces.insert(
-                        id,
-                        WorkspaceDescriptor {
-                            id,
-                            name: summary.manifest.name,
-                            abs_path: entry.path().into(),
-                            last_opened_at: restored_entity.map(|v| v.last_opened_at),
-                        }
-                        .into(),
-                    );
-                }
-
-                Ok::<_, anyhow::Error>(RwLock::new(workspaces))
-            })
-            .await?)
-    }
-
-    pub(super) fn absolutize(&self, path: impl AsRef<Path>) -> PathBuf {
-        self.abs_path.join(path)
+    pub async fn workspace_mut(&self) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
+        self.service::<WorkspaceService<R>>()
+            .active_workspace_mut(self.app_handle.clone())
+            .await
     }
 
     /// Test only utility, not feature-flagged for easier CI setup

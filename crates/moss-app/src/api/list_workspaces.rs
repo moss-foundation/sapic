@@ -5,14 +5,16 @@ use tauri::Runtime as TauriRuntime;
 use crate::{
     app::App,
     models::{operations::ListWorkspacesOutput, types::WorkspaceInfo},
+    services::workspace_service::WorkspaceService,
 };
 
 impl<R: TauriRuntime> App<R> {
     pub async fn list_workspaces<C: Context<R>>(
         &self,
-        ctx: &C,
+        _ctx: &C,
     ) -> OperationResult<ListWorkspacesOutput> {
-        let workspaces = self.workspaces(ctx).await?;
+        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspaces = workspace_service.workspaces().await?;
         let workspaces_lock = workspaces.read().await;
 
         Ok(ListWorkspacesOutput(

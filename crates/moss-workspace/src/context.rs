@@ -12,6 +12,11 @@ use tokio::sync::RwLock;
 
 use crate::models::primitives::CollectionId;
 
+#[async_trait]
+pub trait AnyWorkspaceContext<R: TauriRuntime>: Context<R> {
+    async fn subscribe(&self, subscription: Subscribe);
+}
+
 pub struct WorkspaceContextState {
     on_collection_did_change: SubscriptionSet<CollectionId, OnDidChangeEvent>,
 }
@@ -73,9 +78,4 @@ impl<R: TauriRuntime> AnyWorkspaceContext<R> for WorkspaceContext<R> {
 
 pub enum Subscribe {
     OnCollectionDidChange(CollectionId, Subscription<OnDidChangeEvent>),
-}
-
-#[async_trait]
-pub trait AnyWorkspaceContext<R: TauriRuntime>: Context<R> {
-    async fn subscribe(&self, subscription: Subscribe);
 }

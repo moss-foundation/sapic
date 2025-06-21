@@ -1,13 +1,9 @@
 use anyhow::Result;
 use std::{any::Any, future::Future};
-use tauri::{AppHandle, Runtime as TauriRuntime, State};
+use tauri::{Runtime as TauriRuntime, State};
 use tokio::time::Duration;
 
 use crate::{Global, task::Task};
-
-pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
-    fn app_handle(&self) -> AppHandle<R>;
-}
 
 pub trait Context<R: TauriRuntime>: Send + Sync {
     fn global<T>(&self) -> State<'_, T>

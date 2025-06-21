@@ -1,10 +1,11 @@
+pub mod shared;
+
 use moss_app::{
     models::operations::{BatchDeleteLogInput, ListLogsInput},
     services::log_service::{LogPayload, LogScope, LogService},
 };
 
 use crate::shared::set_up_test_app;
-mod shared;
 
 /// These tests can work one at a time, but cannot be executed together using `cargo test`.
 /// This is because LoggingService will set a global default subscriber.
