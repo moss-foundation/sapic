@@ -1,1 +1,1 @@
-pub mod image_upload;
+pub mod set_icon;

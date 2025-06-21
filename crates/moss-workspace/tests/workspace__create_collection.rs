@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_collection::{ICON_NAME, dirs::ASSETS_DIR};
+use moss_collection::{constants::ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_storage::{
     storage::operations::{GetItem, ListByPrefix},
@@ -214,7 +214,7 @@ async fn create_collection_with_repo() {
 
     // Verify that the repo is stored in the manifest model
     let collection = collections.iter().next().unwrap().1.read().await;
-    assert_eq!(collection.manifest().await.repo, Some(repo.clone()));
+    assert_eq!(collection.manifest().await.repository, Some(repo.clone()));
 
     cleanup().await;
 }

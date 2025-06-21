@@ -15,21 +15,15 @@ use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStat
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    #[ts(optional)]
     pub order: Option<usize>,
-
-    #[ts(optional)]
     pub external_path: Option<PathBuf>,
-
-    #[ts(optional)]
     pub repo: Option<Url>,
-
-    #[ts(optional)]
     pub icon_path: Option<PathBuf>,
 }
 
@@ -53,24 +47,17 @@ pub enum ChangeInput<T> {
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
     pub id: Uuid,
 
     #[validate(length(min = 1))]
-    #[ts(optional)]
     pub new_name: Option<String>,
 
-    #[ts(optional)]
     pub new_repo: Option<ChangeInput<Url>>,
-
-    #[ts(optional)]
     pub new_icon: Option<ChangeInput<PathBuf>>,
-
-    #[ts(optional)]
     pub order: Option<usize>,
-
-    #[ts(optional)]
     pub pinned: Option<bool>,
 }
 

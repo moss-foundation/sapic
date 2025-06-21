@@ -37,7 +37,7 @@ impl<R: TauriRuntime> Workspace<R> {
             item_lock
                 .modify(collection::ModifyParams {
                     name: input.new_name,
-                    repo: match input.new_repo {
+                    repository: match input.new_repo {
                         None => None,
                         Some(ChangeInput::Update(repo_url)) => Some(Change::Update(repo_url)),
                         Some(ChangeInput::Remove) => Some(Change::Remove),

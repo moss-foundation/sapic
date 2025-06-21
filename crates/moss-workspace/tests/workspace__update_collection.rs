@@ -1,14 +1,13 @@
 pub mod shared;
 
-use moss_collection::{ICON_NAME, dirs::ASSETS_DIR};
+use crate::shared::{generate_random_icon, setup_test_workspace};
+use moss_collection::{constants::ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
     ChangeInput, CreateCollectionInput, UpdateCollectionInput,
 };
 use url::Url;
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_collection_success() {
@@ -199,7 +198,7 @@ async fn update_collection_repo() {
     let collections = workspace.collections(&ctx).await.unwrap();
     let collection = collections.iter().next().unwrap().1.read().await;
 
-    assert_eq!(collection.manifest().await.repo, Some(new_repo));
+    assert_eq!(collection.manifest().await.repository, Some(new_repo));
 
     cleanup().await;
 }

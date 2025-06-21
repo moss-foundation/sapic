@@ -9,9 +9,7 @@ pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.toml";
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ManifestModel {
     pub name: String,
-    // TODO: Validation of repo path?
-    // We can have two types of repo paths though: HTTPS and SSH
-    pub repo: Option<Url>,
+    pub repository: Option<Url>,
 }
 
 #[derive(Debug)]
@@ -25,9 +23,9 @@ pub struct ManifestModelDiff {
     /// A new name for the collection, if provided, the collection
     /// will be renamed to this name.
     pub name: Option<String>,
-    /// An update to the repo url, if provided, the collection
+    /// An update to the repository url, if provided, the collection
     /// will be either updated or removed.
-    pub repo: Option<ManifestChange<Url>>,
+    pub repository: Option<ManifestChange<Url>>,
 }
 
 impl InPlaceEditor for ManifestModelDiff {
@@ -35,13 +33,13 @@ impl InPlaceEditor for ManifestModelDiff {
         if let Some(name) = &self.name {
             doc["name"] = name.into();
         }
-        match &self.repo {
+        match &self.repository {
             None => {}
             Some(ManifestChange::Remove) => {
-                doc.remove("repo");
+                doc.remove("repository");
             }
             Some(ManifestChange::Update(new_repo)) => {
-                doc["repo"] = new_repo.to_string().into();
+                doc["repository"] = new_repo.to_string().into();
             }
         }
 

@@ -17,12 +17,12 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::{
-    ICON_NAME, ICON_SIZE,
     config::{CONFIG_FILE_NAME, ConfigModel},
+    constants::{ICON_NAME, ICON_SIZE},
     defaults, dirs,
     dirs::ASSETS_DIR,
     manifest::{MANIFEST_FILE_NAME, ManifestChange, ManifestModel, ManifestModelDiff},
-    services::image_upload::ImageUploadService,
+    services::set_icon::SetIconService,
     worktree::Worktree,
 };
 
@@ -61,7 +61,7 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
-    pub repo: Option<Url>,
+    pub repository: Option<Url>,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -72,7 +72,7 @@ pub enum Change<T> {
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repo: Option<Change<Url>>,
+    pub repository: Option<Change<Url>>,
     pub icon: Option<Change<PathBuf>>,
 }
 
@@ -145,7 +145,7 @@ impl Collection {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                repo: params.repo,
+                repository: params.repository,
             },
         )
         .await?;
@@ -159,13 +159,13 @@ impl Collection {
         )
         .await?;
 
-        // If the user provides an icon, transform it and save it to assets/icon.png
         if let Some(icon_path) = params.icon_path {
-            ImageUploadService::upload_icon(
+            // TODO: Log the error here
+            let _ = SetIconService::set_icon(
                 &icon_path,
                 &abs_path.join(ASSETS_DIR).join(ICON_NAME),
                 ICON_SIZE,
-            )?;
+            );
         }
 
         // TODO: Load environments
@@ -183,11 +183,11 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() || params.repo.is_some() {
+        if params.name.is_some() || params.repository.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repo: match params.repo {
+                    repository: match params.repository {
                         None => None,
                         Some(Change::Update(new_repo)) => Some(ManifestChange::Update(new_repo)),
                         Some(Change::Remove) => Some(ManifestChange::Remove),
@@ -199,7 +199,7 @@ impl Collection {
         match params.icon {
             None => {}
             Some(Change::Update(new_icon_path)) => {
-                ImageUploadService::upload_icon(
+                SetIconService::set_icon(
                     &new_icon_path,
                     &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
                     ICON_SIZE,
