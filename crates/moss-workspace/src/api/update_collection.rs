@@ -31,21 +31,27 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        if input.new_name.is_some() || input.new_repo.is_some() || input.new_icon.is_some() {
+        let need_modify =
+            input.new_name.is_some() || input.new_repo.is_some() || input.new_icon.is_some();
+
+        if need_modify {
             let item_lock = item.write().await;
+
+            let repository = input.new_repo.map(|repo| match repo {
+                ChangeRepository::Update(repo_url) => Change::Update(repo_url),
+                ChangeRepository::Remove => Change::Remove,
+            });
+
+            let icon = input.new_icon.map(|icon| match icon {
+                ChangeIcon::Update(icon_path) => Change::Update(icon_path),
+                ChangeIcon::Remove => Change::Remove,
+            });
+
             item_lock
                 .modify(collection::ModifyParams {
                     name: input.new_name,
-                    repository: match input.new_repo {
-                        None => None,
-                        Some(ChangeRepository::Update(repo_url)) => Some(Change::Update(repo_url)),
-                        Some(ChangeRepository::Remove) => Some(Change::Remove),
-                    },
-                    icon: match input.new_icon {
-                        None => None,
-                        Some(ChangeIcon::Update(icon_path)) => Some(Change::Update(icon_path)),
-                        Some(ChangeIcon::Remove) => Some(Change::Remove),
-                    },
+                    repository,
+                    icon,
                 })
                 .await
                 .map_err(|e| OperationError::Internal(e.to_string()))?;
