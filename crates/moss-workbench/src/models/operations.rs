@@ -49,7 +49,6 @@ pub struct CreateWorkspaceInput {
     pub name: String,
 
     #[serde(default)]
-    #[ts(type = "WorkspaceMode")]
     pub mode: WorkspaceMode,
 
     #[serde(default = "default_open_on_creation")]
