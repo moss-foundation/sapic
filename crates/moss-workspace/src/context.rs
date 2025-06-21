@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use moss_applib::{
     Global,
-    context::Context,
+    context::{Context, ContextValue},
     subscription::{Subscription, SubscriptionSet},
     task::Task,
 };
@@ -63,11 +63,15 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         Task::new(fut, timeout)
     }
 
-    fn set_value<T: moss_applib::context::ContextValue>(&self, value: T) {
+    fn set_value<T: ContextValue>(&self, value: T) {
         todo!()
     }
 
-    fn value<T: moss_applib::context::ContextValue>(&self) -> Option<Arc<T>> {
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
+        todo!()
+    }
+
+    fn remove_value<T: ContextValue>(&self) {
         todo!()
     }
 }

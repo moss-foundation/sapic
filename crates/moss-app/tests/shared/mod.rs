@@ -9,7 +9,7 @@ use moss_app::{
         primitives::ThemeMode,
         types::{ColorThemeInfo, LocaleInfo},
     },
-    services::log_service::LogService,
+    services::{log_service::LogService, workspace_service::WorkspaceService},
     storage::segments::WORKSPACE_SEGKEY,
 };
 use moss_fs::{FileSystem, RealFileSystem};
@@ -64,6 +64,9 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
     )
     .unwrap();
 
+    let workspace_service: WorkspaceService<MockRuntime> =
+        WorkspaceService::new(global_storage.clone(), fs.clone(), &app_path);
+
     let cleanup_fn = Box::new({
         let path = app_path.clone();
         move || {
@@ -102,7 +105,8 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
         fs.clone(),
         app_path.clone(),
     )
-    .with_service(log_service);
+    .with_service(log_service)
+    .with_service(workspace_service);
 
     (
         app_builder.build().await.unwrap(),

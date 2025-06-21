@@ -8,7 +8,7 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
-    context::{AnyAppContext, keys},
+    context::{AnyAppContext, ctxkeys},
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
     services::workspace_service::{WorkspaceDescriptor, WorkspaceService},
     storage::segments::WORKSPACE_SEGKEY,
@@ -35,7 +35,7 @@ impl<R: TauriRuntime> App<R> {
             ));
         }
 
-        if let Some(active_workspace_id) = workspace_service.active_workspace_id().await {
+        if let Some(active_workspace_id) = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id) {
             if active_workspace_id == descriptor.id {
                 return Ok(OpenWorkspaceOutput {
                     id: descriptor.id,
@@ -75,11 +75,9 @@ impl<R: TauriRuntime> App<R> {
             PutItem::put(item_store.as_ref(), segkey, value)?;
         }
 
-        let workspace_id: keys::WorkspaceId = workspace_service
-            .activate_workspace(descriptor.id, workspace)
-            .await
-            .into();
-        ctx.set_value(workspace_id);
+        workspace_service
+            .activate_workspace(ctx, descriptor.id, workspace)
+            .await;
 
         Ok(OpenWorkspaceOutput {
             id: descriptor.id,

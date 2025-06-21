@@ -22,6 +22,10 @@ impl Context<MockRuntime> for MockAppContext {
         self.values.insert(TypeId::of::<T>(), Arc::new(value));
     }
 
+    fn remove_value<T: ContextValue>(&self) {
+        self.values.remove(&TypeId::of::<T>());
+    }
+
     fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
         self.values
             .get(&TypeId::of::<T>())

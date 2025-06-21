@@ -1,9 +1,11 @@
 pub mod shared;
 
 use moss_app::{
+    context::ctxkeys,
     dirs,
     models::operations::{CreateWorkspaceInput, OpenWorkspaceInput},
 };
+use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
@@ -53,9 +55,9 @@ async fn open_workspace_success() {
     assert_eq!(open_output.abs_path, expected_path);
 
     // Check active workspace
-    let active_workspace = app.active_workspace().await;
+    let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
     assert_eq!(workspace_guard.abs_path(), &expected_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
@@ -106,7 +108,7 @@ async fn open_workspace_already_opened() {
     assert_eq!(open_output.abs_path, expected_path);
 
     // Check active workspace is still the same
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     cleanup().await;
@@ -157,7 +159,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1.id, create_output1.id);
 
     // Check first workspace is active
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Open second workspace (should replace first)
@@ -173,7 +175,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result2.id, create_output2.id);
 
     // Check second workspace is now active
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output2.id);
 
     // Open first workspace again
@@ -189,7 +191,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1_again.id, create_output1.id);
 
     // Check first workspace is active again
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output1.id);
 
     cleanup().await;

@@ -50,7 +50,7 @@ async fn rename_workspace_success() {
     assert_eq!(list_workspaces[0].display_name, new_name);
 
     // Verify active workspace has the new name
-    let active_workspace = app.active_workspace().await;
+    let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
     assert_eq!(workspace_guard.manifest().await.name, new_name);
 

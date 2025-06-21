@@ -21,7 +21,11 @@ use tauri::{AppHandle, Runtime as TauriRuntime};
 use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
 
-use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
+use crate::{
+    context::{AnyAppContext, ctxkeys},
+    dirs,
+    storage::segments::WORKSPACE_SEGKEY,
+};
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {
@@ -45,7 +49,6 @@ pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: TauriRuntime> {
-    pub id: Uuid,
     #[deref]
     #[deref_mut]
     pub this: Workspace<R>,
@@ -84,16 +87,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
     pub fn absolutize(&self, path: impl AsRef<Path>) -> PathBuf {
         self.abs_path.join(path)
-    }
-
-    pub(crate) async fn active_workspace_id(&self) -> Option<Uuid> {
-        let guard = self.active_workspace.read().await;
-        if guard.is_none() {
-            return None;
-        }
-
-        let active = guard.as_ref()?;
-        Some(active.id)
     }
 
     pub(crate) async fn active_workspace(
@@ -144,22 +137,27 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         ))
     }
 
-    pub(crate) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) -> Uuid {
+    pub(crate) async fn activate_workspace<C: AnyAppContext<R>>(
+        &self,
+        ctx: &C,
+        id: Uuid,
+        workspace: Workspace<R>,
+    ) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
-            id,
             this: workspace,
             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });
 
-        id
+        let workspace_id: ctxkeys::WorkspaceId = id.into();
+        ctx.set_value(workspace_id);
     }
 
-    pub(crate) async fn deactivate_workspace(&self) -> Option<Uuid> {
+    pub(crate) async fn deactivate_workspace<C: AnyAppContext<R>>(&self, ctx: &C) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = None;
 
-        active_workspace.take().map(|v| v.id)
+        ctx.remove_value::<ctxkeys::WorkspaceId>();
     }
 
     pub(crate) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {

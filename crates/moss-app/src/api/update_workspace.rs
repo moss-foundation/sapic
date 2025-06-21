@@ -1,18 +1,19 @@
-use moss_applib::context::Context;
 use moss_common::api::{OperationOptionExt, OperationResult};
 use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    app::App, models::operations::UpdateWorkspaceInput,
+    app::App,
+    context::{AnyAppContext, ctxkeys},
+    models::operations::UpdateWorkspaceInput,
     services::workspace_service::WorkspaceService,
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn update_workspace<C: Context<R>>(
+    pub async fn update_workspace<C: AnyAppContext<R>>(
         &self,
-        _ctx: &C,
+        ctx: &C,
         input: &UpdateWorkspaceInput,
     ) -> OperationResult<()> {
         input.validate()?;
@@ -24,11 +25,16 @@ impl<R: TauriRuntime> App<R> {
             .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
 
+        let workspace_id = ctx
+            .value::<ctxkeys::WorkspaceId>()
+            .map(|id| **id)
+            .map_err_as_internal("The required context value is not provided")?;
+
         let mut descriptor = {
             let workspaces_lock = workspaces.read().await;
 
             workspaces_lock
-                .get(&workspace.id)
+                .get(&workspace_id)
                 .map_err_as_internal("Workspace not found")? // This should never happen, if it does, there is a bug
                 .as_ref()
                 .clone()
@@ -51,7 +57,7 @@ impl<R: TauriRuntime> App<R> {
 
         {
             let mut workspaces_lock = workspaces.write().await;
-            workspaces_lock.insert(workspace.id, descriptor.into());
+            workspaces_lock.insert(workspace_id, descriptor.into());
         }
 
         Ok(())

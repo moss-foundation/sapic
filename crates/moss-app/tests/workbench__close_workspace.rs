@@ -1,9 +1,8 @@
 pub mod shared;
 
 use moss_app::{
-    context::keys,
+    context::ctxkeys,
     models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
-    services::workspace_service::WorkspaceService,
 };
 use moss_applib::context::Context;
 use moss_common::api::OperationError;
@@ -33,9 +32,12 @@ async fn close_workspace_success() {
 
     // Close the workspace
     let close_result = app
-        .close_workspace(&CloseWorkspaceInput {
-            id: create_output.id,
-        })
+        .close_workspace(
+            &ctx,
+            &CloseWorkspaceInput {
+                id: create_output.id,
+            },
+        )
         .await;
 
     assert!(close_result.is_ok());
@@ -68,9 +70,12 @@ async fn close_workspace_not_open() {
 
     // Attempt to close the workspace (should fail because it's not open)
     let close_result = app
-        .close_workspace(&CloseWorkspaceInput {
-            id: create_output.id,
-        })
+        .close_workspace(
+            &ctx,
+            &CloseWorkspaceInput {
+                id: create_output.id,
+            },
+        )
         .await;
 
     assert!(close_result.is_err());
@@ -125,15 +130,21 @@ async fn close_workspace_after_another_opened() {
         .unwrap();
 
     // Check that the second workspace is active
-    assert!(ctx.value::<keys::WorkspaceId>().is_some());
-    let active_id = ctx.value::<keys::WorkspaceId>().unwrap();
+
+    let maybe_active_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id);
+    assert!(maybe_active_id.is_some());
+    let active_id = maybe_active_id.unwrap();
+
     assert_eq!(active_id, create_output2.id);
 
     // Attempt to close the first workspace (should fail because it's not active)
     let close_result1 = app
-        .close_workspace(&CloseWorkspaceInput {
-            id: create_output1.id,
-        })
+        .close_workspace(
+            &ctx,
+            &CloseWorkspaceInput {
+                id: create_output1.id,
+            },
+        )
         .await;
 
     assert!(close_result1.is_err());
@@ -144,9 +155,12 @@ async fn close_workspace_after_another_opened() {
 
     // Close the second workspace (should succeed)
     let close_result2 = app
-        .close_workspace(&CloseWorkspaceInput {
-            id: create_output2.id,
-        })
+        .close_workspace(
+            &ctx,
+            &CloseWorkspaceInput {
+                id: create_output2.id,
+            },
+        )
         .await;
 
     assert!(close_result2.is_ok());
@@ -154,19 +168,19 @@ async fn close_workspace_after_another_opened() {
     assert_eq!(close_output.id, create_output2.id);
 
     // Check that no workspace is active
-    assert!(app.active_workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn close_workspace_nonexistent() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
 
     let nonexistent_id = Uuid::new_v4();
 
     let close_result = app
-        .close_workspace(&CloseWorkspaceInput { id: nonexistent_id })
+        .close_workspace(&ctx, &CloseWorkspaceInput { id: nonexistent_id })
         .await;
 
     assert!(close_result.is_err());
@@ -209,7 +223,7 @@ async fn close_workspace_from_different_session() {
     // Try to close a workspace with wrong id
     let wrong_id = Uuid::new_v4();
     let close_result = app
-        .close_workspace(&CloseWorkspaceInput { id: wrong_id })
+        .close_workspace(&ctx, &CloseWorkspaceInput { id: wrong_id })
         .await;
 
     assert!(close_result.is_err());

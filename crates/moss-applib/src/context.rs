@@ -18,6 +18,7 @@ pub struct ContextValueSet(Arc<DashMap<TypeId, Arc<dyn ContextValue>>>);
 
 pub trait Context<R: TauriRuntime>: Send + Sync {
     fn set_value<T: ContextValue>(&self, value: T);
+    fn remove_value<T: ContextValue>(&self);
     fn value<T: ContextValue>(&self) -> Option<Arc<T>>;
 
     fn global<T>(&self) -> State<'_, T>
@@ -58,6 +59,10 @@ pub mod test {
     impl<R: TauriRuntime> Context<R> for MockContext {
         fn set_value<T: ContextValue>(&self, value: T) {
             self.values.insert(TypeId::of::<T>(), Arc::new(value));
+        }
+
+        fn remove_value<T: ContextValue>(&self) {
+            self.values.remove(&TypeId::of::<T>());
         }
 
         fn value<T: ContextValue>(&self) -> Option<Arc<T>> {

@@ -1,9 +1,11 @@
 pub mod shared;
 
 use moss_app::{
+    context::ctxkeys,
     dirs,
     models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
 };
+use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
@@ -135,10 +137,10 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
-    // Delete the workspace (should fail because it's open)
+    // Delete the workspace (should succeed and deactivate it)
     let delete_result = app
         .delete_workspace(
             &ctx,
@@ -148,18 +150,17 @@ async fn delete_workspace_opened() {
         )
         .await;
 
-    assert!(delete_result.is_err());
-    assert!(matches!(
-        delete_result,
-        Err(OperationError::FailedPrecondition(_))
-    ));
+    assert!(delete_result.is_ok());
 
-    // Verify workspace directory still exists
-    assert!(workspace_path.exists());
+    // Verify workspace directory was deleted
+    assert!(!workspace_path.exists());
 
-    // Verify workspace is still in list
+    // Verify workspace is not in list
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
-    assert_eq!(list_workspaces.len(), 1);
+    assert!(list_workspaces.is_empty());
+
+    // Verify that no workspace is active after deletion
+    assert!(ctx.value::<ctxkeys::WorkspaceId>().is_none());
 
     cleanup().await;
 }

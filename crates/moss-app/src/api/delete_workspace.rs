@@ -1,18 +1,20 @@
-use moss_applib::context::Context;
 use moss_common::api::{OperationOptionExt, OperationResult};
 use moss_fs::RemoveOptions;
 use moss_storage::storage::operations::RemoveItem;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
-    app::App, models::operations::DeleteWorkspaceInput,
-    services::workspace_service::WorkspaceService, storage::segments::WORKSPACE_SEGKEY,
+    app::App,
+    context::{AnyAppContext, ctxkeys},
+    models::operations::DeleteWorkspaceInput,
+    services::workspace_service::WorkspaceService,
+    storage::segments::WORKSPACE_SEGKEY,
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn delete_workspace<C: Context<R>>(
+    pub async fn delete_workspace<C: AnyAppContext<R>>(
         &self,
-        _ctx: &C,
+        ctx: &C,
         input: &DeleteWorkspaceInput,
     ) -> OperationResult<()> {
         let workspace_service = self.service::<WorkspaceService<R>>();
@@ -49,9 +51,9 @@ impl<R: TauriRuntime> App<R> {
             workspaces_lock.remove(&workspace_desc.id);
         }
 
-        if let Some(active_workspace_id) = workspace_service.active_workspace_id().await {
+        if let Some(active_workspace_id) = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id) {
             if active_workspace_id == input.id {
-                workspace_service.deactivate_workspace().await;
+                workspace_service.deactivate_workspace(ctx).await;
             }
         }
 

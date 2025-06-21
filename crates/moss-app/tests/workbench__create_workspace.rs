@@ -1,6 +1,7 @@
 pub mod shared;
 
-use moss_app::{dirs, models::operations::CreateWorkspaceInput};
+use moss_app::{context::ctxkeys, dirs, models::operations::CreateWorkspaceInput};
+use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
@@ -36,9 +37,9 @@ async fn create_workspace_success() {
     let id = create_output.id;
 
     // Check active workspace
-    let active_workspace = app.active_workspace().await;
+    let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, id);
     assert_eq!(workspace_guard.abs_path(), &expected_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
@@ -79,7 +80,7 @@ async fn create_workspace_empty_name() {
     // Ensure no workspace was created or activated
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert!(list_workspaces.is_empty());
-    assert!(app.active_workspace().await.is_none());
+    assert!(app.workspace().await.is_none());
 
     // Check database
     let item_store = app.__storage().item_store();
@@ -141,9 +142,9 @@ async fn create_workspace_same_name() {
     assert_ne!(first_output.id, second_output.id);
 
     // Check active workspace is the second one
-    let active_workspace = app.active_workspace().await;
+    let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = app.active_workspace_id().await.unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, second_output.id);
     assert_eq!(workspace_guard.abs_path(), &second_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
@@ -204,9 +205,9 @@ async fn create_workspace_special_chars() {
         assert!(expected_path.exists());
 
         // Check active workspace
-        let active_workspace = app.active_workspace().await;
+        let active_workspace = app.workspace().await;
         let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-        let active_workspace_id = app.active_workspace_id().await.unwrap();
+        let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
         assert_eq!(active_workspace_id, create_output.id);
         assert_eq!(workspace_guard.abs_path(), &expected_path);
         assert_eq!(workspace_guard.manifest().await.name, name);
@@ -252,7 +253,7 @@ async fn create_workspace_not_open_on_creation() {
     assert!(expected_path.exists());
 
     // Check that no workspace is active
-    assert!(app.active_workspace().await.as_ref().is_none());
+    assert!(app.workspace().await.as_ref().is_none());
 
     // Check workspace is in list
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();

@@ -1,6 +1,5 @@
 use anyhow::Context as _;
 use chrono::Utc;
-use moss_applib::context::Context;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
@@ -13,13 +12,14 @@ use validator::Validate;
 
 use crate::{
     app::App,
+    context::AnyAppContext,
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     services::workspace_service::{WorkspaceDescriptor, WorkspaceService},
     storage::segments::WORKSPACE_SEGKEY,
 };
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn create_workspace<C: Context<R>>(
+    pub async fn create_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
         input: &CreateWorkspaceInput,
@@ -79,7 +79,7 @@ impl<R: TauriRuntime> App<R> {
         match (last_opened_at, input.open_on_creation) {
             (Some(last_opened_at), true) => {
                 workspace_service
-                    .activate_workspace(id, new_workspace)
+                    .activate_workspace(ctx, id, new_workspace)
                     .await;
 
                 let item_store = self.global_storage.item_store();

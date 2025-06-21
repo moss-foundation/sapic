@@ -14,12 +14,12 @@ use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 
 use crate::app::App;
 
-pub mod keys {
+pub mod ctxkeys {
     use moss_applib::context::ContextValue;
     use uuid::Uuid;
 
     /// The id of the workspace that is currently active.
-    #[derive(Deref, From)]
+    #[derive(Debug, Deref, From, PartialEq, Eq, Hash)]
     pub struct WorkspaceId(Uuid);
 
     impl ContextValue for WorkspaceId {}
@@ -66,6 +66,10 @@ impl<R: TauriRuntime> Context<R> for AppContext<R> {
 
     fn set_value<T: ContextValue>(&self, value: T) {
         self.values.insert(TypeId::of::<T>(), Arc::new(value));
+    }
+
+    fn remove_value<T: ContextValue>(&self) {
+        self.values.remove(&TypeId::of::<T>());
     }
 
     fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
