@@ -2,7 +2,6 @@ use moss_app::{
     models::operations::{BatchDeleteLogInput, ListLogsInput},
     services::log_service::{LogPayload, LogScope, LogService},
 };
-use std::fs::remove_dir_all;
 
 use crate::shared::set_up_test_app;
 mod shared;
@@ -16,7 +15,7 @@ mod shared;
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_queue() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
 
     let log_service = app.service::<LogService>();
     // We only have one log, less than the dump threshold
@@ -57,13 +56,13 @@ async fn test_delete_logs_from_queue() {
         .unwrap()
         .contents;
     assert!(new_logs.is_empty());
-    remove_dir_all(app_path).unwrap();
+    cleanup().await;
 }
 
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_file() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let log_service = app.service::<LogService>();
 
     // By default, the dump threshold is 10, which means that the first log
@@ -106,12 +105,12 @@ async fn test_delete_logs_from_file() {
         .unwrap()
         .contents;
     assert_eq!(new_logs.len(), 14);
-    remove_dir_all(app_path).unwrap();
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn test_delete_all_logs() {
-    let (app, app_path) = set_up_test_app().await;
+    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
     let log_service = app.service::<LogService>();
 
     for _ in 0..15 {
@@ -153,5 +152,5 @@ async fn test_delete_all_logs() {
         .contents;
     assert!(new_logs.is_empty());
 
-    remove_dir_all(app_path).unwrap();
+    cleanup().await;
 }

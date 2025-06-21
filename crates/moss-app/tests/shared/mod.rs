@@ -1,3 +1,4 @@
+use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     app::{App, AppBuilder, AppDefaults},
     models::{
@@ -5,53 +6,79 @@ use moss_app::{
         types::{ColorThemeInfo, LocaleInfo},
     },
     services::log_service::LogService,
+    storage::segments::WORKSPACE_SEGKEY,
 };
-use moss_fs::RealFileSystem;
-use moss_storage::global_storage::GlobalStorageImpl;
+use moss_applib::context::test::MockContext;
+use moss_fs::{FileSystem, RealFileSystem};
+use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
-use moss_workbench::workbench::{Options as WorkbenchOptions, Workbench};
-use std::{fs::create_dir_all, path::PathBuf, sync::Arc};
+use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc};
 use tauri::test::MockRuntime;
 use uuid::Uuid;
 
-fn random_test_app_path() -> PathBuf {
+pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
+
+pub fn random_app_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
         .join(random_string(10))
 }
 
-pub async fn set_up_test_app() -> (App<MockRuntime>, PathBuf) {
+pub fn workspace_key(id: Uuid) -> SegKeyBuf {
+    WORKSPACE_SEGKEY.join(id.to_string())
+}
+
+pub async fn set_up_test_app() -> (App<MockRuntime>, MockContext, CleanupFn, PathBuf) {
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
 
-    let app_path = random_test_app_path();
-    let applog_path = app_path.join("logs");
-    create_dir_all(&applog_path).unwrap();
+    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
+
+    let app_path = random_app_dir_path();
+
+    let logs_abs_path = app_path.join("logs");
+    let workspaces_abs_path = app_path.join("workspaces");
+    let globals_abs_path = app_path.join("globals");
+
+    {
+        tokio::fs::create_dir_all(&app_path).await.unwrap();
+        tokio::fs::create_dir(&logs_abs_path).await.unwrap();
+        tokio::fs::create_dir(&workspaces_abs_path).await.unwrap();
+        tokio::fs::create_dir(&globals_abs_path).await.unwrap();
+    }
 
     let global_storage = Arc::new(GlobalStorageImpl::new(app_path.clone()).unwrap());
-    let workbench = Workbench::new(
-        app_handle.clone(),
-        global_storage.clone(),
-        WorkbenchOptions {
-            abs_path: app_path.clone().into(),
-        },
-    );
 
     let session_id = Uuid::new_v4();
     let log_service = LogService::new(
         fs.clone(),
         app_handle.clone(),
-        &applog_path,
+        &logs_abs_path,
         &session_id,
         global_storage.clone(),
     )
     .unwrap();
 
+    let cleanup_fn = Box::new({
+        let path = app_path.clone();
+        move || {
+            Box::pin(async move {
+                if let Err(e) = tokio::fs::remove_dir_all(&path).await {
+                    eprintln!("Failed to clean up test directory: {}", e);
+                }
+            }) as Pin<Box<dyn Future<Output = ()> + Send>>
+        }
+    });
+
+    // FIXME: This is a hack, should be a mock
+    let activity_indicator = ActivityIndicator::new(app_handle.clone());
+    let ctx = MockContext::new(app_handle.clone());
     let app_builder = AppBuilder::new(
         app_handle.clone(),
-        workbench,
+        global_storage,
+        activity_indicator,
         AppDefaults {
             theme: ColorThemeInfo {
                 identifier: "".to_string(),
@@ -70,8 +97,9 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, PathBuf) {
             },
         },
         fs.clone(),
+        app_path.clone(),
     )
     .with_service(log_service);
 
-    (app_builder.build(), app_path)
+    (app_builder.build(), ctx, cleanup_fn, app_path)
 }

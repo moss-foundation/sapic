@@ -235,7 +235,12 @@ impl LogService {
                     })),
             );
 
-        tracing::subscriber::set_global_default(subscriber)?;
+        // FIXME: This is a hack to avoid panic when running multiple tests
+        // We should find a better way to handle this
+        if let Err(_) = tracing::subscriber::set_global_default(subscriber) {
+            // Global subscriber already set
+        }
+
         Ok(Self {
             fs,
             applog_path: applog_path.to_path_buf(),

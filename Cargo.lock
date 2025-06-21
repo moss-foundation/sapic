@@ -2906,6 +2906,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "derive_more 2.0.1",
+ "moss_activity_indicator",
  "moss_applib",
  "moss_common",
  "moss_db",
@@ -2914,7 +2916,6 @@ dependencies = [
  "moss_tauri",
  "moss_testutils",
  "moss_text",
- "moss_workbench",
  "moss_workspace",
  "nanoid",
  "parking_lot",
@@ -2929,6 +2930,7 @@ dependencies = [
  "tracing-subscriber",
  "ts-rs",
  "uuid",
+ "validator",
 ]
 
 [[package]]
