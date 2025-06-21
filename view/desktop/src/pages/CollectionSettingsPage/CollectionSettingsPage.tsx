@@ -14,6 +14,7 @@ export const CollectionSettings = () => {
   const { mutate: deleteCollection } = useDeleteCollection();
 
   const [name, setName] = useState("");
+  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   useEffect(() => {
@@ -95,7 +96,14 @@ export const CollectionSettings = () => {
       <div className="relative flex h-full justify-center">
         {/* Main Content - Centered on full page width */}
         <div className="w-full max-w-2xl space-y-6 px-6 py-5">
-          <CollectionNameSection name={name} setName={setName} onSave={handleSave} onBlur={handleBlur} />
+          <CollectionNameSection
+            name={name}
+            setName={setName}
+            repository={repository}
+            setRepository={setRepository}
+            onSave={handleSave}
+            onBlur={handleBlur}
+          />
 
           <CollectionDangerZoneSection onDeleteClick={handleDeleteClick} />
         </div>
