@@ -1,13 +1,15 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::collection::{self, IconModification};
+use moss_collection::collection;
 use moss_common::api::{OperationError, OperationResult, OperationResultExt};
 
 use crate::{
-    models::operations::{UpdateCollectionInput, UpdateCollectionOutput, UpdateIconInput},
+    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
     workspace::Workspace,
 };
 
+use crate::models::operations::ChangeInput;
+use moss_collection::collection::Change;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
@@ -30,19 +32,20 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        if input.new_name.is_some()
-            || input.new_repo.is_some()
-            || !matches!(input.new_icon, UpdateIconInput::Nochange)
-        {
+        if input.new_name.is_some() || input.new_repo.is_some() || input.new_icon.is_some() {
             let item_lock = item.write().await;
             item_lock
                 .modify(collection::ModifyParams {
                     name: input.new_name,
-                    repo: input.new_repo,
+                    repo: match input.new_repo {
+                        None => None,
+                        Some(ChangeInput::Update(repo_url)) => Some(Change::Update(repo_url)),
+                        Some(ChangeInput::Remove) => Some(Change::Remove),
+                    },
                     icon: match input.new_icon {
-                        UpdateIconInput::Nochange => IconModification::Nochange,
-                        UpdateIconInput::Update(path) => IconModification::Update(path),
-                        UpdateIconInput::Remove => IconModification::Remove,
+                        None => None,
+                        Some(ChangeInput::Update(icon_path)) => Some(Change::Update(icon_path)),
+                        Some(ChangeInput::Remove) => Some(Change::Remove),
                     },
                 })
                 .await

@@ -15,13 +15,19 @@ pub struct ManifestModel {
 }
 
 #[derive(Debug)]
+pub enum ManifestChange<T> {
+    Update(T),
+    Remove,
+}
+
+#[derive(Debug)]
 pub struct ManifestModelDiff {
     /// A new name for the collection, if provided, the collection
     /// will be renamed to this name.
     pub name: Option<String>,
-    /// A new repo link for the collection, if provided, the collection
-    /// will be relinked to this repo.
-    pub repo: Option<Url>,
+    /// An update to the repo url, if provided, the collection
+    /// will be either updated or removed.
+    pub repo: Option<ManifestChange<Url>>,
 }
 
 impl InPlaceEditor for ManifestModelDiff {
@@ -29,8 +35,14 @@ impl InPlaceEditor for ManifestModelDiff {
         if let Some(name) = &self.name {
             doc["name"] = name.into();
         }
-        if let Some(repo) = &self.repo {
-            doc["repo"] = repo.to_string().into();
+        match &self.repo {
+            None => {}
+            Some(ManifestChange::Remove) => {
+                doc.remove("repo");
+            }
+            Some(ManifestChange::Update(new_repo)) => {
+                doc["repo"] = new_repo.to_string().into();
+            }
         }
 
         Ok(())

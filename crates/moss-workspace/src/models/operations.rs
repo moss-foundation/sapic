@@ -46,9 +46,8 @@ pub struct CreateCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub enum UpdateIconInput {
-    Nochange,
-    Update(PathBuf),
+pub enum ChangeInput<T> {
+    Update(T),
     Remove,
 }
 
@@ -63,9 +62,10 @@ pub struct UpdateCollectionInput {
     pub new_name: Option<String>,
 
     #[ts(optional)]
-    pub new_repo: Option<Url>,
+    pub new_repo: Option<ChangeInput<Url>>,
 
-    pub new_icon: UpdateIconInput,
+    #[ts(optional)]
+    pub new_icon: Option<ChangeInput<PathBuf>>,
 
     #[ts(optional)]
     pub order: Option<usize>,

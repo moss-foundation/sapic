@@ -21,7 +21,7 @@ use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
     defaults, dirs,
     dirs::ASSETS_DIR,
-    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    manifest::{MANIFEST_FILE_NAME, ManifestChange, ManifestModel, ManifestModelDiff},
     services::image_upload::ImageUploadService,
     worktree::Worktree,
 };
@@ -65,16 +65,15 @@ pub struct CreateParams<'a> {
     pub icon_path: Option<PathBuf>,
 }
 
-pub enum IconModification {
-    Nochange,
-    Update(PathBuf),
+pub enum Change<T> {
+    Update(T),
     Remove,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repo: Option<Url>,
-    pub icon: IconModification,
+    pub repo: Option<Change<Url>>,
+    pub icon: Option<Change<PathBuf>>,
 }
 
 #[rustfmt::skip]
@@ -188,21 +187,25 @@ impl Collection {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repo: params.repo,
+                    repo: match params.repo {
+                        None => None,
+                        Some(Change::Update(new_repo)) => Some(ManifestChange::Update(new_repo)),
+                        Some(Change::Remove) => Some(ManifestChange::Remove),
+                    },
                 })
                 .await?;
         }
 
         match params.icon {
-            IconModification::Nochange => {}
-            IconModification::Update(new_icon_path) => {
+            None => {}
+            Some(Change::Update(new_icon_path)) => {
                 ImageUploadService::upload_icon(
                     &new_icon_path,
                     &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
                     ICON_SIZE,
                 )?;
             }
-            IconModification::Remove => {
+            Some(Change::Remove) => {
                 self.fs
                     .remove_file(
                         &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),

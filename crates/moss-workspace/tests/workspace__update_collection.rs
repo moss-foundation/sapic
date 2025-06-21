@@ -4,7 +4,7 @@ use moss_collection::{ICON_NAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
-    CreateCollectionInput, UpdateCollectionInput, UpdateIconInput,
+    ChangeInput, CreateCollectionInput, UpdateCollectionInput,
 };
 use url::Url;
 
@@ -37,7 +37,7 @@ async fn rename_collection_success() {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 new_repo: None,
-                new_icon: UpdateIconInput::Nochange,
+                new_icon: None,
                 order: None,
                 pinned: None,
             },
@@ -80,7 +80,7 @@ async fn rename_collection_empty_name() {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name.clone()),
                 new_repo: None,
-                new_icon: UpdateIconInput::Nochange,
+                new_icon: None,
                 order: None,
                 pinned: None,
             },
@@ -122,7 +122,7 @@ async fn rename_collection_unchanged() {
                 id: create_collection_output.id,
                 new_name: Some(new_collection_name),
                 new_repo: None,
-                new_icon: UpdateIconInput::Nochange,
+                new_icon: None,
                 order: None,
                 pinned: None,
             },
@@ -147,7 +147,7 @@ async fn rename_collection_nonexistent_id() {
                 id: nonexistent_id,
                 new_name: Some(random_collection_name()),
                 new_repo: None,
-                new_icon: UpdateIconInput::Nochange,
+                new_icon: None,
                 order: None,
                 pinned: None,
             },
@@ -186,8 +186,8 @@ async fn update_collection_repo() {
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: None,
-                new_repo: Some(new_repo.clone()),
-                new_icon: UpdateIconInput::Nochange,
+                new_repo: Some(ChangeInput::Update(new_repo.clone())),
+                new_icon: None,
                 order: None,
                 pinned: None,
             },
@@ -234,7 +234,7 @@ async fn update_collection_new_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: UpdateIconInput::Update(icon_path.clone()),
+                new_icon: Some(ChangeInput::Update(icon_path.clone())),
                 order: None,
                 pinned: None,
             },
@@ -277,7 +277,7 @@ async fn update_collection_remove_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: UpdateIconInput::Remove,
+                new_icon: Some(ChangeInput::Remove),
                 order: None,
                 pinned: None,
             },
