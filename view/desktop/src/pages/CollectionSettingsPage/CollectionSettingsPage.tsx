@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useUpdateCollection, useDeleteCollection, useActiveCollection } from "@/hooks/collection";
+import { Collection } from "@/components/CollectionTree/types";
 
 import { CollectionNameSection } from "./CollectionNameSection";
 import { CollectionSummarySection } from "./CollectionSummarySection";
@@ -60,7 +61,7 @@ export const CollectionSettings = () => {
   };
 
   // Helper function to get collection display name
-  const getCollectionDisplayName = (collection: any) => {
+  const getCollectionDisplayName = (collection: Collection) => {
     return typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`;
   };
 
