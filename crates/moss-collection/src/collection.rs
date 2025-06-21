@@ -30,6 +30,15 @@ use crate::{
     worktree::Worktree,
 };
 
+const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
+
+const WORKTREE_DIRS: [&str; 4] = [
+    dirs::REQUESTS_DIR,
+    dirs::ENDPOINTS_DIR,
+    dirs::COMPONENTS_DIR,
+    dirs::SCHEMAS_DIR,
+];
+
 pub struct EnvironmentItem {
     pub id: Uuid,
     pub name: String,
@@ -128,19 +137,14 @@ impl Collection {
             .into();
 
         let worktree = Worktree::new(fs.clone(), abs_path.clone());
-        for dir in &[
-            dirs::REQUESTS_DIR,
-            dirs::ENDPOINTS_DIR,
-            dirs::COMPONENTS_DIR,
-            dirs::SCHEMAS_DIR,
-        ] {
+        for dir in &WORKTREE_DIRS {
             let model = ConfigurationModel::Dir(CompositeDirConfigurationModel::default());
             worktree
                 .create_entry("", dir, true, toml::to_string(&model)?.as_bytes())
                 .await?;
         }
 
-        for dir in &[dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR] {
+        for dir in &OTHER_DIRS {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
 
