@@ -26,8 +26,3 @@ pub mod dirs {
     pub const ENVIRONMENTS_DIR: &str = "environments";
     pub const ASSETS_DIR: &str = "assets";
 }
-
-pub mod constants {
-    pub const ICON_NAME: &str = "icon.png";
-    pub const ICON_SIZE: u32 = 128;
-}

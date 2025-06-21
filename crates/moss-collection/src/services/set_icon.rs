@@ -2,6 +2,11 @@ use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
 use std::path::Path;
 
+pub mod constants {
+    pub const ICON_NAME: &str = "icon.png";
+    pub const ICON_SIZE: u32 = 128;
+}
+
 pub struct SetIconService {}
 
 impl SetIconService {

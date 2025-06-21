@@ -19,11 +19,13 @@ use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
-    constants::{ICON_NAME, ICON_SIZE},
     defaults, dirs,
     dirs::ASSETS_DIR,
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
-    services::set_icon::SetIconService,
+    services::set_icon::{
+        SetIconService,
+        constants::{ICON_NAME, ICON_SIZE},
+    },
     worktree::Worktree,
 };
 
