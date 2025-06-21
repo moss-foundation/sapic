@@ -17,6 +17,7 @@ use moss_app::{
         theme_service::ThemeService, workspace_service::WorkspaceService,
     },
 };
+use moss_applib::context::ContextValueSet;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::global_storage::GlobalStorageImpl;
 use std::{path::PathBuf, sync::Arc};
@@ -119,6 +120,7 @@ pub async fn run<R: TauriRuntime>() {
                 .expect("Failed to build app");
 
                 app_handle.manage(app);
+                app_handle.manage(ContextValueSet::default());
 
                 Ok(())
             })

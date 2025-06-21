@@ -29,7 +29,8 @@ pub async fn close_workspace<R: TauriRuntime>(
     input: CloseWorkspaceInput,
 ) -> TauriResult<CloseWorkspaceOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        app.close_workspace(&input)
+        let ctx = AppContext::from(&app);
+        app.close_workspace(&ctx, &input)
             .await
             .map_err(TauriError::OperationError)
     })
@@ -111,8 +112,8 @@ pub async fn describe_workbench_state<R: TauriRuntime>(
     window: Window<R>,
 ) -> TauriResult<DescribeWorkbenchStateOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let _ctx = AppContext::from(&app);
-        app.describe_workbench_state()
+        let ctx = AppContext::from(&app);
+        app.describe_workbench_state(&ctx)
             .await
             .map_err(TauriError::OperationError)
     })
