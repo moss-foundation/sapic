@@ -111,7 +111,6 @@ jobs:
           - moss_environment
           - moss_testutils
           - moss_common
-          - moss_workbench
           - moss_storage
           - moss_activity_indicator
           - moss_file
@@ -171,7 +170,6 @@ jobs:
           - moss_environment
           - moss_testutils
           - moss_common
-          - moss_workbench
           - moss_storage
           - moss_activity_indicator
           - moss_file
