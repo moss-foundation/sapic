@@ -76,8 +76,7 @@ async fn scan_entries_for_test(
 async fn stream_entries_empty_collection() {
     let (collection_path, collection) = create_test_collection().await;
 
-    // Test scanning empty directories
-    // Now each directory should return exactly one entry (the directory itself)
+    // Each directory should return exactly one entry (the directory itself)
     // since the base directories are created with config files
     for dir in &[
         dirs::REQUESTS_DIR,
@@ -156,7 +155,6 @@ async fn stream_entries_multiple_entries_same_directory() {
     create_test_entry_in_dir(&mut collection, &entry2_name, dirs::REQUESTS_DIR).await;
     create_test_entry_in_dir(&mut collection, &entry3_name, dirs::REQUESTS_DIR).await;
 
-    // Scan the requests directory
     let entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
 
     // Should have 4 entries: the directory itself + 3 created entries
