@@ -6,3 +6,5 @@ export const workspaceInfoSchema = z.object({
   displayName: z.string(),
   lastOpenedAt: z.bigint().optional(),
 });
+
+export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
