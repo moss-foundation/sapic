@@ -10,7 +10,7 @@ import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspac
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings, CollectionSettingsPage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -60,6 +60,9 @@ const DynamicPageWrapper = ({
   React.useEffect(() => {
     if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
       props.api.setTitle(currentWorkspace.displayName);
+    } else if (pageKey === "CollectionSettings" && props.api) {
+      // For now, use a static collection name - in the future this could be dynamic
+      props.api.setTitle("Sapic Test Collection");
     }
   }, [currentWorkspace?.displayName, props.api, pageKey]);
 
@@ -71,6 +74,8 @@ const DynamicPageWrapper = ({
   let displayTitle = config.title;
   if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
     displayTitle = currentWorkspace.displayName;
+  } else if (pageKey === "CollectionSettings") {
+    displayTitle = "Sapic Test Collection";
   }
 
   // Standard page structure with header and content
@@ -210,6 +215,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     WorkspaceSettings: {
       title: "WorkspaceSettings", // This will be dynamically replaced
       component: WorkspaceSettings,
+    },
+    CollectionSettings: {
+      title: "CollectionSettings", // This will be dynamically replaced
+      component: CollectionSettingsPage,
     },
     Welcome: {
       component: WelcomePage,

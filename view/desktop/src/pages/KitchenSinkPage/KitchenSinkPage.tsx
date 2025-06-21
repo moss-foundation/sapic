@@ -19,6 +19,7 @@ import { invokeMossCommand } from "@/lib/backend/platfrom.ts";
 import { Icon, Icons } from "@/lib/ui";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
 import { createColumnHelper, Table } from "@tanstack/react-table";
+import { CollectionSettingsPage } from "@/pages/CollectionSettingsPage";
 
 import * as iconsNames from "../../assets/icons";
 import testData from "../../components/Table/testData.json";
@@ -51,6 +52,16 @@ const ComponentGallery = () => {
           </p>
         </div>
       )}
+
+      {/* Collection Settings Demo */}
+      <KitchenSinkSection
+        header="Collection Settings Page"
+        description="A demo of the Collection Settings page showing collection name editing, summary, and danger zone."
+      >
+        <div className="overflow-hidden rounded-lg border border-(--moss-border-color)" style={{ height: "600px" }}>
+          <CollectionSettingsPage />
+        </div>
+      </KitchenSinkSection>
 
       {/* Table Components */}
       <KitchenSinkSection header="Table" description="A table powered by Tanstack Table">

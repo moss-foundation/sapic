@@ -29,6 +29,7 @@ export type TauriIpcCommand =
   | "list_collections"
   | "describe_workbench_state"
   | "create_collection"
+  | "update_collection"
   | "delete_collection"
   | "stream_collections"
   //
