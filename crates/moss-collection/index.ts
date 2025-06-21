@@ -6,13 +6,3 @@ export * from "./bindings/primitives";
 export * from "./bindings/primitives.zod";
 export * from "./bindings/types";
 export * from "./bindings/types.zod";
-
-type RequestItemConfiguration = {
-  url: string;
-};
-
-export class RequestItem extends RequestItemConfiguration {
-  constructor(configuration: RequestItemConfiguration) {
-    super(configuration);
-  }
-}
