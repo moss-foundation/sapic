@@ -160,6 +160,13 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         ctx.remove_value::<ctxkeys::WorkspaceId>();
     }
 
+    pub(crate) async fn insert_workspace(&self, workspace: WorkspaceDescriptor) -> Result<()> {
+        let workspaces = self.workspaces().await?;
+        let mut workspaces_lock = workspaces.write().await;
+        workspaces_lock.insert(workspace.id, Arc::new(workspace));
+        Ok(())
+    }
+
     pub(crate) async fn workspaces(&self) -> Result<&RwLock<WorkspaceMap>> {
         Ok(self
             .known_workspaces
