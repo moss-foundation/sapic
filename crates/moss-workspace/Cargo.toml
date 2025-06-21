@@ -32,6 +32,8 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 image.workspace = true
 rand.workspace = true
 url.workspace = true
+rustc-hash.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 moss_applib = { workspace = true, features = ["test"] }

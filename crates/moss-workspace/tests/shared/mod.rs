@@ -1,4 +1,7 @@
 use image::{ImageBuffer, Rgb};
+mod context;
+pub use context::*;
+
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::test::MockContext;
 use moss_fs::{FileSystem, RealFileSystem};
@@ -30,7 +33,12 @@ use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (MockContext, Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
+pub async fn setup_test_workspace() -> (
+    MockWorkspaceContext,
+    Arc<Path>,
+    Workspace<MockRuntime>,
+    CleanupFn,
+) {
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -70,7 +78,12 @@ pub async fn setup_test_workspace() -> (MockContext, Arc<Path>, Workspace<MockRu
         }) as Pin<Box<dyn Future<Output = ()> + Send>>
     });
 
-    (ctx, workspace_path, workspace, cleanup_fn)
+    (
+        MockWorkspaceContext::from(ctx),
+        workspace_path,
+        workspace,
+        cleanup_fn,
+    )
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {

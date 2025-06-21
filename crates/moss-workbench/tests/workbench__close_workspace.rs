@@ -101,8 +101,8 @@ async fn close_workspace_success() {
     {
         let active_workspace = workspace_manager.active_workspace().await;
         assert!(active_workspace.as_ref().is_some());
-        let active_workspace = active_workspace.as_ref().unwrap();
-        assert_eq!(active_workspace.id, create_output.id);
+        let active_workspace_id = workspace_manager.active_workspace_id().await.unwrap();
+        assert_eq!(active_workspace_id, create_output.id);
     }
 
     // Close the workspace
@@ -132,11 +132,14 @@ async fn close_workspace_no_active_workspace() {
         .await;
 
     assert!(close_result.is_err());
-    assert!(matches!(close_result, Err(OperationError::InvalidInput(_))));
+    assert!(matches!(
+        close_result,
+        Err(OperationError::FailedPrecondition(_))
+    ));
 
     let error_message = match close_result {
-        Err(OperationError::InvalidInput(msg)) => msg,
-        _ => panic!("Expected InvalidInput error"),
+        Err(OperationError::FailedPrecondition(msg)) => msg,
+        _ => panic!("Expected FailedPrecondition error"),
     };
     assert!(error_message.contains("No active workspace to close"));
 
@@ -176,7 +179,8 @@ async fn close_workspace_wrong_id() {
     // Verify workspace is active
     let active_workspace = workspace_manager.active_workspace().await;
     assert!(active_workspace.as_ref().is_some());
-    assert_eq!(active_workspace.as_ref().unwrap().id, create_output.id);
+    let active_workspace_id = workspace_manager.active_workspace_id().await.unwrap();
+    assert_eq!(active_workspace_id, create_output.id);
 
     // Try to close with wrong ID (this should work fast without hanging)
     let wrong_id = Uuid::new_v4();
@@ -196,7 +200,8 @@ async fn close_workspace_wrong_id() {
     // Verify the original workspace is still active
     let active_workspace = workspace_manager.active_workspace().await;
     assert!(active_workspace.as_ref().is_some());
-    assert_eq!(active_workspace.as_ref().unwrap().id, create_output.id);
+    let active_workspace_id = workspace_manager.active_workspace_id().await.unwrap();
+    assert_eq!(active_workspace_id, create_output.id);
 
     cleanup().await;
 }

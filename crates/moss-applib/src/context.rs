@@ -1,8 +1,13 @@
-use std::any::Any;
-use tauri::{Runtime as TauriRuntime, State};
+use anyhow::Result;
+use std::{any::Any, future::Future};
+use tauri::{AppHandle, Runtime as TauriRuntime, State};
 use tokio::time::Duration;
 
 use crate::{Global, task::Task};
+
+pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
+    fn app_handle(&self) -> AppHandle<R>;
+}
 
 pub trait Context<R: TauriRuntime>: Send + Sync {
     fn global<T>(&self) -> State<'_, T>
@@ -25,6 +30,7 @@ pub mod test {
 
     use tauri::{AppHandle, Manager, State, test::MockRuntime};
 
+    #[derive(Clone)]
     pub struct MockContext {
         app_handle: AppHandle<MockRuntime>,
     }
