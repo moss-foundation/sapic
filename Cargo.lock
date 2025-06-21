@@ -1310,6 +1310,7 @@ dependencies = [
  "macos-trampoline",
  "mimalloc",
  "moss_app",
+ "moss_applib",
  "moss_collection",
  "moss_common",
  "moss_db",
@@ -3176,7 +3177,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
- "fnv",
  "moss_applib",
  "moss_common",
  "moss_db",
@@ -3186,6 +3186,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "moss_workbench",
+ "moss_workspace",
  "nanoid",
  "parking_lot",
  "rustc-hash",
@@ -3205,6 +3206,10 @@ dependencies = [
 name = "moss_applib"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "derive_more 2.0.1",
+ "futures",
+ "rustc-hash",
  "tauri",
  "tokio",
 ]
@@ -3219,6 +3224,7 @@ dependencies = [
  "futures",
  "image",
  "moss_activity_indicator",
+ "moss_applib",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3445,6 +3451,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "arc-swap",
+ "async-trait",
  "chrono",
  "derive_more 2.0.1",
  "futures",
@@ -3461,6 +3468,7 @@ dependencies = [
  "moss_testutils",
  "moss_text",
  "rand 0.9.1",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tauri",
