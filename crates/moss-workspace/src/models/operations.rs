@@ -40,7 +40,7 @@ pub struct CreateCollectionOutput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub enum ChangeRepositoryInput {
+pub enum ChangeRepository {
     Update(Url),
     Remove,
 }
@@ -48,7 +48,7 @@ pub enum ChangeRepositoryInput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub enum ChangeIconInput {
+pub enum ChangeIcon {
     Update(PathBuf),
     Remove,
 }
@@ -63,8 +63,8 @@ pub struct UpdateCollectionInput {
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
 
-    pub new_repo: Option<ChangeRepositoryInput>,
-    pub new_icon: Option<ChangeIconInput>,
+    pub new_repo: Option<ChangeRepository>,
+    pub new_icon: Option<ChangeIcon>,
     pub order: Option<usize>,
     pub pinned: Option<bool>,
 }

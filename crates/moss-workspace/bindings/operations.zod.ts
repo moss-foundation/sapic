@@ -10,14 +10,14 @@ import {
   sidebarPartStateInfoSchema,
 } from "./types.zod";
 
-export const changeIconInputSchema = z.union([
+export const changeIconSchema = z.union([
   z.object({
     "update": z.string(),
   }),
   z.literal("remove"),
 ]);
 
-export const changeRepositoryInputSchema = z.union([
+export const changeRepositorySchema = z.union([
   z.object({
     "update": z.string(),
   }),
@@ -51,8 +51,8 @@ export const describeEnvironmentInputSchema = z.object({
 export const updateCollectionInputSchema = z.object({
   id: z.string(),
   newName: z.string().optional(),
-  newRepo: changeRepositoryInputSchema.optional(),
-  newIcon: changeIconInputSchema.optional(),
+  newRepo: changeRepositorySchema.optional(),
+  newIcon: changeIconSchema.optional(),
   order: z.number().optional(),
   pinned: z.boolean().optional(),
 });

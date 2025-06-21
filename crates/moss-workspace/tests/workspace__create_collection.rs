@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_collection::{constants::ICON_NAME, dirs::ASSETS_DIR};
+use moss_collection::{dirs::ASSETS_DIR, services::set_icon::constants::ICON_NAME};
 use moss_common::api::OperationError;
 use moss_storage::{
     storage::operations::{GetItem, ListByPrefix},

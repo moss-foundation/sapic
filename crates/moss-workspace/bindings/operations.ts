@@ -9,9 +9,9 @@ import type {
   SidebarPartStateInfo,
 } from "./types";
 
-export type ChangeIconInput = { "update": string } | "remove";
+export type ChangeIcon = { "update": string } | "remove";
 
-export type ChangeRepositoryInput = { "update": string } | "remove";
+export type ChangeRepository = { "update": string } | "remove";
 
 export type CreateCollectionInput = {
   name: string;
@@ -43,8 +43,8 @@ export type DescribeWorkspaceOutput = { collections: Array<CollectionInfo>; envi
 export type UpdateCollectionInput = {
   id: string;
   newName?: string;
-  newRepo?: ChangeRepositoryInput;
-  newIcon?: ChangeIconInput;
+  newRepo?: ChangeRepository;
+  newIcon?: ChangeIcon;
   order?: number;
   pinned?: boolean;
 };

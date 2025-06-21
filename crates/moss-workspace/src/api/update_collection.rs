@@ -7,7 +7,7 @@ use validator::Validate;
 
 use crate::{
     models::operations::{
-        ChangeIconInput, ChangeRepositoryInput, UpdateCollectionInput, UpdateCollectionOutput,
+        ChangeIcon, ChangeRepository, UpdateCollectionInput, UpdateCollectionOutput,
     },
     workspace::Workspace,
 };
@@ -38,15 +38,13 @@ impl<R: TauriRuntime> Workspace<R> {
                     name: input.new_name,
                     repository: match input.new_repo {
                         None => None,
-                        Some(ChangeRepositoryInput::Update(repo_url)) => {
-                            Some(Change::Update(repo_url))
-                        }
-                        Some(ChangeRepositoryInput::Remove) => Some(Change::Remove),
+                        Some(ChangeRepository::Update(repo_url)) => Some(Change::Update(repo_url)),
+                        Some(ChangeRepository::Remove) => Some(Change::Remove),
                     },
                     icon: match input.new_icon {
                         None => None,
-                        Some(ChangeIconInput::Update(icon_path)) => Some(Change::Update(icon_path)),
-                        Some(ChangeIconInput::Remove) => Some(Change::Remove),
+                        Some(ChangeIcon::Update(icon_path)) => Some(Change::Update(icon_path)),
+                        Some(ChangeIcon::Remove) => Some(Change::Remove),
                     },
                 })
                 .await

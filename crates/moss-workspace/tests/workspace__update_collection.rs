@@ -1,10 +1,10 @@
 pub mod shared;
 
-use moss_collection::{constants::ICON_NAME, dirs::ASSETS_DIR};
+use moss_collection::{dirs::ASSETS_DIR, services::set_icon::constants::ICON_NAME};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
-    ChangeIconInput, ChangeRepositoryInput, CreateCollectionInput, UpdateCollectionInput,
+    ChangeIcon, ChangeRepository, CreateCollectionInput, UpdateCollectionInput,
 };
 use url::Url;
 
@@ -186,7 +186,7 @@ async fn update_collection_repo() {
             UpdateCollectionInput {
                 id: create_collection_output.id,
                 new_name: None,
-                new_repo: Some(ChangeRepositoryInput::Update(new_repo.clone())),
+                new_repo: Some(ChangeRepository::Update(new_repo.clone())),
                 new_icon: None,
                 order: None,
                 pinned: None,
@@ -234,7 +234,7 @@ async fn update_collection_new_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: Some(ChangeIconInput::Update(icon_path.clone())),
+                new_icon: Some(ChangeIcon::Update(icon_path.clone())),
                 order: None,
                 pinned: None,
             },
@@ -277,7 +277,7 @@ async fn update_collection_remove_icon() {
                 id: create_collection_output.id,
                 new_name: None,
                 new_repo: None,
-                new_icon: Some(ChangeIconInput::Remove),
+                new_icon: Some(ChangeIcon::Remove),
                 order: None,
                 pinned: None,
             },
