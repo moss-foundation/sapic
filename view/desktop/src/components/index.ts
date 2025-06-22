@@ -14,7 +14,7 @@ export * from "./InputOutlined";
 export * from "./InputPlain";
 export * from "./Modals/ConfirmationModal";
 
-export * from "./CollectionTree/Tree";
+export * from "./CollectionTreeV2/Tree";
 export * from "./PageLoader";
 export * from "./PageView/";
 export * as RadioGroup from "./RadioGroup";

@@ -2,15 +2,25 @@ import "./assets/styles.css";
 
 import React from "react";
 
-import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
+import {
+  ActionButton,
+  Breadcrumbs,
+  CollectionTree,
+  PageContent,
+  PageHeader,
+  PageTabs,
+  PageToolbar,
+  PageView,
+} from "@/components";
 import { DropNodeElement } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -220,6 +230,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Default: (props: IDockviewPanelProps) => {
       const isDebug = React.useContext(DebugContext);
       const [activeTab, setActiveTab] = React.useState("endpoint");
+      const { collectionsTrees, updateCollectionTree } = useCollectionsStore();
 
       const tabs = (
         <PageTabs>
@@ -259,6 +270,12 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
               )}
             </span>
+
+            <div className="flex grow flex-col">
+              {collectionsTrees.map((collection) => (
+                <CollectionTree key={collection.id} tree={collection} onTreeUpdate={updateCollectionTree} />
+              ))}
+            </div>
 
             {isDebug && (
               <Metadata

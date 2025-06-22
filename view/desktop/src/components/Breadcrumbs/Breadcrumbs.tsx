@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
@@ -16,26 +16,26 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!panelId) {
-      setActiveTree(null);
-      setPath([]);
-      return;
-    }
+  // useEffect(() => {
+  //   if (!panelId) {
+  //     setActiveTree(null);
+  //     setPath([]);
+  //     return;
+  //   }
 
-    const target = String(panelId);
-    for (const collection of collections) {
-      const newPath = findPath(collection.tree, target);
-      if (newPath) {
-        setActiveTree(collection.tree);
-        setPath(newPath);
-        return;
-      }
-    }
+  //   const target = String(panelId);
+  //   for (const collection of collections) {
+  //     const newPath = findPath(collection.tree, target);
+  //     if (newPath) {
+  //       setActiveTree(collection.tree);
+  //       setPath(newPath);
+  //       return;
+  //     }
+  //   }
 
-    setActiveTree(null);
-    setPath([]);
-  }, [collections, panelId]);
+  //   setActiveTree(null);
+  //   setPath([]);
+  // }, [collections, panelId]);
 
   if (!activeTree) return null;
 

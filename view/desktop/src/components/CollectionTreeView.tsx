@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { CollectionTree, InputPlain } from "@/components";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
-import { cn, swapListById } from "@/utils";
-import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
+import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
 import { getActualDropSourceTarget } from "./CollectionTree/utils";
+import { useHandleCollectionsDragAndDrop } from "./CollectionTreeV2/hooks/useHandleCollectionsDragAndDrop";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
@@ -18,47 +18,9 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollection } = useCollectionsStore();
+  const { collections, setCollections, updateCollectionTree, collectionsTrees } = useCollectionsStore();
 
-  useEffect(() => {
-    const element = dropTargetToggleRef.current;
-    if (!element) return;
-
-    return dropTargetForElements({
-      element,
-      getData: () => ({
-        type: "SidebarCollectionsList",
-        data: {},
-      }),
-      canDrop({ source }) {
-        return ["TreeNode", "TreeRootNode"].includes(source.data.type as string);
-      },
-      onDragStart({ source }) {
-        if (source.data.type === "TreeNode") setShowCollectionCreationZone(true);
-      },
-      onDragEnter({ source }) {
-        if (source.data.type === "TreeNode") setShowCollectionCreationZone(true);
-      },
-      onDragLeave() {
-        setShowCollectionCreationZone(false);
-      },
-      onDrop({ location, source }) {
-        setShowCollectionCreationZone(false);
-
-        if (location.current.dropTargets.length === 0) return;
-
-        const sourceCollectionId = getActualDropSourceTarget(source).treeId;
-        const locationCollectionId = location.current.dropTargets[0].data.treeId as string;
-        const closestEdge = location.current.dropTargets[0].data.closestEdge as Edge;
-
-        if (locationCollectionId === sourceCollectionId || !sourceCollectionId || !locationCollectionId) {
-          return;
-        }
-
-        setCollections(swapListById(sourceCollectionId, locationCollectionId, collections, closestEdge)!);
-      },
-    });
-  }, [collections, setCollections]);
+  useHandleCollectionsDragAndDrop();
 
   useEffect(() => {
     const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
@@ -71,6 +33,7 @@ export const CollectionTreeView = () => {
           id: newTreeId,
           type: "collection",
           order: collections.length + 1,
+          name: "New Collection",
           tree: {
             "id": "New Collection",
             "order": collections.length + 1,
@@ -115,16 +78,19 @@ export const CollectionTreeView = () => {
           </div>
 
           <div className="flex grow flex-col">
-            {collections.map((collection) => (
+            {collectionsTrees.map((collection) => (
               <CollectionTree
                 key={`${collection.id}`}
-                onTreeUpdate={(tree) => updateCollection({ ...collection, tree })}
-                tree={collection.tree}
-                id={collection.id}
+                tree={collection}
+                onTreeUpdate={updateCollectionTree}
                 searchInput={searchInput}
               />
             ))}
           </div>
+
+          {collectionsTrees.map((collection) => (
+            <div key={`${collection.id}`}>{collection.name}</div>
+          ))}
 
           {showCollectionCreationZone && (
             <div className="flex justify-end p-2">
