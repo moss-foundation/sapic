@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CollectionTree, InputPlain } from "@/components";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useCollectionsStore } from "@/store/collections";
+import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -17,7 +18,7 @@ export const CollectionTreeView = () => {
 
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
-
+  const { displayMode } = useRequestModeStore();
   const {
     collections,
     setCollections,
@@ -94,12 +95,10 @@ export const CollectionTreeView = () => {
                   tree={collection}
                   onTreeUpdate={updateCollectionTree}
                   searchInput={searchInput}
+                  displayMode={displayMode}
                 />
               ))}
           </div>
-
-          {shouldShowCollectionTree &&
-            collectionsTrees.map((collection) => <div key={`${collection.id}`}>{collection.name}</div>)}
 
           {showCollectionCreationZone && (
             <div className="flex justify-end p-2">

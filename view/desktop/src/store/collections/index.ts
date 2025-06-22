@@ -324,7 +324,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         channel: onCollectionEvent,
       });
 
-      console.log("collectionsTrees", get().collectionsTrees);
+      // console.log("collectionsTrees", get().collectionsTrees);
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {
@@ -341,7 +341,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
-        console.log("collectionEntry", collectionEntry);
+        // console.log("collectionEntry", collectionEntry);
         set((state) => {
           const existingCollectionEntry = state.streamedCollectionEntries.find((c) => c.id === collectionEntry.id);
           if (existingCollectionEntry) {

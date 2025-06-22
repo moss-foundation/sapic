@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
-import { ActionMenu } from "@/components";
+import { ActionMenu, TreeContext } from "@/components";
 import { ActionButton } from "@/components/ActionButton";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 
@@ -23,8 +23,8 @@ interface TreeRootNodeActionsProps {
   node: TreeCollectionRootNode;
   searchInput?: string;
   isRenamingRootNode: boolean;
-  // setIsAddingRootFileNode: (isAdding: boolean) => void;
-  // setIsAddingRootFolderNode: (isAdding: boolean) => void;
+  setIsAddingRootFileNode: (isAdding: boolean) => void;
+  setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
@@ -36,14 +36,15 @@ export const TreeRootNodeActions = ({
   node,
   searchInput,
   isRenamingRootNode,
-  // setIsAddingRootFileNode,
-  // setIsAddingRootFolderNode,
+  setIsAddingRootFileNode,
+  setIsAddingRootFolderNode,
   setIsRenamingRootNode,
   allFoldersAreCollapsed,
   allFoldersAreExpanded,
   handleCollapseAll,
   handleExpandAll,
 }: TreeRootNodeActionsProps) => {
+  const { displayMode } = useContext(TreeContext);
   const [showDeleteCollectionModal, setShowDeleteCollectionModal] = useState(false);
 
   return (
@@ -53,11 +54,13 @@ export const TreeRootNodeActions = ({
           <div
             className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
           >
-            <ActionButton
-              customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
-              icon="Add"
-              // onClick={() => setIsAddingRootFileNode(true)}
-            />
+            {displayMode === "RequestFirst" && (
+              <ActionButton
+                customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
+                icon="Add"
+                onClick={() => setIsAddingRootFileNode(true)}
+              />
+            )}
             <ActionButton
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
@@ -75,12 +78,21 @@ export const TreeRootNodeActions = ({
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
             <ActionMenu.Content className="z-30" align="center">
-              {/* <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
-            <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item> */}
-              <ActionMenu.Item onClick={() => setIsRenamingRootNode(true)}>Rename...</ActionMenu.Item>
-              <ActionMenu.Item>Refresh</ActionMenu.Item>
-              <ActionMenu.Item onClick={() => setShowDeleteCollectionModal(true)}>Delete</ActionMenu.Item>
-              <ActionMenu.Item disabled={allFoldersAreExpanded} onClick={handleExpandAll}>
+              <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
+              <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
+                Rename...
+              </ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons>Refresh</ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteCollectionModal(true)} icon="Trash">
+                Delete
+              </ActionMenu.Item>
+              <ActionMenu.Item
+                alignWithIcons
+                disabled={allFoldersAreExpanded}
+                onClick={handleExpandAll}
+                icon="ExpandAll"
+              >
                 ExpandAll
               </ActionMenu.Item>
             </ActionMenu.Content>

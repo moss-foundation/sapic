@@ -8,6 +8,7 @@ import { useDropTargetRootNode } from "../hooks/useDropTargetRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
+import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
@@ -48,14 +49,14 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
     onRootUpdate(newNode);
   };
 
-  //   const {
-  //     isAddingFileNode: isAddingRootFileNode,
-  //     isAddingFolderNode: isAddingRootFolderNode,
-  //     setIsAddingFileNode: setIsAddingRootFileNode,
-  //     setIsAddingFolderNode: setIsAddingRootFolderNode,
-  //     handleAddFormSubmit: handleAddFormRootSubmit,
-  //     handleAddFormCancel: handleAddFormRootCancel,
-  //   } = useNodeAddForm(node, onNodeUpdate);
+  const {
+    isAddingRootNodeFile,
+    isAddingRootNodeFolder,
+    setIsAddingRootNodeFile,
+    setIsAddingRootNodeFolder,
+    handleRootAddFormCancel,
+    handleRootAddFormSubmit,
+  } = useRootNodeAddForm(node, onRootUpdate);
 
   const {
     isRenamingRootNode,
@@ -101,7 +102,10 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
       >
         <span
           className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-8px)] w-[calc(100%-8px)] rounded-sm"
+            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-8px)] w-[calc(100%-8px)] rounded-sm",
+            {
+              "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
+            }
           )}
         />
 
@@ -124,8 +128,8 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
           node={node}
           searchInput={searchInput}
           isRenamingRootNode={isRenamingRootNode}
-          // setIsAddingRootFileNode={setIsAddingRootFileNode}
-          // setIsAddingRootFolderNode={setIsAddingRootFolderNode}
+          setIsAddingRootFileNode={setIsAddingRootNodeFile}
+          setIsAddingRootFolderNode={setIsAddingRootNodeFolder}
           setIsRenamingRootNode={setIsRenamingRootNode}
           allFoldersAreCollapsed={allFoldersAreCollapsed}
           allFoldersAreExpanded={allFoldersAreExpanded}
@@ -139,10 +143,10 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
         <TreeRootNodeChildren
           node={node}
           onNodeUpdate={onNodeUpdate}
-          // isAddingRootFileNode={isAddingRootFileNode}
-          // isAddingRootFolderNode={isAddingRootFolderNode}
-          // handleAddFormRootSubmit={handleAddFormRootSubmit}
-          // handleAddFormRootCancel={handleAddFormRootCancel}
+          isAddingRootFileNode={isAddingRootNodeFile}
+          isAddingRootFolderNode={isAddingRootNodeFolder}
+          handleAddFormRootSubmit={handleRootAddFormSubmit}
+          handleAddFormRootCancel={handleRootAddFormCancel}
         />
       )}
     </div>

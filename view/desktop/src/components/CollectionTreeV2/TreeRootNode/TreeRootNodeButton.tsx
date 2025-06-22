@@ -1,8 +1,11 @@
+import { useContext } from "react";
+
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
 import TestMossImage from "../../../assets/images/TestMossImage.webp";
 import { NodeLabel } from "../NodeLabel";
+import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeButtonProps {
@@ -18,7 +21,7 @@ export const TreeRootNodeButton = ({
   shouldRenderChildNodes,
   handleRootNodeClick,
 }: TreeRootNodeButtonProps) => {
-  // const { onRootClickCallback, onRootDoubleClickCallback } = useContext(TreeContext);
+  const { onRootClickCallback, onRootDoubleClickCallback } = useContext(TreeContext);
 
   return (
     <button
@@ -28,9 +31,9 @@ export const TreeRootNodeButton = ({
           ...node,
           expanded: !node.expanded,
         });
-        // onRootClickCallback?.(node);
+        onRootClickCallback?.(node);
       }}
-      // onDoubleClick={() => onRootDoubleClickCallback?.(node)}
+      onDoubleClick={() => onRootDoubleClickCallback?.(node)}
     >
       <span className="flex size-5 shrink-0 items-center justify-center">
         <Icon
@@ -48,7 +51,7 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
-      <NodeLabel label={node.name} searchInput={searchInput} /> root button
+      <NodeLabel label={node.name} searchInput={searchInput} />{" "}
     </button>
   );
 };

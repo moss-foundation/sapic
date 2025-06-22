@@ -22,6 +22,7 @@ import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
 import { useCollectionsStore } from "@/store/collections";
+import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -429,16 +430,26 @@ const TestStreamedCollections = () => {
       },
     });
   };
+  const shouldShowCollectionTree = !areCollectionsStreaming && !areCollectionEntriesStreaming;
+
+  const { displayMode } = useRequestModeStore();
 
   return (
     <div className="flex max-w-100 flex-col gap-2">
       <div className="flex grow flex-col">
-        {collectionsTrees.map((collection) => (
-          <CollectionTree key={collection.id} tree={collection} onTreeUpdate={updateCollectionTree} />
-        ))}
+        {shouldShowCollectionTree &&
+          collectionsTrees.map((collection) => (
+            <CollectionTree
+              key={`${collection.id}`}
+              tree={collection}
+              onTreeUpdate={updateCollectionTree}
+              displayMode={displayMode}
+            />
+          ))}
       </div>
 
       <hr />
+
       <div className="grid grid-cols-2 gap-2">
         <input
           className="w-full border-2 border-dashed border-gray-300"
@@ -487,7 +498,7 @@ const TestStreamedCollections = () => {
           </ButtonPrimary>
         ))}
       </div> */}
-      {/* <code>{JSON.stringify(streamedCollectionEntries, null, 2)}</code> */}
+      <pre className="text-xs">{JSON.stringify(collectionsTrees, null, 2)}</pre>
     </div>
   );
 };
