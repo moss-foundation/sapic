@@ -1,4 +1,4 @@
-import { CollectionTree } from "@/components/CollectionTreeV2/types";
+import { CollectionTree } from "@/components/CollectionTree/types";
 import { CollectionInfo } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 

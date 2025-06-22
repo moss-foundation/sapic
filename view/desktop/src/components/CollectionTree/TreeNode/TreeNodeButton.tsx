@@ -12,12 +12,12 @@ import { DropIndicatorWithInstruction } from "../DropIndicatorWithInstruction";
 import NodeLabel from "../NodeLabel";
 import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
-import { TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 import TreeNode from "./TreeNode";
 
 interface TreeNodeButtonProps {
-  node: TreeNodeProps;
-  onNodeUpdate: (node: TreeNodeProps) => void;
+  node: TreeCollectionNode;
+  onNodeUpdate: (node: TreeCollectionNode) => void;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -52,17 +52,17 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const handleClick = () => {
-      if (node.isFolder) {
+      if (node.kind === "Dir") {
         onNodeUpdate({
           ...node,
-          isExpanded: !node.isExpanded,
+          expanded: !node.expanded,
         });
       } else {
         addOrFocusPanel({
           id: `${node.id}`,
           params: {
             treeId,
-            iconType: node.type,
+            iconType: node.kind,
             workspace: true,
           },
           component: "Default",
@@ -74,7 +74,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     const handleDoubleClick = () => onNodeDoubleClickCallback?.(node);
 
     const nodePaddingLeft = depth * nodeOffset;
-    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
+    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
 
     return (
       <ActionMenu.Root modal={false}>
@@ -89,8 +89,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
                 "group-hover/treeNode:background-(--moss-secondary-background-hover)":
                   !isDragging && activePanelId !== node.id,
-                "background-(--moss-info-background-hover)":
-                  activePanelId === node.id && node.uniqueId !== "DraggedNode",
+                "background-(--moss-info-background-hover)": activePanelId === node.id && node.id !== "DraggedNode",
               })}
             />
             <span
@@ -103,28 +102,25 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/treeNode:opacity-100 group-hover/treeNode:delay-400 group-hover/treeNode:duration-150"
                 slim
               />
-
-              {!node.isFolder && instruction !== null && canDrop === true && (
+              {node.kind === "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
                   paddingRight={paddingRight}
                   instruction={instruction}
-                  isFolder={node.isFolder}
+                  isFolder={node.kind === "Dir"}
                   depth={depth}
                   isLastChild={isLastChild}
                 />
               )}
-
               <Icon
                 icon="ChevronRight"
                 className={cn("text-(--moss-icon-primary-text)", {
                   "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": !node.isFolder,
+                  "opacity-0": node.kind !== "Dir",
                 })}
               />
-
-              <TestCollectionIcon type={node.type} />
-              <NodeLabel label={node.id} searchInput={searchInput} />
+              <TestCollectionIcon type={node.kind} />
+              <NodeLabel label={node.name} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
             {preview &&
@@ -132,17 +128,15 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
                     parentNode={{
-                      uniqueId: "-",
-                      childNodes: [],
-                      type: "",
-                      order: 0,
-                      isFolder: false,
-                      isExpanded: false,
+                      ...node,
                       id: "-",
-                      isRoot: false,
+                      name: "DraggedNode",
+                      order: undefined,
+                      expanded: false,
+                      childNodes: [],
                     }}
                     isLastChild={false}
-                    node={{ ...node, uniqueId: "DraggedNode", childNodes: [] }}
+                    node={{ ...node, id: "DraggedNode", childNodes: [] }}
                     onNodeUpdate={() => {}}
                     depth={0}
                   />
@@ -154,8 +148,8 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>
-            {node.isFolder && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
-            {node.isFolder && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
+            {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
+            {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
             <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
           </ActionMenu.Content>
         </ActionMenu.Portal>

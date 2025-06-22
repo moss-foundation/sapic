@@ -1,58 +1,72 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { EntryInfo } from "@repo/moss-collection";
+
+import { NodeProps, TreeNodeProps } from "./types";
 
 export type SortTypes = "none" | "order" | "alphabetically";
 
-export interface Collection {
-  id: number | string;
-  "type": "collection";
-  "order": number;
-  "tree": NodeProps;
+//TODO remove this after collections from backend are implemented
+export interface CollectionTree {
+  id: string;
+  name: string;
+  type: "collection";
+  order: number | null;
+  tree: NodeProps[];
 }
 
-export interface NodeProps {
-  id: string | number;
-  type: string;
-  order: number;
-  isFolder: boolean;
-  isExpanded: boolean;
-  childNodes: NodeProps[];
+export interface TreeCollectionRootNode {
+  id: string;
+  name: string;
+  order: number | null;
+  expanded: boolean;
+  endpoints: TreeCollectionNode;
+  schemas: TreeCollectionNode;
+  components: TreeCollectionNode;
+  requests: TreeCollectionNode;
+}
+
+export interface TreeCollectionNode extends EntryInfo {
+  childNodes: TreeCollectionNode[];
+}
+
+export interface TreeNodeComponentPropsV2 {
+  node: TreeCollectionRootNode;
+  depth: number;
+  parentNode: TreeCollectionRootNode;
+  isLastChild: boolean;
+  onNodeUpdate: (node: TreeCollectionRootNode) => void;
 }
 
 export interface TreeRootNodeProps {
-  onNodeUpdate: (node: TreeNodeProps) => void;
-  node: TreeNodeProps;
-}
-
-export interface TreeNodeProps extends NodeProps {
-  uniqueId: string;
-  childNodes: TreeNodeProps[];
-  isRoot: boolean;
+  onNodeUpdate: (node: TreeCollectionNode) => void;
+  node: TreeCollectionNode;
 }
 
 export interface TreeProps {
-  id?: string | number;
-  tree: NodeProps;
+  tree: TreeCollectionRootNode;
+
   paddingLeft?: number;
   paddingRight?: number;
   rootOffset?: number;
   nodeOffset?: number;
   searchInput?: string;
   sortBy?: SortTypes;
-  onTreeUpdate?: (tree: NodeProps) => void;
+  displayMode?: "RequestFirst" | "DesignFirst";
+  onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 
-  onRootAdd?: (node: TreeNodeProps) => void;
-  onRootRemove?: (node: TreeNodeProps) => void;
-  onRootRename?: (node: TreeNodeProps) => void;
-  onRootUpdate?: (node: TreeNodeProps) => void;
-  onRootClick?: (node: TreeNodeProps) => void;
-  onRootDoubleClick?: (node: TreeNodeProps) => void;
+  onRootAdd?: (node: TreeCollectionRootNode) => void;
+  onRootRemove?: (node: TreeCollectionRootNode) => void;
+  onRootRename?: (node: TreeCollectionRootNode) => void;
+  onRootUpdate?: (node: TreeCollectionRootNode) => void;
+  onRootClick?: (node: TreeCollectionRootNode) => void;
+  onRootDoubleClick?: (node: TreeCollectionRootNode) => void;
 
-  onNodeAdd?: (node: TreeNodeProps) => void;
-  onNodeRemove?: (node: TreeNodeProps) => void;
-  onNodeRename?: (node: TreeNodeProps) => void;
-  onNodeUpdate?: (node: TreeNodeProps) => void;
-  onNodeClick?: (node: TreeNodeProps) => void;
-  onNodeDoubleClick?: (node: TreeNodeProps) => void;
+  onNodeAdd?: (node: TreeCollectionNode) => void;
+  onNodeRemove?: (node: TreeCollectionNode) => void;
+  onNodeRename?: (node: TreeCollectionNode) => void;
+  onNodeUpdate?: (node: TreeCollectionNode) => void;
+  onNodeClick?: (node: TreeCollectionNode) => void;
+  onNodeDoubleClick?: (node: TreeCollectionNode) => void;
 }
 
 export interface TreeContextProps {
@@ -65,18 +79,19 @@ export interface TreeContextProps {
   sortBy?: SortTypes;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
-  onRootAddCallback?: (node: TreeNodeProps) => void;
-  onRootRemoveCallback?: (node: TreeNodeProps) => void;
-  onRootRenameCallback?: (node: TreeNodeProps) => void;
-  onRootUpdateCallback?: (node: TreeNodeProps) => void;
-  onRootClickCallback?: (node: TreeNodeProps) => void;
-  onRootDoubleClickCallback?: (node: TreeNodeProps) => void;
-  onNodeAddCallback?: (node: TreeNodeProps) => void;
-  onNodeRemoveCallback?: (node: TreeNodeProps) => void;
-  onNodeRenameCallback?: (node: TreeNodeProps) => void;
-  onNodeUpdateCallback?: (node: TreeNodeProps) => void;
-  onNodeClickCallback?: (node: TreeNodeProps) => void;
-  onNodeDoubleClickCallback?: (node: TreeNodeProps) => void;
+  displayMode: "RequestFirst" | "DesignFirst";
+  onRootAddCallback?: (node: TreeCollectionRootNode) => void;
+  onRootRemoveCallback?: (node: TreeCollectionRootNode) => void;
+  onRootRenameCallback?: (node: TreeCollectionRootNode) => void;
+  onRootUpdateCallback?: (node: TreeCollectionRootNode) => void;
+  onRootClickCallback?: (node: TreeCollectionRootNode) => void;
+  onRootDoubleClickCallback?: (node: TreeCollectionRootNode) => void;
+  onNodeAddCallback?: (node: TreeCollectionNode) => void;
+  onNodeRemoveCallback?: (node: TreeCollectionNode) => void;
+  onNodeRenameCallback?: (node: TreeCollectionNode) => void;
+  onNodeUpdateCallback?: (node: TreeCollectionNode) => void;
+  onNodeClickCallback?: (node: TreeCollectionNode) => void;
+  onNodeDoubleClickCallback?: (node: TreeCollectionNode) => void;
 }
 
 export interface TreeNodeComponentProps extends NodeEvents {

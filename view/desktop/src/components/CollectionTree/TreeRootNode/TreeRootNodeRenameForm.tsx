@@ -3,10 +3,10 @@ import { useContext } from "react";
 import TestMossImage from "../../../assets/images/TestMossImage.webp";
 import { NodeRenamingForm } from "../NodeRenamingForm";
 import { TreeContext } from "../Tree";
-import { TreeNodeProps } from "../types";
+import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeRenameFormProps {
-  node: TreeNodeProps;
+  node: TreeCollectionRootNode;
   handleRenamingFormSubmit: (newName: string) => void;
   handleRenamingFormCancel: () => void;
 }
@@ -24,13 +24,14 @@ export const TreeRootNodeRenameForm = ({
       <div className="flex size-5 shrink-0 items-center justify-center rounded outline-1 outline-(--moss-border-color)">
         <img src={TestMossImage} className="h-full w-full" />
       </div>
+
       <NodeRenamingForm
-        onSubmit={(newName) => {
-          handleRenamingFormSubmit(newName);
-          onRootRenameCallback?.({ ...node, id: newName });
+        onSubmit={(name) => {
+          handleRenamingFormSubmit(name);
+          onRootRenameCallback?.({ ...node, name });
         }}
         onCancel={handleRenamingFormCancel}
-        currentName={node.id}
+        currentName={node.name}
       />
     </div>
   );

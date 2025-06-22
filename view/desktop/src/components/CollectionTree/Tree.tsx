@@ -1,16 +1,13 @@
-import { createContext, useEffect, useId, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
-import { useCreateNewCollectionFromTreeNodeEvent } from "./hooks/useCreateNewCollectionFromTreeNodeEvent.ts";
 import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
-import { TreeContextProps, TreeNodeProps, TreeProps } from "./types.ts";
+import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
 import {
   checkIfAllFoldersAreCollapsed,
   checkIfAllFoldersAreExpanded,
-  prepareCollectionForTree,
-  removeUniqueIdFromTree,
-  updateTreeNode,
-} from "./utils.ts";
+  updateNodeInTree,
+} from "./utils/TreeRootUtils.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
@@ -22,10 +19,10 @@ export const TreeContext = createContext<TreeContextProps>({
   allFoldersAreCollapsed: true,
   searchInput: undefined,
   sortBy: "none",
+  displayMode: "RequestFirst",
 });
 
 export const CollectionTree = ({
-  id,
   tree: initialTree,
   paddingLeft = 8,
   paddingRight = 8,
@@ -33,6 +30,7 @@ export const CollectionTree = ({
   nodeOffset = 16,
   searchInput,
   sortBy = "none",
+  displayMode = "RequestFirst",
 
   onTreeUpdate,
 
@@ -50,38 +48,37 @@ export const CollectionTree = ({
   onNodeClick,
   onNodeDoubleClick,
 }: TreeProps) => {
-  const reactId = useId();
-  const treeId = id || reactId;
+  const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
-  const [tree, setTree] = useState<TreeNodeProps>(prepareCollectionForTree(initialTree, sortBy));
-
-  const handleNodeUpdate = (updatedNode: TreeNodeProps) => {
+  const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree((prev) => {
-      const newTree = updateTreeNode(prev, updatedNode);
-      onTreeUpdate?.(removeUniqueIdFromTree(newTree));
+      const newTree = updateNodeInTree(prev, updatedNode);
+      onTreeUpdate?.(newTree);
       return newTree;
     });
+  };
 
-    if (updatedNode.isRoot) onRootUpdate?.(updatedNode);
-    else onNodeUpdate?.(updatedNode);
+  const handleRootNodeUpdate = (updatedNode: TreeCollectionRootNode) => {
+    setTree(updatedNode);
+    onTreeUpdate?.(updatedNode);
   };
 
   useEffect(() => {
-    setTree(prepareCollectionForTree(initialTree, sortBy));
-  }, [initialTree, sortBy]);
+    setTree(initialTree);
+  }, [initialTree]);
 
-  useCreateNewCollectionFromTreeNodeEvent({
-    treeId,
-    onNodeAdd,
-    onNodeRemove,
-    onRootAdd,
-    onRootRemove,
-    onTreeUpdate,
-    setTree,
-  });
+  // useCreateNewCollectionFromTreeNodeEvent({
+  //   treeId,
+  //   onNodeAdd,
+  //   onNodeRemove,
+  //   onRootAdd,
+  //   onRootRemove,
+  //   onTreeUpdate,
+  //   setTree,
+  // });
 
   useMoveTreeNodeEvent({
-    treeId,
+    treeId: initialTree.id,
     onNodeAdd,
     onNodeRemove,
     onRootAdd,
@@ -93,15 +90,16 @@ export const CollectionTree = ({
   return (
     <TreeContext.Provider
       value={{
-        treeId,
+        treeId: initialTree.id,
         paddingLeft,
         paddingRight,
         rootOffset,
         nodeOffset,
-        allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
-        allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
+        allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
+        allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
         searchInput,
         sortBy,
+        displayMode,
 
         onRootAddCallback: onRootAdd,
         onRootRemoveCallback: onRootRemove,
@@ -119,7 +117,7 @@ export const CollectionTree = ({
       }}
     >
       <div>
-        <TreeRootNode onNodeUpdate={handleNodeUpdate} node={tree} />
+        <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootUpdate={handleRootNodeUpdate} node={tree} />
       </div>
     </TreeContext.Provider>
   );

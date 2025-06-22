@@ -6,19 +6,20 @@ import { cn } from "@/utils";
 import TestMossImage from "../../../assets/images/TestMossImage.webp";
 import { NodeLabel } from "../NodeLabel";
 import { TreeContext } from "../Tree";
-import { TreeNodeProps } from "../types";
+import { TreeCollectionRootNode } from "../types";
 
 interface TreeRootNodeButtonProps {
-  node: TreeNodeProps;
+  node: TreeCollectionRootNode;
   searchInput?: string;
   shouldRenderChildNodes: boolean;
-  handleFolderClick: () => void;
+  handleRootNodeClick: (node: TreeCollectionRootNode) => void;
 }
+
 export const TreeRootNodeButton = ({
   node,
   searchInput,
   shouldRenderChildNodes,
-  handleFolderClick,
+  handleRootNodeClick,
 }: TreeRootNodeButtonProps) => {
   const { onRootClickCallback, onRootDoubleClickCallback } = useContext(TreeContext);
 
@@ -26,7 +27,10 @@ export const TreeRootNodeButton = ({
     <button
       className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
       onClick={() => {
-        handleFolderClick();
+        handleRootNodeClick({
+          ...node,
+          expanded: !node.expanded,
+        });
         onRootClickCallback?.(node);
       }}
       onDoubleClick={() => onRootDoubleClickCallback?.(node)}
@@ -47,7 +51,7 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
-      <NodeLabel label={node.id} searchInput={searchInput} />
+      <NodeLabel label={node.name} searchInput={searchInput} />{" "}
     </button>
   );
 };

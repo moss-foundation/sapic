@@ -5,10 +5,17 @@ import {
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DropNodeElement, DropNodeElementWithInstruction, NodeProps, SortTypes, TreeNodeProps } from "./types";
+import {
+  DropNodeElement,
+  DropNodeElementWithInstruction,
+  NodeProps,
+  SortTypes,
+  TreeCollectionNode,
+  TreeNodeProps,
+} from "./types";
 
-export const updateTreeNode = (node: TreeNodeProps, updatedNode: TreeNodeProps): TreeNodeProps => {
-  if (node.uniqueId === updatedNode.uniqueId) return updateNodeOrder(updatedNode);
+export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
+  if (node.id === updatedNode.id) return updateNodeOrder(updatedNode);
 
   return {
     ...node,
@@ -389,7 +396,7 @@ export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => 
   return true;
 };
 
-export const updateNodeOrder = (node: TreeNodeProps): TreeNodeProps => {
+export const updateNodeOrder = (node: TreeCollectionNode): TreeCollectionNode => {
   return {
     ...node,
     childNodes: node.childNodes.map((child, index) => ({
@@ -399,7 +406,7 @@ export const updateNodeOrder = (node: TreeNodeProps): TreeNodeProps => {
   };
 };
 
-export const updateNodesOrder = (nodes: TreeNodeProps[]): TreeNodeProps[] => {
+export const updateNodesOrder = (nodes: TreeCollectionNode[]): TreeCollectionNode[] => {
   return nodes.map((node, index) => ({
     ...node,
     order: index + 1,

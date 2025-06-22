@@ -9,9 +9,9 @@ import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { useHandleCollectionsDragAndDrop } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
 import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
 import { getActualDropSourceTarget } from "./CollectionTree/utils";
-import { useHandleCollectionsDragAndDrop } from "./CollectionTreeV2/hooks/useHandleCollectionsDragAndDrop";
 
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);

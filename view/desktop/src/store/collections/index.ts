@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTreeV2/types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
   CreateEntryInput,
