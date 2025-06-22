@@ -5,7 +5,6 @@ pub mod context;
 pub mod models;
 pub mod services;
 pub mod storage;
-pub mod use_cases;
 
 #[macro_use]
 extern crate derive_more;

@@ -368,9 +368,6 @@ importers:
       '@repo/moss-tabs':
         specifier: workspace:*
         version: link:src/lib/moss-tabs
-      '@repo/moss-workbench':
-        specifier: workspace:*
-        version: link:../../crates/moss-workbench
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace

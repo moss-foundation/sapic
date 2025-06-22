@@ -19,6 +19,14 @@ export const logDateSchema = z.object({
 export const logItemSourceInfoSchema = z.object({
   id: z.string(),
 });
+
+export const workspaceInfoSchema = z.object({
+  id: z.string(),
+  displayName: z.string(),
+  lastOpenedAt: z.bigint().optional(),
+});
+
+export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
 export const colorThemeInfoSchema = z.object({
   identifier: z.string(),
   displayName: z.string(),

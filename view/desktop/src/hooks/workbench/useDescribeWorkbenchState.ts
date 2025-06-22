@@ -1,7 +1,7 @@
 /* FIXME: This hook is currently not used */
 
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DescribeWorkbenchStateOutput } from "@repo/moss-workbench";
+import { DescribeWorkbenchStateOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_DESCRIBE_WORKBENCH_STATE_QUERY_KEY = "describeWorkbenchState";

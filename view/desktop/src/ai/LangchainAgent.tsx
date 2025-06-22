@@ -5,7 +5,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatOllama } from "@langchain/ollama";
-import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/moss-workbench";
+import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/moss-app";
 
 async function setupAgent() {
   // Running a test model locally using Ollama

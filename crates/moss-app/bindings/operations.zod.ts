@@ -10,9 +10,35 @@ import {
   logEntryInfoSchema,
   logItemSourceInfoSchema,
   preferencesSchema,
+  workspaceInfoSchema,
+  workspaceModeSchema,
 } from "./types.zod";
 
 export const batchDeleteLogInputSchema = z.array(z.string());
+
+export const closeWorkspaceInputSchema = z.object({
+  id: z.string(),
+});
+
+export const closeWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const createWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteWorkspaceInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const describeWorkbenchStateOutputSchema = z.object({
+  prevWorkspaceId: z.string().nullable(),
+});
 
 export const getColorThemeInputSchema = z.object({
   id: z.string(),
@@ -26,8 +52,26 @@ export const getTranslationsInputSchema = z.object({
   language: z.string(),
   namespace: z.string(),
 });
+
+export const openWorkspaceInputSchema = z.object({
+  id: z.string(),
+});
+
+export const openWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const updateWorkspaceInputSchema = z.object({
+  name: z.string().nullable(),
+});
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
+});
+
+export const createWorkspaceInputSchema = z.object({
+  name: z.string(),
+  mode: workspaceModeSchema,
+  openOnCreation: z.boolean(),
 });
 
 export const describeAppStateOutputSchema = z.object({
@@ -51,6 +95,8 @@ export const listLogsInputSchema = z.object({
 export const listLogsOutputSchema = z.object({
   contents: z.array(logEntryInfoSchema),
 });
+
+export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
 
 export const setColorThemeInputSchema = z.object({
   themeInfo: colorThemeInfoSchema,

@@ -58,7 +58,6 @@ pub struct WorkspaceSummary {
 }
 
 pub struct Workspace<R: TauriRuntime> {
-    fs: Arc<dyn FileSystem>,
     pub(super) abs_path: Arc<Path>,
     pub(super) storage: Arc<dyn WorkspaceStorage>,
     pub(super) collections: OnceCell<CollectionMap>,
@@ -106,7 +105,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            fs,
             abs_path,
             storage,
             collections: OnceCell::new(),
@@ -152,7 +150,6 @@ impl<R: TauriRuntime> Workspace<R> {
         let layout = LayoutService::new(storage.clone());
 
         Ok(Self {
-            fs,
             abs_path,
             storage,
             collections: OnceCell::new(),

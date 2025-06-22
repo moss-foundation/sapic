@@ -9,13 +9,40 @@ import type {
   LogEntryInfo,
   LogItemSourceInfo,
   Preferences,
+  WorkspaceInfo,
+  WorkspaceMode,
 } from "./types";
 
 export type BatchDeleteLogInput = Array<string>;
 
 export type BatchDeleteLogOutput = { deletedEntries: Array<LogItemSourceInfo> };
 
+export type CloseWorkspaceInput = {
+  /**
+   * The workspace id is required to ensure the close function
+   * is only called when a workspace is open.
+   */
+  id: string;
+};
+
+export type CloseWorkspaceOutput = {
+  /**
+   * The id of the workspace that was closed.
+   */
+  id: string;
+};
+
+export type CreateWorkspaceInput = { name: string; mode: WorkspaceMode; openOnCreation: boolean };
+
+export type CreateWorkspaceOutput = { id: string };
+
+export type DeleteWorkspaceInput = { id: string };
+
+export type DeleteWorkspaceOutput = { id: string };
+
 export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; lastWorkspace?: string };
+
+export type DescribeWorkbenchStateOutput = { prevWorkspaceId: string | null };
 
 export type GetColorThemeInput = { id: string };
 
@@ -33,6 +60,20 @@ export type ListLogsInput = { dates: Array<LogDate>; levels: Array<LogLevel>; re
 
 export type ListLogsOutput = { contents: Array<LogEntryInfo> };
 
+export type ListWorkspacesOutput = Array<WorkspaceInfo>;
+
+export type OpenWorkspaceInput = { id: string };
+
+export type OpenWorkspaceOutput = { id: string };
+
 export type SetColorThemeInput = { themeInfo: ColorThemeInfo };
 
 export type SetLocaleInput = { localeInfo: LocaleInfo };
+
+export type UpdateWorkspaceInput = {
+  /**
+   * A new name for the workspace, if provided, the workspace
+   * will be renamed to this name.
+   */
+  name: string | null;
+};

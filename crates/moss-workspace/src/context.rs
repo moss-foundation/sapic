@@ -63,7 +63,7 @@ impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
         Task::new(fut, timeout)
     }
 
-    fn set_value<T: ContextValue>(&self, value: T) {
+    fn set_value<T: ContextValue>(&self, _value: T) {
         todo!()
     }
 
