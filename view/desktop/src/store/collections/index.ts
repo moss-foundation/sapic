@@ -1,12 +1,6 @@
 import { create } from "zustand";
 
-import {
-  checkIfTreeIsCollapsed,
-  checkIfTreeIsExpanded,
-  collapseAllNodes,
-  expandAllNodes,
-} from "@/components/CollectionTree/utils";
-import { CollectionTree, TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTreeV2/types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTreeV2/types";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
   CreateEntryInput,
@@ -23,20 +17,10 @@ import {
 } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
 
-import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
-import SapicTestCollection from "../../assets/SapicTestCollection.json";
-import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
-
-interface CollectionsStoreState {
+export interface CollectionsStoreState {
   collectionsTrees: TreeCollectionRootNode[];
   setCollectionsTrees: (collectionsTrees: TreeCollectionRootNode[]) => void;
   updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => void;
-
-  collections: CollectionTree[];
-  setCollections: (collections: CollectionTree[]) => void;
-  expandAll: () => void;
-  collapseAll: () => void;
-  updateCollection: (collection: CollectionTree) => void;
 
   isCreateCollectionLoading: boolean;
   createCollection: (collection: CreateCollectionInput) => Promise<void>;
@@ -57,7 +41,7 @@ interface CollectionsStoreState {
   areCollectionEntriesStreaming: boolean;
   streamedCollectionEntries: EntryInfo[];
   startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
-  distributeEntryToCollections: (entry: EntryInfo, collectionId: string) => void;
+  distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -68,56 +52,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => {
     set((state) => ({
       collectionsTrees: state.collectionsTrees.map((c) => (c.id === collectionsTree.id ? { ...collectionsTree } : c)),
-    }));
-  },
-  collections: [
-    {
-      ...SapicTestCollection,
-      name: "Sapic Test Collection",
-    } as unknown as CollectionTree,
-    {
-      ...AzureDevOpsTestCollection,
-      name: "Azure DevOps Test Collection",
-    } as unknown as CollectionTree,
-    {
-      ...WhatsAppBusinessTestCollection,
-      name: "WhatsApp Business Test Collection",
-    } as unknown as CollectionTree,
-  ],
-  setCollections: (collections: CollectionTree[]) => {
-    set({ collections });
-  },
-  expandAll: () => {
-    const allFoldersAreExpanded = get().collections.every((collection) => checkIfTreeIsExpanded(collection.tree));
-
-    if (allFoldersAreExpanded) return;
-
-    set((state) => ({
-      collections: state.collections.map((collection) => {
-        return {
-          ...collection,
-          tree: expandAllNodes(collection.tree),
-        };
-      }),
-    }));
-  },
-  collapseAll: () => {
-    const allFoldersAreCollapsed = get().collections.every((collection) => checkIfTreeIsCollapsed(collection.tree));
-
-    if (allFoldersAreCollapsed) return;
-
-    set((state) => ({
-      collections: state.collections.map((collection) => {
-        return {
-          ...collection,
-          tree: collapseAllNodes(collection.tree),
-        };
-      }),
-    }));
-  },
-  updateCollection: (updatedCollection: CollectionTree) => {
-    set((state) => ({
-      collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
     }));
   },
 
@@ -141,7 +75,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         ...state.streamedCollections,
         {
           id: result.data.id,
-          name: collection.name,
+          ...collection,
           order: collection.order ?? null,
         },
       ],
@@ -161,14 +95,15 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input: { id: collectionId } });
 
     if (result.status === "error") {
+      set(() => ({
+        isDeleteCollectionLoading: false,
+      }));
       throw new Error(String(result.error));
     }
 
     set((state) => ({
       streamedCollections: state.streamedCollections.filter((c) => c.id !== collectionId),
-    }));
-
-    set(() => ({
+      collectionsTrees: state.collectionsTrees.filter((c) => c.id !== collectionId),
       isDeleteCollectionLoading: false,
     }));
   },
@@ -217,6 +152,19 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           },
         ],
       }));
+
+      get().distributeEntryToCollectionTree(
+        {
+          id: result.data.id,
+          name: input.dir.name,
+          order: input.dir.order ?? undefined,
+          path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
+          class: entryClass,
+          kind: "Dir" as const,
+          expanded: false,
+        },
+        collectionId
+      );
     } else if ("item" in input) {
       let entryClass: "Request" | "Endpoint" | "Component" | "Schema" = "Request";
       let protocol: "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc" | undefined = undefined;
@@ -254,6 +202,20 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           },
         ],
       }));
+
+      get().distributeEntryToCollectionTree(
+        {
+          id: result.data.id,
+          name: input.item.name,
+          order: input.item.order ?? undefined,
+          path: `${input.item.path.replaceAll("/", "")}\\${input.item.name}`,
+          class: entryClass,
+          kind: "Item" as const,
+          protocol,
+          expanded: false,
+        },
+        collectionId
+      );
     }
 
     set(() => ({
@@ -298,7 +260,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
       onCollectionEvent.onmessage = (collection) => {
-        console.log("collection", collection);
+        // console.log("collection", collection);
         set((state) => {
           const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
           if (existingCollection) {
@@ -314,44 +276,40 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 name: collection.name,
                 order: collection.order,
                 expanded: true,
-                Endpoints: {
-                  id: "Endpoints-id",
-                  name: "Endpoints",
-                  order: 1,
-                  path: "Endpoints",
+                endpoints: {
+                  id: "",
+                  name: "endpoints",
+                  path: "endpoints",
                   class: "Endpoint",
                   kind: "Dir",
                   expanded: true,
                   childNodes: [],
                 },
-                Schemas: {
-                  id: "Schemas-id",
-                  name: "Schemas",
-                  order: 2,
-                  path: "Schemas",
+                schemas: {
+                  id: "",
+                  name: "schemas",
+                  path: "schemas",
                   class: "Schema",
                   kind: "Dir",
-                  expanded: true,
+                  expanded: false,
                   childNodes: [],
                 },
-                Components: {
-                  id: "Components-id",
-                  name: "Components",
-                  order: 3,
-                  path: "Components",
+                components: {
+                  id: "",
+                  name: "components",
+                  path: "components",
                   class: "Component",
                   kind: "Dir",
                   expanded: true,
                   childNodes: [],
                 },
-                Requests: {
-                  id: "Requests-id",
-                  name: "Requests",
-                  order: 4,
-                  path: "Requests",
+                requests: {
+                  id: "",
+                  name: "requests",
+                  path: "requests",
                   class: "Request",
                   kind: "Dir",
-                  expanded: true,
+                  expanded: false,
                   childNodes: [],
                 },
               },
@@ -366,7 +324,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         channel: onCollectionEvent,
       });
 
-      // console.log("streamedCollections", get().streamedCollections);
+      console.log("collectionsTrees", get().collectionsTrees);
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {
@@ -377,7 +335,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   areCollectionEntriesStreaming: false,
   streamedCollectionEntries: [],
   startCollectionEntriesStream: async (collection) => {
-    // console.log("startCollectionEntriesStream");
     try {
       set({ areCollectionEntriesStreaming: true });
 
@@ -391,7 +348,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             return state;
           }
 
-          get().distributeEntryToCollections(collectionEntry, collection.id);
+          get().distributeEntryToCollectionTree(collectionEntry, collection.id);
           return {
             ...state,
             streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry],
@@ -410,71 +367,98 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     }
   },
 
-  distributeEntryToCollections(entry: EntryInfo, collectionId: string) {
-    const collection = get().collectionsTrees.find((c) => c.id === collectionId);
+  distributeEntryToCollectionTree: (entry, collectionId) => {
+    // Find the collection by ID
+    const collection = get().collectionsTrees.find((col) => col.id === collectionId);
     if (!collection) {
-      console.error("Collection not found:", collectionId);
+      console.error(`Collection with ID ${collectionId} not found`);
       return;
     }
 
-    let category: TreeCollectionNode;
-    switch (entry.class) {
-      case "Request":
-        category = collection.Requests;
-        break;
-      case "Endpoint":
-        category = collection.Endpoints;
-        break;
-      case "Component":
-        category = collection.Components;
-        break;
-      case "Schema":
-        category = collection.Schemas;
-        break;
-      default:
-        console.error("Invalid entry class:", entry.class);
-        return;
-    }
-
-    const parts = entry.path.split("\\");
-    const expectedFirstPart = entry.class.toLowerCase() + "s"; // e.g., "requests"
-    if (parts[0] !== expectedFirstPart) {
-      console.error("Path does not start with expected category:", entry.path);
-      return;
-    }
-
-    const pathParts = parts.slice(1);
-    if (pathParts.length === 0) {
-      console.error("Entry path is too short:", entry.path);
-      return;
-    }
-
-    const parentPathParts = pathParts.slice(0, -1);
-    let currentNode = category;
-    for (const part of parentPathParts) {
-      const childNode = currentNode.childNodes.find((node) => node.name === part && node.kind === "Dir");
-      if (!childNode) {
-        console.error("Parent directory not found:", part);
-        return;
-      }
-      currentNode = childNode;
-    }
-
-    const newNode: TreeCollectionNode = {
-      id: entry.id,
-      name: entry.name,
-      path: `\\${category.name}\\${pathParts.join("\\")}`,
-      class: entry.class,
-      kind: entry.kind,
-      protocol: entry.protocol || undefined,
-      order: entry.order || undefined,
-      expanded: entry.expanded,
-      childNodes: [],
+    // Map entry class to collection category
+    const categoryMap: { [key: string]: string } = {
+      "Request": "requests",
+      "Endpoint": "endpoints",
+      "Component": "components",
+      "Schema": "schemas",
     };
 
-    currentNode.childNodes.push(newNode);
+    //TODO: uncomment this when backend is fixed
+    // const category = categoryMap[entry.class];
+    // if (!category) {
+    //   console.error(`Unknown class ${entry.class}`);
+    //   return;
+    // }
 
-    // Update the state to trigger a re-render
-    set((state) => ({ collectionsTrees: [...state.collectionsTrees] }));
+    const category = entry.path.split("\\")[0];
+    if (!category) {
+      console.error(`Unknown class ${category} ${entry.path}`);
+      return;
+    }
+    // Get the root node for this category
+    const rootNode = (collection as TreeCollectionRootNode)[category] as TreeCollectionNode;
+    if (!rootNode) {
+      console.error(`Category ${category} not found in collection`);
+      return;
+    }
+
+    // Split the path into components
+    const pathComponents = entry.path.split("\\");
+
+    // If path has one component (root node)
+    if (pathComponents.length === 1) {
+      // Update root node properties, preserving childNodes
+      Object.assign(rootNode, entry);
+      return;
+    }
+
+    // Handle nested paths
+    let currentNode = rootNode;
+    const relativePath = pathComponents.slice(1);
+
+    // Navigate or create intermediate directories
+    for (let i = 0; i < relativePath.length - 1; i++) {
+      const component = relativePath[i];
+      let child = currentNode.childNodes.find((node) => node.name === component && node.kind === "Dir");
+
+      if (!child) {
+        child = {
+          id: "",
+          name: component,
+          path: `${currentNode.path}\\${component}`,
+          class: entry.class,
+          kind: "Dir",
+          protocol: undefined,
+          order: undefined,
+          expanded: false,
+          childNodes: [],
+        };
+        currentNode.childNodes.push(child);
+      }
+      currentNode = child;
+    }
+
+    // Handle the final component
+    const lastComponent = relativePath[relativePath.length - 1];
+    let existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
+
+    if (existingNode) {
+      // Update existing node, preserving childNodes
+      Object.assign(existingNode, entry);
+    } else {
+      // Create new node
+      const newNode: TreeCollectionNode = {
+        id: entry.id,
+        name: entry.name,
+        path: entry.path,
+        class: entry.class,
+        kind: entry.kind,
+        protocol: entry.protocol,
+        order: entry.order,
+        expanded: entry.expanded,
+        childNodes: [],
+      };
+      currentNode.childNodes.push(newNode);
+    }
   },
 }));

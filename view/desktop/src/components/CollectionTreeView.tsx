@@ -18,7 +18,14 @@ export const CollectionTreeView = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
-  const { collections, setCollections, updateCollectionTree, collectionsTrees } = useCollectionsStore();
+  const {
+    collections,
+    setCollections,
+    updateCollectionTree,
+    collectionsTrees,
+    areCollectionsStreaming,
+    areCollectionEntriesStreaming,
+  } = useCollectionsStore();
 
   useHandleCollectionsDragAndDrop();
 
@@ -65,6 +72,8 @@ export const CollectionTreeView = () => {
     };
   }, [collections, setCollections]);
 
+  const shouldShowCollectionTree = !areCollectionsStreaming && !areCollectionEntriesStreaming;
+
   return (
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
       <Scrollbar className="h-full">
@@ -78,19 +87,19 @@ export const CollectionTreeView = () => {
           </div>
 
           <div className="flex grow flex-col">
-            {collectionsTrees.map((collection) => (
-              <CollectionTree
-                key={`${collection.id}`}
-                tree={collection}
-                onTreeUpdate={updateCollectionTree}
-                searchInput={searchInput}
-              />
-            ))}
+            {shouldShowCollectionTree &&
+              collectionsTrees.map((collection) => (
+                <CollectionTree
+                  key={`${collection.id}`}
+                  tree={collection}
+                  onTreeUpdate={updateCollectionTree}
+                  searchInput={searchInput}
+                />
+              ))}
           </div>
 
-          {collectionsTrees.map((collection) => (
-            <div key={`${collection.id}`}>{collection.name}</div>
-          ))}
+          {shouldShowCollectionTree &&
+            collectionsTrees.map((collection) => <div key={`${collection.id}`}>{collection.name}</div>)}
 
           {showCollectionCreationZone && (
             <div className="flex justify-end p-2">

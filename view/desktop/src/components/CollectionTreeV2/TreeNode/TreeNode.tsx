@@ -1,9 +1,7 @@
 import { useContext } from "react";
 
-import { TreeNodeProps } from "@/components/CollectionTree/types";
-
 import { TreeContext } from "../..";
-import { TreeCollectionNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
 import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
 
@@ -25,12 +23,12 @@ const shouldRenderTreeNode = (
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeCollectionNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   isLastChild: boolean;
 }
 
 export interface NodeEvents {
-  onNodeUpdate: (node: TreeNodeProps) => void;
+  onNodeUpdate: (node: TreeCollectionNode) => void;
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
@@ -70,7 +68,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   // const [preview, setPreview] = useState<HTMLElement | null>(null);
   // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
 
-  const shouldRenderChildNodes = true; //shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
+  const shouldRenderChildNodes = node.expanded; //shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
   const nodePaddingLeft = depth * nodeOffset;
 
   return (

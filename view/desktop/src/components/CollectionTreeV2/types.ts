@@ -19,10 +19,10 @@ export interface TreeCollectionRootNode {
   name: string;
   order: number | null;
   expanded: boolean;
-  Endpoints: TreeCollectionNode;
-  Schemas: TreeCollectionNode;
-  Components: TreeCollectionNode;
-  Requests: TreeCollectionNode;
+  endpoints: TreeCollectionNode;
+  schemas: TreeCollectionNode;
+  components: TreeCollectionNode;
+  requests: TreeCollectionNode;
 }
 
 export interface TreeCollectionNode extends EntryInfo {

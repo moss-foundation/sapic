@@ -6,14 +6,15 @@ import { cn } from "@/utils";
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { useDropTargetRootNode } from "../hooks/useDropTargetRootNode";
 import { TreeContext } from "../Tree";
-import { TreeCollectionRootNode } from "../types";
+import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
-const shouldRenderChildNodesFn = (node: TreeCollectionRootNode, isDragging: boolean) => {
+const shouldRenderRootChildNodes = (node: TreeCollectionRootNode, isDragging: boolean) => {
   if (!node.expanded) {
     return false;
   }
@@ -25,33 +26,27 @@ const shouldRenderChildNodesFn = (node: TreeCollectionRootNode, isDragging: bool
   return true;
 };
 
-export interface TreeRootNodePropsV2 {
-  onNodeUpdate: (node: TreeCollectionRootNode) => void;
+export interface TreeRootNodeProps {
+  onNodeUpdate: (node: TreeCollectionNode) => void;
   onRootUpdate: (node: TreeCollectionRootNode) => void;
   node: TreeCollectionRootNode;
 }
 
-export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodePropsV2) => {
+export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeProps) => {
   const { treeId, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
-  //   const handleExpandAll = () => {
-  //     const newNode = expandAllNodes(node);
-  //     onNodeUpdate({
-  //       ...node,
-  //       childNodes: newNode.childNodes,
-  //     });
-  //   };
+  const handleExpandAll = () => {
+    const newNode = expandAllNodes(node);
+    onRootUpdate(newNode);
+  };
 
-  //   const handleCollapseAll = () => {
-  //     const newNode = collapseAllNodes(node);
-  //     onNodeUpdate({
-  //       ...node,
-  //       childNodes: newNode.childNodes,
-  //     });
-  //   };
+  const handleCollapseAll = () => {
+    const newNode = collapseAllNodes(node);
+    onRootUpdate(newNode);
+  };
 
   //   const {
   //     isAddingFileNode: isAddingRootFileNode,
@@ -86,7 +81,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
   //   }, [setIsRenamingRootNode, treeId]);
   //
 
-  const shouldRenderChildNodes = shouldRenderChildNodesFn(node, isDragging);
+  const shouldRenderChildNodes = shouldRenderRootChildNodes(node, isDragging);
   // !!searchInput ||
   // (!searchInput && node.isFolder && node.isExpanded) ||
   // isAddingRootFileNode ||
@@ -134,8 +129,8 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
           setIsRenamingRootNode={setIsRenamingRootNode}
           allFoldersAreCollapsed={allFoldersAreCollapsed}
           allFoldersAreExpanded={allFoldersAreExpanded}
-          // handleCollapseAll={handleCollapseAll}
-          // handleExpandAll={handleExpandAll}
+          handleCollapseAll={handleCollapseAll}
+          handleExpandAll={handleExpandAll}
         />
         {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>

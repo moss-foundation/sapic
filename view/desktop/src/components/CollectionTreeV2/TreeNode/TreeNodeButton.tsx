@@ -102,7 +102,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/treeNode:opacity-100 group-hover/treeNode:delay-400 group-hover/treeNode:duration-150"
                 slim
               />
-
               {node.kind === "Dir" && instruction !== null && canDrop === true && (
                 <DropIndicatorWithInstruction
                   paddingLeft={nodePaddingLeft}
@@ -113,7 +112,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
-
               <Icon
                 icon="ChevronRight"
                 className={cn("text-(--moss-icon-primary-text)", {
@@ -121,8 +119,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   "opacity-0": node.kind !== "Dir",
                 })}
               />
-
-              <TestCollectionIcon kind={node.kind} />
+              <TestCollectionIcon type={node.kind} />
               <NodeLabel label={node.name} searchInput={searchInput} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
@@ -131,14 +128,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
                     parentNode={{
-                      uniqueId: "-",
-                      childNodes: [],
-                      type: "",
-                      order: 0,
-                      isFolder: false,
-                      isExpanded: false,
+                      ...node,
                       id: "-",
-                      isRoot: false,
+                      name: "DraggedNode",
+                      order: undefined,
+                      expanded: false,
+                      childNodes: [],
                     }}
                     isLastChild={false}
                     node={{ ...node, id: "DraggedNode", childNodes: [] }}

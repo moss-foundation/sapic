@@ -48,7 +48,7 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
-      <NodeLabel label={node.name} searchInput={searchInput} />
+      <NodeLabel label={node.name} searchInput={searchInput} /> root button
     </button>
   );
 };

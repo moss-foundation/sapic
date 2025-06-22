@@ -3,7 +3,11 @@ import { createContext, useEffect, useState } from "react";
 import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import { updateNodeInTree } from "./utils/TreeRootUtils.ts";
+import {
+  checkIfAllFoldersAreCollapsed,
+  checkIfAllFoldersAreExpanded,
+  updateNodeInTree,
+} from "./utils/TreeRootUtils.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
@@ -91,10 +95,8 @@ export const CollectionTree = ({
         paddingRight,
         rootOffset,
         nodeOffset,
-        // allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree.childNodes),
-        // allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree.childNodes),
-        allFoldersAreExpanded: true,
-        allFoldersAreCollapsed: false,
+        allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
+        allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
         searchInput,
         sortBy,
         displayMode,
