@@ -80,6 +80,8 @@ pub struct CreateParams {
     pub name: Option<String>,
 }
 
+#[derive(Clone)]
+
 pub struct ModifyParams {
     pub name: Option<String>,
 }
@@ -125,7 +127,7 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> Result<Self> {
         let storage = {
             let storage = WorkspaceStorageImpl::new(&abs_path)
-                .context("Failed to load the workspace state database")?;
+                .context("Failed to create the workspace state database")?;
 
             Arc::new(storage)
         };

@@ -14,18 +14,14 @@ impl<R: TauriRuntime> App<R> {
         _ctx: &C,
     ) -> OperationResult<ListWorkspacesOutput> {
         let workspace_service = self.service::<WorkspaceService<R>>();
-        let workspaces = workspace_service.workspaces().await?;
-        let workspaces_lock = workspaces.read().await;
+        let workspaces = workspace_service
+            .map_known_workspaces_to_vec(|id, descriptor| WorkspaceInfo {
+                id,
+                display_name: descriptor.name.clone(),
+                last_opened_at: descriptor.last_opened_at,
+            })
+            .await?;
 
-        Ok(ListWorkspacesOutput(
-            workspaces_lock
-                .iter()
-                .map(|(_, entry)| WorkspaceInfo {
-                    id: entry.id,
-                    display_name: entry.name.clone(),
-                    last_opened_at: entry.last_opened_at,
-                })
-                .collect(),
-        ))
+        Ok(ListWorkspacesOutput(workspaces))
     }
 }

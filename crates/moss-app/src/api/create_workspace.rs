@@ -1,21 +1,12 @@
-use anyhow::Context as _;
-use chrono::Utc;
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-use moss_db::primitives::AnyValue;
-use moss_fs::FileSystem;
-use moss_storage::{global_storage::entities::WorkspaceInfoEntity, storage::operations::PutItem};
-use moss_workspace::{Workspace, workspace::CreateParams};
-use std::{path::Path, sync::Arc};
+use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     app::App,
     context::AnyAppContext,
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
-    services::workspace_service::{WorkspaceDescriptor, WorkspaceService},
-    storage::segments::WORKSPACE_SEGKEY,
+    services::workspace_service::WorkspaceService,
 };
 
 impl<R: TauriRuntime> App<R> {
@@ -27,69 +18,19 @@ impl<R: TauriRuntime> App<R> {
         input.validate()?;
 
         let workspace_service = self.service::<WorkspaceService<R>>();
+        let (workspace, descriptor) = workspace_service
+            .create_workspace(input.name.as_str(), self.activity_indicator.clone())
+            .await?;
 
-        let id = Uuid::new_v4();
-        let id_str = id.to_string();
-        let abs_path: Arc<Path> = workspace_service.absolutize(&id_str).into();
-        if abs_path.exists() {
-            return Err(OperationError::AlreadyExists(
-                abs_path.to_string_lossy().to_string(),
-            ));
+        if input.open_on_creation {
+            workspace_service
+                .activate_workspace(ctx, descriptor.id, workspace)
+                .await?;
         }
 
-        let fs = <dyn FileSystem>::global::<R, C>(ctx);
-        let workspaces = workspace_service
-            .workspaces()
-            .await
-            .context("Failed to get known workspaces")
-            .map_err_as_internal()?;
-
-        fs.create_dir(&abs_path)
-            .await
-            .context("Failed to create workspace")
-            .map_err_as_internal()?;
-
-        let new_workspace = Workspace::create(
-            fs,
-            &abs_path,
-            self.activity_indicator.clone(),
-            CreateParams {
-                name: Some(input.name.clone()),
-            },
-        )
-        .await?;
-
-        let last_opened_at = if input.open_on_creation {
-            Some(Utc::now().timestamp())
-        } else {
-            None
-        };
-
-        workspaces.write().await.insert(
-            id,
-            WorkspaceDescriptor {
-                id,
-                name: input.name.to_owned(),
-                last_opened_at,
-                abs_path: Arc::clone(&abs_path),
-            }
-            .into(),
-        );
-
-        match (last_opened_at, input.open_on_creation) {
-            (Some(last_opened_at), true) => {
-                workspace_service
-                    .activate_workspace(ctx, id, new_workspace)
-                    .await;
-
-                let item_store = self.global_storage.item_store();
-                let segkey = WORKSPACE_SEGKEY.join(id_str);
-                let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
-                PutItem::put(item_store.as_ref(), segkey, value)?;
-            }
-            _ => {}
-        }
-
-        Ok(CreateWorkspaceOutput { id, abs_path })
+        Ok(CreateWorkspaceOutput {
+            id: descriptor.id,
+            abs_path: descriptor.abs_path.clone(),
+        })
     }
 }
