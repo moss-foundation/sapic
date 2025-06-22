@@ -289,16 +289,14 @@ impl Worktree {
                         // TODO: Probably should log here since we should not be able to get here
                     });
 
+                    // INFO: Something here doesn't feel quite right—maybe we can improve it once we have the UI
                     if child_file_type.is_dir() {
-                        // For directories, don't send here - they will be sent when their ScanJob is processed
-                        // This avoids duplicate directory entries
                         new_jobs.push(ScanJob {
                             abs_path: Arc::clone(&child_abs_path),
                             path: child_path,
                             scan_queue: job.scan_queue.clone(),
                         });
                     } else {
-                        // For files, send immediately since they won't have their own ScanJob
                         continue_if_err!(sender.send(entry), |_err| {
                             // TODO: log error
                         });
