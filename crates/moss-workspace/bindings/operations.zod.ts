@@ -10,10 +10,26 @@ import {
   sidebarPartStateInfoSchema,
 } from "./types.zod";
 
+export const changeIconSchema = z.union([
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
+
+export const changeRepositorySchema = z.union([
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
+
 export const createCollectionInputSchema = z.object({
   name: z.string(),
   order: z.number().optional(),
   externalPath: z.string().optional(),
+  repo: z.string().optional(),
+  iconPath: z.string().optional(),
 });
 
 export const createCollectionOutputSchema = z.object({
@@ -34,7 +50,9 @@ export const describeEnvironmentInputSchema = z.object({
 
 export const updateCollectionInputSchema = z.object({
   id: z.string(),
-  newName: z.string().nullable(),
+  newName: z.string().optional(),
+  newRepo: changeRepositorySchema.optional(),
+  newIcon: changeIconSchema.optional(),
   order: z.number().optional(),
   pinned: z.boolean().optional(),
 });

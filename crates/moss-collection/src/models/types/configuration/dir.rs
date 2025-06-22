@@ -2,6 +2,7 @@ use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+use uuid::Uuid;
 
 use crate::models::{primitives::EntryClass, types::configuration::common::ConfigurationMetadata};
 
@@ -52,6 +53,17 @@ pub struct CompositeDirConfigurationModel {
     pub metadata: ConfigurationMetadata,
     #[serde(flatten)]
     pub inner: DirConfigurationModel,
+}
+
+impl Default for CompositeDirConfigurationModel {
+    fn default() -> Self {
+        Self {
+            metadata: ConfigurationMetadata { id: Uuid::new_v4() },
+            inner: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
+                HttpDirConfigurationModel {},
+            )),
+        }
+    }
 }
 
 impl Deref for CompositeDirConfigurationModel {

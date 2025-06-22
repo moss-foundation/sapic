@@ -1,13 +1,14 @@
 use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::collection::{self};
-use moss_common::api::{OperationError, OperationResult, OperationResultExt};
-
+use moss_collection::collection;
+use moss_common::api::{Change, OperationError, OperationResult, OperationResultExt};
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
+    models::operations::{
+        ChangeIcon, ChangeRepository, UpdateCollectionInput, UpdateCollectionOutput,
+    },
     workspace::Workspace,
 };
 
@@ -30,11 +31,27 @@ impl<R: TauriRuntime> Workspace<R> {
             .map_err_as_not_found()?
             .clone();
 
-        if let Some(new_name) = input.new_name {
+        let need_modify =
+            input.new_name.is_some() || input.new_repo.is_some() || input.new_icon.is_some();
+
+        if need_modify {
             let item_lock = item.write().await;
+
+            let repository = input.new_repo.map(|repo| match repo {
+                ChangeRepository::Update(repo_url) => Change::Update(repo_url),
+                ChangeRepository::Remove => Change::Remove,
+            });
+
+            let icon = input.new_icon.map(|icon| match icon {
+                ChangeIcon::Update(icon_path) => Change::Update(icon_path),
+                ChangeIcon::Remove => Change::Remove,
+            });
+
             item_lock
                 .modify(collection::ModifyParams {
-                    name: Some(new_name.clone()),
+                    name: input.new_name,
+                    repository,
+                    icon,
                 })
                 .await
                 .map_err(|e| OperationError::Internal(e.to_string()))?;
