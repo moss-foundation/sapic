@@ -1,9 +1,11 @@
 import { useContext } from "react";
 
 import { TreeContext } from "../..";
-import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
+import { TreeCollectionNode } from "../types";
 import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
+import TreeNodeRenameForm from "./TreeNodeRenameForm";
 
 const shouldRenderTreeNode = (
   node: TreeCollectionNode,
@@ -23,7 +25,7 @@ const shouldRenderTreeNode = (
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeCollectionNode | TreeCollectionRootNode;
+  parentNode?: TreeCollectionNode;
   isLastChild: boolean;
 }
 
@@ -32,8 +34,7 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { searchInput, onNodeAddCallback, onNodeRenameCallback, treeId, nodeOffset, paddingRight } =
-    useContext(TreeContext);
+  const { searchInput, onNodeAddCallback, onNodeRenameCallback, nodeOffset, paddingRight } = useContext(TreeContext);
 
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -60,10 +61,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   //   handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
   // } = useAddNodeWithDivider(parentNode, onNodeUpdate, node.order + 1);
 
-  // const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
-  //   node,
-  //   onNodeUpdate
-  // );
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
+    node,
+    onNodeUpdate
+  );
 
   // const [preview, setPreview] = useState<HTMLElement | null>(null);
   // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
@@ -83,25 +84,25 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           isLastChild={isLastChild}
         />
       )} */}
-      {/* {isRenamingNode ? (
+      {isRenamingNode ? (
         <TreeNodeRenameForm
           node={node}
           depth={depth}
-          parentNode={parentNode}
+          restrictedNames={parentNode?.childNodes.map((childNode) => childNode.id) ?? []}
           onNodeRenameCallback={onNodeRenameCallback}
           handleRenamingFormSubmit={handleRenamingFormSubmit}
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
-      ) : ( */}
-      <>
-        {/* <AddingFormDivider
+      ) : (
+        <>
+          {/* <AddingFormDivider
             paddingLeft={nodePaddingLeft}
             paddingRight={paddingRight}
             position="top"
             onClick={() => setIsAddingDividerNodeAbove(true)}
           /> */}
 
-        {/* {isAddingDividerNodeAbove && (
+          {/* {isAddingDividerNodeAbove && (
             <TreeNodeAddForm
               node={node}
               depth={depth - 1}
@@ -113,22 +114,22 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
             />
           )} */}
 
-        <TreeNodeButton
-          // ref={triggerRef}
-          node={node}
-          onNodeUpdate={onNodeUpdate}
-          depth={depth}
-          // onAddFile={() => setIsAddingFileNode(true)}
-          // onAddFolder={() => setIsAddingFolderNode(true)}
-          // onRename={() => setIsRenamingNode(true)}
-          // isDragging={isDragging}
-          // canDrop={canDrop}
-          // instruction={instruction}
-          // preview={preview}
-          isLastChild={isLastChild}
-        />
+          <TreeNodeButton
+            // ref={triggerRef}
+            node={node}
+            onNodeUpdate={onNodeUpdate}
+            depth={depth}
+            // onAddFile={() => setIsAddingFileNode(true)}
+            // onAddFolder={() => setIsAddingFolderNode(true)}
+            onRename={() => setIsRenamingNode(true)}
+            // isDragging={isDragging}
+            // canDrop={canDrop}
+            // instruction={instruction}
+            // preview={preview}
+            isLastChild={isLastChild}
+          />
 
-        {/* {isAddingDividerNodeBelow && (
+          {/* {isAddingDividerNodeBelow && (
             <TreeNodeAddForm
               node={node}
               depth={depth - 1}
@@ -140,7 +141,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
             />
           )} */}
 
-        {/* {isLastChild && (
+          {/* {isLastChild && (
             <AddingFormDivider
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
@@ -148,8 +149,8 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
               onClick={() => setIsAddingDividerNodeBelow(true)}
             />
           )} */}
-      </>
-      {/* )} */}
+        </>
+      )}
 
       {/* {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm

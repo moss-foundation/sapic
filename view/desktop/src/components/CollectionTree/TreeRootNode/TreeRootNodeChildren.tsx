@@ -11,17 +11,17 @@ interface TreeRootNodeChildrenProps {
   onNodeUpdate: (node: TreeCollectionNode) => void;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
-  handleAddFormRootSubmit: (newNode: TreeCollectionRootNode) => void;
+  handleAddFormRootSubmit: (newNode: TreeCollectionNode) => void;
   handleAddFormRootCancel: () => void;
 }
 
 export const TreeRootNodeChildren = ({
   node,
   onNodeUpdate,
-  // isAddingRootFileNode,
-  // isAddingRootFolderNode,
-  // handleAddFormRootSubmit,
-  // handleAddFormRootCancel,
+  isAddingRootFileNode,
+  isAddingRootFolderNode,
+  handleAddFormRootSubmit,
+  handleAddFormRootCancel,
 }: TreeRootNodeChildrenProps) => {
   const { nodeOffset, onRootAddCallback, displayMode } = useContext(TreeContext);
 
@@ -30,15 +30,11 @@ export const TreeRootNodeChildren = ({
       ? node.requests.childNodes
       : [node.endpoints, node.schemas, node.components, node.requests];
 
-  // console.log(`nodesToRender ${displayMode}`, nodesToRender);
-
   return (
     <ul className={cn("h-full w-full", { "pb-2": nodesToRender.length > 0 })}>
       {nodesToRender.map((childNode, index) => {
-        // console.log("childNode", childNode);
         return (
           <TreeNode
-            parentNode={node}
             onNodeUpdate={onNodeUpdate}
             key={childNode.id}
             node={childNode}
@@ -49,14 +45,14 @@ export const TreeRootNodeChildren = ({
       })}
       {/* {(isAddingRootFileNode || isAddingRootFolderNode) && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <TestCollectionIcon type={node.type} className="opacity-0" />
-          <TestCollectionIcon type={node.type} className={cn({ "opacity-0": isAddingRootFileNode })} />
+          <TestCollectionIcon type={node.kind} className="opacity-0" />
+          <TestCollectionIcon type={node.kind} className={cn({ "opacity-0": isAddingRootFileNode })} />
           <NodeAddForm
             isFolder={isAddingRootFolderNode}
             restrictedNames={nodesToRender.map((childNode) => childNode.id)}
             onSubmit={(newNode) => {
               handleAddFormRootSubmit(newNode);
-              onRootAddCallback?.({ ...node, childNodes: [...nodesToRender, newNode] } as TreeNodeProps);
+              onRootAddCallback?.({ ...node, childNodes: [...nodesToRender, newNode] } as TreeCollectionRootNode);
             }}
             onCancel={handleAddFormRootCancel}
           />

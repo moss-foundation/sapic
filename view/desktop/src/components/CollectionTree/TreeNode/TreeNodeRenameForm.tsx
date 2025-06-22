@@ -6,13 +6,13 @@ import { cn } from "@/utils";
 import { NodeRenamingForm } from "../NodeRenamingForm";
 import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
-import { TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 
 interface TreeNodeRenameFormProps {
-  node: TreeNodeProps;
+  node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeNodeProps;
-  onNodeRenameCallback?: (node: TreeNodeProps) => void;
+  restrictedNames: string[];
+  onNodeRenameCallback?: (node: TreeCollectionNode) => void;
   handleRenamingFormSubmit: (newName: string) => void;
   handleRenamingFormCancel: () => void;
 }
@@ -20,14 +20,14 @@ interface TreeNodeRenameFormProps {
 const TreeNodeRenameForm = ({
   node,
   depth,
-  parentNode,
+  restrictedNames,
   onNodeRenameCallback,
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeNodeRenameFormProps) => {
-  const { nodeOffset, searchInput } = useContext(TreeContext);
+  const { nodeOffset } = useContext(TreeContext);
   const nodePaddingLeft = depth * nodeOffset;
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.isFolder && node.isExpanded);
+  const shouldRenderChildNodes = node.kind === "Dir" && node.expanded;
 
   return (
     <div className="w-full min-w-0">
@@ -36,18 +36,18 @@ const TreeNodeRenameForm = ({
           icon="ChevronRight"
           className={cn("text-(--moss-icon-primary-text)", {
             "rotate-90": shouldRenderChildNodes,
-            "opacity-0": !node.isFolder,
+            "opacity-0": node.kind !== "Dir",
           })}
         />
-        <TestCollectionIcon type={node.type} />
+        <TestCollectionIcon type={node.kind} />
         <NodeRenamingForm
           onSubmit={(newName) => {
             handleRenamingFormSubmit(newName);
-            onNodeRenameCallback?.({ ...node, id: newName });
+            onNodeRenameCallback?.({ ...node, name: newName });
           }}
           onCancel={handleRenamingFormCancel}
-          restrictedNames={parentNode.childNodes.map((childNode) => childNode.id)}
-          currentName={node.id}
+          restrictedNames={restrictedNames}
+          currentName={node.name}
         />
       </span>
     </div>

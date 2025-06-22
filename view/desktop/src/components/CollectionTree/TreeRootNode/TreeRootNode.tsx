@@ -15,13 +15,22 @@ import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
 
-const shouldRenderRootChildNodes = (node: TreeCollectionRootNode, isDragging: boolean) => {
+const shouldRenderRootChildNodes = (
+  node: TreeCollectionRootNode,
+  isDragging: boolean,
+  isAddingRootNodeFile: boolean,
+  isRenamingRootNode: boolean
+) => {
   if (!node.expanded) {
     return false;
   }
 
   if (isDragging) {
     return false;
+  }
+
+  if (isAddingRootNodeFile || isRenamingRootNode) {
+    return true;
   }
 
   return true;
@@ -82,11 +91,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
   //   }, [setIsRenamingRootNode, treeId]);
   //
 
-  const shouldRenderChildNodes = shouldRenderRootChildNodes(node, isDragging);
-  // !!searchInput ||
-  // (!searchInput && node.isFolder && node.isExpanded) ||
-  // isAddingRootFileNode ||
-  // isAddingRootFolderNode;
+  const shouldRenderChildNodes = shouldRenderRootChildNodes(node, isDragging, isAddingRootNodeFile, isRenamingRootNode);
 
   return (
     <div

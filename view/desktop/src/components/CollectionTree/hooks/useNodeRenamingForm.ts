@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 
-export const useNodeRenamingForm = (node: TreeNodeProps, onNodeUpdate: (node: TreeNodeProps) => void) => {
+export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const handleRenamingFormSubmit = (newId: string) => {
-    onNodeUpdate({ ...node, id: newId });
+  const handleRenamingFormSubmit = (newName: string) => {
+    onNodeUpdate({ ...node, name: newName });
 
     setIsRenamingNode(false);
   };

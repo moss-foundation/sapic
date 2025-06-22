@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
-import { NodeProps } from "./types";
+import { TreeCollectionNode } from "./types";
 
 interface NodeRenamingFormProps {
-  onSubmit: (newNode: NodeProps) => void;
+  onSubmit: (newNode: TreeCollectionNode) => void;
   onCancel: () => void;
   restrictedNames: (string | number)[];
   isFolder: boolean;
 }
 
-const createSubtree = (path: string, isFolder: boolean): NodeProps => {
+const createSubtree = (path: string, isFolder: boolean): TreeCollectionNode => {
   const lastNodeIsFolder = path.endsWith("/") || isFolder;
 
   if (path.endsWith("/")) {
@@ -23,7 +23,7 @@ const createSubtree = (path: string, isFolder: boolean): NodeProps => {
   return buildNode(parts, lastNodeIsFolder);
 };
 
-const buildNode = (parts: string[], isLastFolder: boolean): NodeProps => {
+const buildNode = (parts: string[], isLastFolder: boolean): TreeCollectionNode => {
   const name = parts[0];
   const isFolder = parts.length > 1 || isLastFolder;
   const childNodes = parts.length > 1 ? [buildNode(parts.slice(1), isLastFolder)] : [];
