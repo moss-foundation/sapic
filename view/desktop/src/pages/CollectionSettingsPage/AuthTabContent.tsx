@@ -15,7 +15,7 @@ export const AuthTabContent = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+            <div className="background-(--moss-auth-indicator-color) h-2 w-2 rounded-full"></div>
             <span className="text-sm text-(--moss-primary-text)">Authentication configured</span>
           </div>
         </div>

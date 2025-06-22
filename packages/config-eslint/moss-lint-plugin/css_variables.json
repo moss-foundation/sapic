@@ -145,7 +145,6 @@
   "--moss-activegroup-visiblepanel-tab-border-color",
   "--moss-activegroup-hiddenpanel-tab-border-color",
   "--moss-inactivegroup-visiblepanel-tab-border-color",
-  "--moss-tab-active-border-color",
   "--moss-activegroup-hiddenpanel-tab-background-color",
   "--moss-inactivegroup-hiddenpanel-tab-background-color",
   "--moss-activegroup-hiddenpanel-tab-color",
@@ -222,5 +221,7 @@
   "--moss-table-cell-bg",
   "--moss-table-add-form-text",
   "--moss-table-add-row-form-text",
-  "--moss-drag-handle-bg"
+  "--moss-drag-handle-bg",
+  "--moss-tab-active-border-color",
+  "--moss-auth-indicator-color"
 ]

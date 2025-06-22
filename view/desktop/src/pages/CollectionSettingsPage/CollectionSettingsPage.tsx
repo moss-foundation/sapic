@@ -6,7 +6,6 @@ import { Icon } from "@/lib/ui";
 import { useUpdateCollection, useDeleteCollection, useActiveCollection } from "@/hooks/collection";
 import { Collection } from "@/components/CollectionTree/types";
 
-import { GeneralTabContent } from "./GeneralTabContent";
 import { OverviewTabContent } from "./OverviewTabContent";
 import { AuthTabContent } from "./AuthTabContent";
 import { HeadersTabContent } from "./HeadersTabContent";
@@ -22,9 +21,8 @@ const Badge = ({ count }: { count: number }) => (
 );
 
 // Indicator dot for status
-const StatusDot = ({ active }: { active: boolean }) => (
-  <div className={`ml-1 h-2 w-2 rounded-full ${active ? "bg-green-500" : "bg-gray-400"}`} />
-);
+const StatusDot = ({ active }: { active: boolean }) =>
+  active ? <div className="background-(--moss-auth-indicator-color) ml-1 h-2 w-2 rounded-full" /> : null;
 
 export const CollectionSettings = () => {
   const collection = useActiveCollection();
@@ -108,7 +106,17 @@ export const CollectionSettings = () => {
           <span>Overview</span>
         </div>
       ),
-      content: <OverviewTabContent />,
+      content: (
+        <OverviewTabContent
+          name={name}
+          setName={setName}
+          repository={repository}
+          setRepository={setRepository}
+          onSave={handleSave}
+          onBlur={handleBlur}
+          onDeleteClick={handleDeleteClick}
+        />
+      ),
     },
     {
       id: "auth",
@@ -162,26 +170,6 @@ export const CollectionSettings = () => {
         </div>
       ),
       content: <PostRequestTabContent />,
-    },
-    {
-      id: "general",
-      label: (
-        <div className="flex items-center gap-1.5">
-          <Icon icon="Settings" className="h-4 w-4" />
-          <span>General</span>
-        </div>
-      ),
-      content: (
-        <GeneralTabContent
-          name={name}
-          setName={setName}
-          repository={repository}
-          setRepository={setRepository}
-          onSave={handleSave}
-          onBlur={handleBlur}
-          onDeleteClick={handleDeleteClick}
-        />
-      ),
     },
   ];
 

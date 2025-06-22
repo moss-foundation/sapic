@@ -178,9 +178,6 @@
   --moss-activegroup-hiddenpanel-tab-border-color: transparent;
   --moss-inactivegroup-visiblepanel-tab-border-color: var(--moss-gray-8);
 
-  /* PageContainer Tab States */
-  --moss-tab-active-border-color: var(--moss-blue-4);
-
   --moss-activegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-inactivegroup-hiddenpanel-tab-background-color: var(--moss-primary-background);
   --moss-activegroup-hiddenpanel-tab-color: var(--moss-secondary-text);
@@ -283,4 +280,8 @@
   --moss-input-bg-plain: var(--moss-gray-14);
   --moss-input-bg-outlined: var(--moss-gray-14);
   --moss-input-border: var(--moss-gray-9);
+
+  /* PageContainer */
+  --moss-tab-active-border-color: var(--moss-blue-4);
+  --moss-auth-indicator-color: var(--moss-green-4);
 }

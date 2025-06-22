@@ -1,28 +1,46 @@
-export const OverviewTabContent = () => {
+import React from "react";
+import { CollectionNameSection } from "./CollectionNameSection";
+import { CollectionSummarySection } from "./CollectionSummarySection";
+import { CollectionDangerZoneSection } from "./CollectionDangerZoneSection";
+
+interface OverviewTabContentProps {
+  name: string;
+  setName: (name: string) => void;
+  repository: string;
+  setRepository: (repository: string) => void;
+  onSave: () => void;
+  onBlur: () => void;
+  onDeleteClick: () => void;
+}
+
+export const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
+  name,
+  setName,
+  repository,
+  setRepository,
+  onSave,
+  onBlur,
+  onDeleteClick,
+}) => {
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-4 text-lg font-semibold text-(--moss-primary-text)">Collection Overview</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-md border border-(--moss-border-color) p-4">
-            <h4 className="mb-2 font-medium text-(--moss-primary-text)">Total Requests</h4>
-            <p className="text-2xl font-bold text-(--moss-primary)">4</p>
-          </div>
-          <div className="rounded-md border border-(--moss-border-color) p-4">
-            <h4 className="mb-2 font-medium text-(--moss-primary-text)">Last Modified</h4>
-            <p className="text-sm text-(--moss-secondary-text)">24.05.2025</p>
-          </div>
-        </div>
+    <div className="relative flex h-full justify-center">
+      {/* Main Content - Centered on full page width */}
+      <div className="w-full max-w-2xl space-y-9 px-6 py-5">
+        <CollectionNameSection
+          name={name}
+          setName={setName}
+          repository={repository}
+          setRepository={setRepository}
+          onSave={onSave}
+          onBlur={onBlur}
+        />
+
+        <CollectionDangerZoneSection onDeleteClick={onDeleteClick} />
       </div>
 
-      <div>
-        <h4 className="mb-3 font-medium text-(--moss-primary-text)">Recent Activity</h4>
-        <div className="space-y-2">
-          <div className="background-(--moss-secondary-background) rounded-md p-3">
-            <p className="text-sm text-(--moss-primary-text)">Collection created</p>
-            <p className="text-xs text-(--moss-secondary-text)">24.05.2025</p>
-          </div>
-        </div>
+      {/* Right Column - Summary positioned absolutely on the right */}
+      <div className="absolute top-0 right-2 w-60 py-2">
+        <CollectionSummarySection />
       </div>
     </div>
   );
