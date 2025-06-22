@@ -10,7 +10,7 @@ import { CollectionDangerZoneSection } from "./CollectionDangerZoneSection";
 
 export const CollectionSettings = () => {
   const collection = useActiveCollection();
-  const { mutate: updateCollection, isPending } = useUpdateCollection();
+  const { mutate: updateCollection } = useUpdateCollection();
   const { mutate: deleteCollection } = useDeleteCollection();
 
   const [name, setName] = useState("");
@@ -95,7 +95,7 @@ export const CollectionSettings = () => {
 
       <div className="relative flex h-full justify-center">
         {/* Main Content - Centered on full page width */}
-        <div className="w-full max-w-2xl space-y-6 px-6 py-5">
+        <div className="w-full max-w-2xl space-y-9 px-6 py-5">
           <CollectionNameSection
             name={name}
             setName={setName}

@@ -44,7 +44,7 @@ export const CollectionNameSection = ({
       </div>
 
       {/* Repository Field */}
-      <div className="flex items-start gap-3.5 text-(--moss-primary-text)">
+      <div className="mt-10 flex items-start gap-3.5 text-(--moss-primary-text)">
         <label className="mt-1 w-20 font-medium">Repository:</label>
         <div>
           <InputOutlined
