@@ -8,14 +8,14 @@ use std::{
     sync::{Arc, Mutex, Weak},
 };
 
-use crate::AnyEvent;
+use crate::EventMarker;
 
 pub trait AnySubscription {
     fn type_id(&self) -> TypeId;
     fn unsubscribe(&self);
 }
 
-impl<T: AnyEvent> AnySubscription for Subscription<T> {
+impl<T: EventMarker> AnySubscription for Subscription<T> {
     fn type_id(&self) -> TypeId {
         TypeId::of::<T>()
     }
@@ -29,7 +29,7 @@ impl<T: AnyEvent> AnySubscription for Subscription<T> {
 pub struct SubscriptionSet<Key, E>
 where
     Key: Hash + Eq,
-    E: AnyEvent,
+    E: EventMarker,
 {
     inner: FxHashMap<Key, Subscription<E>>,
 }
@@ -37,7 +37,7 @@ where
 impl<Key, E> SubscriptionSet<Key, E>
 where
     Key: Hash + Eq,
-    E: AnyEvent,
+    E: EventMarker,
 {
     pub fn new() -> Self {
         Self {
@@ -49,12 +49,12 @@ where
 pub type ListenerFuture = BoxFuture<'static, ()>;
 type Listener<T> = Arc<dyn Fn(T) -> ListenerFuture + Send + Sync + 'static>;
 
-pub struct Subscription<T: AnyEvent> {
+pub struct Subscription<T: EventMarker> {
     emitter: Weak<Mutex<EventEmitterState<T>>>,
     id: usize,
 }
 
-impl<T: AnyEvent> Subscription<T> {
+impl<T: EventMarker> Subscription<T> {
     pub fn type_id(&self) -> TypeId {
         TypeId::of::<T>()
     }
@@ -66,7 +66,7 @@ impl<T: AnyEvent> Subscription<T> {
     }
 }
 
-impl<T: AnyEvent> Drop for Subscription<T> {
+impl<T: EventMarker> Drop for Subscription<T> {
     fn drop(&mut self) {
         self.unsubscribe();
     }
@@ -76,7 +76,7 @@ pub struct Event<T> {
     state: Arc<Mutex<EventEmitterState<T>>>,
 }
 
-impl<T: AnyEvent> Event<T> {
+impl<T: EventMarker> Event<T> {
     pub fn subscribe<F, Fut>(&self, f: F) -> Subscription<T>
     where
         F: Fn(T) -> Fut + Send + Sync + 'static,
@@ -102,11 +102,11 @@ struct EventEmitterState<T> {
     next_id: usize,
 }
 
-pub struct EventEmitter<T: AnyEvent> {
+pub struct EventEmitter<T: EventMarker> {
     state: Arc<Mutex<EventEmitterState<T>>>,
 }
 
-impl<T: AnyEvent> EventEmitter<T> {
+impl<T: EventMarker> EventEmitter<T> {
     pub fn new() -> Self {
         Self {
             state: Arc::new(Mutex::new(EventEmitterState {
@@ -171,7 +171,7 @@ mod tests {
         pub value: String,
     }
 
-    impl AnyEvent for TestEvent {}
+    impl EventMarker for TestEvent {}
 
     #[tokio::test]
     async fn test_emitter() {

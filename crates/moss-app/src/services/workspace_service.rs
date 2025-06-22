@@ -4,7 +4,7 @@ use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::Service;
+use moss_applib::ServiceMarker;
 use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_fs::{FileSystem, RemoveOptions};
@@ -118,7 +118,7 @@ pub struct WorkspaceService<R: TauriRuntime> {
     active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
 }
 
-impl<R: TauriRuntime> Service for WorkspaceService<R> {}
+impl<R: TauriRuntime> ServiceMarker for WorkspaceService<R> {}
 
 impl<R: TauriRuntime> WorkspaceService<R> {
     pub fn new(

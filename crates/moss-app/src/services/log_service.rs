@@ -3,7 +3,7 @@ mod taurilog_writer;
 
 use anyhow::Result;
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
-use moss_applib::Service;
+use moss_applib::ServiceMarker;
 use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
@@ -144,7 +144,7 @@ pub struct LogService {
     _taurilog_writerguard: WorkerGuard,
 }
 
-impl Service for LogService {}
+impl ServiceMarker for LogService {}
 
 impl LogService {
     pub fn new<R: TauriRuntime>(

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use moss_applib::{
-    Global,
+    GlobalMarker,
     context::{Context, ContextValue},
     subscription::{Subscription, SubscriptionSet},
     task::Task,
@@ -43,7 +43,7 @@ impl<R: TauriRuntime> WorkspaceContext<R> {
 impl<R: TauriRuntime> Context<R> for WorkspaceContext<R> {
     fn global<T>(&self) -> tauri::State<'_, T>
     where
-        T: Global + Any + Send + Sync,
+        T: GlobalMarker + Any + Send + Sync,
     {
         self.app_handle.state::<T>()
     }

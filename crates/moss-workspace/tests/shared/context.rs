@@ -13,7 +13,7 @@ pub struct MockWorkspaceContext {
 impl Context<MockRuntime> for MockWorkspaceContext {
     fn global<T>(&self) -> tauri::State<'_, T>
     where
-        T: moss_applib::Global + std::any::Any + Send + Sync,
+        T: moss_applib::GlobalMarker + std::any::Any + Send + Sync,
     {
         self.app_handle.state()
     }

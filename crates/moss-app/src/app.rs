@@ -1,14 +1,17 @@
 use anyhow::{Context as _, Result};
 use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::Service;
+use moss_applib::{
+    ServiceMarker,
+    providers::{ServiceMap, ServiceProvider},
+};
 use moss_fs::FileSystem;
 use moss_storage::GlobalStorage;
 use moss_text::ReadOnlyStr;
 use moss_workspace::context::WorkspaceContext;
 use rustc_hash::FxHashMap;
 use std::{
-    any::{Any, TypeId},
+    any::TypeId,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     sync::Arc,
@@ -31,25 +34,6 @@ pub struct AppPreferences {
 pub struct AppDefaults {
     pub theme: ColorThemeInfo,
     pub locale: LocaleInfo,
-}
-
-type AnyService = Arc<dyn Any + Send + Sync>;
-
-#[derive(Default)]
-pub struct AppServices(FxHashMap<TypeId, AnyService>);
-
-impl Deref for AppServices {
-    type Target = FxHashMap<TypeId, AnyService>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for AppServices {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
 }
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
@@ -82,7 +66,7 @@ pub struct App<R: TauriRuntime> {
     pub(crate) commands: AppCommands<R>,
     pub(crate) preferences: AppPreferences,
     pub(crate) defaults: AppDefaults,
-    pub(crate) services: AppServices,
+    pub(crate) services: ServiceProvider,
 
     // TODO: This is also might be better to be a service
     pub(crate) activity_indicator: ActivityIndicator<R>,
@@ -95,7 +79,7 @@ pub struct App<R: TauriRuntime> {
 pub struct AppBuilder<R: TauriRuntime> {
     fs: Arc<dyn FileSystem>,
     app_handle: AppHandle<R>,
-    services: AppServices,
+    services: ServiceMap,
     defaults: AppDefaults,
     preferences: AppPreferences,
     commands: AppCommands<R>,
@@ -129,7 +113,7 @@ impl<R: TauriRuntime> AppBuilder<R> {
         }
     }
 
-    pub fn with_service<T: Service + Send + Sync>(mut self, service: T) -> Self {
+    pub fn with_service<T: ServiceMarker + Send + Sync>(mut self, service: T) -> Self {
         self.services.insert(TypeId::of::<T>(), Arc::new(service));
         self
     }
@@ -158,7 +142,7 @@ impl<R: TauriRuntime> AppBuilder<R> {
             commands: self.commands,
             preferences: self.preferences,
             defaults: self.defaults,
-            services: self.services,
+            services: self.services.into(),
             activity_indicator: self.activity_indicator,
             global_storage: self.global_storage,
             abs_path: self.abs_path,
@@ -174,17 +158,8 @@ impl<R: TauriRuntime> App<R> {
         &self.defaults
     }
 
-    pub fn service<T: Service>(&self) -> &T {
-        let type_id = TypeId::of::<T>();
-        let service = self.services.get(&type_id).expect(&format!(
-            "Service {} must be registered before it can be used",
-            std::any::type_name::<T>()
-        ));
-
-        service.downcast_ref::<T>().expect(&format!(
-            "Service {} is registered with the wrong type type id",
-            std::any::type_name::<T>()
-        ))
+    pub fn service<T: ServiceMarker>(&self) -> &T {
+        self.services.get::<T>()
     }
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {

@@ -9,7 +9,7 @@ use std::{
 use tauri::{Runtime as TauriRuntime, State};
 use tokio::time::Duration;
 
-use crate::{Global, task::Task};
+use crate::{GlobalMarker, task::Task};
 
 pub trait ContextValue: Any + Send + Sync + 'static {}
 
@@ -23,7 +23,7 @@ pub trait Context<R: TauriRuntime>: Send + Sync {
 
     fn global<T>(&self) -> State<'_, T>
     where
-        T: Global + Any + Send + Sync;
+        T: GlobalMarker + Any + Send + Sync;
 
     fn spawn<T, E, Fut, F>(&self, callback: F, timeout: Option<Duration>) -> Task<T, E>
     where

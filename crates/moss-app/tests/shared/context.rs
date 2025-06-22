@@ -6,7 +6,7 @@ use std::{
 
 use moss_app::context::AnyAppContext;
 use moss_applib::{
-    Global,
+    GlobalMarker,
     context::{Context, ContextValue, ContextValueSet},
     task::Task,
 };
@@ -34,7 +34,7 @@ impl Context<MockRuntime> for MockAppContext {
 
     fn global<T>(&self) -> State<'_, T>
     where
-        T: Global + Any + Send + Sync,
+        T: GlobalMarker + Any + Send + Sync,
     {
         self.app_handle.state()
     }

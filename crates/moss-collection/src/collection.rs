@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use moss_applib::{
-    AnyEvent,
+    EventMarker,
     subscription::{Event, EventEmitter},
 };
 use moss_common::api::Change;
@@ -52,7 +52,7 @@ pub enum OnDidChangeEvent {
     Toggled(bool),
 }
 
-impl AnyEvent for OnDidChangeEvent {}
+impl EventMarker for OnDidChangeEvent {}
 
 pub struct Collection {
     #[allow(dead_code)]
