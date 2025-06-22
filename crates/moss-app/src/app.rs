@@ -1,30 +1,20 @@
 use anyhow::{Context as _, Result};
-use derive_more::{Deref, DerefMut};
+use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::{Service, context::Context};
+use moss_applib::Service;
 use moss_fs::FileSystem;
-use moss_storage::{
-    GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
-    storage::operations::ListByPrefix,
-};
+use moss_storage::GlobalStorage;
 use moss_text::ReadOnlyStr;
-use moss_workspace::{
-    Workspace,
-    context::{WorkspaceContext, WorkspaceContextState},
-};
+use moss_workspace::context::WorkspaceContext;
 use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
-    collections::HashMap,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{
-    OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard, futures,
-};
-use uuid::Uuid;
+use tokio::sync::RwLock;
 
 use crate::{
     command::{CommandCallback, CommandDecl},

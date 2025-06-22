@@ -85,19 +85,19 @@ type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
 #[derive(Deref)]
 pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
-    id: Uuid,
+    pub id: Uuid,
 
     #[deref]
-    guard: RwLockReadGuard<'a, Workspace<R>>,
+    pub guard: RwLockReadGuard<'a, Workspace<R>>,
 }
 
 #[derive(Deref, DerefMut)]
 pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
-    id: Uuid,
+    pub id: Uuid,
 
     #[deref]
     #[deref_mut]
-    guard: RwLockMappedWriteGuard<'a, Workspace<R>>,
+    pub guard: RwLockMappedWriteGuard<'a, Workspace<R>>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -306,6 +306,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         Ok((new_workspace, descriptor))
     }
 
+    // TODO: remove this after we remove the describe_workbench_state api
     pub(crate) async fn workspace(&self) -> Option<WorkspaceReadGuard<'_, R>> {
         let guard = self.active_workspace.read().await;
         if guard.is_none() {
@@ -317,23 +318,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         });
 
         Some(WorkspaceReadGuard {
-            id,
-            guard: workspace_guard,
-        })
-    }
-
-    pub(crate) async fn workspace_mut(&self) -> Option<WorkspaceWriteGuard<'_, R>> {
-        let guard = self.active_workspace.write().await;
-        if guard.is_none() {
-            return None;
-        }
-
-        let id = guard.as_ref()?.id;
-        let workspace_guard = RwLockWriteGuard::map(guard, |opt| {
-            opt.as_mut().map(|a| &mut a.this).unwrap() // This is safe because we checked for None above
-        });
-
-        Some(WorkspaceWriteGuard {
             id,
             guard: workspace_guard,
         })
