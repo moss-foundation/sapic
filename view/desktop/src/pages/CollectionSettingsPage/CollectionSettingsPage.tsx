@@ -109,7 +109,7 @@ export const CollectionSettings = () => {
         </div>
 
         {/* Right Column - Summary positioned absolutely on the right */}
-        <div className="absolute top-0 right-0 w-80 px-6 py-5">
+        <div className="absolute top-0 right-2 w-60 py-2">
           <CollectionSummarySection />
         </div>
       </div>
