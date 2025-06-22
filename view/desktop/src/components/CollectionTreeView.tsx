@@ -16,7 +16,6 @@ import { useHandleCollectionsDragAndDrop } from "./CollectionTreeV2/hooks/useHan
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [searchInput, setSearchInput] = useState<string>("");
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
   const { displayMode } = useRequestModeStore();
   const {
@@ -80,11 +79,7 @@ export const CollectionTreeView = () => {
       <Scrollbar className="h-full">
         <div className="flex h-full flex-col">
           <div className="flex shrink items-center gap-[7px] py-1 pr-2.5 pl-2">
-            <InputPlain
-              onInput={(e) => setSearchInput((e.target as HTMLInputElement).value)}
-              placeholder="Search"
-              size="sm"
-            />
+            <InputPlain placeholder="Search" size="sm" />
           </div>
 
           <div className="flex grow flex-col">
@@ -94,7 +89,6 @@ export const CollectionTreeView = () => {
                   key={`${collection.id}`}
                   tree={collection}
                   onTreeUpdate={updateCollectionTree}
-                  searchInput={searchInput}
                   displayMode={displayMode}
                 />
               ))}
