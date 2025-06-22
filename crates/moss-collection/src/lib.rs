@@ -1,8 +1,10 @@
 pub mod api;
 pub mod collection;
 pub mod config;
+pub mod context;
 pub mod manifest;
 pub mod models;
+pub mod services;
 pub mod storage;
 pub mod worktree;
 
@@ -22,4 +24,5 @@ pub mod dirs {
     pub const COMPONENTS_DIR: &str = "components";
     pub const SCHEMAS_DIR: &str = "schemas";
     pub const ENVIRONMENTS_DIR: &str = "environments";
+    pub const ASSETS_DIR: &str = "assets";
 }

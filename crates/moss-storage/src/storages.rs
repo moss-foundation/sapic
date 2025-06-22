@@ -8,13 +8,14 @@ use crate::{
     collection_storage::stores::{
         CollectionUnitStore, CollectionVariableStore, MixedStore as CollectionMixedStore,
     },
-    global_storage::stores::GlobalItemStore,
+    global_storage::stores::{GlobalItemStore, GlobalLogStore},
     storage::{Storage, Transactional},
     workspace_storage::stores::{WorkspaceItemStore, WorkspaceVariableStore},
 };
 
 pub trait GlobalStorage: Storage + Transactional + Send + Sync {
     fn item_store(&self) -> Arc<dyn GlobalItemStore>;
+    fn log_store(&self) -> Arc<dyn GlobalLogStore>;
 }
 
 pub trait WorkspaceStorage: Storage + Transactional + Send + Sync {

@@ -17,7 +17,7 @@ pub enum ThemeMode {
 
 // Log
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum LogLevel {
     TRACE,

@@ -27,7 +27,9 @@ pub async fn create_test_collection() -> (PathBuf, Collection) {
         CreateParams {
             name: Some(random_collection_name()),
             external_abs_path: None,
+            repository: None,
             internal_abs_path: &internal_abs_path,
+            icon_path: None,
         },
     )
     .await

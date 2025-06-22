@@ -7,14 +7,17 @@ use moss_storage::{
     GlobalStorage, global_storage::entities::WorkspaceInfoEntity, primitives::segkey::SegmentExt,
     storage::operations::ListByPrefix,
 };
-use moss_workspace::Workspace;
+use moss_workspace::{
+    Workspace,
+    context::{WorkspaceContext, WorkspaceContextState},
+};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
-use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
 use uuid::Uuid;
 
 use crate::{dirs, storage::segments::WORKSPACE_SEGKEY};
@@ -34,17 +37,18 @@ pub struct ActiveWorkspace<R: TauriRuntime> {
     pub id: Uuid,
     #[deref]
     #[deref_mut]
-    pub inner: Workspace<R>,
+    pub this: Workspace<R>,
+    pub context: Arc<RwLock<WorkspaceContextState>>,
 }
 
 #[derive(Deref)]
-pub struct ActiveWorkspaceReadGuard<'a, R: TauriRuntime> {
-    guard: RwLockReadGuard<'a, Option<ActiveWorkspace<R>>>,
+pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
+    guard: RwLockReadGuard<'a, Workspace<R>>,
 }
 
 #[derive(Deref, DerefMut)]
-pub struct ActiveWorkspaceWriteGuard<'a, R: TauriRuntime> {
-    guard: RwLockWriteGuard<'a, Option<ActiveWorkspace<R>>>,
+pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
+    guard: RwLockMappedWriteGuard<'a, Workspace<R>>,
 }
 
 #[derive(Debug)]
@@ -54,8 +58,10 @@ pub struct Options {
 }
 
 pub struct Workbench<R: TauriRuntime> {
+    app_handle: AppHandle<R>,
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
+    // FIXME: This is a hack, will not be public in the future
+    pub active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
     pub(super) known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     pub(super) global_storage: Arc<dyn GlobalStorage>,
     pub(crate) options: Options,
@@ -68,6 +74,7 @@ impl<R: TauriRuntime> Workbench<R> {
         options: Options,
     ) -> Self {
         Self {
+            app_handle: app_handle.clone(),
             activity_indicator: ActivityIndicator::new(app_handle),
             active_workspace: RwLock::new(None),
             known_workspaces: OnceCell::new(),
@@ -76,27 +83,72 @@ impl<R: TauriRuntime> Workbench<R> {
         }
     }
 
-    pub async fn active_workspace_mut(&self) -> ActiveWorkspaceWriteGuard<'_, R> {
-        ActiveWorkspaceWriteGuard {
-            guard: self.active_workspace.write().await,
+    pub async fn active_workspace_id(&self) -> Option<Uuid> {
+        let guard = self.active_workspace.read().await;
+        if guard.is_none() {
+            return None;
         }
+
+        let active = guard.as_ref()?;
+        Some(active.id)
     }
 
-    pub async fn active_workspace(&self) -> ActiveWorkspaceReadGuard<'_, R> {
-        ActiveWorkspaceReadGuard {
-            guard: self.active_workspace.read().await,
+    pub async fn active_workspace(
+        &self,
+    ) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
+        let guard = self.active_workspace.read().await;
+        if guard.is_none() {
+            return None;
         }
+
+        let context_state = guard.as_ref()?.context.clone();
+        let workspace_guard = RwLockReadGuard::map(guard, |opt| match opt.as_ref() {
+            Some(active) => &active.this,
+            None => unreachable!("Already checked for None above"),
+        });
+
+        let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
+        Some((
+            WorkspaceReadGuard {
+                guard: workspace_guard,
+            },
+            context,
+        ))
     }
 
-    pub async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
+    pub async fn active_workspace_mut(
+        &self,
+    ) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
+        let guard = self.active_workspace.write().await;
+        if guard.is_none() {
+            return None;
+        }
+
+        let context_state = guard.as_ref()?.context.clone();
+        let workspace_guard = RwLockWriteGuard::map(guard, |opt| match opt.as_mut() {
+            Some(active) => &mut active.this,
+            None => unreachable!("Already checked for None above"),
+        });
+
+        let context = WorkspaceContext::new(self.app_handle.clone(), context_state);
+        Some((
+            WorkspaceWriteGuard {
+                guard: workspace_guard,
+            },
+            context,
+        ))
+    }
+
+    pub(super) async fn activate_workspace(&self, id: Uuid, workspace: Workspace<R>) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
             id,
-            inner: workspace,
+            this: workspace,
+            context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });
     }
 
-    pub async fn deactivate_workspace(&self) {
+    pub(super) async fn deactivate_workspace(&self) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = None;
     }

@@ -25,6 +25,9 @@ members = [
 ]
 
 [workspace.dependencies]
+#
+# Workspace crates
+#
 moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
@@ -44,6 +47,9 @@ moss_workbench = { path = "crates/moss-workbench" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
+#
+# External crates
+#
 async-stream = "0.3.6"
 notify = "8.0"
 redb = "2.6.0"
@@ -53,8 +59,6 @@ serde = "1.0.217"
 anyhow = "1.0.95"
 arcstr = "1.2.0"
 bstr = "1.11.3"
-dirs = "6.0.0"
-fnv = "1.0.7"
 git2 = "0.20.0"
 log = "0.4.25"
 oauth2 = "5.0.0"
@@ -93,3 +97,4 @@ toml_edit = "0.22"
 nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
+image = "0.25.6"

@@ -2,7 +2,7 @@ use serde::Serialize;
 use ts_rs::TS;
 
 #[derive(Serialize, Clone, TS)]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "events.ts")]
 #[serde(rename_all = "camelCase")]
 pub enum ActivityEvent<'a> {
     /// This event is used when the activity is a one-time event

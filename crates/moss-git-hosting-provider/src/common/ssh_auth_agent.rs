@@ -50,8 +50,8 @@ mod tests {
         path::{Path, PathBuf},
         sync::Arc,
     };
-    #[test]
     #[ignore]
+    #[test]
     fn manual_github_cloning_with_ssh() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITHUB_TEST_REPO_SSH").unwrap();
@@ -69,8 +69,8 @@ mod tests {
         let _repo = RepoHandle::clone(repo_url, repo_path, auth_agent).unwrap();
     }
 
-    #[test]
     #[ignore]
+    #[test]
     fn manual_gitlab_cloning_with_ssh() {
         dotenv::dotenv().ok();
         let repo_url = &dotenv::var("GITLAB_TEST_REPO_SSH").unwrap();

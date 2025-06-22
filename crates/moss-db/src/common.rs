@@ -1,4 +1,5 @@
 use redb::{ReadTransaction as InnerReadTransaction, WriteTransaction as InnerWriteTransaction};
+use std::io::ErrorKind;
 use thiserror::Error;
 
 pub type AnyEntity = Vec<u8>;
@@ -56,6 +57,14 @@ impl From<redb::CommitError> for DatabaseError {
 impl From<serde_json::Error> for DatabaseError {
     fn from(error: serde_json::Error) -> Self {
         DatabaseError::Serialization(error.to_string())
+    }
+}
+impl From<DatabaseError> for std::io::Error {
+    fn from(error: DatabaseError) -> Self {
+        std::io::Error::new(
+            ErrorKind::Other,
+            format!("Database operation failed: {}", error.to_string()),
+        )
     }
 }
 

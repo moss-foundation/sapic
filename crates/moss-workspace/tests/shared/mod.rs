@@ -1,3 +1,7 @@
+use image::{ImageBuffer, Rgb};
+mod context;
+pub use context::*;
+
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::test::MockContext;
 use moss_fs::{FileSystem, RealFileSystem};
@@ -15,6 +19,7 @@ use moss_workspace::{
     storage::segments::COLLECTION_SEGKEY,
     workspace::CreateParams,
 };
+use rand::Rng;
 use std::{
     collections::HashMap,
     fs,
@@ -28,7 +33,12 @@ use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
-pub async fn setup_test_workspace() -> (MockContext, Arc<Path>, Workspace<MockRuntime>, CleanupFn) {
+pub async fn setup_test_workspace() -> (
+    MockWorkspaceContext,
+    Arc<Path>,
+    Workspace<MockRuntime>,
+    CleanupFn,
+) {
     let fs = Arc::new(RealFileSystem::new());
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
@@ -68,7 +78,12 @@ pub async fn setup_test_workspace() -> (MockContext, Arc<Path>, Workspace<MockRu
         }) as Pin<Box<dyn Future<Output = ()> + Send>>
     });
 
-    (ctx, workspace_path, workspace, cleanup_fn)
+    (
+        MockWorkspaceContext::from(ctx),
+        workspace_path,
+        workspace,
+        cleanup_fn,
+    )
 }
 
 pub fn create_simple_editor_state() -> EditorPartStateInfo {
@@ -136,4 +151,20 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
 
 pub fn collection_key(id: Uuid) -> SegKeyBuf {
     COLLECTION_SEGKEY.join(id.to_string())
+}
+
+pub fn generate_random_icon(output_path: &Path) {
+    // Create an empty RGB image buffer
+    let mut img = ImageBuffer::new(128, 128);
+    let mut rng = rand::rng();
+
+    // Fill each pixel with random values [0..255]
+    for pixel in img.pixels_mut() {
+        let r: u8 = rng.random();
+        let g: u8 = rng.random();
+        let b: u8 = rng.random();
+        *pixel = Rgb([r, g, b]);
+    }
+
+    img.save(output_path).unwrap();
 }

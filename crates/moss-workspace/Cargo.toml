@@ -18,7 +18,7 @@ moss_file.workspace = true
 anyhow.workspace = true
 arc-swap.workspace = true
 serde = { workspace = true, features = ["derive"] }
-ts-rs = { workspace = true, features = ["uuid-impl"] }
+ts-rs = { workspace = true, features = ["uuid-impl", "url-impl"] }
 tokio.workspace = true
 thiserror.workspace = true
 validator = { workspace = true, features = ["derive"] }
@@ -29,6 +29,11 @@ toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+image.workspace = true
+rand.workspace = true
+url.workspace = true
+rustc-hash.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 moss_applib = { workspace = true, features = ["test"] }

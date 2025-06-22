@@ -1,5 +1,4 @@
 use anyhow::Context as _;
-use moss_applib::context::Context;
 use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
@@ -18,6 +17,7 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
+    context::{AnyWorkspaceContext, Subscribe},
     dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
     storage::segments::COLLECTION_SEGKEY,
@@ -25,7 +25,7 @@ use crate::{
 };
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn create_collection<C: Context<R>>(
+    pub async fn create_collection<C: AnyWorkspaceContext<R>>(
         &mut self,
         ctx: &C,
         input: &CreateCollectionInput,
@@ -61,10 +61,18 @@ impl<R: TauriRuntime> Workspace<R> {
                 name: Some(input.name.to_owned()),
                 internal_abs_path: &abs_path,
                 external_abs_path: input.external_path.as_deref(),
+                repository: input.repo.to_owned(),
+                icon_path: input.icon_path.to_owned(),
             },
         )
         .await
         .map_err(|e| OperationError::Internal(e.to_string()))?;
+
+        let on_did_change = collection.on_did_change().subscribe(|_event| async move {
+            // TODO: Save in the database whether the collection was collapsed/expanded
+        });
+        ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
+            .await;
 
         collections.insert(
             id,

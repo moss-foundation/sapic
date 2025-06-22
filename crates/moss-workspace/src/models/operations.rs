@@ -4,9 +4,9 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use uuid::Uuid;
-
 use ts_rs::TS;
+use url::Url;
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::types::{CollectionInfo, EditorPartStateInfo, EnvironmentInfo};
@@ -15,16 +15,16 @@ use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStat
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    #[ts(optional)]
     pub order: Option<usize>,
-
-    #[ts(optional)]
     pub external_path: Option<PathBuf>,
+    pub repo: Option<Url>,
+    pub icon_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -32,14 +32,30 @@ pub struct CreateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub id: Uuid,
-
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,
 }
 
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum ChangeRepository {
+    Update(Url),
+    Remove,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub enum ChangeIcon {
+    Update(PathBuf),
+    Remove,
+}
+
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
     pub id: Uuid,
@@ -47,10 +63,9 @@ pub struct UpdateCollectionInput {
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
 
-    #[ts(optional)]
+    pub new_repo: Option<ChangeRepository>,
+    pub new_icon: Option<ChangeIcon>,
     pub order: Option<usize>,
-
-    #[ts(optional)]
     pub pinned: Option<bool>,
 }
 
