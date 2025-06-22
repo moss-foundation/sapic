@@ -9,7 +9,7 @@ interface PageContainerHeaderProps {
 
 export const PageContainerHeader: React.FC<PageContainerHeaderProps> = ({ children, toolbar, className }) => {
   return (
-    <header className={cn("background-(--moss-primary-background) relative", "flex-shrink-0", className)}>
+    <header className={cn("background-(--moss-primary-background) relative h-9", "flex-shrink-0", className)}>
       {/* Main header content */}
       {children}
 
