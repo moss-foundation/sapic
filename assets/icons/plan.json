@@ -14,6 +14,9 @@
   "Bell": {
     "identical": false
   },
+  "Calendar": {
+    "identical": true
+  },
   "Changes": {
     "identical": true
   },
@@ -195,6 +198,9 @@
     "identical": true
   },
   "RemoveCircle": {
+    "identical": true
+  },
+  "Requests": {
     "identical": true
   },
   "Send": {
