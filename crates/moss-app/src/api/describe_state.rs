@@ -17,11 +17,10 @@ impl<R: TauriRuntime> App<R> {
         let workspace_service = self.service::<WorkspaceService<R>>();
 
         // HACK: This is a hack to get the last workspace name
-        let active_workspace_lock = workspace_service.active_workspace.read().await;
+        let active_workspace_lock = workspace_service.workspace().await;
 
         let last_workspace_name = &active_workspace_lock.as_ref().map(|active_workspace| {
             active_workspace
-                .this
                 .abs_path()
                 .file_name()
                 .unwrap()

@@ -39,20 +39,25 @@ type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
 
 #[derive(Deref)]
 pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
+    id: Uuid,
+
+    #[deref]
     guard: RwLockReadGuard<'a, Workspace<R>>,
 }
 
 #[derive(Deref, DerefMut)]
 pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
+    id: Uuid,
+
+    #[deref]
+    #[deref_mut]
     guard: RwLockMappedWriteGuard<'a, Workspace<R>>,
 }
 
-#[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: TauriRuntime> {
-    #[deref]
-    #[deref_mut]
-    pub this: Workspace<R>,
-    pub context: Arc<RwLock<WorkspaceContextState>>,
+    id: Uuid,
+    this: Workspace<R>,
+    context: Arc<RwLock<WorkspaceContextState>>,
 }
 
 pub struct WorkspaceService<R: TauriRuntime> {
@@ -61,7 +66,7 @@ pub struct WorkspaceService<R: TauriRuntime> {
     fs: Arc<dyn FileSystem>,
     global_storage: Arc<dyn GlobalStorage>,
     known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
-    pub(crate) active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
+    active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
 }
 
 impl<R: TauriRuntime> Service for WorkspaceService<R> {}
@@ -89,7 +94,40 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         self.abs_path.join(path)
     }
 
-    pub(crate) async fn active_workspace(
+    pub(crate) async fn workspace(&self) -> Option<WorkspaceReadGuard<'_, R>> {
+        let guard = self.active_workspace.read().await;
+        if guard.is_none() {
+            return None;
+        }
+        let id = guard.as_ref()?.id;
+        let workspace_guard = RwLockReadGuard::map(guard, |opt| {
+            opt.as_ref().map(|a| &a.this).unwrap() // This is safe because we checked for None above
+        });
+
+        Some(WorkspaceReadGuard {
+            id,
+            guard: workspace_guard,
+        })
+    }
+
+    pub(crate) async fn workspace_mut(&self) -> Option<WorkspaceWriteGuard<'_, R>> {
+        let guard = self.active_workspace.write().await;
+        if guard.is_none() {
+            return None;
+        }
+
+        let id = guard.as_ref()?.id;
+        let workspace_guard = RwLockWriteGuard::map(guard, |opt| {
+            opt.as_mut().map(|a| &mut a.this).unwrap() // This is safe because we checked for None above
+        });
+
+        Some(WorkspaceWriteGuard {
+            id,
+            guard: workspace_guard,
+        })
+    }
+
+    pub(crate) async fn workspace_with_context(
         &self,
         app_handle: AppHandle<R>,
     ) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
@@ -98,22 +136,23 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return None;
         }
 
+        let id = guard.as_ref()?.id;
         let context_state = guard.as_ref()?.context.clone();
-        let workspace_guard = RwLockReadGuard::map(guard, |opt| match opt.as_ref() {
-            Some(active) => &active.this,
-            None => unreachable!("Already checked for None above"),
+        let workspace_guard = RwLockReadGuard::map(guard, |opt| {
+            opt.as_ref().map(|a| &a.this).unwrap() // This is safe because we checked for None above
         });
 
         let context = WorkspaceContext::new(app_handle, context_state);
         Some((
             WorkspaceReadGuard {
+                id,
                 guard: workspace_guard,
             },
             context,
         ))
     }
 
-    pub(crate) async fn active_workspace_mut(
+    pub(crate) async fn workspace_with_context_mut(
         &self,
         app_handle: AppHandle<R>,
     ) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
@@ -122,15 +161,16 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return None;
         }
 
+        let id = guard.as_ref()?.id;
         let context_state = guard.as_ref()?.context.clone();
-        let workspace_guard = RwLockWriteGuard::map(guard, |opt| match opt.as_mut() {
-            Some(active) => &mut active.this,
-            None => unreachable!("Already checked for None above"),
+        let workspace_guard = RwLockWriteGuard::map(guard, |opt| {
+            opt.as_mut().map(|a| &mut a.this).unwrap() // This is safe because we checked for None above
         });
 
         let context = WorkspaceContext::new(app_handle, context_state);
         Some((
             WorkspaceWriteGuard {
+                id,
                 guard: workspace_guard,
             },
             context,
@@ -145,6 +185,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     ) {
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
+            id,
             this: workspace,
             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });

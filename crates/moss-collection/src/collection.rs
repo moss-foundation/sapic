@@ -67,7 +67,7 @@ pub struct Collection {
     #[allow(dead_code)]
     config: TomlFileHandle<ConfigModel>,
 
-    on_did_change: EventEmitter<OnDidChangeEvent>,
+    pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
 
 pub struct CreateParams<'a> {

@@ -203,13 +203,13 @@ impl<R: TauriRuntime> App<R> {
 
     pub async fn workspace(&self) -> Option<(WorkspaceReadGuard<'_, R>, WorkspaceContext<R>)> {
         self.service::<WorkspaceService<R>>()
-            .active_workspace(self.app_handle.clone())
+            .workspace_with_context(self.app_handle.clone())
             .await
     }
 
     pub async fn workspace_mut(&self) -> Option<(WorkspaceWriteGuard<'_, R>, WorkspaceContext<R>)> {
         self.service::<WorkspaceService<R>>()
-            .active_workspace_mut(self.app_handle.clone())
+            .workspace_with_context_mut(self.app_handle.clone())
             .await
     }
 

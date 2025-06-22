@@ -20,7 +20,7 @@ impl<R: TauriRuntime> App<R> {
 
         let workspace_service = self.service::<WorkspaceService<R>>();
         let workspaces = workspace_service.workspaces().await?;
-        let mut workspace_guard = workspace_service.active_workspace.write().await;
+        let mut workspace_guard = workspace_service.workspace_mut().await;
         let workspace = workspace_guard
             .as_mut()
             .map_err_as_failed_precondition("No active workspace")?;
