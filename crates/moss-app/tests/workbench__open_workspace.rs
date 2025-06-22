@@ -71,7 +71,7 @@ async fn open_workspace_success() {
 
 #[tokio::test]
 async fn open_workspace_already_opened() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -88,12 +88,11 @@ async fn open_workspace_already_opened() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = abs_path
-        .join(dirs::WORKSPACES_DIR)
-        .join(&create_output.id.to_string())
-        .into();
+    // Verify workspace is currently open
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+    assert_eq!(active_workspace_id, create_output.id);
 
-    // Try to open the same workspace again
+    // Try to open the same workspace again - should fail
     let open_result = app
         .open_workspace(
             &ctx,
@@ -102,12 +101,11 @@ async fn open_workspace_already_opened() {
             },
         )
         .await;
-    let open_output = open_result.unwrap();
 
-    assert_eq!(open_output.id, create_output.id);
-    assert_eq!(open_output.abs_path, expected_path);
+    // Opening an already opened workspace should return an error
+    assert!(open_result.is_err());
 
-    // Check active workspace is still the same
+    // Active workspace should remain unchanged
     let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 

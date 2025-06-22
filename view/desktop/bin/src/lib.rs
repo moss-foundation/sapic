@@ -53,7 +53,8 @@ pub async fn run<R: TauriRuntime>() {
                     PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
 
                 let global_storage = Arc::new(
-                    GlobalStorageImpl::new(&app_dir).expect("Failed to create global storage"),
+                    GlobalStorageImpl::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
+                        .expect("Failed to create global storage"),
                 );
 
                 let themes_dir: PathBuf = std::env::var("THEMES_DIR")

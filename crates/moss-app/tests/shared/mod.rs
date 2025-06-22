@@ -52,7 +52,7 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
     }
 
-    let global_storage = Arc::new(GlobalStorageImpl::new(app_path.clone()).unwrap());
+    let global_storage = Arc::new(GlobalStorageImpl::new(globals_abs_path).unwrap());
 
     let session_id = Uuid::new_v4();
     let log_service = LogService::new(

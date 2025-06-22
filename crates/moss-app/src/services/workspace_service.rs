@@ -1,5 +1,3 @@
-pub mod collection_provider;
-
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
@@ -43,6 +41,9 @@ pub enum WorkspaceServiceError {
     #[error("Workspace already exists: {0}")]
     AlreadyExists(String),
 
+    #[error("Workspace already loaded: {0}")]
+    AlreadyLoaded(String),
+
     #[error("Storage error: {0}")]
     Storage(String),
 
@@ -61,6 +62,7 @@ impl From<WorkspaceServiceError> for OperationError {
         match err {
             WorkspaceServiceError::Io(e) => OperationError::Internal(e),
             WorkspaceServiceError::AlreadyExists(e) => OperationError::AlreadyExists(e),
+            WorkspaceServiceError::AlreadyLoaded(e) => OperationError::InvalidInput(e),
             WorkspaceServiceError::Storage(e) => OperationError::Internal(e),
             WorkspaceServiceError::NotFound(e) => OperationError::NotFound(e),
             WorkspaceServiceError::NotActive => {
@@ -239,7 +241,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         &self,
         id: Uuid,
         activity_indicator: ActivityIndicator<R>,
-    ) -> WorkspaceServiceResult<(bool, Workspace<R>, Arc<WorkspaceDescriptor>)> {
+    ) -> WorkspaceServiceResult<(Workspace<R>, Arc<WorkspaceDescriptor>)> {
         let workspaces = self.workspaces().await?;
         let descriptor = if let Some(d) = workspaces.read().await.get(&id) {
             d.clone()
@@ -253,16 +255,16 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             ));
         }
 
+        let active_workspace_id = self.active_workspace.read().await.as_ref().map(|a| a.id);
+        if active_workspace_id == Some(id) {
+            return Err(WorkspaceServiceError::AlreadyLoaded(id.to_string()));
+        }
+
         let workspace = Workspace::load(self.fs.clone(), &descriptor.abs_path, activity_indicator)
             .await
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
-        let active_workspace_id = self.active_workspace.read().await.as_ref().map(|a| a.id);
-        if active_workspace_id != Some(id) {
-            return Ok((false, workspace, descriptor));
-        } else {
-            Ok((true, workspace, descriptor))
-        }
+        Ok((workspace, descriptor))
     }
 
     pub(crate) async fn create_workspace(

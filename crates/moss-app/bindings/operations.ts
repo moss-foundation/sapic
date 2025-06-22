@@ -34,7 +34,7 @@ export type CloseWorkspaceOutput = {
 
 export type CreateWorkspaceInput = { name: string; mode: WorkspaceMode; openOnCreation: boolean };
 
-export type CreateWorkspaceOutput = { id: string };
+export type CreateWorkspaceOutput = { id: string; active: boolean };
 
 export type DeleteWorkspaceInput = { id: string };
 

@@ -15,16 +15,9 @@ impl<R: TauriRuntime> App<R> {
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspace_service = self.service::<WorkspaceService<R>>();
-        let (active, workspace, descriptor) = workspace_service
+        let (workspace, descriptor) = workspace_service
             .load_workspace(input.id, self.activity_indicator.clone())
             .await?;
-
-        if active {
-            return Ok(OpenWorkspaceOutput {
-                id: descriptor.id,
-                abs_path: descriptor.abs_path.to_owned(),
-            });
-        }
 
         workspace_service
             .activate_workspace(ctx, input.id, workspace)

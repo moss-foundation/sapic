@@ -171,6 +171,8 @@ fn default_open_on_creation() -> bool {
 pub struct CreateWorkspaceOutput {
     pub id: Uuid,
 
+    pub active: bool,
+
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,

@@ -18,7 +18,7 @@ impl<R: TauriRuntime> App<R> {
 
         let workspace_service = self.service::<WorkspaceService<R>>();
         let params = workspace::ModifyParams {
-            name: input.name.clone(),
+            name: input.name.to_owned(),
         };
 
         workspace_service.update_workspace(params).await?;

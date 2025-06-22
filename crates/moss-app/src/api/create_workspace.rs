@@ -30,6 +30,7 @@ impl<R: TauriRuntime> App<R> {
 
         Ok(CreateWorkspaceOutput {
             id: descriptor.id,
+            active: input.open_on_creation,
             abs_path: descriptor.abs_path.clone(),
         })
     }

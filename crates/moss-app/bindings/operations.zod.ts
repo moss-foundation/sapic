@@ -26,6 +26,7 @@ export const closeWorkspaceOutputSchema = z.object({
 
 export const createWorkspaceOutputSchema = z.object({
   id: z.string(),
+  active: z.boolean(),
 });
 
 export const deleteWorkspaceInputSchema = z.object({
