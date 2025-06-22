@@ -36,7 +36,7 @@ export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
             )}
 
             {/* Tabs section - using TabsList for proper Radix UI structure */}
-            <div className="flex items-center px-3">
+            <div className="flex items-center">
               <PageContainerTabsList>
                 {tabs.map((tab) => (
                   <PageContainerTab key={tab.id} value={tab.id}>

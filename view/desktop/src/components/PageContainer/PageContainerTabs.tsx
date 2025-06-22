@@ -37,12 +37,16 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
     <TabsTrigger
       value={value}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors",
-        "border-b-2 border-transparent",
+        "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors",
+        "relative border-b border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
-        "data-[state=active]:border-(--moss-info-background) data-[state=active]:text-(--moss-primary-text)",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-info-background)",
+        "data-[state=active]:text-(--moss-primary-text)",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2",
         "bg-transparent data-[state=active]:bg-transparent",
+        "min-w-0",
+        // Active state - creates a 1px border that sits on the header bottom border
+        "data-[state=active]:after:absolute data-[state=active]:after:right-0 data-[state=active]:after:bottom-[-1px] data-[state=active]:after:left-0",
+        "data-[state=active]:after:h-px data-[state=active]:after:bg-(--moss-tab-active-border-color) data-[state=active]:after:content-['']",
         className
       )}
     >

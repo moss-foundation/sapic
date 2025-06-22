@@ -145,6 +145,7 @@
   "--moss-activegroup-visiblepanel-tab-border-color",
   "--moss-activegroup-hiddenpanel-tab-border-color",
   "--moss-inactivegroup-visiblepanel-tab-border-color",
+  "--moss-tab-active-border-color",
   "--moss-activegroup-hiddenpanel-tab-background-color",
   "--moss-inactivegroup-hiddenpanel-tab-background-color",
   "--moss-activegroup-hiddenpanel-tab-color",
