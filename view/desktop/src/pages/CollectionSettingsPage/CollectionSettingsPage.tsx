@@ -1,12 +1,30 @@
 import { useState, useEffect } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { Icon } from "@/lib/ui";
 import { useUpdateCollection, useDeleteCollection, useActiveCollection } from "@/hooks/collection";
 import { Collection } from "@/components/CollectionTree/types";
 
-import { CollectionNameSection } from "./CollectionNameSection";
-import { CollectionSummarySection } from "./CollectionSummarySection";
-import { CollectionDangerZoneSection } from "./CollectionDangerZoneSection";
+import { GeneralTabContent } from "./GeneralTabContent";
+import { OverviewTabContent } from "./OverviewTabContent";
+import { AuthTabContent } from "./AuthTabContent";
+import { HeadersTabContent } from "./HeadersTabContent";
+import { VariablesTabContent } from "./VariablesTabContent";
+import { PreRequestTabContent } from "./PreRequestTabContent";
+import { PostRequestTabContent } from "./PostRequestTabContent";
+
+// Badge component for tab numbers
+const Badge = ({ count }: { count: number }) => (
+  <span className="ml-1 rounded-full bg-(--moss-info-background) px-1.5 py-0.5 text-xs text-(--moss-primary)">
+    {count}
+  </span>
+);
+
+// Indicator dot for status
+const StatusDot = ({ active }: { active: boolean }) => (
+  <div className={`ml-1 h-2 w-2 rounded-full ${active ? "bg-green-500" : "bg-gray-400"}`} />
+);
 
 export const CollectionSettings = () => {
   const collection = useActiveCollection();
@@ -16,6 +34,7 @@ export const CollectionSettings = () => {
   const [name, setName] = useState("");
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [activeTabId, setActiveTabId] = useState("overview");
 
   useEffect(() => {
     if (collection) {
@@ -79,6 +98,93 @@ export const CollectionSettings = () => {
 
   const collectionDisplayName = getCollectionDisplayName(collection);
 
+  // Define the tabs for the PageContainer matching the design
+  const tabs: TabItem[] = [
+    {
+      id: "overview",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="Home" className="h-4 w-4" />
+          <span>Overview</span>
+        </div>
+      ),
+      content: <OverviewTabContent />,
+    },
+    {
+      id: "auth",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="Key" className="h-4 w-4" />
+          <span>Auth</span>
+          <StatusDot active={true} />
+        </div>
+      ),
+      content: <AuthTabContent />,
+    },
+    {
+      id: "headers",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="ConfigMap" className="h-4 w-4" />
+          <span>Headers</span>
+          <Badge count={3} />
+        </div>
+      ),
+      content: <HeadersTabContent />,
+    },
+    {
+      id: "variables",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="ToolBarVariables" className="h-4 w-4" />
+          <span>Variables</span>
+          <Badge count={3} />
+        </div>
+      ),
+      content: <VariablesTabContent />,
+    },
+    {
+      id: "pre-request",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="JsonPath" className="h-4 w-4" />
+          <span>Pre Request</span>
+        </div>
+      ),
+      content: <PreRequestTabContent />,
+    },
+    {
+      id: "post-request",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="JsonPath" className="h-4 w-4" />
+          <span>Post Request</span>
+        </div>
+      ),
+      content: <PostRequestTabContent />,
+    },
+    {
+      id: "general",
+      label: (
+        <div className="flex items-center gap-1.5">
+          <Icon icon="Settings" className="h-4 w-4" />
+          <span>General</span>
+        </div>
+      ),
+      content: (
+        <GeneralTabContent
+          name={name}
+          setName={setName}
+          repository={repository}
+          setRepository={setRepository}
+          onSave={handleSave}
+          onBlur={handleBlur}
+          onDeleteClick={handleDeleteClick}
+        />
+      ),
+    },
+  ];
+
   return (
     <>
       <ConfirmationModal
@@ -93,26 +199,7 @@ export const CollectionSettings = () => {
         variant="danger"
       />
 
-      <div className="relative flex h-full justify-center">
-        {/* Main Content - Centered on full page width */}
-        <div className="w-full max-w-2xl space-y-9 px-6 py-5">
-          <CollectionNameSection
-            name={name}
-            setName={setName}
-            repository={repository}
-            setRepository={setRepository}
-            onSave={handleSave}
-            onBlur={handleBlur}
-          />
-
-          <CollectionDangerZoneSection onDeleteClick={handleDeleteClick} />
-        </div>
-
-        {/* Right Column - Summary positioned absolutely on the right */}
-        <div className="absolute top-0 right-2 w-60 py-2">
-          <CollectionSummarySection />
-        </div>
-      </div>
+      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
     </>
   );
 };
