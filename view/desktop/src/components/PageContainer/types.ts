@@ -10,8 +10,6 @@ export interface PageContainerHeaderProps {
   className?: string;
 }
 
-
-
 export interface PageContainerContentProps {
   children: ReactNode;
   className?: string;
