@@ -63,7 +63,7 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
     <TabsTrigger
       value={value}
       className={cn(
-        "flex items-center px-2.5 py-2 text-base font-medium transition-colors",
+        "mr-2 flex items-center px-2.5 py-2 text-base transition-colors",
         "relative border-b-2 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
