@@ -37,14 +37,14 @@ impl Collection {
             }),
         };
 
-        self.worktree()
-            .create_entry(
-                &path,
-                &name,
-                is_dir,
-                toml::to_string(&configuration)?.as_bytes(),
-            )
-            .await?;
+        // self.worktree()
+        //     .create_entry(
+        //         &path,
+        //         &name,
+        //         is_dir,
+        //         toml::to_string(&configuration)?.as_bytes(),
+        //     )
+        //     .await?;
 
         // TODO: db operations
 

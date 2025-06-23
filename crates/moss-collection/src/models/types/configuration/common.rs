@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use hcl::{Block, Expression};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
@@ -12,6 +13,14 @@ use uuid::Uuid;
 #[ts(export, export_to = "types.ts")]
 pub struct ConfigurationMetadata {
     pub id: Uuid,
+}
+
+impl ConfigurationMetadata {
+    pub fn to_hcl(&self) -> Block {
+        Block::builder("metadata")
+            .add_attribute(("id", self.id.to_string()))
+            .build()
+    }
 }
 
 // Query Parameter

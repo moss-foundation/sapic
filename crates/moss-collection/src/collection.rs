@@ -139,9 +139,9 @@ impl Collection {
         let worktree = Worktree::new(fs.clone(), abs_path.clone());
         for dir in &WORKTREE_DIRS {
             let model = ConfigurationModel::Dir(CompositeDirConfigurationModel::default());
-            worktree
-                .create_entry("", dir, true, toml::to_string(&model)?.as_bytes())
-                .await?;
+            // worktree
+            //     .create_entry("", dir, true, toml::to_string(&model)?.as_bytes())
+            //     .await?;
         }
 
         for dir in &OTHER_DIRS {
