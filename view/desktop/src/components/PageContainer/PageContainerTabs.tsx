@@ -12,7 +12,9 @@ interface PageContainerTabsProps {
 export const PageContainerTabs: React.FC<PageContainerTabsProps> = ({ value, onValueChange, children, className }) => {
   return (
     <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full flex-col", className)}>
-      {children}
+      <Scrollbar className="h-full overflow-auto">
+        <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
+      </Scrollbar>
     </Tabs>
   );
 };
@@ -23,31 +25,9 @@ interface PageContainerTabsListProps {
 }
 
 export const PageContainerTabsList: React.FC<PageContainerTabsListProps> = ({ children, className }) => {
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    const container = e.currentTarget.querySelector("[data-overlayscrollbars-contents]") as HTMLElement;
-    if (container) {
-      e.preventDefault();
-      container.scrollLeft += e.deltaY;
-    }
-  };
-
   return (
-    <div className={cn("flex h-full w-full", className)} onWheel={handleWheel}>
-      <Scrollbar
-        className="flex-1 overflow-x-auto overflow-y-hidden"
-        options={{
-          scrollbars: {
-            autoHide: "move",
-            autoHideDelay: 1000,
-          },
-          overflow: {
-            x: "scroll",
-            y: "hidden",
-          },
-        }}
-      >
-        <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
-      </Scrollbar>
+    <div className={cn("flex h-full w-full min-w-0", className)} data-tabs-list-container>
+      <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
     </div>
   );
 };
@@ -91,9 +71,7 @@ interface PageContainerTabContentProps {
 export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({ value, children, className }) => {
   return (
     <TabsContent value={value} className={cn("flex-1", className)}>
-      <Scrollbar className="h-full overflow-auto">
-        <div className="min-w-fit p-3">{children}</div>
-      </Scrollbar>
+      <div className="min-w-fit p-3">{children}</div>
     </TabsContent>
   );
 };
