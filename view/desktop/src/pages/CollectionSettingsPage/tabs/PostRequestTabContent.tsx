@@ -1,34 +1,27 @@
 export const PostRequestTabContent = () => {
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-4 text-lg font-semibold text-(--moss-primary-text)">Post-request Script</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-(--moss-primary-text)">
-              JavaScript code to execute after receiving responses
-            </label>
-            <textarea
-              rows={10}
-              placeholder="// Add your post-request script here
-// Examples:
-// pm.test('Status code is 200', function () {
-//     pm.response.to.have.status(200);
-// });
-// pm.globals.set('response_data', pm.response.json());"
-              className="background-(--moss-primary-background) w-full rounded border border-(--moss-border-color) p-3 font-mono text-sm text-(--moss-primary-text)"
+    <div className="flex h-full min-h-[400px] items-center justify-center">
+      <div className="text-center opacity-60">
+        <div className="mb-4">
+          <svg
+            className="mx-auto h-16 w-16 text-(--moss-secondary-text)"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
-          </div>
-
-          <div className="flex gap-2">
-            <button className="background-(--moss-info-background) rounded px-4 py-2 text-(--moss-primary) hover:opacity-80">
-              Save Script
-            </button>
-            <button className="hover:background-(--moss-secondary-background) rounded border border-(--moss-border-color) px-4 py-2 text-(--moss-primary-text)">
-              Test Script
-            </button>
-          </div>
+          </svg>
         </div>
+        <h3 className="mb-2 text-lg font-medium text-(--moss-primary-text)">Post-Request Scripts</h3>
+        <p className="text-(--moss-secondary-text)">
+          This section will contain JavaScript code executed after receiving responses
+        </p>
+        <p className="mt-1 text-sm text-(--moss-secondary-text)">Coming soon...</p>
       </div>
     </div>
   );
