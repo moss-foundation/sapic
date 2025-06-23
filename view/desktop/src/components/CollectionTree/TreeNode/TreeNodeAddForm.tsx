@@ -11,7 +11,6 @@ import { TreeCollectionNode } from "../types";
 interface TreeNodeAddFormProps {
   node: TreeCollectionNode;
   depth: number;
-  isAddingFileNode: boolean;
   isAddingFolderNode: boolean;
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
   handleAddFormSubmit: (name: string) => void;
@@ -21,7 +20,6 @@ interface TreeNodeAddFormProps {
 const TreeNodeAddForm = ({
   node,
   depth,
-  isAddingFileNode,
   isAddingFolderNode,
   handleAddFormSubmit,
   handleAddFormCancel,
@@ -35,15 +33,10 @@ const TreeNodeAddForm = ({
       <TestCollectionIcon
         type={node.kind}
         className={cn("ml-auto", {
-          "opacity-0": isAddingFileNode,
+          "opacity-0": !isAddingFolderNode,
         })}
       />
-      <NodeAddForm
-        parentNode={node}
-        isAddingFolder={isAddingFolderNode}
-        onSubmit={handleAddFormSubmit}
-        onCancel={handleAddFormCancel}
-      />
+      <NodeAddForm onSubmit={handleAddFormSubmit} onCancel={handleAddFormCancel} />
     </div>
   );
 };

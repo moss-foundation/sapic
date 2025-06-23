@@ -158,9 +158,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
         <TreeNodeAddForm
           node={node}
           depth={depth}
-          isAddingFileNode={isAddingFileNode}
           isAddingFolderNode={isAddingFolderNode}
-          onNodeAddCallback={onNodeAddCallback}
           handleAddFormSubmit={handleAddFormSubmit}
           handleAddFormCancel={handleAddFormCancel}
         />
