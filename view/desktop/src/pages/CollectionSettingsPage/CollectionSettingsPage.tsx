@@ -6,12 +6,12 @@ import { Icon } from "@/lib/ui";
 import { useUpdateCollection, useDeleteCollection, useActiveCollection } from "@/hooks/collection";
 import { Collection } from "@/components/CollectionTree/types";
 
-import { OverviewTabContent } from "./OverviewTabContent";
-import { AuthTabContent } from "./AuthTabContent";
-import { HeadersTabContent } from "./HeadersTabContent";
-import { VariablesTabContent } from "./VariablesTabContent";
-import { PreRequestTabContent } from "./PreRequestTabContent";
-import { PostRequestTabContent } from "./PostRequestTabContent";
+import { OverviewTabContent } from "./tabs/OverviewTabContent";
+import { AuthTabContent } from "./tabs/AuthTabContent";
+import { HeadersTabContent } from "./tabs/HeadersTabContent";
+import { VariablesTabContent } from "./tabs/VariablesTabContent";
+import { PreRequestTabContent } from "./tabs/PreRequestTabContent";
+import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
 
 // Badge component for tab numbers
 const Badge = ({ count }: { count: number }) => (

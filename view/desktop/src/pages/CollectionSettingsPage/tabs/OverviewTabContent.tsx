@@ -1,7 +1,7 @@
 import React from "react";
-import { CollectionNameSection } from "./CollectionNameSection";
-import { CollectionSummarySection } from "./CollectionSummarySection";
-import { CollectionDangerZoneSection } from "./CollectionDangerZoneSection";
+import { CollectionNameSection } from "../CollectionNameSection";
+import { CollectionSummarySection } from "../CollectionSummarySection";
+import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
 
 interface OverviewTabContentProps {
   name: string;

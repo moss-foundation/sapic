@@ -5,8 +5,7 @@ use moss_workspace::models::{
     events::{StreamCollectionsEvent, StreamEnvironmentsEvent},
     operations::{
         CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
-        DeleteCollectionOutput, DescribeStateOutput, UpdateCollectionInput, UpdateCollectionOutput,
-        UpdateStateInput,
+        DeleteCollectionOutput, DescribeStateOutput, UpdateStateInput,
     },
 };
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
@@ -132,28 +131,6 @@ pub async fn delete_collection<R: TauriRuntime>(
             .map_err_as_failed_precondition("No active workspace")?;
         workspace
             .delete_collection(&ctx, &input)
-            .await
-            .map_err(TauriError::OperationError)
-    })
-    .await
-    .map_err(|_| TauriError::Timeout)?
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn update_collection<R: TauriRuntime>(
-    app: State<'_, App<R>>,
-    window: Window<R>,
-    input: UpdateCollectionInput,
-) -> TauriResult<UpdateCollectionOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let workbench = app.workbench();
-        let (mut workspace, ctx) = workbench
-            .active_workspace_mut()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
-        workspace
-            .update_collection(&ctx, input)
             .await
             .map_err(TauriError::OperationError)
     })
