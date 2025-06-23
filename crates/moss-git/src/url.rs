@@ -1,20 +1,28 @@
-pub fn clean_git_url(repo_url: &str) -> String {
-    let s = repo_url
-        .split_once("://")
-        .map(|(_, without_protocol)| without_protocol)
-        .unwrap_or(repo_url);
+use anyhow::{Result, anyhow};
+use url::Url;
 
-    s.strip_suffix(".git").unwrap_or(s).to_string()
+// Strip the protocol and ".git" suffix from a git repo url
+pub fn clean_git_url(repo_url: &Url) -> Result<String> {
+    let domain = repo_url
+        .domain()
+        .ok_or_else(|| anyhow!("no domain found"))?;
+    let path = {
+        let path = repo_url.path();
+        path.strip_suffix(".git").unwrap_or(path)
+    };
+
+    Ok(format!("{domain}{path}"))
 }
 
 mod tests {
+    use url::Url;
+
     use crate::url::clean_git_url;
-
     #[test]
-    fn test_url() {
-        let https_url = "https://github.com/moss-foundation/sapic.git";
+    fn test_clean_git_url() {
+        let https_url = Url::parse("https://github.com/moss-foundation/sapic.git").unwrap();
+        let cleaned_url = clean_git_url(&https_url).unwrap();
 
-        let cleaned_url = clean_git_url(https_url);
-        println!("{}", cleaned_url);
+        assert_eq!(cleaned_url, "github.com/moss-foundation/sapic");
     }
 }

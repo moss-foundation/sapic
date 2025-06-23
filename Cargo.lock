@@ -3364,6 +3364,7 @@ dependencies = [
  "git2",
  "openssl",
  "ssh2",
+ "url",
 ]
 
 [[package]]
