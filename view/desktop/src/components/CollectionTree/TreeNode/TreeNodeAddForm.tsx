@@ -2,7 +2,6 @@ import { useContext } from "react";
 
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
-import { CreateEntryInput } from "@repo/moss-collection";
 
 import { NodeAddForm } from "../NodeAddForm";
 import { TestCollectionIcon } from "../TestCollectionIcon";
@@ -15,7 +14,7 @@ interface TreeNodeAddFormProps {
   isAddingFileNode: boolean;
   isAddingFolderNode: boolean;
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
-  handleAddFormSubmit: (newEntry: CreateEntryInput) => void;
+  handleAddFormSubmit: (name: string) => void;
   handleAddFormCancel: () => void;
 }
 
@@ -42,9 +41,7 @@ const TreeNodeAddForm = ({
       <NodeAddForm
         parentNode={node}
         isAddingFolder={isAddingFolderNode}
-        onSubmit={(newEntry) => {
-          handleAddFormSubmit(newEntry);
-        }}
+        onSubmit={handleAddFormSubmit}
         onCancel={handleAddFormCancel}
       />
     </div>

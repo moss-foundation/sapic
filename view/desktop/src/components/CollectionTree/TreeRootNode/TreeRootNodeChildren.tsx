@@ -2,6 +2,8 @@ import { useContext } from "react";
 
 import { cn } from "@/utils";
 
+import { NodeAddForm } from "../NodeAddForm";
+import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
@@ -11,7 +13,7 @@ interface TreeRootNodeChildrenProps {
   onNodeUpdate: (node: TreeCollectionNode) => void;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
-  handleAddFormRootSubmit: (newNode: TreeCollectionNode) => void;
+  handleAddFormRootSubmit: (name: string) => void;
   handleAddFormRootCancel: () => void;
 }
 
@@ -23,12 +25,14 @@ export const TreeRootNodeChildren = ({
   handleAddFormRootSubmit,
   handleAddFormRootCancel,
 }: TreeRootNodeChildrenProps) => {
-  const { nodeOffset, onRootAddCallback, displayMode } = useContext(TreeContext);
+  const { nodeOffset, displayMode } = useContext(TreeContext);
 
   const nodesToRender =
     displayMode === "RequestFirst"
       ? node.requests.childNodes
       : [node.endpoints, node.schemas, node.components, node.requests];
+
+  const shouldRenderAddRootForm = displayMode === "RequestFirst" && (isAddingRootFileNode || isAddingRootFolderNode);
 
   return (
     <ul className={cn("h-full w-full", { "pb-2": nodesToRender.length > 0 })}>
@@ -43,21 +47,13 @@ export const TreeRootNodeChildren = ({
           />
         );
       })}
-      {/* {(isAddingRootFileNode || isAddingRootFolderNode) && (
+      {shouldRenderAddRootForm && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <TestCollectionIcon type={node.kind} className="opacity-0" />
-          <TestCollectionIcon type={node.kind} className={cn({ "opacity-0": isAddingRootFileNode })} />
-          <NodeAddForm
-            isFolder={isAddingRootFolderNode}
-            restrictedNames={nodesToRender.map((childNode) => childNode.id)}
-            onSubmit={(newNode) => {
-              handleAddFormRootSubmit(newNode);
-              onRootAddCallback?.({ ...node, childNodes: [...nodesToRender, newNode] } as TreeCollectionRootNode);
-            }}
-            onCancel={handleAddFormRootCancel}
-          />
+          <TestCollectionIcon type={"Dir"} className="opacity-0" />
+          <TestCollectionIcon type={"Dir"} className={cn({ "opacity-0": isAddingRootFileNode })} />
+          <NodeAddForm onSubmit={handleAddFormRootSubmit} onCancel={handleAddFormRootCancel} />
         </div>
-      )} */}
+      )}
     </ul>
   );
 };

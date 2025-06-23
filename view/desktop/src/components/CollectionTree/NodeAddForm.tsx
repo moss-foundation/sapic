@@ -1,49 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-import { CreateEntryInput } from "@repo/moss-collection";
-
-import { TreeCollectionNode } from "./types";
-
 interface NodeRenamingFormProps {
-  onSubmit: (newEntry: CreateEntryInput) => void;
+  onSubmit: (name: string) => void;
   onCancel: () => void;
-  isAddingFolder: boolean;
-  parentNode: TreeCollectionNode;
 }
 
-const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
-  if (isAddingFolder) {
-    return {
-      dir: {
-        name,
-        path: parentNode.path,
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
-      },
-    };
-  }
-
-  return {
-    item: {
-      name,
-      path: parentNode.path,
-      configuration: {
-        request: {
-          http: {
-            requestParts: {
-              method: "GET",
-            },
-          },
-        },
-      },
-    },
-  };
-};
-
-export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isInitialized = useRef(false);
 
@@ -58,9 +20,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: 
 
     if (!value) return;
 
-    const newEntry = createEntry(parentNode, value, isAddingFolder);
-
-    onSubmit(newEntry);
+    onSubmit(value);
   };
 
   const handleBlur = () => {
@@ -71,9 +31,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: 
       return;
     }
 
-    const newEntry = createEntry(parentNode, value, isAddingFolder);
-
-    onSubmit(newEntry);
+    onSubmit(value);
   };
 
   useEffect(() => {

@@ -78,8 +78,12 @@ export const TreeRootNodeActions = ({
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
             <ActionMenu.Content className="z-30" align="center">
-              <ActionMenu.Item onClick={() => setIsAddingRootFileNode(true)}>Add File</ActionMenu.Item>
-              <ActionMenu.Item onClick={() => setIsAddingRootFolderNode(true)}>Add Folder</ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFileNode(true)}>
+                Add File
+              </ActionMenu.Item>
+              <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFolderNode(true)}>
+                Add Folder
+              </ActionMenu.Item>
               <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
                 Rename...
               </ActionMenu.Item>

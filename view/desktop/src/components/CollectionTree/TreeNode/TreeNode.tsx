@@ -36,7 +36,7 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { searchInput, onNodeAddCallback, onNodeRenameCallback, nodeOffset, paddingRight } = useContext(TreeContext);
+  const { onNodeAddCallback, onNodeRenameCallback, nodeOffset, paddingRight } = useContext(TreeContext);
 
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -47,7 +47,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
     setIsAddingFolderNode,
     handleAddFormSubmit,
     handleAddFormCancel,
-  } = useNodeAddForm();
+  } = useNodeAddForm(node);
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,

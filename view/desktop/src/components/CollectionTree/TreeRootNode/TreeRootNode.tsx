@@ -65,7 +65,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
     setIsAddingRootNodeFolder,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm(node, onRootUpdate);
+  } = useRootNodeAddForm();
 
   const {
     isRenamingRootNode,
@@ -142,6 +142,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
           handleExpandAll={handleExpandAll}
         />
       </div>
+
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
 
       {shouldRenderChildNodes && (
