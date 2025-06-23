@@ -28,7 +28,7 @@ export const HeadersTabContent = () => {
                   className="background-(--moss-primary-background) w-full rounded border border-(--moss-border-color) p-2 text-(--moss-primary-text)"
                 />
               </div>
-              <button className="p-2 text-(--moss-secondary-text) hover:text-(--moss-danger)">×</button>
+              <button className="p-2 text-(--moss-secondary-text) hover:text-(--moss-error)">×</button>
             </div>
           ))}
           <button className="w-full rounded border-2 border-dashed border-(--moss-border-color) p-3 text-(--moss-secondary-text) hover:border-(--moss-primary) hover:text-(--moss-primary-text)">
