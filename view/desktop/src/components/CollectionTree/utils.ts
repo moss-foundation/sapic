@@ -62,18 +62,13 @@ export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabeti
 };
 
 export const prepareCollectionForTree = (
-  collection: NodeProps,
-  sortBy: SortTypes = "none",
-  isFirstCollection: boolean = true
-): TreeNodeProps => {
-  const id = "TreeNodeUniqueId-" + Math.random().toString(36).substring(2, 15);
-
+  collection: TreeCollectionNode,
+  sortBy: SortTypes = "none"
+): TreeCollectionNode => {
   return sortNode(
     {
       ...collection,
-      uniqueId: id,
-      isRoot: isFirstCollection,
-      childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy, false)),
+      childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy)),
     },
     sortBy
   );

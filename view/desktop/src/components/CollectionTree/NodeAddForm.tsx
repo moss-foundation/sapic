@@ -1,124 +1,72 @@
 import { useEffect, useRef, useState } from "react";
 
+import { CreateEntryInput } from "@repo/moss-collection";
+
 import { TreeCollectionNode } from "./types";
 
 interface NodeRenamingFormProps {
-  onSubmit: (newNode: TreeCollectionNode) => void;
+  onSubmit: (newEntry: CreateEntryInput) => void;
   onCancel: () => void;
-  restrictedNames: (string | number)[];
-  isFolder: boolean;
+  isAddingFolder: boolean;
+  parentNode: TreeCollectionNode;
 }
 
-const createSubtree = (path: string, isFolder: boolean): TreeCollectionNode => {
-  const lastNodeIsFolder = path.endsWith("/") || isFolder;
-
-  if (path.endsWith("/")) {
-    path = path.slice(0, -1);
-  }
-
-  const parts = path.split("/").filter((part) => part !== "");
-
-  if (parts.length === 0) throw new Error("Invalid path");
-
-  return buildNode(parts, lastNodeIsFolder);
-};
-
-const buildNode = (parts: string[], isLastFolder: boolean): TreeCollectionNode => {
-  const name = parts[0];
-  const isFolder = parts.length > 1 || isLastFolder;
-  const childNodes = parts.length > 1 ? [buildNode(parts.slice(1), isLastFolder)] : [];
-
-  return {
-    id: name,
-    type: isFolder ? "folder" : "file",
-    order: 0,
-    isFolder,
-    isExpanded: isFolder,
-    childNodes: childNodes,
-  };
-};
-
-const validateName = (
-  name: string,
-  restrictedNames: (string | number)[]
-): {
-  isValid: boolean;
-  message: string;
-} => {
-  const newNodeNames = name.split("/");
-  const newNodeRootName = newNodeNames[0];
-
-  if (newNodeRootName === "" && newNodeNames.length === 1) {
+const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
+  if (isAddingFolder) {
     return {
-      isValid: false,
-      message: "The name cannot be empty",
-    };
-  }
-
-  if (newNodeRootName === "" && newNodeNames.length > 1) {
-    return {
-      isValid: false,
-      message: "The root name of the new subtree cannot be empty",
-    };
-  }
-
-  if (restrictedNames.includes(newNodeRootName)) {
-    return {
-      isValid: false,
-      message: `The name "${newNodeRootName}" is already exists in this location`,
+      dir: {
+        name,
+        path: parentNode.path,
+        configuration: {
+          request: {
+            http: {},
+          },
+        },
+      },
     };
   }
 
   return {
-    isValid: true,
-    message: "",
+    item: {
+      name,
+      path: parentNode.path,
+      configuration: {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      },
+    },
   };
 };
 
-export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [value, setValue] = useState("");
-
-  const { message, isValid } = validateName(value, restrictedNames);
-
-  const [didUserChangeInput, setDidUserChangeInput] = useState(false);
-
-  useEffect(() => {
-    if (inputRef.current && didUserChangeInput) {
-      inputRef.current.setCustomValidity(message);
-      inputRef.current.reportValidity();
-    }
-  }, [didUserChangeInput, message]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-    setDidUserChangeInput(true);
-  };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
     if ("preventDefault" in e) e.preventDefault();
 
-    if (!isValid) return;
+    if (!value) return;
 
-    const node = createSubtree(value, isFolder);
+    const newEntry = createEntry(parentNode, value, isAddingFolder);
 
-    onSubmit(node);
+    onSubmit(newEntry);
   };
 
   const handleBlur = () => {
-    if (!isValid) {
-      onCancel();
-      return;
-    }
+    if (!value) return;
+    const newEntry = createEntry(parentNode, value, isAddingFolder);
 
-    const node = createSubtree(value, isFolder);
-
-    onSubmit(node);
+    onSubmit(newEntry);
   };
 
   useEffect(() => {
@@ -140,7 +88,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
       <input
         ref={inputRef}
         value={value}
-        onChange={handleChange}
+        onChange={(e) => setValue(e.target.value)}
         autoFocus
         minLength={1}
         maxLength={100}

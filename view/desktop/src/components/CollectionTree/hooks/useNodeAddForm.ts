@@ -1,20 +1,21 @@
 import { useContext, useState } from "react";
 
-import { TreeContext } from "../Tree";
-import { NodeProps, TreeNodeProps } from "../types";
-import { prepareCollectionForTree } from "../utils";
+import { useCollectionsStore } from "@/store/collections";
+import { CreateEntryInput } from "@repo/moss-collection";
 
-export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdateCallback: (node: TreeNodeProps) => void) => {
-  const { sortBy } = useContext(TreeContext);
+import { TreeContext } from "../Tree";
+
+export const useNodeAddForm = () => {
+  const { treeId } = useContext(TreeContext);
+  const { createCollectionEntry } = useCollectionsStore();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
-  const handleAddFormSubmit = (newNode: NodeProps) => {
-    onNodeUpdateCallback({
-      ...node,
-      isExpanded: true,
-      childNodes: [...node.childNodes, prepareCollectionForTree(newNode, sortBy, false)],
+  const handleAddFormSubmit = async (newEntry: CreateEntryInput) => {
+    await createCollectionEntry({
+      collectionId: treeId,
+      input: newEntry,
     });
 
     setIsAddingFileNode(false);

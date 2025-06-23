@@ -324,7 +324,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         channel: onCollectionEvent,
       });
 
-      // console.log("collectionsTrees", get().collectionsTrees);
+      console.log("collectionsTrees", get().collectionsTrees);
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {

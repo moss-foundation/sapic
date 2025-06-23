@@ -2,19 +2,20 @@ import { useContext } from "react";
 
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
+import { CreateEntryInput } from "@repo/moss-collection";
 
 import { NodeAddForm } from "../NodeAddForm";
 import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
-import { NodeProps, TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 
 interface TreeNodeAddFormProps {
-  node: TreeNodeProps;
+  node: TreeCollectionNode;
   depth: number;
   isAddingFileNode: boolean;
   isAddingFolderNode: boolean;
-  onNodeAddCallback?: (node: TreeNodeProps) => void;
-  handleAddFormSubmit: (newNode: NodeProps) => void;
+  onNodeAddCallback?: (node: TreeCollectionNode) => void;
+  handleAddFormSubmit: (newEntry: CreateEntryInput) => void;
   handleAddFormCancel: () => void;
 }
 
@@ -23,7 +24,6 @@ const TreeNodeAddForm = ({
   depth,
   isAddingFileNode,
   isAddingFolderNode,
-  onNodeAddCallback,
   handleAddFormSubmit,
   handleAddFormCancel,
 }: TreeNodeAddFormProps) => {
@@ -34,17 +34,16 @@ const TreeNodeAddForm = ({
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
       <Icon icon="ChevronRight" className={cn("opacity-0")} />
       <TestCollectionIcon
-        type={node.type}
+        type={node.kind}
         className={cn("ml-auto", {
           "opacity-0": isAddingFileNode,
         })}
       />
       <NodeAddForm
-        isFolder={isAddingFolderNode}
-        restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-        onSubmit={(newNode) => {
-          handleAddFormSubmit(newNode);
-          onNodeAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
+        parentNode={node}
+        isAddingFolder={isAddingFolderNode}
+        onSubmit={(newEntry) => {
+          handleAddFormSubmit(newEntry);
         }}
         onCancel={handleAddFormCancel}
       />

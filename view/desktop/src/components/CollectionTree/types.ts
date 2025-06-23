@@ -70,7 +70,7 @@ export interface TreeProps {
 }
 
 export interface TreeContextProps {
-  treeId: string | number;
+  treeId: string;
   paddingLeft: number;
   paddingRight: number;
   rootOffset: number;
