@@ -10,9 +10,17 @@ interface PageContainerTabsProps {
 }
 
 export const PageContainerTabs: React.FC<PageContainerTabsProps> = ({ value, onValueChange, children, className }) => {
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const container = e.currentTarget.querySelector("[data-overlayscrollbars-contents]") as HTMLElement;
+    if (container) {
+      e.preventDefault();
+      container.scrollLeft += e.deltaY;
+    }
+  };
+
   return (
     <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full flex-col", className)}>
-      <Scrollbar className="h-full overflow-auto">
+      <Scrollbar className="h-full overflow-auto" onWheel={handleWheel}>
         <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
       </Scrollbar>
     </Tabs>
