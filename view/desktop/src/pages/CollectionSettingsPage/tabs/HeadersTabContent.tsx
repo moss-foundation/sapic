@@ -1,9 +1,28 @@
+import React, { useState } from "react";
+
+interface Header {
+  key: string;
+  value: string;
+}
+
 export const HeadersTabContent = () => {
-  const headers = [
+  const [headers, setHeaders] = useState<Header[]>([
     { key: "Content-Type", value: "application/json" },
     { key: "Accept", value: "application/json" },
     { key: "User-Agent", value: "Sapic/1.0.0" },
-  ];
+  ]);
+
+  const handleHeaderChange = (index: number, field: "key" | "value", newValue: string) => {
+    setHeaders((prev) => prev.map((header, i) => (i === index ? { ...header, [field]: newValue } : header)));
+  };
+
+  const handleAddHeader = () => {
+    setHeaders((prev) => [...prev, { key: "", value: "" }]);
+  };
+
+  const handleRemoveHeader = (index: number) => {
+    setHeaders((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="space-y-6">
@@ -16,6 +35,7 @@ export const HeadersTabContent = () => {
                 <input
                   type="text"
                   value={header.key}
+                  onChange={(e) => handleHeaderChange(index, "key", e.target.value)}
                   placeholder="Header name"
                   className="background-(--moss-primary-background) w-full rounded border border-(--moss-border-color) p-2 text-(--moss-primary-text)"
                 />
@@ -24,14 +44,23 @@ export const HeadersTabContent = () => {
                 <input
                   type="text"
                   value={header.value}
+                  onChange={(e) => handleHeaderChange(index, "value", e.target.value)}
                   placeholder="Header value"
                   className="background-(--moss-primary-background) w-full rounded border border-(--moss-border-color) p-2 text-(--moss-primary-text)"
                 />
               </div>
-              <button className="p-2 text-(--moss-secondary-text) hover:text-(--moss-error)">×</button>
+              <button
+                onClick={() => handleRemoveHeader(index)}
+                className="p-2 text-(--moss-secondary-text) hover:text-(--moss-error)"
+              >
+                ×
+              </button>
             </div>
           ))}
-          <button className="w-full rounded border-2 border-dashed border-(--moss-border-color) p-3 text-(--moss-secondary-text) hover:border-(--moss-primary) hover:text-(--moss-primary-text)">
+          <button
+            onClick={handleAddHeader}
+            className="w-full rounded border-2 border-dashed border-(--moss-border-color) p-3 text-(--moss-secondary-text) hover:border-(--moss-primary) hover:text-(--moss-primary-text)"
+          >
             + Add Header
           </button>
         </div>
