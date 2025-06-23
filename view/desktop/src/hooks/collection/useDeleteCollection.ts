@@ -15,7 +15,6 @@ export const useDeleteCollection = () => {
       return { id };
     },
     onSuccess: () => {
-      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ["listCollections"] });
     },
   });
