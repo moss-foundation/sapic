@@ -9,10 +9,10 @@ moss_fs.workspace = true
 moss_applib.workspace = true
 moss_tauri.workspace = true
 moss_text.workspace = true
-moss_workbench.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true
 moss_db.workspace = true
+moss_activity_indicator.workspace = true
 
 anyhow.workspace = true
 tauri = { workspace = true, features = ["wry"] }
@@ -23,13 +23,24 @@ rustc-hash.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 ts-rs.workspace = true
-uuid.workspace = true
+uuid = { workspace = true, features = ["serde"] }
 chrono.workspace = true
 nanoid.workspace = true
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
 tracing-appender.workspace = true
+derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
+validator.workspace = true
+async-trait.workspace = true
+dashmap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
+
+[features]
+test = []
+
+# Enable test feature for tests
+[package.metadata.cargo-test]
+features = ["test"]

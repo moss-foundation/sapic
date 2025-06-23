@@ -2,31 +2,33 @@ use moss_common::api::{OperationError, OperationOptionExt, OperationResult};
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
+    app::App,
+    context::{AnyAppContext, ctxkeys},
     models::operations::{CloseWorkspaceInput, CloseWorkspaceOutput},
-    workbench::Workbench,
+    services::workspace_service::WorkspaceService,
 };
 
-impl<R: TauriRuntime> Workbench<R> {
-    pub async fn close_workspace(
+impl<R: TauriRuntime> App<R> {
+    pub async fn close_workspace<C: AnyAppContext<R>>(
         &self,
+        ctx: &C,
         input: &CloseWorkspaceInput,
     ) -> OperationResult<CloseWorkspaceOutput> {
-        let active_workspace_id = self
-            .active_workspace_id()
-            .await
+        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspace_id = ctx
+            .value::<ctxkeys::WorkspaceId>()
+            .map(|id| **id)
             .map_err_as_failed_precondition("No active workspace to close")?;
 
-        if active_workspace_id != input.id {
+        if workspace_id != input.id {
             return Err(OperationError::InvalidInput(format!(
                 "Workspace {} is not currently active",
                 input.id
             )));
         }
 
-        self.deactivate_workspace().await;
+        workspace_service.deactivate_workspace(ctx).await;
 
-        Ok(CloseWorkspaceOutput {
-            id: active_workspace_id,
-        })
+        Ok(CloseWorkspaceOutput { id: workspace_id })
     }
 }

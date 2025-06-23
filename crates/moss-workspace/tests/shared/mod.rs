@@ -3,7 +3,6 @@ mod context;
 pub use context::*;
 
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::context::test::MockContext;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
@@ -43,9 +42,9 @@ pub async fn setup_test_workspace() -> (
     let mock_app = tauri::test::mock_app();
     let app_handle = mock_app.handle().clone();
 
-    <dyn FileSystem>::set_global(fs, &app_handle);
+    <dyn FileSystem>::set_global(fs.clone(), &app_handle);
 
-    let ctx = MockContext::new(app_handle.clone());
+    let ctx = MockWorkspaceContext::new(app_handle.clone());
 
     let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -57,9 +56,8 @@ pub async fn setup_test_workspace() -> (
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
     let workspace = Workspace::create(
-        &ctx,
+        fs,
         &workspace_path,
-        // fs,
         activity_indicator,
         CreateParams {
             name: Some(random_workspace_name()),
