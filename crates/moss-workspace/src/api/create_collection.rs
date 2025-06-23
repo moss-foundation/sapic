@@ -69,6 +69,7 @@ impl<R: TauriRuntime> Workspace<R> {
         .map_err(|e| OperationError::Internal(e.to_string()))?;
 
         let on_did_change = collection.on_did_change().subscribe(|_event| async move {
+
             // TODO: Save in the database whether the collection was collapsed/expanded
         });
         ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))

@@ -58,7 +58,6 @@ COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
-WORKBENCH_MODELS_DIR := crates/moss-workbench
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
 
 # ---- Command Executables ----
@@ -138,7 +137,6 @@ $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
-$(eval $(call gen_bindings,workbench,WORKBENCH_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 
 ## Generate all TypeScript bindings
