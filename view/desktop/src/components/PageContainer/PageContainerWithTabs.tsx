@@ -7,22 +7,19 @@ import {
   PageContainerTab,
   PageContainerTabContent,
 } from "./PageContainerTabs";
-import { PageContainerToolbar } from "./PageContainerToolbar";
+
 import { PageContainerWithTabsProps } from "./types";
 
 export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
   tabs,
   activeTabId,
   onTabChange,
-  toolbar,
   className,
 }) => {
-  const toolbarElement = toolbar ? <PageContainerToolbar>{toolbar}</PageContainerToolbar> : undefined;
-
   return (
     <PageContainer className={className}>
       <PageContainerTabs value={activeTabId} onValueChange={onTabChange}>
-        <PageContainerHeader className="h-9 border-b border-(--moss-border-color)" toolbar={toolbarElement}>
+        <PageContainerHeader className="h-9 border-b border-(--moss-border-color)">
           <div className="flex h-full items-center">
             {/* Tabs section - using TabsList for proper Radix UI structure */}
             <div className="flex items-center">

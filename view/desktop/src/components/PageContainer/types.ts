@@ -7,14 +7,10 @@ export interface PageContainerProps {
 
 export interface PageContainerHeaderProps {
   children?: ReactNode;
-  toolbar?: ReactNode;
   className?: string;
 }
 
-export interface PageContainerToolbarProps {
-  children: ReactNode;
-  className?: string;
-}
+
 
 export interface PageContainerContentProps {
   children: ReactNode;
@@ -32,6 +28,5 @@ export interface PageContainerWithTabsProps {
   tabs: TabItem[];
   activeTabId: string;
   onTabChange: (tabId: string) => void;
-  toolbar?: ReactNode;
   className?: string;
 }
