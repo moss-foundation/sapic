@@ -1,7 +1,7 @@
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
-import { Icon } from "@/lib/ui";
+import { Icon, Scrollbar } from "@/lib/ui";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";
@@ -18,7 +18,7 @@ export const WelcomePage = () => {
     element.scrollIntoView({ behavior: "smooth" });
   };
   return (
-    <div className="relative z-[50] h-full overflow-auto">
+    <Scrollbar className="relative z-[50] h-full">
       <section className="relative flex min-h-[calc(100vh-98px)] flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
         <div className="flex flex-col gap-0.5">
           <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
@@ -51,7 +51,7 @@ export const WelcomePage = () => {
       <section id="TestAnchorForWelcomePage" className="flex h-screen flex-col items-center justify-center bg-red-50">
         <p className="text-2xl font-bold">Lorem ipsum</p>
       </section>
-    </div>
+    </Scrollbar>
   );
 };
 
