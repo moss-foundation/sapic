@@ -15,14 +15,14 @@ import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
 
 // Badge component for tab numbers
 const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-info-background) ml-1 rounded-full px-1.5 py-0.5 text-xs text-(--moss-primary)">
+  <span className="background-(--moss-tab-badge-color) flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-0.5 py-0 text-xs leading-none text-white">
     {count}
   </span>
 );
 
 // Indicator dot for status
 const StatusDot = ({ active }: { active: boolean }) =>
-  active ? <div className="background-(--moss-auth-indicator-color) ml-1 h-2 w-2 rounded-full" /> : null;
+  active ? <div className="background-(--moss-auth-indicator-color) h-2 w-2 rounded-full" /> : null;
 
 export const CollectionSettings = () => {
   const collection = useActiveCollection();
@@ -101,7 +101,7 @@ export const CollectionSettings = () => {
     {
       id: "overview",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="SquareBrackets" className="h-4 w-4" />
           <span>Overview</span>
         </div>
@@ -121,7 +121,7 @@ export const CollectionSettings = () => {
     {
       id: "auth",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="Auth" className="h-4 w-4" />
           <span>Auth</span>
           <StatusDot active={true} />
@@ -132,7 +132,7 @@ export const CollectionSettings = () => {
     {
       id: "headers",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="Headers" className="h-4 w-4" />
           <span>Headers</span>
           <Badge count={3} />
@@ -143,7 +143,7 @@ export const CollectionSettings = () => {
     {
       id: "variables",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="Braces" className="h-4 w-4" />
           <span>Variables</span>
           <Badge count={3} />
@@ -154,7 +154,7 @@ export const CollectionSettings = () => {
     {
       id: "pre-request",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="PreRequest" className="h-4 w-4" />
           <span>Pre Request</span>
         </div>
@@ -164,7 +164,7 @@ export const CollectionSettings = () => {
     {
       id: "post-request",
       label: (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Icon icon="PostRequest" className="h-4 w-4" />
           <span>Post Request</span>
         </div>

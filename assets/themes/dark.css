@@ -284,4 +284,5 @@
   /* PageContainer */
   --moss-tab-active-border-color: var(--moss-blue-4);
   --moss-auth-indicator-color: var(--moss-green-4);
+  --moss-tab-badge-color: var(--moss-blue-4);
 }

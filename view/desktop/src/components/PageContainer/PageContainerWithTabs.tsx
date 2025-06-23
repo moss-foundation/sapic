@@ -11,8 +11,6 @@ import { PageContainerToolbar } from "./PageContainerToolbar";
 import { PageContainerWithTabsProps } from "./types";
 
 export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
-  title,
-  icon,
   tabs,
   activeTabId,
   onTabChange,
@@ -24,17 +22,8 @@ export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
   return (
     <PageContainer className={className}>
       <PageContainerTabs value={activeTabId} onValueChange={onTabChange}>
-        {/* Header with tabs - matching PageView header structure */}
         <PageContainerHeader className="h-9 border-b border-(--moss-border-color)" toolbar={toolbarElement}>
           <div className="flex h-full items-center">
-            {/* Title section - only render if title is provided */}
-            {title && (
-              <div className="flex min-w-0 flex-shrink-0 items-center gap-1.5 px-3">
-                {icon && <div className="flex-shrink-0">{icon}</div>}
-                <h1 className="truncate text-[16px] font-semibold text-(--moss-primary-text)">{title}</h1>
-              </div>
-            )}
-
             {/* Tabs section - using TabsList for proper Radix UI structure */}
             <div className="flex items-center">
               <PageContainerTabsList>

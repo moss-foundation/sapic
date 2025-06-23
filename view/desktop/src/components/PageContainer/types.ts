@@ -29,8 +29,6 @@ export interface TabItem {
 }
 
 export interface PageContainerWithTabsProps {
-  title?: string;
-  icon?: ReactNode;
   tabs: TabItem[];
   activeTabId: string;
   onTabChange: (tabId: string) => void;
