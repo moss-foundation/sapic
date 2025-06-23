@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent, Scrollbar } from "@/lib/ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/lib/ui";
 
 interface PageContainerTabsProps {
   value: string;
@@ -10,6 +10,7 @@ interface PageContainerTabsProps {
 }
 
 export const PageContainerTabs: React.FC<PageContainerTabsProps> = ({ value, onValueChange, children, className }) => {
+  /* Scroll vertical scrollbar by mouse wheel
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const container = e.currentTarget.querySelector("[data-overlayscrollbars-contents]") as HTMLElement;
     if (container) {
@@ -17,12 +18,11 @@ export const PageContainerTabs: React.FC<PageContainerTabsProps> = ({ value, onV
       container.scrollLeft += e.deltaY;
     }
   };
+  */
 
   return (
     <Tabs value={value} onValueChange={onValueChange} className={cn("flex h-full flex-col", className)}>
-      <Scrollbar className="h-full overflow-auto" onWheel={handleWheel}>
-        <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
-      </Scrollbar>
+      <div className="flex h-full min-h-fit min-w-fit flex-col">{children}</div>
     </Tabs>
   );
 };
@@ -79,7 +79,7 @@ interface PageContainerTabContentProps {
 export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({ value, children, className }) => {
   return (
     <TabsContent value={value} className={cn("flex-1", className)}>
-      <div className="min-w-fit p-3">{children}</div>
+      <div className="h-full min-w-fit p-3">{children}</div>
     </TabsContent>
   );
 };
