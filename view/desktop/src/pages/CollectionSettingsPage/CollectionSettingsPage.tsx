@@ -15,8 +15,8 @@ import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
 
 // Badge component for tab numbers
 const Badge = ({ count }: { count: number }) => (
-  <span className="background-(--moss-tab-badge-color) flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-0.5 py-0 text-xs leading-none text-white">
-    {count}
+  <span className="background-(--moss-tab-badge-color) inline-flex h-3.5 w-3.5 min-w-[14px] items-center justify-center rounded-full text-xs leading-none font-medium text-white">
+    <span className="relative top-[0.5px]">{count}</span>
   </span>
 );
 

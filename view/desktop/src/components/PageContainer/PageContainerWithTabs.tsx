@@ -20,19 +20,14 @@ export const PageContainerWithTabs: React.FC<PageContainerWithTabsProps> = ({
     <PageContainer className={className}>
       <PageContainerTabs value={activeTabId} onValueChange={onTabChange}>
         <PageContainerHeader className="h-9 border-b border-(--moss-border-color)">
-          <div className="flex h-full items-center">
-            {/* Tabs section - using TabsList for proper Radix UI structure */}
-            <div className="flex items-center">
-              <PageContainerTabsList>
-                {tabs.map((tab) => (
-                  <PageContainerTab key={tab.id} value={tab.id}>
-                    {tab.icon && <div className="flex-shrink-0">{tab.icon}</div>}
-                    <span>{tab.label}</span>
-                  </PageContainerTab>
-                ))}
-              </PageContainerTabsList>
-            </div>
-          </div>
+          <PageContainerTabsList>
+            {tabs.map((tab) => (
+              <PageContainerTab key={tab.id} value={tab.id}>
+                {tab.icon && <div className="flex-shrink-0">{tab.icon}</div>}
+                <span>{tab.label}</span>
+              </PageContainerTab>
+            ))}
+          </PageContainerTabsList>
         </PageContainerHeader>
 
         {/* Tab content */}

@@ -23,7 +23,7 @@ export const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
   onDeleteClick,
 }) => {
   return (
-    <div className="relative flex h-full justify-center">
+    <div className="relative flex h-full min-w-[800px] justify-center">
       {/* Main Content - Centered on full page width */}
       <div className="w-full max-w-2xl space-y-9 px-6 py-5">
         <CollectionNameSection

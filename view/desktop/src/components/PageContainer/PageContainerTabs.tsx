@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/lib/ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent, Scrollbar } from "@/lib/ui";
 
 interface PageContainerTabsProps {
   value: string;
@@ -23,7 +23,33 @@ interface PageContainerTabsListProps {
 }
 
 export const PageContainerTabsList: React.FC<PageContainerTabsListProps> = ({ children, className }) => {
-  return <TabsList className={cn("flex h-auto items-center bg-transparent p-0", className)}>{children}</TabsList>;
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const container = e.currentTarget.querySelector("[data-overlayscrollbars-contents]") as HTMLElement;
+    if (container) {
+      e.preventDefault();
+      container.scrollLeft += e.deltaY;
+    }
+  };
+
+  return (
+    <div className={cn("flex h-full w-full", className)} onWheel={handleWheel}>
+      <Scrollbar
+        className="flex-1 overflow-x-auto overflow-y-hidden"
+        options={{
+          scrollbars: {
+            autoHide: "move",
+            autoHideDelay: 1000,
+          },
+          overflow: {
+            x: "scroll",
+            y: "hidden",
+          },
+        }}
+      >
+        <TabsList className="flex h-full w-max items-center bg-transparent p-0">{children}</TabsList>
+      </Scrollbar>
+    </div>
+  );
 };
 
 interface PageContainerTabProps {
@@ -38,15 +64,14 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
       value={value}
       className={cn(
         "flex items-center px-2.5 py-2 text-base font-medium transition-colors",
-        "relative border-b border-transparent",
+        "relative border-b-2 border-transparent",
         "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
         "data-[state=active]:text-(--moss-primary-text)",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-(--moss-primary) focus-visible:ring-offset-2",
         "bg-transparent data-[state=active]:bg-transparent",
-        "min-w-0",
-        // Active state - creates a 1px border that sits on the header bottom border
-        "data-[state=active]:after:absolute data-[state=active]:after:right-0 data-[state=active]:after:bottom-[-1px] data-[state=active]:after:left-0",
-        "data-[state=active]:after:background-(--moss-tab-active-border-color) data-[state=active]:after:h-px data-[state=active]:after:content-['']",
+        "min-w-0 flex-shrink-0 whitespace-nowrap",
+        // Active state - use direct border instead of pseudo-element
+        "data-[state=active]:border-b-[var(--moss-tab-active-border-color)]",
         className
       )}
     >
@@ -63,8 +88,10 @@ interface PageContainerTabContentProps {
 
 export const PageContainerTabContent: React.FC<PageContainerTabContentProps> = ({ value, children, className }) => {
   return (
-    <TabsContent value={value} className={cn("flex-1 overflow-auto", className)}>
-      <div className="p-3">{children}</div>
+    <TabsContent value={value} className={cn("flex-1", className)}>
+      <Scrollbar className="h-full overflow-auto">
+        <div className="min-w-fit p-3">{children}</div>
+      </Scrollbar>
     </TabsContent>
   );
 };
