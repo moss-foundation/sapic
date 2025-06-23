@@ -42,6 +42,7 @@ export interface CollectionsStoreState {
   streamedCollectionEntries: EntryInfo[];
   startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
   distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
+  updateEntry: (updatedEntry: EntryInfo, collectionId: string) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -77,6 +78,51 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           id: result.data.id,
           ...collection,
           order: collection.order ?? null,
+        },
+      ],
+      collectionsTrees: [
+        ...state.collectionsTrees,
+        {
+          id: result.data.id,
+          name: collection.name,
+          order: collection.order ?? null,
+          expanded: true,
+          endpoints: {
+            id: "",
+            name: "endpoints",
+            path: "endpoints",
+            class: "Endpoint",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          schemas: {
+            id: "",
+            name: "schemas",
+            path: "schemas",
+            class: "Schema",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          components: {
+            id: "",
+            name: "components",
+            path: "components",
+            class: "Component",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          requests: {
+            id: "",
+            name: "requests",
+            path: "requests",
+            class: "Request",
+            kind: "Dir",
+            expanded: false,
+            childNodes: [],
+          },
         },
       ],
     }));
@@ -461,4 +507,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       currentNode.childNodes.push(newNode);
     }
   },
+
+  updateEntry(updatedEntry, collectionId) {},
 }));

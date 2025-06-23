@@ -141,8 +141,8 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
           handleCollapseAll={handleCollapseAll}
           handleExpandAll={handleExpandAll}
         />
-        {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
       </div>
+      {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
 
       {shouldRenderChildNodes && (
         <TreeRootNodeChildren

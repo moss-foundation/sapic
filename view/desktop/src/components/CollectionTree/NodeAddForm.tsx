@@ -45,6 +45,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
 
 export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
 
@@ -63,13 +64,21 @@ export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: 
   };
 
   const handleBlur = () => {
-    if (!value) return;
+    if (!isInitialized.current) return;
+
+    if (!value) {
+      onCancel();
+      return;
+    }
+
     const newEntry = createEntry(parentNode, value, isAddingFolder);
 
     onSubmit(newEntry);
   };
 
   useEffect(() => {
+    if (!inputRef.current) return;
+
     // Timer is set because of MacOS focus bug
     const timer = setTimeout(() => {
       if (inputRef.current) {
@@ -77,6 +86,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, isAddingFolder, parentNode }: 
         inputRef.current.value = value;
         const dotIndex = inputRef.current.value.indexOf(".");
         inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : value.length);
+        isInitialized.current = true;
       }
     }, 100);
     return () => clearTimeout(timer);
