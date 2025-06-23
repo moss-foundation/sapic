@@ -46,7 +46,7 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
         "min-w-0",
         // Active state - creates a 1px border that sits on the header bottom border
         "data-[state=active]:after:absolute data-[state=active]:after:right-0 data-[state=active]:after:bottom-[-1px] data-[state=active]:after:left-0",
-        "data-[state=active]:after:h-px data-[state=active]:after:bg-(--moss-tab-active-border-color) data-[state=active]:after:content-['']",
+        "data-[state=active]:after:background-(--moss-tab-active-border-color) data-[state=active]:after:h-px data-[state=active]:after:content-['']",
         className
       )}
     >

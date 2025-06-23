@@ -21,7 +21,7 @@ export const PostRequestTabContent = () => {
           </div>
 
           <div className="flex gap-2">
-            <button className="rounded bg-(--moss-info-background) px-4 py-2 text-(--moss-primary) hover:opacity-80">
+            <button className="background-(--moss-info-background) rounded px-4 py-2 text-(--moss-primary) hover:opacity-80">
               Save Script
             </button>
             <button className="hover:background-(--moss-secondary-background) rounded border border-(--moss-border-color) px-4 py-2 text-(--moss-primary-text)">
