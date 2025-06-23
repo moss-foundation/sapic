@@ -72,6 +72,8 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
         "min-w-0 flex-shrink-0 whitespace-nowrap",
         // Active state - use direct border instead of pseudo-element
         "data-[state=active]:border-b-[var(--moss-tab-active-border-color)]",
+        // Cursor styling
+        "cursor-pointer",
         className
       )}
     >
