@@ -22,9 +22,8 @@ pub async fn create_collection_entry<R: TauriRuntime>(
     input: CreateEntryInput,
 ) -> TauriResult<CreateEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let workbench = app.workbench();
-        let (mut workspace, ctx) = workbench
-            .active_workspace_mut()
+        let (mut workspace, ctx) = app
+            .workspace_mut()
             .await
             .map_err_as_failed_precondition("No active workspace")?;
 
@@ -51,9 +50,8 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
     input: DeleteEntryInput,
 ) -> TauriResult<DeleteEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let workbench = app.workbench();
-        let (mut workspace, ctx) = workbench
-            .active_workspace_mut()
+        let (mut workspace, ctx) = app
+            .workspace_mut()
             .await
             .map_err_as_failed_precondition("No active workspace")?;
 
@@ -80,9 +78,8 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
     channel: TauriChannel<StreamEntriesEvent>,
 ) -> TauriResult<StreamEntriesOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let workbench = app.workbench();
-        let (workspace, ctx) = workbench
-            .active_workspace()
+        let (workspace, ctx) = app
+            .workspace()
             .await
             .map_err_as_failed_precondition("No active workspace")?;
 

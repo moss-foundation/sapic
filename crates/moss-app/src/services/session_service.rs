@@ -1,11 +1,11 @@
-use moss_applib::Service;
+use moss_applib::ServiceMarker;
 use uuid::Uuid;
 
 pub struct SessionService {
     session_id: Uuid,
 }
 
-impl Service for SessionService {}
+impl ServiceMarker for SessionService {}
 
 impl SessionService {
     pub fn new() -> Self {

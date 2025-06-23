@@ -1,6 +1,6 @@
 import { type Icons } from "@/lib/ui/Icon";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
-import { ListWorkspacesOutput } from "@repo/moss-workbench";
+import { ListWorkspacesOutput } from "@repo/moss-app";
 
 const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
   const idPrefix = prefix ? `${prefix}-` : "";

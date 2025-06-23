@@ -3,7 +3,7 @@ mod taurilog_writer;
 
 use anyhow::Result;
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
-use moss_applib::Service;
+use moss_applib::ServiceMarker;
 use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
@@ -144,7 +144,7 @@ pub struct LogService {
     _taurilog_writerguard: WorkerGuard,
 }
 
-impl Service for LogService {}
+impl ServiceMarker for LogService {}
 
 impl LogService {
     pub fn new<R: TauriRuntime>(
@@ -235,7 +235,12 @@ impl LogService {
                     })),
             );
 
-        tracing::subscriber::set_global_default(subscriber)?;
+        // FIXME: This is a hack to avoid panic when running multiple tests
+        // We should find a better way to handle this
+        if let Err(_) = tracing::subscriber::set_global_default(subscriber) {
+            // Global subscriber already set
+        }
+
         Ok(Self {
             fs,
             applog_path: applog_path.to_path_buf(),
