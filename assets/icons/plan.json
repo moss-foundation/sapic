@@ -11,8 +11,14 @@
   "AddToVcs": {
     "identical": true
   },
+  "Auth": {
+    "identical": true
+  },
   "Bell": {
     "identical": false
+  },
+  "Braces": {
+    "identical": true
   },
   "Calendar": {
     "identical": true
@@ -110,6 +116,9 @@
   "GreenCheckmark": {
     "identical": true
   },
+  "Headers": {
+    "identical": false
+  },
   "History": {
     "identical": true
   },
@@ -191,6 +200,12 @@
   "Placeholder": {
     "identical": true
   },
+  "PostRequest": {
+    "identical": false
+  },
+  "PreRequest": {
+    "identical": false
+  },
   "RadioIndicator": {
     "identical": true
   },
@@ -228,6 +243,9 @@
     "identical": true
   },
   "SortByTypeDesc": {
+    "identical": true
+  },
+  "SquareBrackets": {
     "identical": true
   },
   "Success": {

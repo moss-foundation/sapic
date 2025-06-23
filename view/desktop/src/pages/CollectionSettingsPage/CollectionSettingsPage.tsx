@@ -102,7 +102,7 @@ export const CollectionSettings = () => {
       id: "overview",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="Home" className="h-4 w-4" />
+          <Icon icon="SquareBrackets" className="h-4 w-4" />
           <span>Overview</span>
         </div>
       ),
@@ -122,7 +122,7 @@ export const CollectionSettings = () => {
       id: "auth",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="Key" className="h-4 w-4" />
+          <Icon icon="Auth" className="h-4 w-4" />
           <span>Auth</span>
           <StatusDot active={true} />
         </div>
@@ -133,7 +133,7 @@ export const CollectionSettings = () => {
       id: "headers",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="ConfigMap" className="h-4 w-4" />
+          <Icon icon="Headers" className="h-4 w-4" />
           <span>Headers</span>
           <Badge count={3} />
         </div>
@@ -144,7 +144,7 @@ export const CollectionSettings = () => {
       id: "variables",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="ToolBarVariables" className="h-4 w-4" />
+          <Icon icon="Braces" className="h-4 w-4" />
           <span>Variables</span>
           <Badge count={3} />
         </div>
@@ -155,7 +155,7 @@ export const CollectionSettings = () => {
       id: "pre-request",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="JsonPath" className="h-4 w-4" />
+          <Icon icon="PreRequest" className="h-4 w-4" />
           <span>Pre Request</span>
         </div>
       ),
@@ -165,7 +165,7 @@ export const CollectionSettings = () => {
       id: "post-request",
       label: (
         <div className="flex items-center gap-1.5">
-          <Icon icon="JsonPath" className="h-4 w-4" />
+          <Icon icon="PostRequest" className="h-4 w-4" />
           <span>Post Request</span>
         </div>
       ),
