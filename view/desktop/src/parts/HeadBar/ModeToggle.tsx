@@ -1,30 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { Item as ToggleGroupItem, Root as ToggleGroupRoot } from "@/components/ToggleGroup";
+import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 
 type ToggleValue = "request" | "design";
 
 interface ModeToggleProps {
-  defaultValue?: ToggleValue;
-  onValueChange?: (value: ToggleValue) => void;
   className?: string;
   compact?: boolean;
 }
 
-export const ModeToggle: React.FC<ModeToggleProps> = ({
-  defaultValue = "request",
-  onValueChange,
-  className,
-  compact = false,
-}) => {
-  const [value, setValue] = useState<ToggleValue>(defaultValue);
+export const ModeToggle: React.FC<ModeToggleProps> = ({ className, compact = false }) => {
+  const { displayMode, toggleDisplayMode, setDisplayMode } = useRequestModeStore();
   const [sliderStyle, setSliderStyle] = useState({ width: 0, left: 0 });
   const itemsRef = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const containerRef = useRef<HTMLDivElement>(null);
 
   const updateSliderPosition = () => {
-    const activeItem = itemsRef.current[value];
+    const activeItem = itemsRef.current[displayMode];
     if (activeItem) {
       const { width, left } = activeItem.getBoundingClientRect();
       const parentLeft = activeItem.parentElement?.getBoundingClientRect().left || 0;
@@ -32,13 +26,6 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
         width,
         left: left - parentLeft,
       });
-    }
-  };
-
-  const handleValueChange = (newValue: string) => {
-    if (newValue === "request" || newValue === "design") {
-      setValue(newValue as ToggleValue);
-      onValueChange?.(newValue as ToggleValue);
     }
   };
 
@@ -56,13 +43,12 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [value]);
+  }, [displayMode]);
 
   return (
     <ToggleGroupRoot
       type="single"
-      value={value}
-      onValueChange={handleValueChange}
+      value={displayMode}
       className={cn("relative rounded-sm border border-[var(--moss-border-color)]", className)}
     >
       <div className="relative flex" ref={containerRef}>
@@ -74,18 +60,20 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
           }}
         />
         <ToggleGroupItem
-          value="request"
+          value="RequestFirst"
           className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
-          ref={(el) => (itemsRef.current["request"] = el)}
+          ref={(el) => (itemsRef.current["RequestFirst"] = el)}
+          onClick={() => setDisplayMode("RequestFirst")}
         >
           Request-first mode
         </ToggleGroupItem>
         <ToggleGroupItem
-          value="design"
+          value="DesignFirst"
           className="relative z-10 whitespace-nowrap transition-colors duration-300"
           compact={compact}
-          ref={(el) => (itemsRef.current["design"] = el)}
+          ref={(el) => (itemsRef.current["DesignFirst"] = el)}
+          onClick={() => setDisplayMode("DesignFirst")}
         >
           Design-first mode
         </ToggleGroupItem>

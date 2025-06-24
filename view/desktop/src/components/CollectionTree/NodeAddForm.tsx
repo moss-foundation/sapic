@@ -1,127 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 
-import { NodeProps } from "./types";
+import { validateName } from "./utils/FormUtils";
 
 interface NodeRenamingFormProps {
-  onSubmit: (newNode: NodeProps) => void;
+  onSubmit: (name: string) => void;
   onCancel: () => void;
-  restrictedNames: (string | number)[];
-  isFolder: boolean;
+  restrictedNames?: (string | number)[];
 }
 
-const createSubtree = (path: string, isFolder: boolean): NodeProps => {
-  const lastNodeIsFolder = path.endsWith("/") || isFolder;
-
-  if (path.endsWith("/")) {
-    path = path.slice(0, -1);
-  }
-
-  const parts = path.split("/").filter((part) => part !== "");
-
-  if (parts.length === 0) throw new Error("Invalid path");
-
-  return buildNode(parts, lastNodeIsFolder);
-};
-
-const buildNode = (parts: string[], isLastFolder: boolean): NodeProps => {
-  const name = parts[0];
-  const isFolder = parts.length > 1 || isLastFolder;
-  const childNodes = parts.length > 1 ? [buildNode(parts.slice(1), isLastFolder)] : [];
-
-  return {
-    id: name,
-    type: isFolder ? "folder" : "file",
-    order: 0,
-    isFolder,
-    isExpanded: isFolder,
-    childNodes: childNodes,
-  };
-};
-
-const validateName = (
-  name: string,
-  restrictedNames: (string | number)[]
-): {
-  isValid: boolean;
-  message: string;
-} => {
-  const newNodeNames = name.split("/");
-  const newNodeRootName = newNodeNames[0];
-
-  if (newNodeRootName === "" && newNodeNames.length === 1) {
-    return {
-      isValid: false,
-      message: "The name cannot be empty",
-    };
-  }
-
-  if (newNodeRootName === "" && newNodeNames.length > 1) {
-    return {
-      isValid: false,
-      message: "The root name of the new subtree cannot be empty",
-    };
-  }
-
-  if (restrictedNames.includes(newNodeRootName)) {
-    return {
-      isValid: false,
-      message: `The name "${newNodeRootName}" is already exists in this location`,
-    };
-  }
-
-  return {
-    isValid: true,
-    message: "",
-  };
-};
-
-export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
 
-  const { message, isValid } = validateName(value, restrictedNames);
-
-  const [didUserChangeInput, setDidUserChangeInput] = useState(false);
+  const { isValid, message } = validateName(value, restrictedNames ?? []);
 
   useEffect(() => {
-    if (inputRef.current && didUserChangeInput) {
-      inputRef.current.setCustomValidity(message);
-      inputRef.current.reportValidity();
-    }
-  }, [didUserChangeInput, message]);
+    if (!inputRef.current || !isInitialized.current) return;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-    setDidUserChangeInput(true);
-  };
+    inputRef.current.setCustomValidity(message);
+    inputRef.current.reportValidity();
+  }, [message]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
     if ("preventDefault" in e) e.preventDefault();
 
     if (!isValid) return;
 
-    const node = createSubtree(value, isFolder);
-
-    onSubmit(node);
+    onSubmit(value);
   };
 
   const handleBlur = () => {
+    if (!isInitialized.current) return;
+
     if (!isValid) {
       onCancel();
       return;
     }
 
-    const node = createSubtree(value, isFolder);
-
-    onSubmit(node);
+    onSubmit(value);
   };
 
   useEffect(() => {
+    if (!inputRef.current) return;
+
     // Timer is set because of MacOS focus bug
     const timer = setTimeout(() => {
       if (inputRef.current) {
@@ -129,6 +56,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
         inputRef.current.value = value;
         const dotIndex = inputRef.current.value.indexOf(".");
         inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : value.length);
+        isInitialized.current = true;
       }
     }, 100);
     return () => clearTimeout(timer);
@@ -140,7 +68,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, isFolder }: N
       <input
         ref={inputRef}
         value={value}
-        onChange={handleChange}
+        onChange={(e) => setValue(e.target.value)}
         autoFocus
         minLength={1}
         maxLength={100}

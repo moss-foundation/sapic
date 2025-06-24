@@ -1,41 +1,38 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
-import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
-import { NodeProps } from "../CollectionTree/types";
 import { findNodeById } from "../CollectionTree/utils";
 import { BreadcrumbTree } from "./BreadcrumbTree";
 
 export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
-  const { collections } = useCollectionsStore();
-  const [activeTree, setActiveTree] = useState<NodeProps | null>(null);
+  const [activeTree, setActiveTree] = useState<null>(null);
   const { addOrFocusPanel } = useTabbedPaneStore();
   const [path, setPath] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!panelId) {
-      setActiveTree(null);
-      setPath([]);
-      return;
-    }
+  // useEffect(() => {
+  //   if (!panelId) {
+  //     setActiveTree(null);
+  //     setPath([]);
+  //     return;
+  //   }
 
-    const target = String(panelId);
-    for (const collection of collections) {
-      const newPath = findPath(collection.tree, target);
-      if (newPath) {
-        setActiveTree(collection.tree);
-        setPath(newPath);
-        return;
-      }
-    }
+  //   const target = String(panelId);
+  //   for (const collection of collections) {
+  //     const newPath = findPath(collection.tree, target);
+  //     if (newPath) {
+  //       setActiveTree(collection.tree);
+  //       setPath(newPath);
+  //       return;
+  //     }
+  //   }
 
-    setActiveTree(null);
-    setPath([]);
-  }, [collections, panelId]);
+  //   setActiveTree(null);
+  //   setPath([]);
+  // }, [collections, panelId]);
 
   if (!activeTree) return null;
 
@@ -49,7 +46,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
           if (lastItem) {
             return (
               <div key={pathNode} className="contents">
-                <TestCollectionIcon type={node.type} className="size-4" />
+                <TestCollectionIcon type={node.kind} className="size-4" />
                 <span className="min-w-max">{pathNode}</span>
               </div>
             );
@@ -90,18 +87,18 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
   );
 };
 
-const findPath = (node: NodeProps, target: string): string[] | null => {
-  if (node.id === target) return [node.id];
+// const findPath = (node: NodeProps, target: string): string[] | null => {
+//   if (node.id === target) return [node.id];
 
-  if (node.childNodes && node.childNodes.length > 0) {
-    for (const child of node.childNodes) {
-      const path = findPath(child, target);
-      if (path) return [node.id.toString(), ...path];
-    }
-  }
+//   if (node.childNodes && node.childNodes.length > 0) {
+//     for (const child of node.childNodes) {
+//       const path = findPath(child, target);
+//       if (path) return [node.id.toString(), ...path];
+//     }
+//   }
 
-  return null;
-};
+//   return null;
+// };
 
 export default Breadcrumbs;
 

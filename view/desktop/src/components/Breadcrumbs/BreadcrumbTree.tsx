@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from "react";
 
 import { NodeProps, TreeNodeProps } from "../CollectionTree/types";

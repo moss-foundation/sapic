@@ -5,11 +5,11 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 import { canDropNode, getActualDropSourceTarget, getActualDropTargetWithInstruction } from "../utils";
 
 export const useInstructionNode = (
-  node: TreeNodeProps,
+  node: TreeCollectionNode,
   treeId: string | number,
   dropTargetListRef: RefObject<HTMLButtonElement>,
   isLastChild: boolean,
@@ -58,11 +58,11 @@ export const useInstructionNode = (
           let isReorderAfterAvailable = true;
           let isCombineAvailable = true;
 
-          if (node.isFolder) {
-            if (!isLastChild && !node.isExpanded) {
+          if (node.kind === "Dir") {
+            if (!isLastChild && !node.expanded) {
               isReorderAfterAvailable = false;
             }
-            if (node.isExpanded) {
+            if (node.expanded) {
               isReorderAfterAvailable = false;
             }
           } else {
@@ -109,7 +109,7 @@ export const useInstructionNode = (
           const sourceTarget = getActualDropSourceTarget(source);
           const { dropTarget, instruction } = getActualDropTargetWithInstruction(location, self);
 
-          if (dropTarget?.node.uniqueId !== node.uniqueId) {
+          if (dropTarget?.node.id !== node.id) {
             return;
           }
 

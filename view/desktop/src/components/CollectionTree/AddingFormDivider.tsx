@@ -9,7 +9,12 @@ interface AddingFormDividerProps {
   onClick: () => void;
 }
 
-export const AddingFormDivider = ({ paddingLeft, paddingRight, position = "top", onClick }: AddingFormDividerProps) => {
+export const AddingDividerTrigger = ({
+  paddingLeft,
+  paddingRight,
+  position = "top",
+  onClick,
+}: AddingFormDividerProps) => {
   const [visible, setVisible] = useState(false);
   const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

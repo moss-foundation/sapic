@@ -1,20 +1,56 @@
 import { useContext, useState } from "react";
 
-import { TreeContext } from "../Tree";
-import { NodeProps, TreeNodeProps } from "../types";
-import { prepareCollectionForTree } from "../utils";
+import { useCollectionsStore } from "@/store/collections";
+import { CreateEntryInput } from "@repo/moss-collection";
 
-export const useNodeAddForm = (node: TreeNodeProps, onNodeUpdateCallback: (node: TreeNodeProps) => void) => {
-  const { sortBy } = useContext(TreeContext);
+import { TreeContext } from "../Tree";
+import { TreeCollectionNode } from "../types";
+
+const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
+  if (isAddingFolder) {
+    return {
+      dir: {
+        name,
+        path: parentNode.path,
+        configuration: {
+          request: {
+            http: {},
+          },
+        },
+      },
+    };
+  }
+
+  return {
+    item: {
+      name,
+      path: parentNode.path,
+      configuration: {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      },
+    },
+  };
+};
+
+export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
+  const { treeId } = useContext(TreeContext);
+  const { createCollectionEntry } = useCollectionsStore();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
-  const handleAddFormSubmit = (newNode: NodeProps) => {
-    onNodeUpdateCallback({
-      ...node,
-      isExpanded: true,
-      childNodes: [...node.childNodes, prepareCollectionForTree(newNode, sortBy, false)],
+  const handleAddFormSubmit = async (name: string) => {
+    const newEntry = createEntry(parentNode, name, isAddingFolderNode);
+
+    await createCollectionEntry({
+      collectionId: treeId,
+      input: newEntry,
     });
 
     setIsAddingFileNode(false);

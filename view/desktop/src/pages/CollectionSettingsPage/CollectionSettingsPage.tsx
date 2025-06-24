@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { CollectionTree } from "@/components/CollectionTree/types";
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { useActiveCollection, useDeleteCollection, useUpdateCollection } from "@/hooks/collection";
 import { Icon } from "@/lib/ui";
-import { useUpdateCollection, useDeleteCollection, useActiveCollection } from "@/hooks/collection";
-import { Collection } from "@/components/CollectionTree/types";
 
-import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { AuthTabContent } from "./tabs/AuthTabContent";
 import { HeadersTabContent } from "./tabs/HeadersTabContent";
-import { VariablesTabContent } from "./tabs/VariablesTabContent";
-import { PreRequestTabContent } from "./tabs/PreRequestTabContent";
+import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
+import { PreRequestTabContent } from "./tabs/PreRequestTabContent";
+import { VariablesTabContent } from "./tabs/VariablesTabContent";
 
 // Badge component for tab numbers
 const Badge = ({ count }: { count: number }) => (
@@ -79,7 +79,7 @@ export const CollectionSettings = () => {
   };
 
   // Helper function to get collection display name
-  const getCollectionDisplayName = (collection: Collection) => {
+  const getCollectionDisplayName = (collection: CollectionTree) => {
     return typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`;
   };
 
