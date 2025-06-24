@@ -1,18 +1,8 @@
 import "./assets/styles.css";
 
-import React, { useState } from "react";
+import React from "react";
 
-import {
-  ActionButton,
-  Breadcrumbs,
-  CollectionTree,
-  PageContent,
-  PageHeader,
-  PageTabs,
-  PageToolbar,
-  PageView,
-} from "@/components";
-import ButtonPrimary from "@/components/ButtonPrimary";
+import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
 import { DropNodeElement } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
@@ -21,8 +11,6 @@ import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspac
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
-import { useCollectionsStore } from "@/store/collections";
-import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -264,16 +252,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             <Breadcrumbs panelId={props.api.id} />
 
-            <TestStreamedCollections />
-
-            {/* <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
+            <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
 
               <span>{Math.random().toFixed(2)}</span>
               {props?.params.someRandomString && (
                 <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
               )}
-            </span> */}
+            </span>
             {isDebug && (
               <Metadata
                 onClick={() => {
@@ -376,129 +362,3 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 };
 
 export default TabbedPane;
-
-const TestStreamedCollections = () => {
-  const {
-    streamedCollections,
-    collectionsTrees,
-    updateCollectionTree,
-    areCollectionsStreaming,
-    areCollectionEntriesStreaming,
-    createCollectionEntry,
-  } = useCollectionsStore();
-  const [path, setPath] = useState<string>("");
-  const [name, setName] = useState<string>("");
-
-  const handleClick = (id: string) => {
-    if (!name || !path) return;
-
-    createCollectionEntry({
-      collectionId: id,
-      input: {
-        item: {
-          name,
-          path,
-          configuration: {
-            request: {
-              http: {
-                requestParts: {
-                  method: "GET",
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  };
-
-  const handleClickToDir = (id: string) => {
-    if (!name || !path) return;
-
-    createCollectionEntry({
-      collectionId: id,
-      input: {
-        dir: {
-          name,
-          path,
-          configuration: {
-            request: {
-              http: {},
-            },
-          },
-        },
-      },
-    });
-  };
-  const shouldShowCollectionTree = !areCollectionsStreaming && !areCollectionEntriesStreaming;
-
-  const { displayMode } = useRequestModeStore();
-
-  return (
-    <div className="flex max-w-100 flex-col gap-2">
-      <div className="flex grow flex-col">
-        {shouldShowCollectionTree &&
-          collectionsTrees.map((collection) => (
-            <CollectionTree
-              key={`${collection.id}`}
-              tree={collection}
-              onTreeUpdate={updateCollectionTree}
-              displayMode={displayMode}
-            />
-          ))}
-      </div>
-
-      <hr />
-
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          className="w-full border-2 border-dashed border-gray-300"
-          type="text"
-          placeholder="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          className="w-full border-2 border-dashed border-gray-300"
-          type="text"
-          placeholder="path"
-          value={path}
-          onChange={(e) => setPath(e.target.value)}
-        />
-      </div>
-
-      <div className={cn("flex gap-2")}>
-        <div>loading: {areCollectionsStreaming.toString()}</div>
-        <div>Entries loading: {areCollectionEntriesStreaming.toString()}</div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        {streamedCollections?.map((collection) => (
-          <React.Fragment key={collection.id}>
-            <ButtonPrimary onClick={() => handleClick(collection.id)}>add to "{collection.name}"</ButtonPrimary>
-            <ButtonPrimary onClick={() => handleClickToDir(collection.id)}>
-              add dir to "{collection.name}"
-            </ButtonPrimary>
-          </React.Fragment>
-        ))}
-      </div>
-
-      {/* <div>
-        {streamedCollectionEntries?.map((entry) => (
-          <ButtonPrimary
-            key={entry.id}
-            onClick={() => {
-              deleteCollectionEntry({
-                collectionId: "7e353d76-8894-4007-a6da-2c96d9951eb7",
-                input: { id: entry.id, path: entry.path },
-              });
-            }}
-          >
-            delete {entry.path}
-          </ButtonPrimary>
-        ))}
-      </div> */}
-      <pre className="text-xs">{JSON.stringify(collectionsTrees, null, 2)}</pre>
-    </div>
-  );
-};
