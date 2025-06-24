@@ -2,8 +2,8 @@ use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
 use std::path::Path;
 
+// FIXME: This either shouldn’t be public or should be moved to `lib.rs`.
 pub mod constants {
-    pub const ICON_NAME: &str = "icon.png";
     pub const ICON_SIZE: u32 = 128;
 }
 

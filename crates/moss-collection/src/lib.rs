@@ -10,6 +10,10 @@ pub mod worktree;
 
 pub use collection::Collection;
 
+pub mod constants {
+    pub const COLLECTION_ICON_FILENAME: &str = "icon.png";
+}
+
 mod defaults {
     pub(crate) const DEFAULT_COLLECTION_NAME: &str = "New Collection";
     pub(crate) const _DEFAULT_ENDPOINT_NAME: &str = "New Endpoint";
