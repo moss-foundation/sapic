@@ -118,9 +118,7 @@ export const CollectionTree = ({
         onNodeDoubleClickCallback: onNodeDoubleClick,
       }}
     >
-      <div>
-        <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootNodeUpdate={handleRootNodeUpdate} node={tree} />
-      </div>
+      <TreeRootNode onNodeUpdate={handleNodeUpdate} onRootNodeUpdate={handleRootNodeUpdate} node={tree} />
     </TreeContext.Provider>
   );
 };
