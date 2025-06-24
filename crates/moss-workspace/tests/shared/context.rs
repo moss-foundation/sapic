@@ -1,24 +1,35 @@
+use std::{any::TypeId, sync::Arc};
+
 use async_trait::async_trait;
-use moss_applib::context::{Context, test::MockContext};
+use moss_applib::context::{Context, ContextValue, ContextValueSet};
 use moss_workspace::context::{AnyWorkspaceContext, Subscribe};
-use tauri::test::MockRuntime;
+use tauri::{AppHandle, Manager, test::MockRuntime};
 
 pub struct MockWorkspaceContext {
-    app: MockContext,
-}
-
-impl From<MockContext> for MockWorkspaceContext {
-    fn from(app: MockContext) -> Self {
-        Self { app }
-    }
+    app_handle: AppHandle<MockRuntime>,
+    values: ContextValueSet,
 }
 
 impl Context<MockRuntime> for MockWorkspaceContext {
     fn global<T>(&self) -> tauri::State<'_, T>
     where
-        T: moss_applib::Global + std::any::Any + Send + Sync,
+        T: moss_applib::GlobalMarker + std::any::Any + Send + Sync,
     {
-        <MockContext as Context<MockRuntime>>::global(&self.app)
+        self.app_handle.state()
+    }
+
+    fn set_value<T: ContextValue>(&self, value: T) {
+        self.values.insert(TypeId::of::<T>(), Arc::new(value));
+    }
+
+    fn remove_value<T: ContextValue>(&self) {
+        self.values.remove(&TypeId::of::<T>());
+    }
+
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>> {
+        self.values
+            .get(&TypeId::of::<T>())
+            .and_then(|v| Arc::downcast(v.clone()).ok())
     }
 
     fn spawn<T, E, Fut, F>(
@@ -34,7 +45,8 @@ impl Context<MockRuntime> for MockWorkspaceContext {
         F: FnOnce(Self) -> Fut + Send + 'static,
     {
         let fut = callback(MockWorkspaceContext {
-            app: self.app.clone(),
+            app_handle: self.app_handle.clone(),
+            values: self.values.clone(),
         });
         moss_applib::task::Task::new(fut, timeout)
     }
@@ -43,4 +55,13 @@ impl Context<MockRuntime> for MockWorkspaceContext {
 #[async_trait]
 impl AnyWorkspaceContext<MockRuntime> for MockWorkspaceContext {
     async fn subscribe(&self, _subscription: Subscribe) {}
+}
+
+impl MockWorkspaceContext {
+    pub fn new(app_handle: AppHandle<MockRuntime>) -> Self {
+        Self {
+            app_handle,
+            values: ContextValueSet::default(),
+        }
+    }
 }

@@ -79,13 +79,15 @@ pub struct CreateParams {
     pub name: Option<String>,
 }
 
+#[derive(Clone)]
+
 pub struct ModifyParams {
     pub name: Option<String>,
 }
 
 impl<R: TauriRuntime> Workspace<R> {
-    pub async fn load<C: Context<R>>(
-        ctx: &C,
+    pub async fn load(
+        fs: Arc<dyn FileSystem>,
         abs_path: &Path,
         activity_indicator: ActivityIndicator<R>,
     ) -> Result<Self> {
@@ -96,7 +98,6 @@ impl<R: TauriRuntime> Workspace<R> {
             Arc::new(storage)
         };
 
-        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let abs_path: Arc<Path> = abs_path.to_owned().into();
         let manifest =
             EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
@@ -116,20 +117,19 @@ impl<R: TauriRuntime> Workspace<R> {
         })
     }
 
-    pub async fn create<C: Context<R>>(
-        ctx: &C,
+    pub async fn create(
+        fs: Arc<dyn FileSystem>,
         abs_path: &Path,
         activity_indicator: ActivityIndicator<R>,
         params: CreateParams,
     ) -> Result<Self> {
         let storage = {
             let storage = WorkspaceStorageImpl::new(&abs_path)
-                .context("Failed to load the workspace state database")?;
+                .context("Failed to create the workspace state database")?;
 
             Arc::new(storage)
         };
 
-        let fs = <dyn FileSystem>::global::<R, C>(ctx);
         let abs_path: Arc<Path> = abs_path.to_owned().into();
 
         for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
@@ -174,9 +174,7 @@ impl<R: TauriRuntime> Workspace<R> {
         Ok(())
     }
 
-    pub async fn summary<C: Context<R>>(ctx: &C, abs_path: &Path) -> Result<WorkspaceSummary> {
-        let fs = <dyn FileSystem>::global::<R, C>(ctx);
-
+    pub async fn summary(fs: Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
         let manifest =
             EditableInPlaceFileHandle::load(fs, abs_path.join(MANIFEST_FILE_NAME)).await?;
         Ok(WorkspaceSummary {

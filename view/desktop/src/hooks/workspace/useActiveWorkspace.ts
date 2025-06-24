@@ -1,5 +1,5 @@
 import { useDescribeAppState, useWorkspaceMapping } from "@/hooks";
-import { WorkspaceInfo } from "@repo/moss-workbench";
+import { WorkspaceInfo } from "@repo/moss-app";
 
 export const useActiveWorkspace = (): WorkspaceInfo | null => {
   const { data: appState } = useDescribeAppState();

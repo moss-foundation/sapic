@@ -2,7 +2,7 @@ pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
-use moss_applib::{Global, context::Context};
+use moss_applib::{GlobalMarker, context::Context};
 pub use real::*;
 pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
@@ -82,7 +82,7 @@ pub trait FileSystem: Send + Sync {
 
 pub struct GlobalFileSystem(Arc<dyn FileSystem>);
 
-impl Global for GlobalFileSystem {}
+impl GlobalMarker for GlobalFileSystem {}
 
 impl dyn FileSystem {
     pub fn global<R: TauriRuntime, C: Context<R>>(ctx: &C) -> Arc<Self> {

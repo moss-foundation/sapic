@@ -16,6 +16,7 @@ export interface HeadBarCenterItemsProps {
   selectedBranch: string | null;
   collectionName: string;
   onRenameCollection: (newName: string) => void;
+  onCollectionClick: () => void;
   collectionButtonRef: React.RefObject<HTMLButtonElement>;
   os: string | null;
 }
@@ -28,6 +29,7 @@ export const HeadBarCenterItems = ({
   selectedBranch,
   collectionName,
   onRenameCollection,
+  onCollectionClick,
   collectionButtonRef,
   os,
 }: HeadBarCenterItemsProps) => {
@@ -51,6 +53,7 @@ export const HeadBarCenterItems = ({
         title={collectionName}
         editable={true}
         onRename={onRenameCollection}
+        onClick={onCollectionClick}
       />
       <ActionButton
         icon="Refresh"

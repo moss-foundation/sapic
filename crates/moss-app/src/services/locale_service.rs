@@ -1,5 +1,5 @@
 use anyhow::{Result, anyhow};
-use moss_applib::Service;
+use moss_applib::ServiceMarker;
 use moss_fs::FileSystem;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -16,7 +16,7 @@ pub struct LocaleService {
     default_locale: OnceCell<LocaleInfo>,
 }
 
-impl Service for LocaleService {}
+impl ServiceMarker for LocaleService {}
 
 impl LocaleService {
     pub fn new(fs: Arc<dyn FileSystem>, locales_dir: PathBuf) -> Self {

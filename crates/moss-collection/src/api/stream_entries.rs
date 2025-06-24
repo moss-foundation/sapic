@@ -5,7 +5,9 @@ use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
 
 use crate::{
-    Collection, dirs,
+    Collection,
+    collection::OnDidChangeEvent,
+    dirs,
     models::{events::StreamEntriesEvent, operations::StreamEntriesOutput, types::EntryInfo},
     worktree::WorktreeEntry,
 };
@@ -88,6 +90,10 @@ impl Collection {
         });
 
         let _ = tokio::try_join!(processing_task, completion_task);
+
+        self.on_did_change
+            .fire(OnDidChangeEvent::Toggled(true))
+            .await;
 
         Ok(StreamEntriesOutput {})
     }
