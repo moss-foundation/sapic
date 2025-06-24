@@ -36,7 +36,7 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { onNodeAddCallback, onNodeRenameCallback, nodeOffset, paddingRight } = useContext(TreeContext);
+  const { nodeOffset, paddingRight } = useContext(TreeContext);
 
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -71,8 +71,10 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   // const [preview, setPreview] = useState<HTMLElement | null>(null);
   // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
 
-  const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode; //shouldRenderTreeNode(node, searchInput, isAddingFileNode, isAddingFolderNode);
+  const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
+  const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
   const nodePaddingLeft = depth * nodeOffset;
+  const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
 
   return (
     <li className="relative">
@@ -90,27 +92,26 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
         <TreeNodeRenameForm
           node={node}
           depth={depth}
-          restrictedNames={parentNode?.childNodes.map((childNode) => childNode.id) ?? []}
-          onNodeRenameCallback={onNodeRenameCallback}
+          restrictedNames={restrictedNames}
           handleRenamingFormSubmit={handleRenamingFormSubmit}
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
         <>
-          {/* <AddingFormDivider
-            paddingLeft={nodePaddingLeft}
-            paddingRight={paddingRight}
-            position="top"
-            onClick={() => setIsAddingDividerNodeAbove(true)}
-          /> */}
+          {/* {shouldRenderAddingFormDivider && (
+            <AddingDividerTrigger
+              paddingLeft={nodePaddingLeft}
+              paddingRight={paddingRight}
+              position="top"
+              onClick={() => setIsAddingDividerNodeAbove(true)}
+            />
+          )} */}
 
           {/* {isAddingDividerNodeAbove && (
             <TreeNodeAddForm
-              node={node}
               depth={depth - 1}
-              isAddingFileNode={true}
               isAddingFolderNode={false}
-              onNodeAddCallback={onNodeAddCallback}
+              restrictedNames={restrictedNames}
               handleAddFormSubmit={handleAddDividerFormSubmitAbove}
               handleAddFormCancel={handleAddDividerFormCancelAbove}
             />
@@ -130,21 +131,20 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
             // preview={preview}
             isLastChild={isLastChild}
           />
-
-          {/* {isAddingDividerNodeBelow && (
+          {/* 
+          {isAddingDividerNodeBelow && (
             <TreeNodeAddForm
               node={node}
               depth={depth - 1}
-              isAddingFileNode={true}
+              restrictedNames={restrictedNames}
               isAddingFolderNode={false}
-              onNodeAddCallback={onNodeAddCallback}
               handleAddFormSubmit={handleAddDividerFormSubmitBelow}
               handleAddFormCancel={handleAddDividerFormCancelBelow}
             />
           )} */}
 
-          {/* {isLastChild && (
-            <AddingFormDivider
+          {/* {shouldRenderAddingFormDivider && isLastChild && (
+            <AddingDividerTrigger
               paddingLeft={nodePaddingLeft}
               paddingRight={paddingRight}
               position="bottom"
@@ -156,11 +156,11 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
       {shouldRenderChildNodes && <TreeNodeChildren node={node} onNodeUpdate={onNodeUpdate} depth={depth} />}
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm
-          node={node}
           depth={depth}
           isAddingFolderNode={isAddingFolderNode}
           handleAddFormSubmit={handleAddFormSubmit}
           handleAddFormCancel={handleAddFormCancel}
+          restrictedNames={restrictedNames}
         />
       )}
     </li>

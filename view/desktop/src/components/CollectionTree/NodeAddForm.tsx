@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 
+import { validateName } from "./utils/FormUtils";
+
 interface NodeRenamingFormProps {
   onSubmit: (name: string) => void;
   onCancel: () => void;
+  restrictedNames?: (string | number)[];
 }
 
-export const NodeAddForm = ({ onSubmit, onCancel }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames }: NodeRenamingFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
+
+  const { isValid, message } = validateName(value, restrictedNames ?? []);
+
+  useEffect(() => {
+    if (!inputRef.current || !isInitialized.current) return;
+
+    inputRef.current.setCustomValidity(message);
+    inputRef.current.reportValidity();
+  }, [message]);
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
@@ -18,7 +30,7 @@ export const NodeAddForm = ({ onSubmit, onCancel }: NodeRenamingFormProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement> | React.FocusEvent<HTMLInputElement>) => {
     if ("preventDefault" in e) e.preventDefault();
 
-    if (!value) return;
+    if (!isValid) return;
 
     onSubmit(value);
   };
@@ -26,7 +38,7 @@ export const NodeAddForm = ({ onSubmit, onCancel }: NodeRenamingFormProps) => {
   const handleBlur = () => {
     if (!isInitialized.current) return;
 
-    if (!value) {
+    if (!isValid) {
       onCancel();
       return;
     }

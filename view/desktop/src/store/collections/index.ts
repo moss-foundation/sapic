@@ -77,7 +77,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         {
           id: result.data.id,
           ...collection,
-          order: collection.order ?? null,
+          order: collection.order ?? state.streamedCollections.length + 1,
         },
       ],
       collectionsTrees: [
@@ -85,7 +85,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         {
           id: result.data.id,
           name: collection.name,
-          order: collection.order ?? null,
+          order: collection.order ?? state.streamedCollections.length + 1,
           expanded: true,
           endpoints: {
             id: "",
@@ -190,7 +190,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           {
             id: result.data.id,
             name: input.dir.name,
-            order: input.dir.order ?? undefined,
+            order: input.dir.order ?? state.streamedCollectionEntries.length + 1,
             path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
             class: entryClass,
             kind: "Dir" as const,
@@ -486,7 +486,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
     // Handle the final component
     const lastComponent = relativePath[relativePath.length - 1];
-    let existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
+    const existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
 
     if (existingNode) {
       // Update existing node, preserving childNodes
@@ -500,7 +500,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         class: entry.class,
         kind: entry.kind,
         protocol: entry.protocol,
-        order: entry.order,
+        order: entry.order ? entry.order : currentNode.childNodes.length + 1,
         expanded: entry.expanded,
         childNodes: [],
       };

@@ -7,6 +7,7 @@ import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
+import { calculateRestrictedNames } from "./utils";
 
 interface TreeRootNodeChildrenProps {
   node: TreeCollectionRootNode;
@@ -33,6 +34,7 @@ export const TreeRootNodeChildren = ({
       : [node.endpoints, node.schemas, node.components, node.requests];
 
   const shouldRenderAddRootForm = displayMode === "RequestFirst" && (isAddingRootFileNode || isAddingRootFolderNode);
+  const restrictedNames = calculateRestrictedNames(node, isAddingRootFolderNode);
 
   return (
     <ul className={cn("h-full w-full", { "pb-2": nodesToRender.length > 0 })}>
@@ -51,7 +53,11 @@ export const TreeRootNodeChildren = ({
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
           <TestCollectionIcon type={"Dir"} className="opacity-0" />
           <TestCollectionIcon type={"Dir"} className={cn({ "opacity-0": isAddingRootFileNode })} />
-          <NodeAddForm onSubmit={handleAddFormRootSubmit} onCancel={handleAddFormRootCancel} />
+          <NodeAddForm
+            onSubmit={handleAddFormRootSubmit}
+            onCancel={handleAddFormRootCancel}
+            restrictedNames={restrictedNames}
+          />
         </div>
       )}
     </ul>

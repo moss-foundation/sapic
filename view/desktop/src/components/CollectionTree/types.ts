@@ -1,8 +1,6 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { EntryInfo } from "@repo/moss-collection";
 
-import { NodeProps, TreeNodeProps } from "./types";
-
 export type SortTypes = "none" | "order" | "alphabetically";
 
 //TODO remove this after collections from backend are implemented
@@ -11,7 +9,7 @@ export interface CollectionTree {
   name: string;
   type: "collection";
   order: number | null;
-  tree: NodeProps[];
+  tree: TreeCollectionRootNode;
 }
 
 export interface TreeCollectionRootNode {

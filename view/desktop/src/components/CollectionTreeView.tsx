@@ -10,7 +10,6 @@ import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { useHandleCollectionsDragAndDrop } from "./CollectionTree/hooks/useHandleCollectionsDragAndDrop";
-import { CreateNewCollectionFromTreeNodeEvent } from "./CollectionTree/types";
 import { getActualDropSourceTarget } from "./CollectionTree/utils";
 
 export const CollectionTreeView = () => {
@@ -18,59 +17,53 @@ export const CollectionTreeView = () => {
 
   const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
   const { displayMode } = useRequestModeStore();
-  const {
-    collections,
-    setCollections,
-    updateCollectionTree,
-    collectionsTrees,
-    areCollectionsStreaming,
-    areCollectionEntriesStreaming,
-  } = useCollectionsStore();
+  const { collectionsTrees, updateCollectionTree, areCollectionsStreaming, areCollectionEntriesStreaming } =
+    useCollectionsStore();
 
   useHandleCollectionsDragAndDrop();
 
-  useEffect(() => {
-    const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
-      const { source } = event.detail;
-      const newTreeId = `collectionId${collections.length + 1}`;
+  // useEffect(() => {
+  //   const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
+  //     const { source } = event.detail;
+  //     const newTreeId = `collectionId${collections.length + 1}`;
 
-      setCollections([
-        ...collections,
-        {
-          id: newTreeId,
-          type: "collection",
-          order: collections.length + 1,
-          name: "New Collection",
-          tree: {
-            "id": "New Collection",
-            "order": collections.length + 1,
-            "type": "folder",
-            "isFolder": true,
-            "isExpanded": true,
-            "childNodes": [source.node],
-          },
-        },
-      ]);
-      setTimeout(() => {
-        window.dispatchEvent(
-          new CustomEvent("newCollectionWasCreated", {
-            detail: {
-              treeId: newTreeId,
-            },
-          })
-        );
-      }, 50);
-    };
+  //     setCollections([
+  //       ...collections,
+  //       {
+  //         id: newTreeId,
+  //         type: "collection",
+  //         order: collections.length + 1,
+  //         name: "New Collection",
+  //         tree: {
+  //           "id": "New Collection",
+  //           "order": collections.length + 1,
+  //           "type": "folder",
+  //           "isFolder": true,
+  //           "isExpanded": true,
+  //           "childNodes": [source.node],
+  //         },
+  //       },
+  //     ]);
+  //     setTimeout(() => {
+  //       window.dispatchEvent(
+  //         new CustomEvent("newCollectionWasCreated", {
+  //           detail: {
+  //             treeId: newTreeId,
+  //           },
+  //         })
+  //       );
+  //     }, 50);
+  //   };
 
-    window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
+  //   window.addEventListener("createNewCollectionFromTreeNode", handleCreateNewCollectionFromTreeNode as EventListener);
 
-    return () => {
-      window.removeEventListener(
-        "createNewCollectionFromTreeNode",
-        handleCreateNewCollectionFromTreeNode as EventListener
-      );
-    };
-  }, [collections, setCollections]);
+  //   return () => {
+  //     window.removeEventListener(
+  //       "createNewCollectionFromTreeNode",
+  //       handleCreateNewCollectionFromTreeNode as EventListener
+  //     );
+  //   };
+  // }, [collections, setCollections]);
 
   const shouldShowCollectionTree = !areCollectionsStreaming && !areCollectionEntriesStreaming;
 

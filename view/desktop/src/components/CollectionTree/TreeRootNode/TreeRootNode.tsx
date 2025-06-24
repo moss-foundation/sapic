@@ -1,6 +1,7 @@
 import { useContext, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
+import { useCollectionsStore } from "@/store/collections";
 import { cn } from "@/utils";
 
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
@@ -14,48 +15,29 @@ import { TreeRootNodeActions } from "./TreeRootNodeActions";
 import { TreeRootNodeButton } from "./TreeRootNodeButton";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenameForm } from "./TreeRootNodeRenameForm";
-
-const shouldRenderRootChildNodes = (
-  node: TreeCollectionRootNode,
-  isDragging: boolean,
-  isAddingRootNodeFile: boolean,
-  isRenamingRootNode: boolean
-) => {
-  if (!node.expanded) {
-    return false;
-  }
-
-  if (isDragging) {
-    return false;
-  }
-
-  if (isAddingRootNodeFile || isRenamingRootNode) {
-    return true;
-  }
-
-  return true;
-};
+import { calculateShouldRenderRootChildNodes } from "./utils";
 
 export interface TreeRootNodeProps {
   onNodeUpdate: (node: TreeCollectionNode) => void;
-  onRootUpdate: (node: TreeCollectionRootNode) => void;
+  onRootNodeUpdate: (node: TreeCollectionRootNode) => void;
   node: TreeCollectionRootNode;
 }
 
-export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeProps) => {
+export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
   const { treeId, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
+  const { streamedCollections } = useCollectionsStore();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
   const handleExpandAll = () => {
     const newNode = expandAllNodes(node);
-    onRootUpdate(newNode);
+    onRootNodeUpdate(newNode);
   };
 
   const handleCollapseAll = () => {
     const newNode = collapseAllNodes(node);
-    onRootUpdate(newNode);
+    onRootNodeUpdate(newNode);
   };
 
   const {
@@ -72,7 +54,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
     setIsRenamingRootNode,
     handleRenamingRootNodeFormSubmit,
     handleRenamingRootNodeFormCancel,
-  } = useRootNodeRenamingForm(node, onRootUpdate);
+  } = useRootNodeRenamingForm(node, onRootNodeUpdate);
 
   const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, treeId, isRenamingRootNode);
   useDropTargetRootNode(node, treeId, dropTargetRootRef);
@@ -91,7 +73,14 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
   //   }, [setIsRenamingRootNode, treeId]);
   //
 
-  const shouldRenderChildNodes = shouldRenderRootChildNodes(node, isDragging, isAddingRootNodeFile, isRenamingRootNode);
+  const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
+    node,
+    isDragging,
+    isAddingRootNodeFile,
+    isRenamingRootNode
+  );
+
+  const restrictedNames = streamedCollections.map((collection) => collection.name);
 
   return (
     <div
@@ -117,6 +106,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
         {isRenamingRootNode ? (
           <TreeRootNodeRenameForm
             node={node}
+            restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
           />
@@ -124,8 +114,8 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
           <TreeRootNodeButton
             node={node}
             searchInput={searchInput}
-            shouldRenderChildNodes={shouldRenderChildNodes}
-            handleRootNodeClick={onRootUpdate}
+            shouldRenderChildNodes={shouldRenderRootChildNodes}
+            handleRootNodeClick={onRootNodeUpdate}
           />
         )}
 
@@ -145,7 +135,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootUpdate }: TreeRootNodeP
 
       {closestEdge && <DropIndicator edge={closestEdge} gap={0} className="z-10" />}
 
-      {shouldRenderChildNodes && (
+      {shouldRenderRootChildNodes && (
         <TreeRootNodeChildren
           node={node}
           onNodeUpdate={onNodeUpdate}
