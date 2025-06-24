@@ -22,11 +22,13 @@ interface TreeNodeButtonProps {
   onAddFile: () => void;
   onAddFolder: () => void;
   onRename: () => void;
+  onDelete: () => void;
   isDragging: boolean;
   canDrop: boolean | null;
   instruction: Instruction | null;
   preview: HTMLElement | null;
   isLastChild: boolean;
+  isRootNode: boolean;
 }
 
 const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
@@ -44,35 +46,35 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       instruction,
       preview,
       isLastChild,
+      isRootNode,
     },
     ref
   ) => {
-    const { treeId, nodeOffset, searchInput, onNodeClickCallback, onNodeDoubleClickCallback, paddingRight } =
-      useContext(TreeContext);
+    const { treeId, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const handleClick = () => {
-      if (node.kind === "Dir") {
-        onNodeUpdate({
-          ...node,
-          expanded: !node.expanded,
-        });
-      } else {
-        addOrFocusPanel({
-          id: `${node.id}`,
-          params: {
-            treeId,
-            iconType: node.kind,
-            workspace: true,
-          },
-          component: "Default",
-        });
-      }
-      onNodeClickCallback?.(node);
+      addOrFocusPanel({
+        id: `${node.id}`,
+        title: node.name,
+        params: {
+          treeId,
+          iconType: node.kind,
+          workspace: true,
+        },
+        component: "Default",
+      });
     };
 
-    const handleDoubleClick = () => onNodeDoubleClickCallback?.(node);
+    const handleClickOnDir = () => {
+      if (node.kind !== "Dir") return;
+
+      onNodeUpdate({
+        ...node,
+        expanded: !node.expanded,
+      });
+    };
 
     const nodePaddingLeft = depth * nodeOffset;
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
@@ -83,7 +85,6 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           <button
             ref={ref}
             onClick={handleClick}
-            onDoubleClick={handleDoubleClick}
             className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
           >
             <span
@@ -114,6 +115,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 />
               )}
               <Icon
+                onClick={handleClickOnDir}
                 icon="ChevronRight"
                 className={cn("text-(--moss-icon-primary-text)", {
                   "rotate-90": shouldRenderChildNodes,
@@ -155,8 +157,8 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
           <ActionMenu.Content>
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
-            <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
-            <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>
+            {!isRootNode && <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>}
+            {!isRootNode && <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>}
           </ActionMenu.Content>
         </ActionMenu.Portal>
       </ActionMenu.Root>

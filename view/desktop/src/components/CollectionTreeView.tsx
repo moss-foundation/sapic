@@ -79,7 +79,7 @@ export const CollectionTreeView = () => {
             {shouldShowCollectionTree &&
               collectionsTrees.map((collection) => (
                 <CollectionTree
-                  key={`${collection.id}`}
+                  key={collection.id}
                   tree={collection}
                   onTreeUpdate={updateCollectionTree}
                   displayMode={displayMode}

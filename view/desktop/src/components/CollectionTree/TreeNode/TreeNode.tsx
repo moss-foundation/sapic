@@ -38,7 +38,7 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { nodeOffset, paddingRight, treeId } = useContext(TreeContext);
+  const { nodeOffset, paddingRight, treeId, displayMode } = useContext(TreeContext);
   const { deleteCollectionEntry } = useCollectionsStore();
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -87,6 +87,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
   const nodePaddingLeft = depth * nodeOffset;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
+  const isRootNode = node.path.split("\\").length === 1;
 
   return (
     <li className="relative">
@@ -100,7 +101,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
           isLastChild={isLastChild}
         />
       )} */}
-      {isRenamingNode ? (
+      {isRenamingNode && !isRootNode ? (
         <TreeNodeRenameForm
           node={node}
           depth={depth}
@@ -143,6 +144,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
             // instruction={instruction}
             // preview={preview}
             isLastChild={isLastChild}
+            isRootNode={isRootNode}
           />
           {/* 
           {isAddingDividerNodeBelow && (

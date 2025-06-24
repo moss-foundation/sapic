@@ -156,7 +156,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           order: collection.order ?? state.streamedCollections.length + 1,
           expanded: true,
           endpoints: {
-            id: "",
+            id: Math.random().toString(),
             name: "endpoints",
             path: "endpoints",
             class: "Endpoint",
@@ -165,7 +165,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             childNodes: [],
           },
           schemas: {
-            id: "",
+            id: Math.random().toString(),
             name: "schemas",
             path: "schemas",
             class: "Schema",
@@ -174,7 +174,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             childNodes: [],
           },
           components: {
-            id: "",
+            id: Math.random().toString(),
             name: "components",
             path: "components",
             class: "Component",
@@ -183,7 +183,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             childNodes: [],
           },
           requests: {
-            id: "",
+            id: Math.random().toString(),
             name: "requests",
             path: "requests",
             class: "Request",
@@ -392,7 +392,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 order: collection.order,
                 expanded: true,
                 endpoints: {
-                  id: "",
+                  id: Math.random().toString(),
                   name: "endpoints",
                   path: "endpoints",
                   class: "Endpoint",
@@ -401,7 +401,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   childNodes: [],
                 },
                 schemas: {
-                  id: "",
+                  id: Math.random().toString(),
                   name: "schemas",
                   path: "schemas",
                   class: "Schema",
@@ -410,7 +410,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   childNodes: [],
                 },
                 components: {
-                  id: "",
+                  id: Math.random().toString(),
                   name: "components",
                   path: "components",
                   class: "Component",
@@ -419,7 +419,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   childNodes: [],
                 },
                 requests: {
-                  id: "",
+                  id: Math.random().toString(),
                   name: "requests",
                   path: "requests",
                   class: "Request",
@@ -538,7 +538,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
       if (!child) {
         child = {
-          id: "",
+          id: Math.random().toString(),
           name: component,
           path: `${currentNode.path}\\${component}`,
           class: entry.class,
