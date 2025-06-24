@@ -1,4 +1,4 @@
-import { CollectionTree } from "@/components/CollectionTree/types";
+import { useCollectionsStore } from "@/store/collections";
 import { CollectionInfo } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 
@@ -18,25 +18,25 @@ const listCollectionsFn = async (workspaceId: string | null): Promise<Collection
   return collections.map((collection, index) => ({
     id: typeof collection.id === "string" ? index + 1 : (collection.id as number),
     displayName: typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`,
-    order: collection.order ?? undefined,
+    order: collection.order,
   }));
 };
 
 export const useListCollections = (workspaceId: string | null) => {
+  // Also get collections from store for immediate access
+  const storeCollections = useCollectionsStore((state) => state.collections);
+
   return useQuery<CollectionInfo[], Error>({
     queryKey: [USE_LIST_COLLECTIONS_QUERY_KEY, workspaceId],
     queryFn: () => listCollectionsFn(workspaceId),
     enabled: !!workspaceId,
     // Provide initial data from store
-    initialData: workspaceId ? [] : [],
+    initialData: workspaceId
+      ? storeCollections.map((collection, index) => ({
+          id: typeof collection.id === "string" ? index + 1 : (collection.id as number),
+          displayName: typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`,
+          order: collection.order,
+        }))
+      : [],
   });
-};
-
-const getInitialData = (collections: CollectionTree[]) => {
-  console.log("getInitialData", collections);
-  return collections.map((collection, index) => ({
-    id: typeof collection.id === "string" ? index + 1 : (collection.id as number),
-    displayName: typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`,
-    order: collection.order ?? undefined,
-  }));
 };

@@ -1,6 +1,12 @@
 import { create } from "zustand";
 
-import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import { CollectionTree, TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
+import {
+  checkIfTreeIsCollapsed,
+  checkIfTreeIsExpanded,
+  collapseAllNodes,
+  expandAllNodes,
+} from "@/components/CollectionTree/utils";
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import {
   CreateEntryInput,
@@ -17,7 +23,17 @@ import {
 } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
 
+import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
+import SapicTestCollection from "../../assets/SapicTestCollection.json";
+import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
+
 export interface CollectionsStoreState {
+  collections: CollectionTree[];
+  setCollections: (collections: CollectionTree[]) => void;
+  expandAll: () => void;
+  collapseAll: () => void;
+  updateCollection: (collection: CollectionTree) => void;
+
   collectionsTrees: TreeCollectionRootNode[];
   setCollectionsTrees: (collectionsTrees: TreeCollectionRootNode[]) => void;
   updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => void;
@@ -45,6 +61,59 @@ export interface CollectionsStoreState {
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
+  collections: [
+    {
+      ...SapicTestCollection,
+      name: "Sapic Test Collection",
+    } as unknown as CollectionTree,
+    {
+      ...AzureDevOpsTestCollection,
+      name: "Azure DevOps Test Collection",
+    } as unknown as CollectionTree,
+    {
+      ...WhatsAppBusinessTestCollection,
+      name: "WhatsApp Business Test Collection",
+    } as unknown as CollectionTree,
+  ],
+  setCollections: (collections: CollectionTree[]) => {
+    set({ collections });
+  },
+  expandAll: () => {
+    const allFoldersAreExpanded = get().collections.every((collection) => checkIfTreeIsExpanded(collection.tree));
+
+    if (allFoldersAreExpanded) return;
+
+    set((state) => ({
+      collections: state.collections.map((collection) => {
+        return {
+          ...collection,
+          tree: expandAllNodes(collection.tree as TreeCollectionNode),
+        };
+      }),
+    }));
+  },
+  collapseAll: () => {
+    const allFoldersAreCollapsed = get().collections.every((collection) => checkIfTreeIsCollapsed(collection.tree));
+
+    if (allFoldersAreCollapsed) return;
+
+    set((state) => ({
+      collections: state.collections.map((collection) => {
+        return {
+          ...collection,
+          tree: collapseAllNodes(collection.tree as TreeCollectionNode),
+        };
+      }),
+    }));
+  },
+  updateCollection: (updatedCollection: CollectionTree) => {
+    set((state) => ({
+      collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
+    }));
+  },
+
+  //streamed collections
+
   collectionsTrees: [],
   setCollectionsTrees: (collectionsTrees: TreeCollectionRootNode[]) => {
     set({ collectionsTrees });
