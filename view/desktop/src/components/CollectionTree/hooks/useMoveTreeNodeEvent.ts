@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "../types";

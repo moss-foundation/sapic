@@ -5,14 +5,7 @@ import {
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import {
-  DropNodeElement,
-  DropNodeElementWithInstruction,
-  NodeProps,
-  SortTypes,
-  TreeCollectionNode,
-  TreeNodeProps,
-} from "./types";
+import { DropNodeElement, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
 
 export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updateNodeOrder(updatedNode);
@@ -23,7 +16,7 @@ export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollec
   };
 };
 
-export const sortNode = (node: TreeNodeProps, sortBy: SortTypes = "alphabetically"): TreeNodeProps => {
+export const sortNode = (node: TreeCollectionNode, sortBy: SortTypes = "alphabetically"): TreeCollectionNode => {
   if (sortBy === "none") return node;
 
   return {
@@ -35,11 +28,11 @@ export const sortNode = (node: TreeNodeProps, sortBy: SortTypes = "alphabeticall
   };
 };
 
-export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabetically"): TreeNodeProps[] => {
+export const sortNodes = (nodes: TreeCollectionNode[], sortBy: SortTypes = "alphabetically"): TreeCollectionNode[] => {
   if (sortBy === "alphabetically") {
     nodes.sort((a, b) => {
-      if (a.isFolder && !b.isFolder) return -1;
-      if (!a.isFolder && b.isFolder) return 1;
+      if (a.kind === "Dir" && b.kind === "Item") return -1;
+      if (a.kind === "Item" && b.kind === "Dir") return 1;
       if (a.id < b.id) return -1;
       if (a.id > b.id) return 1;
       return 0;
@@ -54,7 +47,7 @@ export const sortNodes = (nodes: TreeNodeProps[], sortBy: SortTypes = "alphabeti
   }
 
   if (sortBy === "order") {
-    nodes.sort((a, b) => a.order - b.order);
+    nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return nodes;
   }
 
@@ -74,17 +67,7 @@ export const prepareCollectionForTree = (
   );
 };
 
-export const removeUniqueIdFromTree = (tree: TreeNodeProps): NodeProps => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { uniqueId, ...treeWithoutUniqueId } = tree;
-
-  return {
-    ...treeWithoutUniqueId,
-    childNodes: tree.childNodes.map((child) => removeUniqueIdFromTree(child)),
-  };
-};
-
-export const findNodeById = (tree: NodeProps, id: string): NodeProps | undefined => {
+export const findNodeById = (tree: TreeCollectionNode, id: string): TreeCollectionNode | undefined => {
   if (tree.id === id) return tree;
 
   if (tree.childNodes && tree.childNodes.length > 0) {
@@ -97,12 +80,12 @@ export const findNodeById = (tree: NodeProps, id: string): NodeProps | undefined
   return undefined;
 };
 
-export const findNodeByUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {
-  if (tree.uniqueId === uniqueId) return tree;
+export const findNodeByUniqueId = (tree: TreeCollectionNode, id: string): TreeCollectionNode | undefined => {
+  if (tree.id === id) return tree;
 
   if (tree.childNodes && tree.childNodes.length > 0) {
     for (const child of tree.childNodes) {
-      const found = findNodeByUniqueId(child, uniqueId);
+      const found = findNodeByUniqueId(child, id);
       if (found) return found;
     }
   }
@@ -110,13 +93,13 @@ export const findNodeByUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeN
   return undefined;
 };
 
-export const findParentNodeByChildUniqueId = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps | undefined => {
-  if (tree.childNodes.some((child) => child.uniqueId === uniqueId)) {
+export const findParentNodeByChildUniqueId = (tree: TreeCollectionNode, id: string): TreeCollectionNode | undefined => {
+  if (tree.childNodes.some((child) => child.id === id)) {
     return tree;
   }
 
   for (const child of tree.childNodes) {
-    const parent = findParentNodeByChildUniqueId(child, uniqueId);
+    const parent = findParentNodeByChildUniqueId(child, id);
 
     if (parent !== undefined) {
       return parent;
@@ -126,26 +109,26 @@ export const findParentNodeByChildUniqueId = (tree: TreeNodeProps, uniqueId: str
   return undefined;
 };
 
-export const hasDescendant = (tree: TreeNodeProps, node: TreeNodeProps): boolean => {
+export const hasDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.uniqueId === node.uniqueId || hasDescendant(child, node));
+  return tree.childNodes.some((child) => child.id === node.id || hasDescendant(child, node));
 };
 
-export const hasDirectDescendant = (tree: TreeNodeProps, node: TreeNodeProps): boolean => {
+export const hasDirectDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.uniqueId === node.uniqueId && child.id === node.id);
+  return tree.childNodes.some((child) => child.id === node.id && child.id === node.id);
 };
 
-export const hasDirectSimilarDescendant = (tree: TreeNodeProps, node: TreeNodeProps): boolean => {
+export const hasDirectSimilarDescendant = (tree: TreeCollectionNode, node: TreeCollectionNode): boolean => {
   if (!tree.childNodes) return false;
-  return tree.childNodes.some((child) => child.uniqueId === node.uniqueId || child.id === node.id);
+  return tree.childNodes.some((child) => child.id === node.id || child.id === node.id);
 };
 
 const doesStringIncludePartialString = (str: string, partialStr: string) => {
   return str.toLowerCase().includes(partialStr.toLowerCase());
 };
 
-export const hasDescendantWithSearchInput = (tree: TreeNodeProps, input: string): boolean => {
+export const hasDescendantWithSearchInput = (tree: TreeCollectionNode, input: string): boolean => {
   if (!tree.childNodes) return false;
 
   const treeId = String(tree.id);
@@ -157,26 +140,26 @@ export const hasDescendantWithSearchInput = (tree: TreeNodeProps, input: string)
   );
 };
 
-export const removeNodeFromTree = (tree: TreeNodeProps, uniqueId: string): TreeNodeProps => {
-  if (tree.childNodes.some((child) => child.uniqueId === uniqueId)) {
+export const removeNodeFromTree = (tree: TreeCollectionNode, id: string): TreeCollectionNode => {
+  if (tree.childNodes.some((child) => child.id === id)) {
     return {
       ...tree,
-      childNodes: tree.childNodes.filter((child) => child.uniqueId !== uniqueId),
+      childNodes: tree.childNodes.filter((child) => child.id !== id),
     };
   }
 
   return {
     ...tree,
-    childNodes: tree.childNodes.map((child) => removeNodeFromTree(child, uniqueId)),
+    childNodes: tree.childNodes.map((child) => removeNodeFromTree(child, id)),
   };
 };
 
 export const addNodeToFolder = (
-  tree: TreeNodeProps,
+  tree: TreeCollectionNode,
   targetUniqueId: string,
-  nodeToAdd: TreeNodeProps
-): TreeNodeProps => {
-  if (tree.uniqueId === targetUniqueId) {
+  nodeToAdd: TreeCollectionNode
+): TreeCollectionNode => {
+  if (tree.id === targetUniqueId) {
     return updateNodeOrder({
       ...tree,
       childNodes: [...tree.childNodes, nodeToAdd],
@@ -190,12 +173,12 @@ export const addNodeToFolder = (
 };
 
 export const addNodeChildrenWithInstruction = (
-  tree: TreeNodeProps,
+  tree: TreeCollectionNode,
   targetUniqueId: string,
-  childNodes: TreeNodeProps[],
+  childNodes: TreeCollectionNode[],
   instruction: Instruction
-): TreeNodeProps => {
-  if (tree.uniqueId === targetUniqueId) {
+): TreeCollectionNode => {
+  if (tree.id === targetUniqueId) {
     return updateNodeOrder({
       ...tree,
       childNodes,
@@ -236,35 +219,35 @@ export const getActualDropTargetWithInstruction = (
 };
 
 export const addNodeToTreeWithInstruction = (
-  tree: TreeNodeProps,
-  targetNode: TreeNodeProps,
-  sourceNode: TreeNodeProps,
+  tree: TreeCollectionNode,
+  targetNode: TreeCollectionNode,
+  sourceNode: TreeCollectionNode,
   instruction: Instruction | undefined
-): TreeNodeProps => {
-  const treeWithoutSource = removeNodeFromTree(tree, sourceNode.uniqueId);
+): TreeCollectionNode => {
+  const treeWithoutSource = removeNodeFromTree(tree, sourceNode.id);
 
   if (!instruction) {
-    if (targetNode.isFolder) {
-      return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+    if (targetNode.kind === "Dir") {
+      return addNodeToFolder(treeWithoutSource, targetNode.id, sourceNode);
     }
 
     return tree;
   }
 
-  if (instruction.operation === "combine" && targetNode.isFolder) {
-    return addNodeToFolder(treeWithoutSource, targetNode.uniqueId, sourceNode);
+  if (instruction.operation === "combine" && targetNode.kind === "Dir") {
+    return addNodeToFolder(treeWithoutSource, targetNode.id, sourceNode);
   }
 
-  const targetParentNode = findParentNodeByChildUniqueId(treeWithoutSource, targetNode.uniqueId);
+  const targetParentNode = findParentNodeByChildUniqueId(treeWithoutSource, targetNode.id);
   if (!targetParentNode) return treeWithoutSource;
 
-  const indexOfTargetNode = targetParentNode.childNodes.findIndex((child) => child.uniqueId === targetNode.uniqueId);
+  const indexOfTargetNode = targetParentNode.childNodes.findIndex((child) => child.id === targetNode.id);
   if (indexOfTargetNode === -1) return treeWithoutSource;
 
   if (instruction.operation === "reorder-before") {
     return addNodeChildrenWithInstruction(
       treeWithoutSource,
-      targetParentNode.uniqueId,
+      targetParentNode.id,
       [
         ...targetParentNode.childNodes.slice(0, indexOfTargetNode),
         sourceNode,
@@ -277,7 +260,7 @@ export const addNodeToTreeWithInstruction = (
   if (instruction.operation === "reorder-after") {
     return addNodeChildrenWithInstruction(
       treeWithoutSource,
-      targetParentNode.uniqueId,
+      targetParentNode.id,
       [
         ...targetParentNode.childNodes.slice(0, indexOfTargetNode + 1),
         sourceNode,
@@ -290,7 +273,7 @@ export const addNodeToTreeWithInstruction = (
   return tree;
 };
 
-export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeNodeProps) => {
+export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeElement, node: TreeCollectionNode) => {
   if (sourceTarget.node.isFolder === false) {
     // if (hasDirectSimilarDescendant(node, sourceTarget.node)) {
     //   return false;
@@ -310,7 +293,7 @@ export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeE
       return false;
     }
 
-    if (sourceTarget?.node.uniqueId === node.uniqueId) {
+    if (sourceTarget?.node.id === node.id) {
       return false;
     }
   }
@@ -318,27 +301,27 @@ export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeE
   return true;
 };
 
-export const expandAllNodes = <T extends NodeProps>(node: T): T => {
+export const expandAllNodes = <T extends TreeCollectionNode>(node: T): T => {
   return {
     ...node,
-    isExpanded: node.isFolder ? true : node.isExpanded,
+    expanded: node.kind === "Dir" ? true : node.expanded,
     childNodes: node.childNodes.map((child) => expandAllNodes(child)) as T["childNodes"],
   };
 };
 
-export const collapseAllNodes = <T extends NodeProps>(node: T): T => {
+export const collapseAllNodes = <T extends TreeCollectionNode>(node: T): T => {
   return {
     ...node,
-    isExpanded: node.isFolder ? false : node.isExpanded,
+    expanded: node.kind === "Dir" ? false : node.expanded,
     childNodes: node.childNodes.map((child) => collapseAllNodes(child)),
   };
 };
 
-export const checkIfAllFoldersAreExpanded = <T extends NodeProps>(nodes: T[]): boolean => {
+export const checkIfAllFoldersAreExpanded = <T extends TreeCollectionNode>(nodes: T[]): boolean => {
   if (!nodes || nodes.length === 0) return true;
 
   for (const node of nodes) {
-    if (node.isFolder && !node.isExpanded) {
+    if (node.kind === "Dir" && !node.expanded) {
       return false;
     }
     if (!checkIfAllFoldersAreExpanded(node.childNodes)) {
@@ -349,11 +332,11 @@ export const checkIfAllFoldersAreExpanded = <T extends NodeProps>(nodes: T[]): b
   return true;
 };
 
-export const checkIfAllFoldersAreCollapsed = <T extends NodeProps>(nodes: T[]): boolean => {
+export const checkIfAllFoldersAreCollapsed = <T extends TreeCollectionNode>(nodes: T[]): boolean => {
   if (!nodes || nodes.length === 0) return true;
 
   for (const node of nodes) {
-    if (node.isFolder && node.isExpanded) {
+    if (node.kind === "Dir" && node.expanded) {
       return false;
     }
     if (!checkIfAllFoldersAreCollapsed(node.childNodes)) {
@@ -364,8 +347,8 @@ export const checkIfAllFoldersAreCollapsed = <T extends NodeProps>(nodes: T[]): 
   return true;
 };
 
-export const checkIfTreeIsCollapsed = <T extends NodeProps>(node: T): boolean => {
-  if (node.isExpanded) return false;
+export const checkIfTreeIsCollapsed = <T extends TreeCollectionNode>(node: T): boolean => {
+  if (node.expanded) return false;
 
   if (node.childNodes && node.childNodes.length > 0) {
     for (const child of node.childNodes) {
@@ -377,8 +360,8 @@ export const checkIfTreeIsCollapsed = <T extends NodeProps>(node: T): boolean =>
   return true;
 };
 
-export const checkIfTreeIsExpanded = <T extends NodeProps>(node: T): boolean => {
-  if (!node.isExpanded) return false;
+export const checkIfTreeIsExpanded = <T extends TreeCollectionNode>(node: T): boolean => {
+  if (!node.expanded) return false;
 
   if (node.childNodes && node.childNodes.length > 0) {
     for (const child of node.childNodes) {

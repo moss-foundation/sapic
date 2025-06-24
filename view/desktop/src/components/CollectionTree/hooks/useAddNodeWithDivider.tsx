@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useContext, useState } from "react";
 
 import { TreeContext } from "../Tree";

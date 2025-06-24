@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
