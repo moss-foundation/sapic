@@ -1,6 +1,8 @@
 [workspace]
 resolver = "1"
 members = [
+    "libs/hcl-macros",
+    
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
@@ -20,13 +22,15 @@ members = [
     "crates/moss-activity-indicator",
     "crates/moss-file",
     "tools/xtask",
-    "view/desktop/bin",
+    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
 #
 # Workspace crates
 #
+hcl-macros = { path = "libs/hcl-macros" }
+
 moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
