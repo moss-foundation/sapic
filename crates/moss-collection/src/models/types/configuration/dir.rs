@@ -1,41 +1,23 @@
+mod component;
+mod endpoint;
+mod request;
+mod schema;
+
+pub use component::*;
+pub use endpoint::*;
+pub use request::*;
+pub use schema::*;
+
 use std::ops::Deref;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::models::{primitives::EntryClass, types::configuration::common::ConfigurationMetadata};
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum EndpointDirConfigurationModel {}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum ComponentDirConfigurationModel {}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum SchemaDirConfigurationModel {}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[serde(rename_all = "snake_case")]
-// #[ts(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct HttpDirConfigurationModel {}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum RequestDirConfigurationModel {
-    Http(HttpDirConfigurationModel),
-}
+use crate::models::{
+    primitives::{EntryClass, EntryKind},
+    types::configuration::common::ConfigurationMetadata,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -55,6 +37,7 @@ pub struct CompositeDirConfigurationModel {
     pub inner: DirConfigurationModel,
 }
 
+// TODO: remove this
 impl Default for CompositeDirConfigurationModel {
     fn default() -> Self {
         Self {

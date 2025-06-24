@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use strum_macros::Display as ToString;
+use strum_macros::{Display as ToString, EnumString};
 use ts_rs::TS;
 
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
@@ -11,7 +11,7 @@ pub enum EntryClass {
     Schema,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, Deserialize, Serialize, ToString, EnumString, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryKind {
     Dir,
@@ -42,7 +42,7 @@ impl From<&HttpMethod> for EntryProtocol {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToString, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToString, EnumString, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum HttpMethod {
     #[serde(rename = "GET")]

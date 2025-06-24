@@ -4,25 +4,14 @@ pub mod item;
 
 pub use common::*;
 pub use dir::*;
-use hcl::Body;
 pub use item::*;
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de};
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum ConfigurationModel {
     Item(CompositeItemConfigurationModel),
     Dir(CompositeDirConfigurationModel),
-}
-
-impl ConfigurationModel {
-    pub fn to_hcl(&self) -> Body {
-        match self {
-            ConfigurationModel::Item(item) => item.to_hcl(),
-            ConfigurationModel::Dir(dir) => unimplemented!(),
-        }
-    }
 }
 
 impl ConfigurationModel {
@@ -36,22 +25,42 @@ impl ConfigurationModel {
 
 #[cfg(test)]
 mod tests {
+
+    use hcl::{Body, Expression};
+    use serde::{Deserialize, Serialize};
+
     use super::*;
+
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    struct Test {
+        test: Expression,
+    }
+
+    #[test]
+    fn test_expression_serialization() {
+        let test = Test {
+            test: Expression::String("test".to_string()),
+        };
+
+        let hcl_string = hcl::to_string(&test).expect("Failed to serialize to HCL");
+
+        println!("{}", hcl_string);
+    }
 
     #[test]
     fn test_configuration_model_item_hcl_serialization() {
-        let model = ConfigurationModel::Item(CompositeItemConfigurationModel {
+        let model = CompositeItemConfigurationModel {
             metadata: common::ConfigurationMetadata {
                 id: uuid::Uuid::new_v4(),
             },
             inner: item::ItemConfigurationModel::Request(
                 item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-                    request_parts: item::HttpRequestParts {
+                    request_parts: HttpRequestParts {
                         method: crate::models::primitives::HttpMethod::Get,
                     },
                 }),
             ),
-        });
+        };
 
         let hcl_body = model.to_hcl();
         let hcl_string = hcl::to_string(&hcl_body).expect("Failed to serialize to HCL");
@@ -61,6 +70,34 @@ mod tests {
 
         // let _deserialized: ConfigurationModel =
         //     hcl::from_str(&hcl_string).expect("Failed to deserialize from HCL");
+    }
+
+    #[test]
+    fn test_item_configuration_hcl_round_trip() {
+        let model = CompositeItemConfigurationModel {
+            metadata: common::ConfigurationMetadata {
+                id: uuid::Uuid::new_v4(),
+            },
+            inner: item::ItemConfigurationModel::Request(
+                item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
+                    request_parts: HttpRequestParts {
+                        method: crate::models::primitives::HttpMethod::Get,
+                    },
+                }),
+            ),
+        };
+
+        let hcl_body = model.to_hcl();
+        let hcl_string = hcl::to_string(&hcl_body).expect("Failed to serialize to HCL");
+
+        println!("Original model serialized to HCL:");
+        println!("{}", hcl_string);
+
+        let parsed_body: Body = hcl::from_str(&hcl_string).expect("Failed to parse HCL");
+        let deserialized_model = CompositeItemConfigurationModel::from_hcl(parsed_body)
+            .expect("Failed to deserialize from HCL");
+
+        dbg!(&deserialized_model);
     }
 
     // #[test]
@@ -184,5 +221,4 @@ mod tests {
 
     //     assert_eq!(model.id(), deserialized_model.id());
     //     println!("Successfully round-trip serialized/deserialized ConfigurationModel!");
-    // }
 }

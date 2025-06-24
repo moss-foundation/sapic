@@ -1,11 +1,28 @@
-use std::path::PathBuf;
+use anyhow::Result;
+use serde_json::{Number, Value};
+use std::{path::PathBuf, str::FromStr};
 
-use hcl::{Block, Expression};
+use hcl::Block;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
-// Metadata
+use crate::models::primitives::{EntryKind, HttpMethod};
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum Expression {
+    Null,
+    String(String),
+    Variable(String),
+    Number(Number),
+    Bool(bool),
+}
+
+// ########################################################
+// ###                      Metadata                    ###
+// ########################################################
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
@@ -21,23 +38,52 @@ impl ConfigurationMetadata {
             .add_attribute(("id", self.id.to_string()))
             .build()
     }
+
+    pub fn from_hcl(block: &Block) -> Result<Self> {
+        let mut id = None;
+
+        for attr in block.body.attributes() {
+            if attr.key.as_str() == "id" {
+                if let hcl::Expression::String(id_str) = &attr.expr {
+                    id = Some(Uuid::parse_str(id_str)?);
+                    break;
+                }
+            }
+        }
+
+        Ok(Self {
+            id: id.ok_or_else(|| anyhow::anyhow!("Missing id in metadata"))?,
+        })
+    }
+}
+
+// ########################################################
+// ###                      HTTP                        ###
+// ########################################################
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct HttpRequestParts {
+    pub method: HttpMethod,
+    // pub headers: Vec<HeaderParamItem>,
 }
 
 // Query Parameter
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct QueryParamOptions {
     pub propagate: bool,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct QueryParamItem {
     pub key: String,
-    pub value: String,
+    pub value: Expression,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]
@@ -48,7 +94,7 @@ pub struct QueryParamItem {
 
 // Path Parameter
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct PathParamOptions {
@@ -60,7 +106,7 @@ pub struct PathParamOptions {
 #[ts(export, export_to = "types.ts")]
 pub struct PathParamItem {
     pub key: String,
-    pub value: String,
+    pub value: Expression,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]
@@ -71,19 +117,19 @@ pub struct PathParamItem {
 
 // Header Parameter
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct HeaderParamOptions {
     pub propagate: bool,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct HeaderParamItem {
     pub key: String,
-    pub value: String,
+    pub value: Expression,
     #[ts(optional)]
     pub order: Option<usize>,
     #[ts(optional)]
@@ -92,9 +138,32 @@ pub struct HeaderParamItem {
     pub options: HeaderParamOptions,
 }
 
+impl HeaderParamItem {
+    pub fn from_hcl(block: &Block) -> Result<Self> {
+        // let mut key = None;
+        // let mut value = None;
+
+        // for attr in block.body.attributes() {
+        //     if attr.key.as_str() == "key" {
+        //         if let HclExpression::String(key_str) = &attr.expr {
+        //             key = Some(key_str.to_string());
+        //         }
+        //     }
+
+        //     if attr.key.as_str() == "value" {
+        //         if let HclExpression::String(value_str) = &attr.expr {
+        //             value = Some(value_str.to_string());
+        //         }
+        //     }
+        // }
+
+        todo!()
+    }
+}
+
 // Body
 
-#[derive(Clone, Debug, Serialize, PartialEq, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "snake_case")]
 #[ts(export, export_to = "types.ts")]
 pub enum RawBodyType {
@@ -104,14 +173,14 @@ pub enum RawBodyType {
     Xml(String),
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct FormDataOptions {
     pub propagate: bool,
 }
 
-#[derive(Clone, Debug, Serialize, PartialEq, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum FormDataValue {
@@ -119,7 +188,7 @@ pub enum FormDataValue {
     File(PathBuf),
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct FormDataItem {
@@ -133,14 +202,14 @@ pub struct FormDataItem {
     pub options: FormDataOptions,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct UrlEncodedOptions {
     pub propagate: bool,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 #[ts(optional_fields)]
@@ -153,7 +222,7 @@ pub struct UrlEncodedItem {
     pub options: UrlEncodedOptions,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum RequestBody {
