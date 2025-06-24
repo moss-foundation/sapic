@@ -6,11 +6,11 @@ import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolb
 import { DropNodeElement } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings, CollectionSettingsPage } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -60,6 +60,9 @@ const DynamicPageWrapper = ({
   React.useEffect(() => {
     if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
       props.api.setTitle(currentWorkspace.displayName);
+    } else if (pageKey === "CollectionSettings" && props.api) {
+      // For now, use a static collection name - in the future this could be dynamic
+      props.api.setTitle("Sapic Test Collection");
     }
   }, [currentWorkspace?.displayName, props.api, pageKey]);
 
@@ -71,6 +74,8 @@ const DynamicPageWrapper = ({
   let displayTitle = config.title;
   if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
     displayTitle = currentWorkspace.displayName;
+  } else if (pageKey === "CollectionSettings") {
+    displayTitle = "Sapic Test Collection";
   }
 
   // Standard page structure with header and content
@@ -211,6 +216,10 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "WorkspaceSettings", // This will be dynamically replaced
       component: WorkspaceSettings,
     },
+    CollectionSettings: {
+      title: "CollectionSettings", // This will be dynamically replaced
+      component: CollectionSettingsPage,
+    },
     Welcome: {
       component: WelcomePage,
     },
@@ -251,6 +260,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             <Breadcrumbs panelId={props.api.id} />
+
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
 
@@ -259,7 +269,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
               )}
             </span>
-
             {isDebug && (
               <Metadata
                 onClick={() => {

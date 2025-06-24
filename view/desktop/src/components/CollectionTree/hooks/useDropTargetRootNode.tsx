@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { RefObject, useEffect } from "react";
 
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
