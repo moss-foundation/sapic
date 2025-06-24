@@ -37,6 +37,7 @@ impl<R: TauriRuntime> App<R> {
                 theme: self.defaults().theme.clone(),
                 locale: self.defaults().locale.clone(),
             },
+            prev_workspace_id: None,                     // TODO: implement
             last_workspace: last_workspace_name.clone(), // Some("TestWorkspace".to_string())
         })
     }

@@ -40,7 +40,12 @@ export type DeleteWorkspaceInput = { id: string };
 
 export type DeleteWorkspaceOutput = { id: string };
 
-export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; lastWorkspace?: string };
+export type DescribeAppStateOutput = {
+  preferences: Preferences;
+  defaults: Defaults;
+  lastWorkspace?: string;
+  prevWorkspaceId?: string;
+};
 
 export type DescribeWorkbenchStateOutput = { prevWorkspaceId: string | null };
 
