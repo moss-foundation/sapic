@@ -38,6 +38,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
       onAddFile,
       onAddFolder,
       onRename,
+      onDelete,
       isDragging,
       canDrop,
       instruction,
@@ -155,6 +156,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
             {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
             <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
+            <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>
           </ActionMenu.Content>
         </ActionMenu.Portal>
       </ActionMenu.Root>

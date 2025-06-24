@@ -42,7 +42,6 @@ export interface CollectionsStoreState {
   streamedCollectionEntries: EntryInfo[];
   startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
   distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
-  updateEntry: (updatedEntry: EntryInfo, collectionId: string) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -290,6 +289,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set((state) => ({
       streamedCollectionEntries: state.streamedCollectionEntries.filter((c) => c.id !== input.id),
       isDeleteCollectionEntryLoading: false,
+      collectionsTrees: state.collectionsTrees.map((c) => filterOutNodeFromCollectionTree(c, input)),
     }));
   },
 
@@ -507,6 +507,23 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       currentNode.childNodes.push(newNode);
     }
   },
-
-  updateEntry(updatedEntry, collectionId) {},
 }));
+
+const filterOutNodeFromCollectionTree = (tree: TreeCollectionRootNode, input: DeleteEntryInput) => {
+  return {
+    ...tree,
+    requests: filterOutNodeFromNode(tree.requests, input.id),
+    endpoints: filterOutNodeFromNode(tree.endpoints, input.id),
+    components: filterOutNodeFromNode(tree.components, input.id),
+    schemas: filterOutNodeFromNode(tree.schemas, input.id),
+  };
+};
+
+const filterOutNodeFromNode = (node: TreeCollectionNode, id: string): TreeCollectionNode => {
+  return {
+    ...node,
+    childNodes: node.childNodes
+      .filter((childNode) => childNode.id !== id)
+      .map((childNode) => filterOutNodeFromNode(childNode, id)),
+  };
+};

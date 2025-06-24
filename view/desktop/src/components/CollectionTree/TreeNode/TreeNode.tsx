@@ -1,5 +1,7 @@
 import { useContext } from "react";
 
+import { useCollectionsStore } from "@/store/collections";
+
 import { TreeContext } from "../..";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
@@ -36,8 +38,8 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { nodeOffset, paddingRight } = useContext(TreeContext);
-
+  const { nodeOffset, paddingRight, treeId } = useContext(TreeContext);
+  const { deleteCollectionEntry } = useCollectionsStore();
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
   const {
@@ -68,6 +70,16 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
     onNodeUpdate
   );
 
+  const handleDeleteNode = () => {
+    deleteCollectionEntry({
+      collectionId: treeId,
+      input: {
+        id: node.id,
+        path: node.path,
+      },
+    });
+    // onNodeUpdate(node);
+  };
   // const [preview, setPreview] = useState<HTMLElement | null>(null);
   // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);
 
@@ -125,6 +137,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
             onAddFile={() => setIsAddingFileNode(true)}
             onAddFolder={() => setIsAddingFolderNode(true)}
             onRename={() => setIsRenamingNode(true)}
+            onDelete={handleDeleteNode}
             // isDragging={isDragging}
             // canDrop={canDrop}
             // instruction={instruction}
