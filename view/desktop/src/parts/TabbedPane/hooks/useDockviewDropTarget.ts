@@ -19,7 +19,7 @@ export const useTabbedPaneDropTarget = (
 
       const sourceTarget = getActualDropSourceTarget(source);
 
-      if (sourceTarget?.node?.type === "TreeNode" || sourceTarget?.node?.uniqueId) {
+      if (sourceTarget?.node?.type === "TreeNode") {
         setCanDrop(true);
       } else {
         setCanDrop(false);

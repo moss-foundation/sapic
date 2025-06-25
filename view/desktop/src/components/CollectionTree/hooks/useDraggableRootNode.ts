@@ -5,11 +5,11 @@ import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types"
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { NodeProps } from "../types";
+import { TreeCollectionRootNode } from "../types";
 
 export const useDraggableRootNode = (
   draggableRef: RefObject<HTMLDivElement>,
-  node: NodeProps,
+  node: TreeCollectionRootNode,
   treeId: string | number,
   isRenamingNode: boolean
 ) => {
