@@ -166,6 +166,7 @@ async fn update_collection_repo() {
     let collection_name = random_collection_name();
     let old_repo = Url::parse("https://github.com/xxx/1.git").unwrap();
     let new_repo = Url::parse("https://github.com/xxx/2.git").unwrap();
+    let new_normalized_repo = "github.com/xxx/2";
     let create_collection_output = workspace
         .create_collection(
             &ctx,
@@ -199,7 +200,10 @@ async fn update_collection_repo() {
     let collections = workspace.collections(&ctx).await.unwrap();
     let collection = collections.iter().next().unwrap().1.read().await;
 
-    assert_eq!(collection.manifest().await.repository, Some(new_repo));
+    assert_eq!(
+        collection.manifest().await.repository,
+        Some(new_normalized_repo.to_owned())
+    );
 
     cleanup().await;
 }

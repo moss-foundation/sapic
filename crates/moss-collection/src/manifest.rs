@@ -1,10 +1,8 @@
 use anyhow::Result;
 use moss_common::api::Change;
 use moss_file::toml::InPlaceEditor;
-use moss_git::url::normalize_git_url;
 use serde::{Deserialize, Serialize};
 use toml_edit::DocumentMut;
-use url::Url;
 
 pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.toml";
 

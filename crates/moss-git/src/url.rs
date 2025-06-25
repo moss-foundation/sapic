@@ -14,9 +14,10 @@ pub fn normalize_git_url(repo_url: &Url) -> Result<String> {
     Ok(format!("{domain}{path}"))
 }
 
+#[cfg(test)]
 mod tests {
-    use super::*;
 
+    use super::*;
     #[test]
     fn test_clean_git_url() {
         let https_url = Url::parse("https://github.com/moss-foundation/sapic.git").unwrap();

@@ -191,6 +191,7 @@ async fn create_collection_with_repo() {
 
     let collection_name = random_collection_name();
     let repo = Url::parse("https://github.com/moss-foundation/sapic.git").unwrap();
+    let normalized_repo = "github.com/moss-foundation/sapic";
     let create_collection_result = workspace
         .create_collection(
             &ctx,
@@ -214,7 +215,10 @@ async fn create_collection_with_repo() {
 
     // Verify that the repo is stored in the manifest model
     let collection = collections.iter().next().unwrap().1.read().await;
-    assert_eq!(collection.manifest().await.repository, Some(repo.clone()));
+    assert_eq!(
+        collection.manifest().await.repository,
+        Some(normalized_repo.to_string())
+    );
 
     cleanup().await;
 }
