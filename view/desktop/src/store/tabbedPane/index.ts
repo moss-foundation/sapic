@@ -60,7 +60,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
 
     get().api?.addPanel({
       ...options,
-      component: "Default",
+      component: options.component || "Default",
       params: {
         ...options.params,
         someRandomString,

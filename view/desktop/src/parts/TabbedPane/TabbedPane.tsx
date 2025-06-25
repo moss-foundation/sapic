@@ -10,7 +10,7 @@ import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings, CollectionSettingsPage } from "@/pages";
+import { CollectionSettingsPage, KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 import {
@@ -216,10 +216,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       title: "WorkspaceSettings", // This will be dynamically replaced
       component: WorkspaceSettings,
     },
-    CollectionSettings: {
-      title: "CollectionSettings", // This will be dynamically replaced
-      component: CollectionSettingsPage,
-    },
     Welcome: {
       component: WelcomePage,
     },
@@ -313,6 +309,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
+    CollectionSettings: CollectionSettingsPage,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

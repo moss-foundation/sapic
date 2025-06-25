@@ -1,6 +1,7 @@
 import { useContext } from "react";
 
 import { Icon } from "@/lib/ui";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import TestMossImage from "../../../assets/images/TestMossImage.webp";
@@ -12,28 +13,41 @@ interface TreeRootNodeButtonProps {
   node: TreeCollectionRootNode;
   searchInput?: string;
   shouldRenderChildNodes: boolean;
-  handleRootNodeClick: (node: TreeCollectionRootNode) => void;
+  onFolderToggleClick: (node: TreeCollectionRootNode) => void;
 }
 
 export const TreeRootNodeButton = ({
   node,
   searchInput,
   shouldRenderChildNodes,
-  handleRootNodeClick,
+  onFolderToggleClick,
 }: TreeRootNodeButtonProps) => {
-  const { onRootClickCallback, onRootDoubleClickCallback } = useContext(TreeContext);
+  const { treeId } = useContext(TreeContext);
+  const { addOrFocusPanel } = useTabbedPaneStore();
+
+  const handleIconClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    onFolderToggleClick({
+      ...node,
+      expanded: !node.expanded,
+    });
+  };
+
+  const handleLabelClick = () => {
+    addOrFocusPanel({
+      id: node.id,
+      title: `${node.name} settings`,
+      component: "CollectionSettings",
+      params: {
+        collectionId: treeId,
+      },
+    });
+  };
 
   return (
     <button
       className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
-      onClick={() => {
-        handleRootNodeClick({
-          ...node,
-          expanded: !node.expanded,
-        });
-        onRootClickCallback?.(node);
-      }}
-      onDoubleClick={() => onRootDoubleClickCallback?.(node)}
+      onClick={handleLabelClick}
     >
       <span className="flex size-5 shrink-0 items-center justify-center">
         <Icon
@@ -42,6 +56,7 @@ export const TreeRootNodeButton = ({
             "rotate-90": shouldRenderChildNodes,
             "hidden group-hover/treeRootNodeTrigger:block": TestMossImage,
           })}
+          onClick={handleIconClick}
         />
 
         {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
@@ -51,7 +66,7 @@ export const TreeRootNodeButton = ({
           </div>
         )}
       </span>
-      <NodeLabel label={node.name} searchInput={searchInput} />{" "}
+      <NodeLabel label={node.name} searchInput={searchInput} />
     </button>
   );
 };

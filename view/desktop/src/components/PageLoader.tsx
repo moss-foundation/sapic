@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
-// FIXME:
-// The statically created array `tips` is a temporary solution.
-// In the future, this data will be fetched from the backend.
+// FIXME: fetch tips from backend when they are available
 const tips = [
   "The statusbar color can be changed in the appearance settings",
   "You can change the order of widget actions. Try it!",

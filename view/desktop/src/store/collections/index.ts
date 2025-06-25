@@ -58,6 +58,7 @@ export interface CollectionsStoreState {
   streamedCollectionEntries: EntryInfo[];
   startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
   distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -575,6 +576,15 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       };
       currentNode.childNodes.push(newNode);
     }
+  },
+  //TODO: this is temporary, we need to update the collection in the backend too
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => {
+    set((state) => ({
+      streamedCollections: state.streamedCollections.map((c) => (c.id === collection.id ? collection : c)),
+      collectionsTrees: state.collectionsTrees.map((c) =>
+        c.id === collection.id ? { ...c, name: collection.name } : c
+      ),
+    }));
   },
 }));
 

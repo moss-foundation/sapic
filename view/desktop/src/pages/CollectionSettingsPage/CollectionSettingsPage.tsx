@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { CollectionTree } from "@/components/CollectionTree/types";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
-import { useActiveCollection, useDeleteCollection, useUpdateCollection } from "@/hooks/collection";
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
 
 import { AuthTabContent } from "./tabs/AuthTabContent";
@@ -24,66 +22,16 @@ const Badge = ({ count }: { count: number }) => (
 const StatusDot = ({ active }: { active: boolean }) =>
   active ? <div className="background-(--moss-auth-indicator-color) h-2 w-2 rounded-full" /> : null;
 
-export const CollectionSettings = () => {
-  const collection = useActiveCollection();
-  const { mutate: updateCollection } = useUpdateCollection();
-  const { mutate: deleteCollection } = useDeleteCollection();
+export interface CollectionSettingsParams {
+  collectionId: string;
+}
 
-  const [name, setName] = useState("");
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionSettingsParams>) => {
+  const { collectionId } = props.params;
+
   const [activeTabId, setActiveTabId] = useState("overview");
 
-  useEffect(() => {
-    if (collection) {
-      // Get display name from collection
-      const displayName = typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`;
-      setName(displayName);
-    }
-  }, [collection]);
-
-  const handleSave = () => {
-    if (name.trim() && collection && name.trim() !== getCollectionDisplayName(collection)) {
-      const collectionId = typeof collection.id === "string" ? collection.id : String(collection.id);
-      updateCollection(
-        { collectionId, name: name.trim() },
-        {
-          onError: (error) => {
-            console.error("Failed to update collection:", error.message);
-          },
-        }
-      );
-    }
-  };
-
-  // Auto-save when input loses focus
-  const handleBlur = () => {
-    handleSave();
-  };
-
-  // Delete collection handlers
-  const handleDeleteClick = () => {
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleDeleteCollection = () => {
-    if (collection) {
-      const collectionId = typeof collection.id === "string" ? collection.id : String(collection.id);
-      deleteCollection({ id: collectionId });
-      setShowDeleteConfirmModal(false);
-    }
-  };
-
-  const closeDeleteConfirmModal = () => {
-    setShowDeleteConfirmModal(false);
-  };
-
-  // Helper function to get collection display name
-  const getCollectionDisplayName = (collection: CollectionTree) => {
-    return typeof collection.id === "string" ? collection.id : `Collection ${collection.id}`;
-  };
-
-  if (!collection) {
+  if (!collectionId) {
     return (
       <div className="flex h-full items-center justify-center text-(--moss-primary-text)">
         <div className="text-center">
@@ -93,8 +41,6 @@ export const CollectionSettings = () => {
       </div>
     );
   }
-
-  const collectionDisplayName = getCollectionDisplayName(collection);
 
   // Define the tabs for the PageContainer matching the design
   const tabs: TabItem[] = [
@@ -106,17 +52,7 @@ export const CollectionSettings = () => {
           <span>Overview</span>
         </div>
       ),
-      content: (
-        <OverviewTabContent
-          name={name}
-          setName={setName}
-          repository={repository}
-          setRepository={setRepository}
-          onSave={handleSave}
-          onBlur={handleBlur}
-          onDeleteClick={handleDeleteClick}
-        />
-      ),
+      content: <OverviewTabContent collectionId={collectionId} />,
     },
     {
       id: "auth",
@@ -173,21 +109,5 @@ export const CollectionSettings = () => {
     },
   ];
 
-  return (
-    <>
-      <ConfirmationModal
-        showModal={showDeleteConfirmModal}
-        closeModal={closeDeleteConfirmModal}
-        title="Delete"
-        message={`Delete "${collectionDisplayName}"?`}
-        description="This will delete all requests, endpoints, and other items in this collection. This action cannot be undone."
-        confirmLabel="Delete"
-        cancelLabel="Close"
-        onConfirm={handleDeleteCollection}
-        variant="danger"
-      />
-
-      <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />
-    </>
-  );
+  return <PageContainerWithTabs tabs={tabs} activeTabId={activeTabId} onTabChange={setActiveTabId} />;
 };
