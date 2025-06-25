@@ -3,7 +3,7 @@ import "./assets/styles.css";
 import React from "react";
 
 import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
-import { DropNodeElement } from "@/components/CollectionTree/types";
+import { DropNodeElement, TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
@@ -11,8 +11,10 @@ import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspac
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { CollectionSettingsPage, KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { EntryKind } from "@repo/moss-collection";
 import {
   DockviewDidDropEvent,
   DockviewReact,
@@ -38,7 +40,7 @@ const DebugContext = React.createContext<boolean>(false);
 type PageConfig = {
   title?: string;
   icon?: Icons;
-  component: React.ComponentType;
+  component: React.ComponentType<IDockviewPanelProps>;
 };
 
 // Wrapper component for pages with dynamic titles
@@ -60,22 +62,19 @@ const DynamicPageWrapper = ({
   React.useEffect(() => {
     if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
       props.api.setTitle(currentWorkspace.displayName);
-    } else if (pageKey === "CollectionSettings" && props.api) {
-      // For now, use a static collection name - in the future this could be dynamic
-      props.api.setTitle("Sapic Test Collection");
     }
   }, [currentWorkspace?.displayName, props.api, pageKey]);
 
   // Special case for full-page components (no title)
   if (!config.title) {
-    return <PageComponent />;
+    return <PageComponent {...props} />;
   }
 
   let displayTitle = config.title;
   if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
     displayTitle = currentWorkspace.displayName;
   } else if (pageKey === "CollectionSettings") {
-    displayTitle = "Sapic Test Collection";
+    displayTitle = props.api.title ?? "Collection Settings";
   }
 
   // Standard page structure with header and content
@@ -86,7 +85,7 @@ const DynamicPageWrapper = ({
         icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
       />
       <PageContent>
-        <PageComponent />
+        <PageComponent {...props} />
       </PageContent>
     </PageView>
   );
@@ -219,18 +218,29 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Welcome: {
       component: WelcomePage,
     },
+    CollectionSettings: {
+      title: "CollectionSettings",
+      component: CollectionSettingsPage,
+    },
   };
 
   const components = {
-    Default: (props: IDockviewPanelProps) => {
+    Default: (props: IDockviewPanelProps<{ node: TreeCollectionNode; treeId: string; iconType: EntryKind }>) => {
+      const { displayMode } = useRequestModeStore();
+
       const isDebug = React.useContext(DebugContext);
-      const [activeTab, setActiveTab] = React.useState("endpoint");
+
+      const showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
+
+      const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
 
       const tabs = (
         <PageTabs>
-          <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
-            Endpoint
-          </button>
+          {showEndpoint && (
+            <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
+              Endpoint
+            </button>
+          )}
           <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
             Request
           </button>
@@ -309,7 +319,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         />
       );
     },
-    CollectionSettings: CollectionSettingsPage,
     ...Object.entries(pageConfigs).reduce(
       (acc, [key, config]) => {
         acc[key] = (props: IDockviewPanelProps) => <DynamicPageWrapper pageKey={key} config={config} props={props} />;

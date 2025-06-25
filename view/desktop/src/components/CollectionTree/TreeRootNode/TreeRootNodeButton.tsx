@@ -36,7 +36,7 @@ export const TreeRootNodeButton = ({
   const handleLabelClick = () => {
     addOrFocusPanel({
       id: treeId,
-      title: `${node.name} settings`,
+      title: node.name,
       component: "CollectionSettings",
       params: {
         collectionId: treeId,

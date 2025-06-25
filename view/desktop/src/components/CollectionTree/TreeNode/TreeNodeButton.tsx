@@ -61,7 +61,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
         params: {
           treeId,
           iconType: node.kind,
-          workspace: true,
+          node,
         },
         component: "Default",
       });
