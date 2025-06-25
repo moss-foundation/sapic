@@ -19,6 +19,7 @@ members = [
     "crates/moss-storage",
     "crates/moss-activity-indicator",
     "crates/moss-file",
+    "crates/moss-wasm",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -45,6 +46,7 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
+moss_wasm = { path = "crates/moss-wasm" }
 #
 # External crates
 #
@@ -96,3 +98,7 @@ nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
 image = "0.25.6"
+hcl = "1.0.1"
+wasmtime = "34.0.0"
+wasmtime-wasi = "34.0.0"
+sha2 = "0.10.9"
