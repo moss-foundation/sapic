@@ -11,11 +11,22 @@ const radioGroupItemStyles = `
   disabled:background-(--moss-radio-bg-disabled)
   disabled:border-(--moss-radio-border-disabled)
   disabled:data-[state=checked]:background-(--moss-radio-bg-disabled)
-  
+  disabled:cursor-not-allowed
+
   data-[state=checked]:background-(--moss-primary) 
 
   focus-visible:outline-(--moss-primary) 
 `;
+
+export interface ItemWithLabelProps {
+  label?: string;
+  description?: string;
+  value: string;
+  checked?: boolean;
+  onClick: () => void;
+  className?: string;
+  disabled?: boolean;
+}
 
 const ItemWithLabel = ({
   label,
@@ -24,20 +35,17 @@ const ItemWithLabel = ({
   checked,
   onClick,
   className,
-}: {
-  label?: string;
-  description?: string;
-  value: string;
-  checked?: boolean;
-  onClick: () => void;
-  className?: string;
-}) => {
+  disabled = false,
+}: ItemWithLabelProps) => {
   const id = useId();
 
   return (
     <div
       className={cn(
-        "grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2",
+        "selection-none grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2",
+        {
+          "cursor-pointer": !disabled,
+        },
         className
       )}
     >
@@ -47,6 +55,7 @@ const ItemWithLabel = ({
         checked={checked}
         onClick={onClick}
         className={cn(radioGroupItemStyles)}
+        disabled={disabled}
       >
         <RadioGroupPrimitive.Indicator>
           <Icon icon="RadioIndicator" />
@@ -54,7 +63,12 @@ const ItemWithLabel = ({
       </RadioGroupPrimitive.Item>
 
       {label && (
-        <label htmlFor={id} className="cursor-pointer py-2">
+        <label
+          htmlFor={id}
+          className={cn("cursor-pointer py-2", {
+            "cursor-not-allowed": disabled,
+          })}
+        >
           {label}
         </label>
       )}
