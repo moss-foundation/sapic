@@ -1,6 +1,7 @@
 use anyhow::Result;
 use moss_common::api::Change;
 use moss_file::toml::InPlaceEditor;
+use moss_git::url::normalize_git_url;
 use serde::{Deserialize, Serialize};
 use toml_edit::DocumentMut;
 use url::Url;
@@ -10,7 +11,8 @@ pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.toml";
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ManifestModel {
     pub name: String,
-    pub repository: Option<Url>,
+    /// The canonicalized form of git url, with protocol and ".git" suffix striped
+    pub repository: Option<String>,
 }
 
 #[derive(Debug)]
@@ -20,7 +22,7 @@ pub struct ManifestModelDiff {
     pub name: Option<String>,
     /// An update to the repository url, if provided, the collection
     /// will be either updated or removed.
-    pub repository: Option<Change<Url>>,
+    pub repository: Option<Change<String>>,
 }
 
 impl InPlaceEditor for ManifestModelDiff {
@@ -34,7 +36,7 @@ impl InPlaceEditor for ManifestModelDiff {
                 doc.remove("repository");
             }
             Some(Change::Update(new_repo)) => {
-                doc["repository"] = new_repo.to_string().into();
+                doc["repository"] = new_repo.clone().into();
             }
         }
 
