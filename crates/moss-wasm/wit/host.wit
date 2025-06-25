@@ -1,0 +1,9 @@
+package addon:host;
+
+interface host-functions {
+  greet: func(name: string);
+}
+
+world host-world {
+  import host-functions;
+}
