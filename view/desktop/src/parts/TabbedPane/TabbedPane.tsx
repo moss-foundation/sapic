@@ -225,7 +225,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   };
 
   const components = {
-    Default: (props: IDockviewPanelProps<{ node: TreeCollectionNode; treeId: string; iconType: EntryKind }>) => {
+    Default: (
+      props: IDockviewPanelProps<{
+        node: TreeCollectionNode;
+        treeId: string;
+        iconType: EntryKind;
+        someRandomString: string;
+      }>
+    ) => {
       const { displayMode } = useRequestModeStore();
 
       const isDebug = React.useContext(DebugContext);
@@ -233,6 +240,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       const showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
 
       const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
+
+      const dontShowTabs = props.params.node.class === "Endpoint" || props.params.node.class === "Schema";
 
       const tabs = (
         <PageTabs>
@@ -261,7 +270,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
           <PageHeader
             title={props.api.title ?? "Untitled"}
             icon={<Icon icon="Placeholder" className="size-[18px]" />}
-            tabs={tabs}
+            tabs={dontShowTabs ? null : tabs}
             toolbar={toolbar}
           />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
