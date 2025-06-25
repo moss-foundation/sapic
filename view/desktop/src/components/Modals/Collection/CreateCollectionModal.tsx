@@ -7,11 +7,13 @@ import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
 import { useCollectionsStore } from "@/store/collections";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { createCollection, isCreateCollectionLoading } = useCollectionsStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
   const [repo, setRepo] = useState("");
@@ -19,10 +21,22 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   const handleSubmit = async () => {
-    await createCollection({
+    const result = await createCollection({
       name,
     });
+
     closeModal();
+
+    if (openAutomatically) {
+      addOrFocusPanel({
+        id: result.id,
+        title: `${name} settings`,
+        component: "CollectionSettings",
+        params: {
+          collectionId: result.id,
+        },
+      });
+    }
   };
 
   const handleCancel = () => {

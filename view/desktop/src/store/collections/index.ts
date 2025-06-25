@@ -39,7 +39,7 @@ export interface CollectionsStoreState {
   updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => void;
 
   isCreateCollectionLoading: boolean;
-  createCollection: (collection: CreateCollectionInput) => Promise<void>;
+  createCollection: (collection: CreateCollectionInput) => Promise<CreateCollectionOutput>;
 
   isDeleteCollectionLoading: boolean;
   deleteCollection: (collectionId: string) => Promise<void>;
@@ -126,7 +126,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   },
 
   isCreateCollectionLoading: false,
-  createCollection: async (collection) => {
+  createCollection: async (collection: CreateCollectionInput): Promise<CreateCollectionOutput> => {
     set(() => ({
       isCreateCollectionLoading: true,
     }));
@@ -137,6 +137,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       set(() => ({
         isCreateCollectionLoading: false,
       }));
+
       throw new Error(String(result.error));
     }
 
@@ -199,6 +200,8 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set(() => ({
       isCreateCollectionLoading: false,
     }));
+
+    return result.data;
   },
 
   isDeleteCollectionLoading: false,
