@@ -30,7 +30,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     if (openAutomatically) {
       addOrFocusPanel({
         id: result.id,
-        title: `${name} settings`,
+        title: name,
         component: "CollectionSettings",
         params: {
           collectionId: result.id,
