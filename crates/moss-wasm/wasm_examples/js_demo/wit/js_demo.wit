@@ -1,6 +1,5 @@
-package addon:json-demo;
+package plugin:js-demo;
 
 world js-demo {
-  import addon:host/host-functions;
-  export execute: func();
+  include plugin:base/plugin-world;
 }
