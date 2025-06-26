@@ -1,12 +1,179 @@
-pub mod common;
-pub mod dir;
-pub mod item;
+mod common;
+mod component;
+mod endpoint;
+mod request;
+mod schema;
+
+mod docschema;
 
 pub use common::*;
-pub use dir::*;
-pub use item::*;
+pub use component::*;
+pub use endpoint::*;
+pub use request::*;
+pub use schema::*;
+
+use derive_more::{Deref, DerefMut};
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 use uuid::Uuid;
+
+use crate::models::{primitives::EntryClass, types::EntryProtocol};
+
+// #########################################################
+// ###                      Dir                          ###
+// #########################################################
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum DirConfigurationModel {
+    Request(RequestDirConfigurationModel),
+    Endpoint(EndpointDirConfigurationModel),
+    Component(ComponentDirConfigurationModel),
+    Schema(SchemaDirConfigurationModel),
+}
+
+#[derive(Debug, Deref, DerefMut, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompositeDirConfigurationModel {
+    pub metadata: ConfigurationMetadata,
+    #[serde(flatten)]
+    #[deref]
+    #[deref_mut]
+    pub inner: DirConfigurationModel,
+}
+
+// TODO: remove this
+impl Default for CompositeDirConfigurationModel {
+    fn default() -> Self {
+        Self {
+            metadata: ConfigurationMetadata { id: Uuid::new_v4() },
+            inner: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
+                HttpDirConfigurationModel {},
+            )),
+        }
+    }
+}
+
+impl CompositeDirConfigurationModel {
+    pub fn classification(&self) -> EntryClass {
+        match self.inner {
+            DirConfigurationModel::Request(_) => EntryClass::Request,
+            DirConfigurationModel::Endpoint(_) => EntryClass::Endpoint,
+            DirConfigurationModel::Component(_) => EntryClass::Component,
+            DirConfigurationModel::Schema(_) => EntryClass::Schema,
+        }
+    }
+}
+
+// #########################################################
+// ###                      Item                         ###
+// #########################################################
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum ItemConfigurationModel {
+    Request(RequestItemConfigurationModel),
+    Endpoint(EndpointItemConfigurationModel),
+    Component(ComponentItemConfigurationModel),
+    Schema(SchemaItemConfigurationModel),
+}
+
+// impl ItemConfigurationModel {
+//     pub fn to_hcl(&self) -> Block {
+//         match self {
+//             ItemConfigurationModel::Request(model) => model.to_hcl(),
+//             ItemConfigurationModel::Endpoint(model) => model.to_hcl(),
+//             ItemConfigurationModel::Component(_) => unimplemented!(),
+//             ItemConfigurationModel::Schema(_) => unimplemented!(),
+//         }
+//     }
+
+//     pub fn from_hcl(block: &Block) -> Result<Self> {
+//         match block.identifier.as_str() {
+//             "request" => {
+//                 let request_model = RequestItemConfigurationModel::from_hcl(block)?;
+//                 Ok(ItemConfigurationModel::Request(request_model))
+//             }
+//             "endpoint" => {
+//                 let endpoint_model = EndpointItemConfigurationModel::from_hcl(block)?;
+//                 Ok(ItemConfigurationModel::Endpoint(endpoint_model))
+//             }
+//             "component" => {
+//                 unimplemented!("Component configuration not implemented yet")
+//             }
+//             "schema" => {
+//                 unimplemented!("Schema configuration not implemented yet")
+//             }
+//             _ => Err(anyhow::anyhow!("Unknown block type: {}", block.identifier)),
+//         }
+//     }
+// }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CompositeItemConfigurationModel {
+    pub metadata: ConfigurationMetadata,
+    #[serde(flatten)]
+    #[deref]
+    pub inner: ItemConfigurationModel,
+}
+
+// impl CompositeItemConfigurationModel {
+//     pub fn to_hcl(&self) -> Body {
+//         Body::builder()
+//             .add_block(self.metadata.to_hcl())
+//             .add_block(self.inner.to_hcl())
+//             .build()
+//     }
+
+//     pub fn from_hcl(body: Body) -> Result<Self> {
+//         let mut metadata = None;
+//         let mut inner = None;
+
+//         for block in body.blocks() {
+//             match block.identifier.as_str() {
+//                 "metadata" => {
+//                     metadata = Some(ConfigurationMetadata::from_hcl(block)?);
+//                 }
+//                 "request" | "endpoint" | "component" | "schema" => {
+//                     inner = Some(ItemConfigurationModel::from_hcl(block)?);
+//                 }
+//                 _ => {}
+//             }
+//         }
+
+//         Ok(Self {
+//             metadata: metadata.ok_or_else(|| anyhow::anyhow!("Missing metadata block"))?,
+//             inner: inner.ok_or_else(|| anyhow::anyhow!("Missing configuration block"))?,
+//         })
+//     }
+// }
+
+impl CompositeItemConfigurationModel {
+    pub fn classification(&self) -> EntryClass {
+        match self.inner {
+            ItemConfigurationModel::Request(_) => EntryClass::Request,
+            ItemConfigurationModel::Endpoint(_) => EntryClass::Endpoint,
+            ItemConfigurationModel::Component(_) => EntryClass::Component,
+            ItemConfigurationModel::Schema(_) => EntryClass::Schema,
+        }
+    }
+
+    pub fn protocol(&self) -> Option<EntryProtocol> {
+        match &self.inner {
+            ItemConfigurationModel::Request(model) => match model {
+                RequestItemConfigurationModel::Http(model) => {
+                    Some(EntryProtocol::from(&model.request_parts.method))
+                }
+            },
+            ItemConfigurationModel::Endpoint(_) => Some(EntryProtocol::Get),
+            _ => None,
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum ConfigurationModel {
@@ -21,204 +188,4 @@ impl ConfigurationModel {
             ConfigurationModel::Dir(dir) => dir.metadata.id,
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use hcl::{Body, Expression};
-    use serde::{Deserialize, Serialize};
-
-    use super::*;
-
-    #[derive(Debug, Clone, Serialize, Deserialize)]
-    struct Test {
-        test: Expression,
-    }
-
-    #[test]
-    fn test_expression_serialization() {
-        let test = Test {
-            test: Expression::String("test".to_string()),
-        };
-
-        let hcl_string = hcl::to_string(&test).expect("Failed to serialize to HCL");
-
-        println!("{}", hcl_string);
-    }
-
-    #[test]
-    fn test_configuration_model_item_hcl_serialization() {
-        let model = CompositeItemConfigurationModel {
-            metadata: common::ConfigurationMetadata {
-                id: uuid::Uuid::new_v4(),
-            },
-            inner: item::ItemConfigurationModel::Request(
-                item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-                    request_parts: HttpRequestParts {
-                        method: crate::models::primitives::HttpMethod::Get,
-                    },
-                }),
-            ),
-        };
-
-        let hcl_body = model.to_hcl();
-        let hcl_string = hcl::to_string(&hcl_body).expect("Failed to serialize to HCL");
-
-        println!("ConfigurationModel (Item) serialized to HCL:");
-        println!("{}", hcl_string);
-
-        // let _deserialized: ConfigurationModel =
-        //     hcl::from_str(&hcl_string).expect("Failed to deserialize from HCL");
-    }
-
-    #[test]
-    fn test_item_configuration_hcl_round_trip() {
-        let model = CompositeItemConfigurationModel {
-            metadata: common::ConfigurationMetadata {
-                id: uuid::Uuid::new_v4(),
-            },
-            inner: item::ItemConfigurationModel::Request(
-                item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-                    request_parts: HttpRequestParts {
-                        method: crate::models::primitives::HttpMethod::Get,
-                    },
-                }),
-            ),
-        };
-
-        let hcl_body = model.to_hcl();
-        let hcl_string = hcl::to_string(&hcl_body).expect("Failed to serialize to HCL");
-
-        println!("Original model serialized to HCL:");
-        println!("{}", hcl_string);
-
-        let parsed_body: Body = hcl::from_str(&hcl_string).expect("Failed to parse HCL");
-        let deserialized_model = CompositeItemConfigurationModel::from_hcl(parsed_body)
-            .expect("Failed to deserialize from HCL");
-
-        dbg!(&deserialized_model);
-    }
-
-    // #[test]
-    // fn test_configuration_model_dir_hcl_serialization() {
-    //     let model = ConfigurationModel::Dir(CompositeDirConfigurationModel::default());
-
-    //     let hcl_string = hcl::to_string(&model).expect("Failed to serialize to HCL");
-
-    //     println!("ConfigurationModel (Dir) serialized to HCL:");
-    //     println!("{}", hcl_string);
-
-    //     let _deserialized: ConfigurationModel =
-    //         hcl::from_str(&hcl_string).expect("Failed to deserialize from HCL");
-    // }
-
-    // #[test]
-    // fn test_configuration_model_item_hcl_serialization() {
-    //     let model = ConfigurationModel::Item(CompositeItemConfigurationModel {
-    //         metadata: common::ConfigurationMetadata {
-    //             id: uuid::Uuid::new_v4(),
-    //         },
-    //         inner: item::ItemConfigurationModel::Request(
-    //             item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-    //                 request_parts: item::HttpRequestParts {
-    //                     method: crate::models::primitives::HttpMethod::Get,
-    //                 },
-    //             }),
-    //         ),
-    //     });
-
-    //     let hcl_string = hcl::to_string(&model).expect("Failed to serialize to HCL");
-
-    //     println!("ConfigurationModel (Item) serialized to HCL:");
-    //     println!("{}", hcl_string);
-
-    //     let _deserialized: ConfigurationModel =
-    //         hcl::from_str(&hcl_string).expect("Failed to deserialize from HCL");
-    // }
-
-    // #[test]
-    // fn test_configuration_model_hcl_block_serialization() {
-    //     let body = Body::builder()
-    //         .add_attribute((
-    //             "metadata",
-    //             Expression::from_iter([(
-    //                 "id",
-    //                 Expression::String("c1498caa-fbd9-443b-bda3-e84eb2398dde".to_string()),
-    //             )]),
-    //         ))
-    //         .add_block(
-    //             Block::builder("request")
-    //                 .add_label("http")
-    //                 .add_attribute(("method", "GET"))
-    //                 .build(),
-    //         )
-    //         .build();
-
-    //     let hcl_string = hcl::to_string(&body).expect("Failed to serialize to HCL");
-
-    //     println!("HCL with labels:");
-    //     println!("{}", hcl_string);
-    // }
-
-    // #[test]
-    // fn test_configuration_model_custom_hcl_serialization() {
-    //     let model = ConfigurationModel::Item(CompositeItemConfigurationModel {
-    //         metadata: common::ConfigurationMetadata {
-    //             id: uuid::Uuid::parse_str("c1498caa-fbd9-443b-bda3-e84eb2398dde").unwrap(),
-    //         },
-    //         inner: item::ItemConfigurationModel::Request(
-    //             item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-    //                 request_parts: item::HttpRequestParts {
-    //                     method: crate::models::primitives::HttpMethod::Get,
-    //                 },
-    //             }),
-    //         ),
-    //     });
-
-    //     let body = Body::builder()
-    //         .add_attribute((
-    //             "metadata",
-    //             Expression::from_iter([("id", Expression::String(model.id().to_string()))]),
-    //         ))
-    //         .add_block(
-    //             Block::builder("request")
-    //                 .add_label("http")
-    //                 .add_attribute(("method", "GET"))
-    //                 .build(),
-    //         )
-    //         .build();
-
-    //     let hcl_string = hcl::to_string(&body).expect("Failed to serialize to HCL");
-
-    //     println!("ConfigurationModel custom HCL format:");
-    //     println!("{}", hcl_string);
-    // }
-
-    // #[test]
-    // fn test_configuration_model_direct_hcl_serialization() {
-    //     let model = ConfigurationModel::Item(CompositeItemConfigurationModel {
-    //         metadata: common::ConfigurationMetadata {
-    //             id: uuid::Uuid::parse_str("c1498caa-fbd9-443b-bda3-e84eb2398dde").unwrap(),
-    //         },
-    //         inner: item::ItemConfigurationModel::Request(
-    //             item::RequestItemConfigurationModel::Http(item::HttpRequestItemConfiguration {
-    //                 request_parts: item::HttpRequestParts {
-    //                     method: crate::models::primitives::HttpMethod::Get,
-    //                 },
-    //             }),
-    //         ),
-    //     });
-
-    //     let hcl_string =
-    //         hcl::to_string(&model).expect("Failed to serialize ConfigurationModel to HCL");
-
-    //     println!("ConfigurationModel direct HCL serialization:");
-    //     println!("{}", hcl_string);
-
-    //     let deserialized_model: ConfigurationModel =
-    //         hcl::from_str(&hcl_string).expect("Failed to deserialize ConfigurationModel from HCL");
-
-    //     assert_eq!(model.id(), deserialized_model.id());
-    //     println!("Successfully round-trip serialized/deserialized ConfigurationModel!");
 }

@@ -1,8 +1,6 @@
 [workspace]
 resolver = "1"
-members = [
-    "libs/hcl-macros",
-    
+members = [    
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
@@ -29,8 +27,6 @@ members = [
 #
 # Workspace crates
 #
-hcl-macros = { path = "libs/hcl-macros" }
-
 moss_tauri = { path = "crates/moss-tauri" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
