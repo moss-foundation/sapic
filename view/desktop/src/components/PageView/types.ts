@@ -7,7 +7,6 @@ export interface PageViewProps {
 }
 
 export interface PageHeaderProps {
-  title: string;
   icon?: ReactNode;
   tabs?: ReactNode;
   toolbar?: ReactNode;

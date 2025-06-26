@@ -70,20 +70,10 @@ const DynamicPageWrapper = ({
     return <PageComponent {...props} />;
   }
 
-  let displayTitle = config.title;
-  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
-    displayTitle = currentWorkspace.displayName;
-  } else if (pageKey === "CollectionSettings") {
-    displayTitle = props.api.title ?? "Collection Settings";
-  }
   // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader
-        title={displayTitle}
-        icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
-        props={props}
-      />
+      <PageHeader icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined} props={props} />
       <PageContent>
         <PageComponent {...props} />
       </PageContent>
@@ -268,7 +258,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       return (
         <PageView>
           <PageHeader
-            title={props.api.title ?? "Untitled"}
             icon={<Icon icon="Placeholder" className="size-[18px]" />}
             tabs={dontShowTabs ? null : tabs}
             toolbar={toolbar}

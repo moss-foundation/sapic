@@ -4,12 +4,12 @@ import { Divider } from "../Divider";
 import { PageHeaderProps } from "./types";
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ icon, tabs, toolbar, className, props }) => {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState("Untitled");
 
   useEffect(() => {
     const currentPanel = props?.containerApi?.getPanel(props.api.id);
 
-    setTitle(currentPanel?.title ?? "");
+    setTitle(currentPanel?.title ?? "Untitled");
 
     if (props?.api?.onDidTitleChange) {
       const disposable = props.api.onDidTitleChange((event) => {
