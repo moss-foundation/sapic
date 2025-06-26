@@ -1,4 +1,6 @@
-export const VariablesTabContent = () => {
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+
+export const VariablesTabContent = ({}: IDockviewPanelProps<{ collectionId: string }>) => {
   return (
     <div className="flex h-full min-h-[400px] items-center justify-center">
       <div className="text-center opacity-60">

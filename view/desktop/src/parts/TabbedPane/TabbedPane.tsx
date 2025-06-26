@@ -76,13 +76,13 @@ const DynamicPageWrapper = ({
   } else if (pageKey === "CollectionSettings") {
     displayTitle = props.api.title ?? "Collection Settings";
   }
-
   // Standard page structure with header and content
   return (
     <PageView>
       <PageHeader
         title={displayTitle}
         icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
+        props={props}
       />
       <PageContent>
         <PageComponent {...props} />
@@ -123,8 +123,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
   const { canDrop, isDragging } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
@@ -241,7 +241,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
 
-      const dontShowTabs = props.params.node.class === "Endpoint" || props.params.node.class === "Schema";
+      const dontShowTabs = false; //props.params.node.path.split("\\")[0] === "endpoints" || props.params.node.path.split("\\")[0] === "schemas";
 
       const tabs = (
         <PageTabs>
@@ -335,10 +335,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       },
       {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
     ),
-  };
-
-  const headerComponents = {
-    default: CustomTab,
+    // ...Object.entries(pageConfigs).map(([key, config]) => {
+    //   return {
+    //     [key]: (props: IDockviewPanelProps) => (
+    //       <DynamicPageWrapper pageKey={key} config={config} props={props} />
+    //     ),
+    //   };
+    // }),
   };
 
   return (
@@ -366,7 +369,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   disableAutoResizing
                   ref={dockviewRef}
                   components={components}
-                  defaultTabComponent={headerComponents.default}
+                  defaultTabComponent={CustomTab}
                   rightHeaderActionsComponent={PanelToolbar}
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={Watermark}

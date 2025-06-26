@@ -55,21 +55,32 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const handleClick = () => {
+      if (node.kind === "Dir" || node.kind === "Case") {
+        onNodeUpdate({
+          ...node,
+          expanded: true,
+        });
+      }
+
       addOrFocusPanel({
         id: `${node.id}`,
         title: node.name,
         params: {
           treeId,
           iconType: node.kind,
-          node,
+          node: {
+            ...node,
+            expanded: true,
+          },
           someRandomString: "someRandomString",
         },
         component: "Default",
       });
     };
 
-    const handleClickOnDir = () => {
-      if (node.kind !== "Dir") return;
+    const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      if (node.kind === "Item") return;
 
       onNodeUpdate({
         ...node,
@@ -115,14 +126,18 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
-              <Icon
+              <button
                 onClick={handleClickOnDir}
-                icon="ChevronRight"
-                className={cn("text-(--moss-icon-primary-text)", {
-                  "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": node.kind !== "Dir",
-                })}
-              />
+                className={cn(
+                  "hover:background-(--moss-icon-primary-background-hover) cursor-pointer rounded-full text-(--moss-icon-primary-text)",
+                  {
+                    "rotate-90": shouldRenderChildNodes,
+                    "opacity-0": node.kind !== "Dir",
+                  }
+                )}
+              >
+                <Icon icon="ChevronRight" />
+              </button>
 
               {/* <TestCollectionIcon type={node.kind} /> */}
 
@@ -169,6 +184,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
 export default TreeNodeButton;
 
+// TODO: Remove this when we have real icons for the collections
 const DebugCollectionIconPlaceholder = ({
   protocol,
   type,

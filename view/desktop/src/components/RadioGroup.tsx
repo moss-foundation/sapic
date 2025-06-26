@@ -45,6 +45,7 @@ const ItemWithLabel = ({
         "selection-none grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,min-content)] items-center gap-x-2",
         {
           "cursor-pointer": !disabled,
+          "opacity-50": disabled,
         },
         className
       )}

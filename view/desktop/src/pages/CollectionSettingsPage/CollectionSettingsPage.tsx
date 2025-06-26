@@ -52,7 +52,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <span>Overview</span>
         </div>
       ),
-      content: <OverviewTabContent collectionId={collectionId} />,
+      content: <OverviewTabContent {...props} />,
     },
     {
       id: "auth",
@@ -63,7 +63,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <StatusDot active={true} />
         </div>
       ),
-      content: <AuthTabContent />,
+      content: <AuthTabContent {...props} />,
     },
     {
       id: "headers",
@@ -74,7 +74,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <Badge count={3} />
         </div>
       ),
-      content: <HeadersTabContent />,
+      content: <HeadersTabContent {...props} />,
     },
     {
       id: "variables",
@@ -85,7 +85,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <Badge count={3} />
         </div>
       ),
-      content: <VariablesTabContent />,
+      content: <VariablesTabContent {...props} />,
     },
     {
       id: "pre-request",
@@ -95,7 +95,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <span>Pre Request</span>
         </div>
       ),
-      content: <PreRequestTabContent />,
+      content: <PreRequestTabContent {...props} />,
     },
     {
       id: "post-request",
@@ -105,7 +105,7 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
           <span>Post Request</span>
         </div>
       ),
-      content: <PostRequestTabContent />,
+      content: <PostRequestTabContent {...props} />,
     },
   ];
 

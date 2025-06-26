@@ -16,13 +16,14 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repo, setRepo] = useState("");
+  const [repo, setRepo] = useState("https://github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
   const handleSubmit = async () => {
     const result = await createCollection({
       name,
+      repo,
     });
 
     closeModal();
@@ -82,7 +83,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
             </div>
           </div>
 
-          <div className="cursor-not-allowed opacity-50">
+          <div>
             <div className="flex gap-2">
               <span>Mode</span>
               <div className="background-(--moss-border-color) my-auto h-px w-full" />
@@ -91,14 +92,13 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
               You can switch modes in the workspace at any time and as often as needed.
             </p>
             <div className="pl-5">
-              <RadioGroup.Root disabled>
+              <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
                   label="Default"
                   description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
                   value="Default"
                   checked={mode === "Default"}
                   onClick={() => setMode("Default")}
-                  disabled
                 />
 
                 <RadioGroup.ItemWithLabel

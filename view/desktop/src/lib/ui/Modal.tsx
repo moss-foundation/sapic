@@ -41,7 +41,7 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
       <dialog
         ref={dialogRef}
         className={cn(
-          "mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 backdrop:opacity-0 starting:opacity-0",
+          "mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
           className
         )}
       >

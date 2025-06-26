@@ -13,27 +13,32 @@ interface TreeRootNodeButtonProps {
   node: TreeCollectionRootNode;
   searchInput?: string;
   shouldRenderChildNodes: boolean;
-  onFolderToggleClick: (node: TreeCollectionRootNode) => void;
+  onRootNodeClick: (node: TreeCollectionRootNode) => void;
 }
 
 export const TreeRootNodeButton = ({
   node,
   searchInput,
   shouldRenderChildNodes,
-  onFolderToggleClick,
+  onRootNodeClick,
 }: TreeRootNodeButtonProps) => {
   const { treeId } = useContext(TreeContext);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const handleIconClick = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    onFolderToggleClick({
+    onRootNodeClick({
       ...node,
       expanded: !node.expanded,
     });
   };
 
   const handleLabelClick = () => {
+    onRootNodeClick({
+      ...node,
+      expanded: true,
+    });
+
     addOrFocusPanel({
       id: treeId,
       title: node.name,
@@ -50,14 +55,18 @@ export const TreeRootNodeButton = ({
       onClick={handleLabelClick}
     >
       <span className="flex size-5 shrink-0 items-center justify-center">
-        <Icon
-          icon="ChevronRight"
-          className={cn("text-(--moss-icon-primary-text)", {
-            "rotate-90": shouldRenderChildNodes,
-            "hidden group-hover/treeRootNodeTrigger:block": TestMossImage,
-          })}
+        <button
           onClick={handleIconClick}
-        />
+          className="hover:background-(--moss-icon-primary-background-hover) cursor-pointer rounded-full"
+        >
+          <Icon
+            icon="ChevronRight"
+            className={cn("text-(--moss-icon-primary-text)", {
+              "rotate-90": shouldRenderChildNodes,
+              "hidden group-hover/treeRootNodeTrigger:block": TestMossImage,
+            })}
+          />
+        </button>
 
         {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
         {TestMossImage && (

@@ -4,6 +4,7 @@ import { ConfirmationModal, InputOutlined } from "@/components";
 import { useModal } from "@/hooks";
 import { useCollectionsStore } from "@/store/collections";
 
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
 import { CollectionSummarySection } from "../CollectionSummarySection";
 
@@ -11,10 +12,10 @@ interface OverviewTabContentProps {
   collectionId: string;
 }
 
-export const OverviewTabContent = ({ collectionId }: OverviewTabContentProps) => {
+export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
   const { streamedCollections, updateStreamedCollection, deleteCollection } = useCollectionsStore();
 
-  const collection = streamedCollections.find((collection) => collection.id === collectionId);
+  const collection = streamedCollections.find((collection) => collection.id === params.collectionId);
 
   const { showModal, closeModal, openModal } = useModal();
 
@@ -22,15 +23,19 @@ export const OverviewTabContent = ({ collectionId }: OverviewTabContentProps) =>
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
 
   const handleDeleteCollection = () => {
-    deleteCollection(collectionId);
+    deleteCollection(params.collectionId);
   };
 
   const updateCollection = () => {
     if (!collection || !name) return;
+
     updateStreamedCollection({
       ...collection,
       name,
     });
+
+    const currentPanel = containerApi.getPanel(collection.id);
+    currentPanel?.api.setTitle(name);
   };
 
   const handleBlur = () => {
@@ -39,10 +44,7 @@ export const OverviewTabContent = ({ collectionId }: OverviewTabContentProps) =>
       return;
     }
 
-    updateStreamedCollection({
-      ...collection,
-      name,
-    });
+    updateCollection();
   };
 
   if (!collection) {
@@ -71,7 +73,7 @@ export const OverviewTabContent = ({ collectionId }: OverviewTabContentProps) =>
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    updateCollection();
+                    // updateCollection();
                     e.currentTarget.blur();
                   }
                 }}
@@ -101,6 +103,7 @@ export const OverviewTabContent = ({ collectionId }: OverviewTabContentProps) =>
                 }}
                 placeholder="Enter repository URL..."
                 className="w-72 border-(--moss-input-border)"
+                required
               />
             </div>
           </div>
