@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ConfirmationModal, InputOutlined } from "@/components";
 import { useModal } from "@/hooks";
@@ -21,6 +21,12 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
 
   const [name, setName] = useState(collection?.name);
   const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+
+  useEffect(() => {
+    if (collection) {
+      setName(collection?.name);
+    }
+  }, [collection]);
 
   const handleDeleteCollection = () => {
     deleteCollection(params.collectionId);
