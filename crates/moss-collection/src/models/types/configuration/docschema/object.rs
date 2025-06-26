@@ -5,56 +5,47 @@ use hcl::{
 use serde::{Deserialize, Serialize};
 use std::{fmt, ops};
 
-/// A transparent wrapper type which creates HCL objects with unquoted keys.
+/// A transparent wrapper type that serializes structs as HCL objects with unquoted keys.
 ///
-/// When serialized with HCL, this produces objects where keys appear without quotes
-/// in the HCL output, similar to how Terraform configuration blocks work.
+/// This wrapper ensures that when serialized to HCL, object keys appear without quotes,
+/// matching the style of Terraform configuration files and other HCL documents.
 ///
-/// # Example
-///
-/// ```rust
-/// use serde::Serialize;
-/// use indexmap::IndexMap;
-///
-/// #[derive(Serialize)]
-/// struct Config {
-///     #[serde(serialize_with = "object_with_unquoted_keys")]
-///     options: HeaderParameterOptionsObject,
+/// Without `Object<T>`, keys would be quoted:
+/// ```hcl
+/// options = {
+///   "propagate" = true
+///   "cache" = false
 /// }
-///
-/// #[derive(Serialize)]
-/// struct HeaderParameterOptionsObject {
-///     propagate: bool,
-/// }
-///
-/// // This will serialize as:
-/// // options = {
-/// //   propagate = true
-/// // }
 /// ```
+///
+/// With `Object<T>`, keys are unquoted (Terraform-style):
+/// ```hcl
+/// options = {
+///   propagate = true
+///   cache = false
+/// }
+/// ```
+#[derive(PartialEq, Eq, Hash)]
 pub struct Object<T>(T);
 
 impl<T> Object<T> {
-    /// Create a new `Object<T>` from a `T`.
-    pub fn new(value: T) -> Object<T> {
+    #[inline]
+    pub const fn new(value: T) -> Self {
         Object(value)
-    }
-
-    /// Consume the `Object` and return the wrapped `T`.
-    pub fn into_inner(self) -> T {
-        self.0
     }
 }
 
 impl<T> ops::Deref for Object<T> {
     type Target = T;
 
+    #[inline]
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
 impl<T> ops::DerefMut for Object<T> {
+    #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -64,8 +55,21 @@ impl<T> Clone for Object<T>
 where
     T: Clone,
 {
+    #[inline]
     fn clone(&self) -> Self {
         Object(self.0.clone())
+    }
+}
+
+impl<T> Copy for Object<T> where T: Copy {}
+
+impl<T> Default for Object<T>
+where
+    T: Default,
+{
+    #[inline]
+    fn default() -> Self {
+        Object(T::default())
     }
 }
 
@@ -78,6 +82,23 @@ where
     }
 }
 
+impl<T> fmt::Display for Object<T>
+where
+    T: fmt::Display,
+{
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl<T> From<T> for Object<T> {
+    #[inline]
+    fn from(value: T) -> Self {
+        Object::new(value)
+    }
+}
+
 impl<T> Serialize for Object<T>
 where
     T: Serialize,
@@ -86,9 +107,9 @@ where
     where
         S: serde::Serializer,
     {
-        // Convert to HCL Expression with unquoted keys
-        let expression = object_to_hcl_expression(&self.0).map_err(serde::ser::Error::custom)?;
-        expression.serialize(serializer)
+        convert_to_hcl_object_expression(&self.0)
+            .map_err(serde::ser::Error::custom)?
+            .serialize(serializer)
     }
 }
 
@@ -96,75 +117,42 @@ impl<'de, T> Deserialize<'de> for Object<T>
 where
     T: Deserialize<'de>,
 {
+    #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        T::deserialize(deserializer).map(Object)
+        T::deserialize(deserializer).map(Object::new)
     }
 }
 
-/// Convert a serializable value to HCL Expression with unquoted keys
-fn object_to_hcl_expression<T>(value: &T) -> Result<Expression, hcl::Error>
+/// Converts a serializable value to an HCL Expression with unquoted object keys.
+///
+/// This function handles the conversion from Rust values to HCL expressions,
+/// ensuring that object keys appear without quotes in the final HCL output.
+fn convert_to_hcl_object_expression<T>(value: &T) -> Result<Expression, hcl::Error>
 where
     T: Serialize,
 {
-    // First convert to HCL Value
     let hcl_value = hcl::to_value(value)?;
 
-    // Then convert to Expression with unquoted keys
     match hcl_value {
         Value::Object(map) => {
-            let mut object_items = Vec::new();
-            for (key, value) in map {
-                // Create unquoted key using Identifier
-                let object_key = ObjectKey::Identifier(Identifier::new(key)?);
-                let expr = hcl::to_expression(&value)?;
-                object_items.push((object_key, expr));
-            }
-            Ok(Expression::Object(HclObject::from(object_items)))
+            // Convert map entries to HCL object items with unquoted keys
+            let object_items: Result<Vec<_>, hcl::Error> = map
+                .into_iter()
+                .map(|(key, value)| {
+                    let object_key = ObjectKey::Identifier(Identifier::new(key)?);
+                    let expr = hcl::to_expression(&value)?;
+                    Ok((object_key, expr))
+                })
+                .collect();
+
+            Ok(Expression::Object(HclObject::from(object_items?)))
         }
         _ => {
             // For non-object values, convert directly to expression
             hcl::to_expression(&hcl_value)
         }
     }
-}
-
-/// Serialize `T` as an HCL object with unquoted keys.
-///
-/// This function is intended to be used in the `#[serde(serialize_with)]` attribute.
-///
-/// # Example
-///
-/// ```rust
-/// use serde::Serialize;
-///
-/// #[derive(Serialize)]
-/// struct Config {
-///     #[serde(serialize_with = "object_with_unquoted_keys")]
-///     options: HeaderParameterOptionsObject,
-/// }
-///
-/// #[derive(Serialize)]
-/// struct HeaderParameterOptionsObject {
-///     propagate: bool,
-/// }
-/// ```
-pub fn object_with_unquoted_keys<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-where
-    T: Serialize,
-    S: serde::Serializer,
-{
-    let expression = object_to_hcl_expression(value).map_err(serde::ser::Error::custom)?;
-    expression.serialize(serializer)
-}
-
-/// Convenience function that wraps value in Object<T> and serializes it.
-pub fn object<T, S>(value: T, serializer: S) -> Result<S::Ok, S::Error>
-where
-    T: Serialize,
-    S: serde::Serializer,
-{
-    Object::new(value).serialize(serializer)
 }

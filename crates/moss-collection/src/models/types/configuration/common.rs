@@ -1,13 +1,16 @@
 use anyhow::Result;
+use hcl::ser::Block;
 use serde_json::{Number, Value};
 use std::{path::PathBuf, str::FromStr};
 
-use hcl::Block;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::models::primitives::{EntryKind, HttpMethod};
+use crate::models::{
+    primitives::{EntryKind, HttpMethod},
+    types::configuration::docschema::{self, Metadata},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -32,28 +35,10 @@ pub struct ConfigurationMetadata {
     pub id: Uuid,
 }
 
-impl ConfigurationMetadata {
-    pub fn to_hcl(&self) -> Block {
-        Block::builder("metadata")
-            .add_attribute(("id", self.id.to_string()))
-            .build()
-    }
-
-    pub fn from_hcl(block: &Block) -> Result<Self> {
-        let mut id = None;
-
-        for attr in block.body.attributes() {
-            if attr.key.as_str() == "id" {
-                if let hcl::Expression::String(id_str) = &attr.expr {
-                    id = Some(Uuid::parse_str(id_str)?);
-                    break;
-                }
-            }
-        }
-
-        Ok(Self {
-            id: id.ok_or_else(|| anyhow::anyhow!("Missing id in metadata"))?,
-        })
+impl From<Block<Metadata>> for ConfigurationMetadata {
+    fn from(block: Block<Metadata>) -> Self {
+        let inner = block.into_inner();
+        Self { id: inner.id }
     }
 }
 
@@ -67,6 +52,15 @@ impl ConfigurationMetadata {
 pub struct HttpRequestParts {
     pub method: HttpMethod,
     // pub headers: Vec<HeaderParamItem>,
+}
+
+impl From<Block<docschema::HttpRequestParts>> for HttpRequestParts {
+    fn from(value: Block<docschema::HttpRequestParts>) -> Self {
+        let inner = value.into_inner();
+        Self {
+            method: inner.method,
+        }
+    }
 }
 
 // Query Parameter
@@ -136,29 +130,6 @@ pub struct HeaderParamItem {
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: HeaderParamOptions,
-}
-
-impl HeaderParamItem {
-    pub fn from_hcl(block: &Block) -> Result<Self> {
-        // let mut key = None;
-        // let mut value = None;
-
-        // for attr in block.body.attributes() {
-        //     if attr.key.as_str() == "key" {
-        //         if let HclExpression::String(key_str) = &attr.expr {
-        //             key = Some(key_str.to_string());
-        //         }
-        //     }
-
-        //     if attr.key.as_str() == "value" {
-        //         if let HclExpression::String(value_str) = &attr.expr {
-        //             value = Some(value_str.to_string());
-        //         }
-        //     }
-        // }
-
-        todo!()
-    }
 }
 
 // Body

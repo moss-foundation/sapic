@@ -4,7 +4,7 @@ mod endpoint;
 mod request;
 mod schema;
 
-mod docschema;
+pub mod docschema;
 
 pub use common::*;
 pub use component::*;
@@ -18,7 +18,10 @@ use ts_rs::TS;
 
 use uuid::Uuid;
 
-use crate::models::{primitives::EntryClass, types::EntryProtocol};
+use crate::models::{
+    primitives::EntryClass,
+    types::{EntryProtocol, configuration::docschema::ItemRequestConfiguration},
+};
 
 // #########################################################
 // ###                      Dir                          ###
@@ -28,7 +31,7 @@ use crate::models::{primitives::EntryClass, types::EntryProtocol};
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {
-    Request(RequestDirConfigurationModel),
+    Request(DirRequestConfigurationModel),
     Endpoint(EndpointDirConfigurationModel),
     Component(ComponentDirConfigurationModel),
     Schema(SchemaDirConfigurationModel),
@@ -49,8 +52,8 @@ impl Default for CompositeDirConfigurationModel {
     fn default() -> Self {
         Self {
             metadata: ConfigurationMetadata { id: Uuid::new_v4() },
-            inner: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-                HttpDirConfigurationModel {},
+            inner: DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+                DirHttpConfigurationModel {},
             )),
         }
     }
@@ -75,42 +78,11 @@ impl CompositeDirConfigurationModel {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ItemConfigurationModel {
-    Request(RequestItemConfigurationModel),
+    Request(ItemRequestConfigurationModel),
     Endpoint(EndpointItemConfigurationModel),
     Component(ComponentItemConfigurationModel),
     Schema(SchemaItemConfigurationModel),
 }
-
-// impl ItemConfigurationModel {
-//     pub fn to_hcl(&self) -> Block {
-//         match self {
-//             ItemConfigurationModel::Request(model) => model.to_hcl(),
-//             ItemConfigurationModel::Endpoint(model) => model.to_hcl(),
-//             ItemConfigurationModel::Component(_) => unimplemented!(),
-//             ItemConfigurationModel::Schema(_) => unimplemented!(),
-//         }
-//     }
-
-//     pub fn from_hcl(block: &Block) -> Result<Self> {
-//         match block.identifier.as_str() {
-//             "request" => {
-//                 let request_model = RequestItemConfigurationModel::from_hcl(block)?;
-//                 Ok(ItemConfigurationModel::Request(request_model))
-//             }
-//             "endpoint" => {
-//                 let endpoint_model = EndpointItemConfigurationModel::from_hcl(block)?;
-//                 Ok(ItemConfigurationModel::Endpoint(endpoint_model))
-//             }
-//             "component" => {
-//                 unimplemented!("Component configuration not implemented yet")
-//             }
-//             "schema" => {
-//                 unimplemented!("Schema configuration not implemented yet")
-//             }
-//             _ => Err(anyhow::anyhow!("Unknown block type: {}", block.identifier)),
-//         }
-//     }
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
 #[serde(rename_all = "camelCase")]
@@ -121,36 +93,38 @@ pub struct CompositeItemConfigurationModel {
     pub inner: ItemConfigurationModel,
 }
 
-// impl CompositeItemConfigurationModel {
-//     pub fn to_hcl(&self) -> Body {
-//         Body::builder()
-//             .add_block(self.metadata.to_hcl())
-//             .add_block(self.inner.to_hcl())
-//             .build()
-//     }
+impl TryFrom<ItemRequestConfiguration> for CompositeItemConfigurationModel {
+    type Error = anyhow::Error;
 
-//     pub fn from_hcl(body: Body) -> Result<Self> {
-//         let mut metadata = None;
-//         let mut inner = None;
+    fn try_from(value: ItemRequestConfiguration) -> Result<Self, Self::Error> {
+        // if let Some(http_request_parts) = value.http_request_parts {
+        //     let configuration = ItemHttpRequestConfiguration {
+        //         request_parts: HttpRequestParts::from(http_request_parts),
+        //     };
+        //     let model = ItemRequestConfigurationModel::Http(configuration);
 
-//         for block in body.blocks() {
-//             match block.identifier.as_str() {
-//                 "metadata" => {
-//                     metadata = Some(ConfigurationMetadata::from_hcl(block)?);
-//                 }
-//                 "request" | "endpoint" | "component" | "schema" => {
-//                     inner = Some(ItemConfigurationModel::from_hcl(block)?);
-//                 }
-//                 _ => {}
-//             }
-//         }
+        //     return Ok(Self {
+        //         metadata: ConfigurationMetadata::from(value.metadata),
+        //         inner: ItemConfigurationModel::Request(model),
+        //     });
+        // }
 
-//         Ok(Self {
-//             metadata: metadata.ok_or_else(|| anyhow::anyhow!("Missing metadata block"))?,
-//             inner: inner.ok_or_else(|| anyhow::anyhow!("Missing configuration block"))?,
-//         })
-//     }
-// }
+        todo!()
+
+        // let metadata = ConfigurationMetadata::from(value.metadata);
+        // if let Some(request_parts) = value.request_parts.get("http") {}
+        // if request_parts.
+
+        // Self {
+        //     metadata: ConfigurationMetadata::from(value.metadata),
+        //     // inner: ItemConfigurationModel::Request(ItemRequestConfigurationModel::Http(
+        //     //     ItemHttpRequestConfiguration {
+        //     //         request_parts: value.request_parts,
+        //     //     },
+        //     // )),
+        // }
+    }
+}
 
 impl CompositeItemConfigurationModel {
     pub fn classification(&self) -> EntryClass {
@@ -165,7 +139,7 @@ impl CompositeItemConfigurationModel {
     pub fn protocol(&self) -> Option<EntryProtocol> {
         match &self.inner {
             ItemConfigurationModel::Request(model) => match model {
-                RequestItemConfigurationModel::Http(model) => {
+                ItemRequestConfigurationModel::Http(model) => {
                     Some(EntryProtocol::from(&model.request_parts.method))
                 }
             },

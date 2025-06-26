@@ -6,8 +6,8 @@ use moss_collection::{
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput},
         types::configuration::{
-            DirConfigurationModel, HttpDirConfigurationModel, ItemConfigurationModel,
-            RequestDirConfigurationModel,
+            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
+            ItemConfigurationModel,
         },
     },
 };
@@ -30,8 +30,8 @@ fn create_test_item_configuration() -> ItemConfigurationModel {
 }
 
 fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        HttpDirConfigurationModel {},
+    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+        DirHttpConfigurationModel {},
     ))
 }
 
