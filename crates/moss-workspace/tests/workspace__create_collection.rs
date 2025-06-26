@@ -1,6 +1,6 @@
 pub mod shared;
 
-use moss_collection::{dirs::ASSETS_DIR, services::set_icon::constants::ICON_NAME};
+use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_storage::{
     storage::operations::{GetItem, ListByPrefix},
@@ -11,6 +11,14 @@ use moss_workspace::models::operations::CreateCollectionInput;
 use url::Url;
 
 use crate::shared::{collection_key, generate_random_icon, setup_test_workspace};
+
+// FIXME: The tests and business logic are poorly organized.
+// A collection shouldn’t expose implementation details, and the workspace shouldn’t be
+// testing logic that doesn’t belong to it. The DTO for creating a collection should simply
+// return the icon path, and in these tests we should check if the icon exists (when expected),
+// rather than manually constructing the path where we assume it was saved. With the current
+// approach, if the image path logic changes in `moss-collection`, it’ll break tests in
+// `moss-workspace`, which clearly shouldn’t happen.
 
 #[tokio::test]
 async fn create_collection_success() {
@@ -250,6 +258,11 @@ async fn create_collection_with_icon() {
     assert!(collection_path.exists());
 
     // Verify that the icon is stored in the assets folder
-    assert!(collection_path.join(ASSETS_DIR).join(ICON_NAME).exists());
+    assert!(
+        collection_path
+            .join(ASSETS_DIR)
+            .join(COLLECTION_ICON_FILENAME)
+            .exists()
+    );
     cleanup().await;
 }

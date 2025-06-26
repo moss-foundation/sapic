@@ -39,7 +39,7 @@ export interface CollectionsStoreState {
   updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => void;
 
   isCreateCollectionLoading: boolean;
-  createCollection: (collection: CreateCollectionInput) => Promise<void>;
+  createCollection: (collection: CreateCollectionInput) => Promise<CreateCollectionOutput>;
 
   isDeleteCollectionLoading: boolean;
   deleteCollection: (collectionId: string) => Promise<void>;
@@ -58,6 +58,7 @@ export interface CollectionsStoreState {
   streamedCollectionEntries: EntryInfo[];
   startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
   distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
@@ -125,7 +126,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   },
 
   isCreateCollectionLoading: false,
-  createCollection: async (collection) => {
+  createCollection: async (collection: CreateCollectionInput): Promise<CreateCollectionOutput> => {
     set(() => ({
       isCreateCollectionLoading: true,
     }));
@@ -136,6 +137,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       set(() => ({
         isCreateCollectionLoading: false,
       }));
+
       throw new Error(String(result.error));
     }
 
@@ -198,6 +200,8 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set(() => ({
       isCreateCollectionLoading: false,
     }));
+
+    return result.data;
   },
 
   isDeleteCollectionLoading: false,
@@ -575,6 +579,15 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       };
       currentNode.childNodes.push(newNode);
     }
+  },
+  //TODO: this is temporary, we need to update the collection in the backend too
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => {
+    set((state) => ({
+      streamedCollections: state.streamedCollections.map((c) => (c.id === collection.id ? collection : c)),
+      collectionsTrees: state.collectionsTrees.map((c) =>
+        c.id === collection.id ? { ...c, name: collection.name } : c
+      ),
+    }));
   },
 }));
 

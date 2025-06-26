@@ -4,10 +4,12 @@ export const NodeLabel = ({
   label,
   searchInput,
   className,
+  onClick,
 }: {
   label: string | number;
   searchInput?: string;
   className?: string;
+  onClick?: () => void;
 }) => {
   const renderHighlightedLabel = () => {
     if (!searchInput) return String(label);
@@ -28,7 +30,7 @@ export const NodeLabel = ({
   };
 
   return (
-    <span className={cn("w-max overflow-hidden pr-[6px] text-ellipsis whitespace-nowrap", className)}>
+    <span className={cn("w-max overflow-hidden pr-[6px] text-ellipsis whitespace-nowrap", className)} onClick={onClick}>
       {searchInput ? renderHighlightedLabel() : label}
     </span>
   );

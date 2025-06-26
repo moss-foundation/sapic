@@ -115,7 +115,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
             node={node}
             searchInput={searchInput}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
-            handleRootNodeClick={onRootNodeUpdate}
+            onRootNodeClick={onRootNodeUpdate}
           />
         )}
 

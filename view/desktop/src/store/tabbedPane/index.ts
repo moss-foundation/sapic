@@ -17,6 +17,7 @@ interface TabbedPaneState {
   addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
   setGridState: (state: SerializedDockview) => void;
   openPanel: (panelType: string) => void;
+  removePanel: (panelId: string) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
@@ -60,13 +61,14 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
 
     get().api?.addPanel({
       ...options,
-      component: "Default",
+      component: options.component || "Default",
       params: {
         ...options.params,
         someRandomString,
       },
     } as AddPanelOptions);
   },
+
   openPanel: (panelType: string) => {
     try {
       // Use setTimeout to prevent race condition during initialization
@@ -91,6 +93,12 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
       }, 0);
     } catch (error) {
       console.error(`Error in open${panelType}:`, error);
+    }
+  },
+  removePanel: (panelId: string) => {
+    const panel = get().api?.getPanel(panelId);
+    if (panel) {
+      get().api?.removePanel(panel);
     }
   },
 }));
