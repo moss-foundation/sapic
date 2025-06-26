@@ -217,7 +217,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const components = {
     Default: (
       props: IDockviewPanelProps<{
-        node: TreeCollectionNode;
+        node?: TreeCollectionNode;
         treeId: string;
         iconType: EntryKind;
         someRandomString: string;
@@ -227,11 +227,16 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
       const isDebug = React.useContext(DebugContext);
 
-      const showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
-
+      let showEndpoint = false;
+      let dontShowTabs = true;
       const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
-
-      const dontShowTabs = false; //props.params.node.path.split("\\")[0] === "endpoints" || props.params.node.path.split("\\")[0] === "schemas";
+      if (props.params?.node) {
+        showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
+        dontShowTabs =
+          props.params.node.kind === "Dir" ||
+          props.params.node.path.split("\\")[0] === "endpoints" ||
+          props.params.node.path.split("\\")[0] === "schemas";
+      }
 
       const tabs = (
         <PageTabs>
