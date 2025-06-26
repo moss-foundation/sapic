@@ -1,0 +1,13 @@
+package plugin:base;
+
+interface host-functions {
+  use types.{value};
+  greet: func(content: value);
+}
+
+world plugin-world {
+  use types.{value};
+  import host-functions;
+  import types;
+  export execute: func(input: value) -> value;
+}
