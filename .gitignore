@@ -82,3 +82,4 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 view/desktop/src/assets/icons/
 autodocs/
 NUL
+/crates/moss-wasm/wasm_examples/python_demo/__pycache__
