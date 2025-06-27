@@ -2,9 +2,9 @@
 import { z } from "zod";
 import { entryClassSchema, entryKindSchema, entryProtocolSchema, httpMethodSchema } from "./primitives.zod";
 
-export const componentDirConfigurationModelSchema = z.never();
+export const componentDirConfigurationModelSchema = z.record(z.never());
 
-export const componentItemConfigurationModelSchema = z.never();
+export const componentItemConfigurationModelSchema = z.record(z.never());
 
 export const configurationMetadataSchema = z.object({
   id: z.string(),
@@ -12,15 +12,35 @@ export const configurationMetadataSchema = z.object({
 
 export const endpointDirConfigurationModelSchema = z.never();
 
-export const schemaDirConfigurationModelSchema = z.never();
+export const schemaDirConfigurationModelSchema = z.record(z.never());
 
-export const endpointItemConfigurationModelSchema = z.never();
+export const dirHttpConfigurationModelSchema = z.record(z.never());
+
+export const dirRequestConfigurationModelSchema = z.object({
+  "http": dirHttpConfigurationModelSchema,
+});
 
 export const environmentInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),
 });
+
+export const expressionSchema = z.union([
+  z.literal("null"),
+  z.object({
+    "string": z.string(),
+  }),
+  z.object({
+    "variable": z.string(),
+  }),
+  z.object({
+    "number": z.number(),
+  }),
+  z.object({
+    "bool": z.boolean(),
+  }),
+]);
 
 export const formDataValueSchema = z.union([
   z.object({
@@ -39,9 +59,7 @@ export const headerParamOptionsSchema = z.object({
   propagate: z.boolean(),
 });
 
-export const httpDirConfigurationModelSchema = z.record(z.never());
-
-export const schemaItemConfigurationModelSchema = z.never();
+export const schemaItemConfigurationModelSchema = z.record(z.never());
 
 export const pathParamOptionsSchema = z.object({
   propagate: z.boolean(),
@@ -75,16 +93,12 @@ export const formDataItemSchema = z.object({
   options: formDataOptionsSchema,
 });
 
-export const requestDirConfigurationModelSchema = z.object({
-  "http": httpDirConfigurationModelSchema,
-});
-
 export const urlEncodedOptionsSchema = z.object({
   propagate: z.boolean(),
 });
 export const dirConfigurationModelSchema = z.union([
   z.object({
-    "request": requestDirConfigurationModelSchema,
+    "request": dirRequestConfigurationModelSchema,
   }),
   z.object({
     "endpoint": endpointDirConfigurationModelSchema,
@@ -110,7 +124,7 @@ export const entryInfoSchema = z.object({
 
 export const headerParamItemSchema = z.object({
   key: z.string(),
-  value: z.string(),
+  value: expressionSchema,
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
@@ -121,9 +135,17 @@ export const httpRequestPartsSchema = z.object({
   method: httpMethodSchema,
 });
 
+export const itemHttpRequestConfigurationSchema = z.object({
+  requestParts: httpRequestPartsSchema,
+});
+
+export const itemRequestConfigurationModelSchema = z.object({
+  "http": itemHttpRequestConfigurationSchema,
+});
+
 export const pathParamItemSchema = z.object({
   key: z.string(),
-  value: z.string(),
+  value: expressionSchema,
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
@@ -132,7 +154,7 @@ export const pathParamItemSchema = z.object({
 
 export const queryParamItemSchema = z.object({
   key: z.string(),
-  value: z.string(),
+  value: expressionSchema,
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
@@ -148,12 +170,12 @@ export const urlEncodedItemSchema = z.object({
   options: urlEncodedOptionsSchema,
 });
 
-export const httpRequestItemConfigurationSchema = z.object({
+export const httpEndpointItemConfigurationSchema = z.object({
   requestParts: httpRequestPartsSchema,
 });
 
-export const requestItemConfigurationModelSchema = z.object({
-  "http": httpRequestItemConfigurationSchema,
+export const endpointItemConfigurationModelSchema = z.object({
+  "Http": httpEndpointItemConfigurationSchema,
 });
 
 export const requestBodySchema = z.union([
@@ -173,7 +195,7 @@ export const requestBodySchema = z.union([
 
 export const itemConfigurationModelSchema = z.union([
   z.object({
-    "request": requestItemConfigurationModelSchema,
+    "request": itemRequestConfigurationModelSchema,
   }),
   z.object({
     "endpoint": endpointItemConfigurationModelSchema,

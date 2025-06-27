@@ -9,6 +9,8 @@ pub mod docschema;
 pub use common::*;
 pub use component::*;
 pub use endpoint::*;
+use hcl::ser::{Block, LabeledBlock};
+use indexmap::IndexMap;
 pub use request::*;
 pub use schema::*;
 
@@ -20,7 +22,15 @@ use uuid::Uuid;
 
 use crate::models::{
     primitives::{EntryClass, HttpMethod},
-    types::{EntryProtocol, configuration::docschema::RawItemConfiguration},
+    types::{
+        EntryProtocol,
+        configuration::docschema::{
+            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+            RawDirRequestConfiguration, RawDirSchemaConfiguration, RawItemComponentConfiguration,
+            RawItemConfiguration, RawItemEndpointConfiguration, RawItemRequestConfiguration,
+            RawItemSchemaConfiguration, UrlDetails, UrlParts,
+        },
+    },
 };
 
 // #########################################################
@@ -45,6 +55,45 @@ pub struct CompositeDirConfigurationModel {
     #[deref]
     #[deref_mut]
     pub inner: DirConfigurationModel,
+}
+
+impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
+    fn into(self) -> RawDirConfiguration {
+        match self.inner {
+            DirConfigurationModel::Request(model) => {
+                let configuration = match model {
+                    DirRequestConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
+                        metadata: self.metadata.into(),
+                        headers: LabeledBlock::new(IndexMap::new()),
+                    },
+                };
+
+                RawDirConfiguration::Request(Block::new(configuration))
+            }
+            DirConfigurationModel::Endpoint(_model) => {
+                let configuration = RawDirEndpointConfiguration {
+                    metadata: self.metadata.into(),
+                    headers: LabeledBlock::new(IndexMap::new()),
+                };
+
+                RawDirConfiguration::Endpoint(Block::new(configuration))
+            }
+            DirConfigurationModel::Component(_model) => {
+                let configuration = RawDirComponentConfiguration {
+                    metadata: self.metadata.into(),
+                };
+
+                RawDirConfiguration::Component(Block::new(configuration))
+            }
+            DirConfigurationModel::Schema(_model) => {
+                let configuration = RawDirSchemaConfiguration {
+                    metadata: self.metadata.into(),
+                };
+
+                RawDirConfiguration::Schema(Block::new(configuration))
+            }
+        }
+    }
 }
 
 impl CompositeDirConfigurationModel {
@@ -79,6 +128,63 @@ pub struct CompositeItemConfigurationModel {
     #[serde(flatten)]
     #[deref]
     pub inner: ItemConfigurationModel,
+}
+
+impl Into<RawItemConfiguration> for CompositeItemConfigurationModel {
+    fn into(self) -> RawItemConfiguration {
+        match self.inner {
+            ItemConfigurationModel::Request(model) => match model {
+                ItemRequestConfigurationModel::Http(http_configuration) => {
+                    let url_details = UrlDetails {
+                        raw: "".to_string(), // TODO:
+                    };
+                    let request_parts = http_configuration.request_parts.clone();
+                    let url_part = match request_parts.method {
+                        HttpMethod::Get => UrlParts::Get(Block::new(url_details)),
+                        HttpMethod::Post => UrlParts::Post(Block::new(url_details)),
+                        HttpMethod::Put => UrlParts::Put(Block::new(url_details)),
+                        HttpMethod::Delete => UrlParts::Delete(Block::new(url_details)),
+                    };
+
+                    RawItemConfiguration::Request(Block::new(RawItemRequestConfiguration {
+                        metadata: self.metadata.into(),
+                        url: Block::new(url_part),
+                        headers: LabeledBlock::new(IndexMap::new()),
+                    }))
+                }
+            },
+            ItemConfigurationModel::Endpoint(model) => match model {
+                EndpointItemConfigurationModel::Http(http_configuration) => {
+                    let url_details = UrlDetails {
+                        raw: "".to_string(), // TODO:
+                    };
+                    let request_parts = http_configuration.request_parts.clone();
+                    let url_part = match request_parts.method {
+                        HttpMethod::Get => UrlParts::Get(Block::new(url_details)),
+                        HttpMethod::Post => UrlParts::Post(Block::new(url_details)),
+                        HttpMethod::Put => UrlParts::Put(Block::new(url_details)),
+                        HttpMethod::Delete => UrlParts::Delete(Block::new(url_details)),
+                    };
+
+                    RawItemConfiguration::Endpoint(Block::new(RawItemEndpointConfiguration {
+                        metadata: self.metadata.into(),
+                        url: Block::new(url_part),
+                        headers: LabeledBlock::new(IndexMap::new()),
+                    }))
+                }
+            },
+            ItemConfigurationModel::Component(_model) => {
+                RawItemConfiguration::Component(Block::new(RawItemComponentConfiguration {
+                    metadata: self.metadata.into(),
+                }))
+            }
+            ItemConfigurationModel::Schema(_model) => {
+                RawItemConfiguration::Schema(Block::new(RawItemSchemaConfiguration {
+                    metadata: self.metadata.into(),
+                }))
+            }
+        }
+    }
 }
 
 impl From<RawItemConfiguration> for CompositeItemConfigurationModel {

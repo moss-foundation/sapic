@@ -3333,6 +3333,7 @@ name = "moss_common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "hcl-rs",
  "moss_db",
  "serde",
  "serde_json",

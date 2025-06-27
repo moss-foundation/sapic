@@ -55,7 +55,16 @@ pub enum RawItemConfiguration {
     Request(Block<RawItemRequestConfiguration>),
     Endpoint(Block<RawItemEndpointConfiguration>),
     Component(Block<RawItemComponentConfiguration>),
-    Schema(Block<RawItemRequestConfiguration>),
+    Schema(Block<RawItemSchemaConfiguration>),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RawDirConfiguration {
+    Request(Block<RawDirRequestConfiguration>),
+    Endpoint(Block<RawDirEndpointConfiguration>),
+    Component(Block<RawDirComponentConfiguration>),
+    Schema(Block<RawDirSchemaConfiguration>),
 }
 
 #[cfg(test)]

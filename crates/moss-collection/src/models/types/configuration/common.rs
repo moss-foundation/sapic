@@ -31,6 +31,12 @@ pub struct ConfigurationMetadata {
     pub id: Uuid,
 }
 
+impl Into<Block<RawMetadata>> for ConfigurationMetadata {
+    fn into(self) -> Block<RawMetadata> {
+        Block::new(RawMetadata { id: self.id })
+    }
+}
+
 impl From<Block<RawMetadata>> for ConfigurationMetadata {
     fn from(block: Block<RawMetadata>) -> Self {
         let inner = block.into_inner();
