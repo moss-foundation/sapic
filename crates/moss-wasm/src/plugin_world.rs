@@ -1,9 +1,9 @@
-/// See moss-wasm/wit
+// See moss-wasm/wit
 wasmtime::component::bindgen!("plugin-world");
 
-use anyhow::{Result, anyhow};
+use anyhow::anyhow;
 
-use crate::plugin_world::plugin::base::types::SimpleValue;
+use plugin::base::types::{Number, SimpleValue};
 
 impl From<SimpleValue> for Value {
     fn from(value: SimpleValue) -> Self {
@@ -28,5 +28,108 @@ impl TryFrom<Value> for SimpleValue {
             Value::Arr(_) => Err(anyhow!("Cannot convert composite type to simple value")),
             Value::Obj(_) => Err(anyhow!("Cannot convert composite type to simple value")),
         }
+    }
+}
+
+impl TryFrom<hcl::Number> for Number {
+    type Error = anyhow::Error;
+
+    fn try_from(value: hcl::Number) -> std::result::Result<Self, Self::Error> {
+        if value.is_u64() {
+            Ok(Number::Unsigned(value.as_u64().unwrap()))
+        } else if value.is_i64() {
+            Ok(Number::Signed(value.as_i64().unwrap()))
+        } else if value.is_f64() {
+            Ok(Number::Float(value.as_f64().unwrap()))
+        } else {
+            // This should never be reached
+            Err(anyhow!("Failed to convert hcl number to WASM number"))
+        }
+    }
+}
+
+impl TryInto<hcl::Number> for Number {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> std::result::Result<hcl::Number, Self::Error> {
+        let number = match self {
+            Number::Signed(i) => hcl::Number::from(i),
+            Number::Unsigned(u) => hcl::Number::from(u),
+            Number::Float(f) => hcl::Number::from_f64(f)
+                .ok_or(anyhow!("Unable to convert float number {f} to hcl number"))?,
+        };
+        Ok(number)
+    }
+}
+
+impl TryFrom<hcl::Value> for Value {
+    type Error = anyhow::Error;
+
+    fn try_from(value: hcl::Value) -> std::result::Result<Self, Self::Error> {
+        let val = match value {
+            hcl::Value::Null => Value::Null,
+            hcl::Value::Bool(b) => Value::Boolean(b),
+            hcl::Value::Number(number) => Value::Num(Number::try_from(number)?),
+            hcl::Value::String(s) => Value::Str(s),
+            hcl::Value::Array(values) => {
+                let mut elements = vec![];
+                for ele in values {
+                    let wasm_val: Value = ele.try_into()?;
+                    // We don't support nested composite type now
+                    // Element can only be SimpleValue
+                    let wasm_simple_val: SimpleValue = wasm_val
+                        .try_into()
+                        .map_err(|_| anyhow!("Nested composite types are currently unsupported"))?;
+                    elements.push(wasm_simple_val);
+                }
+                Value::Arr(elements)
+            }
+            hcl::Value::Object(index_map) => {
+                let mut entries = vec![];
+                for (key, value) in index_map {
+                    let wasm_val: Value = value.try_into()?;
+                    // We don't support nested composite type now
+                    // Element can only be SimpleValue
+                    let wasm_simple_val: SimpleValue = wasm_val
+                        .try_into()
+                        .map_err(|_| anyhow!("Nested composite types are currently unsupported"))?;
+                    entries.push((key, wasm_simple_val));
+                }
+                Value::Obj(entries)
+            }
+        };
+        Ok(val)
+    }
+}
+
+impl TryInto<hcl::Value> for Value {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> std::result::Result<hcl::Value, Self::Error> {
+        let value = match self {
+            Value::Null => hcl::Value::Null,
+            Value::Boolean(b) => hcl::Value::Bool(b),
+            Value::Num(number) => hcl::Value::Number(number.try_into()?),
+            Value::Str(s) => hcl::Value::String(s),
+            Value::Arr(simple_values) => {
+                let mut elements = vec![];
+                for simple_val in simple_values {
+                    let wasm_val: Value = simple_val.into();
+                    let hcl_val: hcl::Value = wasm_val.try_into()?;
+                    elements.push(hcl_val);
+                }
+                hcl::Value::Array(elements)
+            }
+            Value::Obj(items) => {
+                let mut map: hcl::Map<String, hcl::Value> = hcl::Map::new();
+                for (key, simple_val) in items {
+                    let wasm_val: Value = simple_val.into();
+                    let hcl_val: hcl::Value = wasm_val.try_into()?;
+                    map.insert(key, hcl_val);
+                }
+                hcl::Value::Object(map)
+            }
+        };
+        Ok(value)
     }
 }
