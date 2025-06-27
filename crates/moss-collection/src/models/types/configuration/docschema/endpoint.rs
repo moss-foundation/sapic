@@ -19,7 +19,7 @@ pub struct RawItemEndpointConfiguration {
     pub url: Block<UrlParts>,
 
     #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
+    pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
 // #########################################################
@@ -31,14 +31,14 @@ pub struct RawDirEndpointConfiguration {
     pub metadata: Block<RawMetadata>,
 
     #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
+    pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
 impl RawDirEndpointConfiguration {
     pub fn new() -> Self {
         Self {
             metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
-            headers: LabeledBlock::new(indexmap! {}),
+            headers: None,
         }
     }
 }

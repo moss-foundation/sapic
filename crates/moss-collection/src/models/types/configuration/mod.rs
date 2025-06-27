@@ -64,7 +64,7 @@ impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
                 let configuration = match model {
                     DirRequestConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
                         metadata: self.metadata.into(),
-                        headers: LabeledBlock::new(IndexMap::new()),
+                        headers: None,
                     },
                 };
 
@@ -73,7 +73,7 @@ impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
             DirConfigurationModel::Endpoint(_model) => {
                 let configuration = RawDirEndpointConfiguration {
                     metadata: self.metadata.into(),
-                    headers: LabeledBlock::new(IndexMap::new()),
+                    headers: None,
                 };
 
                 RawDirConfiguration::Endpoint(Block::new(configuration))
@@ -149,7 +149,7 @@ impl Into<RawItemConfiguration> for CompositeItemConfigurationModel {
                     RawItemConfiguration::Request(Block::new(RawItemRequestConfiguration {
                         metadata: self.metadata.into(),
                         url: Block::new(url_part),
-                        headers: LabeledBlock::new(IndexMap::new()),
+                        headers: None,
                     }))
                 }
             },
@@ -169,7 +169,7 @@ impl Into<RawItemConfiguration> for CompositeItemConfigurationModel {
                     RawItemConfiguration::Endpoint(Block::new(RawItemEndpointConfiguration {
                         metadata: self.metadata.into(),
                         url: Block::new(url_part),
-                        headers: LabeledBlock::new(IndexMap::new()),
+                        headers: None,
                     }))
                 }
             },

@@ -141,7 +141,7 @@ mod tests {
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),
-            headers: LabeledBlock::new(indexmap! {
+            headers: Some(LabeledBlock::new(indexmap! {
                     "Content-Type".to_string() => RawHeaderParameter {
                         value: HclExpression::String("application/json".to_string()),
                         disabled: false,
@@ -154,7 +154,7 @@ mod tests {
                         description: "The accept type of the request".to_string(),
                     options: Object::new(HeaderParameterOptions { propagate: true }),
                 }
-            }),
+            })),
         };
 
         let item = RawItemConfiguration::Request(Block::new(config));

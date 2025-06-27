@@ -19,7 +19,7 @@ pub struct RawItemRequestConfiguration {
     pub url: Block<UrlParts>,
 
     #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
+    pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
 // #########################################################
@@ -31,14 +31,14 @@ pub struct RawDirRequestConfiguration {
     pub metadata: Block<RawMetadata>,
 
     #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
+    pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
 impl RawDirRequestConfiguration {
     pub fn new() -> Self {
         Self {
             metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
-            headers: LabeledBlock::new(indexmap! {}),
+            headers: None,
         }
     }
 }
@@ -62,7 +62,7 @@ mod tests {
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),
-            headers: LabeledBlock::new(indexmap! {
+            headers: Some(LabeledBlock::new(indexmap! {
                     "Content-Type".to_string() => RawHeaderParameter {
                         value: HclExpression::String("application/json".to_string()),
                         disabled: false,
@@ -75,7 +75,7 @@ mod tests {
                         description: "The accept type of the request".to_string(),
                     options: Object::new(HeaderParameterOptions { propagate: true }),
                 }
-            }),
+            })),
         };
 
         let str = hcl::to_string(&config).unwrap();

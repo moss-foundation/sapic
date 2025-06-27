@@ -259,7 +259,7 @@ impl Worktree {
                         return;
                     }
                     Err(_err) => {
-                        eprintln!("Error processing dir entry: {}", _err);
+                        eprintln!("Error processing dir {}: {}", job.path.display(), _err);
                         // TODO: log error
                         return;
                     }
