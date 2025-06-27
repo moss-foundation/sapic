@@ -9,7 +9,7 @@ use url::Url;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::models::types::{EditorPartStateInfo, EnvironmentInfo};
+use crate::models::types::EditorPartStateInfo;
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 

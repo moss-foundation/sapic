@@ -10,18 +10,13 @@ use thiserror::Error;
 use tokio::{fs, sync::mpsc};
 use uuid::Uuid;
 
-use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryProtocol},
-    types::configuration::{
-        CompositeDirConfigurationModel, CompositeItemConfigurationModel,
-        docschema::{RawDirConfiguration, RawItemConfiguration},
+use crate::{
+    constants,
+    models::{
+        primitives::{EntryClass, EntryKind, EntryProtocol},
+        types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
 };
-
-pub mod constants {
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.sapic";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.sapic";
-}
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
@@ -125,7 +120,7 @@ impl Worktree {
         self.fs.create_dir(&abs_path).await?;
 
         if is_dir {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
+            let file_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -137,7 +132,7 @@ impl Worktree {
                 )
                 .await?;
         } else {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+            let file_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -336,8 +331,8 @@ async fn process_dir_entry(
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
 ) -> WorktreeResult<Option<WorktreeEntry>> {
-    let dir_config_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
-    let item_config_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+    let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
+    let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
     if dir_config_path.exists() {
         let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;

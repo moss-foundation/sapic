@@ -9,8 +9,7 @@ pub mod docschema;
 pub use common::*;
 pub use component::*;
 pub use endpoint::*;
-use hcl::ser::{Block, LabeledBlock};
-use indexmap::IndexMap;
+use hcl::ser::Block;
 pub use request::*;
 pub use schema::*;
 
