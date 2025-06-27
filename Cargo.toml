@@ -1,6 +1,6 @@
 [workspace]
 resolver = "1"
-members = [
+members = [    
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-tauri",
@@ -19,6 +19,7 @@ members = [
     "crates/moss-storage",
     "crates/moss-activity-indicator",
     "crates/moss-file",
+    "crates/moss-hcl", 
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -45,6 +46,7 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
+moss_hcl = { path = "crates/moss-hcl" }
 #
 # External crates
 #
@@ -96,3 +98,5 @@ nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
 image = "0.25.6"
+hcl-rs = "0.18.5"
+indexmap = "2.9.0"

@@ -5,19 +5,18 @@ export const updateNodeInTree = (
   updatedNode: TreeCollectionNode
 ): TreeCollectionRootNode => {
   //TODO: use class to decide which node to update, but now class is always a Request
-  const path = updatedNode.path.split("\\")[0];
 
-  switch (path) {
-    case "requests":
+  switch (updatedNode.class) {
+    case "Request":
       tree.requests = updateNode(tree.requests, updatedNode);
       break;
-    case "endpoints":
+    case "Endpoint":
       tree.endpoints = updateNode(tree.endpoints, updatedNode);
       break;
-    case "components":
+    case "Component":
       tree.components = updateNode(tree.components, updatedNode);
       break;
-    case "schemas":
+    case "Schema":
       tree.schemas = updateNode(tree.schemas, updatedNode);
       break;
   }

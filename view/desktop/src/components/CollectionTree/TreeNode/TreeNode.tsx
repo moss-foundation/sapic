@@ -49,7 +49,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
     setIsAddingFolderNode,
     handleAddFormSubmit,
     handleAddFormCancel,
-  } = useNodeAddForm(node);
+  } = useNodeAddForm(node, onNodeUpdate);
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,
@@ -75,7 +75,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
       collectionId: treeId,
       input: {
         id: node.id,
-        path: node.path,
+        path: node.path.raw,
       },
     });
     // onNodeUpdate(node);
@@ -87,7 +87,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
   const nodePaddingLeft = depth * nodeOffset;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
-  const isRootNode = node.path.split("\\").length === 1;
+  const isRootNode = node.path.segments.length === 1;
 
   return (
     <li className="relative">

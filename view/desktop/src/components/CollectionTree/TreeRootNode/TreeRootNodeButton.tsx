@@ -57,7 +57,7 @@ export const TreeRootNodeButton = ({
       <span className="flex size-5 shrink-0 items-center justify-center">
         <button
           onClick={handleIconClick}
-          className="hover:background-(--moss-icon-primary-background-hover) cursor-pointer rounded-full"
+          className="hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full"
         >
           <Icon
             icon="ChevronRight"

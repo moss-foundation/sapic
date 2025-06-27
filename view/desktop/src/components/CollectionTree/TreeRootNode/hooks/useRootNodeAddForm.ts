@@ -4,6 +4,7 @@ import { useCollectionsStore } from "@/store/collections";
 import { CreateEntryInput } from "@repo/moss-collection";
 
 import { TreeContext } from "../../Tree";
+import { TreeCollectionRootNode } from "../../types";
 
 const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput => {
   if (isAddingFolder) {
@@ -37,7 +38,10 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
   };
 };
 
-export const useRootNodeAddForm = () => {
+export const useRootNodeAddForm = (
+  node: TreeCollectionRootNode,
+  onRootNodeUpdate: (node: TreeCollectionRootNode) => void
+) => {
   const { treeId } = useContext(TreeContext);
   const { createCollectionEntry } = useCollectionsStore();
 
@@ -47,10 +51,26 @@ export const useRootNodeAddForm = () => {
   const handleRootAddFormSubmit = async (name: string) => {
     const newEntry = createEntry(name, isAddingRootNodeFolder);
 
-    await createCollectionEntry({
+    const result = await createCollectionEntry({
       collectionId: treeId,
       input: newEntry,
     });
+
+    if (result) {
+      onRootNodeUpdate({
+        ...node,
+        requests: {
+          ...node.requests,
+          childNodes: [
+            ...node.requests.childNodes,
+            {
+              ...result,
+              childNodes: [],
+            },
+          ],
+        },
+      });
+    }
 
     setIsAddingRootNodeFile(false);
     setIsAddingRootNodeFolder(false);

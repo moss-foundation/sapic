@@ -19,12 +19,20 @@ pub struct EnvironmentInfo {
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct EntryPath {
+    pub raw: PathBuf,
+    pub segments: Vec<String>,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
     pub id: Uuid,
     pub name: String,
-    pub path: PathBuf,
+    pub path: EntryPath,
     pub class: EntryClass,
     pub kind: EntryKind,
     pub protocol: Option<EntryProtocol>,

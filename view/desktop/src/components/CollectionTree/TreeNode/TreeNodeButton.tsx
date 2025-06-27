@@ -129,7 +129,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <button
                 onClick={handleClickOnDir}
                 className={cn(
-                  "hover:background-(--moss-icon-primary-background-hover) cursor-pointer rounded-full text-(--moss-icon-primary-text)",
+                  "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
                   {
                     "rotate-90": shouldRenderChildNodes,
                     "opacity-0": node.kind !== "Dir",
@@ -143,7 +143,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
-              <NodeLabel label={node.name} searchInput={searchInput} />
+              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
             {preview &&
