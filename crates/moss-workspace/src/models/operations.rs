@@ -9,7 +9,7 @@ use url::Url;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::models::types::{CollectionInfo, EditorPartStateInfo, EnvironmentInfo};
+use crate::models::types::{EditorPartStateInfo, EnvironmentInfo};
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
@@ -92,14 +92,6 @@ pub struct DeleteCollectionOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,
-}
-
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeWorkspaceOutput {
-    pub collections: Vec<CollectionInfo>,
-    pub environments: Vec<EnvironmentInfo>,
 }
 
 #[derive(Debug, Deserialize, TS)]
