@@ -135,6 +135,23 @@ mod tests {
     use indexmap::indexmap;
 
     #[test]
+    fn test_dir() {
+        let config = RawDirRequestConfiguration {
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            headers: None,
+        };
+
+        let item = RawDirConfiguration::Request(Block::new(config));
+
+        let str = hcl::to_string(&item).unwrap();
+        println!("{}", str);
+
+        let new = hcl::from_str::<RawDirConfiguration>(&str).unwrap();
+
+        println!("{:?}", new);
+    }
+
+    #[test]
     fn test_item() {
         let config = RawItemRequestConfiguration {
             metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),

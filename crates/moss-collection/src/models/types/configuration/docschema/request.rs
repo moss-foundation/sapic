@@ -19,6 +19,7 @@ pub struct RawItemRequestConfiguration {
     pub url: Block<UrlParts>,
 
     #[serde(rename = "header")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
@@ -31,6 +32,7 @@ pub struct RawDirRequestConfiguration {
     pub metadata: Block<RawMetadata>,
 
     #[serde(rename = "header")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub headers: Option<LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>>,
 }
 
