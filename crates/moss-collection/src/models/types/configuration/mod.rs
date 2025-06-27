@@ -19,8 +19,8 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 use crate::models::{
-    primitives::EntryClass,
-    types::{EntryProtocol, configuration::docschema::ItemRequestConfiguration},
+    primitives::{EntryClass, HttpMethod},
+    types::{EntryProtocol, configuration::docschema::RawItemConfiguration},
 };
 
 // #########################################################
@@ -45,18 +45,6 @@ pub struct CompositeDirConfigurationModel {
     #[deref]
     #[deref_mut]
     pub inner: DirConfigurationModel,
-}
-
-// TODO: remove this
-impl Default for CompositeDirConfigurationModel {
-    fn default() -> Self {
-        Self {
-            metadata: ConfigurationMetadata { id: Uuid::new_v4() },
-            inner: DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
-                DirHttpConfigurationModel {},
-            )),
-        }
-    }
 }
 
 impl CompositeDirConfigurationModel {
@@ -93,36 +81,158 @@ pub struct CompositeItemConfigurationModel {
     pub inner: ItemConfigurationModel,
 }
 
-impl TryFrom<ItemRequestConfiguration> for CompositeItemConfigurationModel {
-    type Error = anyhow::Error;
+impl From<RawItemConfiguration> for CompositeItemConfigurationModel {
+    fn from(value: RawItemConfiguration) -> Self {
+        match value {
+            RawItemConfiguration::Request(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
 
-    fn try_from(value: ItemRequestConfiguration) -> Result<Self, Self::Error> {
-        // if let Some(http_request_parts) = value.http_request_parts {
-        //     let configuration = ItemHttpRequestConfiguration {
-        //         request_parts: HttpRequestParts::from(http_request_parts),
-        //     };
-        //     let model = ItemRequestConfigurationModel::Http(configuration);
+                match block.url.clone().into_inner() {
+                    docschema::UrlParts::Get(block) => {
+                        let _details = block.into_inner();
 
-        //     return Ok(Self {
-        //         metadata: ConfigurationMetadata::from(value.metadata),
-        //         inner: ItemConfigurationModel::Request(model),
-        //     });
-        // }
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Request(
+                                ItemRequestConfigurationModel::Http(ItemHttpRequestConfiguration {
+                                    request_parts: HttpRequestParts {
+                                        method: HttpMethod::Get,
+                                    },
+                                }),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Post(block) => {
+                        let _details = block.into_inner();
 
-        todo!()
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Request(
+                                ItemRequestConfigurationModel::Http(ItemHttpRequestConfiguration {
+                                    request_parts: HttpRequestParts {
+                                        method: HttpMethod::Post,
+                                    },
+                                }),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Put(block) => {
+                        let _details = block.into_inner();
 
-        // let metadata = ConfigurationMetadata::from(value.metadata);
-        // if let Some(request_parts) = value.request_parts.get("http") {}
-        // if request_parts.
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Request(
+                                ItemRequestConfigurationModel::Http(ItemHttpRequestConfiguration {
+                                    request_parts: HttpRequestParts {
+                                        method: HttpMethod::Put,
+                                    },
+                                }),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Delete(block) => {
+                        let _details = block.into_inner();
 
-        // Self {
-        //     metadata: ConfigurationMetadata::from(value.metadata),
-        //     // inner: ItemConfigurationModel::Request(ItemRequestConfigurationModel::Http(
-        //     //     ItemHttpRequestConfiguration {
-        //     //         request_parts: value.request_parts,
-        //     //     },
-        //     // )),
-        // }
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Request(
+                                ItemRequestConfigurationModel::Http(ItemHttpRequestConfiguration {
+                                    request_parts: HttpRequestParts {
+                                        method: HttpMethod::Delete,
+                                    },
+                                }),
+                            ),
+                        }
+                    }
+                }
+            }
+            RawItemConfiguration::Endpoint(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                match block.url.clone().into_inner() {
+                    docschema::UrlParts::Get(block) => {
+                        let _details = block.into_inner();
+
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Endpoint(
+                                EndpointItemConfigurationModel::Http(
+                                    HttpEndpointItemConfiguration {
+                                        request_parts: HttpRequestParts {
+                                            method: HttpMethod::Get,
+                                        },
+                                    },
+                                ),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Post(block) => {
+                        let _details = block.into_inner();
+
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Endpoint(
+                                EndpointItemConfigurationModel::Http(
+                                    HttpEndpointItemConfiguration {
+                                        request_parts: HttpRequestParts {
+                                            method: HttpMethod::Post,
+                                        },
+                                    },
+                                ),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Put(block) => {
+                        let _details = block.into_inner();
+
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Endpoint(
+                                EndpointItemConfigurationModel::Http(
+                                    HttpEndpointItemConfiguration {
+                                        request_parts: HttpRequestParts {
+                                            method: HttpMethod::Put,
+                                        },
+                                    },
+                                ),
+                            ),
+                        }
+                    }
+                    docschema::UrlParts::Delete(block) => {
+                        let _details = block.into_inner();
+
+                        CompositeItemConfigurationModel {
+                            metadata,
+                            inner: ItemConfigurationModel::Endpoint(
+                                EndpointItemConfigurationModel::Http(
+                                    HttpEndpointItemConfiguration {
+                                        request_parts: HttpRequestParts {
+                                            method: HttpMethod::Delete,
+                                        },
+                                    },
+                                ),
+                            ),
+                        }
+                    }
+                }
+            }
+            RawItemConfiguration::Component(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeItemConfigurationModel {
+                    metadata,
+                    inner: ItemConfigurationModel::Component(ComponentItemConfigurationModel {}),
+                }
+            }
+            RawItemConfiguration::Schema(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeItemConfigurationModel {
+                    metadata,
+                    inner: ItemConfigurationModel::Schema(SchemaItemConfigurationModel {}),
+                }
+            }
+        }
     }
 }
 

@@ -1,16 +1,12 @@
-use anyhow::Result;
 use hcl::ser::Block;
-use serde_json::{Number, Value};
-use std::{path::PathBuf, str::FromStr};
+use serde_json::Number;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::models::{
-    primitives::{EntryKind, HttpMethod},
-    types::configuration::docschema::{self, Metadata},
-};
+use crate::models::{primitives::HttpMethod, types::configuration::docschema::RawMetadata};
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -35,8 +31,8 @@ pub struct ConfigurationMetadata {
     pub id: Uuid,
 }
 
-impl From<Block<Metadata>> for ConfigurationMetadata {
-    fn from(block: Block<Metadata>) -> Self {
+impl From<Block<RawMetadata>> for ConfigurationMetadata {
+    fn from(block: Block<RawMetadata>) -> Self {
         let inner = block.into_inner();
         Self { id: inner.id }
     }
@@ -54,14 +50,16 @@ pub struct HttpRequestParts {
     // pub headers: Vec<HeaderParamItem>,
 }
 
-impl From<Block<docschema::HttpRequestParts>> for HttpRequestParts {
-    fn from(value: Block<docschema::HttpRequestParts>) -> Self {
-        let inner = value.into_inner();
-        Self {
-            method: inner.method,
-        }
-    }
-}
+// impl From<Block<docschema::HttpRequestParts>> for HttpRequestParts {
+//     fn from(value: Block<docschema::HttpRequestParts>) -> Self {
+//         let inner = value.into_inner();
+
+//         todo!()
+//         // Self {
+//         //     method: inner.method,
+//         // }
+//     }
+// }
 
 // Query Parameter
 

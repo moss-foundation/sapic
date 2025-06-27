@@ -37,6 +37,7 @@ strum.workspace = true
 strum_macros.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap = "2.9.0"
+serde_with = "3.0"
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

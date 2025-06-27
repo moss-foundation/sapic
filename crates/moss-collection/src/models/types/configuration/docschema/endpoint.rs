@@ -1,18 +1,25 @@
 use hcl::ser::{Block, LabeledBlock};
-use indexmap::IndexMap;
+use indexmap::{IndexMap, indexmap};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::models::types::configuration::docschema::{DirRequestParts, Metadata, Protocol};
+use crate::models::types::configuration::docschema::{
+    HeaderName, RawHeaderParameter, RawMetadata, UrlParts,
+};
 
 // #########################################################
 // ###                      Item                         ###
 // #########################################################
 
 #[derive(Debug, Serialize, Deserialize)]
-struct ItemEndpointConfiguration {
-    pub metadata: Block<Metadata>,
-    // #[serde(rename = "request")]
-    // pub request_parts: LabeledBlock<IndexMap<Protocol, ItemRequestParts>>,
+pub struct RawItemEndpointConfiguration {
+    pub metadata: Block<RawMetadata>,
+
+    #[serde(flatten)]
+    pub url: Block<UrlParts>,
+
+    #[serde(rename = "header")]
+    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
 }
 
 // #########################################################
@@ -20,9 +27,18 @@ struct ItemEndpointConfiguration {
 // #########################################################
 
 #[derive(Debug, Serialize, Deserialize)]
-struct DirEndpointConfiguration {
-    pub metadata: Block<Metadata>,
+pub struct RawDirEndpointConfiguration {
+    pub metadata: Block<RawMetadata>,
 
-    #[serde(rename = "request")]
-    pub request_parts: LabeledBlock<IndexMap<Protocol, DirRequestParts>>,
+    #[serde(rename = "header")]
+    pub headers: LabeledBlock<IndexMap<HeaderName, RawHeaderParameter>>,
+}
+
+impl RawDirEndpointConfiguration {
+    pub fn new() -> Self {
+        Self {
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            headers: LabeledBlock::new(indexmap! {}),
+        }
+    }
 }

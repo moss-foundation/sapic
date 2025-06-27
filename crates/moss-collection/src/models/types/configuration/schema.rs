@@ -9,7 +9,7 @@ use ts_rs::TS;
 // #[serde(rename_all = "snake_case")]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum SchemaItemConfigurationModel {}
+pub struct SchemaItemConfigurationModel {}
 
 // #########################################################
 // ###                      Dir                          ###
@@ -19,4 +19,4 @@ pub enum SchemaItemConfigurationModel {}
 // #[serde(rename_all = "snake_case")]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum SchemaDirConfigurationModel {}
+pub struct SchemaDirConfigurationModel {}

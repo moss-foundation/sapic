@@ -10,36 +10,29 @@ pub use object::*;
 pub use request::*;
 pub use schema::*;
 
-use hcl::{
-    Expression,
-    ser::{Block, LabeledBlock},
-};
-use indexmap::IndexMap;
+use hcl::{Expression, ser::Block};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-use crate::models::primitives::HttpMethod;
 
 pub type HeaderName = String;
 pub type Protocol = String;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HttpRequestParts {
-    pub method: HttpMethod,
-    pub url: String,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UrlDetails {
+    pub raw: String,
+}
 
-    #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, HeaderParameter>>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum UrlParts {
+    Get(Block<UrlDetails>),
+    Post(Block<UrlDetails>),
+    Put(Block<UrlDetails>),
+    Delete(Block<UrlDetails>),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DirRequestParts {
-    #[serde(rename = "header")]
-    pub headers: LabeledBlock<IndexMap<HeaderName, HeaderParameter>>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct HeaderParameter {
+pub struct RawHeaderParameter {
     pub value: Expression,
     pub disabled: bool,
     pub description: String,
@@ -51,14 +44,18 @@ pub struct HeaderParameterOptions {
     pub propagate: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Metadata {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RawMetadata {
     pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Item {
-    request: Option<Block<ItemRequestConfiguration>>,
+#[serde(rename_all = "snake_case")]
+pub enum RawItemConfiguration {
+    Request(Block<RawItemRequestConfiguration>),
+    Endpoint(Block<RawItemEndpointConfiguration>),
+    Component(Block<RawItemComponentConfiguration>),
+    Schema(Block<RawItemRequestConfiguration>),
 }
 
 #[cfg(test)]
@@ -69,36 +66,33 @@ mod tests {
 
     #[test]
     fn test_item() {
-        let config = ItemRequestConfiguration {
-            metadata: Block::new(Metadata { id: Uuid::new_v4() }),
-            http_request_parts: Some(HttpRequestParts {
-                method: HttpMethod::Get,
-                url: "https://example.com".to_string(),
-                headers: LabeledBlock::new(indexmap! {
-                    "Content-Type".to_string() => HeaderParameter {
+        let config = RawItemRequestConfiguration {
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            url: Block::new(UrlParts::Get(Block::new(UrlDetails {
+                raw: "https://example.com".to_string(),
+            }))),
+            headers: LabeledBlock::new(indexmap! {
+                    "Content-Type".to_string() => RawHeaderParameter {
                         value: HclExpression::String("application/json".to_string()),
                         disabled: false,
                         description: "The content type of the request".to_string(),
                         options: Object::new(HeaderParameterOptions { propagate: true }),
                     },
-                    "Accept".to_string() => HeaderParameter {
+                    "Accept".to_string() => RawHeaderParameter {
                         value: HclExpression::String("application/json, application/xml".to_string()),
                         disabled: false,
                         description: "The accept type of the request".to_string(),
-                        options: Object::new(HeaderParameterOptions { propagate: true }),
-                    }
-                }),
+                    options: Object::new(HeaderParameterOptions { propagate: true }),
+                }
             }),
         };
 
-        let item = Item {
-            request: Some(Block::new(config)),
-        };
+        let item = RawItemConfiguration::Request(Block::new(config));
 
         let str = hcl::to_string(&item).unwrap();
         println!("{}", str);
 
-        let new = hcl::from_str::<Item>(&str).unwrap();
+        let new = hcl::from_str::<RawItemConfiguration>(&str).unwrap();
 
         println!("{:?}", new);
     }

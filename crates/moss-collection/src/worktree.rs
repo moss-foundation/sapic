@@ -16,8 +16,8 @@ use crate::models::{
 };
 
 pub mod constants {
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
+    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.sapic";
+    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.sapic";
 }
 
 #[derive(Error, Debug)]
