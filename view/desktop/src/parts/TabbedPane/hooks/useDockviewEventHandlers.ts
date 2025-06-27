@@ -9,7 +9,8 @@ export const useTabbedPaneEventHandlers = (
   setPanels: React.Dispatch<React.SetStateAction<string[]>>,
   setGroups: React.Dispatch<React.SetStateAction<string[]>>,
   setActivePanel: React.Dispatch<React.SetStateAction<string | undefined>>,
-  setActiveGroup: React.Dispatch<React.SetStateAction<string | undefined>>
+  setActiveGroup: React.Dispatch<React.SetStateAction<string | undefined>>,
+  canDrop: boolean
 ) => {
   const { add: addLogLine } = useDockviewLoggerStore();
   const { setActivePanelId } = useTabbedPaneStore();
@@ -52,10 +53,17 @@ export const useTabbedPaneEventHandlers = (
       api.onUnhandledDragOverEvent((event) => {
         event.accept();
       }),
+      api.onWillShowOverlay((event) => {
+        if (canDrop) {
+          return;
+        }
+
+        event.preventDefault();
+      }),
     ];
 
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, setActivePanelId]);
+  }, [api, addLogLine, setPanels, setGroups, setActivePanel, setActiveGroup, setActivePanelId, canDrop]);
 };

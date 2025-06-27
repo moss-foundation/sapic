@@ -113,8 +113,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  const { canDrop, isDragging } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
-  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
+  const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+
+  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup, canDrop);
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
@@ -370,7 +371,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
-                  disableDnd={isDragging && canDrop === false}
                 />
               </div>
             </DebugContext.Provider>
