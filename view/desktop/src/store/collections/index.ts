@@ -379,7 +379,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
       onCollectionEvent.onmessage = (collection) => {
-        // console.log("collection", collection);
+        console.log("collection", collection);
         set((state) => {
           const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
           if (existingCollection) {
@@ -460,7 +460,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
-        // console.log("collectionEntry", collectionEntry);
+        console.log("collectionEntry", collectionEntry);
         set((state) => {
           const existingCollectionEntry = state.streamedCollectionEntries.find((c) => c.id === collectionEntry.id);
           if (existingCollectionEntry) {
@@ -502,14 +502,12 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       "Schema": "schemas",
     };
 
-    //TODO: uncomment this when backend is fixed
-    // const category = categoryMap[entry.class];
-    // if (!category) {
-    //   console.error(`Unknown class ${entry.class}`);
-    //   return;
-    // }
+    const category = categoryMap[entry.class];
+    if (!category) {
+      console.error(`Unknown class ${entry.class}`);
+      return;
+    }
 
-    const category = entry.path.split("\\")[0];
     if (!category) {
       console.error(`Unknown class ${category} ${entry.path}`);
       return;
