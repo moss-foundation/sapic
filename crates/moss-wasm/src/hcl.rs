@@ -56,7 +56,7 @@ mod tests {
 
         hcl_context.declare_func("hcl_greeter", func);
 
-        let input = r#"message = hcl_greet("WASM")"#;
+        let input = r#"message = hcl_greeter("WASM")"#;
         let body: Body = hcl::from_str(input).unwrap();
         let result = body.evaluate(&hcl_context);
         dbg!(&result);
