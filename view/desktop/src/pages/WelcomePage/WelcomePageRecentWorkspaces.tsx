@@ -17,14 +17,15 @@ export const WelcomePageRecentWorkspaces = () => {
     <div className="flex flex-col gap-2">
       <h2 className="text-lg">Recent</h2>
       <div className="flex flex-col items-start gap-1.5">
-        {workspacesToShow &&
-          workspacesToShow?.map((workspace) => (
-            <WelcomePageLink
-              key={workspace.displayName}
-              label={workspace.displayName}
-              onClick={() => openWorkspace(workspace.id)}
-            />
-          ))}
+        {workspacesToShow?.map((workspace) => (
+          <WelcomePageLink
+            key={workspace.displayName}
+            label={workspace.displayName}
+            onClick={() => openWorkspace(workspace.id)}
+          />
+        ))}
+
+        {workspaces.length === 0 && <span className="text-(--moss-secondary-text)">No recent workspaces</span>}
       </div>
 
       {!showAll && workspaces && workspaces.length > 3 && (
