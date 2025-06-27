@@ -149,6 +149,9 @@ impl WasmHost {
 }
 
 impl WasmHost {
+    // FIXME: Right now we are only checking if the compiled artifact remains unchanged
+    // We need to force recompilation when the source .wasm file changes
+
     fn load_artifact(&mut self, addon_name: &str) -> Result<Vec<u8>, ArtifactError> {
         let artifact_bytes = fs::read(format!("{}/{}.component", PLUGIN_PATH, addon_name))
             .map_err(|_| ArtifactError::NoArtifact)?;
@@ -292,5 +295,54 @@ mod tests {
             ("String".to_string(), val_string.clone()),
         ]);
         host.execute_addon("python_demo", val_obj.clone()).unwrap();
+    }
+
+    #[test]
+    fn test_rust_demo() {
+        let mut host = WasmHost::new().unwrap();
+        host.load_addon("rust_demo").unwrap();
+        let val_null = WasmSimpleValue::Null;
+        host.execute_addon("rust_demo", val_null.clone().into())
+            .unwrap();
+
+        let val_bool = WasmSimpleValue::Boolean(true);
+        host.execute_addon("rust_demo", val_bool.clone().into())
+            .unwrap();
+
+        let val_num_unsigned = WasmSimpleValue::Num(WasmNumber::Unsigned(10000));
+        host.execute_addon("rust_demo", val_num_unsigned.clone().into())
+            .unwrap();
+
+        let val_num_signed = WasmSimpleValue::Num(WasmNumber::Signed(-10000));
+        host.execute_addon("rust_demo", val_num_signed.clone().into())
+            .unwrap();
+
+        let val_num_float = WasmSimpleValue::Num(WasmNumber::Float(3.14));
+        host.execute_addon("rust_demo", val_num_float.clone().into())
+            .unwrap();
+
+        let val_string = WasmSimpleValue::Str("The Answer".to_string());
+        host.execute_addon("rust_demo", val_string.clone().into())
+            .unwrap();
+
+        let val_arr = WasmValue::Arr(vec![
+            val_null.clone(),
+            val_bool.clone(),
+            val_num_unsigned.clone(),
+            val_num_signed.clone(),
+            val_num_float.clone(),
+            val_string.clone(),
+        ]);
+        host.execute_addon("rust_demo", val_arr.clone()).unwrap();
+
+        let val_obj = WasmValue::Obj(vec![
+            ("Null".to_string(), val_null.clone()),
+            ("Bool".to_string(), val_bool.clone()),
+            ("Unsigned".to_string(), val_num_unsigned.clone()),
+            ("Signed".to_string(), val_num_signed.clone()),
+            ("Float".to_string(), val_num_float.clone()),
+            ("String".to_string(), val_string.clone()),
+        ]);
+        host.execute_addon("rust_demo", val_obj.clone()).unwrap();
     }
 }
