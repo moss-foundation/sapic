@@ -3315,7 +3315,6 @@ dependencies = [
  "serde",
  "serde_json",
  "strum",
- "strum_macros",
  "tauri",
  "thiserror 2.0.12",
  "tokio",
