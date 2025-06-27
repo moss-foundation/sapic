@@ -21,7 +21,8 @@ members = [
     "crates/moss-file",
     "crates/moss-wasm",
     "tools/xtask",
-    "view/desktop/bin", "rust_wasm_plugins/rust_demo",
+    "view/desktop/bin", 
+    "rust_wasm_plugins/rust_demo",
 ]
 
 [workspace.dependencies]
@@ -98,7 +99,10 @@ nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
 image = "0.25.6"
-hcl = "1.0.1"
 wasmtime = "34.0.0"
 wasmtime-wasi = "34.0.0"
+wasmtime-wasi-http = "34.0.1"
 sha2 = "0.10.9"
+
+hcl-rs = "0.18.5"
+hcl-edit = "0.8.6"

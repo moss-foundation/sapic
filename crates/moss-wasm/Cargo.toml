@@ -7,4 +7,9 @@ edition = "2024"
 anyhow.workspace = true
 wasmtime.workspace = true
 wasmtime-wasi.workspace = true
+wasmtime-wasi-http.workspace = true
 sha2.workspace = true
+
+# HCL experiment
+hcl-rs.workspace = true
+hcl-edit.workspace = true
