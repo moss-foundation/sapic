@@ -5,7 +5,7 @@ export const updateNodeInTree = (
   updatedNode: TreeCollectionNode
 ): TreeCollectionRootNode => {
   //TODO: use class to decide which node to update, but now class is always a Request
-  const path = updatedNode.path.split("\\")[0];
+  const path = updatedNode.path.segments[0];
 
   switch (path) {
     case "requests":

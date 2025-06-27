@@ -11,7 +11,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     return {
       dir: {
         name,
-        path: parentNode.path,
+        path: parentNode.path.raw,
         configuration: {
           request: {
             http: {},
@@ -24,7 +24,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   return {
     item: {
       name,
-      path: parentNode.path,
+      path: parentNode.path.raw,
       configuration: {
         request: {
           http: {

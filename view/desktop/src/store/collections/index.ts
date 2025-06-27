@@ -1,3 +1,4 @@
+import * as path from "path";
 import { create } from "zustand";
 
 import { CollectionTree, TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
@@ -263,7 +264,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             id: result.data.id,
             name: input.dir.name,
             order: input.dir.order ?? state.streamedCollectionEntries.length + 1,
-            path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
+            path: {
+              raw: path.join(input.dir.path, input.dir.name),
+              segments: [...input.dir.path, input.dir.name],
+            },
             class: entryClass,
             kind: "Dir" as const,
             expanded: false,
@@ -276,7 +280,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           id: result.data.id,
           name: input.dir.name,
           order: input.dir.order ?? undefined,
-          path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
+          path: {
+            raw: path.join(input.dir.path, input.dir.name),
+            segments: [...input.dir.path, input.dir.name],
+          },
           class: entryClass,
           kind: "Dir" as const,
           expanded: false,
@@ -312,7 +319,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
             id: result.data.id,
             name: input.item.name,
             order: input.item.order ?? undefined,
-            path: `${input.item.path.replaceAll("/", "")}\\${input.item.name}`,
+            path: {
+              raw: path.join(input.item.path, input.item.name),
+              segments: [...input.item.path, input.item.name],
+            },
             class: entryClass,
             kind: "Item" as const,
             protocol,
@@ -326,7 +336,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
           id: result.data.id,
           name: input.item.name,
           order: input.item.order ?? undefined,
-          path: `${input.item.path.replaceAll("/", "")}\\${input.item.name}`,
+          path: {
+            raw: path.join(input.item.path, input.item.name),
+            segments: [...input.item.path, input.item.name],
+          },
           class: entryClass,
           kind: "Item" as const,
           protocol,
@@ -398,7 +411,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 endpoints: {
                   id: Math.random().toString(),
                   name: "endpoints",
-                  path: "endpoints",
+                  path: {
+                    raw: "endpoints",
+                    segments: ["endpoints"],
+                  },
                   class: "Endpoint",
                   kind: "Dir",
                   expanded: true,
@@ -407,7 +423,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 schemas: {
                   id: Math.random().toString(),
                   name: "schemas",
-                  path: "schemas",
+                  path: {
+                    raw: "schemas",
+                    segments: ["schemas"],
+                  },
                   class: "Schema",
                   kind: "Dir",
                   expanded: false,
@@ -416,7 +435,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 components: {
                   id: Math.random().toString(),
                   name: "components",
-                  path: "components",
+                  path: {
+                    raw: "components",
+                    segments: ["components"],
+                  },
                   class: "Component",
                   kind: "Dir",
                   expanded: true,
@@ -425,7 +447,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                 requests: {
                   id: Math.random().toString(),
                   name: "requests",
-                  path: "requests",
+                  path: {
+                    raw: "requests",
+                    segments: ["requests"],
+                  },
                   class: "Request",
                   kind: "Dir",
                   expanded: false,
@@ -519,11 +544,8 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       return;
     }
 
-    // Split the path into components
-    const pathComponents = entry.path.split("\\");
-
     // If path has one component (root node)
-    if (pathComponents.length === 1) {
+    if (entry.path.segments.length === 1) {
       // Update root node properties, preserving childNodes
       Object.assign(rootNode, entry);
       return;
@@ -531,7 +553,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
     // Handle nested paths
     let currentNode = rootNode;
-    const relativePath = pathComponents.slice(1);
+    const relativePath = entry.path.segments.slice(1);
 
     // Navigate or create intermediate directories
     for (let i = 0; i < relativePath.length - 1; i++) {
@@ -542,7 +564,10 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         child = {
           id: Math.random().toString(),
           name: component,
-          path: `${currentNode.path}\\${component}`,
+          path: {
+            raw: path.join(currentNode.path.raw, component),
+            segments: [...currentNode.path.segments, component],
+          },
           class: entry.class,
           kind: "Dir",
           protocol: undefined,

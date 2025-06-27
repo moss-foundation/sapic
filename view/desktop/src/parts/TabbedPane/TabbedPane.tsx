@@ -234,8 +234,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
         showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
         dontShowTabs =
           props.params.node.kind === "Dir" ||
-          props.params.node.path.split("\\")[0] === "endpoints" ||
-          props.params.node.path.split("\\")[0] === "schemas";
+          //TODO: change this check for class in the future
+          props.params.node.path.segments[0] === "endpoints" ||
+          props.params.node.path.segments[0] === "schemas";
       }
 
       const tabs = (
