@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
-import { useUpdateWorkspace } from "@/hooks/workbench/useUpdateWorkspace";
 import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
+import { useUpdateWorkspace } from "@/hooks/workbench/useUpdateWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
+import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
+import { WorkspaceDataSection } from "./WorkspaceDataSection";
 import { WorkspaceNameSection } from "./WorkspaceNameSection";
 import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
-import { WorkspaceDataSection } from "./WorkspaceDataSection";
-import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 
 export const WorkspaceSettings = () => {
   const workspace = useActiveWorkspace();
@@ -73,17 +73,19 @@ export const WorkspaceSettings = () => {
 
   return (
     <>
-      <ConfirmationModal
-        showModal={showDeleteConfirmModal}
-        closeModal={closeDeleteConfirmModal}
-        title="Delete"
-        message={`Delete "${workspace?.displayName}"?`}
-        description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
-        confirmLabel="Delete"
-        cancelLabel="Close"
-        onConfirm={handleDeleteWorkspace}
-        variant="danger"
-      />
+      {showDeleteConfirmModal && (
+        <ConfirmationModal
+          showModal={showDeleteConfirmModal}
+          closeModal={closeDeleteConfirmModal}
+          title="Delete"
+          message={`Delete "${workspace?.displayName}"?`}
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+          confirmLabel="Delete"
+          cancelLabel="Close"
+          onConfirm={handleDeleteWorkspace}
+          variant="danger"
+        />
+      )}
 
       <div className="flex h-full justify-center">
         <div className="w-full max-w-2xl space-y-6 px-6 py-5">

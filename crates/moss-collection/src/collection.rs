@@ -19,6 +19,7 @@ use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
+    constants::COLLECTION_ICON_FILENAME,
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
@@ -26,10 +27,7 @@ use crate::{
         RawDirComponentConfiguration, RawDirEndpointConfiguration, RawDirRequestConfiguration,
         RawDirSchemaConfiguration,
     },
-    services::set_icon::{
-        SetIconService,
-        constants::{ICON_NAME, ICON_SIZE},
-    },
+    services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
 };
 
@@ -194,7 +192,7 @@ impl Collection {
             // TODO: Log the error here
             let _ = SetIconService::set_icon(
                 &icon_path,
-                &abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
                 ICON_SIZE,
             );
         }
@@ -228,14 +226,20 @@ impl Collection {
             Some(Change::Update(new_icon_path)) => {
                 SetIconService::set_icon(
                     &new_icon_path,
-                    &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                    &self
+                        .abs_path
+                        .join(ASSETS_DIR)
+                        .join(COLLECTION_ICON_FILENAME),
                     ICON_SIZE,
                 )?;
             }
             Some(Change::Remove) => {
                 self.fs
                     .remove_file(
-                        &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                        &self
+                            .abs_path
+                            .join(ASSETS_DIR)
+                            .join(COLLECTION_ICON_FILENAME),
                         RemoveOptions {
                             recursive: false,
                             ignore_if_not_exists: true,

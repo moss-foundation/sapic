@@ -3,23 +3,41 @@ import { useState } from "react";
 import { RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
+import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
 import { useCollectionsStore } from "@/store/collections";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { createCollection, isCreateCollectionLoading } = useCollectionsStore();
+  const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const [name, setName] = useState("");
-  const [mode, setMode] = useState<"Radio 1" | "Radio 2">("Radio 1");
+  const [name, setName] = useState("New Collection");
+  const [repo, setRepo] = useState("https://github.com/moss-foundation/sapic");
+  const [mode, setMode] = useState<"Default" | "Custom">("Default");
+  const [openAutomatically, setOpenAutomatically] = useState(true);
 
   const handleSubmit = async () => {
-    await createCollection({
+    const result = await createCollection({
       name,
+      repo,
     });
+
     closeModal();
+
+    if (openAutomatically) {
+      addOrFocusPanel({
+        id: result.id,
+        title: name,
+        component: "CollectionSettings",
+        params: {
+          collectionId: result.id,
+        },
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -37,7 +55,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
 
   return (
     <ModalForm
-      title="Create Collection"
+      title="New Collection"
       onBackdropClick={handleCancel}
       showModal={showModal}
       onSubmit={handleSubmit}
@@ -46,16 +64,23 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
       footerClassName="border-t border-(--moss-border-color)"
       content={
         <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
-            <div className="self-start">Name:</div>
-            <InputOutlined
-              value={name}
-              className="max-w-72"
-              onChange={(e) => setName(e.target.value)}
-              pattern="^[^/:\\*?|]+$"
-              required
-            />
-            <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+          <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3.75 gap-y-5 py-5">
+            <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-3">
+              <div>Name:</div>
+              <InputOutlined
+                value={name}
+                className="max-w-72"
+                onChange={(e) => setName(e.target.value)}
+                pattern="[A-Za-z0-9\s]+"
+                required
+              />
+              <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
+            </div>
+
+            <div className="col-span-2 grid grid-cols-subgrid items-center">
+              <div>Repository:</div>
+              <InputOutlined value={repo} className="max-w-72" onChange={(e) => setRepo(e.target.value)} />
+            </div>
           </div>
 
           <div>
@@ -69,19 +94,20 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
             <div className="pl-5">
               <RadioGroup.Root>
                 <RadioGroup.ItemWithLabel
-                  label="Radio 1"
-                  description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-                  value="Radio 1"
-                  checked={mode === "Radio 1"}
-                  onClick={() => setMode("Radio 1")}
+                  label="Default"
+                  description="This mode is suitable when your collection is stored in a separate repository or doesn’t have a repository at all."
+                  value="Default"
+                  checked={mode === "Default"}
+                  onClick={() => setMode("Default")}
                 />
 
                 <RadioGroup.ItemWithLabel
-                  label="Radio 2"
-                  description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
-                  value="Radio 2"
-                  checked={mode === "Radio 2"}
-                  onClick={() => setMode("Radio 2")}
+                  label="Custom"
+                  description="This mode is suitable if you want to store the collection in your project’s repository or in any other folder you specify."
+                  value="Custom"
+                  checked={mode === "Custom"}
+                  onClick={() => setMode("Custom")}
+                  disabled
                 />
               </RadioGroup.Root>
             </div>
@@ -89,9 +115,18 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
         </div>
       }
       footer={
-        <div className="flex items-center justify-end py-0.75">
+        <div className="flex items-center justify-between py-0.75">
+          <CheckboxWithLabel
+            label="Open automatically after creation"
+            checked={openAutomatically}
+            onCheckedChange={(check) => {
+              if (check !== "indeterminate") setOpenAutomatically(check);
+            }}
+          />
           <div className="flex gap-3 px-0.25 py-1.25">
-            <ButtonNeutralOutlined onClick={handleCancel}>Cancel</ButtonNeutralOutlined>
+            <ButtonNeutralOutlined type="button" onClick={handleCancel}>
+              Close
+            </ButtonNeutralOutlined>
             <ButtonPrimary disabled={isSubmitDisabled} type="submit">
               Create
             </ButtonPrimary>
