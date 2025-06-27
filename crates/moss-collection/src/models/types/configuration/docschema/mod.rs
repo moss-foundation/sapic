@@ -13,6 +13,8 @@ use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::models::primitives::{EntryClass, EntryProtocol};
+
 pub type HeaderName = String;
 pub type Protocol = String;
 
@@ -28,6 +30,17 @@ pub enum UrlParts {
     Post(Block<UrlDetails>),
     Put(Block<UrlDetails>),
     Delete(Block<UrlDetails>),
+}
+
+impl UrlParts {
+    pub fn protocol(&self) -> Option<EntryProtocol> {
+        match self {
+            UrlParts::Get(_) => Some(EntryProtocol::Get),
+            UrlParts::Post(_) => Some(EntryProtocol::Post),
+            UrlParts::Put(_) => Some(EntryProtocol::Put),
+            UrlParts::Delete(_) => Some(EntryProtocol::Delete),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,6 +70,35 @@ pub enum RawItemConfiguration {
     Schema(Block<RawItemSchemaConfiguration>),
 }
 
+impl RawItemConfiguration {
+    pub fn id(&self) -> Uuid {
+        match self {
+            RawItemConfiguration::Request(block) => block.metadata.id,
+            RawItemConfiguration::Endpoint(block) => block.metadata.id,
+            RawItemConfiguration::Component(block) => block.metadata.id,
+            RawItemConfiguration::Schema(block) => block.metadata.id,
+        }
+    }
+
+    pub fn classification(&self) -> EntryClass {
+        match self {
+            RawItemConfiguration::Request(_) => EntryClass::Request,
+            RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
+            RawItemConfiguration::Component(_) => EntryClass::Component,
+            RawItemConfiguration::Schema(_) => EntryClass::Schema,
+        }
+    }
+
+    pub fn protocol(&self) -> Option<EntryProtocol> {
+        match self {
+            RawItemConfiguration::Request(conf) => conf.url.protocol(),
+            RawItemConfiguration::Endpoint(conf) => conf.url.protocol(),
+            RawItemConfiguration::Component(_) => None,
+            RawItemConfiguration::Schema(_) => None,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RawDirConfiguration {
@@ -64,6 +106,26 @@ pub enum RawDirConfiguration {
     Endpoint(Block<RawDirEndpointConfiguration>),
     Component(Block<RawDirComponentConfiguration>),
     Schema(Block<RawDirSchemaConfiguration>),
+}
+
+impl RawDirConfiguration {
+    pub fn id(&self) -> Uuid {
+        match self {
+            RawDirConfiguration::Request(block) => block.metadata.id,
+            RawDirConfiguration::Endpoint(block) => block.metadata.id,
+            RawDirConfiguration::Component(block) => block.metadata.id,
+            RawDirConfiguration::Schema(block) => block.metadata.id,
+        }
+    }
+
+    pub fn classification(&self) -> EntryClass {
+        match self {
+            RawDirConfiguration::Request(_) => EntryClass::Request,
+            RawDirConfiguration::Endpoint(_) => EntryClass::Endpoint,
+            RawDirConfiguration::Component(_) => EntryClass::Component,
+            RawDirConfiguration::Schema(_) => EntryClass::Schema,
+        }
+    }
 }
 
 #[cfg(test)]

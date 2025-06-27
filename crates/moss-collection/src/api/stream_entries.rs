@@ -24,6 +24,7 @@ impl Collection {
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
     ) -> OperationResult<StreamEntriesOutput> {
+        dbg!("stream_entries");
         let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
         let worktree = self.worktree();
@@ -59,6 +60,8 @@ impl Collection {
                                 expanded: false,  // FIXME: hardcoded
                             };
 
+                            dbg!(&entry_info);
+
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }
                     }
@@ -75,6 +78,8 @@ impl Collection {
                                 order: None,  // FIXME: hardcoded
                                 expanded: false,  // FIXME: hardcoded
                             };
+
+                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }

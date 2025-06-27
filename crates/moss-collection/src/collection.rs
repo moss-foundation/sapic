@@ -7,6 +7,7 @@ use moss_common::api::Change;
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_hcl::Block;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
     collections::HashMap,
@@ -24,8 +25,8 @@ use crate::{
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
     models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirEndpointConfiguration, RawDirRequestConfiguration,
-        RawDirSchemaConfiguration,
+        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+        RawDirRequestConfiguration, RawDirSchemaConfiguration,
     },
     services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
@@ -141,19 +142,25 @@ impl Collection {
         for dir in &WORKTREE_DIRS {
             let content = match *dir {
                 dirs::REQUESTS_DIR => {
-                    let configuration = RawDirRequestConfiguration::new();
+                    let configuration =
+                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
                     hcl::to_string(&configuration)?
                 }
                 dirs::ENDPOINTS_DIR => {
-                    let configuration = RawDirEndpointConfiguration::new();
+                    let configuration = RawDirConfiguration::Endpoint(Block::new(
+                        RawDirEndpointConfiguration::new(),
+                    ));
                     hcl::to_string(&configuration)?
                 }
                 dirs::COMPONENTS_DIR => {
-                    let configuration = RawDirComponentConfiguration::new();
+                    let configuration = RawDirConfiguration::Component(Block::new(
+                        RawDirComponentConfiguration::new(),
+                    ));
                     hcl::to_string(&configuration)?
                 }
                 dirs::SCHEMAS_DIR => {
-                    let configuration = RawDirSchemaConfiguration::new();
+                    let configuration =
+                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
                     hcl::to_string(&configuration)?
                 }
                 _ => unreachable!(),

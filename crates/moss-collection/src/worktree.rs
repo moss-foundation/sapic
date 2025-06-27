@@ -12,7 +12,10 @@ use uuid::Uuid;
 
 use crate::models::{
     primitives::{EntryClass, EntryKind, EntryProtocol},
-    types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+    types::configuration::{
+        CompositeDirConfigurationModel, CompositeItemConfigurationModel,
+        docschema::{RawDirConfiguration, RawItemConfiguration},
+    },
 };
 
 pub mod constants {
@@ -67,6 +70,7 @@ pub struct Worktree {
     abs_path: Arc<Path>,
 }
 
+#[derive(Debug)]
 struct ScanJob {
     abs_path: Arc<Path>,
     path: Arc<Path>,
@@ -218,6 +222,8 @@ impl Worktree {
         let path: Arc<Path> = path.into();
         let abs_path = self.absolutize(&path)?;
 
+        dbg!(&abs_path);
+
         let (job_tx, mut job_rx) = mpsc::unbounded_channel();
 
         let initial_job = ScanJob {
@@ -231,6 +237,8 @@ impl Worktree {
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
+            // dbg!(&job);
+
             let sender = sender.clone();
             let fs = self.fs.clone();
             let handle = tokio::spawn(async move {
@@ -251,6 +259,7 @@ impl Worktree {
                         return;
                     }
                     Err(_err) => {
+                        eprintln!("Error processing dir entry: {}", _err);
                         // TODO: log error
                         return;
                     }
@@ -285,6 +294,8 @@ impl Worktree {
                         )
                     };
 
+                    dbg!(&child_path);
+
                     let entry = continue_if_none!(maybe_entry, || {
                         // TODO: Probably should log here since we should not be able to get here
                     });
@@ -298,13 +309,15 @@ impl Worktree {
                         });
                     } else {
                         continue_if_err!(sender.send(entry), |_err| {
+                            eprintln!("Error sending entry: {}", _err);
                             // TODO: log error
                         });
                     }
                 }
 
                 for new_job in new_jobs {
-                    continue_if_err!(job.scan_queue.send(new_job), |_| {
+                    continue_if_err!(job.scan_queue.send(new_job), |_err| {
+                        eprintln!("Error sending new job: {}", _err);
                         // TODO: log error
                     });
                 }
@@ -333,11 +346,10 @@ async fn process_dir_entry(
     let item_config_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
 
     if dir_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeDirConfigurationModel>(&fs, &dir_config_path).await?;
+        let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -347,11 +359,10 @@ async fn process_dir_entry(
     }
 
     if item_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeItemConfigurationModel>(&fs, &item_config_path).await?;
+        let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -381,5 +392,5 @@ where
     let mut buf = String::new();
     reader.read_to_string(&mut buf)?;
 
-    Ok(toml::from_str(&buf).map_err(anyhow::Error::from)?)
+    Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
 }
