@@ -23,6 +23,7 @@ impl<R: TauriRuntime> Workspace<R> {
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection_lock.id,
                 name: manifest.name.clone(),
+                repository: manifest.repository,
                 order: collection_lock.order,
                 picture_path: icon_path.exists().then(|| icon_path),
             }) {
