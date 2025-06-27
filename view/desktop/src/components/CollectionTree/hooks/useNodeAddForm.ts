@@ -38,7 +38,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   };
 };
 
-export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
+export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
   const { treeId } = useContext(TreeContext);
   const { createCollectionEntry } = useCollectionsStore();
 
@@ -48,10 +48,23 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode) => {
   const handleAddFormSubmit = async (name: string) => {
     const newEntry = createEntry(parentNode, name, isAddingFolderNode);
 
-    await createCollectionEntry({
+    const result = await createCollectionEntry({
       collectionId: treeId,
       input: newEntry,
     });
+
+    if (result) {
+      onNodeUpdate({
+        ...parentNode,
+        childNodes: [
+          ...parentNode.childNodes,
+          {
+            ...result,
+            childNodes: [],
+          },
+        ],
+      });
+    }
 
     setIsAddingFileNode(false);
     setIsAddingFolderNode(false);

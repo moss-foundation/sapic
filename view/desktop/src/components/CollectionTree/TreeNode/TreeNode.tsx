@@ -49,7 +49,7 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
     setIsAddingFolderNode,
     handleAddFormSubmit,
     handleAddFormCancel,
-  } = useNodeAddForm(node);
+  } = useNodeAddForm(node, onNodeUpdate);
 
   // const {
   //   isAddingDividerNode: isAddingDividerNodeAbove,

@@ -47,7 +47,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     setIsAddingRootNodeFolder,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm();
+  } = useRootNodeAddForm(node, onRootNodeUpdate);
 
   const {
     isRenamingRootNode,
