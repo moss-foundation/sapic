@@ -1,16 +1,15 @@
 mod component;
 mod endpoint;
-mod object;
 mod request;
 mod schema;
 
 pub use component::*;
 pub use endpoint::*;
-pub use object::*;
 pub use request::*;
 pub use schema::*;
 
-use hcl::{Expression, ser::Block};
+use hcl::Expression;
+use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

@@ -3307,13 +3307,13 @@ dependencies = [
  "moss_environment",
  "moss_file",
  "moss_fs",
+ "moss_hcl",
  "moss_storage",
  "moss_testutils",
  "moss_text",
  "notify",
  "serde",
  "serde_json",
- "serde_with",
  "strum",
  "strum_macros",
  "tauri",
@@ -3441,6 +3441,14 @@ dependencies = [
  "ssh2",
  "url",
  "webbrowser",
+]
+
+[[package]]
+name = "moss_hcl"
+version = "0.1.0"
+dependencies = [
+ "hcl-rs",
+ "serde",
 ]
 
 [[package]]

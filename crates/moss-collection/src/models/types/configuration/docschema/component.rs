@@ -1,4 +1,4 @@
-use hcl::ser::Block;
+use moss_hcl::Block;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

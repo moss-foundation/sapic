@@ -12,6 +12,7 @@ moss_storage.workspace = true
 moss_text.workspace = true
 moss_file.workspace = true
 moss_environment.workspace = true
+moss_hcl.workspace = true
 
 moss_applib.workspace = true
 anyhow.workspace = true
@@ -36,8 +37,7 @@ hcl-rs.workspace = true
 strum.workspace = true
 strum_macros.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
-indexmap = "2.9.0"
-serde_with = "3.0"
+indexmap.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }
