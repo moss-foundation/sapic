@@ -1,0 +1,6 @@
+package plugin:rust-demo;
+
+
+world rust-demo {
+    include plugin:base/plugin-world;
+}

@@ -21,7 +21,7 @@ members = [
     "crates/moss-file",
     "crates/moss-wasm",
     "tools/xtask",
-    "view/desktop/bin",
+    "view/desktop/bin", "rust_wasm_plugins/rust_demo",
 ]
 
 [workspace.dependencies]
