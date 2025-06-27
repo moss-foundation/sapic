@@ -222,8 +222,6 @@ impl Worktree {
         let path: Arc<Path> = path.into();
         let abs_path = self.absolutize(&path)?;
 
-        dbg!(&abs_path);
-
         let (job_tx, mut job_rx) = mpsc::unbounded_channel();
 
         let initial_job = ScanJob {
@@ -237,8 +235,6 @@ impl Worktree {
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
-            // dbg!(&job);
-
             let sender = sender.clone();
             let fs = self.fs.clone();
             let handle = tokio::spawn(async move {
@@ -293,8 +289,6 @@ impl Worktree {
                                 .await
                         )
                     };
-
-                    dbg!(&child_path);
 
                     let entry = continue_if_none!(maybe_entry, || {
                         // TODO: Probably should log here since we should not be able to get here

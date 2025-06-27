@@ -8,7 +8,11 @@ use crate::{
     Collection,
     collection::OnDidChangeEvent,
     dirs,
-    models::{events::StreamEntriesEvent, operations::StreamEntriesOutput, types::EntryInfo},
+    models::{
+        events::StreamEntriesEvent,
+        operations::StreamEntriesOutput,
+        types::{EntryInfo, EntryPath},
+    },
     worktree::WorktreeEntry,
 };
 
@@ -24,7 +28,6 @@ impl Collection {
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
     ) -> OperationResult<StreamEntriesOutput> {
-        dbg!("stream_entries");
         let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
         let worktree = self.worktree();
@@ -52,7 +55,10 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: entry.path.to_path_buf(),
+                                path: EntryPath {
+                                    raw: entry.path.to_path_buf(),
+                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
+                                },
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
@@ -71,7 +77,10 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: entry.path.to_path_buf(),
+                                path: EntryPath {
+                                    raw: entry.path.to_path_buf(),
+                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
+                                },
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,

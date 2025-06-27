@@ -1,5 +1,5 @@
 use hcl::ser::{Block, LabeledBlock};
-use indexmap::{IndexMap, indexmap};
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

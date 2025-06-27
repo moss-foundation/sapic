@@ -24,13 +24,15 @@ export type EndpointItemConfigurationModel = { "Http": HttpEndpointItemConfigura
 export type EntryInfo = {
   id: string;
   name: string;
-  path: string;
+  path: EntryPath;
   class: EntryClass;
   kind: EntryKind;
   protocol?: EntryProtocol;
   order?: number;
   expanded: boolean;
 };
+
+export type EntryPath = { raw: string; segments: Array<string> };
 
 export type EnvironmentInfo = { id: string; name: string; order?: number };
 

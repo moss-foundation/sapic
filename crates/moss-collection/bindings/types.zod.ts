@@ -20,6 +20,11 @@ export const dirRequestConfigurationModelSchema = z.object({
   "http": dirHttpConfigurationModelSchema,
 });
 
+export const entryPathSchema = z.object({
+  raw: z.string(),
+  segments: z.array(z.string()),
+});
+
 export const environmentInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -114,7 +119,7 @@ export const dirConfigurationModelSchema = z.union([
 export const entryInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
-  path: z.string(),
+  path: entryPathSchema,
   class: entryClassSchema,
   kind: entryKindSchema,
   protocol: entryProtocolSchema.optional(),
