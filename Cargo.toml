@@ -22,7 +22,7 @@ members = [
     "crates/moss-wasm",
     "tools/xtask",
     "view/desktop/bin", 
-    "rust_wasm_plugins/rust_demo",
+    "rust_wasm_plugins/rust_demo", "rust_wasm_plugins/hcl_greeter",
 ]
 
 [workspace.dependencies]

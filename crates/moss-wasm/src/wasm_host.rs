@@ -7,6 +7,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
+    sync::Mutex,
 };
 use wasmtime::{
     AsContextMut, Config, Engine, Store,
@@ -90,12 +91,15 @@ impl plugin::base::types::Host for WasiHostCtx {}
 
 pub struct PluginInstance {
     plugin: PluginWorld,
-    store: Store<WasiHostCtx>,
+    pub(crate) store: Mutex<Store<WasiHostCtx>>,
 }
 
 impl PluginInstance {
     pub fn new(plugin: PluginWorld, store: Store<WasiHostCtx>) -> Self {
-        Self { plugin, store }
+        Self {
+            plugin,
+            store: Mutex::new(store),
+        }
     }
 }
 
@@ -151,14 +155,20 @@ impl WasmHost {
         Ok(())
     }
 
-    fn execute_plugin(&mut self, plugin_name: &str, val: WasmValue) -> Result<WasmValue> {
+    pub fn execute_plugin(&self, plugin_name: &str, val: WasmValue) -> Result<WasmValue> {
         let plugin_instance = self
             .plugin_registry
-            .get_mut(plugin_name)
+            .get(plugin_name)
             .ok_or(anyhow!("Plugin {plugin_name} is not registered"))?;
 
-        let mut store = &mut plugin_instance.store;
-        let output = plugin_instance.plugin.call_execute(store, &val)?;
+        let mut store_lock = plugin_instance
+            .store
+            .lock()
+            .map_err(|_| anyhow!("Mutex poisoned"))?;
+
+        let output = plugin_instance
+            .plugin
+            .call_execute(store_lock.as_context_mut(), &val)?;
         Ok(output)
     }
 }
