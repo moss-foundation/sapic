@@ -3443,7 +3443,6 @@ dependencies = [
  "serde_json",
  "tauri",
  "tokio",
- "toml_edit 0.22.27",
  "ts-rs",
  "uuid",
  "validator",
