@@ -1,3 +1,8 @@
+// TODO: Right now there's only limited support for composite types
+// Since WIT disallows recursive types, you can only put SimpleValue into composite Value
+// This means that you cannot, for example, have an array of objects as a value
+// In the future, we might consider using JSON string instead
+
 // See moss-wasm/wit
 wasmtime::component::bindgen!("plugin-world");
 

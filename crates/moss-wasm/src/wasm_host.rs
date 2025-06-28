@@ -1,7 +1,5 @@
 use anyhow::{Result, anyhow};
-use plugin::base::types::{
-    Number as WasmNumber, SimpleValue as WasmSimpleValue, Value as WasmValue,
-};
+use plugin::base::types::{Number as WasmNumber, Value as WasmValue};
 use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
@@ -11,7 +9,7 @@ use std::{
 };
 use wasmtime::{
     AsContextMut, Config, Engine, Store,
-    component::{Component, HasSelf, Instance, Linker, ResourceTable},
+    component::{Component, HasSelf, Linker, ResourceTable},
 };
 use wasmtime_wasi::p2::{IoView, WasiCtx, WasiView};
 use wasmtime_wasi_http::{WasiHttpCtx, WasiHttpView};
@@ -114,7 +112,7 @@ pub struct WasmHost {
 
 impl WasmHost {
     pub fn new(plugin_path: &Path) -> Result<Self> {
-        let mut config = Config::new();
+        let config = Config::new();
         let engine = Engine::new(&config)?;
         let mut linker = Linker::new(&engine);
         // Adding WASI apis to the linker
@@ -236,6 +234,8 @@ impl WasmHost {
 
 #[cfg(test)]
 mod tests {
+    use plugin::base::types::SimpleValue as WasmSimpleValue;
+
     use super::*;
 
     const PLUGIN_PATH: &'static str = "plugins";
