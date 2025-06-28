@@ -12,4 +12,3 @@ sha2.workspace = true
 
 # HCL experiment
 hcl-rs.workspace = true
-hcl-edit.workspace = true

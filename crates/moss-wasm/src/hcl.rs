@@ -39,7 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn test_hcl() {
+    fn test_wasm_hcl_integration() {
         let mut wasm_host = WasmHost::new(Path::new(PLUGIN_PATH)).unwrap();
         wasm_host.load_plugin("hcl_greeter").unwrap();
 
