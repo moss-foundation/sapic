@@ -25,7 +25,7 @@ export const WelcomePageRecentWorkspaces = () => {
           />
         ))}
 
-        {workspaces.length === 0 && <span className="text-(--moss-secondary-text)">No recent workspaces</span>}
+        {workspaces?.length === 0 && <span className="text-(--moss-secondary-text)">No recent workspaces</span>}
       </div>
 
       {!showAll && workspaces && workspaces.length > 3 && (
