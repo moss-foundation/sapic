@@ -1,12 +1,13 @@
+/* eslint-disable */
 import { useContext, useState } from "react";
 
 import { TreeContext } from "../Tree";
-import { NodeProps, TreeNodeProps } from "../types";
+import { NodeProps, TreeCollectionNode } from "../types";
 import { prepareCollectionForTree, updateNodeOrder } from "../utils";
 
 export const useAddNodeWithDivider = (
-  node: TreeNodeProps,
-  onNodeUpdateCallback: (node: TreeNodeProps) => void,
+  node: TreeCollectionNode,
+  onNodeUpdateCallback: (node: TreeCollectionNode) => void,
   order: number
 ) => {
   const { sortBy } = useContext(TreeContext);
@@ -17,10 +18,10 @@ export const useAddNodeWithDivider = (
     onNodeUpdateCallback(
       updateNodeOrder({
         ...node,
-        isExpanded: true,
+        expanded: true,
         childNodes: [
           ...node.childNodes.slice(0, order),
-          prepareCollectionForTree(newNode, sortBy, false),
+          prepareCollectionForTree(newNode, sortBy),
           ...node.childNodes.slice(order),
         ],
       })

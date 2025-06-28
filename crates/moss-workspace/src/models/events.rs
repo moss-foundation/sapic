@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
@@ -8,7 +10,9 @@ use uuid::Uuid;
 pub struct StreamCollectionsEvent {
     pub id: Uuid,
     pub name: String,
+    pub repository: Option<String>,
     pub order: Option<usize>,
+    pub picture_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]

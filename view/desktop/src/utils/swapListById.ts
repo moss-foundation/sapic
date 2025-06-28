@@ -1,8 +1,8 @@
 import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
 
 interface Identifiable {
-  id: number | string;
-  order: number;
+  id: string;
+  order: number | null;
 }
 
 export const swapListById = <T extends Identifiable>(

@@ -41,4 +41,3 @@ pre-commit:
       run: pnpm prettier {toml-plugin} --write {staged_files}
       glob: "**/*.{toml,md,json}"
       stage_fixed: true
-

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { Collection } from "@/components/CollectionTree/types";
+import { CollectionTree, TreeCollectionNode, TreeCollectionRootNode } from "@/components/CollectionTree/types";
 import {
   checkIfTreeIsCollapsed,
   checkIfTreeIsExpanded,
@@ -22,26 +22,38 @@ import {
   StreamCollectionsEvent,
 } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
+import { join, sep } from "@tauri-apps/api/path";
 
 import AzureDevOpsTestCollection from "../../assets/AzureDevOpsTestCollection.json";
 import SapicTestCollection from "../../assets/SapicTestCollection.json";
 import WhatsAppBusinessTestCollection from "../../assets/WhatsAppBusinessTestCollection.json";
+import { getClassAndProtocolFromEntyInput } from "./utils/getClassAndProtocolFromEntyInput";
 
-interface CollectionsStoreState {
-  collections: Collection[];
-  setCollections: (collections: Collection[]) => void;
+export interface CollectionsStoreState {
+  collections: CollectionTree[];
+  setCollections: (collections: CollectionTree[]) => void;
   expandAll: () => void;
   collapseAll: () => void;
-  updateCollection: (collection: Collection) => void;
+  updateCollection: (collection: CollectionTree) => void;
+
+  collectionsTrees: TreeCollectionRootNode[];
+  setCollectionsTrees: (collectionsTrees: TreeCollectionRootNode[]) => void;
+  updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => void;
 
   isCreateCollectionLoading: boolean;
-  createCollection: (collection: CreateCollectionInput) => Promise<void>;
+  createCollection: (collection: CreateCollectionInput) => Promise<CreateCollectionOutput>;
 
   isDeleteCollectionLoading: boolean;
   deleteCollection: (collectionId: string) => Promise<void>;
 
   isCreateCollectionEntryLoading: boolean;
-  createCollectionEntry: ({ collectionId, input }: { collectionId: string; input: CreateEntryInput }) => Promise<void>;
+  createCollectionEntry: ({
+    collectionId,
+    input,
+  }: {
+    collectionId: string;
+    input: CreateEntryInput;
+  }) => Promise<EntryInfo | null>;
 
   isDeleteCollectionEntryLoading: boolean;
   deleteCollectionEntry: ({ collectionId, input }: { collectionId: string; input: DeleteEntryInput }) => Promise<void>;
@@ -52,16 +64,27 @@ interface CollectionsStoreState {
 
   areCollectionEntriesStreaming: boolean;
   streamedCollectionEntries: EntryInfo[];
-  startCollectionEntriesStream: (collectionId: string) => void;
+  startCollectionEntriesStream: (collection: StreamCollectionsEvent) => void;
+  distributeEntryToCollectionTree: (entry: EntryInfo, collectionId: string) => void;
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => void;
 }
 
 export const useCollectionsStore = create<CollectionsStoreState>((set, get) => ({
   collections: [
-    SapicTestCollection as Collection,
-    AzureDevOpsTestCollection as Collection,
-    WhatsAppBusinessTestCollection as Collection,
+    {
+      ...SapicTestCollection,
+      name: "Sapic Test Collection",
+    } as unknown as CollectionTree,
+    {
+      ...AzureDevOpsTestCollection,
+      name: "Azure DevOps Test Collection",
+    } as unknown as CollectionTree,
+    {
+      ...WhatsAppBusinessTestCollection,
+      name: "WhatsApp Business Test Collection",
+    } as unknown as CollectionTree,
   ],
-  setCollections: (collections: Collection[]) => {
+  setCollections: (collections: CollectionTree[]) => {
     set({ collections });
   },
   expandAll: () => {
@@ -73,7 +96,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       collections: state.collections.map((collection) => {
         return {
           ...collection,
-          tree: expandAllNodes(collection.tree),
+          tree: expandAllNodes(collection.tree as TreeCollectionNode),
         };
       }),
     }));
@@ -87,19 +110,31 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       collections: state.collections.map((collection) => {
         return {
           ...collection,
-          tree: collapseAllNodes(collection.tree),
+          tree: collapseAllNodes(collection.tree as TreeCollectionNode),
         };
       }),
     }));
   },
-  updateCollection: (updatedCollection: Collection) => {
+  updateCollection: (updatedCollection: CollectionTree) => {
     set((state) => ({
       collections: state.collections.map((c) => (c.id === updatedCollection.id ? { ...updatedCollection } : c)),
     }));
   },
 
+  //streamed collections
+
+  collectionsTrees: [],
+  setCollectionsTrees: (collectionsTrees: TreeCollectionRootNode[]) => {
+    set({ collectionsTrees });
+  },
+  updateCollectionTree: (collectionsTree: TreeCollectionRootNode) => {
+    set((state) => ({
+      collectionsTrees: state.collectionsTrees.map((c) => (c.id === collectionsTree.id ? collectionsTree : c)),
+    }));
+  },
+
   isCreateCollectionLoading: false,
-  createCollection: async (collection) => {
+  createCollection: async (collection: CreateCollectionInput): Promise<CreateCollectionOutput> => {
     set(() => ({
       isCreateCollectionLoading: true,
     }));
@@ -110,6 +145,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       set(() => ({
         isCreateCollectionLoading: false,
       }));
+
       throw new Error(String(result.error));
     }
 
@@ -118,8 +154,66 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         ...state.streamedCollections,
         {
           id: result.data.id,
+          ...collection,
+          order: collection.order ?? state.streamedCollections.length + 1,
+          picturePath: null,
+        },
+      ],
+      collectionsTrees: [
+        ...state.collectionsTrees,
+        {
+          id: result.data.id,
           name: collection.name,
-          order: collection.order ?? null,
+          order: collection.order ?? state.streamedCollections.length + 1,
+          expanded: true,
+          endpoints: {
+            id: Math.random().toString(),
+            name: "endpoints",
+            path: {
+              raw: "endpoints",
+              segments: ["endpoints"],
+            },
+            class: "Endpoint",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          schemas: {
+            id: Math.random().toString(),
+            name: "schemas",
+            path: {
+              raw: "schemas",
+              segments: ["schemas"],
+            },
+            class: "Schema",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          components: {
+            id: Math.random().toString(),
+            name: "components",
+            path: {
+              raw: "components",
+              segments: ["components"],
+            },
+            class: "Component",
+            kind: "Dir",
+            expanded: true,
+            childNodes: [],
+          },
+          requests: {
+            id: Math.random().toString(),
+            name: "requests",
+            path: {
+              raw: "requests",
+              segments: ["requests"],
+            },
+            class: "Request",
+            kind: "Dir",
+            expanded: false,
+            childNodes: [],
+          },
         },
       ],
     }));
@@ -127,6 +221,8 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set(() => ({
       isCreateCollectionLoading: false,
     }));
+
+    return result.data;
   },
 
   isDeleteCollectionLoading: false,
@@ -138,14 +234,15 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input: { id: collectionId } });
 
     if (result.status === "error") {
+      set(() => ({
+        isDeleteCollectionLoading: false,
+      }));
       throw new Error(String(result.error));
     }
 
     set((state) => ({
       streamedCollections: state.streamedCollections.filter((c) => c.id !== collectionId),
-    }));
-
-    set(() => ({
+      collectionsTrees: state.collectionsTrees.filter((c) => c.id !== collectionId),
       isDeleteCollectionLoading: false,
     }));
   },
@@ -169,73 +266,70 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     }
 
     if ("dir" in input) {
-      let entryClass: "Request" | "Endpoint" | "Component" | "Schema" = "Request";
-      if ("request" in input.dir.configuration) {
-        entryClass = "Request";
-      } else if ("endpoint" in input.dir.configuration) {
-        entryClass = "Endpoint";
-      } else if ("component" in input.dir.configuration) {
-        entryClass = "Component";
-      } else if ("schema" in input.dir.configuration) {
-        entryClass = "Schema";
-      }
+      const { entryClass } = getClassAndProtocolFromEntyInput(input);
+      const rawpath = await join(input.dir.path, input.dir.name);
+
+      const newEntry: EntryInfo = {
+        id: result.data.id,
+        name: input.dir.name,
+        order: input.dir.order ?? get().streamedCollectionEntries.length + 1,
+        path: {
+          raw: rawpath,
+          segments: rawpath.split(sep()),
+        },
+        class: entryClass,
+        kind: "Dir" as const,
+        expanded: false,
+      };
 
       set((state) => ({
-        streamedCollectionEntries: [
-          ...state.streamedCollectionEntries,
-          {
-            id: result.data.id,
-            name: input.dir.name,
-            order: input.dir.order ?? undefined,
-            path: `${input.dir.path.replaceAll("/", "")}\\${input.dir.name}`,
-            class: entryClass,
-            kind: "Dir" as const,
-            expanded: false,
-          },
-        ],
+        streamedCollectionEntries: [...state.streamedCollectionEntries, newEntry],
       }));
+
+      get().distributeEntryToCollectionTree(newEntry, collectionId);
+
+      set(() => ({
+        isCreateCollectionEntryLoading: false,
+      }));
+
+      return newEntry;
     } else if ("item" in input) {
-      let entryClass: "Request" | "Endpoint" | "Component" | "Schema" = "Request";
-      let protocol: "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc" | undefined = undefined;
+      const { entryClass, protocol } = getClassAndProtocolFromEntyInput(input);
 
-      if ("request" in input.item.configuration) {
-        entryClass = "Request";
-        if ("http" in input.item.configuration.request) {
-          const method = input.item.configuration.request.http.requestParts.method;
-          if (method === "GET") protocol = "Get";
-          else if (method === "POST") protocol = "Post";
-          else if (method === "PUT") protocol = "Put";
-          else if (method === "DELETE") protocol = "Delete";
-        }
-      } else if ("endpoint" in input.item.configuration) {
-        entryClass = "Endpoint";
-        protocol = "Get";
-      } else if ("component" in input.item.configuration) {
-        entryClass = "Component";
-      } else if ("schema" in input.item.configuration) {
-        entryClass = "Schema";
-      }
+      const rawpath = await join(input.item.path, input.item.name);
+
+      const newEntry: EntryInfo = {
+        id: result.data.id,
+        name: input.item.name,
+        order: input.item.order ?? undefined,
+        path: {
+          raw: rawpath,
+          segments: rawpath.split(sep()),
+        },
+        class: entryClass,
+        kind: "Item" as const,
+        protocol,
+        expanded: false,
+      };
 
       set((state) => ({
-        streamedCollectionEntries: [
-          ...state.streamedCollectionEntries,
-          {
-            id: result.data.id,
-            name: input.item.name,
-            order: input.item.order ?? undefined,
-            path: `${input.item.path.replaceAll("/", "")}\\${input.item.name}`,
-            class: entryClass,
-            kind: "Item" as const,
-            protocol,
-            expanded: false,
-          },
-        ],
+        streamedCollectionEntries: [...state.streamedCollectionEntries, newEntry],
       }));
+
+      get().distributeEntryToCollectionTree(newEntry, collectionId);
+
+      set(() => ({
+        isCreateCollectionEntryLoading: false,
+      }));
+
+      return newEntry;
     }
 
     set(() => ({
       isCreateCollectionEntryLoading: false,
     }));
+
+    return null;
   },
 
   isDeleteCollectionEntryLoading: false,
@@ -259,6 +353,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     set((state) => ({
       streamedCollectionEntries: state.streamedCollectionEntries.filter((c) => c.id !== input.id),
       isDeleteCollectionEntryLoading: false,
+      collectionsTrees: state.collectionsTrees.map((c) => filterOutNodeFromCollectionTree(c, input)),
     }));
   },
 
@@ -270,20 +365,81 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         areCollectionsStreaming: true,
         streamedCollections: [],
         streamedCollectionEntries: [],
+        collectionsTrees: [],
       });
 
       const onCollectionEvent = new Channel<StreamCollectionsEvent>();
-
       onCollectionEvent.onmessage = (collection) => {
+        // console.log("collection", collection);
         set((state) => {
           const existingCollection = state.streamedCollections.find((c) => c.id === collection.id);
           if (existingCollection) {
             return state;
           }
-          return { ...state, streamedCollections: [...state.streamedCollections, collection] };
+          return {
+            ...state,
+            streamedCollections: [...state.streamedCollections, collection],
+            collectionsTrees: [
+              ...state.collectionsTrees,
+              {
+                id: collection.id,
+                name: collection.name,
+                order: collection.order,
+                expanded: true,
+                endpoints: {
+                  id: Math.random().toString(),
+                  name: "endpoints",
+                  path: {
+                    raw: "endpoints",
+                    segments: ["endpoints"],
+                  },
+                  class: "Endpoint",
+                  kind: "Dir",
+                  expanded: true,
+                  childNodes: [],
+                },
+                schemas: {
+                  id: Math.random().toString(),
+                  name: "schemas",
+                  path: {
+                    raw: "schemas",
+                    segments: ["schemas"],
+                  },
+                  class: "Schema",
+                  kind: "Dir",
+                  expanded: false,
+                  childNodes: [],
+                },
+                components: {
+                  id: Math.random().toString(),
+                  name: "components",
+                  path: {
+                    raw: "components",
+                    segments: ["components"],
+                  },
+                  class: "Component",
+                  kind: "Dir",
+                  expanded: true,
+                  childNodes: [],
+                },
+                requests: {
+                  id: Math.random().toString(),
+                  name: "requests",
+                  path: {
+                    raw: "requests",
+                    segments: ["requests"],
+                  },
+                  class: "Request",
+                  kind: "Dir",
+                  expanded: false,
+                  childNodes: [],
+                },
+              },
+            ],
+          };
         });
 
-        get().startCollectionEntriesStream(collection.id);
+        get().startCollectionEntriesStream(collection);
       };
 
       await invokeTauriIpc("stream_collections", {
@@ -298,30 +454,170 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
   areCollectionEntriesStreaming: false,
   streamedCollectionEntries: [],
-  startCollectionEntriesStream: async (collectionId) => {
+  startCollectionEntriesStream: async (collection) => {
     try {
       set({ areCollectionEntriesStreaming: true });
 
       const onCollectionEntryEvent = new Channel<EntryInfo>();
 
       onCollectionEntryEvent.onmessage = (collectionEntry) => {
+        // console.log("collectionEntry", collectionEntry);
         set((state) => {
           const existingCollectionEntry = state.streamedCollectionEntries.find((c) => c.id === collectionEntry.id);
           if (existingCollectionEntry) {
             return state;
           }
-          return { ...state, streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry] };
+
+          get().distributeEntryToCollectionTree(collectionEntry, collection.id);
+          return {
+            ...state,
+            streamedCollectionEntries: [...state.streamedCollectionEntries, collectionEntry],
+          };
         });
       };
 
       await invokeTauriIpc("stream_collection_entries", {
-        collectionId,
+        collectionId: collection.id,
         channel: onCollectionEntryEvent,
       });
+
+      console.log("collectionsTrees", get().collectionsTrees);
     } catch (error) {
       console.error("Failed to get collection entries:", error);
     } finally {
       set({ areCollectionEntriesStreaming: false });
     }
   },
+
+  distributeEntryToCollectionTree: async (entry, collectionId) => {
+    console.log("distributeEntryToCollectionTree", entry);
+    // Find the collection by ID
+    const collection = get().collectionsTrees.find((col) => col.id === collectionId);
+    if (!collection) {
+      console.error(`Collection with ID ${collectionId} not found`);
+      return;
+    }
+
+    // Map entry class to collection category
+    const categoryMap: { [key: string]: string } = {
+      "Request": "requests",
+      "Endpoint": "endpoints",
+      "Component": "components",
+      "Schema": "schemas",
+    };
+
+    const category = categoryMap[entry.class];
+    if (!category) {
+      console.error(`Unknown class ${entry.class}`);
+      return;
+    }
+
+    // Get the root node for this category
+    const rootNode = (collection as TreeCollectionRootNode)[category] as TreeCollectionNode;
+    if (!rootNode) {
+      console.error(`Category ${category} not found in collection`);
+      return;
+    }
+
+    // If path has one component (root node)
+    if (entry.path.segments.length === 1) {
+      // Update root node properties, preserving childNodes
+      const existingChildNodes = rootNode.childNodes;
+      Object.assign(rootNode, entry, { childNodes: existingChildNodes });
+
+      // Update state
+      set((state) => ({
+        collectionsTrees: state.collectionsTrees.map((c) => (c.id === collectionId ? collection : c)),
+      }));
+      return;
+    }
+
+    // Handle nested paths
+    let currentNode = rootNode;
+    const relativePath = entry.path.segments.slice(1);
+    console.log("relativePath", entry.path.segments, relativePath);
+
+    // Navigate or create intermediate directories
+    for (let i = 0; i < relativePath.length - 1; i++) {
+      const component = relativePath[i];
+
+      const rawpath = await join(currentNode.path.raw, component);
+      let child = currentNode.childNodes.find((node) => node.name === component && node.kind === "Dir");
+
+      if (!child) {
+        child = {
+          id: Math.random().toString(), // Generate unique ID for intermediate directory
+          name: component,
+          path: {
+            raw: rawpath,
+            segments: rawpath.split(sep()),
+          },
+          class: entry.class,
+          kind: "Dir",
+          protocol: undefined,
+          order: undefined,
+          expanded: false,
+          childNodes: [],
+        };
+        currentNode.childNodes.push(child);
+      }
+      currentNode = child;
+    }
+
+    // Handle the final component
+    const lastComponent = relativePath[relativePath.length - 1];
+    const existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
+
+    if (existingNode) {
+      // Update existing node, preserving childNodes
+      const existingChildNodes = existingNode.childNodes;
+      Object.assign(existingNode, entry, { childNodes: existingChildNodes });
+    } else {
+      // Create new node
+      const rawpath = await join(currentNode.path.raw, lastComponent);
+      const newNode: TreeCollectionNode = {
+        ...entry,
+        path: {
+          raw: rawpath,
+          segments: rawpath.split(sep()),
+        },
+        childNodes: [],
+      };
+
+      currentNode.childNodes.push(newNode);
+    }
+
+    // Update state to trigger re-render
+    set((state) => ({
+      collectionsTrees: state.collectionsTrees.map((c) => (c.id === collectionId ? collection : c)),
+    }));
+  },
+  //TODO: this is temporary, we need to update the collection in the backend too
+  updateStreamedCollection: (collection: StreamCollectionsEvent) => {
+    set((state) => ({
+      streamedCollections: state.streamedCollections.map((c) => (c.id === collection.id ? collection : c)),
+      collectionsTrees: state.collectionsTrees.map((c) =>
+        c.id === collection.id ? { ...c, name: collection.name } : c
+      ),
+    }));
+  },
 }));
+
+const filterOutNodeFromCollectionTree = (tree: TreeCollectionRootNode, input: DeleteEntryInput) => {
+  return {
+    ...tree,
+    requests: filterOutNodeFromNode(tree.requests, input.id),
+    endpoints: filterOutNodeFromNode(tree.endpoints, input.id),
+    components: filterOutNodeFromNode(tree.components, input.id),
+    schemas: filterOutNodeFromNode(tree.schemas, input.id),
+  };
+};
+
+const filterOutNodeFromNode = (node: TreeCollectionNode, id: string): TreeCollectionNode => {
+  return {
+    ...node,
+    childNodes: node.childNodes
+      .filter((childNode) => childNode.id !== id)
+      .map((childNode) => filterOutNodeFromNode(childNode, id)),
+  };
+};

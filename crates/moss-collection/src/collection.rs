@@ -7,6 +7,8 @@ use moss_common::api::Change;
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_git::url::normalize_git_url;
+use moss_hcl::Block;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
     collections::HashMap,
@@ -14,19 +16,19 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use url::Url;
 use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
+    constants::COLLECTION_ICON_FILENAME,
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
-    models::types::configuration::{CompositeDirConfigurationModel, ConfigurationModel},
-    services::set_icon::{
-        SetIconService,
-        constants::{ICON_NAME, ICON_SIZE},
+    models::types::configuration::docschema::{
+        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+        RawDirRequestConfiguration, RawDirSchemaConfiguration,
     },
+    services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
 };
 
@@ -74,13 +76,13 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
-    pub repository: Option<Url>,
+    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repository: Option<Change<Url>>,
+    pub repository: Option<Change<String>>,
     pub icon: Option<Change<PathBuf>>,
 }
 
@@ -138,15 +140,45 @@ impl Collection {
 
         let worktree = Worktree::new(fs.clone(), abs_path.clone());
         for dir in &WORKTREE_DIRS {
-            let model = ConfigurationModel::Dir(CompositeDirConfigurationModel::default());
+            let content = match *dir {
+                dirs::REQUESTS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::ENDPOINTS_DIR => {
+                    let configuration = RawDirConfiguration::Endpoint(Block::new(
+                        RawDirEndpointConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::COMPONENTS_DIR => {
+                    let configuration = RawDirConfiguration::Component(Block::new(
+                        RawDirComponentConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::SCHEMAS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                _ => unreachable!(),
+            };
             worktree
-                .create_entry("", dir, true, toml::to_string(&model)?.as_bytes())
+                .create_entry("", dir, true, content.as_bytes())
                 .await?;
         }
 
         for dir in &OTHER_DIRS {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
+
+        let normalized_repo = if let Some(url) = params.repository {
+            Some(normalize_git_url(&url)?)
+        } else {
+            None
+        };
 
         let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
             fs.clone(),
@@ -155,7 +187,7 @@ impl Collection {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                repository: params.repository,
+                repository: normalized_repo,
             },
         )
         .await?;
@@ -173,7 +205,7 @@ impl Collection {
             // TODO: Log the error here
             let _ = SetIconService::set_icon(
                 &icon_path,
-                &abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
                 ICON_SIZE,
             );
         }
@@ -193,11 +225,17 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() || params.repository.is_some() {
+        let repo_change = match params.repository {
+            None => None,
+            Some(Change::Update(url)) => Some(Change::Update(normalize_git_url(&url)?)),
+            Some(Change::Remove) => Some(Change::Remove),
+        };
+
+        if params.name.is_some() || repo_change.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repository: params.repository,
+                    repository: repo_change,
                 })
                 .await?;
         }
@@ -207,14 +245,20 @@ impl Collection {
             Some(Change::Update(new_icon_path)) => {
                 SetIconService::set_icon(
                     &new_icon_path,
-                    &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                    &self
+                        .abs_path
+                        .join(ASSETS_DIR)
+                        .join(COLLECTION_ICON_FILENAME),
                     ICON_SIZE,
                 )?;
             }
             Some(Change::Remove) => {
                 self.fs
                     .remove_file(
-                        &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                        &self
+                            .abs_path
+                            .join(ASSETS_DIR)
+                            .join(COLLECTION_ICON_FILENAME),
                         RemoveOptions {
                             recursive: false,
                             ignore_if_not_exists: true,

@@ -8,7 +8,11 @@ use crate::{
     Collection,
     collection::OnDidChangeEvent,
     dirs,
-    models::{events::StreamEntriesEvent, operations::StreamEntriesOutput, types::EntryInfo},
+    models::{
+        events::StreamEntriesEvent,
+        operations::StreamEntriesOutput,
+        types::{EntryInfo, EntryPath},
+    },
     worktree::WorktreeEntry,
 };
 
@@ -51,13 +55,18 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: entry.path.to_path_buf(),
+                                path: EntryPath {
+                                    raw: entry.path.to_path_buf(),
+                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
+                                },
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
                                 order: None, // FIXME: hardcoded
                                 expanded: false,  // FIXME: hardcoded
                             };
+
+                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }
@@ -68,13 +77,18 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: entry.path.to_path_buf(),
+                                path: EntryPath {
+                                    raw: entry.path.to_path_buf(),
+                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
+                                },
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
                                 order: None,  // FIXME: hardcoded
                                 expanded: false,  // FIXME: hardcoded
                             };
+
+                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }

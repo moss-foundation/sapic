@@ -1,7 +1,8 @@
+/* eslint-disable */
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 import { CreateNewCollectionFromTreeNodeEvent, TreeNodeProps, TreeProps } from "../types";
-import { removeNodeFromTree, removeUniqueIdFromTree } from "../utils";
+import { removeNodeFromTree } from "../utils";
 
 interface useCreateNewCollectionFromTreeNodeProps {
   treeId: TreeProps["id"];
@@ -34,7 +35,7 @@ export const useCreateNewCollectionFromTreeNodeEvent = ({
           } else {
             onNodeRemove?.(source.node);
           }
-          onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
+          onTreeUpdate?.(removedTree);
           return removedTree;
         });
       }

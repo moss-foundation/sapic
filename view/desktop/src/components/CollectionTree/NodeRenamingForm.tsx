@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { platform } from "@tauri-apps/plugin-os";
 
 import { useClickOutside } from "./hooks/useClickOutside";
+import { validateName } from "./utils/FormUtils";
 
 interface NodeRenamingFormProps {
   onSubmit: (newName: string) => void;
@@ -12,24 +13,33 @@ interface NodeRenamingFormProps {
 }
 
 export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [value, setValue] = useState(String(currentName));
-
   const isMac = platform() === "macos";
   const isLinux = platform() === "linux";
-
   // HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.
   const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
 
-  const finishEditing = useCallback(() => {
-    const newName = value.trim();
-    if (restrictedNames?.includes(newName)) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isInitialized = useRef(false);
+  const [value, setValue] = useState(String(currentName));
+
+  const { isValid, message } = validateName(value, restrictedNames ?? []);
+
+  useEffect(() => {
+    if (!inputRef.current || !isInitialized.current) return;
+
+    inputRef.current.setCustomValidity(message);
+    inputRef.current.reportValidity();
+  }, [message]);
+
+  const finishEditing = () => {
+    if (!isValid) {
       onCancel();
-    } else {
-      onSubmit(newName);
+      return;
     }
-  }, [value, restrictedNames, onCancel, onSubmit]);
+
+    onSubmit(value);
+  };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
@@ -56,6 +66,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
         inputRef.current.focus();
         const dotIndex = inputRef.current.value.indexOf(".");
         inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : inputRef.current.value.length);
+        isInitialized.current = true;
       }
     }, 100);
     return () => clearTimeout(timer);

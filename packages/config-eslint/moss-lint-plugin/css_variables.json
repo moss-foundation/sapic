@@ -221,5 +221,8 @@
   "--moss-table-cell-bg",
   "--moss-table-add-form-text",
   "--moss-table-add-row-form-text",
-  "--moss-drag-handle-bg"
+  "--moss-drag-handle-bg",
+  "--moss-tab-active-border-color",
+  "--moss-auth-indicator-color",
+  "--moss-tab-badge-color"
 ]
