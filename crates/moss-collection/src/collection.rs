@@ -7,6 +7,7 @@ use moss_common::api::Change;
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
@@ -15,7 +16,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use url::Url;
 use uuid::Uuid;
 
 use crate::{
@@ -76,13 +76,13 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
-    pub repository: Option<Url>,
+    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repository: Option<Change<Url>>,
+    pub repository: Option<Change<String>>,
     pub icon: Option<Change<PathBuf>>,
 }
 
@@ -174,6 +174,12 @@ impl Collection {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
 
+        let normalized_repo = if let Some(url) = params.repository {
+            Some(normalize_git_url(&url)?)
+        } else {
+            None
+        };
+
         let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
@@ -181,7 +187,7 @@ impl Collection {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                repository: params.repository,
+                repository: normalized_repo,
             },
         )
         .await?;
@@ -219,11 +225,17 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() || params.repository.is_some() {
+        let repo_change = match params.repository {
+            None => None,
+            Some(Change::Update(url)) => Some(Change::Update(normalize_git_url(&url)?)),
+            Some(Change::Remove) => Some(Change::Remove),
+        };
+
+        if params.name.is_some() || repo_change.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repository: params.repository,
+                    repository: repo_change,
                 })
                 .await?;
         }

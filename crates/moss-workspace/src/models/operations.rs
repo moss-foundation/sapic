@@ -1,13 +1,13 @@
 use moss_environment::models::types::VariableInfo;
+use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
 use ts_rs::TS;
-use url::Url;
 use uuid::Uuid;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 use crate::models::types::EditorPartStateInfo;
 
@@ -23,7 +23,8 @@ pub struct CreateCollectionInput {
 
     pub order: Option<usize>,
     pub external_path: Option<PathBuf>,
-    pub repo: Option<Url>,
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repo: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -41,7 +42,7 @@ pub struct CreateCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub enum ChangeRepository {
-    Update(Url),
+    Update(String),
     Remove,
 }
 
@@ -63,10 +64,21 @@ pub struct UpdateCollectionInput {
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
 
+    #[validate(custom(function = "validate_change_repository"))]
     pub new_repo: Option<ChangeRepository>,
     pub new_icon: Option<ChangeIcon>,
     pub order: Option<usize>,
     pub pinned: Option<bool>,
+}
+
+fn validate_change_repository(repo: &ChangeRepository) -> Result<(), ValidationError> {
+    match repo {
+        ChangeRepository::Update(repo) => GIT_URL_REGEX
+            .is_match(repo)
+            .then_some(())
+            .ok_or(ValidationError::new("Invalid Git URL format")),
+        ChangeRepository::Remove => Ok(()),
+    }
 }
 
 #[derive(Debug, Serialize, TS)]
