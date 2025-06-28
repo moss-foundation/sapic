@@ -53,11 +53,11 @@ impl TryFrom<hcl::Number> for Number {
     }
 }
 
-impl TryInto<hcl::Number> for Number {
+impl TryFrom<Number> for hcl::Number {
     type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<hcl::Number, Self::Error> {
-        let number = match self {
+    fn try_from(value: Number) -> std::result::Result<Self, Self::Error> {
+        let number = match value {
             Number::Signed(i) => hcl::Number::from(i),
             Number::Unsigned(u) => hcl::Number::from(u),
             Number::Float(f) => hcl::Number::from_f64(f)
@@ -107,11 +107,11 @@ impl TryFrom<hcl::Value> for Value {
     }
 }
 
-impl TryInto<hcl::Value> for Value {
+impl TryFrom<Value> for hcl::Value {
     type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<hcl::Value, Self::Error> {
-        let value = match self {
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        let value = match value {
             Value::Null => hcl::Value::Null,
             Value::Boolean(b) => hcl::Value::Bool(b),
             Value::Num(number) => hcl::Value::Number(number.try_into()?),
