@@ -36,7 +36,8 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
       style={{
         "WebkitBackdropFilter": "blur(8px)", // BackdropFilter doesn't work on Linux without this
       }}
-      onClick={onBackdropClick}
+      // onClick={onBackdropClick}
+      onMouseDown={onBackdropClick}
     >
       <dialog
         ref={dialogRef}
