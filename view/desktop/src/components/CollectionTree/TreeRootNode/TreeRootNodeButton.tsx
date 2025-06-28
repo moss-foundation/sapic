@@ -23,7 +23,7 @@ export const TreeRootNodeButton = ({
   onRootNodeClick,
 }: TreeRootNodeButtonProps) => {
   const { treeId } = useContext(TreeContext);
-  const { addOrFocusPanel } = useTabbedPaneStore();
+  const { api } = useTabbedPaneStore();
 
   const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -34,25 +34,36 @@ export const TreeRootNodeButton = ({
   };
 
   const handleLabelClick = () => {
-    onRootNodeClick({
-      ...node,
-      expanded: true,
-    });
+    const panel = api?.getPanel(treeId);
 
-    addOrFocusPanel({
-      id: treeId,
-      title: node.name,
-      component: "CollectionSettings",
-      params: {
-        collectionId: treeId,
-      },
-    });
+    if (!panel) {
+      api?.addPanel({
+        id: treeId,
+        title: node.name,
+        component: "CollectionSettings",
+        params: {
+          collectionId: treeId,
+        },
+      });
+
+      onRootNodeClick({
+        ...node,
+        expanded: true,
+      });
+    } else {
+      onRootNodeClick({
+        ...node,
+        expanded: !node.expanded,
+      });
+    }
   };
 
   return (
-    <button
+    <div
       className="group/treeRootNodeTrigger relative flex grow cursor-pointer items-center gap-1.5 overflow-hidden font-medium"
       onClick={handleLabelClick}
+      role="button"
+      tabIndex={0}
     >
       <span className="flex size-5 shrink-0 items-center justify-center">
         <button
@@ -76,6 +87,6 @@ export const TreeRootNodeButton = ({
         )}
       </span>
       <NodeLabel label={node.name} searchInput={searchInput} />
-    </button>
+    </div>
   );
 };
