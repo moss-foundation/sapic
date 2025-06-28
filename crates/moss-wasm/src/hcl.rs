@@ -1,5 +1,4 @@
-use hcl::Body;
-
+#[cfg(test)]
 mod tests {
     use std::{
         path::Path,
@@ -7,7 +6,7 @@ mod tests {
     };
 
     use hcl::{
-        Body,
+        Body, Expression,
         eval::{Context, Evaluate, FuncDef, ParamType},
     };
 
@@ -58,7 +57,12 @@ mod tests {
 
         let input = r#"message = hcl_greeter("WASM")"#;
         let body: Body = hcl::from_str(input).unwrap();
-        let result = body.evaluate(&hcl_context);
+        let result = body.evaluate(&hcl_context).unwrap();
+
+        assert_eq!(
+            result.attributes().next().unwrap().expr,
+            Expression::from("Hello, WASM!")
+        );
         dbg!(&result);
     }
 }
