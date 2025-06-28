@@ -3,7 +3,7 @@ For JS and Python
 1. Install wit-deps:
    cargo install wit-deps-cli
 2. Declare upstream WIT dependencies in deps.toml
-   plugin-base = "../../../wit"
+   plugin-base = "../../../../crates/moss-wasm/wit"
 3. Update dependencies when upstream WIT changes
    Delete deps/ and deps.lock
    run wit-dept
@@ -40,7 +40,7 @@ misc/rust_wasm_plugins at the root level
 3. Add dependency on plugin:base in Cargo.toml
    [package.metadata.component.target.dependencies]
    # Relative path to the "wit" folder
-   "plugin:base" = { path = "../../crates/moss-wasm/wit"}
+   "plugin:base" = { path = "../../../crates/moss-wasm/wit"}
 4. Update rust_demo/wit/world.wit
 5. Generate bindings
    cargo component bindings
