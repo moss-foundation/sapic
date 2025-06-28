@@ -102,8 +102,8 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          # - moss_git
-          # - moss_git_hosting_provider
+          - moss_git
+          - moss_git_hosting_provider
           - moss_tauri
           - moss_text
           - moss_collection
@@ -161,8 +161,8 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          # - moss_git
-          # - moss_git_hosting_provider
+          - moss_git
+          - moss_git_hosting_provider
           - moss_tauri
           - moss_text
           - moss_collection
