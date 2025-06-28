@@ -25,7 +25,7 @@ pub static GIT_URL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 /// # Examples
 ///
 /// ```
-/// use moss_git::normalize_git_url;
+/// use moss_git::url::normalize_git_url;
 ///
 /// assert_eq!(normalize_git_url("https://github.com/user/repo.git").unwrap(), "github.com/user/repo");
 /// assert_eq!(normalize_git_url("git@github.com:user/repo.git").unwrap(), "github.com/user/repo");

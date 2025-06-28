@@ -16,7 +16,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use url::Url;
 use uuid::Uuid;
 
 use crate::{
