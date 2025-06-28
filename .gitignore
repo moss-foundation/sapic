@@ -89,7 +89,6 @@ NUL
 crates/moss-wasm/src/bindings.rs
 
 
-crates/moss-wasm/
 
 # HCL derive library
 libs/hcl-derive/
