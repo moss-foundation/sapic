@@ -3364,6 +3364,7 @@ dependencies = [
  "dotenv",
  "git2",
  "openssl",
+ "regex",
  "ssh2",
  "url",
 ]
@@ -3467,6 +3468,7 @@ dependencies = [
  "moss_environment",
  "moss_file",
  "moss_fs",
+ "moss_git",
  "moss_storage",
  "moss_testutils",
  "moss_text",

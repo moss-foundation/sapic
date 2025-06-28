@@ -14,6 +14,7 @@ moss_storage.workspace = true
 moss_activity_indicator.workspace = true
 moss_text.workspace = true
 moss_file.workspace = true
+moss_git.workspace = true
 
 anyhow.workspace = true
 arc-swap.workspace = true

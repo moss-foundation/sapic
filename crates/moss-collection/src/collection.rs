@@ -75,13 +75,13 @@ pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
-    pub repository: Option<Url>,
+    pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repository: Option<Change<Url>>,
+    pub repository: Option<Change<String>>,
     pub icon: Option<Change<PathBuf>>,
 }
 

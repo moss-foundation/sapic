@@ -6,7 +6,6 @@ use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
     ChangeIcon, ChangeRepository, CreateCollectionInput, UpdateCollectionInput,
 };
-use url::Url;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 
@@ -164,8 +163,8 @@ async fn update_collection_repo() {
     let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let old_repo = Url::parse("https://github.com/xxx/1.git").unwrap();
-    let new_repo = Url::parse("https://github.com/xxx/2.git").unwrap();
+    let old_repo = "https://github.com/xxx/1.git".to_string();
+    let new_repo = "github.com/xxx/2".to_string();
     let new_normalized_repo = "github.com/xxx/2";
     let create_collection_output = workspace
         .create_collection(
