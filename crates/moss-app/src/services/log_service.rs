@@ -1,7 +1,7 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
 use moss_common::api::OperationError;
@@ -280,7 +280,10 @@ impl LogService {
         let mut result = Vec::new();
         for entry_id in input {
             // Try deleting from applog queue
-            let mut applog_queue_lock = self.applog_queue.lock();
+            let mut applog_queue_lock = self
+                .applog_queue
+                .lock()
+                .map_err(|_| anyhow!("Mutex poisoned"))?;
             let idx = applog_queue_lock.iter().position(|x| x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
@@ -293,7 +296,10 @@ impl LogService {
             drop(applog_queue_lock);
 
             // Try deleting from sessionlog queue
-            let mut sessionlog_queue_lock = self.sessionlog_queue.lock();
+            let mut sessionlog_queue_lock = self
+                .sessionlog_queue
+                .lock()
+                .map_err(|_| anyhow!("Mutex poisoned"))?;
             let idx = sessionlog_queue_lock.iter().position(|x| x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
@@ -597,7 +603,7 @@ impl LogService {
         // The logs in the queue must be more recent than the logs in files
         // So we append them to the end
         result.extend({
-            let lock = queue.lock();
+            let lock = queue.lock().map_err(|_| anyhow!("Mutex poisoned"))?;
 
             lock.clone()
                 .into_iter()
