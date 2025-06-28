@@ -12,5 +12,4 @@ regex.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]
-openssl = { version = "0.10.70", features = ["vendored"] }
-ssh2 = { workspace = true, features = ["openssl-on-win32", "vendored-openssl"] }
+libssh2-sys = { version = "0.3.1", features = ["openssl-on-win32", "vendored-openssl"] }
