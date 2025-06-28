@@ -72,6 +72,12 @@ impl From<toml::de::Error> for OperationError {
     }
 }
 
+impl From<hcl::Error> for OperationError {
+    fn from(error: hcl::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
 
 pub trait OperationResultExt<T> {
@@ -158,4 +164,10 @@ impl<T> OperationResultExt<T> for Result<T, &str> {
     fn map_err_as_failed_precondition(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::FailedPrecondition(e.to_string()))
     }
+}
+
+#[derive(Debug)]
+pub enum Change<T> {
+    Update(T),
+    Remove,
 }

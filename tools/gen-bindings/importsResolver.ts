@@ -51,7 +51,6 @@ class TypeScriptImportsResolver {
       "moss-environment",
       "moss-workspace",
       "moss-collection",
-      "moss-workbench",
       "moss-activity-indicator",
     ] as const;
 

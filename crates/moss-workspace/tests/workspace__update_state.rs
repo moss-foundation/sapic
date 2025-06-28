@@ -28,7 +28,7 @@ async fn update_state_sidebar_part() {
         ))
         .await;
 
-    assert!(update_state_result.is_ok());
+    let _ = update_state_result.unwrap();
 
     // Verify the state was stored correctly via describe_state
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -74,7 +74,7 @@ async fn update_state_panel_part() {
         .update_state(UpdateStateInput::UpdatePanelPartState(panel_state.clone()))
         .await;
 
-    assert!(update_state_result.is_ok());
+    let _ = update_state_result.unwrap();
 
     // Verify the state was stored correctly via describe_state
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -119,12 +119,12 @@ async fn update_state_multiple_updates() {
             sidebar_state.clone(),
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     let update_panel_result = workspace
         .update_state(UpdateStateInput::UpdatePanelPartState(panel_state.clone()))
         .await;
-    assert!(update_panel_result.is_ok());
+    let _ = update_panel_result.unwrap();
 
     // Verify all states were stored correctly via describe_state
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -180,7 +180,7 @@ async fn update_state_multiple_updates() {
             updated_sidebar_state.clone(),
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     // Verify only sidebar state was updated via describe_state
     let describe_state_output = workspace.describe_state().await.unwrap();
@@ -238,7 +238,7 @@ async fn update_state_overwrite_existing() {
             initial_sidebar_state,
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     // Verify initial state in database
     let item_store = workspace.__storage().item_store();
@@ -267,7 +267,7 @@ async fn update_state_overwrite_existing() {
             updated_sidebar_state.clone(),
         ))
         .await;
-    assert!(update_sidebar_result.is_ok());
+    let _ = update_sidebar_result.unwrap();
 
     // Verify state was overwritten via describe_state
     let describe_state_output = workspace.describe_state().await.unwrap();

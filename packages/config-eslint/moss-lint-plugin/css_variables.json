@@ -188,6 +188,9 @@
   "--moss-button-border-disabled-hover",
   "--moss-button-border-disabled-active",
   "--moss-button-text-disabled",
+  "--moss-button-background-delete",
+  "--moss-button-background-delete-hover",
+  "--moss-button-text-delete",
   "--moss-controls-plain-bg",
   "--moss-controls-plain-border",
   "--moss-controls-plain-text",
@@ -204,6 +207,7 @@
   "--moss-select-disabled-bg",
   "--moss-input-bg-plain",
   "--moss-input-bg-outlined",
+  "--moss-input-border",
   "--moss-stepCard-text",
   "--moss-stepCard-bg",
   "--moss-checkbox-border",
@@ -217,5 +221,8 @@
   "--moss-table-cell-bg",
   "--moss-table-add-form-text",
   "--moss-table-add-row-form-text",
-  "--moss-drag-handle-bg"
+  "--moss-drag-handle-bg",
+  "--moss-tab-active-border-color",
+  "--moss-auth-indicator-color",
+  "--moss-tab-badge-color"
 ]

@@ -9,7 +9,7 @@ const cssVariables = JSON.parse(readFileSync(join(__dirname, "../css_variables.j
 const VALID_TOKENS = new Set(cssVariables);
 
 const ANY_TW_SELECTOR_WITH_ARBITRARY_VALUE =
-  /\b[\w\-:]+(?:\[(?:(?:var\((--[\w\-]+)\))|(--[\w\-]+))\]|-\((?:(?:var\((--[\w\-]+)\))|(--[\w\-]+))\))/g;
+  /\b[\p{L}\p{N}\-:]+(?:\[(?:(?:var\((--[\p{L}\p{N}\-]+)\))|(--[\p{L}\p{N}\-]+))\]|-\((?:(?:var\((--[\p{L}\p{N}\-]+)\))|(--[\p{L}\p{N}\-]+))\))/gu;
 
 const getTokensWithInvalidArbitraryValues = (str, loc) => {
   const invalidTokens = [];

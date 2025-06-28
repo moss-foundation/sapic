@@ -1,0 +1,7 @@
+.gritmodules*
+*.log
+
+# Rust build
+**/target/**
+# TypeScript deps
+**/node_modules/**

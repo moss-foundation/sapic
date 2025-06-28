@@ -4,6 +4,10 @@ pub mod command;
 pub mod context;
 pub mod models;
 pub mod services;
+pub mod storage;
+
+#[macro_use]
+extern crate derive_more;
 
 pub mod constants {
 
@@ -18,4 +22,9 @@ pub mod constants {
     // in moss-app/index.ts to match your changes.
 
     pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
+}
+
+pub mod dirs {
+    pub const WORKSPACES_DIR: &str = "workspaces";
+    pub const GLOBALS_DIR: &str = "globals";
 }

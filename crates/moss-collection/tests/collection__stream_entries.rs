@@ -5,8 +5,9 @@ use moss_collection::{
     dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput},
+        primitives::EntryKind,
         types::configuration::{
-            DirConfigurationModel, HttpDirConfigurationModel, RequestDirConfigurationModel,
+            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
     worktree::WorktreeEntry,
@@ -22,8 +23,8 @@ fn random_entry_name() -> String {
 }
 
 fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        HttpDirConfigurationModel {},
+    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+        DirHttpConfigurationModel {},
     ))
 }
 
@@ -32,7 +33,7 @@ async fn create_test_entry_in_dir(
     entry_name: &str,
     dir_name: &str,
 ) {
-    let entry_path = PathBuf::from(dir_name).join(entry_name);
+    let entry_path = PathBuf::from(dir_name);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
@@ -75,7 +76,8 @@ async fn scan_entries_for_test(
 async fn stream_entries_empty_collection() {
     let (collection_path, collection) = create_test_collection().await;
 
-    // Test scanning empty directories
+    // Each directory should return exactly one entry (the directory itself)
+    // since the base directories are created with config files
     for dir in &[
         dirs::REQUESTS_DIR,
         dirs::ENDPOINTS_DIR,
@@ -83,11 +85,17 @@ async fn stream_entries_empty_collection() {
         dirs::SCHEMAS_DIR,
     ] {
         let entries = scan_entries_for_test(&collection, dir).await;
-        assert!(
-            entries.is_empty(),
-            "Expected no entries in empty directory {}",
+        assert_eq!(
+            entries.len(),
+            1,
+            "Expected exactly one entry (the directory itself) in directory {}",
             dir
         );
+
+        // Verify the entry is the directory itself
+        let entry = &entries[0];
+        assert_eq!(entry.name, *dir);
+        assert!(matches!(entry.kind, EntryKind::Dir));
     }
 
     // Cleanup
@@ -104,15 +112,32 @@ async fn stream_entries_single_entry() {
     // Scan the components directory
     let entries = scan_entries_for_test(&collection, dirs::COMPONENTS_DIR).await;
 
-    assert_eq!(entries.len(), 1, "Expected exactly one entry");
-
-    let entry = &entries[0];
-    assert_eq!(entry.name, entry_name);
+    // Should have 2 entries: the directory itself + the created entry
     assert_eq!(
-        entry.path.file_name().unwrap().to_string_lossy(),
+        entries.len(),
+        2,
+        "Expected two entries: directory + created entry"
+    );
+
+    // Find the created entry (not the directory entry)
+    let created_entry = entries
+        .iter()
+        .find(|e| e.name == entry_name)
+        .expect("Should find the created entry");
+
+    assert_eq!(created_entry.name, entry_name);
+    assert_eq!(
+        created_entry.path.file_name().unwrap().to_string_lossy(),
         entry_name
     );
-    assert!(!entry.id.is_nil());
+    assert!(!created_entry.id.is_nil());
+
+    // Verify the directory entry is also present
+    let dir_entry = entries
+        .iter()
+        .find(|e| e.name == dirs::COMPONENTS_DIR)
+        .expect("Should find the directory entry");
+    assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
@@ -130,24 +155,46 @@ async fn stream_entries_multiple_entries_same_directory() {
     create_test_entry_in_dir(&mut collection, &entry2_name, dirs::REQUESTS_DIR).await;
     create_test_entry_in_dir(&mut collection, &entry3_name, dirs::REQUESTS_DIR).await;
 
-    // Scan the requests directory
     let entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
 
-    assert_eq!(entries.len(), 3, "Expected exactly three entries");
+    // Should have 4 entries: the directory itself + 3 created entries
+    assert_eq!(
+        entries.len(),
+        4,
+        "Expected four entries: directory + 3 created entries"
+    );
 
-    let entry_names: Vec<&str> = entries.iter().map(|e| e.name.as_str()).collect();
+    // Filter out the directory entry to check created entries
+    let created_entries: Vec<_> = entries
+        .iter()
+        .filter(|e| e.name != dirs::REQUESTS_DIR)
+        .collect();
+    assert_eq!(
+        created_entries.len(),
+        3,
+        "Expected exactly three created entries"
+    );
+
+    let entry_names: Vec<&str> = created_entries.iter().map(|e| e.name.as_str()).collect();
     assert!(entry_names.contains(&entry1_name.as_str()));
     assert!(entry_names.contains(&entry2_name.as_str()));
     assert!(entry_names.contains(&entry3_name.as_str()));
 
     // Verify all entries have valid IDs
-    for entry in &entries {
+    for entry in &created_entries {
         assert!(
             !entry.id.is_nil(),
             "Entry {} should have a valid ID",
             entry.name
         );
     }
+
+    // Verify the directory entry is present
+    let dir_entry = entries
+        .iter()
+        .find(|e| e.name == dirs::REQUESTS_DIR)
+        .expect("Should find the directory entry");
+    assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
@@ -177,11 +224,32 @@ async fn stream_entries_multiple_directories() {
     for (expected_name, dir) in &expected_entries {
         let entries = scan_entries_for_test(&collection, dir).await;
 
-        assert_eq!(entries.len(), 1, "Expected exactly one entry in {}", dir);
+        // Should have 2 entries: the directory itself + the created entry
+        assert_eq!(
+            entries.len(),
+            2,
+            "Expected two entries: directory + created entry in {}",
+            dir
+        );
 
-        let entry = &entries[0];
-        assert_eq!(entry.name, *expected_name);
-        assert!(!entry.id.is_nil());
+        // Find the created entry (not the directory)
+        let created_entry = entries
+            .iter()
+            .find(|e| e.name == *expected_name)
+            .expect(&format!(
+                "Should find created entry {} in {}",
+                expected_name, dir
+            ));
+
+        assert_eq!(created_entry.name, *expected_name);
+        assert!(!created_entry.id.is_nil());
+
+        // Verify the directory entry is present
+        let dir_entry = entries
+            .iter()
+            .find(|e| e.name == **dir)
+            .expect(&format!("Should find directory entry for {}", dir));
+        assert!(matches!(dir_entry.kind, EntryKind::Dir));
     }
 
     // Cleanup
@@ -207,11 +275,13 @@ async fn stream_entries_scan_operation_stability() {
         dirs::SCHEMAS_DIR,
     ] {
         let entries = scan_entries_for_test(&collection, dir).await;
-        // Just verify scan completes without error
-        // The number of entries depends on what was created in each directory
+        // Each directory should have at least 1 entry (the directory itself)
+        // and at most 2 entries (directory + 1 created entry)
         assert!(
-            entries.len() <= 2,
-            "Should not find more entries than we created"
+            entries.len() >= 1 && entries.len() <= 2,
+            "Expected 1-2 entries in directory {}, found {}",
+            dir,
+            entries.len()
         );
     }
 
@@ -230,9 +300,12 @@ async fn stream_entries_scan_operation_stability() {
     // Verify all scans completed successfully
     assert_eq!(results.len(), 4, "All 4 directory scans should complete");
 
-    // Total entries should match what we created
+    // Total entries should be: 4 directories + 2 created entries = 6
     let total_entries: usize = results.iter().map(|r| r.len()).sum();
-    assert_eq!(total_entries, 2, "Should find exactly 2 entries total");
+    assert_eq!(
+        total_entries, 6,
+        "Should find exactly 6 entries total (4 directories + 2 created)"
+    );
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
@@ -255,26 +328,44 @@ async fn stream_entries_mixed_content() {
 
     // Test each directory independently
 
-    // Requests should have 1 entry
+    // Requests should have 2 entries: directory + 1 created entry
     let requests_entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
-    assert_eq!(requests_entries.len(), 1);
-    assert_eq!(requests_entries[0].name, requests_entry);
+    assert_eq!(requests_entries.len(), 2);
+    let created_request = requests_entries
+        .iter()
+        .find(|e| e.name == requests_entry)
+        .expect("Should find created request entry");
+    assert_eq!(created_request.name, requests_entry);
 
-    // Components should have 2 entries
+    // Components should have 3 entries: directory + 2 created entries
     let components_entries = scan_entries_for_test(&collection, dirs::COMPONENTS_DIR).await;
-    assert_eq!(components_entries.len(), 2);
-    let component_names: Vec<&str> = components_entries.iter().map(|e| e.name.as_str()).collect();
+    assert_eq!(components_entries.len(), 3);
+    let created_components: Vec<_> = components_entries
+        .iter()
+        .filter(|e| e.name != dirs::COMPONENTS_DIR)
+        .collect();
+    assert_eq!(created_components.len(), 2);
+    let component_names: Vec<&str> = created_components.iter().map(|e| e.name.as_str()).collect();
     assert!(component_names.contains(&components_entry1.as_str()));
     assert!(component_names.contains(&components_entry2.as_str()));
 
-    // Schemas should have 1 entry
+    // Schemas should have 2 entries: directory + 1 created entry
     let schemas_entries = scan_entries_for_test(&collection, dirs::SCHEMAS_DIR).await;
-    assert_eq!(schemas_entries.len(), 1);
-    assert_eq!(schemas_entries[0].name, schemas_entry);
+    assert_eq!(schemas_entries.len(), 2);
+    let created_schema = schemas_entries
+        .iter()
+        .find(|e| e.name == schemas_entry)
+        .expect("Should find created schema entry");
+    assert_eq!(created_schema.name, schemas_entry);
 
-    // Endpoints should be empty
+    // Endpoints should have 1 entry: just the directory
     let endpoints_entries = scan_entries_for_test(&collection, dirs::ENDPOINTS_DIR).await;
-    assert!(endpoints_entries.is_empty());
+    assert_eq!(endpoints_entries.len(), 1);
+    let dir_entry = endpoints_entries
+        .iter()
+        .find(|e| e.name == dirs::ENDPOINTS_DIR)
+        .expect("Should find directory entry");
+    assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
@@ -288,33 +379,45 @@ async fn stream_entries_verify_entry_properties() {
     create_test_entry_in_dir(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
 
     let entries = scan_entries_for_test(&collection, dirs::COMPONENTS_DIR).await;
-    assert_eq!(entries.len(), 1);
+    // Should have 2 entries: directory + created entry
+    assert_eq!(entries.len(), 2);
 
-    let entry = &entries[0];
+    // Find the created entry (not the directory)
+    let created_entry = entries
+        .iter()
+        .find(|e| e.name == entry_name)
+        .expect("Should find the created entry");
 
-    // Verify all properties are set correctly
-    assert!(!entry.id.is_nil(), "ID should be set");
-    assert_eq!(entry.name, entry_name, "Name should match");
+    // Verify all properties are set correctly for the created entry
+    assert!(!created_entry.id.is_nil(), "ID should be set");
+    assert_eq!(created_entry.name, entry_name, "Name should match");
     assert!(
-        !entry.path.to_string_lossy().is_empty(),
+        !created_entry.path.to_string_lossy().is_empty(),
         "Path should be set"
     );
 
     // The entry should be a directory entry with request classification
     assert!(
         matches!(
-            entry.kind,
+            created_entry.kind,
             moss_collection::models::primitives::EntryKind::Dir
         ),
         "Should be a directory"
     );
     assert!(
         matches!(
-            entry.class,
+            created_entry.class,
             moss_collection::models::primitives::EntryClass::Request
         ),
         "Should be classified as Request"
     );
+
+    // Verify the directory entry is also present
+    let dir_entry = entries
+        .iter()
+        .find(|e| e.name == dirs::COMPONENTS_DIR)
+        .expect("Should find the directory entry");
+    assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();

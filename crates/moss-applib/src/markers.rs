@@ -1,3 +1,5 @@
-pub trait Global: 'static {}
+pub trait GlobalMarker: 'static {}
 
-pub trait Service: 'static {}
+pub trait ServiceMarker: 'static {}
+
+pub trait EventMarker: 'static {}

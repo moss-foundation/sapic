@@ -1,7 +1,7 @@
 use anyhow::Result;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path};
-use moss_text::sanitized::desanitize;
+use moss_text::sanitized::{desanitize, sanitize};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -10,15 +10,13 @@ use thiserror::Error;
 use tokio::{fs, sync::mpsc};
 use uuid::Uuid;
 
-use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryProtocol},
-    types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+use crate::{
+    constants,
+    models::{
+        primitives::{EntryClass, EntryKind, EntryProtocol},
+        types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
+    },
 };
-
-pub mod constants {
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
-}
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
@@ -52,6 +50,7 @@ impl From<WorktreeError> for OperationError {
 
 pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
+#[derive(Debug)]
 pub struct WorktreeEntry {
     pub id: Uuid,
     pub name: String,
@@ -66,6 +65,7 @@ pub struct Worktree {
     abs_path: Arc<Path>,
 }
 
+#[derive(Debug)]
 struct ScanJob {
     abs_path: Arc<Path>,
     path: Arc<Path>,
@@ -99,11 +99,15 @@ impl Worktree {
 
     pub async fn create_entry(
         &self,
-        path: &Path,
+        path: impl AsRef<Path>,
+        name: &str,
         is_dir: bool,
         content: &[u8],
     ) -> WorktreeResult<()> {
-        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?.join(sanitize(name));
         let abs_path = self.absolutize(&encoded_path)?;
 
         if abs_path.exists() {
@@ -116,7 +120,7 @@ impl Worktree {
         self.fs.create_dir(&abs_path).await?;
 
         if is_dir {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
+            let file_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -128,7 +132,7 @@ impl Worktree {
                 )
                 .await?;
         } else {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+            let file_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -231,6 +235,27 @@ impl Worktree {
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
 
+                let dir_name = job
+                    .path
+                    .file_name()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_else(|| job.path.to_string_lossy().to_string());
+
+                match process_dir_entry(&dir_name, &job.path, &fs, &job.abs_path).await {
+                    Ok(Some(dir_entry)) => {
+                        let _ = sender.send(dir_entry);
+                    }
+                    Ok(None) => {
+                        // TODO: log error
+                        return;
+                    }
+                    Err(_err) => {
+                        eprintln!("Error processing dir {}: {}", job.path.display(), _err);
+                        // TODO: log error
+                        return;
+                    }
+                }
+
                 let mut read_dir = match fs::read_dir(&job.abs_path).await {
                     Ok(dir) => dir,
                     Err(_) => return,
@@ -264,19 +289,24 @@ impl Worktree {
                         // TODO: Probably should log here since we should not be able to get here
                     });
 
-                    continue_if_err!(sender.send(entry), |_err| {
-                        // TODO: log error
-                    });
-
-                    new_jobs.push(ScanJob {
-                        abs_path: Arc::clone(&child_abs_path),
-                        path: child_path,
-                        scan_queue: job.scan_queue.clone(),
-                    });
+                    // INFO: Something here doesn't feel quite right—maybe we can improve it once we have the UI
+                    if child_file_type.is_dir() {
+                        new_jobs.push(ScanJob {
+                            abs_path: Arc::clone(&child_abs_path),
+                            path: child_path,
+                            scan_queue: job.scan_queue.clone(),
+                        });
+                    } else {
+                        continue_if_err!(sender.send(entry), |_err| {
+                            eprintln!("Error sending entry: {}", _err);
+                            // TODO: log error
+                        });
+                    }
                 }
 
                 for new_job in new_jobs {
-                    continue_if_err!(job.scan_queue.send(new_job), |_| {
+                    continue_if_err!(job.scan_queue.send(new_job), |_err| {
+                        eprintln!("Error sending new job: {}", _err);
                         // TODO: log error
                     });
                 }
@@ -301,15 +331,14 @@ async fn process_dir_entry(
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
 ) -> WorktreeResult<Option<WorktreeEntry>> {
-    let dir_config_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
-    let item_config_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+    let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
+    let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
     if dir_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeDirConfigurationModel>(&fs, &dir_config_path).await?;
+        let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -319,11 +348,10 @@ async fn process_dir_entry(
     }
 
     if item_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeItemConfigurationModel>(&fs, &item_config_path).await?;
+        let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -353,5 +381,5 @@ where
     let mut buf = String::new();
     reader.read_to_string(&mut buf)?;
 
-    Ok(toml::from_str(&buf).map_err(anyhow::Error::from)?)
+    Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
 }

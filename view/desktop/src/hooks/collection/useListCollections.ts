@@ -1,6 +1,6 @@
+import { useCollectionsStore } from "@/store/collections";
 import { CollectionInfo } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
-import { useCollectionsStore } from "@/store/collections";
 
 export const USE_LIST_COLLECTIONS_QUERY_KEY = "listCollections";
 

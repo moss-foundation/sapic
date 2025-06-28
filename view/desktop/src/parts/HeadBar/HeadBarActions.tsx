@@ -1,6 +1,7 @@
 import { RefObject } from "react";
 
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
+import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
@@ -24,8 +25,6 @@ export interface HeadBarActionProps {
   setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
   setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
-  setShowRenameWorkspaceModal?: (show: boolean) => void;
-  setWorkspaceToRename?: (workspace: { id: string; name: string } | null) => void;
 }
 
 /**
@@ -120,11 +119,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     openOpenWorkspaceModal,
     setShowDeleteConfirmModal,
     setWorkspaceToDelete,
-    setShowRenameWorkspaceModal,
-    setWorkspaceToRename,
   } = props;
 
   const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
   const activeWorkspace = useActiveWorkspace();
 
@@ -162,17 +160,14 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
 
         if (actionType === "rename") {
           const workspace = getWorkspaceById(workspaceId);
-          if (workspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
-            // Switch to target workspace first (backend only supports updating active workspace)
+          if (workspace) {
             openWorkspace(workspaceId);
 
             setTimeout(() => {
-              setWorkspaceToRename({
-                id: workspaceId,
-                name: workspace.displayName,
-              });
-              setShowRenameWorkspaceModal(true);
-            }, 100);
+              openPanel("WorkspaceSettings");
+            }, 500);
+          } else {
+            console.error(`Workspace not found for ID: ${workspaceId}`);
           }
           return;
         }
@@ -194,12 +189,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         setShowDeleteConfirmModal(true);
       }
     } else if (action === "rename") {
-      if (activeWorkspace && setShowRenameWorkspaceModal && setWorkspaceToRename) {
-        setWorkspaceToRename({
-          id: activeWorkspace.id,
-          name: activeWorkspace.displayName,
-        });
-        setShowRenameWorkspaceModal(true);
+      if (activeWorkspace) {
+        openPanel("WorkspaceSettings");
       }
     } else if (action === "kitchensink") {
       openPanel("KitchenSink");
@@ -207,6 +198,12 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       openPanel("Logs");
     } else if (action === "debug") {
       setShowDebugPanels(!showDebugPanels);
+    } else if (action === "exit-workspace") {
+      if (activeWorkspace) {
+        closeWorkspace(activeWorkspace.id);
+      }
+    } else {
+      console.log(`Unhandled workspace action: ${action}`);
     }
   };
 };

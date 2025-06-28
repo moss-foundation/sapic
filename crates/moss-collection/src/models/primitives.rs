@@ -29,3 +29,27 @@ pub enum EntryProtocol {
     Graphql,
     Grpc,
 }
+
+impl From<&HttpMethod> for EntryProtocol {
+    fn from(method: &HttpMethod) -> Self {
+        match method {
+            HttpMethod::Get => EntryProtocol::Get,
+            HttpMethod::Post => EntryProtocol::Post,
+            HttpMethod::Put => EntryProtocol::Put,
+            HttpMethod::Delete => EntryProtocol::Delete,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "primitives.ts")]
+pub enum HttpMethod {
+    #[serde(rename = "GET")]
+    Get,
+    #[serde(rename = "POST")]
+    Post,
+    #[serde(rename = "PUT")]
+    Put,
+    #[serde(rename = "DELETE")]
+    Delete,
+}

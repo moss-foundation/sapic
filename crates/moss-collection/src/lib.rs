@@ -1,12 +1,20 @@
 pub mod api;
 pub mod collection;
 pub mod config;
+pub mod context;
 pub mod manifest;
 pub mod models;
+pub mod services;
 pub mod storage;
 pub mod worktree;
 
 pub use collection::Collection;
+
+pub mod constants {
+    pub const COLLECTION_ICON_FILENAME: &str = "icon.png";
+    pub const ITEM_CONFIG_FILENAME: &str = "config.sapic";
+    pub const DIR_CONFIG_FILENAME: &str = "config-folder.sapic";
+}
 
 mod defaults {
     pub(crate) const DEFAULT_COLLECTION_NAME: &str = "New Collection";
@@ -22,4 +30,5 @@ pub mod dirs {
     pub const COMPONENTS_DIR: &str = "components";
     pub const SCHEMAS_DIR: &str = "schemas";
     pub const ENVIRONMENTS_DIR: &str = "environments";
+    pub const ASSETS_DIR: &str = "assets";
 }

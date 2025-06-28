@@ -14,10 +14,11 @@ moss_storage.workspace = true
 moss_activity_indicator.workspace = true
 moss_text.workspace = true
 moss_file.workspace = true
+moss_git.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
-ts-rs = { workspace = true, features = ["uuid-impl"] }
+ts-rs = { workspace = true, features = ["uuid-impl", "url-impl"] }
 tokio.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
@@ -26,8 +27,12 @@ toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
+image.workspace = true
+rand.workspace = true
+url.workspace = true
+rustc-hash.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
-moss_applib = { workspace = true, features = ["test"] }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true

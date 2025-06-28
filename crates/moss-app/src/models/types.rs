@@ -1,11 +1,13 @@
-use std::path::PathBuf;
-
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use ts_rs::TS;
+use uuid::Uuid;
 
 use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode};
 
-// Locale
+// ########################################################
+// ###                      Locale                      ###
+// ########################################################
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -52,16 +54,9 @@ pub struct Defaults {
     pub locale: LocaleInfo,
 }
 
-// Log
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct LogEntryRef {
-    /// This helps us to narrow down the scope of search
-    pub timestamp: String,
-    pub id: String,
-}
+// #########################################################
+// ###                      Log                          ###
+// #########################################################
 
 // FIXME: Is this the best way to handle date type?
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -75,7 +70,7 @@ pub struct LogDate {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogItemSourceInfo {
     pub id: String,
     #[serde(skip)]
@@ -85,7 +80,7 @@ pub struct LogItemSourceInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "types.ts")]
 pub struct LogEntryInfo {
     pub id: String,
     /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"
@@ -94,4 +89,18 @@ pub struct LogEntryInfo {
     #[ts(optional)]
     pub resource: Option<String>,
     pub message: String,
+}
+
+// #########################################################
+// ###                    Workspace                      ###
+// #########################################################
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct WorkspaceInfo {
+    pub id: Uuid,
+    pub display_name: String,
+    #[ts(optional)]
+    pub last_opened_at: Option<i64>,
 }

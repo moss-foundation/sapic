@@ -1,19 +1,45 @@
 use anyhow::{Context, Result};
+use moss_applib::{
+    EventMarker,
+    subscription::{Event, EventEmitter},
+};
+use moss_common::api::Change;
 use moss_environment::environment::Environment;
-use moss_file::toml::{self, TomlFileHandle};
-use moss_fs::FileSystem;
+use moss_file::toml::TomlFileHandle;
+use moss_fs::{FileSystem, RemoveOptions};
+use moss_git::url::normalize_git_url;
+use moss_hcl::Block;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
-use std::{collections::HashMap, path::Path, sync::Arc};
-use uuid::Uuid;
-
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tokio::sync::OnceCell;
+use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
-    defaults, dirs,
+    constants::COLLECTION_ICON_FILENAME,
+    defaults,
+    dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    models::types::configuration::docschema::{
+        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+        RawDirRequestConfiguration, RawDirSchemaConfiguration,
+    },
+    services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
 };
+
+const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
+
+const WORKTREE_DIRS: [&str; 4] = [
+    dirs::REQUESTS_DIR,
+    dirs::ENDPOINTS_DIR,
+    dirs::COMPONENTS_DIR,
+    dirs::SCHEMAS_DIR,
+];
 
 pub struct EnvironmentItem {
     pub id: Uuid,
@@ -22,6 +48,13 @@ pub struct EnvironmentItem {
 }
 
 type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
+
+#[derive(Debug, Clone)]
+pub enum OnDidChangeEvent {
+    Toggled(bool),
+}
+
+impl EventMarker for OnDidChangeEvent {}
 
 pub struct Collection {
     #[allow(dead_code)]
@@ -32,19 +65,30 @@ pub struct Collection {
     storage: Arc<dyn CollectionStorage>,
     #[allow(dead_code)]
     environments: OnceCell<EnvironmentMap>,
-    manifest: toml::EditableInPlaceFileHandle<ManifestModel>,
+    manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
     #[allow(dead_code)]
     config: TomlFileHandle<ConfigModel>,
+
+    pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
 
 pub struct CreateParams<'a> {
     pub name: Option<String>,
     pub internal_abs_path: &'a Path,
     pub external_abs_path: Option<&'a Path>,
+    pub repository: Option<String>,
+    pub icon_path: Option<PathBuf>,
 }
 
 pub struct ModifyParams {
     pub name: Option<String>,
+    pub repository: Option<Change<String>>,
+    pub icon: Option<Change<PathBuf>>,
+}
+
+#[rustfmt::skip]
+impl Collection {
+    pub fn on_did_change(&self) -> Event<OnDidChangeEvent> { self.on_did_change.event() }
 }
 
 impl Collection {
@@ -57,9 +101,11 @@ impl Collection {
             abs_path.display()
         ))?;
 
-        let manifest =
-            toml::EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME))
-                .await?;
+        let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
+            fs.clone(),
+            abs_path.join(MANIFEST_FILE_NAME),
+        )
+        .await?;
 
         let config = TomlFileHandle::load(fs.clone(), &abs_path.join(CONFIG_FILE_NAME)).await?;
         let worktree = Worktree::new(fs.clone(), abs_path.clone());
@@ -74,6 +120,7 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
+            on_did_change: EventEmitter::new(),
         })
     }
 
@@ -91,24 +138,56 @@ impl Collection {
             .to_owned()
             .into();
 
-        for dir in &[
-            dirs::REQUESTS_DIR,
-            dirs::ENDPOINTS_DIR,
-            dirs::COMPONENTS_DIR,
-            dirs::SCHEMAS_DIR,
-            dirs::ENVIRONMENTS_DIR,
-        ] {
+        let worktree = Worktree::new(fs.clone(), abs_path.clone());
+        for dir in &WORKTREE_DIRS {
+            let content = match *dir {
+                dirs::REQUESTS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::ENDPOINTS_DIR => {
+                    let configuration = RawDirConfiguration::Endpoint(Block::new(
+                        RawDirEndpointConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::COMPONENTS_DIR => {
+                    let configuration = RawDirConfiguration::Component(Block::new(
+                        RawDirComponentConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::SCHEMAS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                _ => unreachable!(),
+            };
+            worktree
+                .create_entry("", dir, true, content.as_bytes())
+                .await?;
+        }
+
+        for dir in &OTHER_DIRS {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
 
-        let worktree = Worktree::new(fs.clone(), abs_path.clone());
-        let manifest = toml::EditableInPlaceFileHandle::create(
+        let normalized_repo = if let Some(url) = params.repository {
+            Some(normalize_git_url(&url)?)
+        } else {
+            None
+        };
+
+        let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
             fs.clone(),
             abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
                 name: params
                     .name
                     .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
+                repository: normalized_repo,
             },
         )
         .await?;
@@ -122,6 +201,15 @@ impl Collection {
         )
         .await?;
 
+        if let Some(icon_path) = params.icon_path {
+            // TODO: Log the error here
+            let _ = SetIconService::set_icon(
+                &icon_path,
+                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
+                ICON_SIZE,
+            );
+        }
+
         // TODO: Load environments
 
         Ok(Self {
@@ -132,16 +220,52 @@ impl Collection {
             environments: OnceCell::new(),
             manifest,
             config,
+            on_did_change: EventEmitter::new(),
         })
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        if params.name.is_some() {
+        let repo_change = match params.repository {
+            None => None,
+            Some(Change::Update(url)) => Some(Change::Update(normalize_git_url(&url)?)),
+            Some(Change::Remove) => Some(Change::Remove),
+        };
+
+        if params.name.is_some() || repo_change.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
-                    name: params.name.to_owned(),
+                    name: params.name,
+                    repository: repo_change,
                 })
                 .await?;
+        }
+
+        match params.icon {
+            None => {}
+            Some(Change::Update(new_icon_path)) => {
+                SetIconService::set_icon(
+                    &new_icon_path,
+                    &self
+                        .abs_path
+                        .join(ASSETS_DIR)
+                        .join(COLLECTION_ICON_FILENAME),
+                    ICON_SIZE,
+                )?;
+            }
+            Some(Change::Remove) => {
+                self.fs
+                    .remove_file(
+                        &self
+                            .abs_path
+                            .join(ASSETS_DIR)
+                            .join(COLLECTION_ICON_FILENAME),
+                        RemoveOptions {
+                            recursive: false,
+                            ignore_if_not_exists: true,
+                        },
+                    )
+                    .await?;
+            }
         }
 
         Ok(())

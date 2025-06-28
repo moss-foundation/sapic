@@ -5,7 +5,9 @@ use ts_rs::TS;
 pub type LocaleId = String;
 pub type ThemeId = String;
 
-// Theme
+// ########################################################
+// ###                      Theme                       ###
+// ########################################################
 
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
@@ -15,9 +17,11 @@ pub enum ThemeMode {
     Dark,
 }
 
-// Log
+// #########################################################
+// ###                      Log                          ###
+// #########################################################
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum LogLevel {
     TRACE,

@@ -21,6 +21,8 @@ tauri-build = { version = "2.0.5", features = [] }
 compression = ["tauri/compression"]
 
 [dependencies]
+moss_activity_indicator.workspace = true
+moss_applib.workspace = true
 moss_common.workspace = true
 moss_tauri.workspace = true
 moss_db.workspace = true
@@ -30,7 +32,6 @@ moss_fs.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
 moss_storage.workspace = true
-moss_workbench.workspace = true
 
 tauri = { workspace = true, features = ["wry", "macos-private-api", "devtools", "objc-exception"] }
 tauri-plugin-fs = "2.3.0"

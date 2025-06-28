@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow};
 use async_stream::stream;
 use futures::{StreamExt, stream::BoxStream};
 
-use moss_applib::Global;
+use moss_applib::GlobalMarker;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{io, path::Path, time::Duration};
 use tokio::{
@@ -23,7 +23,7 @@ impl RealFileSystem {
     }
 }
 
-impl Global for RealFileSystem {}
+impl GlobalMarker for RealFileSystem {}
 
 #[async_trait::async_trait]
 impl FileSystem for RealFileSystem {
@@ -80,6 +80,7 @@ impl FileSystem for RealFileSystem {
 
         let mut file = open_options.open(path).await?;
         file.write_all(content).await?;
+        file.flush().await?;
         Ok(())
     }
 

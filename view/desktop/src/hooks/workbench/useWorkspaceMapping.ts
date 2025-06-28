@@ -1,5 +1,7 @@
 import { useMemo } from "react";
-import { WorkspaceInfo } from "@repo/moss-workbench";
+
+import { WorkspaceInfo } from "@repo/moss-app";
+
 import { useListWorkspaces } from "./useListWorkspaces";
 
 export const useWorkspaceMapping = () => {

@@ -1,4 +1,4 @@
-use moss_app::{app::App, context::AppContext};
+use moss_app::app::App;
 use moss_collection::models::{
     events::StreamEntriesEvent,
     operations::{
@@ -22,11 +22,9 @@ pub async fn create_collection_entry<R: TauriRuntime>(
     input: CreateEntryInput,
 ) -> TauriResult<CreateEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let ctx = AppContext::from(&app);
-        let workbench = app.workbench();
-        let mut workspace_guard = workbench.active_workspace_mut().await;
-        let workspace = workspace_guard
-            .as_mut()
+        let (mut workspace, ctx) = app
+            .workspace_mut()
+            .await
             .map_err_as_failed_precondition("No active workspace")?;
 
         let collections = workspace.collections_mut(&ctx).await?;
@@ -52,11 +50,9 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
     input: DeleteEntryInput,
 ) -> TauriResult<DeleteEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let ctx = AppContext::from(&app);
-        let workbench = app.workbench();
-        let mut workspace_guard = workbench.active_workspace_mut().await;
-        let workspace = workspace_guard
-            .as_mut()
+        let (mut workspace, ctx) = app
+            .workspace_mut()
+            .await
             .map_err_as_failed_precondition("No active workspace")?;
 
         let collections = workspace.collections_mut(&ctx).await?;
@@ -82,11 +78,9 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
     channel: TauriChannel<StreamEntriesEvent>,
 ) -> TauriResult<StreamEntriesOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let ctx = AppContext::from(&app);
-        let workbench = app.workbench();
-        let workspace_guard = workbench.active_workspace().await;
-        let workspace = workspace_guard
-            .as_ref()
+        let (workspace, ctx) = app
+            .workspace()
+            .await
             .map_err_as_failed_precondition("No active workspace")?;
 
         let collections = workspace.collections(&ctx).await?;

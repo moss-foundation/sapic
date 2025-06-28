@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 
+import { ConfirmationModal } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-import { RenameWorkspaceModal } from "@/components/Modals/Workspace/RenameWorkspaceModal";
-import { ConfirmationModal } from "@/components";
 import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -59,10 +58,6 @@ export const HeadBar = () => {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  // Rename workspace modal state
-  const [showRenameWorkspaceModal, setShowRenameWorkspaceModal] = useState(false);
-  const [workspaceToRename, setWorkspaceToRename] = useState<{ id: string; name: string } | null>(null);
-
   // Delete workspace hook
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
@@ -79,8 +74,6 @@ export const HeadBar = () => {
     setShowDeleteConfirmModal,
     workspaceToDelete,
     setWorkspaceToDelete,
-    setShowRenameWorkspaceModal,
-    setWorkspaceToRename,
   };
 
   const userActionProps: HeadBarActionProps = { ...actionProps };
@@ -123,40 +116,30 @@ export const HeadBar = () => {
     setWorkspaceToDelete(null);
   };
 
-  // Close rename workspace modal
-  const closeRenameWorkspaceModal = () => {
-    setShowRenameWorkspaceModal(false);
-    setWorkspaceToRename(null);
-  };
-
   return (
     <WorkspaceMenuProvider>
       {/* Workspace Modals */}
-      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
-
-      {/* Rename Workspace Modal */}
-      {workspaceToRename && (
-        <RenameWorkspaceModal
-          showModal={showRenameWorkspaceModal}
-          closeModal={closeRenameWorkspaceModal}
-          workspaceId={workspaceToRename.id}
-          currentName={workspaceToRename.name}
-        />
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
       )}
 
       {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        showModal={showDeleteConfirmModal}
-        closeModal={closeDeleteConfirmModal}
-        title="Delete Workspace"
-        message={`Are you sure you want to delete the workspace "${workspaceToDelete?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
-        onConfirm={handleDeleteWorkspace}
-        variant="danger"
-        icon="Delete"
-      />
+      {showDeleteConfirmModal && (
+        <ConfirmationModal
+          showModal={showDeleteConfirmModal}
+          closeModal={closeDeleteConfirmModal}
+          title="Delete"
+          message={`Delete "${workspaceToDelete?.name}"?`}
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+          confirmLabel="Delete"
+          cancelLabel="Close"
+          onConfirm={handleDeleteWorkspace}
+          variant="danger"
+        />
+      )}
 
       <header
         data-tauri-drag-region

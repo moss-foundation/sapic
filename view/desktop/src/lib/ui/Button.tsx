@@ -59,6 +59,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={forwardedRef}
         className={cn(buttonRootStyles({ isDisabled, loading, iconOnly }), className)}
         disabled={isDisabled}
+        type="button"
         {...props}
       >
         {content}

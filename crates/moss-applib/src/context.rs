@@ -1,13 +1,29 @@
-use std::any::Any;
+use anyhow::Result;
+use dashmap::DashMap;
+use derive_more::{Deref, DerefMut};
+use std::{
+    any::{Any, TypeId},
+    future::Future,
+    sync::Arc,
+};
 use tauri::{Runtime as TauriRuntime, State};
 use tokio::time::Duration;
 
-use crate::{Global, task::Task};
+use crate::{GlobalMarker, task::Task};
+
+pub trait ContextValue: Any + Send + Sync + 'static {}
+
+#[derive(Deref, DerefMut, Default, Clone)]
+pub struct ContextValueSet(Arc<DashMap<TypeId, Arc<dyn ContextValue>>>);
 
 pub trait Context<R: TauriRuntime>: Send + Sync {
+    fn set_value<T: ContextValue>(&self, value: T);
+    fn remove_value<T: ContextValue>(&self);
+    fn value<T: ContextValue>(&self) -> Option<Arc<T>>;
+
     fn global<T>(&self) -> State<'_, T>
     where
-        T: Global + Any + Send + Sync;
+        T: GlobalMarker + Any + Send + Sync;
 
     fn spawn<T, E, Fut, F>(&self, callback: F, timeout: Option<Duration>) -> Task<T, E>
     where
@@ -16,46 +32,4 @@ pub trait Context<R: TauriRuntime>: Send + Sync {
         E: Send + 'static,
         Fut: Future<Output = Result<T, E>> + Send + 'static,
         F: FnOnce(Self) -> Fut + Send + 'static;
-}
-
-#[cfg(any(test, feature = "test"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "test")))]
-pub mod test {
-    use super::*;
-
-    use tauri::{AppHandle, Manager, State, test::MockRuntime};
-
-    pub struct MockContext {
-        app_handle: AppHandle<MockRuntime>,
-    }
-
-    impl MockContext {
-        pub fn new(app_handle: AppHandle<MockRuntime>) -> Self {
-            Self { app_handle }
-        }
-    }
-
-    impl<R: TauriRuntime> Context<R> for MockContext {
-        fn global<T>(&self) -> State<'_, T>
-        where
-            T: Global + Any + Send + Sync,
-        {
-            self.app_handle.state()
-        }
-
-        fn spawn<T, E, Fut, F>(&self, callback: F, timeout: Option<Duration>) -> Task<T, E>
-        where
-            Self: Sized,
-            T: Send + 'static,
-            E: Send + 'static,
-            Fut: Future<Output = Result<T, E>> + Send + 'static,
-            F: FnOnce(Self) -> Fut + Send + 'static,
-        {
-            let fut = callback(MockContext {
-                app_handle: self.app_handle.clone(),
-            });
-            let task = Task::new(fut, timeout);
-            task
-        }
-    }
 }

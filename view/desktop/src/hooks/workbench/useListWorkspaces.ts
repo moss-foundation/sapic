@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { ListWorkspacesOutput } from "@repo/moss-workbench";
+import { ListWorkspacesOutput } from "@repo/moss-app";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_WORKSPACES_QUERY_KEY = "listWorkspaces";
@@ -18,5 +18,6 @@ export const useListWorkspaces = () => {
   return useQuery<ListWorkspacesOutput, Error>({
     queryKey: [USE_LIST_WORKSPACES_QUERY_KEY],
     queryFn: listWorkspacesFn,
+    initialData: [],
   });
 };

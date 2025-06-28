@@ -10,6 +10,7 @@ export THEMES_DIR = ${CURDIR}/assets/themes
 export LOCALES_DIR = ${CURDIR}/assets/locales
 export APP_LOG_DIR = ${CURDIR}/logs/app
 export SESSION_LOG_DIR = ${CURDIR}/logs/session
+export TYPEDOC_DIR = ${CURDIR}/autodocs
 
 # ---- Default Goal ----
 .DEFAULT_GOAL := run-desktop
@@ -57,7 +58,6 @@ COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 COMMON_MODELS_DIR := crates/moss-common
-WORKBENCH_MODELS_DIR := crates/moss-workbench
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
 
 # ---- Command Executables ----
@@ -83,9 +83,13 @@ run-desktop:
 
 ## Install dependencies and setup development environment
 .PHONY: ready
-ready: gen-icons export-css-variables
+ready: gen-icons export-css-variables gen-typedoc
 	$(PNPM) i
-	cd $(DESKTOP_DIR) && $(PNPM) i --force
+
+## Generate TypeDoc documentation
+.PHONY: gen-typedoc
+gen-typedoc:
+	$(PNPM) typedoc
 
 ## Icon generator tool
 .PHONY: gen-icons
@@ -133,7 +137,6 @@ $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
-$(eval $(call gen_bindings,workbench,WORKBENCH_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 
 ## Generate all TypeScript bindings
@@ -157,6 +160,17 @@ export-css-variables:
 	@cd $(SCRIPTS_DIR) && $(UV) run css_variables_exporter.py --source ../assets/themes/light.css \
 														   --dest ../packages/config-eslint/moss-lint-plugin/css_variables.json
 	@$(PNPM) prettier --plugin=prettier-plugin-tailwindcss --write packages/config-eslint/moss-lint-plugin/css_variables.json
+
+## Open TypeDoc documentation in browser
+.PHONY: open-docs
+open-docs:
+ifeq ($(DETECTED_OS),Windows)
+	@start "" "$(TYPEDOC_DIR)/index.html"
+else ifeq ($(DETECTED_OS),Darwin)
+	@open "$(TYPEDOC_DIR)/index.html"
+else
+	@xdg-open "$(TYPEDOC_DIR)/index.html"
+endif
 
 ## Count Lines of Code
 .PHONY: loc
