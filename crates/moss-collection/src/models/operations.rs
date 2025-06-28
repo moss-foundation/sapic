@@ -133,15 +133,6 @@ pub enum UpdateEntryInput {
     Dir(UpdateDirEntryInput),
 }
 
-impl Validate for UpdateEntryInput {
-    fn validate(&self) -> Result<(), ValidationErrors> {
-        match self {
-            UpdateEntryInput::Item(item) => item.validate(),
-            UpdateEntryInput::Dir(dir) => dir.validate(),
-        }
-    }
-}
-
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]

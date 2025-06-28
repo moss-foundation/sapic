@@ -131,7 +131,7 @@ impl EntryConfiguration {
 }
 
 #[derive(Deref, DerefMut)]
-pub struct Entry {
+pub(crate) struct Entry {
     id: Uuid,
     path: Arc<Path>,
 
@@ -140,7 +140,7 @@ pub struct Entry {
     configuration: EntryConfiguration,
 }
 
-pub struct EntryItemMut<'a> {
+pub(crate) struct EntryItemMut<'a> {
     id: Uuid,
     expanded_entries: &'a mut HashSet<Uuid>,
     configuration: &'a mut RawItemConfiguration,
@@ -181,9 +181,10 @@ impl EntryItemMut<'_> {
     }
 }
 
-pub struct EntryDirMut<'a> {
+pub(crate) struct EntryDirMut<'a> {
     id: Uuid,
     expanded_entries: &'a mut HashSet<Uuid>,
+    #[allow(dead_code)]
     configuration: &'a mut RawDirConfiguration,
 }
 

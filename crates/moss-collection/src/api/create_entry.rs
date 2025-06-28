@@ -32,7 +32,7 @@ impl Collection {
                 };
 
                 let configuration: RawItemConfiguration = model.into();
-                hcl::ser::to_string(&configuration)?
+                hcl::to_string(&configuration)?
             }
             CreateEntryInput::Dir(dir) => {
                 let model = CompositeDirConfigurationModel {
@@ -41,7 +41,7 @@ impl Collection {
                 };
 
                 let configuration: RawDirConfiguration = model.into();
-                hcl::ser::to_string(&configuration)?
+                hcl::to_string(&configuration)?
             }
         };
 

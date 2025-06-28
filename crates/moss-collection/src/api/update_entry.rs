@@ -1,9 +1,6 @@
-use moss_bindingutils::primitives::ChangeUsize;
 use moss_common::api::OperationResult;
 use moss_db::primitives::AnyValue;
-use moss_storage::storage::operations::{
-    PutItem, RemoveItem, TransactionalPutItem, TransactionalRemoveItem,
-};
+use moss_storage::storage::operations::TransactionalPutItem;
 use std::{path::Path, sync::Arc};
 use validator::Validate;
 
@@ -97,7 +94,10 @@ impl Collection {
             TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(order))?;
         }
 
-        // TODO: update expanded entries
+        if let Some(expanded) = input.expanded {
+            let segkey = segments::segkey_entry_expanded(&input.id.to_string());
+            TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(expanded))?;
+        }
 
         txn.commit()?;
 
@@ -160,7 +160,10 @@ impl Collection {
             TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(order))?;
         }
 
-        // TODO: update expanded entries
+        if let Some(expanded) = input.expanded {
+            let segkey = segments::segkey_entry_expanded(&input.id.to_string());
+            TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(expanded))?;
+        }
 
         txn.commit()?;
 
@@ -171,23 +174,3 @@ impl Collection {
         }))
     }
 }
-
-// fn update_order_if_needed(
-//     input: Option<ChangeUsize>,
-//     txn: &mut Transaction,
-//     store: &ResourceStore,
-// ) -> OperationResult<()> {
-//     // match input {
-//     //     Some(ChangeUsize::Update(order)) => {
-//     //         let segkey = segments::segkey_entry_order(&input.id.to_string());
-//     //         TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(order))?;
-//     //     }
-//     //     Some(ChangeUsize::Remove) => {
-//     //         let segkey = segments::segkey_entry_order(&input.id.to_string());
-//     //         TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
-//     //     }
-//     //     _ => {}
-//     // };
-
-//     Ok(())
-// }
