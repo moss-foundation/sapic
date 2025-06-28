@@ -481,7 +481,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
         channel: onCollectionEntryEvent,
       });
 
-      console.log("collectionsTrees", get().collectionsTrees);
+      // console.log("collectionsTrees", get().collectionsTrees);
     } catch (error) {
       console.error("Failed to get collection entries:", error);
     } finally {
@@ -535,7 +535,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
     // Handle nested paths
     let currentNode = rootNode;
     const relativePath = entry.path.segments.slice(1);
-    console.log("relativePath", entry.path.segments, relativePath);
+    // console.log("relativePath", entry.path.segments, relativePath);
 
     // Navigate or create intermediate directories
     for (let i = 0; i < relativePath.length - 1; i++) {
