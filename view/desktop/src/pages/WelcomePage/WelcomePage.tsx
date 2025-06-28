@@ -1,7 +1,9 @@
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
+import { useListWorkspaces } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { Icon } from "@/lib/ui";
+import { cn } from "@/utils";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";
@@ -45,6 +47,8 @@ export const WelcomePage = () => {
 };
 
 const FirstColumn = () => {
+  const { data: workspaces } = useListWorkspaces();
+
   const {
     showModal: showNewWorkspaceModal,
     closeModal: closeNewWorkspaceModal,
@@ -58,13 +62,6 @@ const FirstColumn = () => {
 
   return (
     <>
-      {showNewWorkspaceModal && (
-        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      )}
-      {showOpenWorkspaceModal && (
-        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
-      )}
-
       <div className="flex flex-col gap-7.5">
         <div className="flex flex-col items-start gap-2">
           <h2 className="text-lg">Start</h2>
@@ -72,7 +69,15 @@ const FirstColumn = () => {
             <Icon icon="NewWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>New workspace</span>
           </button>
-          <button className="flex cursor-pointer gap-1.5" onClick={openOpenWorkspaceModal}>
+
+          <button
+            disabled={workspaces?.length === 0}
+            className={cn("flex gap-1.5", {
+              "cursor-not-allowed opacity-50": workspaces?.length === 0,
+              "cursor-pointer": workspaces?.length && workspaces?.length > 0,
+            })}
+            onClick={workspaces?.length && workspaces?.length > 0 ? openOpenWorkspaceModal : undefined}
+          >
             <Icon icon="OpenWorkspaceActive" className="size-4 text-(--moss-primary)" />
             <span>Open workspace</span>
           </button>
@@ -80,6 +85,13 @@ const FirstColumn = () => {
 
         <WelcomePageRecentWorkspaces />
       </div>
+
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
     </>
   );
 };

@@ -394,7 +394,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   },
                   class: "Endpoint",
                   kind: "Dir",
-                  expanded: true,
+                  expanded: false,
                   childNodes: [],
                 },
                 schemas: {
@@ -418,7 +418,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   },
                   class: "Component",
                   kind: "Dir",
-                  expanded: true,
+                  expanded: false,
                   childNodes: [],
                 },
                 requests: {
@@ -430,7 +430,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
                   },
                   class: "Request",
                   kind: "Dir",
-                  expanded: false,
+                  expanded: true,
                   childNodes: [],
                 },
               },
