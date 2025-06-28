@@ -1,0 +1,8 @@
+package plugin:rust-hcl-greeter;
+
+
+// Input: String
+// Output: Hello, {input}
+world hcl-greeter {
+    include plugin:base/plugin-world;
+}

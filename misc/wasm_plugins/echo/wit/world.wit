@@ -1,0 +1,6 @@
+package plugin: echo;
+
+/// An example world for the component to target.
+world echo {
+  include plugin: base/plugin-world;
+}
