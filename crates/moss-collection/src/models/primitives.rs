@@ -1,5 +1,26 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "primitives.ts")]
+pub struct EntryPath {
+    pub raw: PathBuf,
+    pub segments: Vec<String>,
+}
+
+impl EntryPath {
+    pub fn new(raw: PathBuf) -> Self {
+        let segments = raw
+            .iter()
+            .map(|s| s.to_string_lossy().to_string())
+            .collect();
+
+        Self { raw, segments }
+    }
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]

@@ -9,8 +9,11 @@ use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
 use crate::models::{
-    primitives::EntryProtocol,
-    types::configuration::{DirConfigurationModel, ItemConfigurationModel},
+    primitives::{EntryPath, EntryProtocol},
+    types::configuration::{
+        CompositeDirConfigurationModel, CompositeItemConfigurationModel, DirConfigurationModel,
+        ItemConfigurationModel,
+    },
 };
 
 // Create Entry
@@ -99,10 +102,13 @@ pub struct DeleteEntryOutput {}
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateItemEntryInput {
     pub id: Uuid,
+    pub path: PathBuf,
+
     #[validate(length(min = 1))]
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<ChangeUsize>,
+    pub order: Option<usize>,
+    pub expanded: Option<bool>,
 }
 
 #[derive(Clone, Debug, Serialize, TS, Validate)]
@@ -111,9 +117,12 @@ pub struct UpdateItemEntryInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateDirEntryInput {
     pub id: Uuid,
+    pub path: PathBuf,
+
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<ChangeUsize>,
+    pub order: Option<usize>,
+    pub expanded: Option<bool>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -138,11 +147,10 @@ impl Validate for UpdateEntryInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateItemEntryOutput {
     pub id: Uuid,
-    pub configuration: ItemConfigurationModel,
+    pub path: EntryPath,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub path: Arc<Path>,
+    /// Data will be shown in this field if any configuration changes have been made.
+    pub configuration: Option<CompositeItemConfigurationModel>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
@@ -150,11 +158,10 @@ pub struct UpdateItemEntryOutput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateDirEntryOutput {
     pub id: Uuid,
-    pub configuration: DirConfigurationModel,
+    pub path: EntryPath,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub path: Arc<Path>,
+    /// Data will be shown in this field if any configuration changes have been made.
+    pub configuration: Option<CompositeDirConfigurationModel>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]

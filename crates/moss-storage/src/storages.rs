@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::{
     collection_storage::stores::{
-        CollectionUnitStore, CollectionVariableStore, MixedStore as CollectionMixedStore,
+        CollectionResourceStore, CollectionVariableStore, MixedStore as CollectionMixedStore,
     },
     global_storage::stores::{GlobalItemStore, GlobalLogStore},
     storage::{Storage, Transactional},
@@ -25,6 +25,6 @@ pub trait WorkspaceStorage: Storage + Transactional + Send + Sync {
 
 pub trait CollectionStorage: Storage + Transactional + Send + Sync {
     fn variable_store(&self) -> Arc<dyn CollectionVariableStore>;
-    fn unit_store(&self) -> Arc<dyn CollectionUnitStore>;
-    fn mixed_store(&self) -> Arc<dyn CollectionMixedStore>;
+    fn resource_store(&self) -> Arc<dyn CollectionResourceStore>;
+    // fn mixed_store(&self) -> Arc<dyn CollectionMixedStore>;
 }

@@ -9,9 +9,8 @@ use crate::{
     collection::OnDidChangeEvent,
     dirs,
     models::{
-        events::StreamEntriesEvent,
-        operations::StreamEntriesOutput,
-        types::{EntryInfo, EntryPath},
+        events::StreamEntriesEvent, operations::StreamEntriesOutput, primitives::EntryPath,
+        types::EntryInfo,
     },
     worktree::EntryDescription,
 };
@@ -55,10 +54,7 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath {
-                                    raw: entry.path.to_path_buf(),
-                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
-                                },
+                                path: EntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,

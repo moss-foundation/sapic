@@ -4,7 +4,7 @@ use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path};
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -28,6 +28,9 @@ pub enum WorktreeError {
     #[error("invalid input: {0}")]
     InvalidInput(String),
 
+    #[error("invalid kind: {0}")]
+    InvalidKind(String),
+
     #[error("worktree entry already exists: {0}")]
     AlreadyExists(String),
 
@@ -45,6 +48,7 @@ impl From<WorktreeError> for OperationError {
     fn from(error: WorktreeError) -> Self {
         match error {
             WorktreeError::InvalidInput(err) => OperationError::InvalidInput(err),
+            WorktreeError::InvalidKind(err) => OperationError::InvalidInput(err),
             WorktreeError::AlreadyExists(err) => OperationError::AlreadyExists(err),
             WorktreeError::NotFound(err) => OperationError::NotFound(err),
             WorktreeError::Unknown(err) => OperationError::Unknown(err),
@@ -137,14 +141,22 @@ pub struct Entry {
 }
 
 pub struct EntryItemMut<'a> {
-    id: &'a Uuid,
-    path: &'a Path,
+    id: Uuid,
+    expanded_entries: &'a mut HashSet<Uuid>,
     configuration: &'a mut RawItemConfiguration,
 }
 
 impl EntryItemMut<'_> {
     pub fn configuration(&self) -> &RawItemConfiguration {
         self.configuration
+    }
+
+    pub fn set_expanded(&mut self, expanded: bool) {
+        if expanded {
+            self.expanded_entries.insert(self.id);
+        } else {
+            self.expanded_entries.remove(&self.id);
+        }
     }
 
     pub fn set_protocol(&mut self, protocol: EntryProtocol) -> WorktreeResult<()> {
@@ -170,9 +182,19 @@ impl EntryItemMut<'_> {
 }
 
 pub struct EntryDirMut<'a> {
-    id: &'a Uuid,
-    path: &'a Path,
+    id: Uuid,
+    expanded_entries: &'a mut HashSet<Uuid>,
     configuration: &'a mut RawDirConfiguration,
+}
+
+impl EntryDirMut<'_> {
+    pub fn set_expanded(&mut self, expanded: bool) {
+        if expanded {
+            self.expanded_entries.insert(self.id);
+        } else {
+            self.expanded_entries.remove(&self.id);
+        }
+    }
 }
 
 impl Entry {
@@ -193,6 +215,7 @@ pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
     entries_by_id: Arc<RwLock<HashMap<Uuid, Entry>>>,
+    expanded_entries: Arc<RwLock<HashSet<Uuid>>>,
 }
 
 impl Worktree {
@@ -201,13 +224,42 @@ impl Worktree {
             fs,
             abs_path,
             entries_by_id: Arc::new(RwLock::new(HashMap::new())),
+            expanded_entries: Arc::new(RwLock::new(HashSet::new())),
         }
     }
 
-    pub async fn with_entry_item_mut<T>(
+    pub(crate) async fn with_entry_item_mut<T>(
         &self,
         id: Uuid,
         f: impl for<'a> FnOnce(&mut EntryItemMut<'a>) -> WorktreeResult<T>,
+    ) -> WorktreeResult<T> {
+        let mut entries = self.entries_by_id.write().await;
+        let entry = entries
+            .get_mut(&id)
+            .ok_or(WorktreeError::NotFound(id.to_string()))?;
+
+        let configuration = match &mut entry.configuration {
+            EntryConfiguration::Item(conf) => conf,
+            EntryConfiguration::Dir(_) => {
+                return Err(WorktreeError::InvalidKind("not an item".to_string()));
+            }
+        };
+
+        let mut expanded_entries = self.expanded_entries.write().await;
+        let result = f(&mut EntryItemMut {
+            id,
+            expanded_entries: &mut expanded_entries,
+            configuration,
+        })?;
+
+        Ok(result)
+    }
+
+    #[allow(dead_code)] // Will be used in the future
+    pub(crate) async fn with_entry_dir_mut<T>(
+        &self,
+        id: Uuid,
+        f: impl for<'a> FnOnce(&mut EntryDirMut<'a>) -> WorktreeResult<T>,
     ) -> WorktreeResult<T> {
         let mut entries_by_id = self.entries_by_id.write().await;
         let entry = entries_by_id
@@ -215,38 +267,21 @@ impl Worktree {
             .ok_or(WorktreeError::NotFound(id.to_string()))?;
 
         let configuration = match &mut entry.configuration {
-            EntryConfiguration::Item(conf) => conf,
-            EntryConfiguration::Dir(_) => {
-                return Err(WorktreeError::InvalidInput(
-                    "Entry is not an item".to_string(),
-                ));
+            EntryConfiguration::Item(_) => {
+                return Err(WorktreeError::InvalidKind("not a dir".to_string()));
             }
+            EntryConfiguration::Dir(conf) => conf,
         };
 
-        let result = f(&mut EntryItemMut {
-            id: &entry.id,
-            path: &entry.path,
+        let mut expanded_entries = self.expanded_entries.write().await;
+        let result = f(&mut EntryDirMut {
+            id,
+            expanded_entries: &mut expanded_entries,
             configuration,
         })?;
 
         Ok(result)
     }
-
-    // pub(crate) async fn with_entry_mut<T, E>(
-    //     &self,
-    //     id: Uuid,
-    //     f: impl FnOnce(&mut Entry) -> Result<T, E>,
-    // ) -> Result<T, E>
-    // where
-    //     E: From<WorktreeError>,
-    // {
-    //     let mut entries_by_id = self.entries_by_id.write().await;
-    //     let entry = entries_by_id
-    //         .get_mut(&id)
-    //         .ok_or(WorktreeError::NotFound(id.to_string()))?;
-
-    //     f(entry)
-    // }
 
     pub fn absolutize(&self, path: &Path) -> WorktreeResult<PathBuf> {
         debug_assert!(path.is_relative());
@@ -266,6 +301,42 @@ impl Worktree {
         } else {
             Ok(self.abs_path.to_path_buf())
         }
+    }
+
+    pub async fn update_entry(
+        &self,
+        path: impl AsRef<Path>,
+        is_dir: bool,
+        content: &[u8],
+    ) -> WorktreeResult<()> {
+        let path = path.as_ref();
+        debug_assert!(path.is_relative());
+
+        let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
+        let abs_path = self.absolutize(&encoded_path)?;
+
+        if !abs_path.exists() {
+            return Err(WorktreeError::NotFound(format!("path {}", path.display())));
+        }
+
+        let file_path = if is_dir {
+            abs_path.join(constants::DIR_CONFIG_FILENAME)
+        } else {
+            abs_path.join(constants::ITEM_CONFIG_FILENAME)
+        };
+
+        self.fs
+            .create_file_with(
+                &file_path,
+                content,
+                CreateOptions {
+                    overwrite: true,
+                    ignore_if_exists: true,
+                },
+            )
+            .await?;
+
+        Ok(())
     }
 
     pub async fn create_entry(
@@ -290,36 +361,27 @@ impl Worktree {
 
         self.fs.create_dir(&abs_path).await?;
 
-        if is_dir {
-            let file_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
-            self.fs
-                .create_file_with(
-                    &file_path,
-                    content,
-                    CreateOptions {
-                        overwrite: false,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
+        let file_path = if is_dir {
+            abs_path.join(constants::DIR_CONFIG_FILENAME)
         } else {
-            let file_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
-            self.fs
-                .create_file_with(
-                    &file_path,
-                    content,
-                    CreateOptions {
-                        overwrite: false,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
-        }
+            abs_path.join(constants::ITEM_CONFIG_FILENAME)
+        };
+
+        self.fs
+            .create_file_with(
+                &file_path,
+                content,
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
 
         Ok(())
     }
 
-    pub async fn rename_entry(&self, id: Uuid, name: &str) -> WorktreeResult<()> {
+    pub async fn rename_entry(&self, id: Uuid, name: &str) -> WorktreeResult<Arc<Path>> {
         let mut entries = self.entries_by_id.write().await;
         let entry = entries
             .get_mut(&id)
@@ -336,7 +398,7 @@ impl Worktree {
         self.rename_entry_internal(&old_path, &new_path).await?;
         entry.path = new_path.into();
 
-        Ok(())
+        Ok(entry.path.clone())
     }
 
     async fn rename_entry_internal(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
