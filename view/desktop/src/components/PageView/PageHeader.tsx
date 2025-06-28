@@ -1,9 +1,27 @@
-import React from "react";
 import { cn } from "@/utils";
+import React, { useEffect, useState } from "react";
 import { Divider } from "../Divider";
 import { PageHeaderProps } from "./types";
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, icon, tabs, toolbar, className }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({ icon, tabs, toolbar, className, props }) => {
+  const [title, setTitle] = useState("Untitled");
+
+  useEffect(() => {
+    const currentPanel = props?.containerApi?.getPanel(props.api.id);
+
+    setTitle(currentPanel?.title ?? "Untitled");
+
+    if (props?.api?.onDidTitleChange) {
+      const disposable = props.api.onDidTitleChange((event) => {
+        setTitle(event.title);
+      });
+
+      return () => {
+        disposable?.dispose();
+      };
+    }
+  }, [props?.api, props?.containerApi]);
+
   return (
     <header
       className={cn("background-(--moss-primary-background) h-9 border-b border-(--moss-border-color)", className)}

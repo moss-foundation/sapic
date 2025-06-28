@@ -8,7 +8,7 @@ export const useTabbedPaneDropTarget = (
   dockviewRef: React.RefObject<HTMLDivElement>,
   setPragmaticDropElement: React.Dispatch<React.SetStateAction<DropNodeElement | null>>
 ) => {
-  const [canDrop, setCanDrop] = React.useState(false);
+  const [canDrop, setCanDrop] = React.useState(true);
   const [isDragging, setIsDragging] = React.useState(false);
 
   React.useEffect(() => {
@@ -19,7 +19,7 @@ export const useTabbedPaneDropTarget = (
 
       const sourceTarget = getActualDropSourceTarget(source);
 
-      if (sourceTarget?.node?.type === "TreeNode" || sourceTarget?.node?.uniqueId) {
+      if (sourceTarget?.node?.type === "TreeNode") {
         setCanDrop(true);
       } else {
         setCanDrop(false);
@@ -36,7 +36,7 @@ export const useTabbedPaneDropTarget = (
     const clearDropTarget = () => {
       setIsDragging(false);
       setPragmaticDropElement(null);
-      setCanDrop(false);
+      setCanDrop(true);
     };
 
     return dropTargetForElements({

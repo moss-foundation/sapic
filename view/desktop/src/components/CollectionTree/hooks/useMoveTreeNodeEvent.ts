@@ -1,7 +1,8 @@
+/* eslint-disable */
 import { Dispatch, SetStateAction, useEffect } from "react";
 
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "../types";
-import { addNodeToTreeWithInstruction, hasDescendant, removeNodeFromTree, removeUniqueIdFromTree } from "../utils";
+import { addNodeToTreeWithInstruction, hasDescendant, removeNodeFromTree } from "../utils";
 
 interface useMoveTreeNodeProps {
   treeId: TreeProps["id"];
@@ -46,7 +47,7 @@ export const useMoveTreeNodeEvent = ({
             } else {
               onNodeAdd?.(source.node);
             }
-            onTreeUpdate?.(removeUniqueIdFromTree(updatedTree));
+            onTreeUpdate?.(updatedTree);
             return updatedTree;
           });
         }
@@ -58,7 +59,7 @@ export const useMoveTreeNodeEvent = ({
             } else {
               onNodeRemove?.(source.node);
             }
-            onTreeUpdate?.(removeUniqueIdFromTree(removedTree));
+            onTreeUpdate?.(removedTree);
             return removedTree;
           });
         }

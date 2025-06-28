@@ -58,8 +58,12 @@ const FirstColumn = () => {
 
   return (
     <>
-      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
 
       <div className="flex flex-col gap-7.5">
         <div className="flex flex-col items-start gap-2">

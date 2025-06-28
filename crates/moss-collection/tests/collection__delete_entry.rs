@@ -5,7 +5,7 @@ use moss_collection::{
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
         types::configuration::{
-            DirConfigurationModel, HttpDirConfigurationModel, RequestDirConfigurationModel,
+            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
 };
@@ -21,8 +21,8 @@ fn random_entry_name() -> String {
 }
 
 fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        HttpDirConfigurationModel {},
+    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+        DirHttpConfigurationModel {},
     ))
 }
 

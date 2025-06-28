@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 
+import { ConfirmationModal } from "@/components";
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
-
-import { ConfirmationModal } from "@/components";
 import { useActiveWorkspace } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -120,21 +119,27 @@ export const HeadBar = () => {
   return (
     <WorkspaceMenuProvider>
       {/* Workspace Modals */}
-      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
 
       {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        showModal={showDeleteConfirmModal}
-        closeModal={closeDeleteConfirmModal}
-        title="Delete"
-        message={`Delete "${workspaceToDelete?.name}"?`}
-        description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
-        confirmLabel="Delete"
-        cancelLabel="Close"
-        onConfirm={handleDeleteWorkspace}
-        variant="danger"
-      />
+      {showDeleteConfirmModal && (
+        <ConfirmationModal
+          showModal={showDeleteConfirmModal}
+          closeModal={closeDeleteConfirmModal}
+          title="Delete"
+          message={`Delete "${workspaceToDelete?.name}"?`}
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
+          confirmLabel="Delete"
+          cancelLabel="Close"
+          onConfirm={handleDeleteWorkspace}
+          variant="danger"
+        />
+      )}
 
       <header
         data-tauri-drag-region

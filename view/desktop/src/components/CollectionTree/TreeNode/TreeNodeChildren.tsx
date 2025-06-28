@@ -1,26 +1,24 @@
-import { useContext } from "react";
-
-import { TreeContext } from "../Tree";
-import { hasDescendantWithSearchInput } from "../utils";
+import { TreeCollectionNode } from "../types";
 import { TreeNode } from "./TreeNode";
 
-const TreeNodeChildren = ({ node, onNodeUpdate, depth }) => {
-  const { searchInput } = useContext(TreeContext);
-  const filteredChildNodes = searchInput
-    ? node.childNodes.filter((childNode) => hasDescendantWithSearchInput(childNode, searchInput))
-    : node.childNodes;
+interface TreeNodeChildrenProps {
+  node: TreeCollectionNode;
+  onNodeUpdate: (node: TreeCollectionNode) => void;
+  depth: number;
+}
 
+const TreeNodeChildren = ({ node, onNodeUpdate, depth }: TreeNodeChildrenProps) => {
   return (
     <div className="contents">
       <ul className="h-full">
-        {filteredChildNodes.map((childNode, index) => (
+        {node.childNodes.map((childNode, index) => (
           <TreeNode
             parentNode={node}
             onNodeUpdate={onNodeUpdate}
-            key={childNode.uniqueId}
+            key={childNode.id}
             node={childNode}
             depth={depth + 1}
-            isLastChild={index === filteredChildNodes.length - 1}
+            isLastChild={index === node.childNodes.length - 1}
           />
         ))}
       </ul>

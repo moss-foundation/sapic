@@ -3,16 +3,18 @@ import "./assets/styles.css";
 import React from "react";
 
 import { ActionButton, Breadcrumbs, PageContent, PageHeader, PageTabs, PageToolbar, PageView } from "@/components";
-import { DropNodeElement } from "@/components/CollectionTree/types";
+import { DropNodeElement, TreeCollectionNode } from "@/components/CollectionTree/types";
 import { useUpdateEditorPartState } from "@/hooks/appState/useUpdateEditorPartState";
 import { mapEditorPartStateToSerializedDockview } from "@/hooks/appState/utils";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { Icon, type Icons } from "@/lib/ui";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { CollectionSettingsPage, KitchenSink, Logs, Settings, WelcomePage, WorkspaceSettings } from "@/pages";
+import { useRequestModeStore } from "@/store/requestMode";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { EntryKind } from "@repo/moss-collection";
 import {
   DockviewDidDropEvent,
   DockviewReact,
@@ -38,7 +40,7 @@ const DebugContext = React.createContext<boolean>(false);
 type PageConfig = {
   title?: string;
   icon?: Icons;
-  component: React.ComponentType;
+  component: React.ComponentType<IDockviewPanelProps>;
 };
 
 // Wrapper component for pages with dynamic titles
@@ -65,23 +67,15 @@ const DynamicPageWrapper = ({
 
   // Special case for full-page components (no title)
   if (!config.title) {
-    return <PageComponent />;
-  }
-
-  let displayTitle = config.title;
-  if (pageKey === "WorkspaceSettings" && currentWorkspace?.displayName) {
-    displayTitle = currentWorkspace.displayName;
+    return <PageComponent {...props} />;
   }
 
   // Standard page structure with header and content
   return (
     <PageView>
-      <PageHeader
-        title={displayTitle}
-        icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined}
-      />
+      <PageHeader icon={config.icon ? <Icon icon={config.icon} className="size-[18px]" /> : undefined} props={props} />
       <PageContent>
-        <PageComponent />
+        <PageComponent {...props} />
       </PageContent>
     </PageView>
   );
@@ -119,8 +113,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
-  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup);
-  const { canDrop, isDragging } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+
+  useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup, canDrop);
   useTabbedPaneResizeObserver(api, dockviewRefWrapper);
 
   const { mutate: updateEditorPartState } = useUpdateEditorPartState();
@@ -214,18 +209,44 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     Welcome: {
       component: WelcomePage,
     },
+    CollectionSettings: {
+      title: "CollectionSettings",
+      component: CollectionSettingsPage,
+    },
   };
 
   const components = {
-    Default: (props: IDockviewPanelProps) => {
+    Default: (
+      props: IDockviewPanelProps<{
+        node?: TreeCollectionNode;
+        treeId: string;
+        iconType: EntryKind;
+        someRandomString: string;
+      }>
+    ) => {
+      const { displayMode } = useRequestModeStore();
+
       const isDebug = React.useContext(DebugContext);
-      const [activeTab, setActiveTab] = React.useState("endpoint");
+
+      let showEndpoint = false;
+      let dontShowTabs = true;
+      const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
+      if (props.params?.node) {
+        showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
+        dontShowTabs =
+          props.params.node.kind === "Dir" ||
+          //TODO: change this check for class in the future
+          props.params.node.path.segments[0] === "endpoints" ||
+          props.params.node.path.segments[0] === "schemas";
+      }
 
       const tabs = (
         <PageTabs>
-          <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
-            Endpoint
-          </button>
+          {showEndpoint && (
+            <button data-active={activeTab === "endpoint"} onClick={() => setActiveTab("endpoint")}>
+              Endpoint
+            </button>
+          )}
           <button data-active={activeTab === "request"} onClick={() => setActiveTab("request")}>
             Request
           </button>
@@ -244,13 +265,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       return (
         <PageView>
           <PageHeader
-            title={props.api.title ?? "Untitled"}
             icon={<Icon icon="Placeholder" className="size-[18px]" />}
-            tabs={tabs}
+            tabs={dontShowTabs ? null : tabs}
             toolbar={toolbar}
           />
           <PageContent className={cn("relative", isDebug && "border-2 border-dashed border-orange-500")}>
             <Breadcrumbs panelId={props.api.id} />
+
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               <span>{props.api.title}</span>
 
@@ -259,7 +280,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                 <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
               )}
             </span>
-
             {isDebug && (
               <Metadata
                 onClick={() => {
@@ -311,10 +331,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       },
       {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
     ),
-  };
-
-  const headerComponents = {
-    default: CustomTab,
+    // ...Object.entries(pageConfigs).map(([key, config]) => {
+    //   return {
+    //     [key]: (props: IDockviewPanelProps) => (
+    //       <DynamicPageWrapper pageKey={key} config={config} props={props} />
+    //     ),
+    //   };
+    // }),
   };
 
   return (
@@ -342,14 +365,13 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
                   disableAutoResizing
                   ref={dockviewRef}
                   components={components}
-                  defaultTabComponent={headerComponents.default}
+                  defaultTabComponent={CustomTab}
                   rightHeaderActionsComponent={PanelToolbar}
                   leftHeaderActionsComponent={AddPanelButton}
                   watermarkComponent={Watermark}
                   onReady={onReady}
                   className={theme || "dockview-theme-light"}
                   onDidDrop={onDidDrop}
-                  disableDnd={isDragging && canDrop === false}
                 />
               </div>
             </DebugContext.Provider>

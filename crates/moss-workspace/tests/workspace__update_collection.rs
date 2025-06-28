@@ -1,14 +1,21 @@
 pub mod shared;
 
-use moss_collection::{dirs::ASSETS_DIR, services::set_icon::constants::ICON_NAME};
+use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
     ChangeIcon, ChangeRepository, CreateCollectionInput, UpdateCollectionInput,
 };
-use url::Url;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
+
+// FIXME: The tests and business logic are poorly organized.
+// A collection shouldn’t expose implementation details, and the workspace shouldn’t be
+// testing logic that doesn’t belong to it. The DTO for creating a collection should simply
+// return the icon path, and in these tests we should check if the icon exists (when expected),
+// rather than manually constructing the path where we assume it was saved. With the current
+// approach, if the image path logic changes in `moss-collection`, it’ll break tests in
+// `moss-workspace`, which clearly shouldn’t happen.
 
 #[tokio::test]
 async fn rename_collection_success() {
@@ -164,8 +171,9 @@ async fn update_collection_repo() {
     let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
-    let old_repo = Url::parse("https://github.com/xxx/1.git").unwrap();
-    let new_repo = Url::parse("https://github.com/xxx/2.git").unwrap();
+    let old_repo = "https://github.com/xxx/1.git".to_string();
+    let new_repo = "github.com/xxx/2".to_string();
+    let new_normalized_repo = "github.com/xxx/2";
     let create_collection_output = workspace
         .create_collection(
             &ctx,
@@ -199,7 +207,10 @@ async fn update_collection_repo() {
     let collections = workspace.collections(&ctx).await.unwrap();
     let collection = collections.iter().next().unwrap().1.read().await;
 
-    assert_eq!(collection.manifest().await.repository, Some(new_repo));
+    assert_eq!(
+        collection.manifest().await.repository,
+        Some(new_normalized_repo.to_owned())
+    );
 
     cleanup().await;
 }
@@ -243,7 +254,12 @@ async fn update_collection_new_icon() {
         .unwrap();
 
     // Verify the icon is generated
-    assert!(collection_path.join(ASSETS_DIR).join(ICON_NAME).exists());
+    assert!(
+        collection_path
+            .join(ASSETS_DIR)
+            .join(COLLECTION_ICON_FILENAME)
+            .exists()
+    );
 
     cleanup().await;
 }
@@ -286,6 +302,11 @@ async fn update_collection_remove_icon() {
         .unwrap();
 
     // Verify the icon is removed
-    assert!(!workspace_path.join(ASSETS_DIR).join(ICON_NAME).exists());
+    assert!(
+        !workspace_path
+            .join(ASSETS_DIR)
+            .join(COLLECTION_ICON_FILENAME)
+            .exists()
+    );
     cleanup().await;
 }

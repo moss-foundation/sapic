@@ -7,6 +7,8 @@ edition = "2024"
 anyhow.workspace = true
 git2.workspace = true
 dotenv.workspace = true
+url.workspace = true
+regex.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]

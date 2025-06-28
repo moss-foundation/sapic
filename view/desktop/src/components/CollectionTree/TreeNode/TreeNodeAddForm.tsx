@@ -6,24 +6,21 @@ import { cn } from "@/utils";
 import { NodeAddForm } from "../NodeAddForm";
 import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
-import { NodeProps, TreeNodeProps } from "../types";
+import { TreeCollectionNode } from "../types";
 
 interface TreeNodeAddFormProps {
-  node: TreeNodeProps;
   depth: number;
-  isAddingFileNode: boolean;
   isAddingFolderNode: boolean;
-  onNodeAddCallback?: (node: TreeNodeProps) => void;
-  handleAddFormSubmit: (newNode: NodeProps) => void;
+  restrictedNames?: (string | number)[];
+  onNodeAddCallback?: (node: TreeCollectionNode) => void;
+  handleAddFormSubmit: (name: string) => void;
   handleAddFormCancel: () => void;
 }
 
 const TreeNodeAddForm = ({
-  node,
   depth,
-  isAddingFileNode,
   isAddingFolderNode,
-  onNodeAddCallback,
+  restrictedNames,
   handleAddFormSubmit,
   handleAddFormCancel,
 }: TreeNodeAddFormProps) => {
@@ -34,20 +31,12 @@ const TreeNodeAddForm = ({
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1">
       <Icon icon="ChevronRight" className={cn("opacity-0")} />
       <TestCollectionIcon
-        type={node.type}
+        type={isAddingFolderNode ? "Dir" : "File"}
         className={cn("ml-auto", {
-          "opacity-0": isAddingFileNode,
+          "opacity-0": !isAddingFolderNode,
         })}
       />
-      <NodeAddForm
-        isFolder={isAddingFolderNode}
-        restrictedNames={node.childNodes.map((childNode) => childNode.id)}
-        onSubmit={(newNode) => {
-          handleAddFormSubmit(newNode);
-          onNodeAddCallback?.({ ...node, childNodes: [...node.childNodes, newNode] } as TreeNodeProps);
-        }}
-        onCancel={handleAddFormCancel}
-      />
+      <NodeAddForm onSubmit={handleAddFormSubmit} onCancel={handleAddFormCancel} restrictedNames={restrictedNames} />
     </div>
   );
 };
