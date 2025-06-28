@@ -265,8 +265,9 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       throw new Error(String(result.error));
     }
 
+    const { entryClass, protocol } = getClassAndProtocolFromEntyInput(input);
+
     if ("dir" in input) {
-      const { entryClass } = getClassAndProtocolFromEntyInput(input);
       const rawpath = await join(input.dir.path, input.dir.name);
 
       const newEntry: EntryInfo = {
@@ -294,8 +295,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
       return newEntry;
     } else if ("item" in input) {
-      const { entryClass, protocol } = getClassAndProtocolFromEntyInput(input);
-
       const rawpath = await join(input.item.path, input.item.name);
 
       const newEntry: EntryInfo = {

@@ -42,6 +42,7 @@ export interface TreeRootNodeProps {
 
 export interface TreeProps {
   tree: TreeCollectionRootNode;
+  image: string | undefined;
 
   paddingLeft?: number;
   paddingRight?: number;
@@ -50,6 +51,7 @@ export interface TreeProps {
   searchInput?: string;
   sortBy?: SortTypes;
   displayMode?: "RequestFirst" | "DesignFirst";
+
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 
   onRootAdd?: (node: TreeCollectionRootNode) => void;
@@ -69,6 +71,7 @@ export interface TreeProps {
 
 export interface TreeContextProps {
   treeId: string;
+  image: string | undefined;
   paddingLeft: number;
   paddingRight: number;
   rootOffset: number;

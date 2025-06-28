@@ -12,6 +12,7 @@ import {
 
 export const TreeContext = createContext<TreeContextProps>({
   treeId: "",
+  image: undefined,
   paddingLeft: 0,
   paddingRight: 0,
   rootOffset: 0,
@@ -25,6 +26,8 @@ export const TreeContext = createContext<TreeContextProps>({
 
 export const CollectionTree = ({
   tree: initialTree,
+  image,
+
   paddingLeft = 8,
   paddingRight = 8,
   rootOffset = 8,
@@ -92,6 +95,7 @@ export const CollectionTree = ({
     <TreeContext.Provider
       value={{
         treeId: initialTree.id,
+        image,
 
         paddingLeft,
         paddingRight,

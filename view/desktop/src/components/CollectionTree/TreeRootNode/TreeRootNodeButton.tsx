@@ -4,7 +4,6 @@ import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
-import TestMossImage from "../../../assets/images/TestMossImage.webp";
 import { NodeLabel } from "../NodeLabel";
 import { TreeContext } from "../Tree";
 import { TreeCollectionRootNode } from "../types";
@@ -22,7 +21,7 @@ export const TreeRootNodeButton = ({
   shouldRenderChildNodes,
   onRootNodeClick,
 }: TreeRootNodeButtonProps) => {
-  const { treeId } = useContext(TreeContext);
+  const { treeId, image } = useContext(TreeContext);
   const { api } = useTabbedPaneStore();
 
   const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -74,15 +73,15 @@ export const TreeRootNodeButton = ({
             icon="ChevronRight"
             className={cn("text-(--moss-icon-primary-text)", {
               "rotate-90": shouldRenderChildNodes,
-              "hidden group-hover/treeRootNodeTrigger:block": TestMossImage,
+              "hidden group-hover/treeRootNodeTrigger:block": image,
             })}
           />
         </button>
 
         {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-        {TestMossImage && (
+        {image && (
           <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
-            <img src={TestMossImage} className="h-full w-full" />
+            <img src={image} className="h-full w-full" />
           </div>
         )}
       </span>
