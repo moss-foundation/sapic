@@ -13,7 +13,7 @@ use crate::{
         operations::StreamEntriesOutput,
         types::{EntryInfo, EntryPath},
     },
-    worktree::WorktreeEntry,
+    worktree::EntryDescription,
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -28,7 +28,7 @@ impl Collection {
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
     ) -> OperationResult<StreamEntriesOutput> {
-        let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
+        let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
         let worktree = self.worktree();
 

@@ -3254,6 +3254,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_bindingutils"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_collection"
 version = "0.1.0"
 dependencies = [
@@ -3267,6 +3275,7 @@ dependencies = [
  "indexmap 2.10.0",
  "moss_activity_indicator",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_db",
  "moss_environment",

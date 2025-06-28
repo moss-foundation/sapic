@@ -53,6 +53,7 @@ MISC_DIR := misc
 SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
+BINDINGUTILS_DIR := crates/moss-bindingutils
 APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
@@ -138,6 +139,7 @@ $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
+$(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -148,7 +150,8 @@ gen-bindings: \
 	gen-workspace-bindings \
 	gen-common-bindings \
 	gen-workbench-bindings \
-	gen-activity-indicator-bindings
+	gen-activity-indicator-bindings \
+	gen-bindingutils-bindings
 
 # ======================================================
 # Utility Commands

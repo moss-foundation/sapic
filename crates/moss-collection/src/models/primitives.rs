@@ -10,6 +10,17 @@ pub enum EntryClass {
     Schema,
 }
 
+impl ToString for EntryClass {
+    fn to_string(&self) -> String {
+        match self {
+            EntryClass::Request => "request".to_string(),
+            EntryClass::Endpoint => "endpoint".to_string(),
+            EntryClass::Component => "component".to_string(),
+            EntryClass::Schema => "schema".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum EntryKind {

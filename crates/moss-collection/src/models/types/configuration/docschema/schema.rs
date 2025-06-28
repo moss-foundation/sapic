@@ -8,7 +8,7 @@ use crate::models::types::configuration::docschema::RawMetadata;
 // ###                      Item                         ###
 // #########################################################
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawItemSchemaConfiguration {
     pub metadata: Block<RawMetadata>,
 }
@@ -17,7 +17,7 @@ pub struct RawItemSchemaConfiguration {
 // ###                      Dir                          ###
 // #########################################################
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawDirSchemaConfiguration {
     pub metadata: Block<RawMetadata>,
 }

@@ -20,8 +20,10 @@ members = [
     "crates/moss-activity-indicator",
     "crates/moss-file",
     "crates/moss-hcl", 
+    "crates/moss-bindingutils", 
+
     "tools/xtask",
-    "view/desktop/bin",
+    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
@@ -47,6 +49,7 @@ moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
 moss_hcl = { path = "crates/moss-hcl" }
+moss_bindingutils = { path = "crates/moss-bindingutils" }
 #
 # External crates
 #
