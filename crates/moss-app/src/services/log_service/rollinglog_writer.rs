@@ -3,8 +3,13 @@ use moss_db::primitives::AnyValue;
 use moss_storage::{
     GlobalStorage, primitives::segkey::SegKey, storage::operations::TransactionalPutItem,
 };
-use parking_lot::Mutex;
-use std::{collections::VecDeque, fs::OpenOptions, io::BufWriter, path::PathBuf, sync::Arc};
+use std::{
+    collections::VecDeque,
+    fs::OpenOptions,
+    io::BufWriter,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 use crate::{
     models::types::LogEntryInfo,
@@ -39,7 +44,10 @@ impl<'a> std::io::Write for RollingLogWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let log_entry: LogEntryInfo = serde_json::from_str(String::from_utf8_lossy(buf).as_ref())?;
 
-        let mut queue_lock = self.log_queue.lock();
+        let mut queue_lock = self
+            .log_queue
+            .lock()
+            .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Mutex poisoned"))?;
         while queue_lock.len() >= self.dump_threshold {
             // Use the timestamp of the oldest entry for filename
             if let Ok(datetime) =
