@@ -5,6 +5,7 @@ export const streamCollectionsEventSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().nullable(),
+  picturePath: z.string().nullable(),
 });
 
 export const streamEnvironmentsEventSchema = z.object({

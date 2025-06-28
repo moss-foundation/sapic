@@ -10,15 +10,13 @@ use thiserror::Error;
 use tokio::{fs, sync::mpsc};
 use uuid::Uuid;
 
-use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryProtocol},
-    types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+use crate::{
+    constants,
+    models::{
+        primitives::{EntryClass, EntryKind, EntryProtocol},
+        types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
+    },
 };
-
-pub mod constants {
-    pub(crate) const CONFIG_FILE_NAME_ITEM: &str = "config.toml";
-    pub(crate) const CONFIG_FILE_NAME_DIR: &str = "config-folder.toml";
-}
 
 #[derive(Error, Debug)]
 pub enum WorktreeError {
@@ -67,6 +65,7 @@ pub struct Worktree {
     abs_path: Arc<Path>,
 }
 
+#[derive(Debug)]
 struct ScanJob {
     abs_path: Arc<Path>,
     path: Arc<Path>,
@@ -121,7 +120,7 @@ impl Worktree {
         self.fs.create_dir(&abs_path).await?;
 
         if is_dir {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
+            let file_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -133,7 +132,7 @@ impl Worktree {
                 )
                 .await?;
         } else {
-            let file_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+            let file_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
             self.fs
                 .create_file_with(
                     &file_path,
@@ -251,6 +250,7 @@ impl Worktree {
                         return;
                     }
                     Err(_err) => {
+                        eprintln!("Error processing dir {}: {}", job.path.display(), _err);
                         // TODO: log error
                         return;
                     }
@@ -298,13 +298,15 @@ impl Worktree {
                         });
                     } else {
                         continue_if_err!(sender.send(entry), |_err| {
+                            eprintln!("Error sending entry: {}", _err);
                             // TODO: log error
                         });
                     }
                 }
 
                 for new_job in new_jobs {
-                    continue_if_err!(job.scan_queue.send(new_job), |_| {
+                    continue_if_err!(job.scan_queue.send(new_job), |_err| {
+                        eprintln!("Error sending new job: {}", _err);
                         // TODO: log error
                     });
                 }
@@ -329,15 +331,14 @@ async fn process_dir_entry(
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
 ) -> WorktreeResult<Option<WorktreeEntry>> {
-    let dir_config_path = abs_path.join(constants::CONFIG_FILE_NAME_DIR);
-    let item_config_path = abs_path.join(constants::CONFIG_FILE_NAME_ITEM);
+    let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
+    let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
     if dir_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeDirConfigurationModel>(&fs, &dir_config_path).await?;
+        let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -347,11 +348,10 @@ async fn process_dir_entry(
     }
 
     if item_config_path.exists() {
-        let config =
-            parse_configuration::<CompositeItemConfigurationModel>(&fs, &item_config_path).await?;
+        let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.metadata.id,
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -381,5 +381,5 @@ where
     let mut buf = String::new();
     reader.read_to_string(&mut buf)?;
 
-    Ok(toml::from_str(&buf).map_err(anyhow::Error::from)?)
+    Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
 }

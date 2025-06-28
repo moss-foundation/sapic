@@ -8,6 +8,7 @@ use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::normalize_git_url;
+use moss_hcl::Block;
 use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
 use std::{
     collections::HashMap,
@@ -20,14 +21,15 @@ use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
+    constants::COLLECTION_ICON_FILENAME,
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
-    models::types::configuration::{CompositeDirConfigurationModel, ConfigurationModel},
-    services::set_icon::{
-        SetIconService,
-        constants::{ICON_NAME, ICON_SIZE},
+    models::types::configuration::docschema::{
+        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+        RawDirRequestConfiguration, RawDirSchemaConfiguration,
     },
+    services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
 };
 
@@ -139,9 +141,33 @@ impl Collection {
 
         let worktree = Worktree::new(fs.clone(), abs_path.clone());
         for dir in &WORKTREE_DIRS {
-            let model = ConfigurationModel::Dir(CompositeDirConfigurationModel::default());
+            let content = match *dir {
+                dirs::REQUESTS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::ENDPOINTS_DIR => {
+                    let configuration = RawDirConfiguration::Endpoint(Block::new(
+                        RawDirEndpointConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::COMPONENTS_DIR => {
+                    let configuration = RawDirConfiguration::Component(Block::new(
+                        RawDirComponentConfiguration::new(),
+                    ));
+                    hcl::to_string(&configuration)?
+                }
+                dirs::SCHEMAS_DIR => {
+                    let configuration =
+                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
+                    hcl::to_string(&configuration)?
+                }
+                _ => unreachable!(),
+            };
             worktree
-                .create_entry("", dir, true, toml::to_string(&model)?.as_bytes())
+                .create_entry("", dir, true, content.as_bytes())
                 .await?;
         }
 
@@ -180,7 +206,7 @@ impl Collection {
             // TODO: Log the error here
             let _ = SetIconService::set_icon(
                 &icon_path,
-                &abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
                 ICON_SIZE,
             );
         }
@@ -220,14 +246,20 @@ impl Collection {
             Some(Change::Update(new_icon_path)) => {
                 SetIconService::set_icon(
                     &new_icon_path,
-                    &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                    &self
+                        .abs_path
+                        .join(ASSETS_DIR)
+                        .join(COLLECTION_ICON_FILENAME),
                     ICON_SIZE,
                 )?;
             }
             Some(Change::Remove) => {
                 self.fs
                     .remove_file(
-                        &self.abs_path.join(ASSETS_DIR).join(ICON_NAME),
+                        &self
+                            .abs_path
+                            .join(ASSETS_DIR)
+                            .join(COLLECTION_ICON_FILENAME),
                         RemoveOptions {
                             recursive: false,
                             ignore_if_not_exists: true,

@@ -14,11 +14,18 @@ impl<R: TauriRuntime> Workspace<R> {
 
         for collection in collections.values() {
             let collection_lock = collection.read().await;
+            let icon_path = collection_lock
+                .abs_path()
+                .join(moss_collection::dirs::ASSETS_DIR)
+                .join(moss_collection::constants::COLLECTION_ICON_FILENAME);
+
             let manifest = collection_lock.manifest().await;
             if let Err(e) = channel.send(StreamCollectionsEvent {
                 id: collection_lock.id,
                 name: manifest.name.clone(),
+                repository: manifest.repository,
                 order: collection_lock.order,
+                picture_path: icon_path.exists().then(|| icon_path),
             }) {
                 println!("Error sending collection event: {:?}", e); // TODO: log error
             }

@@ -82,3 +82,6 @@ crates/moss-git-hosting-provider/gitlab_oauth.json
 view/desktop/src/assets/icons/
 autodocs/
 NUL
+
+# HCL derive library
+libs/hcl-derive/

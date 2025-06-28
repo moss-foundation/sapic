@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 //TODO this should be removed and an Icon component should be used, when we have a proper icon library
 export const TestCollectionIcon = ({ type, className }: { type: string; className?: string }) => {
   switch (type) {
-    case "folder":
+    case "Dir":
       return (
         <svg
           className={cn(className, "min-h-4 min-w-4")}

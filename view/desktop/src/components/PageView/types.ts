@@ -1,3 +1,4 @@
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { ReactNode } from "react";
 
 export interface PageViewProps {
@@ -6,11 +7,11 @@ export interface PageViewProps {
 }
 
 export interface PageHeaderProps {
-  title: string;
   icon?: ReactNode;
   tabs?: ReactNode;
   toolbar?: ReactNode;
   className?: string;
+  props?: IDockviewPanelProps;
 }
 
 export interface PageTabsProps {
