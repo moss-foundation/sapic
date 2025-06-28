@@ -23,7 +23,6 @@ members = [
     "crates/moss-wasm",
     "tools/xtask",
     "view/desktop/bin",
-    "misc/wasm_plugins/rust_demo", "misc/wasm_plugins/hcl_greeter", "misc/wasm_plugins/echo",
 ]
 
 [workspace.dependencies]
@@ -98,7 +97,6 @@ rustc-hash = "2.1.1"
 derive_more = "2.0.1"
 image = "0.25.6"
 hcl-rs = "0.18.5"
-hcl-edit = "0.8.6"
 indexmap = "2.9.0"
 wasmtime = "34.0.0"
 wasmtime-wasi = "34.0.0"
