@@ -10,6 +10,18 @@ use anyhow::anyhow;
 
 use plugin::base::types::{Number, SimpleValue};
 
+impl From<&str> for Value {
+    fn from(value: &str) -> Self {
+        Self::Str(value.into())
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Self::Str(value)
+    }
+}
+
 impl From<SimpleValue> for Value {
     fn from(value: SimpleValue) -> Self {
         match value {
@@ -136,5 +148,21 @@ impl TryFrom<Value> for hcl::Value {
             }
         };
         Ok(value)
+    }
+}
+
+impl Value {
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Boolean(b) => Some(*b),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Value::Str(s) => Some(s),
+            _ => None,
+        }
     }
 }
