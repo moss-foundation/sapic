@@ -198,20 +198,6 @@ impl EntryDirMut<'_> {
     }
 }
 
-impl Entry {
-    pub fn id(&self) -> Uuid {
-        self.id
-    }
-
-    pub fn path(&self) -> &Path {
-        &self.path
-    }
-
-    pub fn configuration(&self) -> &EntryConfiguration {
-        &self.configuration
-    }
-}
-
 pub struct Worktree {
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
@@ -227,6 +213,10 @@ impl Worktree {
             entries_by_id: Arc::new(RwLock::new(HashMap::new())),
             expanded_entries: Arc::new(RwLock::new(HashSet::new())),
         }
+    }
+
+    pub(crate) async fn expanded_entries(&self) -> HashSet<Uuid> {
+        self.expanded_entries.read().await.clone()
     }
 
     pub(crate) async fn with_entry_item_mut<T>(
@@ -437,7 +427,7 @@ impl Worktree {
         Ok(())
     }
 
-    pub async fn remove_entry(&self, path: &Path) -> WorktreeResult<()> {
+    pub async fn remove_entry(&self, id: Uuid, path: &Path) -> WorktreeResult<()> {
         let encoded_path = moss_fs::utils::sanitize_path(path, None)?;
         let abs_path = self.absolutize(&encoded_path)?;
 
@@ -457,6 +447,8 @@ impl Worktree {
                 },
             )
             .await?;
+
+        self.expanded_entries.write().await.remove(&id);
 
         Ok(())
     }

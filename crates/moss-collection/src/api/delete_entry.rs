@@ -14,7 +14,7 @@ impl Collection {
     ) -> OperationResult<DeleteEntryOutput> {
         input.validate()?;
 
-        self.worktree().remove_entry(&input.path).await?;
+        self.worktree().remove_entry(input.id, &input.path).await?;
 
         let mut txn = self.storage().begin_write()?;
         let store = self.storage().resource_store();
@@ -24,10 +24,10 @@ impl Collection {
             TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
         }
 
-        {
-            let segkey = segments::segkey_entry_expanded(&input.id.to_string());
-            TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
-        }
+        // {
+        //     let segkey = segments::segkey_entry_expanded(&input.id.to_string());
+        //     TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
+        // }
 
         txn.commit()?;
 
