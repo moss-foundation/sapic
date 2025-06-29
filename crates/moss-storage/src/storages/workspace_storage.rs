@@ -16,7 +16,6 @@ use crate::{
     },
 };
 
-pub mod entities;
 pub mod stores;
 
 const DB_NAME: &str = "state.db";
