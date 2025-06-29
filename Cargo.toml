@@ -21,7 +21,7 @@ members = [
     "crates/moss-file",
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
-
+    "crates/moss-wasm",
     "tools/xtask",
     "view/desktop/bin", 
 ]
@@ -50,6 +50,7 @@ moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
 moss_hcl = { path = "crates/moss-hcl" }
 moss_bindingutils = { path = "crates/moss-bindingutils" }
+moss_wasm = { path = "crates/moss-wasm" }
 #
 # External crates
 #
@@ -67,7 +68,6 @@ log = "0.4.25"
 oauth2 = "5.0.0"
 reqwest = "0.12.12"
 serde_json = "1.0"
-ssh2 = "0.9.5"
 strum = "0.27.0"
 tokio = "1.45.1"
 tokio-stream = "0.1.17"
@@ -100,3 +100,8 @@ derive_more = "2.0.1"
 image = "0.25.6"
 hcl-rs = "0.18.5"
 indexmap = "2.9.0"
+wasmtime = "34.0.0"
+wasmtime-wasi = "34.0.0"
+wasmtime-wasi-http = "34.0.1"
+sha2 = "0.10.9"
+

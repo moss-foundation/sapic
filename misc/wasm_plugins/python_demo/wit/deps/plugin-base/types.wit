@@ -1,0 +1,26 @@
+interface types {
+    variant number {
+        signed(s64),
+        unsigned(u64),
+        float(f64),
+    }
+
+    variant simple-value {
+        null,
+        boolean(bool),
+        num(number),
+        str(string),
+    }
+
+    variant value {
+        null,
+        boolean(bool),
+        num(number),
+        str(string),
+        arr(list<simple-value>),
+        obj(list<tuple<string, simple-value>>)
+    }
+
+}
+
+
