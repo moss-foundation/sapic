@@ -8,7 +8,6 @@ use crate::models::primitives::ThemeId;
 #[ts(export, export_to = "events.ts")]
 pub struct ColorThemeChangeEventPayload<'a> {
     pub id: &'a ThemeId,
-    pub test_field: String,
 }
 
 impl<'a> ColorThemeChangeEventPayload<'a> {

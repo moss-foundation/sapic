@@ -104,3 +104,9 @@ pub struct WorkspaceInfo {
     #[ts(optional)]
     pub last_opened_at: Option<i64>,
 }
+
+#[derive(TS)]
+#[ts(export, export_to = "types.ts")]
+pub struct TEST {
+    pub name: String,
+}
