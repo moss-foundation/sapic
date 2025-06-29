@@ -18,5 +18,6 @@ export const useListWorkspaces = () => {
   return useQuery<ListWorkspacesOutput, Error>({
     queryKey: [USE_LIST_WORKSPACES_QUERY_KEY],
     queryFn: listWorkspacesFn,
+    placeholderData: [],
   });
 };

@@ -24,9 +24,11 @@ export const WelcomePageRecentWorkspaces = () => {
             onClick={() => openWorkspace(workspace.id)}
           />
         ))}
+
+        {workspaces?.length === 0 && <span className="text-(--moss-secondary-text)">No recent workspaces</span>}
       </div>
 
-      {!showAll && workspaces?.length && workspaces.length > 3 && (
+      {!showAll && workspaces && workspaces.length > 3 && (
         <div>
           <ButtonNeutralOutlined onClick={() => setShowAll(true)}>More</ButtonNeutralOutlined>
         </div>

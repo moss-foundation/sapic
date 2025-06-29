@@ -2,6 +2,7 @@ import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import { ModalForm } from "@/components/ModalForm";
 import { useCollectionsStore } from "@/store/collections";
+import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
@@ -11,11 +12,18 @@ export const DeleteCollectionModal = ({
   collectionId,
 }: ModalWrapperProps & { collectionId: string }) => {
   const { deleteCollection, isDeleteCollectionLoading, streamedCollections } = useCollectionsStore();
+  const { removePanel } = useTabbedPaneStore();
+
   const collection = streamedCollections.find((collection) => collection.id === collectionId);
 
   const handleSubmit = async () => {
-    await deleteCollection(collectionId);
-    closeModal();
+    try {
+      await deleteCollection(collectionId);
+      closeModal();
+      removePanel(collectionId);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCancel = () => {

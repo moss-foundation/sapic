@@ -16,7 +16,7 @@ export interface HeadBarCenterItemsProps {
   selectedBranch: string | null;
   collectionName: string;
   onRenameCollection: (newName: string) => void;
-  onCollectionClick: () => void;
+  onCollectionClick?: () => void;
   collectionButtonRef: React.RefObject<HTMLButtonElement>;
   os: string | null;
 }

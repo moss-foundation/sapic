@@ -1,0 +1,5 @@
+package plugin:python-demo;
+
+world python-demo {
+    include plugin:base/plugin-world;
+}

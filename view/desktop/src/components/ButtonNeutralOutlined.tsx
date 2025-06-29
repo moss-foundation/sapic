@@ -37,8 +37,8 @@ const buttonStyles = cva(`
   }
 )
 
-export const ButtonNeutralOutlined = ({ size = "md", ...props }: ButtonNeutralOutlinedProps) => {
-  return <Button className={cn(buttonStyles({ size }), props.className)} {...props} />;
+export const ButtonNeutralOutlined = ({ size = "md", className, ...props }: ButtonNeutralOutlinedProps) => {
+  return <Button className={cn(buttonStyles({ size }), className)} {...props} />;
 };
 
 export default ButtonNeutralOutlined;

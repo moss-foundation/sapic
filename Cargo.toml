@@ -19,6 +19,8 @@ members = [
     "crates/moss-storage",
     "crates/moss-activity-indicator",
     "crates/moss-file",
+    "crates/moss-hcl",
+    "crates/moss-wasm",
     "tools/xtask",
     "view/desktop/bin",
 ]
@@ -45,6 +47,8 @@ moss_testutils = { path = "crates/moss-testutils" }
 moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
+moss_hcl = { path = "crates/moss-hcl" }
+moss_wasm = { path = "crates/moss-wasm" }
 #
 # External crates
 #
@@ -60,16 +64,13 @@ bstr = "1.11.3"
 git2 = "0.20.0"
 log = "0.4.25"
 oauth2 = "5.0.0"
-parking_lot = { version = "0.12.3", default-features = false }
 reqwest = "0.12.12"
 serde_json = "1.0"
-ssh2 = "0.9.5"
 strum = "0.27.0"
 tokio = "1.45.1"
 tokio-stream = "0.1.17"
 tracing = "0.1"
 tracing-appender = "0.2.3"
-tracing-appender-localtime = "0.2.4"
 tracing-subscriber = { version = "0.3.18", default-features = false }
 ts-rs = "11.0.1"
 thiserror = "2.0.11"
@@ -85,7 +86,6 @@ webbrowser = "1.0.3"
 zeroize = "1.7"
 aes-gcm = "0.10.3"
 argon2 = "0.5.1"
-arc-swap = "1.7.1"
 validator = "0.20.0"
 futures = "0.3.31"
 regex = { version = "1.11.1", default-features = false, features = [] }
@@ -96,3 +96,10 @@ nanoid = "0.4.0"
 rustc-hash = "2.1.1"
 derive_more = "2.0.1"
 image = "0.25.6"
+hcl-rs = "0.18.5"
+indexmap = "2.9.0"
+wasmtime = "34.0.0"
+wasmtime-wasi = "34.0.0"
+wasmtime-wasi-http = "34.0.1"
+sha2 = "0.10.9"
+

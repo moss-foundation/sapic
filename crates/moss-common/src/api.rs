@@ -72,6 +72,12 @@ impl From<toml::de::Error> for OperationError {
     }
 }
 
+impl From<hcl::Error> for OperationError {
+    fn from(error: hcl::Error) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 pub type OperationResult<T> = Result<T, OperationError>;
 
 pub trait OperationResultExt<T> {

@@ -7,7 +7,7 @@ use moss_collection::{
         operations::{CreateDirEntryInput, CreateEntryInput},
         primitives::EntryKind,
         types::configuration::{
-            DirConfigurationModel, HttpDirConfigurationModel, RequestDirConfigurationModel,
+            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
     worktree::WorktreeEntry,
@@ -23,8 +23,8 @@ fn random_entry_name() -> String {
 }
 
 fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        HttpDirConfigurationModel {},
+    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+        DirHttpConfigurationModel {},
     ))
 }
 

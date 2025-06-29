@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
+
 import { useModal } from "@/hooks/useModal";
 import { useGlobalSidebarState } from "@/hooks/workspace/useGlobalSidebarState";
+
+import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
+import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import ButtonPrimary from "./ButtonPrimary";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
-import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
-import TabbedPane from "../parts/TabbedPane/TabbedPane";
 
 interface EmptyWorkspaceProps {
   inSidebar?: boolean;
@@ -31,8 +33,12 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
   if (inSidebar) {
     return (
       <div className="flex flex-col gap-4.25 px-2">
-        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+        {showNewWorkspaceModal && (
+          <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+        )}
+        {showOpenWorkspaceModal && (
+          <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+        )}
 
         <div>
           <img src={ErrorNaughtyDog} className="mx-auto h-auto w-full max-w-[200px]" />
@@ -53,8 +59,12 @@ export const EmptyWorkspace = ({ inSidebar = false }: EmptyWorkspaceProps) => {
   // Main content area - render TabbedPane with WelcomePage
   return (
     <>
-      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
       <TabbedPane theme="dockview-theme-light" mode="welcome" />
     </>
   );

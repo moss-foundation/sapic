@@ -61,7 +61,8 @@ impl FsWatcher {
                     .collect::<Vec<_>>();
 
                 if !path_events.is_empty() {
-                    let pending_paths = pending_path_events.lock().unwrap();
+                    // FIXME: We can't propagate the error here since it's in a closure
+                    let pending_paths = pending_path_events.lock().expect("Mutex poisoned");
                     if pending_paths.is_empty() {
                         tx.send(()).unwrap();
                     }

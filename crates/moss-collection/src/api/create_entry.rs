@@ -8,7 +8,7 @@ use crate::{
         operations::{CreateEntryInput, CreateEntryOutput},
         types::configuration::{
             CompositeDirConfigurationModel, CompositeItemConfigurationModel, ConfigurationMetadata,
-            ConfigurationModel,
+            docschema::{RawDirConfiguration, RawItemConfiguration},
         },
     },
 };
@@ -24,26 +24,29 @@ impl Collection {
         let is_dir = matches!(input, CreateEntryInput::Dir(_));
         let path = input.path().clone();
         let name = input.name().to_owned();
-        let configuration = match input {
+        let content = match input {
             CreateEntryInput::Item(item) => {
-                ConfigurationModel::Item(CompositeItemConfigurationModel {
+                let model = CompositeItemConfigurationModel {
                     metadata: ConfigurationMetadata { id },
                     inner: item.configuration,
-                })
+                };
+
+                let configuration: RawItemConfiguration = model.into();
+                hcl::ser::to_string(&configuration)?
             }
-            CreateEntryInput::Dir(dir) => ConfigurationModel::Dir(CompositeDirConfigurationModel {
-                metadata: ConfigurationMetadata { id },
-                inner: dir.configuration,
-            }),
+            CreateEntryInput::Dir(dir) => {
+                let model = CompositeDirConfigurationModel {
+                    metadata: ConfigurationMetadata { id },
+                    inner: dir.configuration,
+                };
+
+                let configuration: RawDirConfiguration = model.into();
+                hcl::ser::to_string(&configuration)?
+            }
         };
 
         self.worktree()
-            .create_entry(
-                &path,
-                &name,
-                is_dir,
-                toml::to_string(&configuration)?.as_bytes(),
-            )
+            .create_entry(&path, &name, is_dir, content.as_bytes())
             .await?;
 
         // TODO: db operations

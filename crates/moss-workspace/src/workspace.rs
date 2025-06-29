@@ -4,7 +4,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
 use moss_collection::collection::Collection;
 use moss_environment::environment::{self, Environment};
-use moss_file::toml::EditableInPlaceFileHandle;
+use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::{
     WorkspaceStorage,
@@ -27,7 +27,7 @@ use uuid::Uuid;
 use crate::{
     defaults, dirs,
     layout::LayoutService,
-    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
+    manifest::{MANIFEST_FILE_NAME, ManifestModel},
     storage::segments::COLLECTION_SEGKEY,
 };
 
@@ -70,7 +70,7 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) next_environment_id: Arc<AtomicUsize>,
 
     #[allow(dead_code)]
-    pub(super) manifest: EditableInPlaceFileHandle<ManifestModel>,
+    pub(super) manifest: JsonFileHandle<ManifestModel>,
 
     pub layout: LayoutService,
 }
@@ -99,8 +99,7 @@ impl<R: TauriRuntime> Workspace<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.to_owned().into();
-        let manifest =
-            EditableInPlaceFileHandle::load(fs.clone(), abs_path.join(MANIFEST_FILE_NAME)).await?;
+        let manifest = JsonFileHandle::load(fs.clone(), &abs_path.join(MANIFEST_FILE_NAME)).await?;
 
         let layout = LayoutService::new(storage.clone());
 
@@ -136,9 +135,9 @@ impl<R: TauriRuntime> Workspace<R> {
             fs.create_dir(&abs_path.join(dir)).await?;
         }
 
-        let manifest = EditableInPlaceFileHandle::create(
+        let manifest = JsonFileHandle::create(
             fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            &abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
                 name: params
                     .name
@@ -165,18 +164,24 @@ impl<R: TauriRuntime> Workspace<R> {
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
         if params.name.is_some() {
             self.manifest
-                .edit(ManifestModelDiff {
-                    name: params.name.to_owned(),
-                })
+                .edit(
+                    |model| {
+                        model.name = params.name.unwrap();
+                        Ok(())
+                    },
+                    |model| {
+                        serde_json::to_string(model).map_err(|err| {
+                            anyhow::anyhow!("Failed to serialize JSON file: {}", err)
+                        })
+                    },
+                )
                 .await?;
         }
-
         Ok(())
     }
 
     pub async fn summary(fs: Arc<dyn FileSystem>, abs_path: &Path) -> Result<WorkspaceSummary> {
-        let manifest =
-            EditableInPlaceFileHandle::load(fs, abs_path.join(MANIFEST_FILE_NAME)).await?;
+        let manifest = JsonFileHandle::load(fs, &abs_path.join(MANIFEST_FILE_NAME)).await?;
         Ok(WorkspaceSummary {
             manifest: manifest.model().await,
         })

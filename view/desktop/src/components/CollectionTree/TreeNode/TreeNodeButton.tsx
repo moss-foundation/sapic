@@ -55,20 +55,32 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const handleClick = () => {
+      if (node.kind === "Dir" || node.kind === "Case") {
+        onNodeUpdate({
+          ...node,
+          expanded: true,
+        });
+      }
+
       addOrFocusPanel({
         id: `${node.id}`,
         title: node.name,
         params: {
           treeId,
           iconType: node.kind,
-          workspace: true,
+          node: {
+            ...node,
+            expanded: true,
+          },
+          someRandomString: "someRandomString",
         },
         component: "Default",
       });
     };
 
-    const handleClickOnDir = () => {
-      if (node.kind !== "Dir") return;
+    const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      if (node.kind === "Item") return;
 
       onNodeUpdate({
         ...node,
@@ -114,20 +126,24 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                   isLastChild={isLastChild}
                 />
               )}
-              <Icon
+              <button
                 onClick={handleClickOnDir}
-                icon="ChevronRight"
-                className={cn("text-(--moss-icon-primary-text)", {
-                  "rotate-90": shouldRenderChildNodes,
-                  "opacity-0": node.kind !== "Dir",
-                })}
-              />
+                className={cn(
+                  "hover:background-(--moss-icon-primary-background-hover) flex cursor-pointer items-center justify-center rounded-full text-(--moss-icon-primary-text)",
+                  {
+                    "rotate-90": shouldRenderChildNodes,
+                    "opacity-0": node.kind !== "Dir",
+                  }
+                )}
+              >
+                <Icon icon="ChevronRight" />
+              </button>
 
               {/* <TestCollectionIcon type={node.kind} /> */}
 
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
-              <NodeLabel label={node.name} searchInput={searchInput} />
+              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
             {preview &&
@@ -168,6 +184,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
 export default TreeNodeButton;
 
+// TODO: Remove this when we have real icons for the collections
 const DebugCollectionIconPlaceholder = ({
   protocol,
   type,

@@ -1,7 +1,7 @@
 import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
-import { Icon } from "@/lib/ui";
+import { Icon, Scrollbar } from "@/lib/ui";
 
 import WelcomePageDivider from "./WelcomePageDivider";
 import WelcomePageLink from "./WelcomePageLink";
@@ -9,9 +9,17 @@ import WelcomePageRecentWorkspaces from "./WelcomePageRecentWorkspaces";
 import WelcomePageSteps from "./WelcomePageSteps";
 
 export const WelcomePage = () => {
+  const handleLearnMoreClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const element = document.getElementById("TestAnchorForWelcomePage");
+    if (!element) {
+      return;
+    }
+    element.scrollIntoView({ behavior: "smooth" });
+  };
   return (
-    <div className="relative min-h-screen select-none">
-      <div className="relative flex h-full min-w-min flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
+    <Scrollbar className="relative z-[50] h-full">
+      <section className="relative flex min-h-[calc(100vh-98px)] flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
         <div className="flex flex-col gap-0.5">
           <h1 className="fill-[var(--moss-gray-6)] text-[34px]">Simple API Client</h1>
 
@@ -27,20 +35,23 @@ export const WelcomePage = () => {
           <WelcomePageSteps />
         </div>
 
-        <div className="mt-auto mb-8 flex justify-center">
-          <div className="flex flex-col items-center gap-2 text-sm">
-            <span>Learn more</span>
-            <Icon icon="ChevronDownHovered" />
-          </div>
-        </div>
-      </div>
+        <a
+          href="#TestAnchorForWelcomePage"
+          onClick={handleLearnMoreClick}
+          className="group/learn-more relative bottom-8 mt-auto flex cursor-pointer flex-col items-center gap-2 self-center pt-10 text-sm"
+        >
+          <span>Learn more</span>
+          <Icon
+            icon="ChevronDownHovered"
+            className="group-hover/learn-more:background-(--moss-icon-primary-background-hover) rounded-full transition-colors"
+          />
+        </a>
+      </section>
 
-      <div className="flex h-screen w-full flex-col items-center pb-6">
-        <div id="TestAnchorForWelcomePage" className="mt-auto">
-          hello
-        </div>
-      </div>
-    </div>
+      <section id="TestAnchorForWelcomePage" className="flex h-screen flex-col items-center justify-center bg-red-50">
+        <p className="text-2xl font-bold">Lorem ipsum</p>
+      </section>
+    </Scrollbar>
   );
 };
 
@@ -58,8 +69,12 @@ const FirstColumn = () => {
 
   return (
     <>
-      <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
-      <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
 
       <div className="flex flex-col gap-7.5">
         <div className="flex flex-col items-start gap-2">
@@ -95,7 +110,7 @@ const SecondColumn = () => {
 
         <WelcomePageDivider />
 
-        <WelcomePageLink label="View Sapic’s Roadmap" withIcon />
+        <WelcomePageLink label="View Sapic's Roadmap" withIcon />
 
         <WelcomePageDivider />
 

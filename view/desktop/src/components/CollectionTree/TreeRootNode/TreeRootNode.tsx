@@ -47,7 +47,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     setIsAddingRootNodeFolder,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm();
+  } = useRootNodeAddForm(node, onRootNodeUpdate);
 
   const {
     isRenamingRootNode,
@@ -115,7 +115,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
             node={node}
             searchInput={searchInput}
             shouldRenderChildNodes={shouldRenderRootChildNodes}
-            handleRootNodeClick={onRootNodeUpdate}
+            onRootNodeClick={onRootNodeUpdate}
           />
         )}
 

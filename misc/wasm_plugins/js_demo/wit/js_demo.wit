@@ -1,0 +1,5 @@
+package plugin:js-demo;
+
+world js-demo {
+  include plugin:base/plugin-world;
+}

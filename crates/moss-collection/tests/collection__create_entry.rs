@@ -2,12 +2,12 @@ pub mod shared;
 
 use crate::shared::create_test_collection;
 use moss_collection::{
-    dirs,
+    constants, dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput},
         types::configuration::{
-            DirConfigurationModel, HttpDirConfigurationModel, ItemConfigurationModel,
-            RequestDirConfigurationModel,
+            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
+            ItemConfigurationModel,
         },
     },
 };
@@ -30,8 +30,8 @@ fn create_test_item_configuration() -> ItemConfigurationModel {
 }
 
 fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
-        HttpDirConfigurationModel {},
+    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+        DirHttpConfigurationModel {},
     ))
 }
 
@@ -59,8 +59,7 @@ async fn create_dir_entry_success() {
     assert!(expected_dir.exists());
     assert!(expected_dir.is_dir());
 
-    // Verify the config file was created (for directories it's config-folder.toml)
-    let config_file = expected_dir.join("config-folder.toml");
+    let config_file = expected_dir.join(constants::DIR_CONFIG_FILENAME);
     assert!(config_file.exists());
     assert!(config_file.is_file());
 
