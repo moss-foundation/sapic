@@ -121,7 +121,7 @@ jobs:
       - name: Verify that bindings are updated
         run: |
           make gen-${{matrix.crate}}-bindings
-          git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**/*.ts
+          git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
   
   
   
