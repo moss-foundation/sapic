@@ -39,3 +39,9 @@ pub struct EntryInfo {
     pub order: Option<usize>,
     pub expanded: bool,
 }
+
+#[derive(TS)]
+#[ts(export, export_to = "types.ts")]
+pub struct TEST {
+    pub name: String,
+}
