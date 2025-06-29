@@ -25,4 +25,3 @@ if __name__ == "__main__":
     json_output = json.dumps(list(updated_models))
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         fh.write(f'UPDATED_MODELS={json_output}\n')
-  
