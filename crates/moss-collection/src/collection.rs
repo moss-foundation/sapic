@@ -54,7 +54,6 @@ pub struct Collection {
     pub(super) services: ServiceProvider,
     pub(super) worktree: Arc<Worktree>,
     pub(super) abs_path: Arc<Path>,
-    #[allow(dead_code)]
     pub(super) storage: Arc<dyn CollectionStorage>,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap>,
