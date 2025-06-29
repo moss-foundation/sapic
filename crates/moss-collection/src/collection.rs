@@ -1,6 +1,7 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use moss_applib::{
     EventMarker,
+    providers::ServiceProvider,
     subscription::{Event, EventEmitter},
 };
 use moss_common::api::Change;
@@ -8,8 +9,7 @@ use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::normalize_git_url;
-use moss_hcl::Block;
-use moss_storage::{CollectionStorage, collection_storage::CollectionStorageImpl};
+use moss_storage::CollectionStorage;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -19,27 +19,13 @@ use tokio::sync::OnceCell;
 use uuid::Uuid;
 
 use crate::{
-    config::{CONFIG_FILE_NAME, ConfigModel},
+    config::ConfigModel,
     constants::COLLECTION_ICON_FILENAME,
-    defaults,
-    dirs::{self, ASSETS_DIR},
-    manifest::{MANIFEST_FILE_NAME, ManifestModel, ManifestModelDiff},
-    models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-        RawDirRequestConfiguration, RawDirSchemaConfiguration,
-    },
+    dirs::ASSETS_DIR,
+    manifest::{ManifestModel, ManifestModelDiff},
     services::set_icon::{SetIconService, constants::ICON_SIZE},
     worktree::Worktree,
 };
-
-const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
-
-const WORKTREE_DIRS: [&str; 4] = [
-    dirs::REQUESTS_DIR,
-    dirs::ENDPOINTS_DIR,
-    dirs::COMPONENTS_DIR,
-    dirs::SCHEMAS_DIR,
-];
 
 pub struct EnvironmentItem {
     pub id: Uuid,
@@ -56,34 +42,27 @@ pub enum OnDidChangeEvent {
 
 impl EventMarker for OnDidChangeEvent {}
 
-pub struct Collection {
-    #[allow(dead_code)]
-    fs: Arc<dyn FileSystem>,
-    worktree: Arc<Worktree>,
-    abs_path: Arc<Path>,
-    #[allow(dead_code)]
-    storage: Arc<dyn CollectionStorage>,
-    #[allow(dead_code)]
-    environments: OnceCell<EnvironmentMap>,
-    manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
-    #[allow(dead_code)]
-    config: TomlFileHandle<ConfigModel>,
-
-    pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
-}
-
-pub struct CreateParams<'a> {
-    pub name: Option<String>,
-    pub internal_abs_path: &'a Path,
-    pub external_abs_path: Option<&'a Path>,
-    pub repository: Option<String>,
-    pub icon_path: Option<PathBuf>,
-}
-
 pub struct ModifyParams {
     pub name: Option<String>,
     pub repository: Option<Change<String>>,
     pub icon: Option<Change<PathBuf>>,
+}
+
+pub struct Collection {
+    #[allow(dead_code)]
+    pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) services: ServiceProvider,
+    pub(super) worktree: Arc<Worktree>,
+    pub(super) abs_path: Arc<Path>,
+    #[allow(dead_code)]
+    pub(super) storage: Arc<dyn CollectionStorage>,
+    #[allow(dead_code)]
+    pub(super) environments: OnceCell<EnvironmentMap>,
+    pub(super) manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
+    #[allow(dead_code)]
+    pub(super) config: TomlFileHandle<ConfigModel>,
+
+    pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
 }
 
 #[rustfmt::skip]
@@ -92,138 +71,6 @@ impl Collection {
 }
 
 impl Collection {
-    pub async fn load(abs_path: &Path, fs: Arc<dyn FileSystem>) -> Result<Self> {
-        let abs_path: Arc<Path> = abs_path.to_owned().into();
-        debug_assert!(abs_path.is_absolute());
-
-        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
-            "Failed to open the collection {} state database",
-            abs_path.display()
-        ))?;
-
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
-            fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
-        )
-        .await?;
-
-        let config = TomlFileHandle::load(fs.clone(), &abs_path.join(CONFIG_FILE_NAME)).await?;
-        let worktree = Worktree::new(fs.clone(), abs_path.clone());
-
-        // TODO: Load environments
-
-        Ok(Self {
-            fs,
-            abs_path,
-            worktree: Arc::new(worktree),
-            storage: Arc::new(storage),
-            environments: OnceCell::new(),
-            manifest,
-            config,
-            on_did_change: EventEmitter::new(),
-        })
-    }
-
-    pub async fn create<'a>(fs: Arc<dyn FileSystem>, params: CreateParams<'a>) -> Result<Self> {
-        debug_assert!(params.internal_abs_path.is_absolute());
-
-        let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
-            "Failed to open the collection {} state database",
-            params.internal_abs_path.display()
-        ))?;
-
-        let abs_path: Arc<Path> = params
-            .external_abs_path
-            .unwrap_or(params.internal_abs_path)
-            .to_owned()
-            .into();
-
-        let worktree = Worktree::new(fs.clone(), abs_path.clone());
-        for dir in &WORKTREE_DIRS {
-            let content = match *dir {
-                dirs::REQUESTS_DIR => {
-                    let configuration =
-                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
-                    hcl::to_string(&configuration)?
-                }
-                dirs::ENDPOINTS_DIR => {
-                    let configuration = RawDirConfiguration::Endpoint(Block::new(
-                        RawDirEndpointConfiguration::new(),
-                    ));
-                    hcl::to_string(&configuration)?
-                }
-                dirs::COMPONENTS_DIR => {
-                    let configuration = RawDirConfiguration::Component(Block::new(
-                        RawDirComponentConfiguration::new(),
-                    ));
-                    hcl::to_string(&configuration)?
-                }
-                dirs::SCHEMAS_DIR => {
-                    let configuration =
-                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
-                    hcl::to_string(&configuration)?
-                }
-                _ => unreachable!(),
-            };
-            worktree
-                .create_entry("", dir, true, content.as_bytes())
-                .await?;
-        }
-
-        for dir in &OTHER_DIRS {
-            fs.create_dir(&abs_path.join(dir)).await?;
-        }
-
-        let normalized_repo = if let Some(url) = params.repository {
-            Some(normalize_git_url(&url)?)
-        } else {
-            None
-        };
-
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
-            fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
-            ManifestModel {
-                name: params
-                    .name
-                    .unwrap_or(defaults::DEFAULT_COLLECTION_NAME.to_string()),
-                repository: normalized_repo,
-            },
-        )
-        .await?;
-
-        let config = TomlFileHandle::create(
-            fs.clone(),
-            &params.internal_abs_path.join(CONFIG_FILE_NAME),
-            ConfigModel {
-                external_path: params.external_abs_path.map(|p| p.to_owned().into()),
-            },
-        )
-        .await?;
-
-        if let Some(icon_path) = params.icon_path {
-            // TODO: Log the error here
-            let _ = SetIconService::set_icon(
-                &icon_path,
-                &abs_path.join(ASSETS_DIR).join(COLLECTION_ICON_FILENAME),
-                ICON_SIZE,
-            );
-        }
-
-        // TODO: Load environments
-
-        Ok(Self {
-            fs: Arc::clone(&fs),
-            abs_path: params.internal_abs_path.to_owned().into(),
-            worktree: Arc::new(worktree),
-            storage: Arc::new(storage),
-            environments: OnceCell::new(),
-            manifest,
-            config,
-            on_did_change: EventEmitter::new(),
-        })
-    }
-
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
         let repo_change = match params.repository {
             None => None,

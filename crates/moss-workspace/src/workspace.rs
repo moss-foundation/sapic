@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
-use moss_collection::collection::Collection;
+use moss_collection::{CollectionBuilder, builder::LoadParams, collection::Collection};
 use moss_environment::environment::{self, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
@@ -330,7 +330,11 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
-                    let collection = Collection::load(&entry.path(), fs.clone()).await?;
+                    let collection = CollectionBuilder::new(fs.clone())
+                        .load(LoadParams {
+                            internal_abs_path: &entry.path(),
+                        })
+                        .await?;
                     collections.insert(
                         id,
                         Arc::new(RwLock::new(CollectionItem {

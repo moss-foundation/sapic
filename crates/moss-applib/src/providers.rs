@@ -1,9 +1,8 @@
+use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
     sync::Arc,
 };
-
-use rustc_hash::FxHashMap;
 
 use crate::ServiceMarker;
 
