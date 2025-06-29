@@ -2,12 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum EditorGridOrientationEntity {
-    Horizontal,
-    Vertical,
-}
+use crate::models::primitives::{EditorGridOrientation, PanelRenderer};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct EditorGridLeafDataEntity {
@@ -34,13 +29,7 @@ pub struct EditorGridStateEntity {
     pub root: EditorGridNodeEntity,
     pub width: f64,
     pub height: f64,
-    pub orientation: EditorGridOrientationEntity,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub enum PanelRendererEntity {
-    OnlyWhenVisible,
-    Always,
+    pub orientation: EditorGridOrientation,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -49,7 +38,7 @@ pub struct EditorPanelStateEntity {
     pub content_component: Option<String>,
     pub tab_component: Option<String>,
     pub title: Option<String>,
-    pub renderer: Option<PanelRendererEntity>,
+    pub renderer: Option<PanelRenderer>,
     pub params: Option<HashMap<String, JsonValue>>,
     pub minimum_width: Option<f64>,
     pub minimum_height: Option<f64>,
