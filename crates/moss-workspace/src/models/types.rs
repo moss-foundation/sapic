@@ -26,6 +26,19 @@ impl Default for WorkspaceMode {
     }
 }
 
+#[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct CollectionInfo {
+    #[ts(type = "Identifier")]
+    pub id: Identifier,
+
+    pub display_name: String,
+
+    #[ts(optional)]
+    pub order: Option<usize>,
+}
+
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
