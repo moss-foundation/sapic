@@ -15,3 +15,5 @@ impl<'a> ColorThemeChangeEventPayload<'a> {
         Self { id }
     }
 }
+
+// TEST
