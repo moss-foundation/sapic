@@ -103,6 +103,21 @@ jobs:
       - name: Install gen-bindings dependencies
         run: cd tools/gen-bindings && pnpm install
 
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # v2.7.8
+
       - name: Verify that bindings are updated
         run: |
           make gen-${{matrix.crate}}-bindings
