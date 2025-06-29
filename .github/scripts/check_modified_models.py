@@ -7,10 +7,16 @@ pattern = r"crates/moss-(\w+)/src/models*"
 
 if __name__ == "__main__":
     updated_models = set()
+    # 1. figure out the base branch (default to 'main' if missing)
+    base = os.environ.get("GITHUB_BASE_REF", "main")
 
-    command = ["git", "diff", "origin...HEAD", "--name-only"]
-    result = subprocess.run(command, capture_output=True, text=True, check=True)
-    changed_files = result.stdout.strip().split('\n')
+    # 2. fetch it from origin
+    subprocess.run(["git", "fetch", "origin", f"{base}:{base}"], check=True, text=True, capture_output=True)
+
+    # 3. diff against that base
+    diff_output = subprocess.run(["git", "diff", f"origin/{base}...HEAD", "--name-only"], check=True, text=True,
+                                 capture_output=True)
+    changed_files = diff_output.splitlines() if diff_output else []
     for changed_file in changed_files:
         match = re.search(pattern, changed_file)
         if match:
@@ -19,3 +25,4 @@ if __name__ == "__main__":
     json_output = json.dumps(list(updated_models))
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         fh.write(f'UPDATED_MODELS={json_output}\n')
+   
