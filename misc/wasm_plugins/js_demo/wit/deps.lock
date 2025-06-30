@@ -1,0 +1,4 @@
+[plugin-base]
+path = "../../../../crates/moss-wasm/wit"
+sha256 = "8ac7db62c36ad3d6710d81f96a65bbaeb1c6ca7b211306f5b8898c623931cf50"
+sha512 = "8d7c48fb308a4e761cd6bf1c398b50b8170bc819d41e1f6bbeb1c0e308c2dcce239f0727aad1448cb1bd4c2e7770e2c608ab38a3707ec2da06e7dfaaa6d7f5fa"

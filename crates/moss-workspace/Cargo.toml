@@ -23,7 +23,6 @@ tokio.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 serde_json.workspace = true
-toml_edit.workspace = true
 uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
