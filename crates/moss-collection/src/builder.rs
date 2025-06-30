@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use moss_applib::{
     ServiceMarker,
     providers::{ServiceMap, ServiceProvider},
@@ -8,10 +8,8 @@ use moss_file::toml::TomlFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
-use moss_storage::collection_storage::CollectionStorageImpl;
 use std::{
     any::TypeId,
-    marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
 };
