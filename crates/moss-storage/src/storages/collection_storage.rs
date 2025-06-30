@@ -1,3 +1,6 @@
+pub mod entities;
+pub mod stores;
+
 use moss_db::{
     DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
     primitives::AnyValue,
@@ -16,14 +19,10 @@ use crate::{
     storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
 
-pub mod entities;
-pub mod stores;
-
 const DB_NAME: &str = "state.db";
 
 pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("variables");
 pub const TABLE_RESOURCES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("resources");
-// pub const TABLE_MIXED: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("mixed");
 
 pub struct CollectionStorageImpl {
     client: ReDbClient,
@@ -38,7 +37,6 @@ impl CollectionStorageImpl {
         for (type_id, table) in [
             (TypeId::of::<CollectionVariableStoreImpl>(), TABLE_VARIABLES),
             (TypeId::of::<CollectionResourceStoreImpl>(), TABLE_RESOURCES),
-            // (TypeId::of::<MixedStoreImpl>(), TABLE_MIXED),
         ] {
             client = client.with_table(&table)?;
             tables.insert(type_id, Arc::new(table));
