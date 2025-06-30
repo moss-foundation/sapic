@@ -1,6 +1,6 @@
 use anyhow::Result;
 use moss_applib::{
-    EventMarker,
+    EventMarker, ServiceMarker,
     providers::ServiceProvider,
     subscription::{Event, EventEmitter},
 };
@@ -70,6 +70,14 @@ impl Collection {
 }
 
 impl Collection {
+    pub fn service<T: ServiceMarker>(&self) -> &T {
+        self.services.get::<T>()
+    }
+
+    pub fn service_arc<T: ServiceMarker + Send + Sync>(&self) -> Arc<T> {
+        self.services.get_arc::<T>()
+    }
+
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
         let repo_change = match params.repository {
             None => None,

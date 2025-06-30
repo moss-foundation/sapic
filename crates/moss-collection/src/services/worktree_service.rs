@@ -1,4 +1,5 @@
 use derive_more::{Deref, DerefMut};
+use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_db::{DatabaseError, Transaction, primitives::AnyValue};
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
@@ -9,6 +10,7 @@ use moss_storage::{
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
     collections::{HashMap, HashSet},
+    hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -151,15 +153,14 @@ impl EntryConfiguration {
 }
 
 pub struct ModifyParams {
-    name: Option<String>,
-    protocol: Option<EntryProtocol>,
-    expanded: Option<bool>,
-    order: Option<usize>,
+    pub name: Option<String>,
+    pub protocol: Option<EntryProtocol>,
+    pub expanded: Option<bool>,
+    pub order: Option<usize>,
 }
 
 #[derive(Deref, DerefMut)]
 pub struct EntryItemMut<'a> {
-    id: Uuid,
     path: &'a mut Arc<Path>,
 
     #[deref]
@@ -169,7 +170,6 @@ pub struct EntryItemMut<'a> {
 
 #[derive(Deref, DerefMut)]
 pub struct EntryDirMut<'a> {
-    id: Uuid,
     path: &'a mut Arc<Path>,
 
     #[deref]
@@ -191,7 +191,6 @@ impl Entry {
     pub fn as_item_mut(&mut self) -> Option<EntryItemMut<'_>> {
         match &mut self.configuration {
             EntryConfiguration::Item(configuration) => Some(EntryItemMut {
-                id: self.id,
                 path: &mut self.path,
                 configuration,
             }),
@@ -202,7 +201,6 @@ impl Entry {
     pub fn as_dir_mut(&mut self) -> Option<EntryDirMut<'_>> {
         match &mut self.configuration {
             EntryConfiguration::Dir(configuration) => Some(EntryDirMut {
-                id: self.id,
                 path: &mut self.path,
                 configuration,
             }),
@@ -233,6 +231,8 @@ pub struct WorktreeService {
     storage: Arc<dyn CollectionStorage>,
     state: Arc<RwLock<WorktreeState>>,
 }
+
+impl ServiceMarker for WorktreeService {}
 
 impl WorktreeService {
     pub fn new(
@@ -276,7 +276,6 @@ impl WorktreeService {
             .ok_or(WorktreeError::NotFound(id.to_string()))?;
 
         let abs_path = self.absolutize(&entry.path)?;
-
         if !abs_path.exists() {
             return Err(WorktreeError::NotFound(format!(
                 "Entry not found: {}",
@@ -295,6 +294,14 @@ impl WorktreeService {
             .await?;
 
         state_lock.expanded_entries.remove(&id);
+
+        {
+            let mut txn = self.storage.begin_write()?;
+            let store = self.storage.resource_store();
+            update_expanded_entries(&mut state_lock, &store, &mut txn, id, false)?;
+
+            txn.commit()?;
+        }
 
         Ok(())
     }
@@ -471,7 +478,7 @@ impl WorktreeService {
             let store = self.storage.resource_store();
 
             db_update_order(&store, &mut txn, id, metadata.order)?;
-            db_update_expanded_entries(&mut state_lock, &store, &mut txn, id, metadata.expanded)?;
+            update_expanded_entries(&mut state_lock, &store, &mut txn, id, metadata.expanded)?;
 
             txn.commit()?;
         }
@@ -541,7 +548,7 @@ impl WorktreeService {
         &self,
         id: Uuid,
         params: ModifyParams,
-    ) -> WorktreeResult<RawDirConfiguration> {
+    ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -552,9 +559,11 @@ impl WorktreeService {
                 "expected to be a dir".to_string(),
             ))?;
 
+        let mut path = entry.path.clone().to_path_buf();
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
+            path = new_path.clone();
 
             self.rename_entry(&old_path, &new_path).await?;
             *entry.path = new_path.into();
@@ -563,7 +572,7 @@ impl WorktreeService {
         let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
-            return Ok(configuration);
+            return Ok((path, configuration));
         }
 
         let mut txn = self.storage.begin_write()?;
@@ -574,19 +583,19 @@ impl WorktreeService {
         }
 
         if let Some(expanded) = params.expanded {
-            db_update_expanded_entries(&mut state_lock, &store, &mut txn, id, expanded)?;
+            update_expanded_entries(&mut state_lock, &store, &mut txn, id, expanded)?;
         }
 
         txn.commit()?;
 
-        Ok(configuration)
+        Ok((path, configuration))
     }
 
     pub async fn update_item_entry(
         &self,
         id: Uuid,
         params: ModifyParams,
-    ) -> WorktreeResult<RawItemConfiguration> {
+    ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -597,9 +606,11 @@ impl WorktreeService {
                 "expected to be an item".to_string(),
             ))?;
 
+        let mut path = entry.path.clone().to_path_buf();
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
+            path = new_path.clone();
 
             self.rename_entry(&old_path, &new_path).await?;
             *entry.path = new_path.into();
@@ -629,7 +640,7 @@ impl WorktreeService {
         let configuration = entry.configuration.clone();
         let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
         if !is_db_update_needed {
-            return Ok(configuration);
+            return Ok((path, configuration));
         }
 
         let mut txn = self.storage.begin_write()?;
@@ -664,7 +675,7 @@ impl WorktreeService {
 
         txn.commit()?;
 
-        Ok(configuration)
+        Ok((path, configuration))
     }
 
     async fn create_entry(
@@ -740,7 +751,7 @@ fn rename_path(path: &Path, name: &str) -> PathBuf {
     buf
 }
 
-fn db_update_expanded_entries(
+fn update_expanded_entries(
     state: &mut WorktreeState,
     store: &Arc<dyn CollectionResourceStore + 'static>,
     txn: &mut Transaction,

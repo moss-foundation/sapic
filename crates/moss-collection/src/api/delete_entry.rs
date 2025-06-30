@@ -1,10 +1,9 @@
 use crate::{
     collection::Collection,
     models::operations::{DeleteEntryInput, DeleteEntryOutput},
-    storage::segments,
+    services::worktree_service::WorktreeService,
 };
 use moss_common::api::OperationResult;
-use moss_storage::storage::operations::TransactionalRemoveItem;
 use validator::Validate;
 
 impl Collection {
@@ -14,23 +13,9 @@ impl Collection {
     ) -> OperationResult<DeleteEntryOutput> {
         input.validate()?;
 
-        self.worktree().remove_entry(input.id, &input.path).await?;
+        let worktree_service = self.service::<WorktreeService>();
+        worktree_service.remove_entry(input.id).await?;
 
-        let mut txn = self.storage().begin_write()?;
-        let store = self.storage().resource_store();
-
-        {
-            let segkey = segments::segkey_entry_order(&input.id.to_string());
-            TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
-        }
-
-        // {
-        //     let segkey = segments::segkey_entry_expanded(&input.id.to_string());
-        //     TransactionalRemoveItem::remove(store.as_ref(), &mut txn, segkey)?;
-        // }
-
-        txn.commit()?;
-
-        Ok(DeleteEntryOutput {})
+        Ok(DeleteEntryOutput { id: input.id })
     }
 }
