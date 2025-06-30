@@ -17,7 +17,6 @@ export const CollectionDangerZoneSection = ({ onDeleteClick }: CollectionDangerZ
             Once you delete a collection, there is no going back. Please be certain.
           </p>
         </div>
-        {/* TODO: this should be a separate button component */}
         <ButtonDanger size="md" onClick={onDeleteClick}>
           Delete
         </ButtonDanger>
