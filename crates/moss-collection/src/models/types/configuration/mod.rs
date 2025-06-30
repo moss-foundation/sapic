@@ -46,14 +46,59 @@ pub enum DirConfigurationModel {
     Schema(SchemaDirConfigurationModel),
 }
 
-#[derive(Debug, Deref, DerefMut, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Deref, DerefMut, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
 pub struct CompositeDirConfigurationModel {
     pub metadata: ConfigurationMetadata,
+
     #[serde(flatten)]
     #[deref]
     #[deref_mut]
     pub inner: DirConfigurationModel,
+}
+
+impl From<RawDirConfiguration> for CompositeDirConfigurationModel {
+    fn from(value: RawDirConfiguration) -> Self {
+        match value {
+            RawDirConfiguration::Request(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeDirConfigurationModel {
+                    metadata,
+                    inner: DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+                        DirHttpConfigurationModel {},
+                    )),
+                }
+            }
+            RawDirConfiguration::Endpoint(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeDirConfigurationModel {
+                    metadata,
+                    inner: DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
+                        HttpEndpointDirConfiguration {},
+                    )),
+                }
+            }
+            RawDirConfiguration::Component(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeDirConfigurationModel {
+                    metadata,
+                    inner: DirConfigurationModel::Component(ComponentDirConfigurationModel {}),
+                }
+            }
+            RawDirConfiguration::Schema(block) => {
+                let metadata = ConfigurationMetadata::from(block.metadata.clone());
+
+                CompositeDirConfigurationModel {
+                    metadata,
+                    inner: DirConfigurationModel::Schema(SchemaDirConfigurationModel {}),
+                }
+            }
+        }
+    }
 }
 
 impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
@@ -69,10 +114,14 @@ impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
 
                 RawDirConfiguration::Request(Block::new(configuration))
             }
-            DirConfigurationModel::Endpoint(_model) => {
-                let configuration = RawDirEndpointConfiguration {
-                    metadata: self.metadata.into(),
-                    headers: None,
+            DirConfigurationModel::Endpoint(model) => {
+                let configuration = match model {
+                    EndpointDirConfigurationModel::Http(_http_model) => {
+                        RawDirEndpointConfiguration {
+                            metadata: self.metadata.into(),
+                            headers: None,
+                        }
+                    }
                 };
 
                 RawDirConfiguration::Endpoint(Block::new(configuration))
@@ -120,12 +169,15 @@ pub enum ItemConfigurationModel {
     Schema(SchemaItemConfigurationModel),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, Deref, DerefMut, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
 pub struct CompositeItemConfigurationModel {
     pub metadata: ConfigurationMetadata,
+
     #[serde(flatten)]
     #[deref]
+    #[deref_mut]
     pub inner: ItemConfigurationModel,
 }
 

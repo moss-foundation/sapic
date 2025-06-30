@@ -1,11 +1,10 @@
 pub mod configuration;
 
 use serde::Serialize;
-use std::path::PathBuf;
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::models::primitives::{EntryClass, EntryKind, EntryProtocol};
+use crate::models::primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol};
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -15,14 +14,6 @@ pub struct EnvironmentInfo {
     pub id: Uuid,
     pub name: String,
     pub order: Option<usize>,
-}
-
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct EntryPath {
-    pub raw: PathBuf,
-    pub segments: Vec<String>,
 }
 
 #[derive(Debug, Serialize, TS)]

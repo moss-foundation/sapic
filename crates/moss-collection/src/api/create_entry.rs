@@ -5,12 +5,14 @@ use validator::Validate;
 use crate::{
     collection::Collection,
     models::{
-        operations::{CreateEntryInput, CreateEntryOutput},
+        operations::{
+            CreateDirEntryInput, CreateEntryInput, CreateEntryOutput, CreateItemEntryInput,
+        },
         types::configuration::{
             CompositeDirConfigurationModel, CompositeItemConfigurationModel, ConfigurationMetadata,
-            docschema::{RawDirConfiguration, RawItemConfiguration},
         },
     },
+    services::worktree_service::{EntryMetadata, WorktreeService},
 };
 
 impl Collection {
@@ -18,38 +20,68 @@ impl Collection {
         &mut self,
         input: CreateEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
+        match input {
+            CreateEntryInput::Item(input) => self.create_item_entry(input).await,
+            CreateEntryInput::Dir(input) => self.create_dir_entry(input).await,
+        }
+    }
+
+    async fn create_dir_entry(
+        &mut self,
+        input: CreateDirEntryInput,
+    ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
+        let worktree_service = self.service::<WorktreeService>();
+
         let id = Uuid::new_v4();
-        let is_dir = matches!(input, CreateEntryInput::Dir(_));
-        let path = input.path().clone();
-        let name = input.name().to_owned();
-        let content = match input {
-            CreateEntryInput::Item(item) => {
-                let model = CompositeItemConfigurationModel {
-                    metadata: ConfigurationMetadata { id },
-                    inner: item.configuration,
-                };
-
-                let configuration: RawItemConfiguration = model.into();
-                hcl::ser::to_string(&configuration)?
-            }
-            CreateEntryInput::Dir(dir) => {
-                let model = CompositeDirConfigurationModel {
-                    metadata: ConfigurationMetadata { id },
-                    inner: dir.configuration,
-                };
-
-                let configuration: RawDirConfiguration = model.into();
-                hcl::ser::to_string(&configuration)?
-            }
+        let model = CompositeDirConfigurationModel {
+            metadata: ConfigurationMetadata { id },
+            inner: input.configuration,
         };
 
-        self.worktree()
-            .create_entry(&path, &name, is_dir, content.as_bytes())
+        worktree_service
+            .create_dir_entry(
+                id,
+                &input.name,
+                input.path,
+                model.into(),
+                EntryMetadata {
+                    order: input.order,
+                    expanded: true, // Directories are automatically marked as expanded
+                },
+            )
             .await?;
 
-        // TODO: db operations
+        Ok(CreateEntryOutput { id })
+    }
+
+    async fn create_item_entry(
+        &mut self,
+        input: CreateItemEntryInput,
+    ) -> OperationResult<CreateEntryOutput> {
+        input.validate()?;
+
+        let worktree_service = self.service::<WorktreeService>();
+
+        let id = Uuid::new_v4();
+        let model = CompositeItemConfigurationModel {
+            metadata: ConfigurationMetadata { id },
+            inner: input.configuration,
+        };
+
+        worktree_service
+            .create_item_entry(
+                id,
+                &input.name,
+                input.path,
+                model.into(),
+                EntryMetadata {
+                    order: input.order,
+                    expanded: false,
+                },
+            )
+            .await?;
 
         Ok(CreateEntryOutput { id })
     }

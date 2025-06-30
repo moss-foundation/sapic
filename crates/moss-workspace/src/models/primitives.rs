@@ -4,28 +4,6 @@ use uuid::Uuid;
 
 pub type CollectionId = Uuid;
 
-// #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS, Validate)]
-// #[serde(transparent)]
-// #[ts(export, export_to = "primitives.ts")]
-// pub struct GitUrl {
-//     #[validate(regex(path = *RE_TWO_CHARS))]
-//     pub url: String,
-// }
-
-// impl GitUrl {
-//     pub fn new(url: String) -> Self {
-//         Self { url }
-//     }
-
-//     pub fn as_str(&self) -> &str {
-//         &self.url
-//     }
-
-//     pub fn as_string(&self) -> String {
-//         self.url.clone()
-//     }
-// }
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]

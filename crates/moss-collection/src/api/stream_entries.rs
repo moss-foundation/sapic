@@ -1,19 +1,18 @@
-use std::path::Path;
+use std::{path::Path, sync::Arc};
 
 use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
 
 use crate::{
-    Collection,
+    Collection, // worktree::EntryDescription,
     collection::OnDidChangeEvent,
     dirs,
     models::{
-        events::StreamEntriesEvent,
-        operations::StreamEntriesOutput,
-        types::{EntryInfo, EntryPath},
+        events::StreamEntriesEvent, operations::StreamEntriesOutput, primitives::EntryPath,
+        types::EntryInfo,
     },
-    worktree::WorktreeEntry,
+    services::worktree_service::{EntryDescription, WorktreeService},
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -28,18 +27,20 @@ impl Collection {
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
     ) -> OperationResult<StreamEntriesOutput> {
-        let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
+        let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree = self.worktree();
+        let worktree_service = self.service_arc::<WorktreeService>();
 
         let mut handles = Vec::new();
         for dir in EXPANSION_DIRECTORIES {
             let dir_path = Path::new(dir);
             let entries_tx_clone = tx.clone();
-            let worktree_clone = worktree.clone();
+            let worktree_service_clone = worktree_service.clone();
 
             let handle = tokio::spawn(async move {
-                let _ = worktree_clone.scan(dir_path, entries_tx_clone).await;
+                let _ = worktree_service_clone
+                    .scan(dir_path, entries_tx_clone)
+                    .await;
             });
 
             handles.push(handle);
@@ -55,10 +56,7 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath {
-                                    raw: entry.path.to_path_buf(),
-                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
-                                },
+                                path: EntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,

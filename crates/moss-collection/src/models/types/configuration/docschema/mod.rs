@@ -41,9 +41,18 @@ impl UrlParts {
             UrlParts::Delete(_) => Some(EntryProtocol::Delete),
         }
     }
+
+    pub fn details(&self) -> &UrlDetails {
+        match self {
+            UrlParts::Get(details) => details,
+            UrlParts::Post(details) => details,
+            UrlParts::Put(details) => details,
+            UrlParts::Delete(details) => details,
+        }
+    }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawHeaderParameter {
     pub value: Expression,
     pub disabled: bool,
@@ -51,7 +60,7 @@ pub struct RawHeaderParameter {
     pub options: Object<HeaderParameterOptions>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HeaderParameterOptions {
     pub propagate: bool,
 }
@@ -61,7 +70,7 @@ pub struct RawMetadata {
     pub id: Uuid,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RawItemConfiguration {
     Request(Block<RawItemRequestConfiguration>),
@@ -79,27 +88,9 @@ impl RawItemConfiguration {
             RawItemConfiguration::Schema(block) => block.metadata.id,
         }
     }
-
-    pub fn classification(&self) -> EntryClass {
-        match self {
-            RawItemConfiguration::Request(_) => EntryClass::Request,
-            RawItemConfiguration::Endpoint(_) => EntryClass::Endpoint,
-            RawItemConfiguration::Component(_) => EntryClass::Component,
-            RawItemConfiguration::Schema(_) => EntryClass::Schema,
-        }
-    }
-
-    pub fn protocol(&self) -> Option<EntryProtocol> {
-        match self {
-            RawItemConfiguration::Request(conf) => conf.url.protocol(),
-            RawItemConfiguration::Endpoint(conf) => conf.url.protocol(),
-            RawItemConfiguration::Component(_) => None,
-            RawItemConfiguration::Schema(_) => None,
-        }
-    }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RawDirConfiguration {
     Request(Block<RawDirRequestConfiguration>),

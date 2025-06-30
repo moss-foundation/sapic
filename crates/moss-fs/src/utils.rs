@@ -1,6 +1,22 @@
 use anyhow::Result;
+use derive_more::{Deref, DerefMut};
 use moss_text::sanitized;
 use std::path::{Component, Path, PathBuf};
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deref, DerefMut)]
+pub struct SanitizedPath(PathBuf);
+
+impl From<PathBuf> for SanitizedPath {
+    fn from(path: PathBuf) -> Self {
+        Self(path)
+    }
+}
+
+impl From<SanitizedPath> for PathBuf {
+    fn from(path: SanitizedPath) -> Self {
+        path.0
+    }
+}
 
 /// Doing a basic normalization using Path::components()
 /// All path separators will be normalized, and special components ignored
@@ -32,6 +48,7 @@ pub fn normalize_path(path: &Path) -> PathBuf {
     result
 }
 
+// TODO: return SanitizedPath
 /// Normalize the path and encode the segments after the prefix
 pub fn sanitize_path(path: &Path, prefix: Option<&Path>) -> Result<PathBuf> {
     // Determine the relative part of the path to be encoded.

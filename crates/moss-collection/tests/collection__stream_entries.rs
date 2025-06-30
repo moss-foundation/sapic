@@ -10,7 +10,7 @@ use moss_collection::{
             DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
-    worktree::WorktreeEntry,
+    worktree::EntryDescription,
 };
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
@@ -50,8 +50,8 @@ async fn create_test_entry_in_dir(
 async fn scan_entries_for_test(
     collection: &moss_collection::Collection,
     dir_name: &str,
-) -> Vec<WorktreeEntry> {
-    let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
+) -> Vec<EntryDescription> {
+    let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
     let worktree = collection.worktree();
 
     let dir_path = std::path::Path::new(dir_name);
