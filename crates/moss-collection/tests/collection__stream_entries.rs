@@ -10,7 +10,7 @@ use moss_collection::{
             DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
-    worktree::EntryDescription,
+    services::worktree_service::EntryDescription,
 };
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
@@ -38,7 +38,7 @@ async fn create_test_entry_in_dir(
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.to_string(),
-        order: None,
+        order: 0,
         configuration: create_test_dir_configuration(),
     });
 
@@ -52,17 +52,26 @@ async fn scan_entries_for_test(
     dir_name: &str,
 ) -> Vec<EntryDescription> {
     let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
-    let worktree = collection.worktree();
+
+    // Access the worktree service through the Collection's service system
+    let worktree_service =
+        collection.service::<moss_collection::services::worktree_service::WorktreeService>();
 
     let dir_path = std::path::Path::new(dir_name);
 
     // Check if directory exists before scanning
-    let abs_dir = worktree.absolutize(dir_path);
+    let abs_dir = worktree_service.absolutize(dir_path);
     if abs_dir.is_err() || !abs_dir.as_ref().unwrap().exists() {
         return Vec::new(); // Return empty vec if directory doesn't exist
     }
 
-    let _result = worktree.scan(dir_path, tx).await;
+    // Create empty sets for scanning
+    let expanded_entries = std::sync::Arc::new(std::collections::HashSet::new());
+    let all_entry_keys = std::sync::Arc::new(std::collections::HashMap::new());
+
+    let _result = worktree_service
+        .scan(dir_path, expanded_entries, all_entry_keys, tx)
+        .await;
 
     let mut entries = Vec::new();
     while let Ok(entry) = rx.try_recv() {

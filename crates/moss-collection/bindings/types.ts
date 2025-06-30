@@ -36,17 +36,59 @@ export type EndpointDirConfigurationModel = { "Http": HttpEndpointDirConfigurati
 export type EndpointItemConfigurationModel = { "Http": HttpEndpointItemConfiguration };
 
 export type EntryInfo = {
+  /**
+   * Unique identifier for this entry
+   */
   id: string;
+  /**
+   * Display name of the entry
+   */
   name: string;
+  /**
+   * Path relative to the collection root.
+   * Includes both the original path string and its segments.
+   */
   path: EntryPath;
+  /**
+   * Classification of the entry (Request, Endpoint, Component, or Schema)
+   */
   class: EntryClass;
+  /**
+   * Type of entry indicating its structure (Dir for directories, Item for files, Case of item cases)
+   */
   kind: EntryKind;
+  /**
+   * HTTP protocol/method used by this entry, if applicable (GET, POST, PUT, DELETE, WebSocket, GraphQL, gRPC)
+   */
   protocol?: EntryProtocol;
+  /**
+   * Determines the display position of this entry among others in the same group.
+   * Entries are sorted in ascending order; lower values appear before higher ones.
+   * Negative values are allowed and will be placed before positive values.
+   * If multiple entries have the same order, they are sorted alphabetically.
+   * If not specified, the entry appears last and is sorted alphabetically
+   * among unspecified items.
+   */
   order?: number;
+  /**
+   * Whether this entry is expanded in the tree view (applies to directories)
+   */
   expanded: boolean;
 };
 
-export type EnvironmentInfo = { id: string; name: string; order?: number };
+export type EnvironmentInfo = {
+  id: string;
+  name: string;
+  /**
+   * Determines the display position of this entry among others in the same group.
+   * Entries are sorted in ascending order; lower values appear before higher ones.
+   * Negative values are allowed and will be placed before positive values.
+   * If multiple entries have the same order, they are sorted alphabetically.
+   * If not specified, the entry appears last and is sorted alphabetically
+   * among unspecified items.
+   */
+  order?: number;
+};
 
 export type Expression =
   | "null"

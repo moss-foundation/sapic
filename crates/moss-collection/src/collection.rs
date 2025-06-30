@@ -54,6 +54,7 @@ pub struct Collection {
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap>,
     pub(super) manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
+    #[allow(dead_code)]
     pub(super) config: TomlFileHandle<ConfigModel>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,

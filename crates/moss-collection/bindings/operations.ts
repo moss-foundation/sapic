@@ -7,20 +7,7 @@ import type {
   ItemConfigurationModel,
 } from "./types";
 
-export type CreateDirEntryInput = {
-  path: string;
-  name: string;
-  /**
-   * Determines the display position of this entry among others in the same group.
-   * Entries are sorted in ascending order; lower values appear before higher ones.
-   * Negative values are allowed and will be placed before positive values.
-   * If multiple entries have the same order, they are sorted alphabetically.
-   * If not specified, the entry appears last and is sorted alphabetically
-   * among unspecified items.
-   */
-  order: number;
-  configuration: DirConfigurationModel;
-};
+export type CreateDirEntryInput = { path: string; name: string; order: number; configuration: DirConfigurationModel };
 
 export type CreateEntryInput = { "item": CreateItemEntryInput } | { "dir": CreateDirEntryInput };
 
