@@ -3,7 +3,6 @@ import { createContext, useEffect, useState } from "react";
 import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import { prepareCollectionForTree } from "./utils/index";
 import {
   checkIfAllFoldersAreCollapsed,
   checkIfAllFoldersAreExpanded,
@@ -52,7 +51,7 @@ export const CollectionTree = ({
   onNodeClick,
   onNodeDoubleClick,
 }: TreeProps) => {
-  const [tree, setTree] = useState<TreeCollectionRootNode>(prepareCollectionForTree(initialTree));
+  const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
   const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree((prev) => {

@@ -26,6 +26,7 @@ export const TreeRootNodeButton = ({
 
   const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+
     onRootNodeClick({
       ...node,
       expanded: !node.expanded,

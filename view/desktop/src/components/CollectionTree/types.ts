@@ -54,12 +54,12 @@ export interface TreeProps {
 
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 
-  onRootAdd?: (node: TreeCollectionRootNode) => void;
-  onRootRemove?: (node: TreeCollectionRootNode) => void;
-  onRootRename?: (node: TreeCollectionRootNode) => void;
-  onRootUpdate?: (node: TreeCollectionRootNode) => void;
-  onRootClick?: (node: TreeCollectionRootNode) => void;
-  onRootDoubleClick?: (node: TreeCollectionRootNode) => void;
+  onRootAdd?: (node: TreeCollectionNode) => void;
+  onRootRemove?: (node: TreeCollectionNode) => void;
+  onRootRename?: (node: TreeCollectionNode) => void;
+  onRootUpdate?: (node: TreeCollectionNode) => void;
+  onRootClick?: (node: TreeCollectionNode) => void;
+  onRootDoubleClick?: (node: TreeCollectionNode) => void;
 
   onNodeAdd?: (node: TreeCollectionNode) => void;
   onNodeRemove?: (node: TreeCollectionNode) => void;
@@ -81,12 +81,12 @@ export interface TreeContextProps {
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
   displayMode: "RequestFirst" | "DesignFirst";
-  onRootAddCallback?: (node: TreeCollectionRootNode) => void;
-  onRootRemoveCallback?: (node: TreeCollectionRootNode) => void;
-  onRootRenameCallback?: (node: TreeCollectionRootNode) => void;
-  onRootUpdateCallback?: (node: TreeCollectionRootNode) => void;
-  onRootClickCallback?: (node: TreeCollectionRootNode) => void;
-  onRootDoubleClickCallback?: (node: TreeCollectionRootNode) => void;
+  onRootAddCallback?: (node: TreeCollectionNode) => void;
+  onRootRemoveCallback?: (node: TreeCollectionNode) => void;
+  onRootRenameCallback?: (node: TreeCollectionNode) => void;
+  onRootUpdateCallback?: (node: TreeCollectionNode) => void;
+  onRootClickCallback?: (node: TreeCollectionNode) => void;
+  onRootDoubleClickCallback?: (node: TreeCollectionNode) => void;
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
   onNodeRemoveCallback?: (node: TreeCollectionNode) => void;
   onNodeRenameCallback?: (node: TreeCollectionNode) => void;

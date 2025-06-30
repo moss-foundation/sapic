@@ -50,13 +50,18 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { treeId, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
+    const { treeId, nodeOffset, searchInput, paddingRight, onNodeRenameCallback } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
         onNodeUpdate({
+          ...node,
+          expanded: true,
+        });
+
+        onNodeRenameCallback?.({
           ...node,
           expanded: true,
         });
@@ -79,10 +84,19 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     };
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
+      console.log("handleClickOnDir", node);
       e.stopPropagation();
-      if (node.kind === "Item") return;
+      if (node.kind === "Item") {
+        console.log("handleClickOnDir", node);
+        return;
+      }
 
       onNodeUpdate({
+        ...node,
+        expanded: !node.expanded,
+      });
+
+      onNodeRenameCallback?.({
         ...node,
         expanded: !node.expanded,
       });

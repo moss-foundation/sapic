@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ConfirmationModal, InputOutlined } from "@/components";
 import { useModal } from "@/hooks";
+import { useCollectionsTrees } from "@/hooks/collection/useCollectionsTrees";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { useCollectionsStore } from "@/store/collections";
 
@@ -16,6 +17,9 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { streamedCollections, updateStreamedCollection, deleteCollection } = useCollectionsStore();
 
   const collection = streamedCollections.find((collection) => collection.id === params.collectionId);
+
+  const { collectionsTrees } = useCollectionsTrees();
+  const collectionTree = collectionsTrees.find((tree) => tree.id === collection?.id);
 
   const { showModal, closeModal, openModal } = useModal();
 
@@ -121,6 +125,8 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
       <div className="absolute top-0 right-2 w-60 py-2">
         <CollectionSummarySection />
       </div>
+
+      <pre>{JSON.stringify(collectionTree, null, 2)}</pre>
 
       {showModal && (
         <ConfirmationModal

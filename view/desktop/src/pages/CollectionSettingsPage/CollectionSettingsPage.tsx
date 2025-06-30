@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 import { PageContainerWithTabs, TabItem } from "@/components/PageContainer";
+import { useStreamedCollectionsWithEntries } from "@/hooks";
+import { useCollectionsTrees } from "@/hooks/collection/useCollectionsTrees";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { Icon } from "@/lib/ui";
 
@@ -30,6 +32,13 @@ export const CollectionSettings = ({ ...props }: IDockviewPanelProps<CollectionS
   const { collectionId } = props.params;
 
   const [activeTabId, setActiveTabId] = useState("overview");
+
+  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
+  const { collectionsTrees } = useCollectionsTrees();
+
+  // useEffect(() => {
+  //   console.log(collectionsTrees);
+  // }, [collectionsTrees]);
 
   if (!collectionId) {
     return (

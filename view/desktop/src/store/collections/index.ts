@@ -444,7 +444,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       await invokeTauriIpc("stream_collections", {
         channel: onCollectionEvent,
       });
-      console.log("streamedCollections", get().streamedCollections);
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {
