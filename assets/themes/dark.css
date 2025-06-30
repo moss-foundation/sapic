@@ -256,10 +256,10 @@
   --moss-button-neutral-ghost-text: rgb(212, 212, 216);
   --moss-button-neutral-ghost-boxShadow: null;
 
-  /* --- Delete buttons */
-  --moss-button-background-delete: var(--moss-red-5);
-  --moss-button-background-delete-hover: var(--moss-red-3);
-  --moss-button-text-delete: var(--moss-gray-14);
+  /* --- Danger buttons */
+  --moss-button-background-danger: var(--moss-red-5);
+  --moss-button-background-danger-hover: var(--moss-red-3);
+  --moss-button-text-danger: var(--moss-gray-14);
 
   /* Form Controls */
   --moss-controls-plain-bg: transparent;

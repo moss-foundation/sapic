@@ -1,6 +1,7 @@
 import React from "react";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/lib/ui";
 import { cn } from "@/utils";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/lib/ui";
 
 interface PageContainerTabsProps {
   value: string;
@@ -52,6 +53,7 @@ export const PageContainerTab: React.FC<PageContainerTabProps> = ({ value, child
         "data-[state=active]:border-b-[var(--moss-tab-active-border-color)]",
         // Cursor styling
         "cursor-pointer",
+
         className
       )}
     >

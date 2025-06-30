@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { TestCollectionIcon } from "@/components/CollectionTree/TestCollectionIcon";
 import { Icon } from "@/lib/ui/Icon";
