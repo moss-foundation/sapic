@@ -15,6 +15,7 @@ export interface CollectionTree {
 export interface TreeCollectionRootNode {
   id: string;
   name: string;
+  image?: string;
   order: number | null;
   expanded: boolean;
   endpoints: TreeCollectionNode;
@@ -42,7 +43,6 @@ export interface TreeRootNodeProps {
 
 export interface TreeProps {
   tree: TreeCollectionRootNode;
-  image: string | undefined;
 
   paddingLeft?: number;
   paddingRight?: number;
