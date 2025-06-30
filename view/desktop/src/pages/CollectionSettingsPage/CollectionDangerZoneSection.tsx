@@ -10,6 +10,7 @@ export const CollectionDangerZoneSection = ({ onDeleteClick }: CollectionDangerZ
   return (
     <div className="mt-8 text-(--moss-primary-text)">
       <SectionTitle>Danger Zone</SectionTitle>
+
       <div className="flex w-[36rem] items-center justify-between">
         <div>
           <p className="mb-1 font-medium">Delete this collection</p>
@@ -17,6 +18,7 @@ export const CollectionDangerZoneSection = ({ onDeleteClick }: CollectionDangerZ
             Once you delete a collection, there is no going back. Please be certain.
           </p>
         </div>
+
         <ButtonDanger size="md" onClick={onDeleteClick}>
           Delete
         </ButtonDanger>

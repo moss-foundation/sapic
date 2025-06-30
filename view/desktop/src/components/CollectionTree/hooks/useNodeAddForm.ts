@@ -1,31 +1,30 @@
 import { useContext, useState } from "react";
 
 import { useCollectionsStore } from "@/store/collections";
-import { CreateEntryInput } from "@repo/moss-collection";
+import { CreateEntryInput, DirConfigurationModel, ItemConfigurationModel } from "@repo/moss-collection";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
-const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
-  if (isAddingFolder) {
-    return {
-      dir: {
-        name,
-        path: parentNode.path.raw,
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
-      },
-    };
+const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConfigurationModel => {
+  switch (nodeClass) {
+    case "Request":
+      return { request: { http: {} } };
+    case "Endpoint":
+      return { request: { http: {} } };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return { request: { http: {} } };
   }
+};
 
-  return {
-    item: {
-      name,
-      path: parentNode.path.raw,
-      configuration: {
+const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemConfigurationModel => {
+  switch (nodeClass) {
+    case "Request":
+      return {
         request: {
           http: {
             requestParts: {
@@ -33,7 +32,55 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
             },
           },
         },
+      };
+    case "Endpoint":
+      return {
+        endpoint: {
+          Http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+  }
+};
+
+const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
+  console.log("iscreateEntry", parentNode);
+
+  const baseEntry = {
+    name,
+    path: parentNode.path.raw,
+  };
+
+  if (isAddingFolder) {
+    return {
+      dir: {
+        ...baseEntry,
+        configuration: createDirConfiguration(parentNode.class),
       },
+    };
+  }
+
+  return {
+    item: {
+      ...baseEntry,
+      configuration: createItemConfiguration(parentNode.class),
     },
   };
 };
