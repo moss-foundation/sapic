@@ -10,7 +10,6 @@ use moss_storage::{
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
     collections::{HashMap, HashSet},
-    hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -27,6 +26,7 @@ use crate::{
         primitives::{EntryClass, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
+    services::storage_service::StorageService,
     storage::segments,
 };
 
@@ -228,18 +228,14 @@ struct WorktreeState {
 pub struct WorktreeService {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<dyn CollectionStorage>,
     state: Arc<RwLock<WorktreeState>>,
+    storage: Arc<StorageService>, // TODO: should be a trait
 }
 
 impl ServiceMarker for WorktreeService {}
 
 impl WorktreeService {
-    pub fn new(
-        abs_path: Arc<Path>,
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn CollectionStorage>,
-    ) -> Self {
+    pub fn new(abs_path: Arc<Path>, fs: Arc<dyn FileSystem>, storage: Arc<StorageService>) -> Self {
         Self {
             abs_path,
             fs,
@@ -297,8 +293,8 @@ impl WorktreeService {
 
         {
             let mut txn = self.storage.begin_write()?;
-            let store = self.storage.resource_store();
-            update_expanded_entries(&mut state_lock, &store, &mut txn, id, false)?;
+            self.storage
+                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
 
             txn.commit()?;
         }
@@ -475,10 +471,16 @@ impl WorktreeService {
 
         {
             let mut txn = self.storage.begin_write()?;
-            let store = self.storage.resource_store();
 
-            db_update_order(&store, &mut txn, id, metadata.order)?;
-            update_expanded_entries(&mut state_lock, &store, &mut txn, id, metadata.expanded)?;
+            self.storage
+                .put_entry_order_txn(&mut txn, id, metadata.order)?;
+
+            if metadata.expanded {
+                state_lock.expanded_entries.insert(id);
+
+                self.storage
+                    .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
+            }
 
             txn.commit()?;
         }
@@ -517,25 +519,14 @@ impl WorktreeService {
 
         {
             let mut txn = self.storage.begin_write()?;
-            let store = self.storage.resource_store();
-
-            let segkey = segments::segkey_entry_order(&id.to_string());
-            TransactionalPutItem::put(
-                store.as_ref(),
-                &mut txn,
-                segkey,
-                AnyValue::from(metadata.order),
-            )?;
+            self.storage
+                .put_entry_order_txn(&mut txn, id, metadata.order)?;
 
             if metadata.expanded {
                 state_lock.expanded_entries.insert(id);
 
-                TransactionalPutItem::put(
-                    store.as_ref(),
-                    &mut txn,
-                    segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-                    AnyValue::serialize(&state_lock.expanded_entries.clone())?,
-                )?;
+                self.storage
+                    .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
             }
 
             txn.commit()?;
@@ -576,14 +567,20 @@ impl WorktreeService {
         }
 
         let mut txn = self.storage.begin_write()?;
-        let store = self.storage.resource_store();
 
         if let Some(order) = params.order {
-            db_update_order(&store, &mut txn, id, order)?;
+            self.storage.put_entry_order_txn(&mut txn, id, order)?;
         }
 
         if let Some(expanded) = params.expanded {
-            update_expanded_entries(&mut state_lock, &store, &mut txn, id, expanded)?;
+            if expanded {
+                state_lock.expanded_entries.insert(id);
+            } else {
+                state_lock.expanded_entries.remove(&id);
+            }
+
+            self.storage
+                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
         }
 
         txn.commit()?;
@@ -644,33 +641,20 @@ impl WorktreeService {
         }
 
         let mut txn = self.storage.begin_write()?;
-        let store = self.storage.resource_store();
 
         if let Some(order) = params.order {
-            let segkey = segments::segkey_entry_order(&id.to_string());
-            TransactionalPutItem::put(store.as_ref(), &mut txn, segkey, AnyValue::from(order))?;
+            self.storage.put_entry_order_txn(&mut txn, id, order)?;
         }
 
-        match params.expanded {
-            Some(true) => {
+        if let Some(expanded) = params.expanded {
+            if expanded {
                 state_lock.expanded_entries.insert(id);
-                TransactionalPutItem::put(
-                    store.as_ref(),
-                    &mut txn,
-                    segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-                    AnyValue::serialize(&state_lock.expanded_entries.clone())?,
-                )?;
-            }
-            Some(false) => {
+            } else {
                 state_lock.expanded_entries.remove(&id);
-                TransactionalPutItem::put(
-                    store.as_ref(),
-                    &mut txn,
-                    segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-                    AnyValue::serialize(&state_lock.expanded_entries.clone())?,
-                )?;
             }
-            _ => {}
+
+            self.storage
+                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
         }
 
         txn.commit()?;
@@ -749,41 +733,6 @@ fn rename_path(path: &Path, name: &str) -> PathBuf {
     buf.pop();
     buf.push(sanitize(name));
     buf
-}
-
-fn update_expanded_entries(
-    state: &mut WorktreeState,
-    store: &Arc<dyn CollectionResourceStore + 'static>,
-    txn: &mut Transaction,
-    id: Uuid,
-    value: bool,
-) -> Result<(), DatabaseError> {
-    if value {
-        state.expanded_entries.insert(id);
-    } else {
-        state.expanded_entries.remove(&id);
-    }
-
-    TransactionalPutItem::put(
-        store.as_ref(),
-        txn,
-        segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-        AnyValue::serialize(&state.expanded_entries.clone())?,
-    )?;
-
-    Ok(())
-}
-
-fn db_update_order(
-    store: &Arc<dyn CollectionResourceStore + 'static>,
-    txn: &mut Transaction,
-    id: Uuid,
-    value: usize,
-) -> Result<(), DatabaseError> {
-    let segkey = segments::segkey_entry_order(&id.to_string());
-    TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::from(value))?;
-
-    Ok(())
 }
 
 async fn process_dir_entry(

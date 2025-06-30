@@ -7,6 +7,7 @@ use moss_hcl::Block;
 use moss_storage::collection_storage::CollectionStorageImpl;
 use std::{
     any::TypeId,
+    marker::PhantomData,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -36,16 +37,16 @@ const WORKTREE_DIRS: [&str; 4] = [
     dirs::SCHEMAS_DIR,
 ];
 
-pub struct CreateParams<'a> {
+pub struct CreateParams {
     pub name: Option<String>,
-    pub internal_abs_path: &'a Path,
-    pub external_abs_path: Option<&'a Path>,
+    pub internal_abs_path: Arc<Path>,
+    pub external_abs_path: Option<Arc<Path>>,
     pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
 }
 
-pub struct LoadParams<'a> {
-    pub internal_abs_path: &'a Path,
+pub struct LoadParams {
+    pub internal_abs_path: Arc<Path>,
 }
 
 pub struct CollectionBuilder {
@@ -66,33 +67,35 @@ impl CollectionBuilder {
         self
     }
 
-    pub async fn load<'a>(self, params: LoadParams<'a>) -> Result<Collection> {
-        let abs_path: Arc<Path> = params.internal_abs_path.to_owned().into();
-        debug_assert!(abs_path.is_absolute());
+    pub fn with_service_arc<T: ServiceMarker + Send + Sync>(mut self, service: Arc<T>) -> Self {
+        self.services.insert(TypeId::of::<T>(), service);
+        self
+    }
 
-        let storage = CollectionStorageImpl::new(&abs_path).context(format!(
-            "Failed to open the collection {} state database",
-            abs_path.display()
-        ))?;
+    pub async fn load(self, params: LoadParams) -> Result<Collection> {
+        debug_assert!(params.internal_abs_path.is_absolute());
 
         let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
             self.fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            params.internal_abs_path.join(MANIFEST_FILE_NAME),
         )
         .await?;
 
-        let config =
-            TomlFileHandle::load(self.fs.clone(), &abs_path.join(CONFIG_FILE_NAME)).await?;
-        let worktree = Worktree::new(self.fs.clone(), abs_path.clone());
+        let config = TomlFileHandle::load(
+            self.fs.clone(),
+            &params.internal_abs_path.join(CONFIG_FILE_NAME),
+        )
+        .await?;
+        let worktree = Worktree::new(self.fs.clone(), params.internal_abs_path.clone());
 
         // TODO: Load environments
 
         Ok(Collection {
             fs: self.fs.clone(),
             services: self.services.into(),
-            abs_path: abs_path.clone(),
+            abs_path: params.internal_abs_path,
             worktree: Arc::new(worktree),
-            storage: Arc::new(storage),
+            // storage: Arc::new(storage),
             environments: OnceCell::new(),
             manifest,
             config,
@@ -100,18 +103,13 @@ impl CollectionBuilder {
         })
     }
 
-    pub async fn create<'a>(self, params: CreateParams<'a>) -> Result<Collection> {
+    pub async fn create(self, params: CreateParams) -> Result<Collection> {
         debug_assert!(params.internal_abs_path.is_absolute());
-
-        let storage = CollectionStorageImpl::new(&params.internal_abs_path).context(format!(
-            "Failed to open the collection {} state database",
-            params.internal_abs_path.display()
-        ))?;
 
         let abs_path: Arc<Path> = params
             .external_abs_path
-            .unwrap_or(params.internal_abs_path)
-            .to_owned()
+            .clone()
+            .unwrap_or(params.internal_abs_path.clone())
             .into();
 
         let worktree = Worktree::new(self.fs.clone(), abs_path.clone());
@@ -193,7 +191,7 @@ impl CollectionBuilder {
             services: self.services.into(),
             abs_path: params.internal_abs_path.to_owned().into(),
             worktree: Arc::new(worktree),
-            storage: Arc::new(storage),
+            // storage: Arc::new(storage),
             environments: OnceCell::new(),
             manifest,
             config,

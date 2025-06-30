@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Arc};
+use std::path::Path;
 
 use moss_common::api::OperationResult;
 use tauri::ipc::Channel as TauriChannel;
@@ -64,8 +64,6 @@ impl Collection {
                                 expanded: false,  // FIXME: hardcoded
                             };
 
-                            dbg!(&entry_info);
-
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }
                     }
@@ -85,8 +83,6 @@ impl Collection {
                                 order: None,  // FIXME: hardcoded
                                 expanded: false,  // FIXME: hardcoded
                             };
-
-                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }

@@ -9,7 +9,6 @@ use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::normalize_git_url;
-use moss_storage::CollectionStorage;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -54,7 +53,7 @@ pub struct Collection {
     pub(super) services: ServiceProvider,
     pub(super) worktree: Arc<Worktree>,
     pub(super) abs_path: Arc<Path>,
-    pub(super) storage: Arc<dyn CollectionStorage>,
+    // pub(super) storage: Arc<dyn CollectionStorage>,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap>,
     pub(super) manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
@@ -137,10 +136,10 @@ impl Collection {
         &self.abs_path
     }
 
-    #[allow(dead_code)]
-    pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
-        &self.storage
-    }
+    // #[allow(dead_code)]
+    // pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
+    //     &self.storage
+    // }
 
     pub async fn environments(&self) -> Result<&EnvironmentMap> {
         let result = self

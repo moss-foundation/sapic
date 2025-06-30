@@ -1,5 +1,9 @@
 use anyhow::Context as _;
-use moss_collection::{CollectionBuilder, builder::CreateParams};
+use moss_collection::{
+    CollectionBuilder,
+    builder::CreateParams,
+    services::{storage_service::StorageService, worktree_service::WorktreeService},
+};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
@@ -55,16 +59,22 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to create the collection directory")?;
 
         let order = input.order.to_owned();
-        let collection = CollectionBuilder::new(fs.clone())
-            .create(CreateParams {
-                name: Some(input.name.to_owned()),
-                internal_abs_path: &abs_path,
-                external_abs_path: input.external_path.as_deref(),
-                repository: input.repo.to_owned(),
-                icon_path: input.icon_path.to_owned(),
-            })
-            .await
-            .map_err(|e| OperationError::Internal(e.to_string()))?;
+        let collection = {
+            let storage = Arc::new(StorageService::new(&abs_path)?);
+            let worktree = WorktreeService::new(abs_path.clone(), fs.clone(), storage.clone());
+            CollectionBuilder::new(fs.clone())
+                .with_service_arc(storage)
+                .with_service(worktree)
+                .create(CreateParams {
+                    name: Some(input.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: input.external_path.as_deref().map(|p| p.to_owned().into()),
+                    repository: input.repo.to_owned(),
+                    icon_path: input.icon_path.to_owned(),
+                })
+                .await
+                .map_err(|e| OperationError::Internal(e.to_string()))?
+        };
 
         let on_did_change = collection.on_did_change().subscribe(|_event| async move {
 

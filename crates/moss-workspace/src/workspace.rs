@@ -2,7 +2,12 @@ use anyhow::{Context as _, Result};
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
-use moss_collection::{CollectionBuilder, builder::LoadParams, collection::Collection};
+use moss_collection::{
+    CollectionBuilder,
+    builder::LoadParams,
+    collection::Collection,
+    services::{storage_service::StorageService, worktree_service::WorktreeService},
+};
 use moss_environment::environment::{self, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
@@ -330,11 +335,23 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
-                    let collection = CollectionBuilder::new(fs.clone())
-                        .load(LoadParams {
-                            internal_abs_path: &entry.path(),
-                        })
-                        .await?;
+                    let collection = {
+                        let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
+                        let storage = Arc::new(StorageService::new(&collection_abs_path)?);
+                        let worktree = WorktreeService::new(
+                            collection_abs_path.clone(),
+                            fs.clone(),
+                            storage.clone(),
+                        );
+                        CollectionBuilder::new(fs.clone())
+                            .with_service_arc(storage)
+                            .with_service(worktree)
+                            .load(LoadParams {
+                                internal_abs_path: collection_abs_path,
+                            })
+                            .await?
+                    };
+
                     collections.insert(
                         id,
                         Arc::new(RwLock::new(CollectionItem {
