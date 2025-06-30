@@ -444,6 +444,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
       await invokeTauriIpc("stream_collections", {
         channel: onCollectionEvent,
       });
+      console.log("streamedCollections", get().streamedCollections);
     } catch (error) {
       console.error("Failed to set up stream_collections:", error);
     } finally {
@@ -489,7 +490,7 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
   },
 
   distributeEntryToCollectionTree: async (entry, collectionId) => {
-    console.log("distributeEntryToCollectionTree", entry);
+    // console.log("distributeEntryToCollectionTree", entry);
     // Find the collection by ID
     const collection = get().collectionsTrees.find((col) => col.id === collectionId);
     if (!collection) {

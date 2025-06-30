@@ -16,7 +16,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repo, setRepo] = useState("https://github.com/moss-foundation/sapic");
+  const [repo, setRepo] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 

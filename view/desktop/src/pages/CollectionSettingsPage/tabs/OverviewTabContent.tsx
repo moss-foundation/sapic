@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 
 import { ConfirmationModal, InputOutlined } from "@/components";
 import { useModal } from "@/hooks";
+import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { useCollectionsStore } from "@/store/collections";
 
-import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
 import { CollectionSummarySection } from "../CollectionSummarySection";
 
@@ -20,7 +20,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const { showModal, closeModal, openModal } = useModal();
 
   const [name, setName] = useState(collection?.name);
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
 
   useEffect(() => {
     if (collection) {
