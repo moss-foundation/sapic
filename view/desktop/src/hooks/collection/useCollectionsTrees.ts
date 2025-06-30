@@ -15,6 +15,7 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
     isEntriesLoading,
     isLoading: isCollectionsLoading,
   } = useStreamedCollectionsWithEntries();
+
   const isLoading = isEntriesLoading || isCollectionsLoading;
 
   const validCollections = collectionsWithEntries.filter((collection) => collection.entries.length >= 4);

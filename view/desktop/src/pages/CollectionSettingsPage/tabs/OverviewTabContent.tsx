@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { ConfirmationModal, InputOutlined } from "@/components";
-import { useModal } from "@/hooks";
-import { useCollectionsTrees } from "@/hooks/collection/useCollectionsTrees";
+import { useDeleteCollection, useModal, useStreamedCollections } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
-import { useCollectionsStore } from "@/store/collections";
 
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
 import { CollectionSummarySection } from "../CollectionSummarySection";
@@ -14,12 +12,10 @@ interface OverviewTabContentProps {
 }
 
 export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
-  const { streamedCollections, updateStreamedCollection, deleteCollection } = useCollectionsStore();
+  const { data: streamedCollections } = useStreamedCollections();
+  const { mutate: deleteCollection } = useDeleteCollection();
 
-  const collection = streamedCollections.find((collection) => collection.id === params.collectionId);
-
-  const { collectionsTrees } = useCollectionsTrees();
-  const collectionTree = collectionsTrees.find((tree) => tree.id === collection?.id);
+  const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
 
   const { showModal, closeModal, openModal } = useModal();
 
@@ -39,10 +35,10 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const updateCollection = () => {
     if (!collection || !name) return;
 
-    updateStreamedCollection({
-      ...collection,
-      name,
-    });
+    // updateStreamedCollection({
+    //   ...collection,
+    //   name,
+    // });
 
     const currentPanel = containerApi.getPanel(collection.id);
     currentPanel?.api.setTitle(name);
@@ -126,7 +122,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
         <CollectionSummarySection />
       </div>
 
-      <pre>{JSON.stringify(collectionTree, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(collectionTree, null, 2)}</pre> */}
 
       {showModal && (
         <ConfirmationModal

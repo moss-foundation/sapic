@@ -1,6 +1,7 @@
+import ButtonDanger from "@/components/ButtonDanger";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
 import { ModalForm } from "@/components/ModalForm";
+import { useDeleteCollection } from "@/hooks";
 import { useCollectionsStore } from "@/store/collections";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -11,7 +12,9 @@ export const DeleteCollectionModal = ({
   showModal,
   collectionId,
 }: ModalWrapperProps & { collectionId: string }) => {
-  const { deleteCollection, isDeleteCollectionLoading, streamedCollections } = useCollectionsStore();
+  const { streamedCollections } = useCollectionsStore();
+  const { mutateAsync: deleteCollection, isPending: isDeleteCollectionLoading } = useDeleteCollection();
+
   const { removePanel } = useTabbedPaneStore();
 
   const collection = streamedCollections.find((collection) => collection.id === collectionId);
@@ -51,9 +54,9 @@ export const DeleteCollectionModal = ({
             <ButtonNeutralOutlined onClick={handleCancel} type="button">
               Cancel
             </ButtonNeutralOutlined>
-            <ButtonPrimary disabled={isSubmitDisabled} type="submit">
+            <ButtonDanger disabled={isSubmitDisabled} type="submit">
               Delete
-            </ButtonPrimary>
+            </ButtonDanger>
           </div>
         </div>
       }

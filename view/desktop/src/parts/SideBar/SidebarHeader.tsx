@@ -9,6 +9,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
   const { areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
   const { hasWorkspace } = useWorkspaceSidebarState();
+
   const {
     showModal: showCreateCollectionModal,
     closeModal: closeCreateCollectionModal,

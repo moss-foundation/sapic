@@ -15,12 +15,7 @@ import {
   DeleteEntryOutput,
   EntryInfo,
 } from "@repo/moss-collection";
-import {
-  CreateCollectionInput,
-  CreateCollectionOutput,
-  DeleteCollectionOutput,
-  StreamCollectionsEvent,
-} from "@repo/moss-workspace";
+import { CreateCollectionInput, CreateCollectionOutput, StreamCollectionsEvent } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
 import { join, sep } from "@tauri-apps/api/path";
 
@@ -227,19 +222,6 @@ export const useCollectionsStore = create<CollectionsStoreState>((set, get) => (
 
   isDeleteCollectionLoading: false,
   deleteCollection: async (collectionId) => {
-    set(() => ({
-      isDeleteCollectionLoading: true,
-    }));
-
-    const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input: { id: collectionId } });
-
-    if (result.status === "error") {
-      set(() => ({
-        isDeleteCollectionLoading: false,
-      }));
-      throw new Error(String(result.error));
-    }
-
     set((state) => ({
       streamedCollections: state.streamedCollections.filter((c) => c.id !== collectionId),
       collectionsTrees: state.collectionsTrees.filter((c) => c.id !== collectionId),
