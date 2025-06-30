@@ -50,12 +50,6 @@ export const activitybarPartStateInfoSchema = z.object({
   items: z.array(activitybarItemStateInfoSchema),
 });
 
-export const collectionInfoSchema = z.object({
-  id: identifierSchema,
-  displayName: z.string(),
-  order: z.number().optional(),
-});
-
 export const editorGridStateSchema = z.object({
   root: editorGridNodeSchema,
   width: z.number(),
