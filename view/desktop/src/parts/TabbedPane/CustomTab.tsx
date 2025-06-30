@@ -70,9 +70,9 @@ export const CustomTab: React.FC<CustomTabProps> = ({
 
   return (
     <div data-testid="dockview-custom-tab" {...rest} onClick={onClick} className="dv-default-tab">
-      <span className="dv-default-tab-content flex items-center gap-1">
+      <span className="dv-default-tab-content flex max-w-40 items-center gap-1">
         {iconType && <TestCollectionIcon type={iconType} />}
-        <span>{title}</span>
+        <span className="truncate">{title}</span>
       </span>
       {!hideClose && (
         <div className="dv-default-tab-action" onPointerDown={onPointerDown} onClick={onClose}>
