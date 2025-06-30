@@ -1,18 +1,28 @@
-use std::path::Path;
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+    sync::Arc,
+};
 
 use moss_common::api::OperationResult;
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
+use uuid::Uuid;
 
 use crate::{
-    Collection, // worktree::EntryDescription,
+    Collection,
     collection::OnDidChangeEvent,
     dirs,
     models::{
         events::StreamEntriesEvent, operations::StreamEntriesOutput, primitives::EntryPath,
         types::EntryInfo,
     },
-    services::worktree_service::{EntryDescription, WorktreeService},
+    services::{
+        storage_service::StorageService,
+        worktree_service::{EntryDescription, WorktreeService},
+    },
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -30,6 +40,7 @@ impl Collection {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
         let worktree_service = self.service_arc::<WorktreeService>();
+        let storage_service = self.service::<StorageService>();
 
         let mut handles = Vec::new();
         for dir in EXPANSION_DIRECTORIES {
@@ -37,9 +48,34 @@ impl Collection {
             let entries_tx_clone = tx.clone();
             let worktree_service_clone = worktree_service.clone();
 
+            // We need to fetch this data from the database here, otherwise we’ll be requesting it every time the scan method is called.
+
+            let expanded_entries: Arc<HashSet<Uuid>> =
+                match storage_service.get_expanded_entries::<Uuid>() {
+                    Ok(entries) => entries.collect::<HashSet<_>>().into(),
+                    Err(error) => {
+                        println!("warn: getting expanded entries: {}", error);
+                        HashSet::default().into()
+                    }
+                };
+
+            let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
+                match storage_service.get_all_entry_keys() {
+                    Ok(keys) => keys.collect::<HashMap<_, _>>().into(),
+                    Err(error) => {
+                        println!("warn: getting all entry keys: {}", error);
+                        HashMap::default().into()
+                    }
+                };
+
             let handle = tokio::spawn(async move {
                 let _ = worktree_service_clone
-                    .scan(dir_path, entries_tx_clone)
+                    .scan(
+                        dir_path,
+                        expanded_entries.clone(),
+                        all_entry_keys.clone(),
+                        entries_tx_clone,
+                    )
                     .await;
             });
 
@@ -60,9 +96,10 @@ impl Collection {
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: None, // FIXME: hardcoded
-                                expanded: false,  // FIXME: hardcoded
+                                order: entry.order,
+                                expanded: entry.expanded,
                             };
+
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }
@@ -80,9 +117,10 @@ impl Collection {
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: None,  // FIXME: hardcoded
-                                expanded: false,  // FIXME: hardcoded
+                                order: entry.order,
+                                expanded: entry.expanded,
                             };
+
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }

@@ -1,12 +1,9 @@
 use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
-use moss_db::{DatabaseError, Transaction, primitives::AnyValue};
+use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
-use moss_storage::{
-    CollectionStorage, collection_storage::stores::CollectionResourceStore,
-    storage::operations::TransactionalPutItem,
-};
+use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
     collections::{HashMap, HashSet},
@@ -217,6 +214,8 @@ pub struct EntryDescription {
     pub class: EntryClass,
     pub kind: EntryKind,
     pub protocol: Option<EntryProtocol>,
+    pub order: Option<usize>,
+    pub expanded: bool,
 }
 
 #[derive(Default)]
@@ -290,14 +289,8 @@ impl WorktreeService {
             .await?;
 
         state_lock.expanded_entries.remove(&id);
-
-        {
-            let mut txn = self.storage.begin_write()?;
-            self.storage
-                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
-
-            txn.commit()?;
-        }
+        self.storage
+            .put_expanded_entries(state_lock.expanded_entries.clone())?;
 
         Ok(())
     }
@@ -305,6 +298,8 @@ impl WorktreeService {
     pub async fn scan(
         &self,
         path: &Path,
+        expanded_entries: Arc<HashSet<Uuid>>,
+        all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> WorktreeResult<()> {
         debug_assert!(path.is_relative());
@@ -328,6 +323,8 @@ impl WorktreeService {
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
+            let expanded_entries = expanded_entries.clone();
+            let all_entry_keys = all_entry_keys.clone();
 
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
@@ -340,6 +337,7 @@ impl WorktreeService {
 
                 match process_dir_entry(&job.path, &fs, &job.abs_path).await {
                     Ok(Some(entry)) => {
+                        let expanded = expanded_entries.contains(&entry.id);
                         let desc = EntryDescription {
                             id: entry.id,
                             name: desanitize(&dir_name),
@@ -347,9 +345,16 @@ impl WorktreeService {
                             class: entry.classification(),
                             kind: entry.kind(),
                             protocol: entry.configuration.protocol(),
+                            expanded,
+                            order: all_entry_keys
+                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
+                                .map(|o| o.to_owned().into()),
                         };
 
                         let _ = sender.send(desc);
+                        if expanded {
+                            state.write().await.expanded_entries.insert(entry.id);
+                        }
                         state.write().await.entries.insert(entry.id, entry);
                     }
                     Ok(None) => {
@@ -409,6 +414,10 @@ impl WorktreeService {
                             class: entry.classification(),
                             kind: entry.kind(),
                             protocol: entry.configuration.protocol(),
+                            expanded: expanded_entries.contains(&entry.id),
+                            order: all_entry_keys
+                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
+                                .map(|o| o.to_owned().into()),
                         };
 
                         continue_if_err!(sender.send(desc), |_err| {

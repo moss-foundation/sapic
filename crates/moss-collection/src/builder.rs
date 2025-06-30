@@ -1,5 +1,9 @@
 use anyhow::{Context, Result};
-use moss_applib::{ServiceMarker, providers::ServiceMap, subscription::EventEmitter};
+use moss_applib::{
+    ServiceMarker,
+    providers::{ServiceMap, ServiceProvider},
+    subscription::EventEmitter,
+};
 use moss_file::toml::TomlFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
@@ -12,6 +16,7 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
+use uuid::Uuid;
 
 use crate::{
     Collection,
@@ -24,17 +29,19 @@ use crate::{
         RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
         RawDirRequestConfiguration, RawDirSchemaConfiguration,
     },
-    services::set_icon::{SetIconService, constants::ICON_SIZE},
-    worktree::Worktree,
+    services::{
+        set_icon::{SetIconService, constants::ICON_SIZE},
+        worktree_service::{EntryMetadata, WorktreeService},
+    },
 };
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
-const WORKTREE_DIRS: [&str; 4] = [
-    dirs::REQUESTS_DIR,
-    dirs::ENDPOINTS_DIR,
-    dirs::COMPONENTS_DIR,
-    dirs::SCHEMAS_DIR,
+const WORKTREE_DIRS: [(&str, usize); 4] = [
+    (dirs::REQUESTS_DIR, 0),
+    (dirs::ENDPOINTS_DIR, 1),
+    (dirs::COMPONENTS_DIR, 2),
+    (dirs::SCHEMAS_DIR, 3),
 ];
 
 pub struct CreateParams {
@@ -86,7 +93,6 @@ impl CollectionBuilder {
             &params.internal_abs_path.join(CONFIG_FILE_NAME),
         )
         .await?;
-        let worktree = Worktree::new(self.fs.clone(), params.internal_abs_path.clone());
 
         // TODO: Load environments
 
@@ -94,8 +100,6 @@ impl CollectionBuilder {
             fs: self.fs.clone(),
             services: self.services.into(),
             abs_path: params.internal_abs_path,
-            worktree: Arc::new(worktree),
-            // storage: Arc::new(storage),
             environments: OnceCell::new(),
             manifest,
             config,
@@ -112,35 +116,38 @@ impl CollectionBuilder {
             .unwrap_or(params.internal_abs_path.clone())
             .into();
 
-        let worktree = Worktree::new(self.fs.clone(), abs_path.clone());
-        for dir in &WORKTREE_DIRS {
-            let content = match *dir {
+        let services: ServiceProvider = self.services.into();
+        let worktree_service = services.get::<WorktreeService>();
+
+        for (dir, order) in &WORKTREE_DIRS {
+            let id = Uuid::new_v4();
+            let configuration = match *dir {
                 dirs::REQUESTS_DIR => {
-                    let configuration =
-                        RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new()));
-                    hcl::to_string(&configuration)?
+                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(id)))
                 }
                 dirs::ENDPOINTS_DIR => {
-                    let configuration = RawDirConfiguration::Endpoint(Block::new(
-                        RawDirEndpointConfiguration::new(),
-                    ));
-                    hcl::to_string(&configuration)?
+                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(id)))
                 }
-                dirs::COMPONENTS_DIR => {
-                    let configuration = RawDirConfiguration::Component(Block::new(
-                        RawDirComponentConfiguration::new(),
-                    ));
-                    hcl::to_string(&configuration)?
-                }
+                dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
+                    RawDirComponentConfiguration::new(id),
+                )),
                 dirs::SCHEMAS_DIR => {
-                    let configuration =
-                        RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new()));
-                    hcl::to_string(&configuration)?
+                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(id)))
                 }
                 _ => unreachable!(),
             };
-            worktree
-                .create_entry("", dir, true, content.as_bytes())
+
+            worktree_service
+                .create_dir_entry(
+                    id,
+                    dir,
+                    "",
+                    configuration,
+                    EntryMetadata {
+                        order: *order,
+                        expanded: false,
+                    },
+                )
                 .await?;
         }
 
@@ -188,10 +195,8 @@ impl CollectionBuilder {
 
         Ok(Collection {
             fs: self.fs.clone(),
-            services: self.services.into(),
+            services,
             abs_path: params.internal_abs_path.to_owned().into(),
-            worktree: Arc::new(worktree),
-            // storage: Arc::new(storage),
             environments: OnceCell::new(),
             manifest,
             config,

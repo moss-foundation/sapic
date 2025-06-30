@@ -4,7 +4,8 @@ use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
     CollectionStorage,
     collection_storage::CollectionStorageImpl,
-    storage::operations::{GetItem, TransactionalGetItem, TransactionalPutItem},
+    primitives::segkey::SegKeyBuf,
+    storage::operations::{GetItem, ListByPrefix, TransactionalPutItem},
 };
 use serde::{Serialize, de::DeserializeOwned};
 use std::{hash::Hash, path::Path, sync::Arc};
@@ -35,6 +36,8 @@ impl StorageService {
     pub(crate) fn begin_write(&self) -> Result<Transaction> {
         Ok(self.storage.begin_write()?)
     }
+
+    #[allow(dead_code)]
     pub(crate) fn begin_read(&self) -> Result<Transaction> {
         Ok(self.storage.begin_read()?)
     }
@@ -53,12 +56,25 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_entry_order_txn(&self, txn: &mut Transaction, id: Uuid) -> Result<usize> {
+    pub(crate) fn get_all_entry_keys(&self) -> Result<impl Iterator<Item = (SegKeyBuf, AnyValue)>> {
         let store = self.storage.resource_store();
-        let segkey = segments::segkey_entry_order(&id.to_string());
-        let value = TransactionalGetItem::get(store.as_ref(), txn, segkey)?;
+        let value = ListByPrefix::list_by_prefix(
+            store.as_ref(),
+            &segments::SEGKEY_RESOURCE_ENTRY.to_segkey_buf().to_string(),
+        )?;
 
-        Ok(value.into())
+        Ok(value.into_iter())
+    }
+
+    pub(crate) fn put_expanded_entries<T: Serialize>(
+        &self,
+        expanded_entries: impl IntoIterator<Item = T>,
+    ) -> Result<()> {
+        let mut txn = self.begin_write()?;
+        self.put_expanded_entries_txn(&mut txn, expanded_entries)?;
+        txn.commit()?;
+
+        Ok(())
     }
 
     pub(crate) fn put_expanded_entries_txn<T: Serialize>(

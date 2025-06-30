@@ -23,9 +23,9 @@ pub struct RawDirComponentConfiguration {
 }
 
 impl RawDirComponentConfiguration {
-    pub fn new() -> Self {
+    pub fn new(id: Uuid) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            metadata: Block::new(RawMetadata { id }),
         }
     }
 }

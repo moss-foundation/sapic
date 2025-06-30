@@ -23,7 +23,6 @@ use crate::{
     dirs::ASSETS_DIR,
     manifest::{ManifestModel, ManifestModelDiff},
     services::set_icon::{SetIconService, constants::ICON_SIZE},
-    worktree::Worktree,
 };
 
 pub struct EnvironmentItem {
@@ -50,14 +49,11 @@ pub struct ModifyParams {
 pub struct Collection {
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) services: ServiceProvider,
-    pub(super) worktree: Arc<Worktree>,
     pub(super) abs_path: Arc<Path>,
-    // pub(super) storage: Arc<dyn CollectionStorage>,
+    pub(super) services: ServiceProvider,
     #[allow(dead_code)]
     pub(super) environments: OnceCell<EnvironmentMap>,
     pub(super) manifest: moss_file::toml::EditableInPlaceFileHandle<ManifestModel>,
-    #[allow(dead_code)]
     pub(super) config: TomlFileHandle<ConfigModel>,
 
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
@@ -128,18 +124,9 @@ impl Collection {
         self.manifest.model().await
     }
 
-    pub fn worktree(&self) -> Arc<Worktree> {
-        self.worktree.clone()
-    }
-
     pub fn abs_path(&self) -> &Arc<Path> {
         &self.abs_path
     }
-
-    // #[allow(dead_code)]
-    // pub(super) fn storage(&self) -> &Arc<dyn CollectionStorage> {
-    //     &self.storage
-    // }
 
     pub async fn environments(&self) -> Result<&EnvironmentMap> {
         let result = self
