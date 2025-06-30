@@ -1,4 +1,5 @@
 import { ComponentPropsWithoutRef, ElementRef, forwardRef } from "react";
+
 import { cn } from "@/utils";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
@@ -18,7 +19,7 @@ const TabsTrigger = forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors",
+      "flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors",
       "border-b-2 border-transparent",
       "text-(--moss-secondary-text) hover:text-(--moss-primary-text)",
       "data-[state=active]:border-(--moss-info-background) data-[state=active]:text-(--moss-primary-text)",
@@ -39,4 +40,4 @@ const TabsContent = forwardRef<
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsContent, TabsList, TabsTrigger };
