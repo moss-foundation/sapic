@@ -36,6 +36,7 @@ export type TauriIpcCommand =
   //
   | "create_collection_entry"
   | "delete_collection_entry"
+  | "update_collection_entry"
   | "stream_collection_entries";
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };

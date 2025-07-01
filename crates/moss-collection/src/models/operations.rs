@@ -76,7 +76,7 @@ pub struct DeleteEntryOutput {
 
 // Update Entry
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
@@ -92,7 +92,7 @@ pub struct UpdateItemEntryInput {
     pub expanded: Option<bool>,
 }
 
-#[derive(Clone, Debug, Serialize, TS, Validate)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
@@ -106,7 +106,7 @@ pub struct UpdateDirEntryInput {
     pub expanded: Option<bool>,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum UpdateEntryInput {

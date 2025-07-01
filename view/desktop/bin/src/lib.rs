@@ -160,6 +160,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::create_collection_entry,
             commands::delete_collection_entry,
             commands::stream_collection_entries,
+            commands::update_collection_entry,
         ])
         .on_window_event(|_window, event| match event {
             // #[cfg(target_os = "macos")]
