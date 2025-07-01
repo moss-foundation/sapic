@@ -3,6 +3,7 @@ import "@repo/moss-tabs/assets/styles.css";
 import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
+import { useStreamedCollections } from "@/hooks";
 import { useCollectionsTrees } from "@/hooks/collection/useCollectionsTrees";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
@@ -65,6 +66,13 @@ export const CollectionTreeView = () => {
   // }, [collections, setCollections]);
 
   const { collectionsTrees, isLoading } = useCollectionsTrees();
+  const { error: collectionsError } = useStreamedCollections();
+
+  useEffect(() => {
+    if (collectionsError) {
+      console.error(collectionsError);
+    }
+  }, [collectionsError]);
 
   return (
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
