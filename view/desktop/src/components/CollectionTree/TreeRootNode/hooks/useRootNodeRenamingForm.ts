@@ -13,7 +13,7 @@ export const useRootNodeRenamingForm = (
   const { placeholderFnForUpdateCollection } = useUpdateCollection();
 
   const handleRenamingRootNodeFormSubmit = (name: string) => {
-    onNodeUpdate?.({ ...node, name });
+    // onNodeUpdate?.({ ...node, name });
 
     placeholderFnForUpdateCollection({
       id: node.id,
