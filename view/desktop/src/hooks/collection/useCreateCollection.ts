@@ -4,12 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
 
-export interface UseCreateCollectionInput {
-  collection: CreateCollectionInput;
-}
-
-const createCollection = async ({ collection }: UseCreateCollectionInput) => {
-  const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input: collection });
+const createCollection = async (input: CreateCollectionInput) => {
+  const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input });
 
   if (result.status === "error") {
     throw new Error(String(result.error));

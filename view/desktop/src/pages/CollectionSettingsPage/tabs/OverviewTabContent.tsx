@@ -121,23 +121,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
         <CollectionSummarySection />
       </div>
 
-      {/* <pre>{JSON.stringify(collectionTree, null, 2)}</pre> */}
-
-      {showModal && (
-        // <ConfirmationModal
-        //   showModal={showModal}
-        //   closeModal={closeModal}
-        //   title="Delete"
-        //   message={`Delete "${collection.name}"?`}
-        //   description="This will delete all requests, endpoints, and other items in this collection. This action cannot be undone."
-        //   confirmLabel="Delete"
-        //   cancelLabel="Close"
-        //   onConfirm={handleDeleteCollection}
-        //   variant="danger"
-        // />
-
-        <DeleteCollectionModal showModal={showModal} closeModal={closeModal} collectionId={params.collectionId} />
-      )}
+      {showModal && <DeleteCollectionModal showModal={showModal} closeModal={closeModal} id={params.collectionId} />}
     </div>
   );
 };

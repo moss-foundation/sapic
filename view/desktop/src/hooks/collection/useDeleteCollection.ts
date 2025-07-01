@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { DeleteCollectionOutput } from "@repo/moss-workspace";
+import { DeleteCollectionInput, DeleteCollectionOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
@@ -8,7 +8,7 @@ export interface UseDeleteCollectionInput {
   id: string;
 }
 
-const deleteStreamedCollection = async ({ id }: UseDeleteCollectionInput) => {
+const deleteStreamedCollection = async ({ id }: DeleteCollectionInput) => {
   const result = await invokeTauriIpc<DeleteCollectionOutput>("delete_collection", { input: { id } });
 
   if (result.status === "error") {

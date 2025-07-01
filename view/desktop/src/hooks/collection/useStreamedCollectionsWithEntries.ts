@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { EntryInfo } from "@repo/moss-collection";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
@@ -23,25 +23,37 @@ export const useStreamedCollectionsWithEntries = () => {
       queryFn: () => fetchCollectionEntries(collection.id),
       placeholderData: [] as EntryInfo[],
     })),
+    combine: (results) => {
+      return {
+        data: results.map((result) => result.data || []),
+        isLoading: results.some((result) => result.isPending),
+        hasError: results.some((result) => result.error),
+        results: results,
+      };
+    },
   });
 
   const collectionsWithEntries = useMemo((): CollectionWithEntries[] => {
     return collections.map((collection, index) => {
-      const entriesQuery = entriesQueries[index];
+      const entriesResult = entriesQueries.results[index];
       return {
         ...collection,
-        entries: entriesQuery?.data || [],
-        isEntriesLoading: entriesQuery?.isLoading || false,
-        entriesError: entriesQuery?.error || null,
+        entries: entriesResult?.data || [],
+        isEntriesLoading: entriesResult?.isPending || false,
+        entriesError: entriesResult?.error || null,
       };
     });
-  }, [collections, entriesQueries]);
+  }, [collections, entriesQueries.results]);
+
+  useEffect(() => {
+    console.log(entriesQueries.results);
+  }, [entriesQueries.results]);
 
   return {
     data: collectionsWithEntries,
     isLoading: isCollectionsLoading,
     error: collectionsError,
-    isEntriesLoading: entriesQueries.some((query) => query.isLoading),
-    hasEntriesError: entriesQueries.some((query) => query.error),
+    isEntriesLoading: entriesQueries.isLoading,
+    hasEntriesError: entriesQueries.hasError,
   };
 };

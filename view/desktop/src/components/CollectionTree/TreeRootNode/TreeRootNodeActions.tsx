@@ -92,7 +92,7 @@ export const TreeRootNodeActions = ({
       </div>
       {showDeleteCollectionModal && (
         <DeleteCollectionModal
-          collectionId={node.id}
+          id={node.id}
           showModal={showDeleteCollectionModal}
           closeModal={() => setShowDeleteCollectionModal(false)}
         />
