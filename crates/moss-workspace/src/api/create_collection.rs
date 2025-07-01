@@ -3,10 +3,7 @@ use moss_collection::collection::{self, Collection};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
-use moss_storage::{
-    storage::operations::PutItem,
-    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
-};
+use moss_storage::storage::operations::PutItem;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -20,7 +17,7 @@ use crate::{
     context::{AnyWorkspaceContext, Subscribe},
     dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    storage::segments::COLLECTION_SEGKEY,
+    storage::{entities::collection_store::CollectionCacheEntity, segments::COLLECTION_SEGKEY},
     workspace::{CollectionItem, Workspace},
 };
 
