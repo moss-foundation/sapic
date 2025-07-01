@@ -8,6 +8,7 @@ import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
+import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 
 import SidebarHeader from "./SidebarHeader";
@@ -18,7 +19,7 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  // const { sideBarPosition } = useAppResizableLayoutStore();
+  const { sideBarPosition } = useAppResizableLayoutStore();
 
   return (
     <div
