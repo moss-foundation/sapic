@@ -12,12 +12,8 @@ use moss_environment::environment::{self, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::{
-    WorkspaceStorage,
-    primitives::segkey::SegmentExt,
-    storage::operations::ListByPrefix,
-    workspace_storage::{
-        WorkspaceStorageImpl, entities::collection_store_entities::CollectionCacheEntity,
-    },
+    WorkspaceStorage, primitives::segkey::SegmentExt, storage::operations::ListByPrefix,
+    workspace_storage::WorkspaceStorageImpl,
 };
 use moss_text::sanitized::desanitize;
 use std::{
@@ -33,7 +29,7 @@ use crate::{
     defaults, dirs,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    storage::segments::COLLECTION_SEGKEY,
+    storage::{entities::collection_store::CollectionCacheEntity, segments::COLLECTION_SEGKEY},
 };
 
 #[derive(Deref, DerefMut)]
