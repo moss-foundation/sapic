@@ -16,6 +16,8 @@ export type ActivitybarPartStateInfo = {
   items: Array<ActivitybarItemStateInfo>;
 };
 
+export type CollectionInfo = { id: Identifier; displayName: string; order?: number };
+
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
 export type EditorGridNode =
