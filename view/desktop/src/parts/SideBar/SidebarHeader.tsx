@@ -1,12 +1,10 @@
-import { useEffect } from "react";
-
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
 import { useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   // const { collapseAll } = useCollectionsStore();
-  const { isLoading: isCollectionsLoading, refetch: refetchCollections, data: collections } = useStreamedCollections();
+  const { isLoading: isCollectionsLoading, clearQueryCacheAndRefetch } = useStreamedCollections();
   const { hasWorkspace } = useWorkspaceSidebarState();
 
   const {
@@ -14,14 +12,6 @@ export const SidebarHeader = ({ title }: { title: string }) => {
     closeModal: closeCreateCollectionModal,
     openModal: openCreateCollectionModal,
   } = useModal();
-
-  const handleForceRefetch = () => {
-    refetchCollections({ cancelRefetch: true });
-  };
-
-  useEffect(() => {
-    console.log(collections);
-  }, [collections]);
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
@@ -35,7 +25,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"
-          onClick={handleForceRefetch}
+          onClick={clearQueryCacheAndRefetch}
           title="Refresh Collections"
           disabled={isCollectionsLoading || !hasWorkspace}
         />

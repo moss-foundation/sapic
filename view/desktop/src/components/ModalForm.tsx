@@ -21,7 +21,6 @@ export const ModalForm = ({
   ...props
 }: ModalFormProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("handleSubmit", e);
     e.preventDefault();
     onSubmit?.(e);
   };

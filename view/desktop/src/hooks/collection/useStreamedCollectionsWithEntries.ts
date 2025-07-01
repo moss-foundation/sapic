@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { EntryInfo } from "@repo/moss-collection";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
@@ -44,10 +44,6 @@ export const useStreamedCollectionsWithEntries = () => {
       };
     });
   }, [collections, entriesQueries.results]);
-
-  useEffect(() => {
-    console.log(entriesQueries.results);
-  }, [entriesQueries.results]);
 
   return {
     data: collectionsWithEntries,

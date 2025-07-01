@@ -26,7 +26,6 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
     return validCollections.map((collection) => {
       const { entries, isEntriesLoading, entriesError, ...rest } = collection;
 
-      // Create category nodes with proper structure
       const createCategoryNode = (
         categoryName: string,
         categoryClass: "Request" | "Endpoint" | "Component" | "Schema"
@@ -48,7 +47,6 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
       const components = createCategoryNode("components", "Component");
       const requests = createCategoryNode("requests", "Request");
 
-      // Map entry class to collection category nodes
       const categoryMap: { [key: string]: TreeCollectionNode } = {
         "Request": requests,
         "Endpoint": endpoints,
@@ -56,7 +54,6 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
         "Schema": schemas,
       };
 
-      // Distribute entries based on their class and path structure
       entries.forEach((entry) => {
         const rootNode = categoryMap[entry.class];
         if (!rootNode) {
@@ -64,28 +61,24 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
           return;
         }
 
-        // If path has one component (root node)
         if (entry.path.segments.length === 1) {
-          // Update root node properties, preserving childNodes
           const existingChildNodes = rootNode.childNodes;
           Object.assign(rootNode, entry, { childNodes: existingChildNodes });
           return;
         }
 
-        // Handle nested paths - similar to Zustand store logic
         let currentNode = rootNode;
-        const relativePath = entry.path.segments.slice(1); // Skip the category name
+        const relativePath = entry.path.segments.slice(1);
 
-        // Navigate or create intermediate directories
         for (let i = 0; i < relativePath.length - 1; i++) {
           const component = relativePath[i];
-          const pathSoFar = entry.path.segments.slice(0, i + 2); // Include category + path up to current component
+          const pathSoFar = entry.path.segments.slice(0, i + 2);
 
           let child = currentNode.childNodes.find((node) => node.name === component && node.kind === "Dir");
 
           if (!child) {
             child = {
-              id: `${collection.id}-${pathSoFar.join("-")}`, // Generate unique ID for intermediate directory
+              id: `${collection.id}-${pathSoFar.join("-")}`,
               name: component,
               path: {
                 raw: pathSoFar.join("/"),
@@ -103,16 +96,13 @@ export const useCollectionsTrees = (): useCollectionsTreesProps => {
           currentNode = child;
         }
 
-        // Handle the final component
         const lastComponent = relativePath[relativePath.length - 1];
         const existingNode = currentNode.childNodes.find((node) => node.name === lastComponent);
 
         if (existingNode) {
-          // Update existing node, preserving childNodes
           const existingChildNodes = existingNode.childNodes;
           Object.assign(existingNode, entry, { childNodes: existingChildNodes });
         } else {
-          // Create new node
           const newNode: TreeCollectionNode = {
             ...entry,
             childNodes: [],

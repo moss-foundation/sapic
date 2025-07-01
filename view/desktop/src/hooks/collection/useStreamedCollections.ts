@@ -1,6 +1,6 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
 export const USE_STREAMED_COLLECTIONS_QUERY_KEY = "streamedCollections";
@@ -22,9 +22,22 @@ const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> =>
 };
 
 export const useStreamedCollections = () => {
-  return useQuery<StreamCollectionsEvent[], Error>({
+  const queryClient = useQueryClient();
+
+  const query = useQuery<StreamCollectionsEvent[], Error>({
     queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],
     queryFn: startStreamingCollections,
     placeholderData: [],
   });
+
+  const clearQueryCacheAndRefetch = () => {
+    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+    queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+    return query.refetch();
+  };
+
+  return {
+    ...query,
+    clearQueryCacheAndRefetch,
+  };
 };
