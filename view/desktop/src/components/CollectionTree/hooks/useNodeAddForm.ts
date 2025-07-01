@@ -86,7 +86,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
 };
 
 export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
-  const { treeId } = useContext(TreeContext);
+  const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
@@ -96,7 +96,7 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
     const newEntry = createEntry(parentNode, name, isAddingFolderNode);
 
     const result = await createCollectionEntry({
-      collectionId: treeId,
+      collectionId: id,
       input: newEntry,
     });
 

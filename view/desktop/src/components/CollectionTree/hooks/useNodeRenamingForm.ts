@@ -12,7 +12,7 @@ export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (nod
   const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
 
   const handleRenamingFormSubmit = (newName: string) => {
-    onNodeUpdate({ ...node, name: newName });
+    // onNodeUpdate({ ...node, name: newName });
 
     placeholderFnForUpdateCollectionEntry({
       id: node.id,
