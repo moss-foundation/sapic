@@ -15,7 +15,6 @@ export const DeleteCollectionModal = ({ closeModal, showModal, id }: ModalWrappe
   const collection = streamedCollections?.find((collection) => collection.id === id);
 
   const handleSubmit = async () => {
-    console.log("Deleting collection", id);
     try {
       await deleteCollection({ id });
       closeModal();
