@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { CreateCollectionInput, CreateCollectionOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
 
 const createCollection = async (input: CreateCollectionInput) => {
   const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input });
@@ -20,7 +20,7 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: createCollection,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY] });
     },
   });
 };

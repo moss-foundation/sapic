@@ -24,7 +24,7 @@ export interface TreeRootNodeProps {
 }
 
 export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
-  const { treeId, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
+  const { id, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
@@ -56,8 +56,8 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node, onRootNodeUpdate);
 
-  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, treeId, isRenamingRootNode);
-  useDropTargetRootNode(node, treeId, dropTargetRootRef);
+  const { closestEdge, isDragging } = useDraggableRootNode(draggableRootRef, node, id, isRenamingRootNode);
+  useDropTargetRootNode(node, id, dropTargetRootRef);
 
   //   useEffect(() => {
   //     const handleNewCollectionWasCreated = (event: Event) => {

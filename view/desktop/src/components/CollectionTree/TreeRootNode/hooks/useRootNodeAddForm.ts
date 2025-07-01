@@ -44,7 +44,7 @@ export const useRootNodeAddForm = (
   node: TreeCollectionRootNode,
   onRootNodeUpdate: (node: TreeCollectionRootNode) => void
 ) => {
-  const { treeId } = useContext(TreeContext);
+  const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
   const [isAddingRootNodeFile, setIsAddingRootNodeFile] = useState(false);
@@ -55,7 +55,7 @@ export const useRootNodeAddForm = (
 
     try {
       const result = await createCollectionEntry({
-        collectionId: treeId,
+        collectionId: id,
         input: newEntry,
       });
 

@@ -1,22 +1,10 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { EntryInfo } from "@repo/moss-collection";
+import { StreamCollectionsEvent } from "@repo/moss-workspace";
 
 export type SortTypes = "none" | "order" | "alphabetically";
 
-//TODO remove this after collections from backend are implemented
-export interface CollectionTree {
-  id: string;
-  name: string;
-  type: "collection";
-  order: number | null;
-  tree: TreeCollectionRootNode;
-}
-
-export interface TreeCollectionRootNode {
-  id: string;
-  name: string;
-  image?: string;
-  order: number | null;
+export interface TreeCollectionRootNode extends StreamCollectionsEvent {
   expanded: boolean;
   endpoints: TreeCollectionNode;
   schemas: TreeCollectionNode;
@@ -69,9 +57,7 @@ export interface TreeProps {
   onNodeDoubleClick?: (node: TreeCollectionNode) => void;
 }
 
-export interface TreeContextProps {
-  treeId: string;
-  image: string | undefined;
+export interface TreeContextProps extends StreamCollectionsEvent {
   paddingLeft: number;
   paddingRight: number;
   rootOffset: number;

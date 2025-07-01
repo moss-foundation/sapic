@@ -17,13 +17,12 @@ export const TreeRootNodeRenameForm = ({
   handleRenamingFormSubmit,
   handleRenamingFormCancel,
 }: TreeRootNodeRenameFormProps) => {
-  const { image } = useContext(TreeContext);
+  const { picturePath } = useContext(TreeContext);
 
   return (
     <div className="flex grow cursor-pointer items-center gap-1.5">
-      {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
       <div className="flex size-5 shrink-0 items-center justify-center rounded outline-1 outline-(--moss-border-color)">
-        <img src={image} className="h-full w-full" />
+        {picturePath && <img src={picturePath} className="h-full w-full" />}
       </div>
 
       <NodeRenamingForm

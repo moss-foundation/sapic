@@ -2,7 +2,7 @@ import { invokeTauriIpc } from "@/lib/backend/tauri";
 import { DeleteCollectionInput, DeleteCollectionOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
+import { USE_STREAM_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
 
 export interface UseDeleteCollectionInput {
   id: string;
@@ -24,7 +24,7 @@ export const useDeleteCollection = () => {
   return useMutation({
     mutationFn: deleteStreamedCollection,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY] });
     },
   });
 };

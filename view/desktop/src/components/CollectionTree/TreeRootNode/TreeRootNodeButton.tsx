@@ -21,7 +21,7 @@ export const TreeRootNodeButton = ({
   shouldRenderChildNodes,
   onRootNodeClick,
 }: TreeRootNodeButtonProps) => {
-  const { treeId, image } = useContext(TreeContext);
+  const { id, picturePath } = useContext(TreeContext);
   const { api } = useTabbedPaneStore();
 
   const handleIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,15 +34,15 @@ export const TreeRootNodeButton = ({
   };
 
   const handleLabelClick = () => {
-    const panel = api?.getPanel(treeId);
+    const panel = api?.getPanel(id);
 
     if (!panel) {
       api?.addPanel({
-        id: treeId,
+        id,
         title: node.name,
         component: "CollectionSettings",
         params: {
-          collectionId: treeId,
+          collectionId: id,
         },
       });
 
@@ -74,15 +74,14 @@ export const TreeRootNodeButton = ({
             icon="ChevronRight"
             className={cn("text-(--moss-icon-primary-text)", {
               "rotate-90": shouldRenderChildNodes,
-              "hidden group-hover/treeRootNodeTrigger:block": image,
+              "hidden group-hover/treeRootNodeTrigger:block": picturePath,
             })}
           />
         </button>
 
-        {/* TODO: Replace with the actual image and don't forget to remove image from assets */}
-        {image && (
+        {picturePath && (
           <div className="h-full w-full rounded group-hover/treeRootNodeTrigger:hidden">
-            <img src={image} className="h-full w-full" />
+            <img src={picturePath} className="h-full w-full" />
           </div>
         )}
       </span>

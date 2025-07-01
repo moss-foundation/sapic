@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { InputOutlined } from "@/components";
 import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
-import { useDeleteCollection, useModal, useStreamedCollections } from "@/hooks";
+import { useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
@@ -14,7 +14,7 @@ interface OverviewTabContentProps {
 
 export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
   const { data: streamedCollections } = useStreamedCollections();
-  const { mutateAsync: deleteCollection } = useDeleteCollection();
+  const { placeholderFnForUpdateCollection } = useUpdateCollection();
 
   const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
 
@@ -24,12 +24,12 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
 
   useEffect(() => {
-    if (collection) setName(collection?.name);
-  }, [collection]);
-
-  const handleDeleteCollection = async () => {
-    await deleteCollection(params.collectionId);
-  };
+    if (collection) {
+      setName(collection.name);
+      const currentPanel = containerApi.getPanel(collection.id);
+      currentPanel?.api.setTitle(collection.name);
+    }
+  }, [collection, containerApi]);
 
   const updateCollection = () => {
     if (!collection || !name) return;
@@ -39,8 +39,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
     //   name,
     // });
 
-    const currentPanel = containerApi.getPanel(collection.id);
-    currentPanel?.api.setTitle(name);
+    placeholderFnForUpdateCollection({ id: collection.id, collection: { ...collection, name } });
   };
 
   const handleBlur = () => {

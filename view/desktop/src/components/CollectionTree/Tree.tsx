@@ -10,8 +10,12 @@ import {
 } from "./utils/TreeRootUtils.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
-  treeId: "",
-  image: undefined,
+  id: "",
+  name: "",
+  repository: null,
+  order: null,
+  picturePath: null,
+
   paddingLeft: 0,
   paddingRight: 0,
   rootOffset: 0,
@@ -92,8 +96,11 @@ export const CollectionTree = ({
   return (
     <TreeContext.Provider
       value={{
-        treeId: initialTree.id,
-        image: initialTree.image,
+        id: initialTree.id,
+        name: initialTree.name,
+        repository: initialTree.repository,
+        order: initialTree.order,
+        picturePath: initialTree.picturePath,
 
         paddingLeft,
         paddingRight,

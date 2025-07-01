@@ -38,7 +38,7 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { nodeOffset, paddingRight, treeId, displayMode } = useContext(TreeContext);
+  const { nodeOffset, paddingRight, id } = useContext(TreeContext);
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -72,10 +72,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
 
   const handleDeleteNode = () => {
     deleteCollectionEntry({
-      collectionId: treeId,
+      collectionId: id,
       input: {
         id: node.id,
-        path: node.path.raw,
       },
     });
     // onNodeUpdate(node);
