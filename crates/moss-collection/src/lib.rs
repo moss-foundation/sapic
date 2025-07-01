@@ -7,7 +7,6 @@ pub mod manifest;
 pub mod models;
 pub mod services;
 pub mod storage;
-pub mod worktree;
 
 pub use builder::CollectionBuilder;
 pub use collection::Collection;
