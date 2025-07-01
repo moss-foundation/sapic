@@ -5,7 +5,7 @@ use crate::{
     collection::Collection,
     models::{
         events::BatchUpdateEntryEvent,
-        operations::{BatchUpdateEntryInput, BatchUpdateEntryInputKind, BatchUpdateEntryOutput},
+        operations::{BatchUpdateEntryInput, BatchUpdateEntryKind, BatchUpdateEntryOutput},
     },
 };
 
@@ -17,11 +17,11 @@ impl Collection {
     ) -> OperationResult<BatchUpdateEntryOutput> {
         for entry in input.entries {
             match entry {
-                BatchUpdateEntryInputKind::Item(input) => {
+                BatchUpdateEntryKind::Item(input) => {
                     let output = self.update_item_entry(input).await?;
                     channel.send(BatchUpdateEntryEvent::Item(output))?;
                 }
-                BatchUpdateEntryInputKind::Dir(input) => {
+                BatchUpdateEntryKind::Dir(input) => {
                     let output = self.update_dir_entry(input).await?;
                     channel.send(BatchUpdateEntryEvent::Dir(output))?;
                 }

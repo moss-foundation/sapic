@@ -8,9 +8,9 @@ import type {
   UpdateItemEntryParams,
 } from "./types";
 
-export type BatchUpdateEntryInput = { entries: Array<BatchUpdateEntryInputKind> };
+export type BatchUpdateEntryInput = { entries: Array<BatchUpdateEntryKind> };
 
-export type BatchUpdateEntryInputKind = { "ITEM": UpdateItemEntryParams } | { "DIR": UpdateDirEntryParams };
+export type BatchUpdateEntryKind = { "ITEM": UpdateItemEntryParams } | { "DIR": UpdateDirEntryParams };
 
 export type BatchUpdateEntryOutput = Record<string, never>;
 

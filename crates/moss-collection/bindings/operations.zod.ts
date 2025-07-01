@@ -24,7 +24,7 @@ export const deleteEntryOutputSchema = z.object({
 });
 
 export const streamEntriesOutputSchema = z.record(z.never());
-export const batchUpdateEntryInputKindSchema = z.union([
+export const batchUpdateEntryKindSchema = z.union([
   z.object({
     "ITEM": updateItemEntryParamsSchema,
   }),
@@ -75,7 +75,7 @@ export const updateEntryOutputSchema = z.union([
 ]);
 
 export const batchUpdateEntryInputSchema = z.object({
-  entries: z.array(batchUpdateEntryInputKindSchema),
+  entries: z.array(batchUpdateEntryKindSchema),
 });
 
 export const createEntryInputSchema = z.union([

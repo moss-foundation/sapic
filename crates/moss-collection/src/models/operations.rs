@@ -103,7 +103,7 @@ pub enum UpdateEntryOutput {
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub enum BatchUpdateEntryInputKind {
+pub enum BatchUpdateEntryKind {
     Item(UpdateItemEntryParams),
     Dir(UpdateDirEntryParams),
 }
@@ -113,7 +113,7 @@ pub enum BatchUpdateEntryInputKind {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateEntryInput {
-    pub entries: Vec<BatchUpdateEntryInputKind>,
+    pub entries: Vec<BatchUpdateEntryKind>,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
