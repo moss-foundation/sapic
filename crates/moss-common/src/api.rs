@@ -30,6 +30,12 @@ pub enum OperationError {
     Unknown(#[from] anyhow::Error),
 }
 
+impl From<moss_fs::FsError> for OperationError {
+    fn from(error: moss_fs::FsError) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 impl From<moss_db::common::DatabaseError> for OperationError {
     fn from(error: moss_db::common::DatabaseError) -> Self {
         OperationError::Internal(error.to_string())
