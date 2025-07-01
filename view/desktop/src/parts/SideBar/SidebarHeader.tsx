@@ -1,13 +1,11 @@
-import { useEffect } from "react";
-
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
-import { useModal, useWorkspaceSidebarState } from "@/hooks";
+import { useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
 import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   const { collapseAll } = useCollectionsStore();
-  const { areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
+  const { isLoading: isCollectionsLoading, refetch } = useStreamedCollections();
   const { hasWorkspace } = useWorkspaceSidebarState();
 
   const {
@@ -15,12 +13,6 @@ export const SidebarHeader = ({ title }: { title: string }) => {
     closeModal: closeCreateCollectionModal,
     openModal: openCreateCollectionModal,
   } = useModal();
-
-  useEffect(() => {
-    if (hasWorkspace) {
-      startCollectionsStream();
-    }
-  }, [hasWorkspace, startCollectionsStream]);
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
@@ -34,9 +26,9 @@ export const SidebarHeader = ({ title }: { title: string }) => {
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"
-          onClick={startCollectionsStream}
+          onClick={refetch}
           title="Refresh Collections"
-          disabled={areCollectionsStreaming || !hasWorkspace}
+          disabled={isCollectionsLoading || !hasWorkspace}
         />
         <ExampleDropdownMenu />
       </div>

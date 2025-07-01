@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { ConfirmationModal, InputOutlined } from "@/components";
+import { InputOutlined } from "@/components";
+import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
 import { useDeleteCollection, useModal, useStreamedCollections } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
 
@@ -13,7 +14,7 @@ interface OverviewTabContentProps {
 
 export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
   const { data: streamedCollections } = useStreamedCollections();
-  const { mutate: deleteCollection } = useDeleteCollection();
+  const { mutateAsync: deleteCollection } = useDeleteCollection();
 
   const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
 
@@ -23,13 +24,11 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
   const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
 
   useEffect(() => {
-    if (collection) {
-      setName(collection?.name);
-    }
+    if (collection) setName(collection?.name);
   }, [collection]);
 
-  const handleDeleteCollection = () => {
-    deleteCollection(params.collectionId);
+  const handleDeleteCollection = async () => {
+    await deleteCollection(params.collectionId);
   };
 
   const updateCollection = () => {
@@ -125,17 +124,19 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
       {/* <pre>{JSON.stringify(collectionTree, null, 2)}</pre> */}
 
       {showModal && (
-        <ConfirmationModal
-          showModal={showModal}
-          closeModal={closeModal}
-          title="Delete"
-          message={`Delete "${collection.name}"?`}
-          description="This will delete all requests, endpoints, and other items in this collection. This action cannot be undone."
-          confirmLabel="Delete"
-          cancelLabel="Close"
-          onConfirm={handleDeleteCollection}
-          variant="danger"
-        />
+        // <ConfirmationModal
+        //   showModal={showModal}
+        //   closeModal={closeModal}
+        //   title="Delete"
+        //   message={`Delete "${collection.name}"?`}
+        //   description="This will delete all requests, endpoints, and other items in this collection. This action cannot be undone."
+        //   confirmLabel="Delete"
+        //   cancelLabel="Close"
+        //   onConfirm={handleDeleteCollection}
+        //   variant="danger"
+        // />
+
+        <DeleteCollectionModal showModal={showModal} closeModal={closeModal} collectionId={params.collectionId} />
       )}
     </div>
   );

@@ -6,19 +6,6 @@ import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteColl
 
 import { TreeCollectionRootNode } from "../types";
 
-// interface TreeRootNodeActionsProps {
-//   node: TreeNodeProps;
-//   searchInput?: string;
-//   isRenamingRootNode: boolean;
-//   setIsAddingRootFileNode: (isAdding: boolean) => void;
-//   setIsAddingRootFolderNode: (isAdding: boolean) => void;
-//   setIsRenamingRootNode: (isRenaming: boolean) => void;
-//   allFoldersAreCollapsed: boolean;
-//   allFoldersAreExpanded: boolean;
-//   handleCollapseAll: () => void;
-//   handleExpandAll: () => void;
-// }
-
 interface TreeRootNodeActionsProps {
   node: TreeCollectionRootNode;
   searchInput?: string;

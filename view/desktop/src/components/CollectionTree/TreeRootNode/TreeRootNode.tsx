@@ -1,7 +1,7 @@
 import { useContext, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
-import { useCollectionsStore } from "@/store/collections";
+import { useStreamedCollections } from "@/hooks";
 import { cn } from "@/utils";
 
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
@@ -25,7 +25,7 @@ export interface TreeRootNodeProps {
 
 export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
   const { treeId, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
-  const { streamedCollections } = useCollectionsStore();
+  const { data: streamedCollections } = useStreamedCollections();
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
@@ -80,7 +80,7 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     isRenamingRootNode
   );
 
-  const restrictedNames = streamedCollections.map((collection) => collection.name);
+  const restrictedNames = streamedCollections?.map((collection) => collection.name) ?? [];
 
   return (
     <div

@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useCollectionsStore } from "@/store/collections";
+import { useCreateCollectionEntry } from "@/hooks";
 import { CreateEntryInput, DirConfigurationModel, ItemConfigurationModel } from "@repo/moss-collection";
 
 import { TreeContext } from "../Tree";
@@ -61,8 +61,6 @@ const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemCo
 };
 
 const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
-  console.log("iscreateEntry", parentNode);
-
   const baseEntry = {
     name,
     path: parentNode.path.raw,
@@ -87,7 +85,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
 
 export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
   const { treeId } = useContext(TreeContext);
-  const { createCollectionEntry } = useCollectionsStore();
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);

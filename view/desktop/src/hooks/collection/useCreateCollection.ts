@@ -4,7 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_COLLECTIONS_QUERY_KEY } from "./useStreamedCollections";
 
-const createCollection = async (collection: CreateCollectionInput) => {
+export interface UseCreateCollectionInput {
+  collection: CreateCollectionInput;
+}
+
+const createCollection = async ({ collection }: UseCreateCollectionInput) => {
   const result = await invokeTauriIpc<CreateCollectionOutput>("create_collection", { input: collection });
 
   if (result.status === "error") {
@@ -16,8 +20,9 @@ const createCollection = async (collection: CreateCollectionInput) => {
 
 export const useCreateCollection = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (collection: CreateCollectionInput) => createCollection(collection),
+    mutationFn: createCollection,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
     },

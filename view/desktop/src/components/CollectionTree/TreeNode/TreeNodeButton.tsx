@@ -84,10 +84,8 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     };
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
-      console.log("handleClickOnDir", node);
       e.stopPropagation();
       if (node.kind === "Item") {
-        console.log("handleClickOnDir", node);
         return;
       }
 

@@ -9,9 +9,17 @@ export interface ModalProps {
   onBackdropClick?: () => void;
   className?: string;
   children?: React.ReactNode;
+  size?: "small" | "medium";
 }
 
-export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, className, children }: ModalProps) => {
+export const Modal = ({
+  backdropFilter = "blur",
+  showModal,
+  onBackdropClick,
+  className,
+  children,
+  size = "medium",
+}: ModalProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -42,7 +50,11 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
       <dialog
         ref={dialogRef}
         className={cn(
-          "mx-auto mt-[9%] flex max-w-[544px] min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
+          "mx-auto mt-[9%] flex min-w-64 flex-col rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
+          {
+            "max-w-[436px]": size === "small",
+            "max-w-[544px]": size === "medium",
+          },
           className
         )}
       >
