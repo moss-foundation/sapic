@@ -12,7 +12,9 @@ use crate::models::{
     },
 };
 
-// Create Entry
+// ########################################################
+// ###                   Create Entry                   ###
+// ########################################################
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -59,7 +61,9 @@ pub struct CreateEntryOutput {
     pub id: Uuid,
 }
 
-// Delete Entry
+// ########################################################
+// ###                   Delete Entry                   ###
+// ########################################################
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -74,7 +78,11 @@ pub struct DeleteEntryOutput {
     pub id: Uuid,
 }
 
-// Update Entry
+// ########################################################
+// ###                   Update Entry                   ###
+// ########################################################
+
+// Common Inputs
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -98,6 +106,8 @@ pub struct UpdateItemEntryInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateDirEntryInput {
     pub id: Uuid,
+
+    // TODO: Add validation for path
     pub path: PathBuf,
 
     #[validate(length(min = 1))]
@@ -105,6 +115,28 @@ pub struct UpdateDirEntryInput {
     pub order: Option<usize>,
     pub expanded: Option<bool>,
 }
+
+// Common Outputs
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateItemEntryOutput {
+    pub id: Uuid,
+    pub path: EntryPath,
+    pub configuration: CompositeItemConfigurationModel,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateDirEntryOutput {
+    pub id: Uuid,
+    pub path: EntryPath,
+    pub configuration: CompositeDirConfigurationModel,
+}
+
+// Update Entry
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
@@ -117,30 +149,49 @@ pub enum UpdateEntryInput {
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateItemEntryOutput {
-    pub id: Uuid,
-    pub path: EntryPath,
-    pub configuration: CompositeItemConfigurationModel,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "UPPERCASE")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateDirEntryOutput {
-    pub id: Uuid,
-    pub path: EntryPath,
-    pub configuration: CompositeDirConfigurationModel,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "UPPERCASE")]
-#[ts(export, export_to = "operations.ts")]
 pub enum UpdateEntryOutput {
     Item(UpdateItemEntryOutput),
     Dir(UpdateDirEntryOutput),
 }
 
-// Stream Entries
+// ########################################################
+// ###                  Batch Update Entry              ###
+// ########################################################
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchUpdateEntryInputKind {
+    Item(UpdateItemEntryInput),
+    Dir(UpdateDirEntryInput),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEntryInput {
+    pub entries: Vec<BatchUpdateEntryInputKind>,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchUpdateEntryOutputKind {
+    Item(UpdateItemEntryOutput),
+    Dir(UpdateDirEntryOutput),
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEntryOutput {
+    pub entries: Vec<UpdateEntryOutput>,
+}
+
+// ########################################################
+// ###                  Stream Entries                  ###
+// ########################################################
 
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]

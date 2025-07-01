@@ -20,15 +20,21 @@ impl Collection {
         input: UpdateEntryInput,
     ) -> OperationResult<UpdateEntryOutput> {
         match input {
-            UpdateEntryInput::Item(input) => self.update_item_entry(input).await,
-            UpdateEntryInput::Dir(input) => self.update_dir_entry(input).await,
+            UpdateEntryInput::Item(input) => {
+                let output = self.update_item_entry(input).await?;
+                Ok(UpdateEntryOutput::Item(output))
+            }
+            UpdateEntryInput::Dir(input) => {
+                let output = self.update_dir_entry(input).await?;
+                Ok(UpdateEntryOutput::Dir(output))
+            }
         }
     }
 
     pub(super) async fn update_item_entry(
         &mut self,
         input: UpdateItemEntryInput,
-    ) -> OperationResult<UpdateEntryOutput> {
+    ) -> OperationResult<UpdateItemEntryOutput> {
         input.validate()?;
 
         let worktree_service = self.service::<WorktreeService>();
@@ -48,17 +54,17 @@ impl Collection {
         let path = EntryPath::new(path.to_path_buf());
         let model = CompositeItemConfigurationModel::from(configuration);
 
-        Ok(UpdateEntryOutput::Item(UpdateItemEntryOutput {
+        Ok(UpdateItemEntryOutput {
             id: input.id,
             path,
             configuration: model,
-        }))
+        })
     }
 
     pub(super) async fn update_dir_entry(
         &mut self,
         input: UpdateDirEntryInput,
-    ) -> OperationResult<UpdateEntryOutput> {
+    ) -> OperationResult<UpdateDirEntryOutput> {
         input.validate()?;
 
         let worktree_service = self.service::<WorktreeService>();
@@ -78,10 +84,10 @@ impl Collection {
         let path = EntryPath::new(path.to_path_buf());
         let model = CompositeDirConfigurationModel::from(configuration);
 
-        Ok(UpdateEntryOutput::Dir(UpdateDirEntryOutput {
+        Ok(UpdateDirEntryOutput {
             id: input.id,
             path,
             configuration: model,
-        }))
+        })
     }
 }
