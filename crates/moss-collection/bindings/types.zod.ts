@@ -99,6 +99,14 @@ export const formDataItemSchema = z.object({
   options: formDataOptionsSchema,
 });
 
+export const updateDirEntryParamsSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  name: z.string().optional(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
+});
+
 export const urlEncodedOptionsSchema = z.object({
   propagate: z.boolean(),
 });
@@ -180,6 +188,15 @@ export const urlEncodedItemSchema = z.object({
   options: urlEncodedOptionsSchema,
 });
 
+export const updateItemEntryParamsSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  name: z.string().optional(),
+  protocol: entryProtocolSchema.optional(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
+});
+
 export const compositeDirConfigurationModelSchema = z
   .object({
     metadata: configurationMetadataSchema,
@@ -224,6 +241,12 @@ export const requestBodySchema = z.union([
   }),
 ]);
 
+export const afterUpdateDirEntryDescriptionSchema = z.object({
+  id: z.string(),
+  path: entryPathSchema,
+  configuration: compositeDirConfigurationModelSchema,
+});
+
 export const compositeItemConfigurationModelSchema = z
   .object({
     metadata: configurationMetadataSchema,
@@ -259,3 +282,9 @@ export const itemConfigurationModelSchema = z.union([
     "schema": schemaItemConfigurationModelSchema,
   }),
 ]);
+
+export const afterUpdateItemEntryDescriptionSchema = z.object({
+  id: z.string(),
+  path: entryPathSchema,
+  configuration: compositeItemConfigurationModelSchema,
+});
