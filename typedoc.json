@@ -19,5 +19,9 @@
   "excludeExternals": true,
   "useTsLinkResolution": true,
   "alwaysCreateEntryPointModule": true,
-  "plugin": ["./misc/typedoc/typedoc-rename-plugin.js", "./misc/typedoc/typedoc-git-branch-plugin.js"]
+  "plugin": [
+    "./misc/typedoc/typedoc-rename-plugin.js",
+    "./misc/typedoc/typedoc-git-branch-plugin.js",
+    "./misc/typedoc/typedoc-categorize-plugin.js"
+  ]
 }
