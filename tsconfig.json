@@ -20,6 +20,9 @@
       "path": "crates/moss-common"
     },
     {
+      "path": "crates/moss-bindingutils"
+    },
+    {
       "path": "crates/moss-activity-indicator"
     },
     {

@@ -3674,6 +3674,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_bindingutils"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_collection"
 version = "0.1.0"
 dependencies = [
@@ -3685,6 +3693,7 @@ dependencies = [
  "indexmap 2.10.0",
  "moss_activity_indicator",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3776,6 +3785,7 @@ dependencies = [
  "anyhow",
  "async-stream",
  "async-trait",
+ "derive_more 2.0.1",
  "futures",
  "moss_applib",
  "moss_common",

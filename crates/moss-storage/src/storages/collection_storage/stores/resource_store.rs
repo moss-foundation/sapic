@@ -1,25 +1,26 @@
+use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
 use std::sync::Arc;
 
-use moss_db::{DatabaseClient, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue};
-
 use crate::{
-    collection_storage::stores::MixedStore,
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, operations::*},
+    storages::collection_storage::stores::CollectionResourceStore,
 };
 
-pub struct MixedStoreImpl {
+pub struct CollectionResourceStoreImpl {
+    #[allow(dead_code)]
     client: ReDbClient,
+    #[allow(dead_code)]
     table: Arc<SegBinTable>,
 }
 
-impl MixedStoreImpl {
+impl CollectionResourceStoreImpl {
     pub fn new(client: ReDbClient, table: Arc<SegBinTable>) -> Self {
         Self { client, table }
     }
 }
 
-impl ListByPrefix for MixedStoreImpl {
+impl ListByPrefix for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -29,7 +30,7 @@ impl ListByPrefix for MixedStoreImpl {
     }
 }
 
-impl TransactionalListByPrefix for MixedStoreImpl {
+impl TransactionalListByPrefix for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -42,7 +43,7 @@ impl TransactionalListByPrefix for MixedStoreImpl {
     }
 }
 
-impl PutItem for MixedStoreImpl {
+impl PutItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -53,7 +54,7 @@ impl PutItem for MixedStoreImpl {
     }
 }
 
-impl TransactionalPutItem for MixedStoreImpl {
+impl TransactionalPutItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -67,7 +68,7 @@ impl TransactionalPutItem for MixedStoreImpl {
     }
 }
 
-impl GetItem for MixedStoreImpl {
+impl GetItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -77,7 +78,7 @@ impl GetItem for MixedStoreImpl {
     }
 }
 
-impl TransactionalGetItem for MixedStoreImpl {
+impl TransactionalGetItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -86,7 +87,7 @@ impl TransactionalGetItem for MixedStoreImpl {
     }
 }
 
-impl RemoveItem for MixedStoreImpl {
+impl RemoveItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -98,7 +99,7 @@ impl RemoveItem for MixedStoreImpl {
     }
 }
 
-impl TransactionalRemoveItem for MixedStoreImpl {
+impl TransactionalRemoveItem for CollectionResourceStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;
 
@@ -107,4 +108,4 @@ impl TransactionalRemoveItem for MixedStoreImpl {
     }
 }
 
-impl MixedStore for MixedStoreImpl {}
+impl CollectionResourceStore for CollectionResourceStoreImpl {}
