@@ -1,10 +1,16 @@
 pub mod configuration;
 
-use serde::Serialize;
+use std::path::PathBuf;
+
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 use uuid::Uuid;
+use validator::Validate;
 
-use crate::models::primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol};
+use crate::models::{
+    primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol},
+    types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+};
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -21,6 +27,56 @@ pub struct EnvironmentInfo {
     /// If not specified, the entry appears last and is sorted alphabetically
     /// among unspecified items.
     pub order: Option<usize>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateItemEntryParams {
+    pub id: Uuid,
+    // TODO: Add validation for path
+    pub path: PathBuf,
+
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+    pub protocol: Option<EntryProtocol>,
+    pub order: Option<usize>,
+    pub expanded: Option<bool>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateDirEntryParams {
+    pub id: Uuid,
+
+    // TODO: Add validation for path
+    pub path: PathBuf,
+
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+    pub order: Option<usize>,
+    pub expanded: Option<bool>,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct AfterUpdateDirEntryDescription {
+    pub id: Uuid,
+    pub path: EntryPath,
+    pub configuration: CompositeDirConfigurationModel,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct AfterUpdateItemEntryDescription {
+    pub id: Uuid,
+    pub path: EntryPath,
+    pub configuration: CompositeItemConfigurationModel,
 }
 
 #[derive(Debug, Serialize, TS)]

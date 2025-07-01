@@ -1,9 +1,11 @@
 use moss_common::api::OperationResult;
+use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     collection::Collection,
-    models::operations::{
-        BatchUpdateEntryInput, BatchUpdateEntryInputKind, BatchUpdateEntryOutput, UpdateEntryOutput,
+    models::{
+        events::BatchUpdateEntryEvent,
+        operations::{BatchUpdateEntryInput, BatchUpdateEntryInputKind, BatchUpdateEntryOutput},
     },
 };
 
@@ -11,21 +13,21 @@ impl Collection {
     pub async fn batch_update_entry(
         &mut self,
         input: BatchUpdateEntryInput,
+        channel: TauriChannel<BatchUpdateEntryEvent>,
     ) -> OperationResult<BatchUpdateEntryOutput> {
-        let mut results = Vec::new();
         for entry in input.entries {
             match entry {
                 BatchUpdateEntryInputKind::Item(input) => {
                     let output = self.update_item_entry(input).await?;
-                    results.push(UpdateEntryOutput::Item(output));
+                    channel.send(BatchUpdateEntryEvent::Item(output))?;
                 }
                 BatchUpdateEntryInputKind::Dir(input) => {
                     let output = self.update_dir_entry(input).await?;
-                    results.push(UpdateEntryOutput::Dir(output));
+                    channel.send(BatchUpdateEntryEvent::Dir(output))?;
                 }
             }
         }
 
-        Ok(BatchUpdateEntryOutput { entries: results })
+        Ok(BatchUpdateEntryOutput {})
     }
 }

@@ -4,12 +4,13 @@ use validator::Validate;
 use crate::{
     collection::Collection,
     models::{
-        operations::{
-            UpdateDirEntryInput, UpdateDirEntryOutput, UpdateEntryInput, UpdateEntryOutput,
-            UpdateItemEntryInput, UpdateItemEntryOutput,
-        },
+        operations::{UpdateEntryInput, UpdateEntryOutput},
         primitives::EntryPath,
-        types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+        types::{
+            AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
+            UpdateItemEntryParams,
+            configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
+        },
     },
     services::worktree_service::{ModifyParams, WorktreeService},
 };
@@ -33,8 +34,8 @@ impl Collection {
 
     pub(super) async fn update_item_entry(
         &mut self,
-        input: UpdateItemEntryInput,
-    ) -> OperationResult<UpdateItemEntryOutput> {
+        input: UpdateItemEntryParams,
+    ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
 
         let worktree_service = self.service::<WorktreeService>();
@@ -54,7 +55,7 @@ impl Collection {
         let path = EntryPath::new(path.to_path_buf());
         let model = CompositeItemConfigurationModel::from(configuration);
 
-        Ok(UpdateItemEntryOutput {
+        Ok(AfterUpdateItemEntryDescription {
             id: input.id,
             path,
             configuration: model,
@@ -63,8 +64,8 @@ impl Collection {
 
     pub(super) async fn update_dir_entry(
         &mut self,
-        input: UpdateDirEntryInput,
-    ) -> OperationResult<UpdateDirEntryOutput> {
+        input: UpdateDirEntryParams,
+    ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;
 
         let worktree_service = self.service::<WorktreeService>();
@@ -84,7 +85,7 @@ impl Collection {
         let path = EntryPath::new(path.to_path_buf());
         let model = CompositeDirConfigurationModel::from(configuration);
 
-        Ok(UpdateDirEntryOutput {
+        Ok(AfterUpdateDirEntryDescription {
             id: input.id,
             path,
             configuration: model,

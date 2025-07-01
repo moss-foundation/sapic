@@ -4,12 +4,10 @@ use ts_rs::TS;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::models::{
-    primitives::{EntryPath, EntryProtocol},
-    types::configuration::{
-        CompositeDirConfigurationModel, CompositeItemConfigurationModel, DirConfigurationModel,
-        ItemConfigurationModel,
-    },
+use crate::models::types::{
+    AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
+    UpdateItemEntryParams,
+    configuration::{DirConfigurationModel, ItemConfigurationModel},
 };
 
 // ########################################################
@@ -82,76 +80,20 @@ pub struct DeleteEntryOutput {
 // ###                   Update Entry                   ###
 // ########################################################
 
-// Common Inputs
-
-#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateItemEntryInput {
-    pub id: Uuid,
-    // TODO: Add validation for path
-    pub path: PathBuf,
-
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-    pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
-    pub expanded: Option<bool>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateDirEntryInput {
-    pub id: Uuid,
-
-    // TODO: Add validation for path
-    pub path: PathBuf,
-
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-    pub order: Option<usize>,
-    pub expanded: Option<bool>,
-}
-
-// Common Outputs
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateItemEntryOutput {
-    pub id: Uuid,
-    pub path: EntryPath,
-    pub configuration: CompositeItemConfigurationModel,
-}
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateDirEntryOutput {
-    pub id: Uuid,
-    pub path: EntryPath,
-    pub configuration: CompositeDirConfigurationModel,
-}
-
-// Update Entry
-
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum UpdateEntryInput {
-    Item(UpdateItemEntryInput),
-    Dir(UpdateDirEntryInput),
+    Item(UpdateItemEntryParams),
+    Dir(UpdateDirEntryParams),
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum UpdateEntryOutput {
-    Item(UpdateItemEntryOutput),
-    Dir(UpdateDirEntryOutput),
+    Item(AfterUpdateItemEntryDescription),
+    Dir(AfterUpdateDirEntryDescription),
 }
 
 // ########################################################
@@ -162,8 +104,8 @@ pub enum UpdateEntryOutput {
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum BatchUpdateEntryInputKind {
-    Item(UpdateItemEntryInput),
-    Dir(UpdateDirEntryInput),
+    Item(UpdateItemEntryParams),
+    Dir(UpdateDirEntryParams),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
@@ -178,16 +120,14 @@ pub struct BatchUpdateEntryInput {
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum BatchUpdateEntryOutputKind {
-    Item(UpdateItemEntryOutput),
-    Dir(UpdateDirEntryOutput),
+    Item(AfterUpdateItemEntryDescription),
+    Dir(AfterUpdateDirEntryDescription),
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateEntryOutput {
-    pub entries: Vec<UpdateEntryOutput>,
-}
+pub struct BatchUpdateEntryOutput {}
 
 // ########################################################
 // ###                  Stream Entries                  ###
