@@ -13,7 +13,7 @@ use tokio::{
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
 
-use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
+use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
 
 pub struct RealFileSystem;
 
@@ -27,15 +27,15 @@ impl GlobalMarker for RealFileSystem {}
 
 #[async_trait::async_trait]
 impl FileSystem for RealFileSystem {
-    async fn create_dir_all(&self, path: &Path) -> Result<()> {
+    async fn create_dir_all(&self, path: &Path) -> FsResult<()> {
         Ok(tokio::fs::create_dir_all(path).await?)
     }
 
-    async fn create_dir(&self, path: &Path) -> Result<()> {
+    async fn create_dir(&self, path: &Path) -> FsResult<()> {
         Ok(tokio::fs::create_dir(path).await?)
     }
 
-    async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> Result<()> {
+    async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> FsResult<()> {
         (if options.recursive {
             tokio::fs::remove_dir_all(path).await
         } else {
@@ -50,7 +50,7 @@ impl FileSystem for RealFileSystem {
         })
     }
 
-    async fn create_file(&self, path: &Path, options: CreateOptions) -> Result<()> {
+    async fn create_file(&self, path: &Path, options: CreateOptions) -> FsResult<()> {
         let mut open_options = tokio::fs::OpenOptions::new();
         open_options.write(true).create(true);
         if options.overwrite {
@@ -69,7 +69,7 @@ impl FileSystem for RealFileSystem {
         path: &Path,
         content: &[u8],
         options: CreateOptions,
-    ) -> Result<()> {
+    ) -> FsResult<()> {
         let mut open_options = tokio::fs::OpenOptions::new();
         open_options.write(true).create(true);
         if options.overwrite {
@@ -84,7 +84,7 @@ impl FileSystem for RealFileSystem {
         Ok(())
     }
 
-    async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()> {
+    async fn remove_file(&self, path: &Path, options: RemoveOptions) -> FsResult<()> {
         tokio::fs::remove_file(path).await.or_else(|err| {
             if err.kind() == io::ErrorKind::NotFound && options.ignore_if_not_exists {
                 Ok(())
@@ -94,23 +94,26 @@ impl FileSystem for RealFileSystem {
         })
     }
 
-    async fn open_file(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>> {
+    async fn open_file(&self, path: &Path) -> FsResult<Box<dyn io::Read + Send + Sync>> {
         Ok(Box::new(std::fs::File::open(path)?))
     }
 
-    async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> Result<()> {
+    async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> FsResult<()> {
         if !options.overwrite && tokio::fs::metadata(to).await.is_ok() {
             if options.ignore_if_exists {
                 return Ok(());
             } else {
-                return Err(anyhow!("{to:?} already exists"));
+                return Err(FsError::AlreadyExists(format!(
+                    "Path {} already exists",
+                    to.to_string_lossy().to_string()
+                )));
             }
         }
 
         Ok(tokio::fs::rename(from, to).await?)
     }
 
-    async fn read_dir(&self, path: &Path) -> Result<ReadDir> {
+    async fn read_dir(&self, path: &Path) -> FsResult<ReadDir> {
         Ok(tokio::fs::read_dir(path).await?)
     }
 
@@ -118,7 +121,7 @@ impl FileSystem for RealFileSystem {
         &self,
         path: &Path,
         latency: Duration,
-    ) -> Result<(
+    ) -> FsResult<(
         BoxStream<'static, Vec<notify::Event>>,
         notify::RecommendedWatcher,
     )> {

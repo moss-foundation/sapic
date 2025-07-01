@@ -30,7 +30,7 @@ pub enum WorktreeError {
     NotFound(String),
 
     #[error("io error: {0}")]
-    Io(#[from] std::io::Error),
+    Io(#[from] moss_fs::FsError),
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
@@ -379,7 +379,9 @@ where
 {
     let mut reader = fs.open_file(path).await?;
     let mut buf = String::new();
-    reader.read_to_string(&mut buf)?;
+    reader
+        .read_to_string(&mut buf)
+        .map_err(moss_fs::FsError::from)?;
 
     Ok(hcl::from_str(&buf).map_err(anyhow::Error::from)?)
 }
