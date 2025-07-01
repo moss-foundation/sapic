@@ -275,8 +275,8 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
               {props.params?.node ? (
                 <div>
-                  <span>Node {props.params.node.name}</span>
-                  <div className="pointer-events-auto max-h-[600px] overflow-y-auto text-[16px]">
+                  <span className="text-[18px]">Node name: "{props.params.node.name}"</span>
+                  <div className="pointer-events-auto max-h-[70vh] overflow-y-auto text-[12px]">
                     <pre>{JSON.stringify(props.params.node, null, 2)}</pre>
                   </div>
                 </div>
