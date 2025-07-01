@@ -7,10 +7,10 @@ import {
 } from "./types.zod";
 export const batchUpdateEntryEventSchema = z.union([
   z.object({
-    "Item": afterUpdateItemEntryDescriptionSchema,
+    "ITEM": afterUpdateItemEntryDescriptionSchema,
   }),
   z.object({
-    "Dir": afterUpdateDirEntryDescriptionSchema,
+    "DIR": afterUpdateDirEntryDescriptionSchema,
   }),
 ]);
 

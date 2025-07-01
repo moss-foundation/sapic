@@ -10,6 +10,7 @@ use super::types::EntryInfo;
 pub struct StreamEntriesEvent(pub EntryInfo);
 
 #[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "events.ts")]
 pub enum BatchUpdateEntryEvent {
     Item(AfterUpdateItemEntryDescription),

@@ -2,7 +2,7 @@
 import type { AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, EntryInfo } from "./types";
 
 export type BatchUpdateEntryEvent =
-  | { "Item": AfterUpdateItemEntryDescription }
-  | { "Dir": AfterUpdateDirEntryDescription };
+  | { "ITEM": AfterUpdateItemEntryDescription }
+  | { "DIR": AfterUpdateDirEntryDescription };
 
 export type StreamEntriesEvent = EntryInfo;
