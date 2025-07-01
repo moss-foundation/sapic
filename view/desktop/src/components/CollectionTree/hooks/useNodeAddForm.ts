@@ -70,6 +70,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     return {
       dir: {
         ...baseEntry,
+        order: 0,
         configuration: createDirConfiguration(parentNode.class),
       },
     };
@@ -78,6 +79,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   return {
     item: {
       ...baseEntry,
+      order: 0,
       configuration: createItemConfiguration(parentNode.class),
     },
   };

@@ -12,6 +12,7 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
       dir: {
         name,
         path: "requests",
+        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
         configuration: {
           request: {
             http: {},
@@ -25,6 +26,7 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
     item: {
       name,
       path: "requests",
+      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
       configuration: {
         request: {
           http: {

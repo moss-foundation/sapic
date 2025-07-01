@@ -2,12 +2,7 @@ use std::collections::HashMap;
 
 use moss_common::api::OperationResult;
 use moss_db::primitives::AnyValue;
-use moss_storage::{
-    storage::operations::TransactionalPutItem,
-    workspace_storage::entities::state_store_entities::{
-        EditorGridStateEntity, EditorPanelStateEntity,
-    },
-};
+use moss_storage::storage::operations::TransactionalPutItem;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -17,8 +12,11 @@ use crate::{
             ActivitybarPartStateInfo, EditorPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    storage::segments::{
-        PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+        segments::{
+            PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+        },
     },
     workspace::Workspace,
 };

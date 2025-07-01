@@ -36,7 +36,7 @@ async fn create_test_entry(
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.to_string(),
-        order: None,
+        order: 0,
         configuration: create_test_dir_configuration(),
     });
 
@@ -53,14 +53,11 @@ async fn delete_entry_success() {
         create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result = collection.delete_entry(delete_input).await;
     let _ = result.unwrap();
@@ -76,11 +73,7 @@ async fn delete_entry_success() {
 async fn delete_entry_not_found() {
     let (collection_path, mut collection) = create_test_collection().await;
 
-    let non_existent_path = PathBuf::from(dirs::COMPONENTS_DIR).join("non_existent_entry");
-    let delete_input = DeleteEntryInput {
-        id: Uuid::new_v4(),
-        path: non_existent_path,
-    };
+    let delete_input = DeleteEntryInput { id: Uuid::new_v4() };
 
     let result = collection.delete_entry(delete_input).await;
     assert!(result.is_err());
@@ -107,7 +100,7 @@ async fn delete_entry_with_subdirectories() {
         create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
 
     // Create some subdirectories and files inside the entry
-    let entry_dir = collection_path.join(&entry_path);
+    let entry_dir = collection_path.join(&entry_path).join(&entry_name);
     let sub_dir = entry_dir.join("subdir");
     let sub_sub_dir = sub_dir.join("subsubdir");
 
@@ -121,10 +114,7 @@ async fn delete_entry_with_subdirectories() {
     assert!(sub_sub_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result = collection.delete_entry(delete_input).await;
     let _ = result.unwrap();
@@ -151,16 +141,13 @@ async fn delete_multiple_entries() {
         create_test_entry(&mut collection, &entry2_name, dirs::SCHEMAS_DIR).await;
 
     // Verify both entries were created
-    let expected_dir1 = collection_path.join(&entry1_path);
-    let expected_dir2 = collection_path.join(&entry2_path);
+    let expected_dir1 = collection_path.join(&entry1_path).join(&entry1_name);
+    let expected_dir2 = collection_path.join(&entry2_path).join(&entry2_name);
     assert!(expected_dir1.exists());
     assert!(expected_dir2.exists());
 
     // Delete first entry
-    let delete_input1 = DeleteEntryInput {
-        id: entry1_id,
-        path: entry1_path.clone(),
-    };
+    let delete_input1 = DeleteEntryInput { id: entry1_id };
 
     let result1 = collection.delete_entry(delete_input1).await;
     let _ = result1.unwrap();
@@ -170,10 +157,7 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete second entry
-    let delete_input2 = DeleteEntryInput {
-        id: entry2_id,
-        path: entry2_path.clone(),
-    };
+    let delete_input2 = DeleteEntryInput { id: entry2_id };
 
     let result2 = collection.delete_entry(delete_input2).await;
     let _ = result2.unwrap();
@@ -195,14 +179,11 @@ async fn delete_entry_twice() {
         create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry first time - should succeed
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result1 = collection.delete_entry(delete_input.clone()).await;
     let _ = result1.unwrap();
@@ -244,35 +225,32 @@ async fn delete_entries_from_different_directories() {
     for (idx, dir) in directories.iter().enumerate() {
         let entry_name = format!("{}_{}", random_entry_name(), idx);
         let (entry_id, entry_path) = create_test_entry(&mut collection, &entry_name, dir).await;
-        entries.push((entry_id, entry_path, dir));
+        entries.push((entry_id, entry_path, entry_name, dir));
     }
 
     // Verify all entries were created
-    for (_, entry_path, _) in &entries {
-        let expected_dir = collection_path.join(entry_path);
+    for (_, entry_path, entry_name, _) in &entries {
+        let expected_dir = collection_path.join(entry_path).join(entry_name);
         assert!(
             expected_dir.exists(),
             "Entry not created at {:?}",
-            entry_path
+            expected_dir
         );
     }
 
     // Delete all entries
-    for (entry_id, entry_path, _) in &entries {
-        let delete_input = DeleteEntryInput {
-            id: *entry_id,
-            path: entry_path.clone(),
-        };
+    for (entry_id, entry_path, entry_name, _) in &entries {
+        let delete_input = DeleteEntryInput { id: *entry_id };
 
         let result = collection.delete_entry(delete_input).await;
         let _ = result.expect(&format!("Failed to delete entry at {:?}", entry_path));
 
         // Verify the directory was removed
-        let expected_dir = collection_path.join(entry_path);
+        let expected_dir = collection_path.join(entry_path).join(entry_name);
         assert!(
             !expected_dir.exists(),
             "Entry not deleted at {:?}",
-            entry_path
+            expected_dir
         );
     }
 

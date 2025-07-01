@@ -1,12 +1,7 @@
 use anyhow::Result;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::{
-    WorkspaceStorage,
-    primitives::segkey::SegKeyBuf,
-    storage::operations::TransactionalListByPrefix,
-    workspace_storage::entities::state_store_entities::{
-        EditorGridStateEntity, EditorPanelStateEntity,
-    },
+    WorkspaceStorage, primitives::segkey::SegKeyBuf, storage::operations::TransactionalListByPrefix,
 };
 use serde::de::DeserializeOwned;
 use std::{collections::HashMap, sync::Arc};
@@ -22,11 +17,13 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    storage::segments::{
-        PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+        segments::{
+            PART_ACTIVITYBAR_SEGKEY, PART_EDITOR_SEGKEY, PART_PANEL_SEGKEY, PART_SIDEBAR_SEGKEY,
+        },
     },
 };
-
 // ------------------------------------
 // Activitybar
 // ------------------------------------
@@ -118,7 +115,7 @@ pub struct PanelPartPreferences {
 
 const PANEL_DEFAULTS: PanelPartDefaults = PanelPartDefaults {
     size: 200,
-    is_visible: true,
+    is_visible: false,
 };
 
 // ------------------------------------

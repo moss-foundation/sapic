@@ -1,15 +1,14 @@
 pub mod shared;
 
+use crate::shared::{collection_key, generate_random_icon, setup_test_workspace};
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
-use moss_storage::{
-    storage::operations::{GetItem, ListByPrefix},
-    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
-};
+use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
-use moss_workspace::models::operations::CreateCollectionInput;
-
-use crate::shared::{collection_key, generate_random_icon, setup_test_workspace};
+use moss_workspace::{
+    models::operations::CreateCollectionInput,
+    storage::entities::collection_store::CollectionCacheEntity,
+};
 
 // FIXME: The tests and business logic are poorly organized.
 // A collection shouldn’t expose implementation details, and the workspace shouldn’t be
