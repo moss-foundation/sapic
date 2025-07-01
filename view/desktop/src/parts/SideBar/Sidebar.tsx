@@ -1,15 +1,14 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
-import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
-import { useGetProjectSessionState } from "@/hooks/useProjectSession";
-import { useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
-import { cn } from "@/utils";
-import { useActiveWorkspace } from "@/hooks";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useActiveWorkspace } from "@/hooks";
+import { useGetProjectSessionState } from "@/hooks/useProjectSession";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useActivityBarStore } from "@/store/activityBar";
+import { cn } from "@/utils";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -19,7 +18,7 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const { sideBarPosition } = useAppResizableLayoutStore();
+  // const { sideBarPosition } = useAppResizableLayoutStore();
 
   return (
     <div

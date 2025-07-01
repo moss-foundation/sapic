@@ -15,10 +15,11 @@ import { getActualDropSourceTarget } from "./CollectionTree/utils";
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
   const { displayMode } = useRequestModeStore();
 
   useHandleCollectionsDragAndDrop();
+
+  const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
   // useEffect(() => {
   //   const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {

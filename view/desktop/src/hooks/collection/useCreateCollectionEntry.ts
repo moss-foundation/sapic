@@ -1,5 +1,5 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { getClassAndProtocolFromEntyInput } from "@/store/collections/utils/getClassAndProtocolFromEntyInput";
+import { getClassAndProtocolFromEntyInput } from "@/utils/getClassAndProtocolFromEntyInput";
 import { CreateEntryInput, CreateEntryOutput, EntryInfo } from "@repo/moss-collection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { join, sep } from "@tauri-apps/api/path";

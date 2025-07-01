@@ -1,10 +1,9 @@
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
 import { useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
-import { useCollectionsStore } from "@/store/collections";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  const { collapseAll } = useCollectionsStore();
+  // const { collapseAll } = useCollectionsStore();
   const { isLoading: isCollectionsLoading, refetch } = useStreamedCollections();
   const { hasWorkspace } = useWorkspaceSidebarState();
 
@@ -22,11 +21,11 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
       <div className="flex grow justify-end">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
-        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={collapseAll} />
+        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={undefined} />
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"
-          onClick={refetch}
+          onClick={() => refetch()}
           title="Refresh Collections"
           disabled={isCollectionsLoading || !hasWorkspace}
         />
