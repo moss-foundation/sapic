@@ -34,7 +34,7 @@ pub async fn create_test_collection() -> (Arc<Path>, Collection) {
     let storage = Arc::new(StorageService::new(&abs_path).unwrap());
     let worktree = WorktreeService::new(abs_path.clone(), fs.clone(), storage.clone());
     let collection = CollectionBuilder::new(fs)
-        .with_service_arc(storage)
+        .with_service::<StorageService>(storage)
         .with_service(worktree)
         .create(CreateParams {
             name: Some(random_collection_name()),

@@ -60,7 +60,7 @@ impl<R: TauriRuntime> Workspace<R> {
             let storage = Arc::new(StorageService::new(&abs_path)?);
             let worktree = WorktreeService::new(abs_path.clone(), fs.clone(), storage.clone());
             CollectionBuilder::new(fs.clone())
-                .with_service_arc(storage)
+                .with_service::<StorageService>(storage)
                 .with_service(worktree)
                 .create(CreateParams {
                     name: Some(input.name.to_owned()),

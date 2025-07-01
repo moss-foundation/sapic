@@ -67,13 +67,11 @@ impl CollectionBuilder {
         }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(mut self, service: T) -> Self {
-        self.services.insert(TypeId::of::<T>(), Arc::new(service));
-        self
-    }
-
-    pub fn with_service_arc<T: ServiceMarker + Send + Sync>(mut self, service: Arc<T>) -> Self {
-        self.services.insert(TypeId::of::<T>(), service);
+    pub fn with_service<T: ServiceMarker + Send + Sync>(
+        mut self,
+        service: impl Into<Arc<T>>,
+    ) -> Self {
+        self.services.insert(TypeId::of::<T>(), service.into());
         self
     }
 

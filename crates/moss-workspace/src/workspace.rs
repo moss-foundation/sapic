@@ -340,7 +340,7 @@ impl<R: TauriRuntime> Workspace<R> {
                             storage.clone(),
                         );
                         CollectionBuilder::new(fs.clone())
-                            .with_service_arc(storage)
+                            .with_service::<StorageService>(storage)
                             .with_service(worktree)
                             .load(LoadParams {
                                 internal_abs_path: collection_abs_path,
