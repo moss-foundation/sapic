@@ -86,7 +86,7 @@ async fn create_dir_entry_with_order() {
     });
 
     let result = collection.create_entry(input).await;
-    let output = result.unwrap();
+    let _ = result.unwrap();
 
     // Verify the directory was created
     let expected_dir = collection_path.join(&entry_path).join(&entry_name);

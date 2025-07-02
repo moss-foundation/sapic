@@ -12,7 +12,6 @@ use moss_storage::{
     primitives::segkey::SegKey,
     storage::operations::{GetItem, TransactionalRemoveItem},
 };
-use nanoid::nanoid;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,

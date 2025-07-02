@@ -23,7 +23,6 @@ serde_json.workspace = true
 serde.workspace = true
 ts-rs.workspace = true
 chrono.workspace = true
-nanoid.workspace = true
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json", "chrono", "ansi"] }
 tracing-appender.workspace = true
