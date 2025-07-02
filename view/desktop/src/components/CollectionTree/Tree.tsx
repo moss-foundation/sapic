@@ -24,7 +24,7 @@ export const TreeContext = createContext<TreeContextProps>({
   allFoldersAreCollapsed: true,
   searchInput: undefined,
   sortBy: "none",
-  displayMode: "RequestFirst",
+  displayMode: "REQUEST_FIRST",
 });
 
 export const CollectionTree = ({
@@ -36,7 +36,7 @@ export const CollectionTree = ({
   nodeOffset = 16,
   searchInput,
   sortBy = "none",
-  displayMode = "RequestFirst",
+  displayMode = "REQUEST_FIRST",
 
   onTreeUpdate,
 

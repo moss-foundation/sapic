@@ -41,7 +41,7 @@ export const TreeRootNodeActions = ({
           <div
             className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
           >
-            {displayMode === "RequestFirst" && (
+            {displayMode === "REQUEST_FIRST" && (
               <ActionButton
                 customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
                 icon="Add"

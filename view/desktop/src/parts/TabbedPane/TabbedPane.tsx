@@ -232,7 +232,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       let dontShowTabs = true;
       const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
       if (props.params?.node) {
-        showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
+        showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
         dontShowTabs =
           props.params.node.kind === "Dir" ||
           props.params.node.class === "Endpoint" ||
