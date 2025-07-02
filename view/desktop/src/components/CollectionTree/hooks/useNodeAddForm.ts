@@ -6,6 +6,7 @@ import { CreateEntryInput, DirConfigurationModel, ItemConfigurationModel } from 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
+//FIXME: This is a temporary solution until we have a proper configuration model
 const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConfigurationModel => {
   switch (nodeClass) {
     case "Request":
@@ -21,6 +22,7 @@ const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConf
   }
 };
 
+//FIXME: This is a temporary solution until we have a proper configuration model
 const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemConfigurationModel => {
   switch (nodeClass) {
     case "Request":
@@ -60,6 +62,7 @@ const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemCo
   }
 };
 
+//FIXME: This is a temporary solution until we have a proper configuration model
 const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
   const baseEntry = {
     name,
