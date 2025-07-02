@@ -324,19 +324,22 @@ jobs:
           shared-key: "build"
           save-if: false
 
-      - name: Cache Grit installation
+      - name: Cache Grit binary
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         id: grit-cache
         with:
-          path: ~/.grit
-          key: ${{ runner.os }}-grit-${{ hashFiles('**/.grit.yaml', '**/.gritmodules') }}
+          path: ~/.cargo/bin/grit
+          key: ${{ runner.os }}-grit-binary-v1
           restore-keys: |
-            ${{ runner.os }}-grit-
+            ${{ runner.os }}-grit-binary-
 
       - name: Install Grit
         if: steps.grit-cache.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://docs.grit.io/install | bash
+
+      - name: Add Grit to PATH
+        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Init Grit
         run: |
