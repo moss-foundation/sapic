@@ -2,8 +2,8 @@ import { useContext } from "react";
 
 import { cn } from "@/utils";
 
+import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { NodeAddForm } from "../NodeAddForm";
-import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
 import TreeNode from "../TreeNode/TreeNode";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
@@ -37,7 +37,7 @@ export const TreeRootNodeChildren = ({
   const restrictedNames = calculateRestrictedNames(node, isAddingRootFolderNode);
 
   return (
-    <ul className={cn("h-full w-full", { "pb-2": nodesToRender.length > 0 })}>
+    <ul className={cn("h-full w-full")}>
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
@@ -51,8 +51,12 @@ export const TreeRootNodeChildren = ({
       })}
       {shouldRenderAddRootForm && (
         <div className="flex w-full min-w-0 items-center gap-1 py-0.5" style={{ paddingLeft: nodeOffset * 1 }}>
-          <TestCollectionIcon type={"Dir"} className="opacity-0" />
-          <TestCollectionIcon type={"Dir"} className={cn({ "opacity-0": isAddingRootFileNode })} />
+          <DebugCollectionIconPlaceholder type={"Dir"} protocol={undefined} className="opacity-0" />
+          <DebugCollectionIconPlaceholder
+            type={"Dir"}
+            protocol={undefined}
+            className={cn({ "opacity-0": isAddingRootFileNode })}
+          />
           <NodeAddForm
             onSubmit={handleAddFormRootSubmit}
             onCancel={handleAddFormRootCancel}

@@ -91,12 +91,12 @@ export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootN
     >
       <div
         ref={draggableRootRef}
-        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[5px] pr-2"
+        className="group/TreeRootHeader relative flex w-full min-w-0 items-center justify-between gap-1 py-[3px] pr-2"
         style={{ paddingLeft: rootOffset, paddingRight: rootOffset }}
       >
         <span
           className={cn(
-            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-8px)] w-[calc(100%-8px)] rounded-sm",
+            "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) absolute inset-x-1 h-[calc(100%-5px)] w-[calc(100%-8px)] rounded-sm",
             {
               "group-hover/TreeRootHeader:background-transparent": isRenamingRootNode,
             }

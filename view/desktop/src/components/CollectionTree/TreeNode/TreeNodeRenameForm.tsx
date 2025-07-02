@@ -3,8 +3,8 @@ import { useContext } from "react";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
+import { DebugCollectionIconPlaceholder } from "../DebugCollectionIconPlaceholder";
 import { NodeRenamingForm } from "../NodeRenamingForm";
-import { TestCollectionIcon } from "../TestCollectionIcon";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
@@ -39,7 +39,7 @@ const TreeNodeRenameForm = ({
             "opacity-0": node.kind !== "Dir",
           })}
         />
-        <TestCollectionIcon type={node.kind} />
+        <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
         <NodeRenamingForm
           onSubmit={(newName) => {
             handleRenamingFormSubmit(newName);
