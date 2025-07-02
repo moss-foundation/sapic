@@ -21,7 +21,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
             let manifest = collection_lock.manifest().await;
             if let Err(e) = channel.send(StreamCollectionsEvent {
-                id: collection_lock.id.clone(),
+                id: collection_lock.id,
                 name: manifest.name.clone(),
                 repository: manifest.repository,
                 order: collection_lock.order,

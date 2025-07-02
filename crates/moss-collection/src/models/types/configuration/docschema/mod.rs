@@ -11,6 +11,7 @@ pub use schema::*;
 use hcl::Expression;
 use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::models::primitives::{EntryClass, EntryProtocol};
 
@@ -57,7 +58,7 @@ pub struct HeaderParameterOptions {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawMetadata {
-    pub id: String,
+    pub id: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -70,12 +71,12 @@ pub enum RawItemConfiguration {
 }
 
 impl RawItemConfiguration {
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> Uuid {
         match self {
-            RawItemConfiguration::Request(block) => block.metadata.id.as_str(),
-            RawItemConfiguration::Endpoint(block) => block.metadata.id.as_str(),
-            RawItemConfiguration::Component(block) => block.metadata.id.as_str(),
-            RawItemConfiguration::Schema(block) => block.metadata.id.as_str(),
+            RawItemConfiguration::Request(block) => block.metadata.id,
+            RawItemConfiguration::Endpoint(block) => block.metadata.id,
+            RawItemConfiguration::Component(block) => block.metadata.id,
+            RawItemConfiguration::Schema(block) => block.metadata.id,
         }
     }
 
@@ -108,12 +109,12 @@ pub enum RawDirConfiguration {
 }
 
 impl RawDirConfiguration {
-    pub fn id(&self) -> &str {
+    pub fn id(&self) -> Uuid {
         match self {
-            RawDirConfiguration::Request(block) => block.metadata.id.as_str(),
-            RawDirConfiguration::Endpoint(block) => block.metadata.id.as_str(),
-            RawDirConfiguration::Component(block) => block.metadata.id.as_str(),
-            RawDirConfiguration::Schema(block) => block.metadata.id.as_str(),
+            RawDirConfiguration::Request(block) => block.metadata.id,
+            RawDirConfiguration::Endpoint(block) => block.metadata.id,
+            RawDirConfiguration::Component(block) => block.metadata.id,
+            RawDirConfiguration::Schema(block) => block.metadata.id,
         }
     }
 
@@ -130,16 +131,13 @@ impl RawDirConfiguration {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::ID_LENGTH;
     use hcl::{Expression as HclExpression, ser::LabeledBlock};
     use indexmap::indexmap;
 
     #[test]
     fn test_dir() {
         let config = RawDirRequestConfiguration {
-            metadata: Block::new(RawMetadata {
-                id: nanoid::nanoid!(ID_LENGTH),
-            }),
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
             headers: None,
         };
 
@@ -156,9 +154,7 @@ mod tests {
     #[test]
     fn test_item() {
         let config = RawItemRequestConfiguration {
-            metadata: Block::new(RawMetadata {
-                id: nanoid::nanoid!(ID_LENGTH),
-            }),
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),

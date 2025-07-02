@@ -8,6 +8,7 @@ use std::{
 };
 use thiserror::Error;
 use tokio::{fs, sync::mpsc};
+use uuid::Uuid;
 
 use crate::{
     constants,
@@ -51,7 +52,7 @@ pub type WorktreeResult<T> = Result<T, WorktreeError>;
 
 #[derive(Debug)]
 pub struct WorktreeEntry {
-    pub id: String,
+    pub id: Uuid,
     pub name: String,
     pub path: Arc<Path>,
     pub class: EntryClass,
@@ -337,7 +338,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.id().to_string(),
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),
@@ -350,7 +351,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(WorktreeEntry {
-            id: config.id().to_string(),
+            id: config.id(),
             name: desanitize(name),
             path: desanitize_path(path, None)?.into(),
             class: config.classification(),

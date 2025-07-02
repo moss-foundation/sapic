@@ -147,6 +147,7 @@ gen-bindings: \
 	gen-environment-bindings \
 	gen-workspace-bindings \
 	gen-common-bindings \
+	gen-workbench-bindings \
 	gen-activity-indicator-bindings
 
 # ======================================================
@@ -164,7 +165,7 @@ export-css-variables:
 .PHONY: open-docs
 open-docs:
 ifeq ($(DETECTED_OS),Windows)
-	@cmd.exe /C start "" "$(TYPEDOC_DIR)\index.html"
+	@start "" "$(TYPEDOC_DIR)/index.html"
 else ifeq ($(DETECTED_OS),Darwin)
 	@open "$(TYPEDOC_DIR)/index.html"
 else

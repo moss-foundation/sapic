@@ -39,7 +39,7 @@ export const deleteCollectionInputSchema = z.object({
 });
 
 export const deleteCollectionOutputSchema = z.object({
-  id: z.string().optional(),
+  id: z.string(),
 });
 
 export const describeEnvironmentInputSchema = z.object({

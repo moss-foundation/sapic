@@ -8,6 +8,7 @@ use std::{
     path::Path,
     sync::{Arc, atomic::AtomicUsize},
 };
+use uuid::Uuid;
 
 use crate::{
     file::FileModel,
@@ -136,7 +137,7 @@ impl Environment {
         })
     }
 
-    pub async fn id(&self) -> String {
+    pub async fn id(&self) -> Uuid {
         self.file.model().await.id
     }
 

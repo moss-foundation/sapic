@@ -5,7 +5,6 @@ pub use context::*;
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
     app::{App, AppBuilder, AppDefaults},
-    constants::ID_LENGTH,
     models::{
         primitives::ThemeMode,
         types::{ColorThemeInfo, LocaleInfo},
@@ -18,6 +17,7 @@ use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKey
 use moss_testutils::random_name::random_string;
 use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc};
 use tauri::test::MockRuntime;
+use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -28,8 +28,8 @@ pub fn random_app_dir_path() -> PathBuf {
         .join(random_string(10))
 }
 
-pub fn workspace_key(id: &str) -> SegKeyBuf {
-    WORKSPACE_SEGKEY.join(id)
+pub fn workspace_key(id: Uuid) -> SegKeyBuf {
+    WORKSPACE_SEGKEY.join(id.to_string())
 }
 
 pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, PathBuf) {
@@ -54,7 +54,7 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
 
     let global_storage = Arc::new(GlobalStorageImpl::new(globals_abs_path).unwrap());
 
-    let session_id = nanoid::nanoid!(ID_LENGTH);
+    let session_id = Uuid::new_v4();
     let log_service = LogService::new(
         fs.clone(),
         app_handle.clone(),

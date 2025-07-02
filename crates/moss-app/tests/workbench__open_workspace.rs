@@ -1,8 +1,6 @@
 pub mod shared;
 
-use crate::shared::{set_up_test_app, workspace_key};
 use moss_app::{
-    constants::ID_LENGTH,
     context::ctxkeys,
     dirs,
     models::operations::{CreateWorkspaceInput, OpenWorkspaceInput},
@@ -13,6 +11,9 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
+use uuid::Uuid;
+
+use crate::shared::{set_up_test_app, workspace_key};
 
 #[tokio::test]
 async fn open_workspace_success() {
@@ -44,7 +45,7 @@ async fn open_workspace_success() {
         .open_workspace(
             &ctx,
             &OpenWorkspaceInput {
-                id: create_output.id.clone(),
+                id: create_output.id,
             },
         )
         .await;
@@ -56,17 +57,14 @@ async fn open_workspace_success() {
     // Check active workspace
     let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
     assert_eq!(workspace_guard.abs_path(), &expected_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
 
     // Check entry in the database
     let item_store = app.__storage().item_store();
-    let _ = GetItem::get(item_store.as_ref(), workspace_key(&create_output.id)).unwrap();
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).unwrap();
 
     cleanup().await;
 }
@@ -91,10 +89,7 @@ async fn open_workspace_already_opened() {
     let create_output = create_result.unwrap();
 
     // Verify workspace is currently open
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Try to open the same workspace again - should fail
@@ -102,7 +97,7 @@ async fn open_workspace_already_opened() {
         .open_workspace(
             &ctx,
             &OpenWorkspaceInput {
-                id: create_output.id.clone(),
+                id: create_output.id,
             },
         )
         .await;
@@ -111,10 +106,7 @@ async fn open_workspace_already_opened() {
     assert!(open_result.is_err());
 
     // Active workspace should remain unchanged
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     cleanup().await;
@@ -157,7 +149,7 @@ async fn open_workspace_switch_between_workspaces() {
         .open_workspace(
             &ctx,
             &OpenWorkspaceInput {
-                id: create_output1.id.clone(),
+                id: create_output1.id,
             },
         )
         .await
@@ -165,10 +157,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1.id, create_output1.id);
 
     // Check first workspace is active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output1.id);
 
     // Open second workspace (should replace first)
@@ -176,7 +165,7 @@ async fn open_workspace_switch_between_workspaces() {
         .open_workspace(
             &ctx,
             &OpenWorkspaceInput {
-                id: create_output2.id.clone(),
+                id: create_output2.id,
             },
         )
         .await
@@ -184,10 +173,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result2.id, create_output2.id);
 
     // Check second workspace is now active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output2.id);
 
     // Open first workspace again
@@ -195,7 +181,7 @@ async fn open_workspace_switch_between_workspaces() {
         .open_workspace(
             &ctx,
             &OpenWorkspaceInput {
-                id: create_output1.id.clone(),
+                id: create_output1.id,
             },
         )
         .await
@@ -203,10 +189,7 @@ async fn open_workspace_switch_between_workspaces() {
     assert_eq!(open_result1_again.id, create_output1.id);
 
     // Check first workspace is active again
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output1.id);
 
     cleanup().await;
@@ -216,7 +199,7 @@ async fn open_workspace_switch_between_workspaces() {
 async fn open_workspace_nonexistent() {
     let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = nanoid::nanoid!(ID_LENGTH);
+    let nonexistent_id = Uuid::new_v4();
 
     let open_result = app
         .open_workspace(&ctx, &OpenWorkspaceInput { id: nonexistent_id })

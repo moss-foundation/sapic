@@ -11,6 +11,7 @@ use std::{
     sync::Arc,
 };
 use toml_edit::{DocumentMut, value};
+use uuid::Uuid;
 
 // Helper struct to manage a temporary directory for test files
 struct TestDir {
@@ -20,7 +21,7 @@ struct TestDir {
 impl TestDir {
     fn new(test_name: &str) -> Result<Self> {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let unique_id = nanoid::nanoid!(10);
+        let unique_id = Uuid::new_v4().to_string();
         let path = manifest_dir
             .join("data")
             .join(format!("{}-{}", test_name, unique_id));

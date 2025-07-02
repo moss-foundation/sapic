@@ -1,8 +1,6 @@
 pub mod shared;
 
-use crate::shared::create_test_collection;
 use moss_collection::{
-    constants::ID_LENGTH,
     dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
@@ -14,6 +12,9 @@ use moss_collection::{
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
+use uuid::Uuid;
+
+use crate::shared::create_test_collection;
 
 fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))
@@ -29,7 +30,7 @@ async fn create_test_entry(
     collection: &mut moss_collection::Collection,
     entry_name: &str,
     dir_name: &str,
-) -> (String, PathBuf) {
+) -> (Uuid, PathBuf) {
     let entry_path = PathBuf::from(dir_name);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
@@ -77,7 +78,7 @@ async fn delete_entry_not_found() {
 
     let non_existent_path = PathBuf::from(dirs::COMPONENTS_DIR).join("non_existent_entry");
     let delete_input = DeleteEntryInput {
-        id: nanoid::nanoid!(ID_LENGTH),
+        id: Uuid::new_v4(),
         path: non_existent_path,
     };
 
@@ -259,7 +260,7 @@ async fn delete_entries_from_different_directories() {
     // Delete all entries
     for (entry_id, entry_path, _) in &entries {
         let delete_input = DeleteEntryInput {
-            id: entry_id.clone(),
+            id: *entry_id,
             path: entry_path.clone(),
         };
 

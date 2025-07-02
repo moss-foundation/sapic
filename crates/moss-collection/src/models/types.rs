@@ -3,6 +3,7 @@ pub mod configuration;
 use serde::Serialize;
 use std::path::PathBuf;
 use ts_rs::TS;
+use uuid::Uuid;
 
 use crate::models::primitives::{EntryClass, EntryKind, EntryProtocol};
 
@@ -11,7 +12,7 @@ use crate::models::primitives::{EntryClass, EntryKind, EntryProtocol};
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    pub id: String,
+    pub id: Uuid,
     pub name: String,
     pub order: Option<usize>,
 }
@@ -29,7 +30,7 @@ pub struct EntryPath {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
-    pub id: String,
+    pub id: Uuid,
     pub name: String,
     pub path: EntryPath,
     pub class: EntryClass,

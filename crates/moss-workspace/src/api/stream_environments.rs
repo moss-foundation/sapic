@@ -20,11 +20,11 @@ impl<R: TauriRuntime> Workspace<R> {
 
         let collections_data: Vec<_> = collections
             .iter()
-            .map(|(id, collection)| (id.clone(), collection.clone()))
+            .map(|(&id, collection)| (id, collection.clone()))
             .collect();
         let environments_data: Vec<_> = environments
             .iter()
-            .map(|(id, env)| (id.clone(), env.name.clone()))
+            .map(|(&id, env)| (id, env.name.clone()))
             .collect();
 
         // Create a stream from collection environments
@@ -36,8 +36,8 @@ impl<R: TauriRuntime> Workspace<R> {
                     .await?
                     .iter()
                     .map(|e| StreamEnvironmentsEvent {
-                        id: e.id.clone(),
-                        collection_id: Some(collection_id.clone()),
+                        id: e.id,
+                        collection_id: Some(collection_id),
                         name: e.name.clone(),
                         order: e.order,
                     })

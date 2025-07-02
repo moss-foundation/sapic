@@ -1,12 +1,11 @@
-use crate::{
-    constants::ID_LENGTH,
-    models::types::configuration::docschema::{
-        HeaderName, RawHeaderParameter, RawMetadata, UrlParts,
-    },
-};
 use hcl::ser::{Block, LabeledBlock};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::models::types::configuration::docschema::{
+    HeaderName, RawHeaderParameter, RawMetadata, UrlParts,
+};
 
 // #########################################################
 // ###                      Item                         ###
@@ -40,9 +39,7 @@ pub struct RawDirEndpointConfiguration {
 impl RawDirEndpointConfiguration {
     pub fn new() -> Self {
         Self {
-            metadata: Block::new(RawMetadata {
-                id: nanoid::nanoid!(ID_LENGTH),
-            }),
+            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
             headers: None,
         }
     }

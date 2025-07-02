@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
+use uuid::Uuid;
 
 use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode};
 
@@ -98,7 +99,7 @@ pub struct LogEntryInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct WorkspaceInfo {
-    pub id: String,
+    pub id: Uuid,
     pub display_name: String,
     #[ts(optional)]
     pub last_opened_at: Option<i64>,

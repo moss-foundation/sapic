@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use super::models::types::{VariableKind, VariableName, VariableValue};
-use crate::constants::ID_LENGTH;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use super::models::types::{VariableKind, VariableName, VariableValue};
 
 #[derive(Debug)]
 pub struct VariableUpdate {
@@ -35,16 +36,14 @@ impl Variable {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FileModel {
-    // FIXME: Can the id be missing here?
-    pub id: String,
+    pub id: Uuid,
     pub values: HashMap<VariableName, Variable>,
 }
 
 impl FileModel {
-    // FIXME: Should we be able to create an environment filemodel without id?
     pub fn new() -> Self {
         Self {
-            id: nanoid::nanoid!(ID_LENGTH),
+            id: Uuid::new_v4(),
             values: HashMap::new(),
         }
     }

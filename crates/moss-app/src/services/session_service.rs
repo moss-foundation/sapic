@@ -1,8 +1,8 @@
-use crate::constants::ID_LENGTH;
 use moss_applib::ServiceMarker;
+use uuid::Uuid;
 
 pub struct SessionService {
-    session_id: String,
+    session_id: Uuid,
 }
 
 impl ServiceMarker for SessionService {}
@@ -10,11 +10,11 @@ impl ServiceMarker for SessionService {}
 impl SessionService {
     pub fn new() -> Self {
         Self {
-            session_id: nanoid::nanoid!(ID_LENGTH),
+            session_id: Uuid::new_v4(),
         }
     }
 
-    pub fn session_id(&self) -> &str {
+    pub fn session_id(&self) -> &Uuid {
         &self.session_id
     }
 }

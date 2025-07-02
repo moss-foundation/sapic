@@ -13,4 +13,4 @@ anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 ts-rs = { workspace = true, features = ["serde-json-impl"] }
-nanoid.workspace = true
+uuid = { workspace = true, features = ["serde"] }

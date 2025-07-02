@@ -1,8 +1,6 @@
 pub mod shared;
 
-use crate::shared::set_up_test_app;
 use moss_app::{
-    constants::ID_LENGTH,
     context::ctxkeys,
     dirs,
     models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
@@ -13,6 +11,9 @@ use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
+use uuid::Uuid;
+
+use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn delete_workspace_success() {
@@ -136,10 +137,7 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -171,7 +169,7 @@ async fn delete_workspace_opened() {
 async fn delete_workspace_nonexistent() {
     let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = nanoid::nanoid!(ID_LENGTH);
+    let nonexistent_id = Uuid::new_v4();
 
     let delete_result = app
         .delete_workspace(&ctx, &DeleteWorkspaceInput { id: nonexistent_id })

@@ -45,7 +45,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let removed_id = {
             if let Some(v) = collections.remove(&input.id) {
                 let lock = v.read().await;
-                let id = lock.id.clone();
+                let id = lock.id;
                 Some(id)
             } else {
                 None
@@ -58,7 +58,7 @@ impl<R: TauriRuntime> Workspace<R> {
         }
 
         Ok(DeleteCollectionOutput {
-            id: removed_id,
+            id: removed_id.unwrap_or(uuid::Uuid::nil()),
             abs_path,
         })
     }

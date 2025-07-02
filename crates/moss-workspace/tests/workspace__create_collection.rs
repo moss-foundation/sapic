@@ -48,7 +48,7 @@ async fn create_collection_success() {
     let id = create_collection_output.id;
 
     let item_store = workspace.__storage().item_store();
-    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(&id))
+    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
         .unwrap()
         .deserialize()
         .unwrap();
@@ -128,7 +128,7 @@ async fn create_collection_special_chars() {
         // Verify the db entry was created
         let id = create_collection_output.id;
         let item_store = workspace.__storage().item_store();
-        let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(&id))
+        let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
             .unwrap()
             .deserialize()
             .unwrap();
@@ -176,7 +176,7 @@ async fn create_collection_with_order() {
     // Verify the db entry was created
     let id = create_collection_output.id;
     let item_store = workspace.__storage().item_store();
-    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(&id))
+    let entity: CollectionCacheEntity = GetItem::get(item_store.as_ref(), collection_key(id))
         .unwrap()
         .deserialize()
         .unwrap();

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
+use uuid::Uuid;
 use validator::{Validate, ValidationErrors};
 
 use crate::models::{
@@ -66,14 +67,14 @@ impl Validate for CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
-    pub id: String,
+    pub id: Uuid,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {
-    pub id: String,
+    pub id: Uuid,
     pub path: PathBuf,
 }
 
@@ -88,7 +89,7 @@ pub struct DeleteEntryOutput {}
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateItemEntryInput {
-    pub id: String,
+    pub id: Uuid,
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
     pub order: Option<usize>,
@@ -99,7 +100,7 @@ pub struct UpdateItemEntryInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateDirEntryInput {
-    pub id: String,
+    pub id: Uuid,
     pub name: Option<String>,
     pub order: Option<usize>,
 }
