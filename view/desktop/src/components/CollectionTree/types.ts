@@ -1,21 +1,10 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { EntryInfo } from "@repo/moss-collection";
+import { StreamCollectionsEvent, WorkspaceMode } from "@repo/moss-workspace";
 
 export type SortTypes = "none" | "order" | "alphabetically";
 
-//TODO remove this after collections from backend are implemented
-export interface CollectionTree {
-  id: string;
-  name: string;
-  type: "collection";
-  order: number | null;
-  tree: TreeCollectionRootNode;
-}
-
-export interface TreeCollectionRootNode {
-  id: string;
-  name: string;
-  order: number | null;
+export interface TreeCollectionRootNode extends StreamCollectionsEvent {
   expanded: boolean;
   endpoints: TreeCollectionNode;
   schemas: TreeCollectionNode;
@@ -49,15 +38,16 @@ export interface TreeProps {
   nodeOffset?: number;
   searchInput?: string;
   sortBy?: SortTypes;
-  displayMode?: "RequestFirst" | "DesignFirst";
+  displayMode?: WorkspaceMode;
+
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
 
-  onRootAdd?: (node: TreeCollectionRootNode) => void;
-  onRootRemove?: (node: TreeCollectionRootNode) => void;
-  onRootRename?: (node: TreeCollectionRootNode) => void;
-  onRootUpdate?: (node: TreeCollectionRootNode) => void;
-  onRootClick?: (node: TreeCollectionRootNode) => void;
-  onRootDoubleClick?: (node: TreeCollectionRootNode) => void;
+  onRootAdd?: (node: TreeCollectionNode) => void;
+  onRootRemove?: (node: TreeCollectionNode) => void;
+  onRootRename?: (node: TreeCollectionNode) => void;
+  onRootUpdate?: (node: TreeCollectionNode) => void;
+  onRootClick?: (node: TreeCollectionNode) => void;
+  onRootDoubleClick?: (node: TreeCollectionNode) => void;
 
   onNodeAdd?: (node: TreeCollectionNode) => void;
   onNodeRemove?: (node: TreeCollectionNode) => void;
@@ -67,8 +57,7 @@ export interface TreeProps {
   onNodeDoubleClick?: (node: TreeCollectionNode) => void;
 }
 
-export interface TreeContextProps {
-  treeId: string;
+export interface TreeContextProps extends StreamCollectionsEvent {
   paddingLeft: number;
   paddingRight: number;
   rootOffset: number;
@@ -77,13 +66,13 @@ export interface TreeContextProps {
   sortBy?: SortTypes;
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
-  displayMode: "RequestFirst" | "DesignFirst";
-  onRootAddCallback?: (node: TreeCollectionRootNode) => void;
-  onRootRemoveCallback?: (node: TreeCollectionRootNode) => void;
-  onRootRenameCallback?: (node: TreeCollectionRootNode) => void;
-  onRootUpdateCallback?: (node: TreeCollectionRootNode) => void;
-  onRootClickCallback?: (node: TreeCollectionRootNode) => void;
-  onRootDoubleClickCallback?: (node: TreeCollectionRootNode) => void;
+  displayMode: WorkspaceMode;
+  onRootAddCallback?: (node: TreeCollectionNode) => void;
+  onRootRemoveCallback?: (node: TreeCollectionNode) => void;
+  onRootRenameCallback?: (node: TreeCollectionNode) => void;
+  onRootUpdateCallback?: (node: TreeCollectionNode) => void;
+  onRootClickCallback?: (node: TreeCollectionNode) => void;
+  onRootDoubleClickCallback?: (node: TreeCollectionNode) => void;
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
   onNodeRemoveCallback?: (node: TreeCollectionNode) => void;
   onNodeRenameCallback?: (node: TreeCollectionNode) => void;

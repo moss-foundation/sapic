@@ -4,7 +4,7 @@ import { ActionMenu } from "@/components";
 import { Icon } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
+import { DebugCollectionIconPlaceholder } from "../CollectionTree/DebugCollectionIconPlaceholder";
 import { findNodeById } from "../CollectionTree/utils";
 import { BreadcrumbTree } from "./BreadcrumbTree";
 
@@ -46,7 +46,7 @@ export const Breadcrumbs = ({ panelId }: { panelId: string }) => {
           if (lastItem) {
             return (
               <div key={pathNode} className="contents">
-                <TestCollectionIcon type={node.kind} className="size-4" />
+                <DebugCollectionIconPlaceholder type={node.kind} protocol={undefined} />
                 <span className="min-w-max">{pathNode}</span>
               </div>
             );

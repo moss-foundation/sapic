@@ -1,25 +1,23 @@
-import { useEffect } from "react";
-
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
-import { useModal, useWorkspaceSidebarState } from "@/hooks";
-import { useCollectionsStore } from "@/store/collections";
+import { useClearAllCollectionEntries, useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  const { collapseAll } = useCollectionsStore();
-  const { areCollectionsStreaming, startCollectionsStream } = useCollectionsStore();
+  // const { collapseAll } = useCollectionsStore();
+  const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamedCollections();
+  const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
   const { hasWorkspace } = useWorkspaceSidebarState();
+
   const {
     showModal: showCreateCollectionModal,
     closeModal: closeCreateCollectionModal,
     openModal: openCreateCollectionModal,
   } = useModal();
 
-  useEffect(() => {
-    if (hasWorkspace) {
-      startCollectionsStream();
-    }
-  }, [hasWorkspace, startCollectionsStream]);
+  const handleRefreshCollections = () => {
+    clearCollectionsCacheAndRefetch();
+    clearAllCollectionEntriesCache();
+  };
 
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
@@ -29,13 +27,13 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
       <div className="flex grow justify-end">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
-        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={collapseAll} />
+        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={undefined} />
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"
-          onClick={startCollectionsStream}
+          onClick={handleRefreshCollections}
           title="Refresh Collections"
-          disabled={areCollectionsStreaming || !hasWorkspace}
+          disabled={isCollectionsLoading || !hasWorkspace}
         />
         <ExampleDropdownMenu />
       </div>

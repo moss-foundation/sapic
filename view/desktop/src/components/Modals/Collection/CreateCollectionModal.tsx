@@ -6,17 +6,18 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
-import { useCollectionsStore } from "@/store/collections";
+import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const { createCollection, isCreateCollectionLoading } = useCollectionsStore();
+  const { mutateAsync: createCollection, isPending: isCreateCollectionLoading } = useCreateCollection();
+
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const [name, setName] = useState("New Collection");
-  const [repo, setRepo] = useState("https://github.com/moss-foundation/sapic");
+  const [repo, setRepo] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 

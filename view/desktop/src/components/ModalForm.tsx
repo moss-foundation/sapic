@@ -8,6 +8,7 @@ interface ModalFormProps extends ModalProps {
   onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
   titleClassName?: string;
   footerClassName?: string;
+  size?: "small" | "medium";
 }
 
 export const ModalForm = ({
@@ -26,7 +27,7 @@ export const ModalForm = ({
 
   return (
     <Modal {...props}>
-      <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()}>
+      <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {title && (
           <h2 className={cn("flex items-center justify-center py-1.5 font-medium", titleClassName)}>{title}</h2>
         )}

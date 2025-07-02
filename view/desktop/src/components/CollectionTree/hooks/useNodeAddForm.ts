@@ -1,33 +1,33 @@
 import { useContext, useState } from "react";
 
-import { useCollectionsStore } from "@/store/collections";
-import { CreateEntryInput } from "@repo/moss-collection";
+import { useCreateCollectionEntry } from "@/hooks";
+import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
+import { CreateEntryInput, DirConfigurationModel, ItemConfigurationModel } from "@repo/moss-collection";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
 
-const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
-  if (isAddingFolder) {
-    return {
-      dir: {
-        name,
-        path: parentNode.path.raw,
-        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
-        configuration: {
-          request: {
-            http: {},
-          },
-        },
-      },
-    };
+//FIXME: This is a temporary solution until we have a proper configuration model
+const createDirConfiguration = (nodeClass: TreeCollectionNode["class"]): DirConfigurationModel => {
+  switch (nodeClass) {
+    case "Request":
+      return { request: { http: {} } };
+    case "Endpoint":
+      return { request: { http: {} } };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return { request: { http: {} } };
   }
+};
 
-  return {
-    item: {
-      name,
-      path: parentNode.path.raw,
-      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
-      configuration: {
+//FIXME: This is a temporary solution until we have a proper configuration model
+const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemConfigurationModel => {
+  switch (nodeClass) {
+    case "Request":
+      return {
         request: {
           http: {
             requestParts: {
@@ -35,14 +35,64 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
             },
           },
         },
+      };
+    case "Endpoint":
+      return {
+        endpoint: {
+          Http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+    case "Component":
+      return { component: {} };
+    case "Schema":
+      return { schema: {} };
+    default:
+      return {
+        request: {
+          http: {
+            requestParts: {
+              method: "GET",
+            },
+          },
+        },
+      };
+  }
+};
+
+//FIXME: This is a temporary solution until we have a proper configuration model
+const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
+  const baseEntry = {
+    name,
+    path: parentNode.path.raw,
+  };
+
+  if (isAddingFolder) {
+    return {
+      dir: {
+        ...baseEntry,
+        order: 0,
+        configuration: createDirConfiguration(parentNode.class),
       },
+    };
+  }
+
+  return {
+    item: {
+      ...baseEntry,
+      order: 0,
+      configuration: createItemConfiguration(parentNode.class),
     },
   };
 };
 
 export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
-  const { treeId } = useContext(TreeContext);
-  const { createCollectionEntry } = useCollectionsStore();
+  const { id } = useContext(TreeContext);
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
+  const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
@@ -50,26 +100,40 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
   const handleAddFormSubmit = async (name: string) => {
     const newEntry = createEntry(parentNode, name, isAddingFolderNode);
 
-    const result = await createCollectionEntry({
-      collectionId: treeId,
-      input: newEntry,
-    });
-
-    if (result) {
-      onNodeUpdate({
-        ...parentNode,
-        childNodes: [
-          ...parentNode.childNodes,
-          {
-            ...result,
-            childNodes: [],
-          },
-        ],
+    try {
+      const result = await createCollectionEntry({
+        collectionId: id,
+        input: newEntry,
       });
-    }
 
-    setIsAddingFileNode(false);
-    setIsAddingFolderNode(false);
+      const { childNodes, ...parentNodeWithoutChildren } = parentNode;
+      placeholderFnForUpdateCollectionEntry({
+        collectionId: id,
+        updatedEntry: {
+          ...parentNodeWithoutChildren,
+          expanded: true,
+        },
+      });
+
+      if (result) {
+        onNodeUpdate({
+          ...parentNode,
+          expanded: true,
+          childNodes: [
+            ...parentNode.childNodes,
+            {
+              ...result,
+              childNodes: [],
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAddingFileNode(false);
+      setIsAddingFolderNode(false);
+    }
   };
 
   const handleAddFormCancel = () => {
