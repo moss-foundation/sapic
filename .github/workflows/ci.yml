@@ -116,8 +116,16 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
 
-      - name: Build workspace
-        run: cargo check --workspace --locked
+      - name: Build dependencies only
+        run: |
+          echo "Fetching all dependencies..."
+          cargo fetch --locked
+          
+          echo "Compiling workspace dependencies..."
+          cargo check --workspace --locked
+          
+          echo "Warming up build cache..."
+          cargo build --workspace --locked --lib
 
   check-bindings:
     name: Check Bindings
