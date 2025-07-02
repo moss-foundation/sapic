@@ -6,12 +6,11 @@ use moss_app::{
     models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
 };
 use moss_applib::context::Context;
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, nanoid::new_nanoid};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
-use uuid::Uuid;
 
 use crate::shared::set_up_test_app;
 
@@ -137,7 +136,10 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+    let active_workspace_id = ctx
+        .value::<ctxkeys::WorkspaceId>()
+        .map(|id| id.to_string())
+        .unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -169,7 +171,7 @@ async fn delete_workspace_opened() {
 async fn delete_workspace_nonexistent() {
     let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = Uuid::new_v4();
+    let nonexistent_id = new_nanoid();
 
     let delete_result = app
         .delete_workspace(&ctx, &DeleteWorkspaceInput { id: nonexistent_id })

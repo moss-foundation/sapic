@@ -42,7 +42,7 @@ impl Collection {
 
         let (path, configuration) = worktree_service
             .update_item_entry(
-                input.id,
+                &input.id,
                 ModifyParams {
                     name: input.name,
                     protocol: input.protocol,
@@ -72,7 +72,7 @@ impl Collection {
 
         let (path, configuration) = worktree_service
             .update_dir_entry(
-                input.id,
+                &input.id,
                 ModifyParams {
                     name: input.name,
                     order: input.order,

@@ -64,13 +64,13 @@ async fn delete_collection_nonexistent_id() {
         .id;
 
     workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 
     // Delete the collection again
     let delete_collection_result = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await;
 
     assert!(delete_collection_result.is_err());
@@ -107,7 +107,7 @@ async fn delete_collection_fs_already_deleted() {
         .delete_collection(
             &ctx,
             &DeleteCollectionInput {
-                id: create_collection_output.id,
+                id: create_collection_output.id.clone(),
             },
         )
         .await

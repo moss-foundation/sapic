@@ -4,7 +4,10 @@ use moss_collection::{
     builder::CreateParams,
     services::{storage_service::StorageService, worktree_service::WorktreeService},
 };
-use moss_common::api::{OperationError, OperationResult};
+use moss_common::{
+    api::{OperationError, OperationResult},
+    nanoid::new_nanoid,
+};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
 use moss_storage::storage::operations::PutItem;
@@ -14,7 +17,6 @@ use std::{
 };
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
@@ -33,10 +35,9 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
-        let id = Uuid::new_v4();
-        let id_str = id.to_string();
+        let id = new_nanoid();
 
-        let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
+        let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id);
         let abs_path: Arc<Path> = self.absolutize(path).into();
 
         if abs_path.exists() {
@@ -77,20 +78,20 @@ impl<R: TauriRuntime> Workspace<R> {
 
             // TODO: Save in the database whether the collection was collapsed/expanded
         });
-        ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
+        ctx.subscribe(Subscribe::OnCollectionDidChange(id.clone(), on_did_change))
             .await;
 
         collections.insert(
-            id,
+            id.clone(),
             Arc::new(RwLock::new(CollectionItem {
-                id,
+                id: id.clone(),
                 order: order.clone(),
                 inner: collection,
             })),
         );
 
         {
-            let key = COLLECTION_SEGKEY.join(&id_str);
+            let key = COLLECTION_SEGKEY.join(&id);
             let value = AnyValue::serialize(&CollectionCacheEntity {
                 order: order.clone(),
                 external_abs_path: None,

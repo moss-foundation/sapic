@@ -16,11 +16,10 @@ use crate::app::App;
 
 pub mod ctxkeys {
     use moss_applib::context::ContextValue;
-    use uuid::Uuid;
 
     /// The id of the workspace that is currently active.
     #[derive(Debug, Deref, From, PartialEq, Eq, Hash)]
-    pub struct WorkspaceId(Uuid);
+    pub struct WorkspaceId(String);
 
     impl ContextValue for WorkspaceId {}
 }

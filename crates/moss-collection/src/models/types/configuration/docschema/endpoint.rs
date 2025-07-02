@@ -1,7 +1,6 @@
 use hcl::ser::{Block, LabeledBlock};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::models::{
     primitives::EntryProtocol,
@@ -55,9 +54,9 @@ pub struct RawDirEndpointConfiguration {
 }
 
 impl RawDirEndpointConfiguration {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: &str) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id }),
+            metadata: Block::new(RawMetadata { id: id.to_string() }),
             headers: None,
         }
     }

@@ -14,7 +14,7 @@ impl Collection {
         input.validate()?;
 
         let worktree_service = self.service::<WorktreeService>();
-        worktree_service.remove_entry(input.id).await?;
+        worktree_service.remove_entry(&input.id).await?;
 
         Ok(DeleteEntryOutput { id: input.id })
     }

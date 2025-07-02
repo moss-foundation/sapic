@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
+use moss_common::nanoid::new_nanoid;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use super::models::types::{VariableKind, VariableName, VariableValue};
-
 #[derive(Debug)]
 pub struct VariableUpdate {
     pub kind: Option<VariableKind>,
@@ -36,14 +35,14 @@ impl Variable {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FileModel {
-    pub id: Uuid,
+    pub id: String,
     pub values: HashMap<VariableName, Variable>,
 }
 
 impl FileModel {
     pub fn new() -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: new_nanoid(),
             values: HashMap::new(),
         }
     }

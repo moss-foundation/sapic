@@ -24,12 +24,12 @@ impl<R: TauriRuntime> App<R> {
 
         if input.open_on_creation {
             workspace_service
-                .activate_workspace(ctx, descriptor.id, workspace)
+                .activate_workspace(ctx, &descriptor.id, workspace)
                 .await?;
         }
 
         Ok(CreateWorkspaceOutput {
-            id: descriptor.id,
+            id: descriptor.id.clone(),
             active: input.open_on_creation,
             abs_path: descriptor.abs_path.clone(),
         })

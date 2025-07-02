@@ -1,6 +1,5 @@
 use moss_hcl::Block;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::models::types::configuration::docschema::RawMetadata;
 
@@ -23,9 +22,9 @@ pub struct RawDirSchemaConfiguration {
 }
 
 impl RawDirSchemaConfiguration {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: &str) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id }),
+            metadata: Block::new(RawMetadata { id: id.to_string() }),
         }
     }
 }

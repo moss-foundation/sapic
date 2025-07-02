@@ -6,7 +6,6 @@ use std::{
     sync::Arc,
 };
 use ts_rs::TS;
-use uuid::Uuid;
 use validator::{Validate, ValidationError};
 
 use crate::models::types::EditorPartStateInfo;
@@ -32,7 +31,7 @@ pub struct CreateCollectionInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    pub id: Uuid,
+    pub id: String,
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,
@@ -59,7 +58,7 @@ pub enum ChangeIcon {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
-    pub id: Uuid,
+    pub id: String,
 
     #[validate(length(min = 1))]
     pub new_name: Option<String>,
@@ -85,21 +84,21 @@ fn validate_change_repository(repo: &ChangeRepository) -> Result<(), ValidationE
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionOutput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
+#[ts(export, export_to = "operations.ts", optional_fields)]
 pub struct DeleteCollectionOutput {
-    pub id: Uuid,
+    pub id: Option<String>,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -110,7 +109,7 @@ pub struct DeleteCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, TS)]
