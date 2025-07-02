@@ -83,7 +83,7 @@ pub struct QueryParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -106,7 +106,7 @@ pub struct PathParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -129,7 +129,7 @@ pub struct HeaderParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -170,7 +170,7 @@ pub struct FormDataItem {
     pub key: String,
     pub value: FormDataValue,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -191,7 +191,7 @@ pub struct UrlEncodedOptions {
 pub struct UrlEncodedItem {
     pub key: String,
     pub value: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: UrlEncodedOptions,

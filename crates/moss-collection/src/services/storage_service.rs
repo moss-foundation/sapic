@@ -46,7 +46,7 @@ impl StorageService {
         &self,
         txn: &mut Transaction,
         id: Uuid,
-        order: usize,
+        order: isize,
     ) -> Result<()> {
         let store = self.storage.resource_store();
 

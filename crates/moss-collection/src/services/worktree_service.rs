@@ -93,7 +93,7 @@ struct ScanJob {
 }
 
 pub struct EntryMetadata {
-    pub order: usize,
+    pub order: isize,
     pub expanded: bool,
 }
 
@@ -153,7 +153,7 @@ pub struct ModifyParams {
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
     pub expanded: Option<bool>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -214,7 +214,7 @@ pub struct EntryDescription {
     pub class: EntryClass,
     pub kind: EntryKind,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: bool,
 }
 

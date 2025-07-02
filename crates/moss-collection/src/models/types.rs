@@ -41,7 +41,7 @@ pub struct UpdateItemEntryParams {
     #[validate(length(min = 1))]
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -57,7 +57,7 @@ pub struct UpdateDirEntryParams {
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -109,7 +109,7 @@ pub struct EntryInfo {
     /// If multiple entries have the same order, they are sorted alphabetically.
     /// If not specified, the entry appears last and is sorted alphabetically
     /// among unspecified items.
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 
     /// Whether this entry is expanded in the tree view (applies to directories)
     pub expanded: bool,

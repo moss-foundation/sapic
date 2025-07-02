@@ -25,7 +25,7 @@ pub struct CreateItemEntryInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: usize,
+    pub order: isize,
     pub configuration: ItemConfigurationModel,
 }
 
@@ -40,7 +40,7 @@ pub struct CreateDirEntryInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: usize,
+    pub order: isize,
     pub configuration: DirConfigurationModel,
 }
 
