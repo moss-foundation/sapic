@@ -16,7 +16,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use uuid::Uuid;
 
 use crate::{
     config::{CONFIG_FILE_NAME, ConfigModel},
@@ -42,12 +41,12 @@ const WORKTREE_DIRS: [&str; 4] = [
 ];
 
 pub struct EnvironmentItem {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
     pub inner: Environment,
 }
 
-type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<String, Arc<EnvironmentItem>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {

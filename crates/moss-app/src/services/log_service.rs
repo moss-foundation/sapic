@@ -33,9 +33,9 @@ use tracing_subscriber::{
     },
     prelude::*,
 };
-use uuid::Uuid;
 
 use crate::{
+    constants::ID_LENGTH,
     models::types::{LogEntryInfo, LogItemSourceInfo},
     services::log_service::{
         constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
@@ -45,8 +45,6 @@ use crate::{
 pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
     pub const SESSION_SCOPE: &'static str = "session";
-
-    pub const ID_LENGTH: usize = 10;
 
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 
@@ -150,7 +148,7 @@ impl LogService {
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
-        session_id: &Uuid,
+        session_id: &str,
         storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
@@ -680,7 +678,7 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = Uuid::new_v4();
+        let session_id = new_id();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,

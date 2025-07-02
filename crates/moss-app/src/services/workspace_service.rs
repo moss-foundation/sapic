@@ -25,9 +25,9 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::sync::{OnceCell, RwLock, RwLockMappedWriteGuard, RwLockReadGuard, RwLockWriteGuard};
-use uuid::Uuid;
 
 use crate::{
+    constants::ID_LENGTH,
     context::{AnyAppContext, ctxkeys},
     dirs,
     storage::segments::WORKSPACE_SEGKEY,
@@ -77,17 +77,17 @@ pub type WorkspaceServiceResult<T> = Result<T, WorkspaceServiceError>;
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceDescriptor {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
-type WorkspaceMap = HashMap<Uuid, Arc<WorkspaceDescriptor>>;
+type WorkspaceMap = HashMap<String, Arc<WorkspaceDescriptor>>;
 
 #[derive(Deref)]
 pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
-    pub id: Uuid,
+    pub id: String,
 
     #[deref]
     pub guard: RwLockReadGuard<'a, Workspace<R>>,
@@ -95,7 +95,7 @@ pub struct WorkspaceReadGuard<'a, R: TauriRuntime> {
 
 #[derive(Deref, DerefMut)]
 pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
-    pub id: Uuid,
+    pub id: String,
 
     #[deref]
     #[deref_mut]
@@ -104,7 +104,7 @@ pub struct WorkspaceWriteGuard<'a, R: TauriRuntime> {
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: TauriRuntime> {
-    id: Uuid,
+    id: String,
     #[deref]
     #[deref_mut]
     this: Workspace<R>,
@@ -147,14 +147,14 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
     pub(crate) async fn map_known_workspaces_to_vec<T>(
         &self,
-        f: impl Fn(Uuid, Arc<WorkspaceDescriptor>) -> T,
+        f: impl Fn(String, Arc<WorkspaceDescriptor>) -> T,
     ) -> WorkspaceServiceResult<Vec<T>> {
         let workspaces = self.workspaces().await?;
         let workspaces_lock = workspaces.read().await;
         let mut result = Vec::with_capacity(workspaces_lock.len());
 
-        for (&id, v) in workspaces_lock.iter() {
-            result.push(f(id, v.clone()));
+        for (id, v) in workspaces_lock.iter() {
+            result.push(f(id.clone(), v.clone()));
         }
 
         Ok(result)
@@ -186,7 +186,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             descriptor.name = new_name;
         }
 
-        workspaces_lock.insert(workspace.id, Arc::new(descriptor));
+        workspaces_lock.insert(workspace.id.clone(), Arc::new(descriptor));
 
         Ok(())
     }
@@ -194,12 +194,12 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn delete_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: Uuid,
+        id: &str,
     ) -> WorkspaceServiceResult<()> {
         let workspaces = self.workspaces().await?;
 
-        let (id, abs_path) = if let Some(descriptor) = workspaces.read().await.get(&id) {
-            (descriptor.id, descriptor.abs_path.clone())
+        let (id, abs_path) = if let Some(descriptor) = workspaces.read().await.get(id) {
+            (descriptor.id.clone(), descriptor.abs_path.clone())
         } else {
             return Err(WorkspaceServiceError::NotFound(id.to_string()));
         };
@@ -229,7 +229,12 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             workspaces_lock.remove(&id);
         }
 
-        let active_workspace_id = self.active_workspace.read().await.as_ref().map(|a| a.id);
+        let active_workspace_id = self
+            .active_workspace
+            .read()
+            .await
+            .as_ref()
+            .map(|a| a.id.clone());
         if active_workspace_id != Some(id) {
             return Ok(());
         }
@@ -239,11 +244,11 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
     pub(crate) async fn load_workspace(
         &self,
-        id: Uuid,
+        id: &str,
         activity_indicator: ActivityIndicator<R>,
     ) -> WorkspaceServiceResult<(Workspace<R>, Arc<WorkspaceDescriptor>)> {
         let workspaces = self.workspaces().await?;
-        let descriptor = if let Some(d) = workspaces.read().await.get(&id) {
+        let descriptor = if let Some(d) = workspaces.read().await.get(id) {
             d.clone()
         } else {
             return Err(WorkspaceServiceError::NotFound(id.to_string()));
@@ -255,8 +260,13 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             ));
         }
 
-        let active_workspace_id = self.active_workspace.read().await.as_ref().map(|a| a.id);
-        if active_workspace_id == Some(id) {
+        let active_workspace_id = self
+            .active_workspace
+            .read()
+            .await
+            .as_ref()
+            .map(|a| a.id.clone());
+        if active_workspace_id == Some(id.to_string()) {
             return Err(WorkspaceServiceError::AlreadyLoaded(id.to_string()));
         }
 
@@ -274,7 +284,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     ) -> WorkspaceServiceResult<(Workspace<R>, Arc<WorkspaceDescriptor>)> {
         let workspaces = self.workspaces().await?;
 
-        let id = Uuid::new_v4();
+        let id = nanoid::nanoid!(ID_LENGTH);
         let id_str = id.to_string();
 
         let abs_path: Arc<Path> = self.absolutize(&id_str).into();
@@ -296,14 +306,17 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         let descriptor: Arc<WorkspaceDescriptor> = WorkspaceDescriptor {
-            id,
+            id: id.clone(),
             name: name.to_owned(),
             last_opened_at: None,
             abs_path: Arc::clone(&abs_path),
         }
         .into();
 
-        workspaces.write().await.insert(id, descriptor.clone());
+        workspaces
+            .write()
+            .await
+            .insert(id.clone(), descriptor.clone());
 
         Ok((new_workspace, descriptor))
     }
@@ -314,7 +327,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         if guard.is_none() {
             return None;
         }
-        let id = guard.as_ref()?.id;
+        let id = guard.as_ref()?.id.clone();
         let workspace_guard = RwLockReadGuard::map(guard, |opt| {
             opt.as_ref().map(|a| &a.this).unwrap() // This is safe because we checked for None above
         });
@@ -334,7 +347,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return None;
         }
 
-        let id = guard.as_ref()?.id;
+        let id = guard.as_ref()?.id.clone();
         let context_state = guard.as_ref()?.context.clone();
         let workspace_guard = RwLockReadGuard::map(guard, |opt| {
             opt.as_ref().map(|a| &a.this).unwrap() // This is safe because we checked for None above
@@ -359,7 +372,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return None;
         }
 
-        let id = guard.as_ref()?.id;
+        let id = guard.as_ref()?.id.clone();
         let context_state = guard.as_ref()?.context.clone();
         let workspace_guard = RwLockWriteGuard::map(guard, |opt| {
             opt.as_mut().map(|a| &mut a.this).unwrap() // This is safe because we checked for None above
@@ -378,37 +391,36 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn activate_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: Uuid,
+        id: &str,
         workspace: Workspace<R>,
     ) -> Result<()> {
         let last_opened_at = Utc::now().timestamp();
         let workspaces = self.workspaces().await?;
         let mut workspaces_lock = workspaces.write().await;
         let mut descriptor = workspaces_lock
-            .get(&id)
+            .get(id)
             .ok_or(WorkspaceServiceError::NotFound(id.to_string()))?
             .as_ref()
             .clone();
 
         descriptor.last_opened_at = Some(last_opened_at);
 
-        workspaces_lock.insert(id, Arc::new(descriptor));
+        workspaces_lock.insert(id.to_string(), Arc::new(descriptor));
         drop(workspaces_lock);
 
         let mut active_workspace = self.active_workspace.write().await;
         *active_workspace = Some(ActiveWorkspace {
-            id,
+            id: id.to_string(),
             this: workspace,
             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });
 
         let item_store = self.global_storage.item_store();
-        let id_str = id.to_string();
-        let segkey = WORKSPACE_SEGKEY.join(id_str);
+        let segkey = WORKSPACE_SEGKEY.join(&id);
         let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
         PutItem::put(item_store.as_ref(), segkey, value)?;
 
-        let workspace_id: ctxkeys::WorkspaceId = id.into();
+        let workspace_id: ctxkeys::WorkspaceId = id.to_string().into();
         ctx.set_value(workspace_id);
 
         Ok(())
@@ -475,34 +487,26 @@ impl<R: TauriRuntime> WorkspaceService<R> {
                         continue;
                     }
 
-                    let id_str = entry.file_name().to_string_lossy().to_string();
-                    let id = match Uuid::parse_str(&id_str) {
-                        Ok(id) => id,
-                        Err(_) => {
-                            // TODO: logging
-                            println!("failed to get the collection {:?} name", id_str);
-                            continue;
-                        }
-                    };
+                    let id = entry.file_name().to_string_lossy().to_string();
 
                     let summary = Workspace::<R>::summary(self.fs.clone(), &entry.path())
                         .await
                         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
                     let restored_entity =
-                        match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
+                        match restored_entities.remove(&id).map_or(Ok(None), |v| {
                             v.deserialize::<WorkspaceInfoEntity>().map(Some)
                         }) {
                             Ok(value) => value,
                             Err(_err) => {
                                 // TODO: logging
-                                println!("failed to get the workspace {:?} info", id_str);
+                                println!("failed to get the workspace {:?} info", id);
                                 continue;
                             }
                         };
 
                     workspaces.insert(
-                        id,
+                        id.clone(),
                         WorkspaceDescriptor {
                             id,
                             name: summary.manifest.name,

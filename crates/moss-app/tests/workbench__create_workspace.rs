@@ -39,7 +39,10 @@ async fn create_workspace_success() {
     // Check active workspace
     let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+    let active_workspace_id = ctx
+        .value::<ctxkeys::WorkspaceId>()
+        .map(|id| id.to_string())
+        .unwrap();
     assert_eq!(active_workspace_id, id);
     assert_eq!(workspace_guard.abs_path(), &expected_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
@@ -52,7 +55,7 @@ async fn create_workspace_success() {
 
     // Check database
     let item_store = app.__storage().item_store();
-    let _ = GetItem::get(item_store.as_ref(), workspace_key(id)).unwrap();
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(&id)).unwrap();
 
     cleanup().await;
 }
@@ -144,7 +147,10 @@ async fn create_workspace_same_name() {
     // Check active workspace is the second one
     let active_workspace = app.workspace().await;
     let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+    let active_workspace_id = ctx
+        .value::<ctxkeys::WorkspaceId>()
+        .map(|id| id.to_string())
+        .unwrap();
     assert_eq!(active_workspace_id, second_output.id);
     assert_eq!(workspace_guard.abs_path(), &second_path);
     assert_eq!(workspace_guard.manifest().await.name, workspace_name);
@@ -169,8 +175,8 @@ async fn create_workspace_same_name() {
 
     let _global_storage = app.__storage();
     let item_store = app.__storage().item_store();
-    let _ = GetItem::get(item_store.as_ref(), workspace_key(second_output.id)).unwrap();
-    assert!(GetItem::get(item_store.as_ref(), workspace_key(first_output.id)).is_err());
+    let _ = GetItem::get(item_store.as_ref(), workspace_key(&second_output.id)).unwrap();
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(&first_output.id)).is_err());
 
     cleanup().await;
 }
@@ -207,7 +213,10 @@ async fn create_workspace_special_chars() {
         // Check active workspace
         let active_workspace = app.workspace().await;
         let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-        let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+        let active_workspace_id = ctx
+            .value::<ctxkeys::WorkspaceId>()
+            .map(|id| id.to_string())
+            .unwrap();
         assert_eq!(active_workspace_id, create_output.id);
         assert_eq!(workspace_guard.abs_path(), &expected_path);
         assert_eq!(workspace_guard.manifest().await.name, name);
@@ -223,7 +232,7 @@ async fn create_workspace_special_chars() {
         assert_eq!(matching_workspace.display_name, name);
         // Check database
         let item_store = app.__storage().item_store();
-        let _ = GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).unwrap();
+        let _ = GetItem::get(item_store.as_ref(), workspace_key(&create_output.id)).unwrap();
     }
 
     cleanup().await;
@@ -263,6 +272,6 @@ async fn create_workspace_not_open_on_creation() {
 
     // Check that a database entry is not created for unopened workspace
     let item_store = app.__storage().item_store();
-    assert!(GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).is_err());
+    assert!(GetItem::get(item_store.as_ref(), workspace_key(&create_output.id)).is_err());
     cleanup().await;
 }

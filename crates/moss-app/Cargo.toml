@@ -22,7 +22,6 @@ rustc-hash.workspace = true
 serde_json.workspace = true
 serde.workspace = true
 ts-rs.workspace = true
-uuid = { workspace = true, features = ["serde"] }
 chrono.workspace = true
 nanoid.workspace = true
 tracing.workspace = true

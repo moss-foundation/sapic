@@ -1,9 +1,9 @@
 use moss_common::api::OperationResult;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     collection::Collection,
+    constants::ID_LENGTH,
     models::{
         operations::{CreateEntryInput, CreateEntryOutput},
         types::configuration::{
@@ -20,14 +20,14 @@ impl Collection {
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
 
-        let id = Uuid::new_v4();
+        let id = nanoid::nanoid!(ID_LENGTH);
         let is_dir = matches!(input, CreateEntryInput::Dir(_));
         let path = input.path().clone();
         let name = input.name().to_owned();
         let content = match input {
             CreateEntryInput::Item(item) => {
                 let model = CompositeItemConfigurationModel {
-                    metadata: ConfigurationMetadata { id },
+                    metadata: ConfigurationMetadata { id: id.clone() },
                     inner: item.configuration,
                 };
 
@@ -36,7 +36,7 @@ impl Collection {
             }
             CreateEntryInput::Dir(dir) => {
                 let model = CompositeDirConfigurationModel {
-                    metadata: ConfigurationMetadata { id },
+                    metadata: ConfigurationMetadata { id: id.clone() },
                     inner: dir.configuration,
                 };
 

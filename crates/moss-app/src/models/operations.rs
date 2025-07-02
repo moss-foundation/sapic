@@ -5,7 +5,6 @@ use moss_workspace::models::types::WorkspaceMode;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::{
@@ -131,14 +130,14 @@ pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceInput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    pub id: Uuid,
+    pub id: String,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -169,7 +168,7 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    pub id: Uuid,
+    pub id: String,
 
     pub active: bool,
 
@@ -184,14 +183,14 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    pub id: Uuid,
+    pub id: String,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -218,9 +217,9 @@ pub struct UpdateWorkspaceInput {
 pub struct DescribeWorkbenchStateOutput {
     #[serde(skip)]
     #[ts(skip)]
-    pub active_workspace_id: Option<Uuid>,
+    pub active_workspace_id: Option<String>,
 
-    pub prev_workspace_id: Option<Uuid>,
+    pub prev_workspace_id: Option<String>,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -235,7 +234,7 @@ pub struct DescribeWorkbenchStateOutput {
 pub struct CloseWorkspaceInput {
     /// The workspace id is required to ensure the close function
     /// is only called when a workspace is open.
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -243,5 +242,5 @@ pub struct CloseWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
-    pub id: Uuid,
+    pub id: String,
 }

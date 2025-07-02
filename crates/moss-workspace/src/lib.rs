@@ -6,6 +6,7 @@ pub mod models;
 pub mod storage;
 
 pub mod workspace;
+
 pub use workspace::Workspace;
 
 pub mod constants {
@@ -23,6 +24,8 @@ pub mod constants {
     pub const TREE_VIEW_GROUP_COLLECTIONS: &str = "workbench.view.collections";
     pub const TREE_VIEW_GROUP_ENVIRONMENTS: &str = "workbench.view.environments";
     pub const TREE_VIEW_GROUP_MOCK_SERVERS: &str = "workbench.view.mockServers";
+
+    pub const ID_LENGTH: usize = 10;
 }
 
 pub mod defaults {

@@ -18,7 +18,6 @@ use std::{
 };
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::{OnceCell, RwLock};
-use uuid::Uuid;
 
 use crate::{
     defaults, dirs,
@@ -29,7 +28,7 @@ use crate::{
 
 #[derive(Deref, DerefMut)]
 pub struct CollectionItem {
-    pub id: Uuid,
+    pub id: String,
     pub order: Option<usize>,
     #[deref]
     #[deref_mut]
@@ -38,7 +37,7 @@ pub struct CollectionItem {
 
 #[derive(Deref, DerefMut)]
 pub struct EnvironmentItem {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
     pub display_name: String,
     #[deref]
@@ -46,8 +45,8 @@ pub struct EnvironmentItem {
     pub inner: Environment,
 }
 
-type CollectionMap = HashMap<Uuid, Arc<RwLock<CollectionItem>>>;
-type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
+type CollectionMap = HashMap<String, Arc<RwLock<CollectionItem>>>;
+type EnvironmentMap = HashMap<String, Arc<EnvironmentItem>>;
 
 pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
@@ -235,7 +234,7 @@ impl<R: TauriRuntime> Workspace<R> {
 
                     let id = environment.id().await;
                     let entry = EnvironmentItem {
-                        id,
+                        id: id.clone(),
                         name,
                         display_name: decoded_name,
                         inner: environment,
@@ -305,32 +304,24 @@ impl<R: TauriRuntime> Workspace<R> {
                         continue;
                     }
 
-                    let id_str = entry.file_name().to_string_lossy().to_string();
-                    let id = match Uuid::parse_str(&id_str) {
-                        Ok(id) => id,
-                        Err(_) => {
-                            // TODO: logging
-                            println!("failed to get the collection {:?} name", id_str);
-                            continue;
-                        }
-                    };
+                    let id = entry.file_name().to_string_lossy().to_string();
 
-                    let cache = match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
+                    let cache = match restored_entities.remove(&id).map_or(Ok(None), |v| {
                         v.deserialize::<CollectionCacheEntity>().map(Some)
                     }) {
                         Ok(value) => value,
                         Err(_err) => {
                             // TODO: logging
-                            println!("failed to get the collection {:?} info", id_str);
+                            println!("failed to get the collection {:?} info", id);
                             continue;
                         }
                     };
 
                     let collection = Collection::load(&entry.path(), fs.clone()).await?;
                     collections.insert(
-                        id,
+                        id.clone(),
                         Arc::new(RwLock::new(CollectionItem {
-                            id,
+                            id: id.clone(),
                             order: cache.map(|v| v.order).flatten(),
                             inner: collection,
                         })),

@@ -14,6 +14,8 @@ pub mod constants {
     pub const COLLECTION_ICON_FILENAME: &str = "icon.png";
     pub const ITEM_CONFIG_FILENAME: &str = "config.sapic";
     pub const DIR_CONFIG_FILENAME: &str = "config-folder.sapic";
+
+    pub const ID_LENGTH: usize = 10;
 }
 
 mod defaults {

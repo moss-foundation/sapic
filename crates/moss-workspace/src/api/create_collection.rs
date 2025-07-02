@@ -10,10 +10,10 @@ use std::{
 };
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
+    constants::ID_LENGTH,
     context::{AnyWorkspaceContext, Subscribe},
     dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
@@ -29,7 +29,7 @@ impl<R: TauriRuntime> Workspace<R> {
     ) -> OperationResult<CreateCollectionOutput> {
         input.validate()?;
 
-        let id = Uuid::new_v4();
+        let id = nanoid::nanoid!(ID_LENGTH);
         let id_str = id.to_string();
 
         let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
@@ -69,13 +69,13 @@ impl<R: TauriRuntime> Workspace<R> {
 
             // TODO: Save in the database whether the collection was collapsed/expanded
         });
-        ctx.subscribe(Subscribe::OnCollectionDidChange(id, on_did_change))
+        ctx.subscribe(Subscribe::OnCollectionDidChange(id.clone(), on_did_change))
             .await;
 
         collections.insert(
-            id,
+            id.clone(),
             Arc::new(RwLock::new(CollectionItem {
-                id,
+                id: id.clone(),
                 order: order.clone(),
                 inner: collection,
             })),

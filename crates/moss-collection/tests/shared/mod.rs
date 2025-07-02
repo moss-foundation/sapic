@@ -1,8 +1,10 @@
-use moss_collection::collection::{Collection, CreateParams};
+use moss_collection::{
+    collection::{Collection, CreateParams},
+    constants::ID_LENGTH,
+};
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
 use std::{path::PathBuf, sync::Arc};
-use uuid::Uuid;
 
 #[allow(dead_code)]
 pub fn random_dir_name() -> String {
@@ -13,7 +15,7 @@ fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
-        .join(Uuid::new_v4().to_string())
+        .join(nanoid::nanoid!(ID_LENGTH))
 }
 
 pub async fn create_test_collection() -> (PathBuf, Collection) {

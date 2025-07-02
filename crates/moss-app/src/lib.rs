@@ -22,6 +22,8 @@ pub mod constants {
     // in moss-app/index.ts to match your changes.
 
     pub const LOGGING_SERVICE_CHANNEL: &'static str = "logging";
+
+    pub const ID_LENGTH: usize = 10;
 }
 
 pub mod dirs {

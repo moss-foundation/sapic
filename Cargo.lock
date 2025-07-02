@@ -1597,7 +1597,6 @@ dependencies = [
  "tauri-plugin-window-state",
  "tokio",
  "tracing",
- "uuid",
 ]
 
 [[package]]
@@ -3656,7 +3655,6 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "ts-rs",
- "uuid",
  "validator",
 ]
 
@@ -3695,6 +3693,7 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "nanoid",
  "serde",
  "serde_json",
  "tauri",
@@ -3703,7 +3702,6 @@ dependencies = [
  "toml",
  "toml_edit 0.22.27",
  "ts-rs",
- "uuid",
  "validator",
 ]
 
@@ -3749,10 +3747,10 @@ dependencies = [
  "moss_file",
  "moss_fs",
  "moss_storage",
+ "nanoid",
  "serde",
  "serde_json",
  "ts-rs",
- "uuid",
 ]
 
 [[package]]
@@ -3761,12 +3759,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "moss_fs",
+ "nanoid",
  "serde",
  "serde_json",
  "tokio",
  "toml",
  "toml_edit 0.22.27",
- "uuid",
 ]
 
 [[package]]
@@ -3902,13 +3900,13 @@ dependencies = [
  "moss_storage",
  "moss_testutils",
  "moss_text",
+ "nanoid",
  "rand 0.9.1",
  "serde",
  "serde_json",
  "tauri",
  "tokio",
  "ts-rs",
- "uuid",
  "validator",
 ]
 
@@ -7164,7 +7162,6 @@ dependencies = [
  "thiserror 2.0.12",
  "ts-rs-macros",
  "url",
- "uuid",
 ]
 
 [[package]]

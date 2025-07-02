@@ -17,8 +17,6 @@ use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use uuid::Uuid;
-
 use crate::models::{
     primitives::{EntryClass, HttpMethod},
     types::{
@@ -371,10 +369,10 @@ pub enum ConfigurationModel {
 }
 
 impl ConfigurationModel {
-    pub fn id(&self) -> Uuid {
+    pub fn id(&self) -> &str {
         match self {
-            ConfigurationModel::Item(item) => item.metadata.id,
-            ConfigurationModel::Dir(dir) => dir.metadata.id,
+            ConfigurationModel::Item(item) => item.metadata.id.as_str(),
+            ConfigurationModel::Dir(dir) => dir.metadata.id.as_str(),
         }
     }
 }

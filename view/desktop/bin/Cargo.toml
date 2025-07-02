@@ -39,7 +39,7 @@ tauri-plugin-os = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 tauri-plugin-window-state = "2.2.1"
 tauri-plugin-single-instance = "2.2.2"
-uuid = { workspace = true, features = ["serde"] }
+
 anyhow.workspace = true
 log.workspace = true
 rand.workspace = true
