@@ -16,14 +16,22 @@ export const useUpdateCollectionEntry = () => {
     collectionId,
     updatedEntry,
   }: UseUpdateCollectionEntryInput) => {
-    queryClient.setQueryData([USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId], async (old: EntryInfo[]) => {
-      const entryBeforeUpdate = old.find((e) => e.id === updatedEntry.id);
+    const currentData = queryClient.getQueryData([USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId]) as
+      | EntryInfo[]
+      | undefined;
 
-      if (!entryBeforeUpdate) {
-        return old;
-      }
+    if (!currentData) {
+      return;
+    }
 
-      return old.map(async (oldEntry) => {
+    const entryBeforeUpdate = currentData.find((e) => e.id === updatedEntry.id);
+
+    if (!entryBeforeUpdate) {
+      return;
+    }
+
+    const newEntries = await Promise.all(
+      currentData.map(async (oldEntry) => {
         if (oldEntry.id === updatedEntry.id) {
           return updatedEntry;
         }
@@ -47,8 +55,12 @@ export const useUpdateCollectionEntry = () => {
         }
 
         return oldEntry;
-      });
-    });
+      })
+    );
+
+    console.log("newEntries", newEntries);
+
+    queryClient.setQueryData([USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, collectionId], newEntries);
   };
 
   return {

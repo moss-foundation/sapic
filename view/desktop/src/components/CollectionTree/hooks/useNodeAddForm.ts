@@ -95,26 +95,30 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
   const handleAddFormSubmit = async (name: string) => {
     const newEntry = createEntry(parentNode, name, isAddingFolderNode);
 
-    const result = await createCollectionEntry({
-      collectionId: id,
-      input: newEntry,
-    });
-
-    if (result) {
-      onNodeUpdate({
-        ...parentNode,
-        childNodes: [
-          ...parentNode.childNodes,
-          {
-            ...result,
-            childNodes: [],
-          },
-        ],
+    try {
+      const result = await createCollectionEntry({
+        collectionId: id,
+        input: newEntry,
       });
-    }
 
-    setIsAddingFileNode(false);
-    setIsAddingFolderNode(false);
+      if (result) {
+        onNodeUpdate({
+          ...parentNode,
+          childNodes: [
+            ...parentNode.childNodes,
+            {
+              ...result,
+              childNodes: [],
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAddingFileNode(false);
+      setIsAddingFolderNode(false);
+    }
   };
 
   const handleAddFormCancel = () => {
