@@ -58,8 +58,8 @@ APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
-COMMON_MODELS_DIR := crates/moss-common
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
+API_MODELS_DIR := crates/moss-api
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -137,9 +137,9 @@ $(eval $(call gen_bindings,app,APP_MODELS_DIR))
 $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
-$(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
+$(eval $(call gen_bindings,api,API_MODELS_DIR))
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -148,10 +148,10 @@ gen-bindings: \
 	gen-collection-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
-	gen-common-bindings \
 	gen-workbench-bindings \
 	gen-activity-indicator-bindings \
-	gen-bindingutils-bindings
+	gen-bindingutils-bindings \
+	gen-api-bindings
 
 # ======================================================
 # Utility Commands
