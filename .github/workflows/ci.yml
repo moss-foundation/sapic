@@ -117,6 +117,8 @@ jobs:
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
 
       - name: Verify that bindings are updated
         run: |
@@ -155,7 +157,7 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          workspaces: ".github/cache"
+          cache-all-crates: "true"
 
       - name: Workspace Audit
         run: |
@@ -212,6 +214,8 @@ jobs:
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
 
       - name: Run Tests - ${{ matrix.package }}
         run: cargo test -p ${{ matrix.package }}
@@ -272,6 +276,8 @@ jobs:
 
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
 
       - name: Install Grit
         run: |
