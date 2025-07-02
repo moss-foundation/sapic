@@ -269,7 +269,7 @@ jobs:
           save-if: false
 
       - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }} --locked --offline
+        run: cargo test -p ${{ matrix.package }} --locked
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check
