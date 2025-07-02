@@ -102,6 +102,7 @@ pub type CommandCallback<R> =
 
 pub struct CommandDecl<R: TauriRuntime> {
     pub name: ReadOnlyStr,
+
     pub callback: CommandCallback<R>,
 }
 
