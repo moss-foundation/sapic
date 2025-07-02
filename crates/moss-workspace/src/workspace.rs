@@ -19,7 +19,7 @@ use moss_text::sanitized::desanitize;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    sync::Arc,
 };
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::{OnceCell, RwLock};
@@ -66,11 +66,6 @@ pub struct Workspace<R: TauriRuntime> {
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
     #[allow(dead_code)]
-    pub(super) next_variable_id: Arc<AtomicUsize>,
-    #[allow(dead_code)]
-    pub(super) next_environment_id: Arc<AtomicUsize>,
-
-    #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
 
     pub layout: LayoutService,
@@ -110,8 +105,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_variable_id: Arc::new(AtomicUsize::new(0)),
-            next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
             layout,
         })
@@ -155,8 +148,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_variable_id: Arc::new(AtomicUsize::new(0)),
-            next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
             layout,
         })
@@ -231,7 +222,6 @@ impl<R: TauriRuntime> Workspace<R> {
                         &entry_abs_path,
                         fs.clone(),
                         self.storage.variable_store().clone(),
-                        self.next_variable_id.clone(),
                         environment::LoadParams {
                             create_if_not_exists: false,
                         },

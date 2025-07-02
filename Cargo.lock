@@ -3758,6 +3758,7 @@ dependencies = [
  "moss_file",
  "moss_fs",
  "moss_storage",
+ "nanoid",
  "serde",
  "serde_json",
  "ts-rs",
