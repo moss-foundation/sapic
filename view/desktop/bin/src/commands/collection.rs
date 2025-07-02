@@ -1,11 +1,11 @@
+use moss_api::{self as api, TauriError, TauriResult};
 use moss_app::app::App;
 use moss_collection::models::{events::*, operations::*};
 use moss_common::api::OperationOptionExt;
-use moss_tauri::{TauriError, TauriResult};
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
 use uuid::Uuid;
 
-use crate::constants::DEFAULT_COMMAND_TIMEOUT;
+use crate::commands::Options;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
@@ -14,8 +14,9 @@ pub async fn create_collection_entry<R: TauriRuntime>(
     window: Window<R>,
     collection_id: Uuid,
     input: CreateEntryInput,
+    options: Options,
 ) -> TauriResult<CreateEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+    api::with_timeout(options, async move {
         let (mut workspace, ctx) = app
             .workspace_mut()
             .await
@@ -42,8 +43,9 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
     window: Window<R>,
     collection_id: Uuid,
     input: DeleteEntryInput,
+    options: Options,
 ) -> TauriResult<DeleteEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+    api::with_timeout(options, async move {
         let (mut workspace, ctx) = app
             .workspace_mut()
             .await
@@ -70,8 +72,9 @@ pub async fn update_collection_entry<R: TauriRuntime>(
     window: Window<R>,
     collection_id: Uuid,
     input: UpdateEntryInput,
+    options: Options,
 ) -> TauriResult<UpdateEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+    api::with_timeout(options, async move {
         let (mut workspace, ctx) = app
             .workspace_mut()
             .await
@@ -100,8 +103,9 @@ pub async fn batch_update_collection_entry<R: TauriRuntime>(
     channel: TauriChannel<BatchUpdateEntryEvent>,
     collection_id: Uuid,
     input: BatchUpdateEntryInput,
+    options: Options,
 ) -> TauriResult<BatchUpdateEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+    api::with_timeout(options, async move {
         let (mut workspace, ctx) = app
             .workspace_mut()
             .await
@@ -129,8 +133,9 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
     window: Window<R>,
     collection_id: Uuid,
     channel: TauriChannel<StreamEntriesEvent>,
+    options: Options,
 ) -> TauriResult<StreamEntriesOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
+    api::with_timeout(options, async move {
         let (workspace, ctx) = app
             .workspace()
             .await
