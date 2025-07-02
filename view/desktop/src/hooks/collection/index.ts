@@ -1,5 +1,6 @@
 export * from "./derivedHooks/useCollectionsTrees";
 export * from "./derivedHooks/useStreamedCollectionsWithEntries";
+export * from "./useClearAllCollectionEntries";
 export * from "./useCreateCollection";
 export * from "./useCreateCollectionEntry";
 export * from "./useDeleteCollection";

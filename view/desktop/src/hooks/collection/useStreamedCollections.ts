@@ -35,14 +35,14 @@ export const useStreamedCollections = () => {
     enabled: hasWorkspace,
   });
 
-  const clearQueryCacheAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
-    queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+  const clearCollectionsCacheAndRefetch = () => {
+    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
+    queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY] });
     return query.refetch();
   };
 
   return {
     ...query,
-    clearQueryCacheAndRefetch,
+    clearCollectionsCacheAndRefetch,
   };
 };
