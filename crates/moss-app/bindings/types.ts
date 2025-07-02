@@ -2,7 +2,7 @@
 import type { LogLevel, ThemeMode } from "./primitives";
 
 /**
- * @category Types
+ * @category Type
  */
 export type ColorThemeInfo = {
   identifier: string;
@@ -14,12 +14,12 @@ export type ColorThemeInfo = {
 };
 
 /**
- * @category Types
+ * @category Type
  */
 export type Defaults = { theme: ColorThemeInfo; locale: LocaleInfo };
 
 /**
- * @category Types
+ * @category Type
  */
 export type LocaleInfo = {
   identifier: string;
@@ -30,12 +30,12 @@ export type LocaleInfo = {
 };
 
 /**
- * @category Types
+ * @category Type
  */
 export type LogDate = { year: number; month: number; day: number };
 
 /**
- * @category Types
+ * @category Type
  */
 export type LogEntryInfo = {
   id: string;
@@ -49,17 +49,17 @@ export type LogEntryInfo = {
 };
 
 /**
- * @category Types
+ * @category Type
  */
 export type LogItemSourceInfo = { id: string };
 
 /**
- * @category Types
+ * @category Type
  */
 export type Preferences = { theme: ColorThemeInfo | null; locale: LocaleInfo | null };
 
 /**
- * @category Types
+ * @category Type
  */
 export type WorkspaceInfo = { id: string; displayName: string; lastOpenedAt?: bigint };
 

@@ -14,17 +14,17 @@ import type {
 } from "./types";
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type BatchDeleteLogInput = Array<string>;
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type BatchDeleteLogOutput = { deletedEntries: Array<LogItemSourceInfo> };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type CloseWorkspaceInput = {
   /**
@@ -35,7 +35,7 @@ export type CloseWorkspaceInput = {
 };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type CloseWorkspaceOutput = {
   /**
@@ -45,102 +45,102 @@ export type CloseWorkspaceOutput = {
 };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type CreateWorkspaceInput = { name: string; mode: WorkspaceMode; openOnCreation: boolean };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type CreateWorkspaceOutput = { id: string; active: boolean };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type DeleteWorkspaceInput = { id: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type DeleteWorkspaceOutput = { id: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type DescribeAppStateOutput = { preferences: Preferences; defaults: Defaults; lastWorkspace?: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type DescribeWorkbenchStateOutput = { prevWorkspaceId: string | null };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type GetColorThemeInput = { id: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type GetColorThemeOutput = { cssContent: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type GetTranslationsInput = { language: string; namespace: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type GetTranslationsOutput = JsonValue;
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type ListColorThemesOutput = Array<ColorThemeInfo>;
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type ListLocalesOutput = Array<LocaleInfo>;
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type ListLogsInput = { dates: Array<LogDate>; levels: Array<LogLevel>; resource?: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type ListLogsOutput = { contents: Array<LogEntryInfo> };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type OpenWorkspaceInput = { id: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type OpenWorkspaceOutput = { id: string };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type SetColorThemeInput = { themeInfo: ColorThemeInfo };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type SetLocaleInput = { localeInfo: LocaleInfo };
 
 /**
- * @category Operations
+ * @category Operation
  */
 export type UpdateWorkspaceInput = {
   /**
