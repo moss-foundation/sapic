@@ -1,7 +1,7 @@
 pub mod shared;
 
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, nanoid::new_nanoid};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::operations::{
     ChangeIcon, ChangeRepository, CreateCollectionInput, UpdateCollectionInput,
@@ -145,7 +145,7 @@ async fn rename_collection_nonexistent_id() {
     let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
-    let nonexistent_id = uuid::Uuid::new_v4();
+    let nonexistent_id = new_nanoid();
 
     let result = workspace
         .update_collection(

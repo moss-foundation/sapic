@@ -1,5 +1,4 @@
-use moss_common::api::OperationResult;
-use uuid::Uuid;
+use moss_common::{api::OperationResult, nanoid::new_nanoid};
 use validator::Validate;
 
 use crate::{
@@ -34,15 +33,15 @@ impl Collection {
 
         let worktree_service = self.service::<WorktreeService>();
 
-        let id = Uuid::new_v4();
+        let id = new_nanoid();
         let model = CompositeDirConfigurationModel {
-            metadata: ConfigurationMetadata { id },
+            metadata: ConfigurationMetadata { id: id.clone() },
             inner: input.configuration,
         };
 
         worktree_service
             .create_dir_entry(
-                id,
+                &id,
                 &input.name,
                 input.path,
                 model.into(),
@@ -64,15 +63,15 @@ impl Collection {
 
         let worktree_service = self.service::<WorktreeService>();
 
-        let id = Uuid::new_v4();
+        let id = new_nanoid();
         let model = CompositeItemConfigurationModel {
-            metadata: ConfigurationMetadata { id },
+            metadata: ConfigurationMetadata { id: id.clone() },
             inner: input.configuration,
         };
 
         worktree_service
             .create_item_entry(
-                id,
+                &id,
                 &input.name,
                 input.path,
                 model.into(),

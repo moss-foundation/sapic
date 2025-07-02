@@ -1,7 +1,6 @@
 use indexmap::IndexMap;
 use moss_hcl::{Block, LabeledBlock};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::models::{
     primitives::EntryProtocol,
@@ -55,9 +54,9 @@ pub struct RawDirRequestConfiguration {
 }
 
 impl RawDirRequestConfiguration {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: &str) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id }),
+            metadata: Block::new(RawMetadata { id: id.to_string() }),
             headers: None,
         }
     }
@@ -73,12 +72,12 @@ mod tests {
 
     use hcl::{Expression as HclExpression, ser::LabeledBlock};
     use indexmap::indexmap;
-    use uuid::Uuid;
+    use moss_common::nanoid::new_nanoid;
 
     #[test]
     fn test_labeled_block() {
         let config = RawItemRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            metadata: Block::new(RawMetadata { id: new_nanoid() }),
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),

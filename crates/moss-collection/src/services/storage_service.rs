@@ -9,7 +9,6 @@ use moss_storage::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 use std::{hash::Hash, path::Path, sync::Arc};
-use uuid::Uuid;
 
 use crate::storage::segments;
 
@@ -45,7 +44,7 @@ impl StorageService {
     pub(crate) fn put_entry_order_txn(
         &self,
         txn: &mut Transaction,
-        id: Uuid,
+        id: &str,
         order: usize,
     ) -> Result<()> {
         let store = self.storage.resource_store();

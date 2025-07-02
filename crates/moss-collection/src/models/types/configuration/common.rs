@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use uuid::Uuid;
 
 use crate::models::{primitives::HttpMethod, types::configuration::docschema::RawMetadata};
 
@@ -28,7 +27,7 @@ pub enum Expression {
 #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct ConfigurationMetadata {
-    pub id: Uuid,
+    pub id: String,
 }
 
 impl Into<Block<RawMetadata>> for ConfigurationMetadata {

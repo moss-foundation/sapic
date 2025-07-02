@@ -15,7 +15,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use uuid::Uuid;
 
 use crate::{
     config::ConfigModel,
@@ -26,12 +25,12 @@ use crate::{
 };
 
 pub struct EnvironmentItem {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
     pub inner: Environment,
 }
 
-type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<String, Arc<EnvironmentItem>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {

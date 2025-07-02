@@ -4,7 +4,7 @@ mod taurilog_writer;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, nanoid::new_nanoid};
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
@@ -33,7 +33,6 @@ use tracing_subscriber::{
     },
     prelude::*,
 };
-use uuid::Uuid;
 
 use crate::{
     models::types::{LogEntryInfo, LogItemSourceInfo},
@@ -46,15 +45,9 @@ pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
     pub const SESSION_SCOPE: &'static str = "session";
 
-    pub const ID_LENGTH: usize = 10;
-
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 
     pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
-}
-
-fn new_id() -> String {
-    nanoid!(ID_LENGTH)
 }
 
 const DUMP_THRESHOLD: usize = 10;
@@ -150,7 +143,7 @@ impl LogService {
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
-        session_id: &Uuid,
+        session_id: &str,
         storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
@@ -332,7 +325,7 @@ impl LogService {
             LogScope::App => {
                 trace!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -340,7 +333,7 @@ impl LogService {
             LogScope::Session => {
                 trace!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -353,7 +346,7 @@ impl LogService {
             LogScope::App => {
                 debug!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -361,7 +354,7 @@ impl LogService {
             LogScope::Session => {
                 debug!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -374,7 +367,7 @@ impl LogService {
             LogScope::App => {
                 info!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -382,7 +375,7 @@ impl LogService {
             LogScope::Session => {
                 info!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -395,7 +388,7 @@ impl LogService {
             LogScope::App => {
                 warn!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -403,7 +396,7 @@ impl LogService {
             LogScope::Session => {
                 warn!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -416,7 +409,7 @@ impl LogService {
             LogScope::App => {
                 error!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -424,7 +417,7 @@ impl LogService {
             LogScope::Session => {
                 error!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = new_nanoid(),
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -680,7 +673,7 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = Uuid::new_v4();
+        let session_id = new_nanoid();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,

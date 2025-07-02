@@ -3,7 +3,6 @@ use moss_collection::models::{events::*, operations::*};
 use moss_common::api::OperationOptionExt;
 use moss_tauri::{TauriError, TauriResult};
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
-use uuid::Uuid;
 
 use crate::constants::DEFAULT_COMMAND_TIMEOUT;
 
@@ -12,7 +11,7 @@ use crate::constants::DEFAULT_COMMAND_TIMEOUT;
 pub async fn create_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: String,
     input: CreateEntryInput,
 ) -> TauriResult<CreateEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
@@ -40,7 +39,7 @@ pub async fn create_collection_entry<R: TauriRuntime>(
 pub async fn delete_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: String,
     input: DeleteEntryInput,
 ) -> TauriResult<DeleteEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
@@ -68,7 +67,7 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
 pub async fn update_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: String,
     input: UpdateEntryInput,
 ) -> TauriResult<UpdateEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
@@ -98,7 +97,7 @@ pub async fn batch_update_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
     channel: TauriChannel<BatchUpdateEntryEvent>,
-    collection_id: Uuid,
+    collection_id: String,
     input: BatchUpdateEntryInput,
 ) -> TauriResult<BatchUpdateEntryOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
@@ -127,7 +126,7 @@ pub async fn batch_update_collection_entry<R: TauriRuntime>(
 pub async fn stream_collection_entries<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: String,
     channel: TauriChannel<StreamEntriesEvent>,
 ) -> TauriResult<StreamEntriesOutput> {
     tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {

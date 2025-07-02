@@ -9,7 +9,6 @@ use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
-use uuid::Uuid;
 
 use crate::{
     Collection,
@@ -50,8 +49,8 @@ impl Collection {
 
             // We need to fetch this data from the database here, otherwise we’ll be requesting it every time the scan method is called.
 
-            let expanded_entries: Arc<HashSet<Uuid>> =
-                match storage_service.get_expanded_entries::<Uuid>() {
+            let expanded_entries: Arc<HashSet<String>> =
+                match storage_service.get_expanded_entries::<String>() {
                     Ok(entries) => entries.collect::<HashSet<_>>().into(),
                     Err(error) => {
                         println!("warn: getting expanded entries: {}", error);

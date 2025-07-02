@@ -18,7 +18,7 @@ export type CreateCollectionOutput = { id: string };
 
 export type DeleteCollectionInput = { id: string };
 
-export type DeleteCollectionOutput = { id: string };
+export type DeleteCollectionOutput = { id?: string };
 
 export type DescribeEnvironmentInput = { id: string };
 
