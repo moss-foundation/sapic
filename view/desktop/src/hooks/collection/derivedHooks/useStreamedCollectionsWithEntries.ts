@@ -4,9 +4,9 @@ import { EntryInfo } from "@repo/moss-collection";
 import { StreamCollectionsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 
-import { fetchCollectionEntries } from "./queries/fetchCollectionEntries";
-import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
-import { useStreamedCollections } from "./useStreamedCollections";
+import { fetchCollectionEntries } from "../queries/fetchCollectionEntries";
+import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "../useStreamedCollectionEntries";
+import { useStreamedCollections } from "../useStreamedCollections";
 
 export interface CollectionWithEntries extends StreamCollectionsEvent {
   entries: EntryInfo[];

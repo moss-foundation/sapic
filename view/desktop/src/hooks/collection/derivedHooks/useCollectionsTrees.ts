@@ -4,12 +4,12 @@ import { TreeCollectionNode, TreeCollectionRootNode } from "@/components/Collect
 
 import { useStreamedCollectionsWithEntries } from "./useStreamedCollectionsWithEntries";
 
-export interface useCollectionsTreesProps {
+export interface UseCollectionsTreesProps {
   collectionsTrees: TreeCollectionRootNode[];
   isLoading: boolean;
 }
 
-export const useCollectionsTrees = (): useCollectionsTreesProps => {
+export const useCollectionsTrees = (): UseCollectionsTreesProps => {
   const {
     data: collectionsWithEntries,
     isEntriesLoading,

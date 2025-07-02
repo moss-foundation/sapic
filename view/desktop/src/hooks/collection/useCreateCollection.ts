@@ -20,11 +20,6 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: createCollection,
     onSuccess: (data, variables) => {
-      console.log("onSuccess createCollection", {
-        data,
-        variables,
-      });
-
       queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
         return [
           ...old,

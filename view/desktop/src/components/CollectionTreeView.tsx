@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
 import { useStreamedCollections } from "@/hooks";
-import { useCollectionsTrees } from "@/hooks/collection/useCollectionsTrees";
+import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
