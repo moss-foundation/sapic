@@ -115,10 +115,6 @@ jobs:
         with:
           cache-all-crates: true
           shared-key: "build"
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-rust-
 
       - name: Build workspace
         run: cargo check --workspace --locked
@@ -163,10 +159,6 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-rust-
 
       - name: Install gen-bindings dependencies
         run: cd tools/gen-bindings && pnpm install --frozen-lockfile
@@ -208,10 +200,6 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-rust-
 
       - name: Workspace Audit
         run: |
@@ -271,10 +259,6 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-rust-
 
       - name: Run Tests - ${{ matrix.package }}
         run: cargo test -p ${{ matrix.package }} --locked
@@ -339,10 +323,6 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
-          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-rust-
 
       - name: Cache Grit installation
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
