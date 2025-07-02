@@ -1,3 +1,6 @@
+pub mod entities;
+pub mod stores;
+
 use moss_db::{
     DatabaseClient, DatabaseResult, ReDbClient, Table, Transaction, bincode_table::BincodeTable,
     primitives::AnyValue,
@@ -9,21 +12,17 @@ use std::{any::TypeId, collections::HashMap, path::Path, sync::Arc};
 use crate::{
     CollectionStorage,
     collection_storage::stores::{
-        CollectionUnitStore, CollectionVariableStore, MixedStore, mixed_store::MixedStoreImpl,
-        unit_store::CollectionUnitStoreImpl, variable_store::CollectionVariableStoreImpl,
+        CollectionResourceStore, CollectionVariableStore,
+        resource_store::CollectionResourceStoreImpl, variable_store::CollectionVariableStoreImpl,
     },
     primitives::segkey::SegKeyBuf,
     storage::{SegBinTable, Storage, StoreTypeId, Transactional},
 };
 
-pub mod entities;
-pub mod stores;
-
 const DB_NAME: &str = "state.db";
 
 pub const TABLE_VARIABLES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("variables");
-pub const TABLE_UNITS: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("units");
-pub const TABLE_MIXED: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("mixed");
+pub const TABLE_RESOURCES: BincodeTable<SegKeyBuf, AnyValue> = BincodeTable::new("resources");
 
 pub struct CollectionStorageImpl {
     client: ReDbClient,
@@ -37,8 +36,7 @@ impl CollectionStorageImpl {
         let mut tables = HashMap::new();
         for (type_id, table) in [
             (TypeId::of::<CollectionVariableStoreImpl>(), TABLE_VARIABLES),
-            (TypeId::of::<CollectionUnitStoreImpl>(), TABLE_UNITS),
-            (TypeId::of::<MixedStoreImpl>(), TABLE_MIXED),
+            (TypeId::of::<CollectionResourceStoreImpl>(), TABLE_RESOURCES),
         ] {
             client = client.with_table(&table)?;
             tables.insert(type_id, Arc::new(table));
@@ -89,24 +87,14 @@ impl CollectionStorage for CollectionStorageImpl {
         Arc::new(CollectionVariableStoreImpl::new(client, table))
     }
 
-    fn unit_store(&self) -> Arc<dyn CollectionUnitStore> {
+    fn resource_store(&self) -> Arc<dyn CollectionResourceStore> {
         let client = self.client.clone();
         let table = self
             .tables
-            .get(&TypeId::of::<CollectionUnitStoreImpl>())
-            .unwrap()
-            .clone();
-        Arc::new(CollectionUnitStoreImpl::new(client, table))
-    }
-
-    fn mixed_store(&self) -> Arc<dyn MixedStore> {
-        let client = self.client.clone();
-        let table = self
-            .tables
-            .get(&TypeId::of::<MixedStoreImpl>())
+            .get(&TypeId::of::<CollectionResourceStoreImpl>())
             .unwrap()
             .clone();
 
-        Arc::new(MixedStoreImpl::new(client, table))
+        Arc::new(CollectionResourceStoreImpl::new(client, table))
     }
 }

@@ -10,6 +10,11 @@ export const entryClassSchema = z.union([
 
 export const entryKindSchema = z.union([z.literal("Dir"), z.literal("Item"), z.literal("Case")]);
 
+export const entryPathSchema = z.object({
+  raw: z.string(),
+  segments: z.array(z.string()),
+});
+
 export const entryProtocolSchema = z.union([
   z.literal("Get"),
   z.literal("Post"),

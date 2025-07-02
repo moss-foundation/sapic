@@ -12,6 +12,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
       dir: {
         name,
         path: parentNode.path.raw,
+        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
         configuration: {
           request: {
             http: {},
@@ -25,6 +26,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     item: {
       name,
       path: parentNode.path.raw,
+      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
       configuration: {
         request: {
           http: {

@@ -2,21 +2,30 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 use uuid::Uuid;
-use validator::{Validate, ValidationErrors};
+use validator::Validate;
 
-use crate::models::{
-    primitives::EntryProtocol,
-    types::configuration::{DirConfigurationModel, ItemConfigurationModel},
+use crate::models::types::{
+    AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
+    UpdateItemEntryParams,
+    configuration::{DirConfigurationModel, ItemConfigurationModel},
 };
+
+// ########################################################
+// ###                   Create Entry                   ###
+// ########################################################
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateItemEntryInput {
+    // TODO: Add validation for path
     pub path: PathBuf,
+
+    #[validate(length(min = 1))]
     pub name: String,
-    pub order: Option<usize>,
+
+    pub order: usize,
     pub configuration: ItemConfigurationModel,
 }
 
@@ -25,9 +34,13 @@ pub struct CreateItemEntryInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateDirEntryInput {
+    // TODO: Add validation for path
     pub path: PathBuf,
+
+    #[validate(length(min = 1))]
     pub name: String,
-    pub order: Option<usize>,
+
+    pub order: usize,
     pub configuration: DirConfigurationModel,
 }
 
@@ -39,30 +52,6 @@ pub enum CreateEntryInput {
     Dir(CreateDirEntryInput),
 }
 
-impl CreateEntryInput {
-    pub fn path(&self) -> &PathBuf {
-        match self {
-            CreateEntryInput::Item(item) => &item.path,
-            CreateEntryInput::Dir(dir) => &dir.path,
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        match self {
-            CreateEntryInput::Item(item) => &item.name,
-            CreateEntryInput::Dir(dir) => &dir.name,
-        }
-    }
-}
-impl Validate for CreateEntryInput {
-    fn validate(&self) -> Result<(), ValidationErrors> {
-        match self {
-            CreateEntryInput::Item(item) => item.validate(),
-            CreateEntryInput::Dir(dir) => dir.validate(),
-        }
-    }
-}
-
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -70,55 +59,79 @@ pub struct CreateEntryOutput {
     pub id: Uuid,
 }
 
+// ########################################################
+// ###                   Delete Entry                   ###
+// ########################################################
+
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {
     pub id: Uuid,
-    pub path: PathBuf,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct DeleteEntryOutput {}
-
-// Update Entry
-
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateItemEntryInput {
+pub struct DeleteEntryOutput {
     pub id: Uuid,
-    pub name: Option<String>,
-    pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
 }
 
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateDirEntryInput {
-    pub id: Uuid,
-    pub name: Option<String>,
-    pub order: Option<usize>,
-}
+// ########################################################
+// ###                   Update Entry                   ###
+// ########################################################
 
-#[derive(Clone, Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
 pub enum UpdateEntryInput {
-    Item(UpdateItemEntryInput),
-    Dir(UpdateDirEntryInput),
+    Item(UpdateItemEntryParams),
+    Dir(UpdateDirEntryParams),
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "operations.ts")]
-pub struct UpdateEntryOutput {}
+pub enum UpdateEntryOutput {
+    Item(AfterUpdateItemEntryDescription),
+    Dir(AfterUpdateDirEntryDescription),
+}
 
-// Stream Entries
+// ########################################################
+// ###                  Batch Update Entry              ###
+// ########################################################
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchUpdateEntryKind {
+    Item(UpdateItemEntryParams),
+    Dir(UpdateDirEntryParams),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEntryInput {
+    pub entries: Vec<BatchUpdateEntryKind>,
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchUpdateEntryOutputKind {
+    Item(AfterUpdateItemEntryDescription),
+    Dir(AfterUpdateDirEntryDescription),
+}
+
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateEntryOutput {}
+
+// ########################################################
+// ###                  Stream Entries                  ###
+// ########################################################
 
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]

@@ -115,7 +115,7 @@ pub struct PanelPartPreferences {
 
 const PANEL_DEFAULTS: PanelPartDefaults = PanelPartDefaults {
     size: 200,
-    is_visible: true,
+    is_visible: false,
 };
 
 // ------------------------------------
