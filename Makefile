@@ -168,7 +168,7 @@ export-css-variables:
 .PHONY: open-docs
 open-docs:
 ifeq ($(DETECTED_OS),Windows)
-	@start "" "$(TYPEDOC_DIR)/index.html"
+	@cmd.exe /C start "" "$(TYPEDOC_DIR)\index.html"
 else ifeq ($(DETECTED_OS),Darwin)
 	@open "$(TYPEDOC_DIR)/index.html"
 else
