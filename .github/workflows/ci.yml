@@ -19,6 +19,7 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_INCREMENTAL: 0
+  RUSTC_WRAPPER: sccache
 
 jobs:
   check-modified-files:
@@ -116,6 +117,9 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.3
+
       - name: Build dependencies and internal crates
         run: |
           echo "Fetching all dependencies..."
@@ -167,6 +171,9 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.3
 
       - name: Install gen-bindings dependencies
         run: cd tools/gen-bindings && pnpm install --frozen-lockfile
@@ -268,8 +275,11 @@ jobs:
           shared-key: "build"
           save-if: false
 
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.3
+
       - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }} --locked
+        run: cargo test -p ${{ matrix.package }} --locked --offline
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check
@@ -331,6 +341,9 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
           save-if: false
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.3
 
       - name: Cache Grit binary
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
