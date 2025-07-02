@@ -144,6 +144,9 @@ importers:
       '@repo/bindings-utils':
         specifier: workspace:*
         version: link:../../packages/bindings-utils
+      '@repo/moss-workspace':
+        specifier: workspace:*
+        version: link:../moss-workspace
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
