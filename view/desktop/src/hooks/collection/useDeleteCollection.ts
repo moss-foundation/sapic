@@ -23,9 +23,9 @@ export const useDeleteCollection = () => {
 
   return useMutation({
     mutationFn: deleteStreamedCollection,
-    onSuccess: (_, variables) => {
+    onSuccess: (data) => {
       queryClient.setQueryData([USE_STREAMED_COLLECTIONS_QUERY_KEY], (old: StreamCollectionsEvent[]) => {
-        return old.filter((collection) => collection.id !== variables.id);
+        return old.filter((collection) => collection.id !== data.id);
       });
     },
   });

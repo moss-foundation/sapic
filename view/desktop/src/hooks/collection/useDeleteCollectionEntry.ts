@@ -15,6 +15,8 @@ const deleteCollectionEntry = async ({ collectionId, input }: UseDeleteCollectio
   if (result.status === "error") {
     throw new Error(String(result.error));
   }
+
+  return result.data;
 };
 
 export const useDeleteCollectionEntry = () => {
@@ -22,11 +24,11 @@ export const useDeleteCollectionEntry = () => {
 
   return useMutation({
     mutationFn: deleteCollectionEntry,
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
         (old: EntryInfo[]) => {
-          return old.filter((entry) => entry.id !== variables.input.id);
+          return old.filter((entry) => entry.id !== data.id);
         }
       );
     },
