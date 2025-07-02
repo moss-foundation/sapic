@@ -116,16 +116,16 @@ jobs:
           cache-all-crates: true
           shared-key: "build"
 
-      - name: Build dependencies only
+      - name: Build dependencies and internal crates
         run: |
           echo "Fetching all dependencies..."
           cargo fetch --locked
           
-          echo "Compiling workspace dependencies..."
-          cargo check --workspace --locked
+          echo "Building all workspace crates (libs and bins)..."
+          cargo build --workspace --locked
           
-          echo "Warming up build cache..."
-          cargo build --workspace --locked --lib
+          echo "Pre-compiling all tests (without running)..."
+          cargo test --workspace --locked --no-run
 
   check-bindings:
     name: Check Bindings
@@ -269,7 +269,7 @@ jobs:
           save-if: false
 
       - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }} --locked
+        run: cargo test -p ${{ matrix.package }} --locked --offline
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check
