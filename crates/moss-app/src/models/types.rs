@@ -9,6 +9,7 @@ use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode};
 // ###                      Locale                      ###
 // ########################################################
 
+/// @category Types
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -22,6 +23,7 @@ pub struct LocaleInfo {
     pub is_default: Option<bool>,
 }
 
+/// @category Types
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -38,6 +40,7 @@ pub struct ColorThemeInfo {
 
 // State
 
+/// @category Types
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -46,6 +49,7 @@ pub struct Preferences {
     pub locale: Option<LocaleInfo>,
 }
 
+/// @category Types
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -59,6 +63,7 @@ pub struct Defaults {
 // #########################################################
 
 // FIXME: Is this the best way to handle date type?
+/// @category Types
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -68,6 +73,7 @@ pub struct LogDate {
     pub day: u32,
 }
 
+/// @category Types
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -78,6 +84,7 @@ pub struct LogItemSourceInfo {
     pub file_path: Option<PathBuf>,
 }
 
+/// @category Types
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -95,6 +102,7 @@ pub struct LogEntryInfo {
 // ###                    Workspace                      ###
 // #########################################################
 
+/// @category Types
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]

@@ -3,6 +3,7 @@ use ts_rs::TS;
 
 use crate::models::primitives::ThemeId;
 
+/// @category Events
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "events.ts")]
