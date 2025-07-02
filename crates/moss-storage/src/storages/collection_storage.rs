@@ -1,4 +1,3 @@
-pub mod entities;
 pub mod stores;
 
 use moss_db::{
