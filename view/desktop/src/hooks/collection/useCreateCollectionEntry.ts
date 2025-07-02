@@ -4,7 +4,7 @@ import { CreateEntryInput, CreateEntryOutput, EntryInfo } from "@repo/moss-colle
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { join, sep } from "@tauri-apps/api/path";
 
-import { USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamCollectionEntries";
+import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY } from "./useStreamedCollectionEntries";
 
 export interface UseCreateCollectionEntryInputProps {
   collectionId: string;
@@ -23,6 +23,7 @@ const createCollectionEntry = async ({ collectionId, input }: UseCreateCollectio
 
   const { entryClass, protocol } = getClassAndProtocolFromEntyInput(input);
 
+  //FIXME: This is a temporary solution until we have a proper configuration model
   if ("dir" in input) {
     const rawpath = await join(input.dir.path, input.dir.name);
 
@@ -68,8 +69,13 @@ export const useCreateCollectionEntry = () => {
 
   return useMutation<EntryInfo | null, Error, UseCreateCollectionEntryInputProps>({
     mutationFn: createCollectionEntry,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [USE_STREAM_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId] });
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(
+        [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, variables.collectionId],
+        (old: EntryInfo[]) => {
+          return [...old, data];
+        }
+      );
     },
   });
 };

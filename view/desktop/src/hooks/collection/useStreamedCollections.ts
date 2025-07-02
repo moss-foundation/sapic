@@ -5,7 +5,7 @@ import { Channel } from "@tauri-apps/api/core";
 
 import { useWorkspaceSidebarState } from "../workspace/useWorkspaceSidebarState";
 
-export const USE_STREAM_COLLECTIONS_QUERY_KEY = "streamedCollections";
+export const USE_STREAMED_COLLECTIONS_QUERY_KEY = "streamedCollections";
 
 const startStreamingCollections = async (): Promise<StreamCollectionsEvent[]> => {
   const collections: StreamCollectionsEvent[] = [];
@@ -29,15 +29,15 @@ export const useStreamedCollections = () => {
   const queryClient = useQueryClient();
 
   const query = useQuery<StreamCollectionsEvent[], Error>({
-    queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY],
+    queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY],
     queryFn: startStreamingCollections,
     placeholderData: [],
     enabled: hasWorkspace,
   });
 
   const clearQueryCacheAndRefetch = () => {
-    queryClient.invalidateQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY], exact: true });
-    queryClient.removeQueries({ queryKey: [USE_STREAM_COLLECTIONS_QUERY_KEY], exact: true });
+    queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+    queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
     return query.refetch();
   };
 
