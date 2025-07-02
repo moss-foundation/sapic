@@ -29,11 +29,11 @@ export const TreeRootNodeChildren = ({
   const { nodeOffset, displayMode } = useContext(TreeContext);
 
   const nodesToRender =
-    displayMode === "RequestFirst"
+    displayMode === "REQUEST_FIRST"
       ? node.requests.childNodes
       : [node.endpoints, node.schemas, node.components, node.requests]; //TODO: this should check it's root nodes orders
 
-  const shouldRenderAddRootForm = displayMode === "RequestFirst" && (isAddingRootFileNode || isAddingRootFolderNode);
+  const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
   const restrictedNames = calculateRestrictedNames(node, isAddingRootFolderNode);
 
   return (
