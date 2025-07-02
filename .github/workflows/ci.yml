@@ -18,6 +18,7 @@ env:
   RUST_BACKTRACE: 1
   CARGO_TERM_COLOR: always
   CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_INCREMENTAL: 0
 
 jobs:
   check-modified-files:
@@ -41,6 +42,7 @@ jobs:
           files: |
             **.rs
             Cargo.toml
+            Cargo.lock
           files_ignore: |
             .github/**
 
@@ -54,6 +56,7 @@ jobs:
             **.js
             **.jsx
             package.json
+            pnpm-lock.yaml
 
   check-modified-models:
     name: Check Modified Models
@@ -79,9 +82,47 @@ jobs:
         id: output-models
         run: python3 .github/scripts/check_modified_models.py
 
+  # Single job to build Rust cache - all other Rust jobs depend on this
+  rust-build-cache:
+    name: Build Rust Cache
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: true
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build workspace
+        run: cargo check --workspace --locked
+
   check-bindings:
     name: Check Bindings
-    needs: check-modified-models
+    needs: [check-modified-models, rust-build-cache]
+    if: ${{ needs.check-modified-models.outputs.UPDATED_MODELS != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -100,9 +141,6 @@ jobs:
       - name: Install PNPM
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
-      - name: Install gen-bindings dependencies
-        run: cd tools/gen-bindings && pnpm install
-
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
 
@@ -118,19 +156,20 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          cache-all-crates: "true"
+          cache-all-crates: true
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install gen-bindings dependencies
+        run: cd tools/gen-bindings && pnpm install --frozen-lockfile
 
       - name: Verify that bindings are updated
         run: |
           make gen-${{matrix.crate}}-bindings
           git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
   
-  
-  
   rust-general-workflows:
     name: Rust General Workflows
-    needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    needs: rust-build-cache
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -157,17 +196,17 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          cache-all-crates: "true"
+          cache-all-crates: true
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Workspace Audit
         run: |
           cd "${GITHUB_WORKSPACE}/tools/xtask"
-          cargo -q run -- --fail-fast audit
+          cargo run --locked -- --fail-fast audit
 
   rust-tests:
     name: Rust Tests - ${{ matrix.package }}
-    needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    needs: rust-build-cache
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -215,10 +254,11 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          cache-all-crates: "true"
+          cache-all-crates: true
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Run Tests - ${{ matrix.package }}
-        run: cargo test -p ${{ matrix.package }}
+        run: cargo test -p ${{ matrix.package }} --locked
 
   # Run Rust Lint Check in each package individually.
   # Right now it includes warnings check and grit check
@@ -226,9 +266,9 @@ jobs:
   # without being blocked by warnings during the development process.
   # Warnings checks will run when the PR is marked as ready for review.
   rust-lint-check:
-    name: Rust Lint Check
-    needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
+    name: Rust Lint Check - ${{ matrix.package }}
+    needs: rust-build-cache
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -277,7 +317,8 @@ jobs:
       - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          cache-all-crates: "true"
+          cache-all-crates: true
+          key: ${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Install Grit
         run: |
@@ -296,18 +337,18 @@ jobs:
       - name: Rust Grit Check - ${{ matrix.package }}
         run: python3 .github/scripts/rust_grit_check.py -p ${{ matrix.package }}
   
+  # Optimized Node.js workflows - single job with matrix for tasks
   node-workflows:
-    name: Node.js Workflows - ${{ matrix.task.name }}
+    name: Node.js - ${{ matrix.task.name }}
     needs: check-modified-files
     if: ${{ needs.check-modified-files.outputs.node == 'true' }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         task:
           - name: Lint
-            command: |
-              pnpm run lint -- --quiet
+            command: pnpm run lint -- --quiet
 
           - name: Test Packages
             command: pnpm run test --project packages
@@ -338,10 +379,10 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Dependencies for desktop # TODO: This is a hack to get around eslint issues
-        run: cd view/desktop && pnpm install --force
+      - name: Install Dependencies for desktop
+        run: cd view/desktop && pnpm install --frozen-lockfile --force
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
