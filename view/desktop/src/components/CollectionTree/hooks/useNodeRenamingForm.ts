@@ -16,16 +16,29 @@ export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (nod
     const rawpath = await join(...node.path.segments.slice(0, -1), newName);
 
     try {
-      await updateCollectionEntry({
-        collectionId: id,
-        updatedEntry: {
-          "ITEM": {
-            ...node,
-            name: newName,
-            path: rawpath,
+      if (node.kind === "Dir") {
+        await updateCollectionEntry({
+          collectionId: id,
+          updatedEntry: {
+            "DIR": {
+              id: node.id,
+              path: rawpath,
+              name: newName,
+            },
           },
-        },
-      });
+        });
+      } else {
+        await updateCollectionEntry({
+          collectionId: id,
+          updatedEntry: {
+            "ITEM": {
+              id: node.id,
+              path: rawpath,
+              name: newName,
+            },
+          },
+        });
+      }
 
       onNodeUpdate({ ...node, name: newName });
     } catch (error) {

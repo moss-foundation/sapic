@@ -45,6 +45,10 @@ export const useUpdateCollectionEntry = (collectionId: string) => {
           return oldEntry;
         });
       });
+      queryClient.invalidateQueries({
+        queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, collectionId],
+        exact: true,
+      });
     },
   });
 };
