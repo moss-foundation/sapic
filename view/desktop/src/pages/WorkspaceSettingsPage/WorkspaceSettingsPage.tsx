@@ -12,7 +12,7 @@ import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
 export const WorkspaceSettings = () => {
   const workspace = useActiveWorkspace();
-  const { mutate: updateWorkspace, isPending } = useUpdateWorkspace();
+  const { mutate: updateWorkspace } = useUpdateWorkspace();
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
   const [name, setName] = useState(workspace?.displayName || "");
