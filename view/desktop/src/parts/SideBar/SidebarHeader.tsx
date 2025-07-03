@@ -1,11 +1,20 @@
 import { ActionButton, ActionMenu } from "@/components";
 import { CreateCollectionModal } from "@/components/Modals/Collection/CreateCollectionModal";
-import { useClearAllCollectionEntries, useModal, useStreamedCollections, useWorkspaceSidebarState } from "@/hooks";
+import {
+  useClearAllCollectionEntries,
+  useCollectionsTrees,
+  useModal,
+  useStreamedCollections,
+  useWorkspaceSidebarState,
+} from "@/hooks";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   // const { collapseAll } = useCollectionsStore();
-  const { isLoading: isCollectionsLoading, clearCollectionsCacheAndRefetch } = useStreamedCollections();
+
+  const { isLoading: areCollectionsLoading } = useCollectionsTrees();
+  const { clearCollectionsCacheAndRefetch } = useStreamedCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
+
   const { hasWorkspace } = useWorkspaceSidebarState();
 
   const {
@@ -33,7 +42,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
           icon="Refresh"
           onClick={handleRefreshCollections}
           title="Refresh Collections"
-          disabled={isCollectionsLoading || !hasWorkspace}
+          disabled={areCollectionsLoading || !hasWorkspace}
         />
         <ExampleDropdownMenu />
       </div>
