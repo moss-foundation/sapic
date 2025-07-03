@@ -58,21 +58,28 @@ export interface TreeProps {
 }
 
 export interface TreeContextProps extends StreamCollectionsEvent {
+  displayMode: WorkspaceMode;
+
   paddingLeft: number;
   paddingRight: number;
+
   rootOffset: number;
   nodeOffset: number;
+
   searchInput?: string;
+
   sortBy?: SortTypes;
+
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
-  displayMode: WorkspaceMode;
+
   onRootAddCallback?: (node: TreeCollectionNode) => void;
   onRootRemoveCallback?: (node: TreeCollectionNode) => void;
   onRootRenameCallback?: (node: TreeCollectionNode) => void;
   onRootUpdateCallback?: (node: TreeCollectionNode) => void;
   onRootClickCallback?: (node: TreeCollectionNode) => void;
   onRootDoubleClickCallback?: (node: TreeCollectionNode) => void;
+
   onNodeAddCallback?: (node: TreeCollectionNode) => void;
   onNodeRemoveCallback?: (node: TreeCollectionNode) => void;
   onNodeRenameCallback?: (node: TreeCollectionNode) => void;

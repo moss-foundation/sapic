@@ -390,3 +390,20 @@ export const updateNodesOrder = (nodes: TreeCollectionNode[]): TreeCollectionNod
     order: index + 1,
   }));
 };
+
+export const sortNodesByOrder = (nodes: TreeCollectionNode[]): TreeCollectionNode[] => {
+  //FIXME nodes without order shouldnt exist, it's a temporary check
+  return [...nodes].sort((a, b) => {
+    const validOrderA = typeof a.order === "number";
+    const validOrderB = typeof b.order === "number";
+
+    if (validOrderA && validOrderB) {
+      return a.order! - b.order!;
+    }
+
+    if (validOrderA) return -1;
+    if (validOrderB) return 1;
+
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  });
+};
