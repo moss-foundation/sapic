@@ -32,7 +32,7 @@ interface TreeNodeButtonProps {
   isRootNode: boolean;
 }
 
-const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
+const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
   (
     {
       node,
@@ -51,26 +51,22 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, onNodeRenameCallback } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+    const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry(id);
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        // onNodeUpdate({
-        //   ...node,
-        //   expanded: true,
-        // });
-
-        const { childNodes, ...nodeWithoutChildren } = node;
-
-        placeholderFnForUpdateCollectionEntry({
+        updateCollectionEntry({
           collectionId: id,
           updatedEntry: {
-            ...nodeWithoutChildren,
-            expanded: true,
+            DIR: {
+              id: node.id,
+              path: node.path.raw,
+              expanded: true,
+            },
           },
         });
       }
@@ -97,13 +93,14 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
         return;
       }
 
-      const { childNodes, ...nodeWithoutChildren } = node;
-
-      placeholderFnForUpdateCollectionEntry({
+      updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...nodeWithoutChildren,
-          expanded: !nodeWithoutChildren.expanded,
+          DIR: {
+            id: node.id,
+            path: node.path.raw,
+            expanded: !node.expanded,
+          },
         },
       });
     };
@@ -114,10 +111,12 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     return (
       <ActionMenu.Root modal={false}>
         <ActionMenu.Trigger asChild openOnRightClick>
-          <button
+          <div
             ref={ref}
             onClick={handleClick}
             className={cn("group/treeNode relative flex h-full w-full min-w-0 cursor-pointer items-center")}
+            role="button"
+            tabIndex={0}
           >
             <span
               className={cn("absolute inset-x-2 h-full w-[calc(100%-16px)] rounded-sm", {
@@ -188,7 +187,7 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
                 </ul>,
                 preview
               )}
-          </button>
+          </div>
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>

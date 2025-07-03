@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
 import { useUpdateCollectionEntry } from "@/hooks/collection/useUpdateCollectionEntry";
-import { join, sep } from "@tauri-apps/api/path";
+import { join } from "@tauri-apps/api/path";
 
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode } from "../types";
@@ -10,20 +10,19 @@ export const useNodeRenamingForm = (node: TreeCollectionNode, onNodeUpdate: (nod
   const { id } = useContext(TreeContext);
   const [isRenamingNode, setIsRenamingNode] = useState(false);
 
-  const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry(id);
 
   const handleRenamingFormSubmit = async (newName: string) => {
     const rawpath = await join(...node.path.segments.slice(0, -1), newName);
 
     try {
-      placeholderFnForUpdateCollectionEntry({
+      await updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...node,
-          name: newName,
-          path: {
-            raw: rawpath,
-            segments: rawpath.split(sep()),
+          "ITEM": {
+            ...node,
+            name: newName,
+            path: rawpath,
           },
         },
       });
