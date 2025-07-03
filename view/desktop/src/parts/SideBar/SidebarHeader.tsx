@@ -5,8 +5,10 @@ import {
   useCollectionsTrees,
   useModal,
   useStreamedCollections,
+  useStreamedCollectionsWithEntries,
   useWorkspaceSidebarState,
 } from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
   // const { collapseAll } = useCollectionsStore();
@@ -14,6 +16,8 @@ export const SidebarHeader = ({ title }: { title: string }) => {
   const { isLoading: areCollectionsLoading } = useCollectionsTrees();
   const { clearCollectionsCacheAndRefetch } = useStreamedCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();
+
+  const { data: collectionsWithEntries } = useStreamedCollectionsWithEntries();
 
   const { hasWorkspace } = useWorkspaceSidebarState();
 
@@ -28,6 +32,29 @@ export const SidebarHeader = ({ title }: { title: string }) => {
     clearAllCollectionEntriesCache();
   };
 
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+
+  const handleCollapseAll = () => {
+    collectionsWithEntries?.forEach((collection) => {
+      batchUpdateCollectionEntry({
+        collectionId: collection.id,
+        entries: {
+          entries: collection.entries
+            .filter((entry) => entry.kind === "Dir" && entry.expanded === true)
+            .map((entry) => {
+              return {
+                DIR: {
+                  id: entry.id,
+                  expanded: false,
+                  path: entry.path.raw,
+                },
+              };
+            }),
+        },
+      });
+    });
+  };
+
   return (
     <div className="background-(--moss-secondary-background) relative flex items-center justify-between px-2 py-[5px] text-(--moss-primary-text) uppercase">
       <div className="w-max items-center overflow-hidden text-xs text-ellipsis whitespace-nowrap text-(--moss-secondary-text)">
@@ -36,7 +63,7 @@ export const SidebarHeader = ({ title }: { title: string }) => {
 
       <div className="flex grow justify-end">
         <ActionButton disabled={!hasWorkspace} icon="Add" onClick={openCreateCollectionModal} />
-        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={undefined} />
+        <ActionButton disabled={!hasWorkspace} icon="CollapseAll" onClick={handleCollapseAll} />
         <ActionButton disabled={!hasWorkspace} icon="Import" />
         <ActionButton
           icon="Refresh"

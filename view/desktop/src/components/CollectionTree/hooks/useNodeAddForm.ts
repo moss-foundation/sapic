@@ -63,7 +63,12 @@ const createItemConfiguration = (nodeClass: TreeCollectionNode["class"]): ItemCo
 };
 
 //FIXME: This is a temporary solution until we have a proper configuration model
-const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolder: boolean): CreateEntryInput => {
+const createEntry = (
+  parentNode: TreeCollectionNode,
+  name: string,
+  isAddingFolder: boolean,
+  order: number
+): CreateEntryInput => {
   const baseEntry = {
     name,
     path: parentNode.path.raw,
@@ -73,7 +78,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     return {
       dir: {
         ...baseEntry,
-        order: 0,
+        order,
         configuration: createDirConfiguration(parentNode.class),
       },
     };
@@ -82,7 +87,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   return {
     item: {
       ...baseEntry,
-      order: 0,
+      order,
       configuration: createItemConfiguration(parentNode.class),
     },
   };
@@ -96,7 +101,7 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
 
   const handleAddFormSubmit = async (name: string) => {
-    const newEntry = createEntry(parentNode, name, isAddingFolderNode);
+    const newEntry = createEntry(parentNode, name, isAddingFolderNode, parentNode.childNodes.length + 1);
 
     try {
       const result = await createCollectionEntry({
