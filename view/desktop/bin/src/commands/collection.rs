@@ -132,6 +132,7 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
     collection_id: Uuid,
+    input: Option<StreamEntriesInput>, // FIXME: this needs to be optional because the frontend doesn't send it yet
     channel: TauriChannel<StreamEntriesEvent>,
     options: Options,
 ) -> TauriResult<StreamEntriesOutput> {
@@ -146,9 +147,16 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
             .get(&collection_id)
             .map_err_as_not_found("Collection not found")?;
 
+        // FIXME: temporary hack
+        let input = if let Some(input) = input {
+            input
+        } else {
+            StreamEntriesInput { paths: Vec::new() }
+        };
+
         let collection_item_lock = collection_item.read().await;
         collection_item_lock
-            .stream_entries(channel)
+            .stream_entries(channel, input)
             .await
             .map_err(TauriError::OperationError)
     })

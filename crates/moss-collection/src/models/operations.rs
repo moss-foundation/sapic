@@ -133,6 +133,21 @@ pub struct BatchUpdateEntryOutput {}
 // ###                  Stream Entries                  ###
 // ########################################################
 
+#[derive(Clone, Debug, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamEntriesInput {
+    /// The list of paths to expand. Paths need to be relative to the collection root.
+    /// If empty, the default expansion directories will be used. Default expansion directories are:
+    /// - `requests`
+    /// - `endpoints`
+    /// - `components`
+    /// - `schemas`
+    ///
+    /// This might be useful for the frontend to only expand a specific path.
+    pub paths: Vec<PathBuf>,
+}
+
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

@@ -23,6 +23,10 @@ export const deleteEntryOutputSchema = z.object({
   id: z.string(),
 });
 
+export const streamEntriesInputSchema = z.object({
+  paths: z.array(z.string()),
+});
+
 export const streamEntriesOutputSchema = z.record(z.never());
 export const batchUpdateEntryKindSchema = z.union([
   z.object({

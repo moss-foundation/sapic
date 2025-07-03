@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    path::Path,
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
@@ -16,7 +16,9 @@ use crate::{
     collection::OnDidChangeEvent,
     dirs,
     models::{
-        events::StreamEntriesEvent, operations::StreamEntriesOutput, primitives::EntryPath,
+        events::StreamEntriesEvent,
+        operations::{StreamEntriesInput, StreamEntriesOutput},
+        primitives::EntryPath,
         types::EntryInfo,
     },
     services::{
@@ -36,6 +38,7 @@ impl Collection {
     pub async fn stream_entries(
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
+        input: StreamEntriesInput,
     ) -> OperationResult<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
@@ -43,8 +46,15 @@ impl Collection {
         let storage_service = self.service::<StorageService>();
 
         let mut handles = Vec::new();
-        for dir in EXPANSION_DIRECTORIES {
-            let dir_path = Path::new(dir);
+        let expansion_dirs = if !input.paths.is_empty() {
+            input.paths
+        } else {
+            EXPANSION_DIRECTORIES
+                .iter()
+                .map(|dir| PathBuf::from(dir))
+                .collect::<Vec<_>>()
+        };
+        for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
             let worktree_service_clone = worktree_service.clone();
 
@@ -71,7 +81,7 @@ impl Collection {
             let handle = tokio::spawn(async move {
                 let _ = worktree_service_clone
                     .scan(
-                        dir_path,
+                        &dir,
                         expanded_entries.clone(),
                         all_entry_keys.clone(),
                         entries_tx_clone,
