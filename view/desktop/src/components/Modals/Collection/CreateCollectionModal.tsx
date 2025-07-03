@@ -6,12 +6,14 @@ import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
 import InputOutlined from "@/components/InputOutlined";
 import { ModalForm } from "@/components/ModalForm";
+import { useStreamedCollections } from "@/hooks";
 import { useCreateCollection } from "@/hooks/collection/useCreateCollection";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+  const { data: collections } = useStreamedCollections();
   const { mutateAsync: createCollection, isPending: isCreateCollectionLoading } = useCreateCollection();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -25,6 +27,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     const result = await createCollection({
       name,
       repo,
+      order: collections?.length ? collections.length + 1 : 1,
     });
 
     closeModal();
@@ -49,6 +52,9 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const resetForm = () => {
     setTimeout(() => {
       setName("");
+      setRepo("");
+      setMode("Default");
+      setOpenAutomatically(true);
     }, 200);
   };
 
