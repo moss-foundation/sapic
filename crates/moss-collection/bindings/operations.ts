@@ -30,19 +30,7 @@ export type DeleteEntryInput = { id: string };
 
 export type DeleteEntryOutput = { id: string };
 
-export type StreamEntriesInput = {
-  /**
-   * The list of paths to expand. Paths need to be relative to the collection root.
-   * If empty, the default expansion directories will be used. Default expansion directories are:
-   * - `requests`
-   * - `endpoints`
-   * - `components`
-   * - `schemas`
-   *
-   * This might be useful for the frontend to only expand a specific path.
-   */
-  paths: Array<string>;
-};
+export type StreamEntriesInput = "LOAD_ROOT" | { "RELOAD_PATH": string };
 
 export type StreamEntriesOutput = Record<string, never>;
 

@@ -151,7 +151,7 @@ pub async fn stream_collection_entries<R: TauriRuntime>(
         let input = if let Some(input) = input {
             input
         } else {
-            StreamEntriesInput { paths: Vec::new() }
+            StreamEntriesInput::LoadRoot
         };
 
         let collection_item_lock = collection_item.read().await;

@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::Arc,
 };
 
@@ -46,13 +46,12 @@ impl Collection {
         let storage_service = self.service::<StorageService>();
 
         let mut handles = Vec::new();
-        let expansion_dirs = if !input.paths.is_empty() {
-            input.paths
-        } else {
-            EXPANSION_DIRECTORIES
+        let expansion_dirs = match input {
+            StreamEntriesInput::LoadRoot => EXPANSION_DIRECTORIES
                 .iter()
                 .map(|dir| PathBuf::from(dir))
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
+            StreamEntriesInput::ReloadPath(path) => vec![path],
         };
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
