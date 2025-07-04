@@ -134,8 +134,11 @@ impl From<i8> for AnyValue {
 impl From<AnyValue> for i8 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
+        if bytes.is_empty() {
+            return 0; // Default for empty input
+        }
         let mut buf = [0; 1];
-        buf.copy_from_slice(&bytes[..1]);
+        buf[0] = bytes[0];
         i8::from_le_bytes(buf)
     }
 }
@@ -149,9 +152,18 @@ impl From<i16> for AnyValue {
 impl From<AnyValue> for i16 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 2];
-        buf.copy_from_slice(&bytes[..2]);
-        i16::from_le_bytes(buf)
+        let size = std::mem::size_of::<i16>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 2];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            i16::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 2];
+            buf.copy_from_slice(&bytes[..size]);
+            i16::from_le_bytes(buf)
+        }
     }
 }
 
@@ -164,9 +176,18 @@ impl From<i32> for AnyValue {
 impl From<AnyValue> for i32 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 4];
-        buf.copy_from_slice(&bytes[..4]);
-        i32::from_le_bytes(buf)
+        let size = std::mem::size_of::<i32>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 4];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            i32::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 4];
+            buf.copy_from_slice(&bytes[..size]);
+            i32::from_le_bytes(buf)
+        }
     }
 }
 
@@ -179,9 +200,18 @@ impl From<i64> for AnyValue {
 impl From<AnyValue> for i64 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 8];
-        buf.copy_from_slice(&bytes[..8]);
-        i64::from_le_bytes(buf)
+        let size = std::mem::size_of::<i64>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 8];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            i64::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 8];
+            buf.copy_from_slice(&bytes[..size]);
+            i64::from_le_bytes(buf)
+        }
     }
 }
 
@@ -194,9 +224,18 @@ impl From<i128> for AnyValue {
 impl From<AnyValue> for i128 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 16];
-        buf.copy_from_slice(&bytes[..16]);
-        i128::from_le_bytes(buf)
+        let size = std::mem::size_of::<i128>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 16];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            i128::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 16];
+            buf.copy_from_slice(&bytes[..size]);
+            i128::from_le_bytes(buf)
+        }
     }
 }
 
@@ -211,8 +250,11 @@ impl From<u8> for AnyValue {
 impl From<AnyValue> for u8 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
+        if bytes.is_empty() {
+            return 0; // Default for empty input
+        }
         let mut buf = [0; 1];
-        buf.copy_from_slice(&bytes[..1]);
+        buf[0] = bytes[0];
         u8::from_le_bytes(buf)
     }
 }
@@ -226,9 +268,18 @@ impl From<u16> for AnyValue {
 impl From<AnyValue> for u16 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 2];
-        buf.copy_from_slice(&bytes[..2]);
-        u16::from_le_bytes(buf)
+        let size = std::mem::size_of::<u16>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 2];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            u16::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 2];
+            buf.copy_from_slice(&bytes[..size]);
+            u16::from_le_bytes(buf)
+        }
     }
 }
 
@@ -241,9 +292,18 @@ impl From<u32> for AnyValue {
 impl From<AnyValue> for u32 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 4];
-        buf.copy_from_slice(&bytes[..4]);
-        u32::from_le_bytes(buf)
+        let size = std::mem::size_of::<u32>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 4];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            u32::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 4];
+            buf.copy_from_slice(&bytes[..size]);
+            u32::from_le_bytes(buf)
+        }
     }
 }
 
@@ -256,9 +316,18 @@ impl From<u64> for AnyValue {
 impl From<AnyValue> for u64 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 8];
-        buf.copy_from_slice(&bytes[..8]);
-        u64::from_le_bytes(buf)
+        let size = std::mem::size_of::<u64>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 8];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            u64::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 8];
+            buf.copy_from_slice(&bytes[..size]);
+            u64::from_le_bytes(buf)
+        }
     }
 }
 
@@ -271,9 +340,18 @@ impl From<u128> for AnyValue {
 impl From<AnyValue> for u128 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 16];
-        buf.copy_from_slice(&bytes[..16]);
-        u128::from_le_bytes(buf)
+        let size = std::mem::size_of::<u128>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 16];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            u128::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 16];
+            buf.copy_from_slice(&bytes[..size]);
+            u128::from_le_bytes(buf)
+        }
     }
 }
 
@@ -288,9 +366,18 @@ impl From<f32> for AnyValue {
 impl From<AnyValue> for f32 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 4];
-        buf.copy_from_slice(&bytes[..4]);
-        f32::from_le_bytes(buf)
+        let size = std::mem::size_of::<f32>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 4];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            f32::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 4];
+            buf.copy_from_slice(&bytes[..size]);
+            f32::from_le_bytes(buf)
+        }
     }
 }
 
@@ -303,9 +390,18 @@ impl From<f64> for AnyValue {
 impl From<AnyValue> for f64 {
     fn from(value: AnyValue) -> Self {
         let bytes = value.as_bytes();
-        let mut buf = [0; 8];
-        buf.copy_from_slice(&bytes[..8]);
-        f64::from_le_bytes(buf)
+        let size = std::mem::size_of::<f64>();
+        
+        if bytes.len() < size {
+            // Pad with zeros if we have fewer bytes than expected
+            let mut buf = [0u8; 8];
+            buf[..bytes.len()].copy_from_slice(bytes);
+            f64::from_le_bytes(buf)
+        } else {
+            let mut buf = [0; 8];
+            buf.copy_from_slice(&bytes[..size]);
+            f64::from_le_bytes(buf)
+        }
     }
 }
 
@@ -319,7 +415,11 @@ impl From<bool> for AnyValue {
 
 impl From<AnyValue> for bool {
     fn from(value: AnyValue) -> Self {
-        value.as_bytes()[0] != 0
+        let bytes = value.as_bytes();
+        if bytes.is_empty() {
+            return false; // Default for empty input
+        }
+        bytes[0] != 0
     }
 }
 

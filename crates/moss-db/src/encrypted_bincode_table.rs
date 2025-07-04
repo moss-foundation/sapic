@@ -122,7 +122,22 @@ where
             .map_err(|e| DatabaseError::Internal(format!("Failed to hash password: {}", e)))?;
 
         let mut key_bytes = [0u8; 32];
-        key_bytes.copy_from_slice(&password_hash.hash.unwrap().as_bytes()[..32]);
+        match password_hash.hash {
+            Some(hash) => {
+                let hash_bytes = hash.as_bytes();
+                if hash_bytes.len() < 32 {
+                    return Err(DatabaseError::Internal(
+                        "Password hash is too short".to_string(),
+                    ));
+                }
+                key_bytes.copy_from_slice(&hash_bytes[..32]);
+            }
+            None => {
+                return Err(DatabaseError::Internal(
+                    "Password hash generation failed".to_string(),
+                ));
+            }
+        }
         Ok(Zeroizing::new(key_bytes))
     }
 
