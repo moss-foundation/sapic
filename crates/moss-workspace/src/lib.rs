@@ -26,10 +26,6 @@ pub mod constants {
     pub const TREE_VIEW_GROUP_MOCK_SERVERS: &str = "workbench.view.mockServers";
 }
 
-pub mod defaults {
-    pub(crate) const DEFAULT_WORKSPACE_NAME: &str = "New Workspace";
-}
-
 pub mod dirs {
     pub const COLLECTIONS_DIR: &str = "collections";
     pub const ENVIRONMENTS_DIR: &str = "environments";

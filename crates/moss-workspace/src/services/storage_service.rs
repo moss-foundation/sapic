@@ -41,10 +41,6 @@ impl StorageService {
         Ok(self.storage.begin_write()?)
     }
 
-    pub(crate) fn begin_read(&self) -> Result<Transaction> {
-        Ok(self.storage.begin_read()?)
-    }
-
     // Items operations
 
     pub(crate) fn put_item_order_txn(

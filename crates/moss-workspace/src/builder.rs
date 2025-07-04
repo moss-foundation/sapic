@@ -3,7 +3,7 @@ use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{ServiceMarker, providers::ServiceMap};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
-use std::{any::TypeId, marker::PhantomData, path::Path, sync::Arc};
+use std::{any::TypeId, path::Path, sync::Arc};
 use tauri::Runtime as TauriRuntime;
 
 use crate::{

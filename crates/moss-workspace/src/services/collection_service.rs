@@ -1,7 +1,7 @@
 use anyhow::{Context as _, Result};
 use derive_more::{Deref, DerefMut};
 use futures::Stream;
-use moss_applib::ServiceMarker;
+use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{self as collection, Collection as CollectionHandle, CollectionBuilder};
 use moss_common::api::OperationError;
@@ -17,9 +17,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
-    dirs,
-    services::{PublicServiceMarker, storage_service::StorageService},
-    storage::segments::COLLECTION_SEGKEY,
+    dirs, services::storage_service::StorageService, storage::segments::COLLECTION_SEGKEY,
 };
 
 #[derive(Error, Debug)]
@@ -105,6 +103,7 @@ pub(crate) struct CollectionItemDescription {
     pub name: String,
     pub order: Option<usize>,
     pub expanded: bool,
+    #[allow(dead_code)]
     pub repository: Option<String>,
     pub icon_path: Option<PathBuf>,
     pub abs_path: Arc<Path>,
@@ -194,7 +193,7 @@ impl CollectionService {
             CollectionBuilder::new(self.fs.clone())
                 .with_service::<collection::services::StorageService>(storage)
                 .with_service(worktree)
-                .create(collection::builder::CreateParams {
+                .create(collection::builder::CollectionCreateParams {
                     name: Some(params.name.to_owned()),
                     internal_abs_path: abs_path.clone(),
                     external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
@@ -408,7 +407,7 @@ async fn restore_collections(
             CollectionBuilder::new(fs.clone())
                 .with_service::<collection::services::StorageService>(storage)
                 .with_service(worktree)
-                .load(collection::builder::LoadParams {
+                .load(collection::builder::CollectionLoadParams {
                     internal_abs_path: collection_abs_path,
                 })
                 .await?
