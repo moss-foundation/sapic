@@ -50,7 +50,6 @@ pub struct Workspace<R: TauriRuntime> {
     // pub(super) environments: OnceCell<EnvironmentMap>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
-
     #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
     // pub layout: LayoutService,

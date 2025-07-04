@@ -1,5 +1,16 @@
+pub mod models;
+mod utils;
+
+pub use utils::*;
+
 use serde::Serialize;
 use thiserror::Error;
+
+pub mod constants {
+    use std::time::Duration;
+
+    pub const DEFAULT_OPERATION_TIMEOUT: Duration = Duration::from_secs(30);
+}
 
 #[derive(Debug, Error)]
 pub enum TauriError {
