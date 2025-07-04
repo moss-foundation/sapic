@@ -3896,12 +3896,14 @@ name = "moss_workspace"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-stream",
  "async-trait",
  "derive_more 2.0.1",
  "futures",
  "image",
  "moss_activity_indicator",
  "moss_applib",
+ "moss_bindingutils",
  "moss_collection",
  "moss_common",
  "moss_db",
@@ -3916,6 +3918,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "thiserror 2.0.12",
  "tokio",
  "ts-rs",
  "uuid",

@@ -1,3 +1,4 @@
+use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::types::VariableInfo;
 use moss_git::url::GIT_URL_REGEX;
 use serde::{Deserialize, Serialize};
@@ -21,7 +22,7 @@ pub struct CreateCollectionInput {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: Option<usize>,
+    pub order: usize,
     pub external_path: Option<PathBuf>,
     #[validate(regex(path = "*GIT_URL_REGEX"))]
     pub repo: Option<String>,
@@ -33,25 +34,18 @@ pub struct CreateCollectionInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub id: Uuid,
+    pub name: String,
+    pub order: Option<usize>,
+    pub expanded: bool,
+    pub icon_path: Option<PathBuf>,
+
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Arc<Path>,
-}
 
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub enum ChangeRepository {
-    Update(String),
-    Remove,
-}
-
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub enum ChangeIcon {
-    Update(PathBuf),
-    Remove,
+    #[serde(skip)]
+    #[ts(skip)]
+    pub external_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
@@ -62,22 +56,24 @@ pub struct UpdateCollectionInput {
     pub id: Uuid,
 
     #[validate(length(min = 1))]
-    pub new_name: Option<String>,
-
+    pub name: Option<String>,
     #[validate(custom(function = "validate_change_repository"))]
-    pub new_repo: Option<ChangeRepository>,
-    pub new_icon: Option<ChangeIcon>,
+    pub repository: Option<ChangeString>,
+
+    // TODO: add validation
+    pub icon: Option<ChangePath>,
     pub order: Option<usize>,
     pub pinned: Option<bool>,
+    pub expanded: Option<bool>,
 }
 
-fn validate_change_repository(repo: &ChangeRepository) -> Result<(), ValidationError> {
+fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
     match repo {
-        ChangeRepository::Update(repo) => GIT_URL_REGEX
+        ChangeString::Update(repo) => GIT_URL_REGEX
             .is_match(repo)
             .then_some(())
             .ok_or(ValidationError::new("Invalid Git URL format")),
-        ChangeRepository::Remove => Ok(()),
+        ChangeString::Remove => Ok(()),
     }
 }
 
@@ -103,7 +99,7 @@ pub struct DeleteCollectionOutput {
 
     #[serde(skip)]
     #[ts(skip)]
-    pub abs_path: Arc<Path>,
+    pub abs_path: Option<Arc<Path>>,
 }
 
 #[derive(Debug, Deserialize, TS)]

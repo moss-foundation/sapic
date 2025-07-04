@@ -1,12 +1,6 @@
 use moss_db::primitives::AnyValue;
 
-use crate::{
-    primitives::segkey::SegKeyBuf,
-    storage::operations::{
-        GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
-        TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-    },
-};
+use crate::{primitives::segkey::SegKeyBuf, storage::operations::*};
 
 pub mod item_store;
 pub mod variable_store;
@@ -21,6 +15,9 @@ pub trait WorkspaceItemStore:
     + TransactionalGetItem<Key = SegKeyBuf, Entity = AnyValue>
     + RemoveItem<Key = SegKeyBuf, Entity = AnyValue>
     + TransactionalRemoveItem<Key = SegKeyBuf, Entity = AnyValue>
+    + RemoveByPrefix<Key = SegKeyBuf, Entity = AnyValue>
+    + TransactionalRemoveByPrefix<Key = SegKeyBuf, Entity = AnyValue>
+    + TransactionalListByPrefix<Key = SegKeyBuf, Entity = AnyValue>
     + Send
     + Sync
 {

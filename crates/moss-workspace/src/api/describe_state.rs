@@ -1,16 +1,31 @@
+use std::collections::HashMap;
+
 use moss_common::api::OperationResult;
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::Runtime as TauriRuntime;
 
-use crate::{Workspace, models::operations::DescribeStateOutput};
+use crate::{
+    Workspace,
+    models::operations::DescribeStateOutput,
+    services::{layout_service::LayoutService, storage_service::StorageService},
+};
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {
-        let mut txn = self.storage.begin_read()?;
+        let layout = self.services.get::<LayoutService>();
+        let storage = self.services.get::<StorageService>();
 
-        let editor_state = self.layout.editor_state(&mut txn)?;
-        let sidebar_state = self.layout.sidebar_state(&mut txn)?;
-        let panel_state = self.layout.panel_state(&mut txn)?;
-        let activitybar_state = self.layout.activitybar_state(&mut txn)?;
+        // HACK: cache here is a temporary solution
+        let mut cache = storage
+            .get_layout_cache()?
+            .map(|(segkey, value)| (segkey, value))
+            .collect::<HashMap<SegKeyBuf, AnyValue>>();
+
+        let editor_state = layout.get_editor_layout_state(&mut cache)?;
+        let sidebar_state = layout.get_sidebar_layout_state(&mut cache)?;
+        let panel_state = layout.get_panel_layout_state(&mut cache)?;
+        let activitybar_state = layout.get_activitybar_layout_state(&mut cache)?;
 
         Ok(DescribeStateOutput {
             editor: editor_state,

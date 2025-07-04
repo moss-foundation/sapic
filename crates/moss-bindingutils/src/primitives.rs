@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -22,5 +24,13 @@ pub enum ChangeString {
 #[ts(export, export_to = "primitives.ts")]
 pub enum ChangeBool {
     Update(bool),
+    Remove,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "primitives.ts")]
+pub enum ChangePath {
+    Update(PathBuf),
     Remove,
 }

@@ -3,13 +3,7 @@ use std::sync::Arc;
 
 use crate::{
     primitives::segkey::SegKeyBuf,
-    storage::{
-        SegBinTable,
-        operations::{
-            GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
-            TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-        },
-    },
+    storage::{SegBinTable, operations::*},
     workspace_storage::stores::WorkspaceItemStore,
 };
 
@@ -44,6 +38,29 @@ impl TransactionalListByPrefix for WorkspaceItemStoreImpl {
         prefix: &str,
     ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
         self.table.scan_by_prefix(txn, prefix)
+    }
+}
+
+impl RemoveByPrefix for WorkspaceItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn remove_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let mut write_txn = self.client.begin_write()?;
+        self.table.remove_by_prefix(&mut write_txn, prefix)
+    }
+}
+
+impl TransactionalRemoveByPrefix for WorkspaceItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn remove_by_prefix(
+        &self,
+        txn: &mut Transaction,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        self.table.remove_by_prefix(txn, prefix)
     }
 }
 

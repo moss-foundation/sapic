@@ -13,6 +13,7 @@ use tauri::Runtime as TauriRuntime;
 use crate::{
     dirs,
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
+    services::collection_service::CollectionService,
     storage::segments::COLLECTION_SEGKEY,
     workspace::Workspace,
 };
@@ -23,43 +24,45 @@ impl<R: TauriRuntime> Workspace<R> {
         ctx: &C,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
-        let fs = <dyn FileSystem>::global::<R, C>(ctx);
+        let collection_service = self.services.get::<CollectionService>();
+        let description = collection_service.delete_collection(input.id).await?;
+        // let fs = <dyn FileSystem>::global::<R, C>(ctx);
 
-        let id_str = input.id.to_string();
-        let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
-        let abs_path: Arc<Path> = self.absolutize(path).into();
+        // let id_str = input.id.to_string();
+        // let path = PathBuf::from(dirs::COLLECTIONS_DIR).join(&id_str);
+        // let abs_path: Arc<Path> = self.absolutize(path).into();
 
-        if abs_path.exists() {
-            fs.remove_dir(
-                &abs_path,
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await
-            .context("Failed to delete collection from file system")?;
-        }
+        // if abs_path.exists() {
+        //     fs.remove_dir(
+        //         &abs_path,
+        //         RemoveOptions {
+        //             recursive: true,
+        //             ignore_if_not_exists: true,
+        //         },
+        //     )
+        //     .await
+        //     .context("Failed to delete collection from file system")?;
+        // }
 
-        let collections = self.collections_mut(ctx).await?;
-        let removed_id = {
-            if let Some(v) = collections.remove(&input.id) {
-                let lock = v.read().await;
-                let id = lock.id;
-                Some(id)
-            } else {
-                None
-            }
-        };
+        // let collections = self.collections_mut(ctx).await?;
+        // let removed_id = {
+        //     if let Some(v) = collections.remove(&input.id) {
+        //         let lock = v.read().await;
+        //         let id = lock.id;
+        //         Some(id)
+        //     } else {
+        //         None
+        //     }
+        // };
 
-        {
-            let key = COLLECTION_SEGKEY.join(&id_str);
-            RemoveItem::remove(self.storage.item_store().as_ref(), key)?;
-        }
+        // {
+        //     let key = COLLECTION_SEGKEY.join(&id_str);
+        //     RemoveItem::remove(self.storage.item_store().as_ref(), key)?;
+        // }
 
         Ok(DeleteCollectionOutput {
-            id: removed_id.unwrap_or(uuid::Uuid::nil()),
-            abs_path,
+            id: input.id,
+            abs_path: description.map(|d| d.abs_path),
         })
     }
 }

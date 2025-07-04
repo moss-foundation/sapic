@@ -14,8 +14,13 @@ use moss_storage::{
 };
 use moss_workspace::{
     Workspace,
+    builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
     context::{WorkspaceContext, WorkspaceContextState},
-    workspace::{CreateParams, ModifyParams},
+    services::{
+        collection_service::CollectionService, layout_service::LayoutService,
+        storage_service::StorageService,
+    },
+    workspace::ModifyParams,
 };
 use std::{
     collections::HashMap,
@@ -260,8 +265,34 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return Err(WorkspaceServiceError::AlreadyLoaded(id.to_string()));
         }
 
-        let workspace = Workspace::load(self.fs.clone(), &descriptor.abs_path, activity_indicator)
+        let storage_service: Arc<StorageService> = StorageService::new(&descriptor.abs_path)
+            .context("Failed to load the storage service")
+            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+            .into();
+
+        let collection_service = CollectionService::new(
+            descriptor.abs_path.clone(),
+            self.fs.clone(),
+            storage_service.clone(),
+        )
+        .await
+        .context("Failed to load the collection service")
+        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+
+        let layout_service = LayoutService::new(storage_service.clone());
+
+        let workspace = WorkspaceBuilder::new(self.fs.clone())
+            .with_service::<StorageService>(storage_service.clone())
+            .with_service(collection_service)
+            .with_service(layout_service)
+            .load(
+                WorkspaceLoadParams {
+                    abs_path: descriptor.abs_path.clone(),
+                },
+                activity_indicator,
+            )
             .await
+            .context("Failed to load the workspace")
             .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         Ok((workspace, descriptor))
@@ -284,16 +315,33 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             .context("Failed to create workspace directory")
             .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
 
-        let new_workspace = Workspace::create(
-            self.fs.clone(),
-            &abs_path,
-            activity_indicator, // TODO:
-            CreateParams {
-                name: Some(name.to_string()),
-            },
-        )
-        .await
-        .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+        let storage_service: Arc<StorageService> = StorageService::new(&abs_path)
+            .context("Failed to load the storage service")
+            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+            .into();
+
+        let collection_service =
+            CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
+                .await
+                .context("Failed to load the collection service")
+                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+
+        let layout_service = LayoutService::new(storage_service.clone());
+
+        let workspace = WorkspaceBuilder::new(self.fs.clone())
+            .with_service::<StorageService>(storage_service.clone())
+            .with_service(collection_service)
+            .with_service(layout_service)
+            .create(
+                WorkspaceCreateParams {
+                    name: name.to_string(),
+                    abs_path: abs_path.clone(),
+                },
+                activity_indicator,
+            )
+            .await
+            .context("Failed to create the workspace")
+            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         let descriptor: Arc<WorkspaceDescriptor> = WorkspaceDescriptor {
             id,
@@ -305,7 +353,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         workspaces.write().await.insert(id, descriptor.clone());
 
-        Ok((new_workspace, descriptor))
+        Ok((workspace, descriptor))
     }
 
     // TODO: remove this after we remove the describe_workbench_state api
