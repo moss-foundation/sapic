@@ -17,7 +17,7 @@ use crate::{
 
 impl Collection {
     pub async fn update_entry(
-        &mut self,
+        &self,
         input: UpdateEntryInput,
     ) -> OperationResult<UpdateEntryOutput> {
         match input {
@@ -33,7 +33,7 @@ impl Collection {
     }
 
     pub(super) async fn update_item_entry(
-        &mut self,
+        &self,
         input: UpdateItemEntryParams,
     ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
@@ -63,7 +63,7 @@ impl Collection {
     }
 
     pub(super) async fn update_dir_entry(
-        &mut self,
+        &self,
         input: UpdateDirEntryParams,
     ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;

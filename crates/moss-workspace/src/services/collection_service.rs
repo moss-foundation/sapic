@@ -17,7 +17,9 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
-    dirs, services::storage_service::StorageService, storage::segments::COLLECTION_SEGKEY,
+    dirs,
+    services::{PublicServiceMarker, storage_service::StorageService},
+    storage::segments::COLLECTION_SEGKEY,
 };
 
 #[derive(Error, Debug)]
@@ -95,7 +97,7 @@ struct CollectionItem {
 
     #[deref]
     #[deref_mut]
-    pub handle: CollectionHandle,
+    pub handle: Arc<CollectionHandle>,
 }
 
 pub(crate) struct CollectionItemDescription {
@@ -123,6 +125,7 @@ pub struct CollectionService {
 }
 
 impl ServiceMarker for CollectionService {}
+impl PublicServiceMarker for CollectionService {}
 
 impl CollectionService {
     pub async fn new(
@@ -130,9 +133,12 @@ impl CollectionService {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService>,
     ) -> CollectionResult<Self> {
-        let expanded_items = storage
-            .get_expanded_items::<Uuid>()?
-            .collect::<HashSet<_>>();
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<Uuid>() {
+            expanded_items.collect::<HashSet<_>>()
+        } else {
+            HashSet::new()
+        };
+
         let collections = restore_collections(&abs_path, &fs, &storage).await?;
 
         Ok(Self {
@@ -146,22 +152,18 @@ impl CollectionService {
         })
     }
 
-    // async fn with_collection<T>(
-    //     &self,
-    //     id: Uuid,
-    //     fut: impl FnOnce(&CollectionItem) -> T,
-    // ) -> CollectionResult<T> {
-    //     let state_lock = self.state.read().await;
-    //     let r = state_lock
-    //         .collections
-    //         .get(&id)
-    //         .ok_or(CollectionError::NotFound(id.to_string()))?;
-
-    //     Ok(f(r))
-    // }
-
     fn absolutize<P: AsRef<Path>>(&self, path: P) -> PathBuf {
         self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
+    }
+
+    pub async fn collection(&self, id: Uuid) -> CollectionResult<Arc<CollectionHandle>> {
+        let state_lock = self.state.read().await;
+        let item = state_lock
+            .collections
+            .get(&id)
+            .ok_or(CollectionError::NotFound(id.to_string()))?;
+
+        Ok(item.handle.clone())
     }
 
     pub(crate) async fn create_collection(
@@ -218,7 +220,7 @@ impl CollectionService {
             CollectionItem {
                 id,
                 order: Some(params.order),
-                handle: collection,
+                handle: Arc::new(collection),
             },
         );
 
@@ -432,7 +434,7 @@ async fn restore_collections(
             CollectionItem {
                 id,
                 order,
-                handle: collection,
+                handle: Arc::new(collection),
             },
         );
     }

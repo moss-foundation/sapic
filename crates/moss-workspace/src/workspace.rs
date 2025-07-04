@@ -1,7 +1,7 @@
 use anyhow::Result;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
-use moss_applib::providers::ServiceProvider;
+use moss_applib::{ServiceMarker, providers::ServiceProvider};
 use moss_collection::collection::Collection;
 use moss_environment::environment::Environment;
 use moss_file::json::JsonFileHandle;
@@ -15,7 +15,10 @@ use tauri::Runtime as TauriRuntime;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 
-use crate::manifest::{MANIFEST_FILE_NAME, ManifestModel};
+use crate::{
+    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    services::{PublicServiceMarker, collection_service::CollectionService},
+};
 
 #[derive(Deref, DerefMut)]
 pub struct CollectionItem {
@@ -66,6 +69,9 @@ pub struct ModifyParams {
 }
 
 impl<R: TauriRuntime> Workspace<R> {
+    pub fn service<S: ServiceMarker + PublicServiceMarker>(&self) -> &S {
+        self.services.get::<S>()
+    }
     // pub async fn load(
     //     fs: Arc<dyn FileSystem>,
     //     abs_path: &Path,

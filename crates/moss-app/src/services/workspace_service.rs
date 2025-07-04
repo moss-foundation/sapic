@@ -276,7 +276,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             storage_service.clone(),
         )
         .await
-        .context("Failed to load the collection service")
+        // .context("Failed to load the collection service")
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         let layout_service = LayoutService::new(storage_service.clone());
@@ -323,7 +323,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let collection_service =
             CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
                 .await
-                .context("Failed to load the collection service")
+                // .context("Failed to load the collection service")
                 .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         let layout_service = LayoutService::new(storage_service.clone());

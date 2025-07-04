@@ -20,18 +20,16 @@ pub struct WorkspaceCreateParams {
     pub abs_path: Arc<Path>,
 }
 
-pub struct WorkspaceBuilder<R: TauriRuntime> {
+pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
     services: ServiceMap,
-    _runtime: PhantomData<R>,
 }
 
-impl<R: TauriRuntime> WorkspaceBuilder<R> {
+impl WorkspaceBuilder {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
         Self {
             fs,
             services: Default::default(),
-            _runtime: PhantomData,
         }
     }
 
@@ -43,7 +41,7 @@ impl<R: TauriRuntime> WorkspaceBuilder<R> {
         self
     }
 
-    pub async fn load(
+    pub async fn load<R: TauriRuntime>(
         self,
         params: WorkspaceLoadParams,
         activity_indicator: ActivityIndicator<R>, // FIXME: will be passed as a service in the future
@@ -62,7 +60,7 @@ impl<R: TauriRuntime> WorkspaceBuilder<R> {
         })
     }
 
-    pub async fn create(
+    pub async fn create<R: TauriRuntime>(
         self,
         params: WorkspaceCreateParams,
         activity_indicator: ActivityIndicator<R>, // FIXME: will be passed as a service in the future

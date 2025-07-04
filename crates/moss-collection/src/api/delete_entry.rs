@@ -8,7 +8,7 @@ use validator::Validate;
 
 impl Collection {
     pub async fn delete_entry(
-        &mut self,
+        &self,
         input: DeleteEntryInput,
     ) -> OperationResult<DeleteEntryOutput> {
         input.validate()?;

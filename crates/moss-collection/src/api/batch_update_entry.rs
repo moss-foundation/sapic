@@ -11,7 +11,7 @@ use crate::{
 
 impl Collection {
     pub async fn batch_update_entry(
-        &mut self,
+        &self,
         input: BatchUpdateEntryInput,
         channel: TauriChannel<BatchUpdateEntryEvent>,
     ) -> OperationResult<BatchUpdateEntryOutput> {
