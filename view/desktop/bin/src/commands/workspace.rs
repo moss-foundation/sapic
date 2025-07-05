@@ -1,13 +1,7 @@
 use moss_api::{self as api, TauriError, TauriResult};
 use moss_app::app::App;
 use moss_common::api::OperationOptionExt;
-use moss_workspace::models::{
-    events::{StreamCollectionsEvent, StreamEnvironmentsEvent},
-    operations::{
-        CreateCollectionInput, CreateCollectionOutput, DeleteCollectionInput,
-        DeleteCollectionOutput, DescribeStateOutput, UpdateStateInput,
-    },
-};
+use moss_workspace::models::{events::*, operations::*};
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::Options;
@@ -85,7 +79,7 @@ pub async fn stream_collections<R: TauriRuntime>(
     window: Window<R>,
     channel: TauriChannel<StreamCollectionsEvent>,
     options: Options,
-) -> TauriResult<()> {
+) -> TauriResult<StreamCollectionsOutput> {
     api::with_timeout(options, async move {
         let (workspace, ctx) = app
             .workspace()

@@ -17,7 +17,7 @@ use crate::{
 
 impl Collection {
     pub async fn create_entry(
-        &mut self,
+        &self,
         input: CreateEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         match input {
@@ -27,7 +27,7 @@ impl Collection {
     }
 
     async fn create_dir_entry(
-        &mut self,
+        &self,
         input: CreateDirEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;
@@ -57,7 +57,7 @@ impl Collection {
     }
 
     async fn create_item_entry(
-        &mut self,
+        &self,
         input: CreateItemEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
         input.validate()?;

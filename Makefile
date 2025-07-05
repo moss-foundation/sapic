@@ -141,6 +141,14 @@ $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,api,API_MODELS_DIR))
 
+gen-app-bindings:
+gen-collection-bindings:
+gen-environment-bindings:
+gen-workspace-bindings:
+gen-activity-indicator-bindings:
+gen-bindingutils-bindings:
+gen-api-bindings:
+
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
@@ -148,10 +156,12 @@ gen-bindings: \
 	gen-collection-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
-	gen-workbench-bindings \
 	gen-activity-indicator-bindings \
 	gen-bindingutils-bindings \
 	gen-api-bindings
+
+
+
 
 # ======================================================
 # Utility Commands

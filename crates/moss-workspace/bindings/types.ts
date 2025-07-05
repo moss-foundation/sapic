@@ -5,7 +5,7 @@ import type { ActivitybarPosition, EditorGridOrientation, PanelRenderer, Sidebar
 export type ActivitybarItemStateInfo = { id: string; order: number; visible: boolean };
 
 export type ActivitybarPartStateInfo = {
-  lastActiveContainerId: string | null;
+  lastActiveContainerId?: string;
   position: ActivitybarPosition;
   items: Array<ActivitybarItemStateInfo>;
 };
@@ -31,7 +31,7 @@ export type EditorPanelState = {
   tabComponent?: string;
   title?: string;
   renderer?: PanelRenderer;
-  params?: { [key: string]: JsonValue };
+  params: { [key: string]: JsonValue };
   minimumWidth?: number;
   minimumHeight?: number;
   maximumWidth?: number;

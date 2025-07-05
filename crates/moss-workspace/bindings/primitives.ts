@@ -2,6 +2,10 @@
 
 export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 
+export type ChangePath = { "UPDATE": string } | "REMOVE";
+
+export type ChangeString = { "UPDATE": string } | "REMOVE";
+
 export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
 
 export type PanelRenderer = "onlyWhenVisible" | "always";

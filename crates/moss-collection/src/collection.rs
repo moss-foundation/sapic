@@ -4,7 +4,7 @@ use moss_applib::{
     providers::ServiceProvider,
     subscription::{Event, EventEmitter},
 };
-use moss_common::api::Change;
+use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
@@ -42,8 +42,8 @@ impl EventMarker for OnDidChangeEvent {}
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub repository: Option<Change<String>>,
-    pub icon: Option<Change<PathBuf>>,
+    pub repository: Option<ChangeString>,
+    pub icon_path: Option<ChangePath>,
 }
 
 pub struct Collection {
@@ -66,6 +66,23 @@ impl Collection {
 }
 
 impl Collection {
+    pub fn abs_path(&self) -> &Arc<Path> {
+        &self.abs_path
+    }
+
+    pub fn external_path(&self) -> Option<&Arc<Path>> {
+        unimplemented!()
+    }
+
+    pub fn icon_path(&self) -> Option<PathBuf> {
+        let path = self
+            .abs_path
+            .join(ASSETS_DIR)
+            .join(COLLECTION_ICON_FILENAME);
+
+        path.exists().then_some(path)
+    }
+
     pub fn service<T: ServiceMarker>(&self) -> &T {
         self.services.get::<T>()
     }
@@ -75,24 +92,24 @@ impl Collection {
     }
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
-        let repo_change = match params.repository {
-            None => None,
-            Some(Change::Update(url)) => Some(Change::Update(normalize_git_url(&url)?)),
-            Some(Change::Remove) => Some(Change::Remove),
-        };
+        if params.name.is_some() || params.repository.is_some() {
+            let normalized_repo = if let Some(ChangeString::Update(url)) = params.repository {
+                Some(ChangeString::Update(normalize_git_url(&url)?))
+            } else {
+                None
+            };
 
-        if params.name.is_some() || repo_change.is_some() {
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repository: repo_change,
+                    repository: normalized_repo,
                 })
                 .await?;
         }
 
-        match params.icon {
+        match params.icon_path {
             None => {}
-            Some(Change::Update(new_icon_path)) => {
+            Some(ChangePath::Update(new_icon_path)) => {
                 SetIconService::set_icon(
                     &new_icon_path,
                     &self
@@ -102,7 +119,7 @@ impl Collection {
                     ICON_SIZE,
                 )?;
             }
-            Some(Change::Remove) => {
+            Some(ChangePath::Remove) => {
                 self.fs
                     .remove_file(
                         &self
@@ -123,10 +140,6 @@ impl Collection {
 
     pub async fn manifest(&self) -> ManifestModel {
         self.manifest.model().await
-    }
-
-    pub fn abs_path(&self) -> &Arc<Path> {
-        &self.abs_path
     }
 
     pub async fn environments(&self) -> Result<&EnvironmentMap> {

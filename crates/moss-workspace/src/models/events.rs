@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamCollectionsEvent {
     pub id: Uuid,
@@ -17,16 +18,15 @@ pub struct StreamCollectionsEvent {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamEnvironmentsEvent {
     pub id: Uuid,
 
     /// The id of the collection that the environment belongs to.
     /// If the environment is global, this will be `None`.
-    #[ts(optional)]
     pub collection_id: Option<Uuid>,
 
     pub name: String,
-    #[ts(optional)]
     pub order: Option<usize>,
 }

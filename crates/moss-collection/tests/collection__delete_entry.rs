@@ -71,7 +71,7 @@ async fn delete_entry_success() {
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let delete_input = DeleteEntryInput { id: Uuid::new_v4() };
 

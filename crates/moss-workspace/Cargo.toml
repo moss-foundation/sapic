@@ -15,6 +15,7 @@ moss_activity_indicator.workspace = true
 moss_text.workspace = true
 moss_file.workspace = true
 moss_git.workspace = true
+moss_bindingutils.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -29,6 +30,8 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 image.workspace = true
 rand.workspace = true
 async-trait.workspace = true
+thiserror.workspace = true
+async-stream.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

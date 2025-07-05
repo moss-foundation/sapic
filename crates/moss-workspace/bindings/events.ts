@@ -3,9 +3,9 @@
 export type StreamCollectionsEvent = {
   id: string;
   name: string;
-  repository: string | null;
-  order: number | null;
-  picturePath: string | null;
+  repository?: string;
+  order?: number;
+  picturePath?: string;
 };
 
 export type StreamEnvironmentsEvent = {

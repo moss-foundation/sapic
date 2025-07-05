@@ -25,6 +25,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
     const result = await createCollection({
       name,
       repo,
+      order: 0, // FIXME: This is a temporary hardcoded
     });
 
     closeModal();

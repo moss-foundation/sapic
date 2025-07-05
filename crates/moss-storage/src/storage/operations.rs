@@ -32,6 +32,24 @@ pub trait ListByPrefix: Send + Sync {
     fn list_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
 }
 
+pub trait RemoveByPrefix: Send + Sync {
+    type Key;
+    type Entity;
+
+    fn remove_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
+pub trait TransactionalRemoveByPrefix: Send + Sync {
+    type Key;
+    type Entity;
+
+    fn remove_by_prefix(
+        &self,
+        txn: &mut Transaction,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>>;
+}
+
 pub trait TransactionalPutItem: Send + Sync {
     type Key;
     type Entity;

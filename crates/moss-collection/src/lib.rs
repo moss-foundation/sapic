@@ -9,7 +9,7 @@ pub mod services;
 pub mod storage;
 
 pub use builder::CollectionBuilder;
-pub use collection::Collection;
+pub use collection::{Collection, ModifyParams};
 
 pub mod constants {
     pub const COLLECTION_ICON_FILENAME: &str = "icon.png";

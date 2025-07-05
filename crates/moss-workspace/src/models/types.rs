@@ -27,25 +27,22 @@ impl Default for WorkspaceMode {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
     pub id: String,
-
     pub display_name: String,
-
-    #[ts(optional)]
     pub order: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
     pub id: String,
-    #[ts(optional)]
     pub collection_id: Option<String>,
     pub name: String,
-    #[ts(optional)]
     pub order: Option<usize>,
 }
 
@@ -64,6 +61,7 @@ pub struct ActivitybarItemStateInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct ActivitybarPartStateInfo {
     pub last_active_container_id: Option<String>,
@@ -102,11 +100,11 @@ pub struct PanelPartStateInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPartStateInfo {
     pub grid: EditorGridState,
     #[ts(type = "Record<string, EditorPanelState>")]
     pub panels: HashMap<String, EditorPanelState>,
-    #[ts(optional)]
     pub active_group: Option<String>,
 }

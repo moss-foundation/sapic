@@ -68,7 +68,7 @@ impl StorageService {
 
     pub(crate) fn put_expanded_entries<T: Serialize>(
         &self,
-        expanded_entries: impl IntoIterator<Item = T>,
+        expanded_entries: Vec<T>,
     ) -> Result<()> {
         let mut txn = self.begin_write()?;
         self.put_expanded_entries_txn(&mut txn, expanded_entries)?;
@@ -80,28 +80,26 @@ impl StorageService {
     pub(crate) fn put_expanded_entries_txn<T: Serialize>(
         &self,
         txn: &mut Transaction,
-        expanded_entries: impl IntoIterator<Item = T>,
+        expanded_entries: Vec<T>,
     ) -> Result<()> {
         let store = self.storage.resource_store();
         TransactionalPutItem::put(
             store.as_ref(),
             txn,
             segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-            AnyValue::serialize(&expanded_entries.into_iter().collect::<Vec<_>>())?,
+            AnyValue::serialize(&expanded_entries)?,
         )?;
 
         Ok(())
     }
 
-    pub(crate) fn get_expanded_entries<T: DeserializeOwned>(
-        &self,
-    ) -> Result<impl Iterator<Item = T>>
+    pub(crate) fn get_expanded_entries<T: DeserializeOwned>(&self) -> Result<Vec<T>>
     where
         T: Eq + Hash,
     {
         let store = self.storage.resource_store();
         let segkey = segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
-        Ok(AnyValue::deserialize::<Vec<T>>(&value)?.into_iter())
+        Ok(AnyValue::deserialize::<Vec<T>>(&value)?)
     }
 }

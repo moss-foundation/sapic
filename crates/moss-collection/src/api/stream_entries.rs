@@ -57,11 +57,11 @@ impl Collection {
             let entries_tx_clone = tx.clone();
             let worktree_service_clone = worktree_service.clone();
 
-            // We need to fetch this data from the database here, otherwise we’ll be requesting it every time the scan method is called.
+            // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
             let expanded_entries: Arc<HashSet<Uuid>> =
                 match storage_service.get_expanded_entries::<Uuid>() {
-                    Ok(entries) => entries.collect::<HashSet<_>>().into(),
+                    Ok(entries) => HashSet::from_iter(entries).into(),
                     Err(error) => {
                         println!("warn: getting expanded entries: {}", error);
                         HashSet::default().into()
