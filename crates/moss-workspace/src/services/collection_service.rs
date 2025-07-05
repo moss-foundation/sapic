@@ -3,7 +3,9 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_collection::{self as collection, Collection as CollectionHandle, CollectionBuilder};
+use moss_collection::{
+    self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+};
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
@@ -315,7 +317,7 @@ impl CollectionService {
             self.storage.put_item_order_txn(&mut txn, id, order)?;
         }
 
-        item.modify(collection::ModifyParams {
+        item.modify(CollectionModifyParams {
             name: params.name,
             repository: params.repository,
             icon_path: params.icon_path,

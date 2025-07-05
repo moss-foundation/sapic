@@ -13,7 +13,7 @@ impl<R: TauriRuntime> App<R> {
         &self,
         _ctx: &C,
     ) -> OperationResult<ListWorkspacesOutput> {
-        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspaces = workspace_service
             .map_known_workspaces_to_vec(|id, descriptor| WorkspaceInfo {
                 id,

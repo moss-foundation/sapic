@@ -4,7 +4,8 @@ pub use context::*;
 
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
-    app::{App, AppBuilder, AppDefaults},
+    App, AppBuilder,
+    app::AppDefaults,
     models::{
         primitives::ThemeMode,
         types::{ColorThemeInfo, LocaleInfo},
@@ -65,7 +66,9 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
     .unwrap();
 
     let workspace_service: WorkspaceService<MockRuntime> =
-        WorkspaceService::new(global_storage.clone(), fs.clone(), &app_path);
+        WorkspaceService::new(global_storage.clone(), fs.clone(), &app_path)
+            .await
+            .expect("Failed to create workspace service");
 
     let cleanup_fn = Box::new({
         let path = app_path.clone();

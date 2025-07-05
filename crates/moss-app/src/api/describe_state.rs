@@ -14,7 +14,7 @@ use crate::{
 
 impl<R: TauriRuntime> App<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeAppStateOutput> {
-        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
 
         // HACK: This is a hack to get the last workspace name
         let active_workspace_lock = workspace_service.workspace().await;

@@ -14,18 +14,14 @@ impl<R: TauriRuntime> App<R> {
         ctx: &C,
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
-        let workspace_service = self.service::<WorkspaceService<R>>();
-        let (workspace, descriptor) = workspace_service
-            .load_workspace(input.id, self.activity_indicator.clone())
-            .await?;
-
-        workspace_service
-            .activate_workspace(ctx, input.id, workspace)
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
+        let desc = workspace_service
+            .activate_workspace(ctx, input.id, self.activity_indicator.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {
-            id: descriptor.id,
-            abs_path: descriptor.abs_path.to_owned(),
+            id: desc.id,
+            abs_path: desc.abs_path.to_owned(),
         })
     }
 }

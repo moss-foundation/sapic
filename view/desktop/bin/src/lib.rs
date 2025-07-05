@@ -11,7 +11,8 @@ extern crate tracing;
 
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
-    app::{AppBuilder, AppDefaults},
+    AppBuilder,
+    app::AppDefaults,
     services::{
         locale_service::LocaleService, log_service::LogService, session_service::SessionService,
         theme_service::ThemeService, workspace_service::WorkspaceService,
@@ -70,7 +71,9 @@ pub async fn run<R: TauriRuntime>() {
                     .into();
 
                 let workspace_service =
-                    WorkspaceService::<R>::new(global_storage.clone(), fs.clone(), &app_dir);
+                    WorkspaceService::<R>::new(global_storage.clone(), fs.clone(), &app_dir)
+                        .await
+                        .expect("Failed to create workspace service");
                 let theme_service = ThemeService::new(fs.clone(), themes_dir);
                 let locale_service = LocaleService::new(fs.clone(), locales_dir);
                 let session_service = SessionService::new();

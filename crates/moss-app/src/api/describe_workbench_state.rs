@@ -19,7 +19,7 @@ impl<R: TauriRuntime> App<R> {
         Ok(DescribeWorkbenchStateOutput {
             active_workspace_id: workspace_id,
             prev_workspace_id: None, // TODO: implement
-            abs_path: Arc::clone(&self.abs_path),
+                                     // abs_path: Arc::clone(&self.abs_path),
         })
     }
 }

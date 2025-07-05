@@ -14,19 +14,13 @@ pub async fn update_workspace_state<R: TauriRuntime>(
     input: UpdateStateInput,
     options: Options,
 ) -> TauriResult<()> {
-    api::with_timeout(options, async move {
-        let (workspace, _ctx) = app
-            .workspace()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
-
+    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
         workspace
             .update_state(input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -36,18 +30,13 @@ pub async fn describe_workspace_state<R: TauriRuntime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeStateOutput> {
-    api::with_timeout(options, async move {
-        let (workspace, _ctx) = app
-            .workspace()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_workspace_timeout(app, options, |_ctx, workspace| async move {
         workspace
             .describe_state()
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -58,18 +47,13 @@ pub async fn stream_workspace_environments<R: TauriRuntime>(
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
 ) -> TauriResult<()> {
-    api::with_timeout(options, async move {
-        let (workspace, ctx) = app
-            .workspace()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
         workspace
             .stream_environments(&ctx, channel)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -80,18 +64,13 @@ pub async fn stream_collections<R: TauriRuntime>(
     channel: TauriChannel<StreamCollectionsEvent>,
     options: Options,
 ) -> TauriResult<StreamCollectionsOutput> {
-    api::with_timeout(options, async move {
-        let (workspace, ctx) = app
-            .workspace()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
         workspace
             .stream_collections(&ctx, channel)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -102,18 +81,13 @@ pub async fn create_collection<R: TauriRuntime>(
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
-    api::with_timeout(options, async move {
-        let (mut workspace, ctx) = app
-            .workspace_mut()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_workspace_timeout(app, options, |ctx, mut workspace| async move {
         workspace
             .create_collection(&ctx, &input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -124,16 +98,11 @@ pub async fn delete_collection<R: TauriRuntime>(
     input: DeleteCollectionInput,
     options: Options,
 ) -> TauriResult<DeleteCollectionOutput> {
-    api::with_timeout(options, async move {
-        let (mut workspace, ctx) = app
-            .workspace_mut()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_workspace_timeout(app, options, |ctx, mut workspace| async move {
         workspace
             .delete_collection(&ctx, &input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }

@@ -1,5 +1,6 @@
 pub mod api;
 pub mod app;
+pub mod builder;
 pub mod command;
 pub mod context;
 pub mod models;
@@ -8,6 +9,9 @@ pub mod storage;
 
 #[macro_use]
 extern crate derive_more;
+
+pub use app::App;
+pub use builder::AppBuilder;
 
 pub mod constants {
 

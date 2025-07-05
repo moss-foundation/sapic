@@ -1,11 +1,12 @@
 use moss_common::api::OperationResult;
-use moss_workspace::workspace;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    app::App, context::AnyAppContext, models::operations::UpdateWorkspaceInput,
-    services::workspace_service::WorkspaceService,
+    app::App,
+    context::AnyAppContext,
+    models::operations::UpdateWorkspaceInput,
+    services::workspace_service::{WorkspaceItemUpdateParams, WorkspaceService},
 };
 
 impl<R: TauriRuntime> App<R> {
@@ -16,12 +17,12 @@ impl<R: TauriRuntime> App<R> {
     ) -> OperationResult<()> {
         input.validate()?;
 
-        let workspace_service = self.service::<WorkspaceService<R>>();
-        let params = workspace::ModifyParams {
-            name: input.name.to_owned(),
-        };
-
-        workspace_service.update_workspace(params).await?;
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
+        workspace_service
+            .update_workspace(WorkspaceItemUpdateParams {
+                name: input.name.to_owned(),
+            })
+            .await?;
 
         Ok(())
     }
