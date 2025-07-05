@@ -58,7 +58,7 @@ jobs:
   check-modified-models:
     name: Check Modified Models
     needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' && github.ref_name != 'main' }}
     runs-on: ubuntu-latest
     outputs:
       UPDATED_MODELS: ${{steps.output-models.outputs.UPDATED_MODELS}}
