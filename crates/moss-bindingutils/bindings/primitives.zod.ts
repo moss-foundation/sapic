@@ -8,6 +8,13 @@ export const changeBoolSchema = z.union([
   z.literal("REMOVE"),
 ]);
 
+export const changePathSchema = z.union([
+  z.object({
+    "UPDATE": z.string(),
+  }),
+  z.literal("REMOVE"),
+]);
+
 export const changeStringSchema = z.union([
   z.object({
     "UPDATE": z.string(),

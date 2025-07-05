@@ -57,7 +57,7 @@ export const updateCollectionInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   repository: changeStringSchema.optional(),
-  icon: changePathSchema.optional(),
+  iconPath: changePathSchema.optional(),
   order: z.number().optional(),
   pinned: z.boolean().optional(),
   expanded: z.boolean().optional(),

@@ -58,11 +58,12 @@ pub struct UpdateCollectionInput {
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
+
     #[validate(custom(function = "validate_change_repository"))]
     pub repository: Option<ChangeString>,
 
     // TODO: add validation
-    pub icon: Option<ChangePath>,
+    pub icon_path: Option<ChangePath>,
     pub order: Option<usize>,
     pub pinned: Option<bool>,
     pub expanded: Option<bool>,

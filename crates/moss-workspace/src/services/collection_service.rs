@@ -76,7 +76,7 @@ pub(crate) struct CollectionItemUpdateParams {
     pub order: Option<usize>,
     pub expanded: Option<bool>,
     pub repository: Option<ChangeString>,
-    pub icon: Option<ChangePath>,
+    pub icon_path: Option<ChangePath>,
 }
 
 pub(crate) struct CollectionItemCreateParams {
@@ -318,7 +318,7 @@ impl CollectionService {
         item.modify(collection::ModifyParams {
             name: params.name,
             repository: params.repository,
-            icon: params.icon,
+            icon_path: params.icon_path,
         })
         .await
         .map_err(|e| CollectionError::Internal(e.to_string()))?;

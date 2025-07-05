@@ -2,7 +2,7 @@
 
 export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 
-export type ChangePath = { "update": string } | "remove";
+export type ChangePath = { "UPDATE": string } | "REMOVE";
 
 export type ChangeString = { "UPDATE": string } | "REMOVE";
 

@@ -34,7 +34,7 @@ export type UpdateCollectionInput = {
   id: string;
   name?: string;
   repository?: ChangeString;
-  icon?: ChangePath;
+  iconPath?: ChangePath;
   order?: number;
   pinned?: boolean;
   expanded?: boolean;

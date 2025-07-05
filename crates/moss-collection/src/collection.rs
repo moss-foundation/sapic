@@ -43,7 +43,7 @@ impl EventMarker for OnDidChangeEvent {}
 pub struct ModifyParams {
     pub name: Option<String>,
     pub repository: Option<ChangeString>,
-    pub icon: Option<ChangePath>,
+    pub icon_path: Option<ChangePath>,
 }
 
 pub struct Collection {
@@ -107,7 +107,7 @@ impl Collection {
                 .await?;
         }
 
-        match params.icon {
+        match params.icon_path {
             None => {}
             Some(ChangePath::Update(new_icon_path)) => {
                 SetIconService::set_icon(

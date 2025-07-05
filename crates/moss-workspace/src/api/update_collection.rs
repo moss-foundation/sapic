@@ -26,7 +26,7 @@ impl<R: TauriRuntime> Workspace<R> {
                     order: input.order,
                     expanded: input.expanded,
                     repository: input.repository,
-                    icon: input.icon,
+                    icon_path: input.icon_path,
                 },
             )
             .await?;

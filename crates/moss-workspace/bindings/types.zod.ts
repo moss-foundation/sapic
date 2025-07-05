@@ -57,7 +57,7 @@ export const panelPartStateInfoSchema = z.object({
 
 export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
 export const activitybarPartStateInfoSchema = z.object({
-  lastActiveContainerId: z.string().nullable(),
+  lastActiveContainerId: z.string().optional(),
   position: activitybarPositionSchema,
   items: z.array(activitybarItemStateInfoSchema),
 });
@@ -75,7 +75,7 @@ export const editorPanelStateSchema = z.object({
   tabComponent: z.string().optional(),
   title: z.string().optional(),
   renderer: panelRendererSchema.optional(),
-  params: z.record(jsonValueSchema).optional(),
+  params: z.record(jsonValueSchema),
   minimumWidth: z.number().optional(),
   minimumHeight: z.number().optional(),
   maximumWidth: z.number().optional(),
