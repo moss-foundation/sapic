@@ -1,13 +1,14 @@
 import { useContext } from "react";
 
 import { useDeleteCollectionEntry } from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 
 import { TreeContext } from "../..";
 import { AddingDividerTrigger } from "../AddingFormDivider";
 import { useAddNodeWithDivider } from "../hooks/useAddNodeWithDivider";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "../hooks/useNodeRenamingForm";
-import { TreeCollectionNode, TreeCollectionRootNode, TreeNodeComponentProps } from "../types";
+import { TreeCollectionNode, TreeNodeComponentProps } from "../types";
 import TreeNodeAddForm from "./TreeNodeAddForm";
 import TreeNodeButton from "./TreeNodeButton";
 import TreeNodeChildren from "./TreeNodeChildren";
@@ -38,6 +39,7 @@ export const TreeNode = ({
 }: TreeNodeComponentProps) => {
   const { nodeOffset, paddingRight, id } = useContext(TreeContext);
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
+  const { mutateAsync: batchUpdateCollectionEntries } = useBatchUpdateCollectionEntry();
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
   const {
@@ -49,36 +51,71 @@ export const TreeNode = ({
     handleAddFormCancel,
   } = useNodeAddForm(node, onNodeUpdate);
 
-  const parentNodeForDivider = isRootNode
-    ? (parentNode as TreeCollectionRootNode).requests
-    : (parentNode as TreeCollectionNode);
-
   const {
     isAddingDividerNode: isAddingDividerNodeAbove,
     setIsAddingDividerNode: setIsAddingDividerNodeAbove,
     handleAddDividerFormSubmit: handleAddDividerFormSubmitAbove,
     handleAddDividerFormCancel: handleAddDividerFormCancelAbove,
-  } = useAddNodeWithDivider(node, parentNodeForDivider, "before");
+  } = useAddNodeWithDivider(node, parentNode, "before");
 
   const {
     isAddingDividerNode: isAddingDividerNodeBelow,
     setIsAddingDividerNode: setIsAddingDividerNodeBelow,
     handleAddDividerFormSubmit: handleAddDividerFormSubmitBelow,
     handleAddDividerFormCancel: handleAddDividerFormCancelBelow,
-  } = useAddNodeWithDivider(node, parentNodeForDivider, "after");
+  } = useAddNodeWithDivider(node, parentNode, "after");
 
   const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } = useNodeRenamingForm(
     node,
     onNodeUpdate
   );
 
-  const handleDeleteNode = () => {
-    deleteCollectionEntry({
-      collectionId: id,
-      input: {
-        id: node.id,
-      },
-    });
+  const handleDeleteNode = async () => {
+    try {
+      const result = await deleteCollectionEntry({
+        collectionId: id,
+        input: {
+          id: node.id,
+        },
+      });
+
+      const nodesToUpdate = parentNode.childNodes
+        .filter((childNode) => childNode.id !== result.id)
+        .sort((a, b) => a.order! - b.order!)
+        .map((childNode, index) => ({
+          id: childNode.id,
+          path: childNode.path.raw,
+          order: index + 1,
+          kind: childNode.kind,
+        }));
+
+      await batchUpdateCollectionEntries({
+        collectionId: id,
+        entries: {
+          entries: nodesToUpdate.map((node) => {
+            if (node.kind === "Dir") {
+              return {
+                DIR: {
+                  id: node.id,
+                  order: node.order,
+                  path: node.path,
+                },
+              };
+            }
+
+            return {
+              ITEM: {
+                id: node.id,
+                order: node.order,
+                path: node.path,
+              },
+            };
+          }),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
   // const [preview, setPreview] = useState<HTMLElement | null>(null);
   // const { instruction, isDragging, canDrop } = useInstructionNode(node, treeId, triggerRef, isLastChild, setPreview);

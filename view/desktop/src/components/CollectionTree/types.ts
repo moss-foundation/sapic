@@ -19,7 +19,7 @@ export interface TreeCollectionNode extends EntryInfo {
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeCollectionNode | TreeCollectionRootNode;
+  parentNode: TreeCollectionNode;
   isLastChild: boolean;
   isRootNode?: boolean;
 }
