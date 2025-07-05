@@ -10,7 +10,12 @@ use moss_storage::{
     workspace_storage::WorkspaceStorageImpl,
 };
 use serde::{Serialize, de::DeserializeOwned};
-use std::{collections::HashMap, hash::Hash, path::Path, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+    path::Path,
+    sync::Arc,
+};
 use uuid::Uuid;
 
 use crate::{
@@ -60,7 +65,7 @@ impl StorageService {
     pub(crate) fn put_expanded_items_txn<T: Serialize>(
         &self,
         txn: &mut Transaction,
-        expanded_entries: Vec<T>,
+        expanded_entries: &HashSet<T>,
     ) -> Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put(
@@ -73,26 +78,26 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<Vec<T>>
+    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<HashSet<T>>
     where
         T: Eq + Hash,
     {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
-        Ok(AnyValue::deserialize::<Vec<T>>(&value)?)
+        Ok(AnyValue::deserialize::<HashSet<T>>(&value)?)
     }
 
     pub(crate) fn list_items_metadata(
         &self,
         segkey_prefix: SegKeyBuf,
-    ) -> DatabaseResult<impl Iterator<Item = (SegKeyBuf, AnyValue)>> {
+    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
         let data = ListByPrefix::list_by_prefix(
             self.storage.item_store().as_ref(),
             segkey_prefix.to_string().as_str(),
         )?;
 
-        Ok(data.into_iter())
+        Ok(data.into_iter().collect())
     }
 
     pub(crate) fn remove_item_metadata_txn(
@@ -111,11 +116,11 @@ impl StorageService {
 
     // Layout operations
 
-    pub(crate) fn get_layout_cache(&self) -> Result<impl Iterator<Item = (SegKeyBuf, AnyValue)>> {
+    pub(crate) fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.item_store();
         let segkey = segments::LAYOUT_SEGKEY.to_segkey_buf();
         let value = ListByPrefix::list_by_prefix(store.as_ref(), segkey.to_string().as_str())?;
-        Ok(value.into_iter())
+        Ok(value.into_iter().collect())
     }
 
     pub(crate) fn put_sidebar_layout(

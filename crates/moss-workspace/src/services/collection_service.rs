@@ -227,14 +227,8 @@ impl CollectionService {
 
             self.storage
                 .put_item_order_txn(&mut txn, id, params.order)?;
-            self.storage.put_expanded_items_txn(
-                &mut txn,
-                state_lock
-                    .expanded_items
-                    .iter()
-                    .copied()
-                    .collect::<Vec<_>>(),
-            )?;
+            self.storage
+                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
 
             txn.commit()?;
         }
@@ -280,14 +274,8 @@ impl CollectionService {
 
             self.storage
                 .remove_item_metadata_txn(&mut txn, COLLECTION_SEGKEY.join(&id.to_string()))?;
-            self.storage.put_expanded_items_txn(
-                &mut txn,
-                state_lock
-                    .expanded_items
-                    .iter()
-                    .copied()
-                    .collect::<Vec<_>>(),
-            )?;
+            self.storage
+                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
 
             txn.commit()?;
         }
@@ -342,14 +330,8 @@ impl CollectionService {
                 state_lock.expanded_items.remove(&id);
             }
 
-            self.storage.put_expanded_items_txn(
-                &mut txn,
-                state_lock
-                    .expanded_items
-                    .iter()
-                    .copied()
-                    .collect::<Vec<_>>(),
-            )?;
+            self.storage
+                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
         }
 
         Ok(())
@@ -433,9 +415,7 @@ async fn restore_collections(
         collections.push((id, collection));
     }
 
-    let metadata = storage
-        .list_items_metadata(COLLECTION_SEGKEY.to_segkey_buf())?
-        .collect::<HashMap<_, _>>();
+    let metadata = storage.list_items_metadata(COLLECTION_SEGKEY.to_segkey_buf())?;
 
     let mut result = HashMap::new();
     for (id, collection) in collections {

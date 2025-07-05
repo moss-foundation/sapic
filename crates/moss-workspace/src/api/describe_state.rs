@@ -1,8 +1,4 @@
-use std::collections::HashMap;
-
 use moss_common::api::OperationResult;
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -17,10 +13,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let storage = self.services.get::<StorageService>();
 
         // HACK: cache here is a temporary solution
-        let mut cache = storage
-            .get_layout_cache()?
-            .map(|(segkey, value)| (segkey, value))
-            .collect::<HashMap<SegKeyBuf, AnyValue>>();
+        let mut cache = storage.get_layout_cache()?;
 
         let editor_state = layout.get_editor_layout_state(&mut cache)?;
         let sidebar_state = layout.get_sidebar_layout_state(&mut cache)?;
