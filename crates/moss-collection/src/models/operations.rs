@@ -133,6 +133,15 @@ pub struct BatchUpdateEntryOutput {}
 // ###                  Stream Entries                  ###
 // ########################################################
 
+#[derive(Clone, Debug, Deserialize, TS)]
+#[ts(export, export_to = "operations.ts")]
+pub enum StreamEntriesInput {
+    #[serde(rename = "LOAD_ROOT")]
+    LoadRoot,
+    #[serde(rename = "RELOAD_PATH")]
+    ReloadPath(PathBuf),
+}
+
 #[derive(Clone, Debug, Serialize, TS)]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

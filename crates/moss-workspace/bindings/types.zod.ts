@@ -5,7 +5,6 @@ import { jsonValueSchema } from "@repo/bindings-utils";
 import {
   activitybarPositionSchema,
   editorGridOrientationSchema,
-  identifierSchema,
   panelRendererSchema,
   sidebarPositionSchema,
 } from "./primitives.zod";
@@ -15,6 +14,12 @@ export const activitybarItemStateInfoSchema = z.object({
   id: z.string(),
   order: z.number(),
   visible: z.boolean(),
+});
+
+export const collectionInfoSchema = z.object({
+  id: z.string(),
+  displayName: z.string(),
+  order: z.number().optional(),
 });
 
 export const editorGridLeafDataSchema = z.object({
@@ -38,6 +43,13 @@ export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
   ])
 );
 
+export const environmentInfoSchema = z.object({
+  id: z.string(),
+  collectionId: z.string().optional(),
+  name: z.string(),
+  order: z.number().optional(),
+});
+
 export const panelPartStateInfoSchema = z.object({
   size: z.number(),
   visible: z.boolean(),
@@ -48,12 +60,6 @@ export const activitybarPartStateInfoSchema = z.object({
   lastActiveContainerId: z.string().nullable(),
   position: activitybarPositionSchema,
   items: z.array(activitybarItemStateInfoSchema),
-});
-
-export const collectionInfoSchema = z.object({
-  id: identifierSchema,
-  displayName: z.string(),
-  order: z.number().optional(),
 });
 
 export const editorGridStateSchema = z.object({
@@ -80,13 +86,6 @@ export const editorPartStateInfoSchema = z.object({
   grid: editorGridStateSchema,
   panels: z.record(editorPanelStateSchema),
   activeGroup: z.string().optional(),
-});
-
-export const environmentInfoSchema = z.object({
-  id: identifierSchema,
-  collectionId: identifierSchema.optional(),
-  name: z.string(),
-  order: z.number().optional(),
 });
 
 export const sidebarPartStateInfoSchema = z.object({

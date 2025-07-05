@@ -4,8 +4,6 @@ export type ActivitybarPosition = "DEFAULT" | "TOP" | "BOTTOM" | "HIDDEN";
 
 export type EditorGridOrientation = "HORIZONTAL" | "VERTICAL";
 
-export type Identifier = number;
-
 export type PanelRenderer = "onlyWhenVisible" | "always";
 
 export type SidebarPosition = "LEFT" | "RIGHT";

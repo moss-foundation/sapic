@@ -176,7 +176,7 @@ jobs:
         package:
           - moss_git
           - moss_git_hosting_provider
-          - moss_tauri
+          - moss_api
           - moss_text
           - moss_collection
           - moss_app
@@ -237,7 +237,7 @@ jobs:
         package:
           - moss_git
           - moss_git_hosting_provider
-          - moss_tauri
+          - moss_api
           - moss_text
           - moss_collection
           - moss_app

@@ -1,7 +1,6 @@
 mod editor;
 pub use editor::*;
 
-use moss_common::models::primitives::Identifier;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use ts_rs::TS;
@@ -30,8 +29,7 @@ impl Default for WorkspaceMode {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct CollectionInfo {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: String,
 
     pub display_name: String,
 
@@ -43,10 +41,9 @@ pub struct CollectionInfo {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    #[ts(type = "Identifier")]
-    pub id: Identifier,
+    pub id: String,
     #[ts(optional)]
-    pub collection_id: Option<Identifier>,
+    pub collection_id: Option<String>,
     pub name: String,
     #[ts(optional)]
     pub order: Option<usize>,

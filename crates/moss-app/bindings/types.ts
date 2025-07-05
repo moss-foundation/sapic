@@ -38,5 +38,3 @@ export type LogItemSourceInfo = { id: string };
 export type Preferences = { theme: ColorThemeInfo | null; locale: LocaleInfo | null };
 
 export type WorkspaceInfo = { id: string; displayName: string; lastOpenedAt?: bigint };
-
-export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";
