@@ -140,3 +140,12 @@ pub enum UpdateStateInput {
     UpdatePanelPartState(PanelPartStateInfo),
     UpdateActivitybarPartState(ActivitybarPartStateInfo),
 }
+
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamCollectionsOutput {
+    #[serde(skip)]
+    #[ts(skip)]
+    pub total_returned: usize,
+}

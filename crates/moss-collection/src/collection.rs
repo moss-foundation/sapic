@@ -8,6 +8,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
+use moss_git::url::normalize_git_url;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -92,10 +93,16 @@ impl Collection {
 
     pub async fn modify(&self, params: ModifyParams) -> Result<()> {
         if params.name.is_some() || params.repository.is_some() {
+            let normalized_repo = if let Some(ChangeString::Update(url)) = params.repository {
+                Some(ChangeString::Update(normalize_git_url(&url)?))
+            } else {
+                None
+            };
+
             self.manifest
                 .edit(ManifestModelDiff {
                     name: params.name,
-                    repository: params.repository,
+                    repository: normalized_repo,
                 })
                 .await?;
         }

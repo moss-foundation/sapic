@@ -66,6 +66,16 @@ impl Key for AnyKey {
     }
 }
 
+pub trait IsPrimitive {}
+
+impl IsPrimitive for isize {}
+impl IsPrimitive for usize {}
+impl IsPrimitive for i8 {}
+impl IsPrimitive for i16 {}
+impl IsPrimitive for i32 {}
+impl IsPrimitive for i64 {}
+impl IsPrimitive for i128 {}
+
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct AnyValue(Vec<u8>);
 

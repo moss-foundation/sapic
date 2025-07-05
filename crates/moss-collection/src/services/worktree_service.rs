@@ -289,8 +289,13 @@ impl WorktreeService {
             .await?;
 
         state_lock.expanded_entries.remove(&id);
-        self.storage
-            .put_expanded_entries(state_lock.expanded_entries.clone())?;
+        self.storage.put_expanded_entries(
+            state_lock
+                .expanded_entries
+                .iter()
+                .copied()
+                .collect::<Vec<_>>(),
+        )?;
 
         Ok(())
     }
@@ -487,8 +492,14 @@ impl WorktreeService {
             if metadata.expanded {
                 state_lock.expanded_entries.insert(id);
 
-                self.storage
-                    .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
+                self.storage.put_expanded_entries_txn(
+                    &mut txn,
+                    state_lock
+                        .expanded_entries
+                        .iter()
+                        .copied()
+                        .collect::<Vec<_>>(),
+                )?;
             }
 
             txn.commit()?;
@@ -534,8 +545,14 @@ impl WorktreeService {
             if metadata.expanded {
                 state_lock.expanded_entries.insert(id);
 
-                self.storage
-                    .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
+                self.storage.put_expanded_entries_txn(
+                    &mut txn,
+                    state_lock
+                        .expanded_entries
+                        .iter()
+                        .copied()
+                        .collect::<Vec<_>>(),
+                )?;
             }
 
             txn.commit()?;
@@ -588,8 +605,14 @@ impl WorktreeService {
                 state_lock.expanded_entries.remove(&id);
             }
 
-            self.storage
-                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
+            self.storage.put_expanded_entries_txn(
+                &mut txn,
+                state_lock
+                    .expanded_entries
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            )?;
         }
 
         txn.commit()?;
@@ -662,8 +685,14 @@ impl WorktreeService {
                 state_lock.expanded_entries.remove(&id);
             }
 
-            self.storage
-                .put_expanded_entries_txn(&mut txn, state_lock.expanded_entries.clone())?;
+            self.storage.put_expanded_entries_txn(
+                &mut txn,
+                state_lock
+                    .expanded_entries
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            )?;
         }
 
         txn.commit()?;

@@ -5,7 +5,6 @@ use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{self as collection, Collection as CollectionHandle, CollectionBuilder};
 use moss_common::api::OperationError;
-use moss_db::primitives::AnyValue;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     collections::{HashMap, HashSet},
@@ -133,7 +132,7 @@ impl CollectionService {
         storage: Arc<StorageService>,
     ) -> CollectionResult<Self> {
         let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<Uuid>() {
-            expanded_items.collect::<HashSet<_>>()
+            expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
             HashSet::new()
         };
@@ -228,8 +227,14 @@ impl CollectionService {
 
             self.storage
                 .put_item_order_txn(&mut txn, id, params.order)?;
-            self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+            self.storage.put_expanded_items_txn(
+                &mut txn,
+                state_lock
+                    .expanded_items
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            )?;
 
             txn.commit()?;
         }
@@ -275,8 +280,14 @@ impl CollectionService {
 
             self.storage
                 .remove_item_metadata_txn(&mut txn, COLLECTION_SEGKEY.join(&id.to_string()))?;
-            self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+            self.storage.put_expanded_items_txn(
+                &mut txn,
+                state_lock
+                    .expanded_items
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            )?;
 
             txn.commit()?;
         }
@@ -331,8 +342,14 @@ impl CollectionService {
                 state_lock.expanded_items.remove(&id);
             }
 
-            self.storage
-                .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
+            self.storage.put_expanded_items_txn(
+                &mut txn,
+                state_lock
+                    .expanded_items
+                    .iter()
+                    .copied()
+                    .collect::<Vec<_>>(),
+            )?;
         }
 
         Ok(())
@@ -426,7 +443,7 @@ async fn restore_collections(
 
         let order = metadata
             .get(&segkey_prefix.join("order"))
-            .map(|v| AnyValue::from(v.to_owned()).into());
+            .and_then(|v| v.deserialize().ok());
 
         result.insert(
             id,

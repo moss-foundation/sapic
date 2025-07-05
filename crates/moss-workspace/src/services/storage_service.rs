@@ -52,7 +52,7 @@ impl StorageService {
         let store = self.storage.item_store();
 
         let segkey = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
-        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::from(order))?;
+        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())
     }
@@ -60,27 +60,27 @@ impl StorageService {
     pub(crate) fn put_expanded_items_txn<T: Serialize>(
         &self,
         txn: &mut Transaction,
-        expanded_entries: impl IntoIterator<Item = T>,
+        expanded_entries: Vec<T>,
     ) -> Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put(
             store.as_ref(),
             txn,
             segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-            AnyValue::serialize(&expanded_entries.into_iter().collect::<Vec<_>>())?,
+            AnyValue::serialize(&expanded_entries)?,
         )?;
 
         Ok(())
     }
 
-    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<impl Iterator<Item = T>>
+    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<Vec<T>>
     where
         T: Eq + Hash,
     {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
-        Ok(AnyValue::deserialize::<Vec<T>>(&value)?.into_iter())
+        Ok(AnyValue::deserialize::<Vec<T>>(&value)?)
     }
 
     pub(crate) fn list_items_metadata(
@@ -138,14 +138,14 @@ impl StorageService {
             store.as_ref(),
             &mut txn,
             segments::LAYOUT_SIDEBAR_SEGKEY.join("size"),
-            AnyValue::from(size),
+            AnyValue::serialize(&size)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
             segments::LAYOUT_SIDEBAR_SEGKEY.join("visible"),
-            AnyValue::from(visible),
+            AnyValue::serialize(&visible)?,
         )?;
 
         Ok(txn.commit()?)
@@ -159,14 +159,14 @@ impl StorageService {
             store.as_ref(),
             &mut txn,
             segments::LAYOUT_PANEL_SEGKEY.join("size"),
-            AnyValue::from(size),
+            AnyValue::serialize(&size)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
             segments::LAYOUT_PANEL_SEGKEY.join("visible"),
-            AnyValue::from(visible),
+            AnyValue::serialize(&visible)?,
         )?;
 
         Ok(txn.commit()?)
@@ -185,7 +185,7 @@ impl StorageService {
                 store.as_ref(),
                 &mut txn,
                 segments::LAYOUT_ACTIVITYBAR_SEGKEY.join("lastActiveContainerId"),
-                AnyValue::from(last_active_container_id),
+                AnyValue::serialize(&last_active_container_id)?,
             )?
         }
 
@@ -227,10 +227,17 @@ impl StorageService {
                 store.as_ref(),
                 &mut txn,
                 segments::LAYOUT_EDITOR_SEGKEY.join("activeGroup"),
-                AnyValue::from(active_group),
+                AnyValue::serialize(&active_group)?,
             )?
         }
 
         Ok(txn.commit()?)
+    }
+
+    // HACK: This is a hack to get the storage service for testing purposes.
+    // As soon as we switch to getting services by trait instead of by type,
+    // we'll be able to move this method into the test service, TestStorageService.
+    pub fn __storage(&self) -> &Arc<dyn WorkspaceStorage> {
+        &self.storage
     }
 }

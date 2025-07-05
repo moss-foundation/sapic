@@ -13,11 +13,33 @@ use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
-use moss_workspace::services::collection_service::CollectionService;
+use moss_workspace::{Workspace, services::collection_service::CollectionService};
 use tauri::{Runtime as TauriRuntime, State};
 use uuid::Uuid;
 
 pub(super) type Options = Option<moss_api::models::types::Options>;
+
+// pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
+//     app: State<'_, App<R>>,
+//     options: Options,
+//     f: F,
+// ) -> TauriResult<T>
+// where
+//     R: TauriRuntime,
+//     F: FnOnce(Arc<Workspace<R>>) -> Fut + Send + 'static,
+//     Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
+// {
+//     moss_api::with_timeout(options, async move {
+//         let (workspace, _ctx) = app
+//             .workspace()
+//             .await
+//             .map_err_as_failed_precondition("No active workspace")?;
+
+//         f(workspace).await
+//     })
+//     .await
+//     .map_err(|_| TauriError::Timeout)?
+// }
 
 pub(super) async fn with_collection_timeout<R, T, F, Fut>(
     app: State<'_, App<R>>,
