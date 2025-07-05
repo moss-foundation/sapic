@@ -11,8 +11,6 @@ import {
 import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 
 export const SidebarHeader = ({ title }: { title: string }) => {
-  // const { collapseAll } = useCollectionsStore();
-
   const { isLoading: areCollectionsLoading } = useCollectionsTrees();
   const { clearCollectionsCacheAndRefetch } = useStreamedCollections();
   const { clearAllCollectionEntriesCache } = useClearAllCollectionEntries();

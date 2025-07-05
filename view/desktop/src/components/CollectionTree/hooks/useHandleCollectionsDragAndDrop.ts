@@ -1,5 +1,4 @@
 export const useHandleCollectionsDragAndDrop = () => {
-  // const { collectionsTrees, setCollectionsTrees } = useCollectionsStore();
   // const handleReorder = useCallback(
   //   ({ location, source }) => {
   //     if (location.current?.dropTargets.length === 0) return;
