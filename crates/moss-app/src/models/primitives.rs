@@ -9,6 +9,7 @@ pub type ThemeId = String;
 // ###                      Theme                       ###
 // ########################################################
 
+/// @category Primitive
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]
@@ -21,6 +22,7 @@ pub enum ThemeMode {
 // ###                      Log                          ###
 // #########################################################
 
+/// @category Primitive
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, TS, PartialEq)]
 #[ts(export, export_to = "primitives.ts")]
 pub enum LogLevel {
