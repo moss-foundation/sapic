@@ -8,6 +8,20 @@ export const activitybarPositionSchema = z.union([
   z.literal("HIDDEN"),
 ]);
 
+export const changePathSchema = z.union([
+  z.object({
+    "update": z.string(),
+  }),
+  z.literal("remove"),
+]);
+
+export const changeStringSchema = z.union([
+  z.object({
+    "UPDATE": z.string(),
+  }),
+  z.literal("REMOVE"),
+]);
+
 export const editorGridOrientationSchema = z.union([z.literal("HORIZONTAL"), z.literal("VERTICAL")]);
 
 export const panelRendererSchema = z.union([z.literal("onlyWhenVisible"), z.literal("always")]);

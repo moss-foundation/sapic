@@ -31,6 +31,7 @@ pub struct CreateCollectionInput {
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
     pub id: Uuid,
@@ -119,15 +120,12 @@ pub struct DescribeEnvironmentOutput {
 
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeStateOutput {
-    #[ts(optional)]
     pub editor: Option<EditorPartStateInfo>,
-    #[ts(optional)]
     pub sidebar: Option<SidebarPartStateInfo>,
-    #[ts(optional)]
     pub panel: Option<PanelPartStateInfo>,
-    #[ts(optional)]
     pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
