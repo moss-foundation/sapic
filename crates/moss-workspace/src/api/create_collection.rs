@@ -1,12 +1,13 @@
 use anyhow::Context as _;
-use moss_collection::collection::{self, Collection};
+use moss_collection::{
+    CollectionBuilder,
+    builder::CreateParams,
+    services::{storage_service::StorageService, worktree_service::WorktreeService},
+};
 use moss_common::api::{OperationError, OperationResult};
 use moss_db::primitives::AnyValue;
 use moss_fs::FileSystem;
-use moss_storage::{
-    storage::operations::PutItem,
-    workspace_storage::entities::collection_store_entities::CollectionCacheEntity,
-};
+use moss_storage::storage::operations::PutItem;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -20,7 +21,7 @@ use crate::{
     context::{AnyWorkspaceContext, Subscribe},
     dirs,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
-    storage::segments::COLLECTION_SEGKEY,
+    storage::{entities::collection_store::CollectionCacheEntity, segments::COLLECTION_SEGKEY},
     workspace::{CollectionItem, Workspace},
 };
 
@@ -55,18 +56,22 @@ impl<R: TauriRuntime> Workspace<R> {
             .context("Failed to create the collection directory")?;
 
         let order = input.order.to_owned();
-        let collection = Collection::create(
-            fs.clone(),
-            collection::CreateParams {
-                name: Some(input.name.to_owned()),
-                internal_abs_path: &abs_path,
-                external_abs_path: input.external_path.as_deref(),
-                repository: input.repo.to_owned(),
-                icon_path: input.icon_path.to_owned(),
-            },
-        )
-        .await
-        .map_err(|e| OperationError::Internal(e.to_string()))?;
+        let collection = {
+            let storage = Arc::new(StorageService::new(&abs_path)?);
+            let worktree = WorktreeService::new(abs_path.clone(), fs.clone(), storage.clone());
+            CollectionBuilder::new(fs.clone())
+                .with_service::<StorageService>(storage)
+                .with_service(worktree)
+                .create(CreateParams {
+                    name: Some(input.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: input.external_path.as_deref().map(|p| p.to_owned().into()),
+                    repository: input.repo.to_owned(),
+                    icon_path: input.icon_path.to_owned(),
+                })
+                .await
+                .map_err(|e| OperationError::Internal(e.to_string()))?
+        };
 
         let on_did_change = collection.on_did_change().subscribe(|_event| async move {
 

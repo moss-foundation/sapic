@@ -3,7 +3,7 @@ resolver = "1"
 members = [
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
-    "crates/moss-tauri",
+    "crates/moss-api",
     "crates/moss-text",
     "crates/moss-collection",
     "crates/moss-app",
@@ -19,17 +19,18 @@ members = [
     "crates/moss-storage",
     "crates/moss-activity-indicator",
     "crates/moss-file",
-    "crates/moss-hcl",
+    "crates/moss-hcl", 
+    "crates/moss-bindingutils", 
     "crates/moss-wasm",
     "tools/xtask",
-    "view/desktop/bin",
+    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
 #
 # Workspace crates
 #
-moss_tauri = { path = "crates/moss-tauri" }
+moss_api = { path = "crates/moss-api" }
 moss_text = { path = "crates/moss-text" }
 moss_collection = { path = "crates/moss-collection" }
 moss_db = { path = "crates/moss-db" }
@@ -48,6 +49,7 @@ moss_storage = { path = "crates/moss-storage" }
 moss_activity_indicator = { path = "crates/moss-activity-indicator" }
 moss_file = { path = "crates/moss-file" }
 moss_hcl = { path = "crates/moss-hcl" }
+moss_bindingutils = { path = "crates/moss-bindingutils" }
 moss_wasm = { path = "crates/moss-wasm" }
 #
 # External crates

@@ -52,6 +52,8 @@ class TypeScriptImportsResolver {
       "moss-workspace",
       "moss-collection",
       "moss-activity-indicator",
+      "moss-bindingutils",
+      "moss-api",
     ] as const;
 
     this.project = this.initializeProject();

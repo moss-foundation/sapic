@@ -7,7 +7,9 @@
     "crates/moss-activity-indicator",
     "crates/moss-collection",
     "crates/moss-environment",
-    "crates/moss-workspace"
+    "crates/moss-workspace",
+    "crates/moss-bindingutils",
+    "crates/moss-api"
   ],
   "entryPointStrategy": "packages",
   "packageOptions": {

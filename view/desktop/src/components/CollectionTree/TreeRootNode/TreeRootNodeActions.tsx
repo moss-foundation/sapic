@@ -6,19 +6,6 @@ import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteColl
 
 import { TreeCollectionRootNode } from "../types";
 
-// interface TreeRootNodeActionsProps {
-//   node: TreeNodeProps;
-//   searchInput?: string;
-//   isRenamingRootNode: boolean;
-//   setIsAddingRootFileNode: (isAdding: boolean) => void;
-//   setIsAddingRootFolderNode: (isAdding: boolean) => void;
-//   setIsRenamingRootNode: (isRenaming: boolean) => void;
-//   allFoldersAreCollapsed: boolean;
-//   allFoldersAreExpanded: boolean;
-//   handleCollapseAll: () => void;
-//   handleExpandAll: () => void;
-// }
-
 interface TreeRootNodeActionsProps {
   node: TreeCollectionRootNode;
   searchInput?: string;
@@ -54,7 +41,7 @@ export const TreeRootNodeActions = ({
           <div
             className={`hidden items-center opacity-0 transition-[display,opacity] transition-discrete duration-100 group-hover:flex group-hover:opacity-100`}
           >
-            {displayMode === "RequestFirst" && (
+            {displayMode === "REQUEST_FIRST" && (
               <ActionButton
                 customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
                 icon="Add"
@@ -105,7 +92,7 @@ export const TreeRootNodeActions = ({
       </div>
       {showDeleteCollectionModal && (
         <DeleteCollectionModal
-          collectionId={node.id}
+          id={node.id}
           showModal={showDeleteCollectionModal}
           closeModal={() => setShowDeleteCollectionModal(false)}
         />

@@ -62,5 +62,3 @@ export type Preferences = { theme: ColorThemeInfo | null; locale: LocaleInfo | n
  * @category Type
  */
 export type WorkspaceInfo = { id: string; displayName: string; lastOpenedAt?: bigint };
-
-export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

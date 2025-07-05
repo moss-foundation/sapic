@@ -2,23 +2,24 @@ use anyhow::{Context as _, Result};
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::context::Context;
-use moss_collection::collection::Collection;
+use moss_collection::{
+    CollectionBuilder,
+    builder::LoadParams,
+    collection::Collection,
+    services::{storage_service::StorageService, worktree_service::WorktreeService},
+};
 use moss_environment::environment::{self, Environment};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::{
-    WorkspaceStorage,
-    primitives::segkey::SegmentExt,
-    storage::operations::ListByPrefix,
-    workspace_storage::{
-        WorkspaceStorageImpl, entities::collection_store_entities::CollectionCacheEntity,
-    },
+    WorkspaceStorage, primitives::segkey::SegmentExt, storage::operations::ListByPrefix,
+    workspace_storage::WorkspaceStorageImpl,
 };
 use moss_text::sanitized::desanitize;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::{Arc, atomic::AtomicUsize},
+    sync::Arc,
 };
 use tauri::Runtime as TauriRuntime;
 use tokio::sync::{OnceCell, RwLock};
@@ -28,7 +29,7 @@ use crate::{
     defaults, dirs,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    storage::segments::COLLECTION_SEGKEY,
+    storage::{entities::collection_store::CollectionCacheEntity, segments::COLLECTION_SEGKEY},
 };
 
 #[derive(Deref, DerefMut)]
@@ -64,11 +65,6 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) environments: OnceCell<EnvironmentMap>,
     #[allow(dead_code)]
     pub(super) activity_indicator: ActivityIndicator<R>,
-    #[allow(dead_code)]
-    pub(super) next_variable_id: Arc<AtomicUsize>,
-    #[allow(dead_code)]
-    pub(super) next_environment_id: Arc<AtomicUsize>,
-
     #[allow(dead_code)]
     pub(super) manifest: JsonFileHandle<ManifestModel>,
 
@@ -109,8 +105,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_variable_id: Arc::new(AtomicUsize::new(0)),
-            next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
             layout,
         })
@@ -154,8 +148,6 @@ impl<R: TauriRuntime> Workspace<R> {
             collections: OnceCell::new(),
             environments: OnceCell::new(),
             activity_indicator,
-            next_variable_id: Arc::new(AtomicUsize::new(0)),
-            next_environment_id: Arc::new(AtomicUsize::new(0)),
             manifest,
             layout,
         })
@@ -230,7 +222,6 @@ impl<R: TauriRuntime> Workspace<R> {
                         &entry_abs_path,
                         fs.clone(),
                         self.storage.variable_store().clone(),
-                        self.next_variable_id.clone(),
                         environment::LoadParams {
                             create_if_not_exists: false,
                         },
@@ -330,7 +321,23 @@ impl<R: TauriRuntime> Workspace<R> {
                         }
                     };
 
-                    let collection = Collection::load(&entry.path(), fs.clone()).await?;
+                    let collection = {
+                        let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
+                        let storage = Arc::new(StorageService::new(&collection_abs_path)?);
+                        let worktree = WorktreeService::new(
+                            collection_abs_path.clone(),
+                            fs.clone(),
+                            storage.clone(),
+                        );
+                        CollectionBuilder::new(fs.clone())
+                            .with_service::<StorageService>(storage)
+                            .with_service(worktree)
+                            .load(LoadParams {
+                                internal_abs_path: collection_abs_path,
+                            })
+                            .await?
+                    };
+
                     collections.insert(
                         id,
                         Arc::new(RwLock::new(CollectionItem {

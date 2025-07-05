@@ -232,12 +232,11 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       let dontShowTabs = true;
       const [activeTab, setActiveTab] = React.useState(showEndpoint ? "endpoint" : "request");
       if (props.params?.node) {
-        showEndpoint = displayMode === "DesignFirst" && props.params.node.class === "Endpoint";
+        showEndpoint = displayMode === "DESIGN_FIRST" && props.params.node.class === "Endpoint";
         dontShowTabs =
           props.params.node.kind === "Dir" ||
-          //TODO: change this check for class in the future
-          props.params.node.path.segments[0] === "endpoints" ||
-          props.params.node.path.segments[0] === "schemas";
+          props.params.node.class === "Endpoint" ||
+          props.params.node.class === "Schema";
       }
 
       const tabs = (
@@ -273,13 +272,24 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
             <Breadcrumbs panelId={props.api.id} />
 
             <span className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 transform flex-col text-[42px] opacity-50">
-              <span>{props.api.title}</span>
-
-              <span>{Math.random().toFixed(2)}</span>
-              {props?.params.someRandomString && (
-                <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+              {props.params?.node ? (
+                <div>
+                  <span className="text-[18px]">Node name: "{props.params.node.name}"</span>
+                  <div className="pointer-events-auto max-h-[70vh] overflow-y-auto text-[12px]">
+                    <pre>{JSON.stringify(props.params.node, null, 2)}</pre>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <span>{props.api.title}</span>
+                  <span>{Math.random().toFixed(2)}</span>
+                  {props?.params.someRandomString && (
+                    <span className="text-xs">some random string from backend: {props.params.someRandomString}</span>
+                  )}
+                </>
               )}
             </span>
+
             {isDebug && (
               <Metadata
                 onClick={() => {
@@ -331,13 +341,6 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
       },
       {} as Record<string, (props: IDockviewPanelProps) => JSX.Element>
     ),
-    // ...Object.entries(pageConfigs).map(([key, config]) => {
-    //   return {
-    //     [key]: (props: IDockviewPanelProps) => (
-    //       <DynamicPageWrapper pageKey={key} config={config} props={props} />
-    //     ),
-    //   };
-    // }),
   };
 
   return (

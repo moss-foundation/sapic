@@ -3,8 +3,8 @@ import "@repo/moss-tabs/assets/styles.css";
 import { useEffect, useRef, useState } from "react";
 
 import { CollectionTree, InputPlain } from "@/components";
+import { useCollectionsTrees } from "@/hooks/collection/derivedHooks/useCollectionsTrees";
 import { Icon, Scrollbar } from "@/lib/ui";
-import { useCollectionsStore } from "@/store/collections";
 import { useRequestModeStore } from "@/store/requestMode";
 import { cn } from "@/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -15,12 +15,11 @@ import { getActualDropSourceTarget } from "./CollectionTree/utils";
 export const CollectionTreeView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
   const { displayMode } = useRequestModeStore();
-  const { collectionsTrees, updateCollectionTree, areCollectionsStreaming, areCollectionEntriesStreaming } =
-    useCollectionsStore();
 
   useHandleCollectionsDragAndDrop();
+
+  const [showCollectionCreationZone, setShowCollectionCreationZone] = useState<boolean>(false);
 
   // useEffect(() => {
   //   const handleCreateNewCollectionFromTreeNode = (event: CustomEvent<CreateNewCollectionFromTreeNodeEvent>) => {
@@ -65,7 +64,7 @@ export const CollectionTreeView = () => {
   //   };
   // }, [collections, setCollections]);
 
-  const shouldShowCollectionTree = !areCollectionsStreaming && !areCollectionEntriesStreaming;
+  const { collectionsTrees, isLoading } = useCollectionsTrees();
 
   return (
     <div ref={dropTargetToggleRef} className="relative h-[calc(100%-36px)] select-none">
@@ -76,14 +75,9 @@ export const CollectionTreeView = () => {
           </div>
 
           <div className="flex grow flex-col">
-            {shouldShowCollectionTree &&
+            {!isLoading &&
               collectionsTrees.map((collection) => (
-                <CollectionTree
-                  key={collection.id}
-                  tree={collection}
-                  onTreeUpdate={updateCollectionTree}
-                  displayMode={displayMode}
-                />
+                <CollectionTree key={collection.id} tree={collection} displayMode={displayMode} />
               ))}
           </div>
 

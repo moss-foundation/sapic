@@ -53,12 +53,13 @@ MISC_DIR := misc
 SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
+BINDINGUTILS_DIR := crates/moss-bindingutils
 APP_MODELS_DIR := crates/moss-app
 COLLECTION_MODELS_DIR := crates/moss-collection
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
-COMMON_MODELS_DIR := crates/moss-common
 ACTIVITY_INDICATOR_MODELS_DIR := crates/moss-activity-indicator
+API_MODELS_DIR := crates/moss-api
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -116,7 +117,7 @@ gen-$(1)-bindings:
 	@cd $($(2)) && rm -rf bindings
 
 	@echo "Generating $(1) models..."
-	@$(CARGO) test export_bindings_ --manifest-path $($(2))/Cargo.toml
+	@$(CARGO) test --lib export_bindings_ --manifest-path $($(2))/Cargo.toml
 	@cd $(GEN_BINDINGS_DIR) && $(PNPM) run importsResolver ../../$($(2))
 
 	@echo "Generating $(1) zod schemas..."
@@ -136,8 +137,9 @@ $(eval $(call gen_bindings,app,APP_MODELS_DIR))
 $(eval $(call gen_bindings,collection,COLLECTION_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
-$(eval $(call gen_bindings,common,COMMON_MODELS_DIR))
 $(eval $(call gen_bindings,activity-indicator,ACTIVITY_INDICATOR_MODELS_DIR))
+$(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
+$(eval $(call gen_bindings,api,API_MODELS_DIR))
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
@@ -146,9 +148,10 @@ gen-bindings: \
 	gen-collection-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
-	gen-common-bindings \
 	gen-workbench-bindings \
-	gen-activity-indicator-bindings
+	gen-activity-indicator-bindings \
+	gen-bindingutils-bindings \
+	gen-api-bindings
 
 # ======================================================
 # Utility Commands
@@ -165,7 +168,7 @@ export-css-variables:
 .PHONY: open-docs
 open-docs:
 ifeq ($(DETECTED_OS),Windows)
-	@start "" "$(TYPEDOC_DIR)/index.html"
+	@cmd.exe /C start "" "$(TYPEDOC_DIR)\index.html"
 else ifeq ($(DETECTED_OS),Darwin)
 	@open "$(TYPEDOC_DIR)/index.html"
 else

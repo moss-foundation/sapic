@@ -249,10 +249,10 @@
   --moss-button-border-disabled-active: transparent;
   --moss-button-text-disabled: var(--moss-gray-8);
 
-  /* --- Delete buttons */
-  --moss-button-background-delete: var(--moss-red-4);
-  --moss-button-background-delete-hover: var(--moss-red-2);
-  --moss-button-text-delete: var(--moss-gray-14);
+  /* --- Danger buttons */
+  --moss-button-background-danger: var(--moss-red-4);
+  --moss-button-background-danger-hover: var(--moss-red-2);
+  --moss-button-text-danger: var(--moss-gray-14);
 
   /* Form Controls */
   --moss-controls-plain-bg: transparent;

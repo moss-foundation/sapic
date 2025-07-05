@@ -4,6 +4,8 @@ export type EntryClass = "Request" | "Endpoint" | "Component" | "Schema";
 
 export type EntryKind = "Dir" | "Item" | "Case";
 
+export type EntryPath = { raw: string; segments: Array<string> };
+
 export type EntryProtocol = "Get" | "Post" | "Put" | "Delete" | "WebSocket" | "Graphql" | "Grpc";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";

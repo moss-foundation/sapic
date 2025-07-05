@@ -3,7 +3,6 @@ import { createContext, useEffect, useState } from "react";
 import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
-import { prepareCollectionForTree } from "./utils/index";
 import {
   checkIfAllFoldersAreCollapsed,
   checkIfAllFoldersAreExpanded,
@@ -11,7 +10,12 @@ import {
 } from "./utils/TreeRootUtils.ts";
 
 export const TreeContext = createContext<TreeContextProps>({
-  treeId: "",
+  id: "",
+  name: "",
+  repository: null,
+  order: null,
+  picturePath: null,
+
   paddingLeft: 0,
   paddingRight: 0,
   rootOffset: 0,
@@ -20,18 +24,19 @@ export const TreeContext = createContext<TreeContextProps>({
   allFoldersAreCollapsed: true,
   searchInput: undefined,
   sortBy: "none",
-  displayMode: "RequestFirst",
+  displayMode: "REQUEST_FIRST",
 });
 
 export const CollectionTree = ({
   tree: initialTree,
+
   paddingLeft = 8,
   paddingRight = 8,
   rootOffset = 8,
   nodeOffset = 16,
   searchInput,
   sortBy = "none",
-  displayMode = "RequestFirst",
+  displayMode = "REQUEST_FIRST",
 
   onTreeUpdate,
 
@@ -49,7 +54,7 @@ export const CollectionTree = ({
   onNodeClick,
   onNodeDoubleClick,
 }: TreeProps) => {
-  const [tree, setTree] = useState<TreeCollectionRootNode>(prepareCollectionForTree(initialTree));
+  const [tree, setTree] = useState<TreeCollectionRootNode>(initialTree);
 
   const handleNodeUpdate = (updatedNode: TreeCollectionNode) => {
     setTree((prev) => {
@@ -91,7 +96,11 @@ export const CollectionTree = ({
   return (
     <TreeContext.Provider
       value={{
-        treeId: initialTree.id,
+        id: initialTree.id,
+        name: initialTree.name,
+        repository: initialTree.repository,
+        order: initialTree.order,
+        picturePath: initialTree.picturePath,
 
         paddingLeft,
         paddingRight,
