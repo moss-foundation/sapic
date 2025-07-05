@@ -16,12 +16,15 @@ export interface TreeCollectionNode extends EntryInfo {
   childNodes: TreeCollectionNode[];
 }
 
-export interface TreeNodeComponentPropsV2 {
-  node: TreeCollectionRootNode;
+export interface TreeNodeComponentProps extends NodeEvents {
+  node: TreeCollectionNode;
   depth: number;
-  parentNode: TreeCollectionRootNode;
+  parentNode: TreeCollectionNode | TreeCollectionRootNode;
   isLastChild: boolean;
-  onNodeUpdate: (node: TreeCollectionRootNode) => void;
+  isRootNode?: boolean;
+}
+export interface NodeEvents {
+  onNodeUpdate: (node: TreeCollectionNode) => void;
 }
 
 export interface TreeRootNodeProps {
@@ -37,7 +40,7 @@ export interface TreeProps {
   rootOffset?: number;
   nodeOffset?: number;
   searchInput?: string;
-  sortBy?: SortTypes;
+
   displayMode?: WorkspaceMode;
 
   onTreeUpdate?: (tree: TreeCollectionRootNode) => void;
@@ -68,8 +71,6 @@ export interface TreeContextProps extends StreamCollectionsEvent {
 
   searchInput?: string;
 
-  sortBy?: SortTypes;
-
   allFoldersAreCollapsed: boolean;
   allFoldersAreExpanded: boolean;
 
@@ -86,17 +87,6 @@ export interface TreeContextProps extends StreamCollectionsEvent {
   onNodeUpdateCallback?: (node: TreeCollectionNode) => void;
   onNodeClickCallback?: (node: TreeCollectionNode) => void;
   onNodeDoubleClickCallback?: (node: TreeCollectionNode) => void;
-}
-
-export interface TreeNodeComponentProps extends NodeEvents {
-  node: TreeNodeProps;
-  depth: number;
-  parentNode: TreeNodeProps;
-  isLastChild: boolean;
-}
-
-export interface NodeEvents {
-  onNodeUpdate: (node: TreeNodeProps) => void;
 }
 
 export interface MoveNodeEventDetail {

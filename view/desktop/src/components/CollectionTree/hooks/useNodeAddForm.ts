@@ -109,8 +109,6 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
         input: newEntry,
       });
 
-      const { childNodes, ...parentNodeWithoutChildren } = parentNode;
-
       if (result) {
         onNodeUpdate({
           ...parentNode,

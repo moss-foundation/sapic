@@ -35,6 +35,8 @@ export const SidebarHeader = ({ title }: { title: string }) => {
   const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
 
   const handleCollapseAll = () => {
+    if (!collectionsWithEntries) return;
+
     collectionsWithEntries?.forEach((collection) => {
       batchUpdateCollectionEntry({
         collectionId: collection.id,

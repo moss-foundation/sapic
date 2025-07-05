@@ -5,7 +5,7 @@ import {
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { DropNodeElement, DropNodeElementWithInstruction, SortTypes, TreeCollectionNode } from "./types";
+import { DropNodeElement, DropNodeElementWithInstruction, TreeCollectionNode } from "./types";
 
 export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updateNodeOrder(updatedNode);
@@ -14,57 +14,6 @@ export const updateTreeNode = (node: TreeCollectionNode, updatedNode: TreeCollec
     ...node,
     childNodes: node.childNodes.map((child) => updateTreeNode(child, updatedNode)),
   };
-};
-
-export const sortNode = (node: TreeCollectionNode, sortBy: SortTypes = "alphabetically"): TreeCollectionNode => {
-  if (sortBy === "none") return node;
-
-  return {
-    ...node,
-    childNodes: sortNodes(
-      node.childNodes.map((child) => sortNode(child, sortBy)),
-      sortBy
-    ),
-  };
-};
-
-export const sortNodes = (nodes: TreeCollectionNode[], sortBy: SortTypes = "alphabetically"): TreeCollectionNode[] => {
-  if (sortBy === "alphabetically") {
-    nodes.sort((a, b) => {
-      if (a.kind === "Dir" && b.kind === "Item") return -1;
-      if (a.kind === "Item" && b.kind === "Dir") return 1;
-      if (a.id < b.id) return -1;
-      if (a.id > b.id) return 1;
-      return 0;
-    });
-
-    return nodes.map((node, index) => {
-      return {
-        ...node,
-        order: index + 1,
-      };
-    });
-  }
-
-  if (sortBy === "order") {
-    nodes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return nodes;
-  }
-
-  return nodes;
-};
-
-export const prepareCollectionForTree = (
-  collection: TreeCollectionNode,
-  sortBy: SortTypes = "none"
-): TreeCollectionNode => {
-  return sortNode(
-    {
-      ...collection,
-      childNodes: collection.childNodes.map((child) => prepareCollectionForTree(child, sortBy)),
-    },
-    sortBy
-  );
 };
 
 export const findNodeById = (tree: TreeCollectionNode, id: string): TreeCollectionNode | undefined => {
@@ -138,20 +87,6 @@ export const hasDescendantWithSearchInput = (tree: TreeCollectionNode, input: st
   return tree.childNodes.some(
     (child) => doesStringIncludePartialString(treeId, input) || hasDescendantWithSearchInput(child, input)
   );
-};
-
-export const removeNodeFromTree = (tree: TreeCollectionNode, id: string): TreeCollectionNode => {
-  if (tree.childNodes.some((child) => child.id === id)) {
-    return {
-      ...tree,
-      childNodes: tree.childNodes.filter((child) => child.id !== id),
-    };
-  }
-
-  return {
-    ...tree,
-    childNodes: tree.childNodes.map((child) => removeNodeFromTree(child, id)),
-  };
 };
 
 export const addNodeToFolder = (
@@ -299,22 +234,6 @@ export const canDropNode = (sourceTarget: DropNodeElement, dropTarget: DropNodeE
   }
 
   return true;
-};
-
-export const expandAllNodes = <T extends TreeCollectionNode>(node: T): T => {
-  return {
-    ...node,
-    expanded: node.kind === "Dir" ? true : node.expanded,
-    childNodes: node.childNodes.map((child) => expandAllNodes(child)) as T["childNodes"],
-  };
-};
-
-export const collapseAllNodes = <T extends TreeCollectionNode>(node: T): T => {
-  return {
-    ...node,
-    expanded: node.kind === "Dir" ? false : node.expanded,
-    childNodes: node.childNodes.map((child) => collapseAllNodes(child)),
-  };
 };
 
 export const checkIfAllFoldersAreExpanded = <T extends TreeCollectionNode>(nodes: T[]): boolean => {

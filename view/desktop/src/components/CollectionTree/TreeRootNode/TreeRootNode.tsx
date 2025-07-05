@@ -1,14 +1,14 @@
 import { useContext, useRef } from "react";
 
 import { DropIndicator } from "@/components/DropIndicator";
-import { useStreamedCollections } from "@/hooks";
+import { useStreamedCollectionEntries, useStreamedCollections } from "@/hooks";
+import { useBatchUpdateCollectionEntry } from "@/hooks/collection/useBatchUpdateCollectionEntry";
 import { cn } from "@/utils";
 
 import { useDraggableRootNode } from "../hooks/useDraggableRootNode";
 import { useDropTargetRootNode } from "../hooks/useDropTargetRootNode";
 import { TreeContext } from "../Tree";
 import { TreeCollectionNode, TreeCollectionRootNode } from "../types";
-import { collapseAllNodes, expandAllNodes } from "../utils/TreeRootUtils";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
@@ -26,18 +26,52 @@ export interface TreeRootNodeProps {
 export const TreeRootNode = ({ node, onNodeUpdate, onRootNodeUpdate }: TreeRootNodeProps) => {
   const { id, allFoldersAreCollapsed, allFoldersAreExpanded, searchInput, rootOffset } = useContext(TreeContext);
   const { data: streamedCollections } = useStreamedCollections();
+  const { mutateAsync: batchUpdateCollectionEntry } = useBatchUpdateCollectionEntry();
+  const { data: streamedCollectionEntries } = useStreamedCollectionEntries(id);
 
   const draggableRootRef = useRef<HTMLDivElement>(null);
   const dropTargetRootRef = useRef<HTMLDivElement>(null);
 
   const handleExpandAll = () => {
-    const newNode = expandAllNodes(node);
-    onRootNodeUpdate(newNode);
+    if (!streamedCollectionEntries) return;
+
+    const entriesToExpand = streamedCollectionEntries
+      ?.filter((entry) => entry.kind === "Dir" && entry.expanded === false)
+      .map((entry) => ({
+        DIR: {
+          id: entry.id,
+          expanded: true,
+          path: entry.path.raw,
+        },
+      }));
+
+    batchUpdateCollectionEntry({
+      collectionId: id,
+      entries: {
+        entries: entriesToExpand,
+      },
+    });
   };
 
   const handleCollapseAll = () => {
-    const newNode = collapseAllNodes(node);
-    onRootNodeUpdate(newNode);
+    if (!streamedCollectionEntries) return;
+
+    const entriesToCollapse = streamedCollectionEntries
+      ?.filter((entry) => entry.kind === "Dir" && entry.expanded === true)
+      .map((entry) => ({
+        DIR: {
+          id: entry.id,
+          expanded: false,
+          path: entry.path.raw,
+        },
+      }));
+
+    batchUpdateCollectionEntry({
+      collectionId: id,
+      entries: {
+        entries: entriesToCollapse,
+      },
+    });
   };
 
   const {

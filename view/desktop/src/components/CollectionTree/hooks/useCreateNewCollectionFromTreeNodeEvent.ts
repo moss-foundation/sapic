@@ -1,8 +1,8 @@
 /* eslint-disable */
 import { Dispatch, SetStateAction, useEffect } from "react";
 
-import { CreateNewCollectionFromTreeNodeEvent, TreeNodeProps, TreeProps } from "../types";
-import { removeNodeFromTree } from "../utils";
+import { CreateNewCollectionFromTreeNodeEvent, TreeCollectionNode, TreeProps } from "../types";
+import { removeNodeFromTree } from "../utils/TreeUtils";
 
 interface useCreateNewCollectionFromTreeNodeProps {
   treeId: TreeProps["id"];
@@ -12,7 +12,7 @@ interface useCreateNewCollectionFromTreeNodeProps {
   onRootRemove: TreeProps["onRootRemove"];
   onTreeUpdate: TreeProps["onTreeUpdate"];
 
-  setTree: Dispatch<SetStateAction<TreeNodeProps>>;
+  setTree: Dispatch<SetStateAction<TreeCollectionNode>>;
 }
 
 export const useCreateNewCollectionFromTreeNodeEvent = ({

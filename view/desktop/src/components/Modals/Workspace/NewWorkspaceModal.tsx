@@ -15,7 +15,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
   const { mutate: createWorkspace } = useCreateWorkspace();
   const { mutate: openWorkspace } = useOpenWorkspace();
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState("New Workspace");
   const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 

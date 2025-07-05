@@ -1,6 +1,5 @@
 import { createContext, useEffect, useState } from "react";
 
-import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
 import {
@@ -23,7 +22,6 @@ export const TreeContext = createContext<TreeContextProps>({
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: undefined,
-  sortBy: "none",
   displayMode: "REQUEST_FIRST",
 });
 
@@ -35,7 +33,6 @@ export const CollectionTree = ({
   rootOffset = 8,
   nodeOffset = 16,
   searchInput,
-  sortBy = "none",
   displayMode = "REQUEST_FIRST",
 
   onTreeUpdate,
@@ -83,15 +80,15 @@ export const CollectionTree = ({
   //   setTree,
   // });
 
-  useMoveTreeNodeEvent({
-    treeId: initialTree.id,
-    onNodeAdd,
-    onNodeRemove,
-    onRootAdd,
-    onRootRemove,
-    onTreeUpdate,
-    setTree,
-  });
+  // useMoveTreeNodeEvent({
+  //   treeId: initialTree.id,
+  //   onNodeAdd,
+  //   onNodeRemove,
+  //   onRootAdd,
+  //   onRootRemove,
+  //   onTreeUpdate,
+  //   setTree,
+  // });
 
   return (
     <TreeContext.Provider
@@ -109,7 +106,6 @@ export const CollectionTree = ({
         allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
         allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
         searchInput,
-        sortBy,
         displayMode,
 
         onRootAddCallback: onRootAdd,

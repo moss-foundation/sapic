@@ -1,11 +1,11 @@
 /* eslint-disable */
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useContext, useEffect } from "react";
 
+import { TreeContext } from "../Tree";
 import { MoveNodeEventDetail, TreeNodeProps, TreeProps } from "../types";
 import { addNodeToTreeWithInstruction, hasDescendant, removeNodeFromTree } from "../utils";
 
 interface useMoveTreeNodeProps {
-  treeId: TreeProps["id"];
   onNodeAdd: TreeProps["onNodeAdd"];
   onNodeRemove: TreeProps["onNodeRemove"];
   onRootAdd: TreeProps["onRootAdd"];
@@ -16,7 +16,6 @@ interface useMoveTreeNodeProps {
 }
 
 export const useMoveTreeNodeEvent = ({
-  treeId,
   onNodeAdd,
   onNodeRemove,
   onRootAdd,
@@ -24,13 +23,14 @@ export const useMoveTreeNodeEvent = ({
   onTreeUpdate,
   setTree,
 }: useMoveTreeNodeProps) => {
+  const { id } = useContext(TreeContext);
   useEffect(() => {
     const handleMoveTreeNode = (event: CustomEvent<MoveNodeEventDetail>) => {
       const { source, target, instruction } = event.detail;
 
       if (source.node.uniqueId === target.node.uniqueId) return;
 
-      if (source.treeId === target.treeId && source.treeId === treeId) {
+      if (source.treeId === target.treeId && source.treeId === id) {
         if (hasDescendant(source.node, target.node)) {
           return;
         }
@@ -39,7 +39,7 @@ export const useMoveTreeNodeEvent = ({
           return addNodeToTreeWithInstruction(prevTree, target.node, source.node, instruction);
         });
       } else {
-        if (target.treeId === treeId) {
+        if (target.treeId === id) {
           setTree((prevTree) => {
             const updatedTree = addNodeToTreeWithInstruction(prevTree, target.node, source.node, instruction);
             if (source.node.isRoot) {
@@ -51,7 +51,7 @@ export const useMoveTreeNodeEvent = ({
             return updatedTree;
           });
         }
-        if (source.treeId === treeId) {
+        if (source.treeId === id) {
           setTree((prevTree) => {
             const removedTree = removeNodeFromTree(prevTree, source.node.uniqueId);
             if (source.node.isRoot) {

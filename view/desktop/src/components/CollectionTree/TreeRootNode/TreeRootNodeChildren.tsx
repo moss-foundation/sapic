@@ -31,8 +31,8 @@ export const TreeRootNodeChildren = ({
 
   const nodesToRender = sortNodesByOrder(
     displayMode === "REQUEST_FIRST"
-      ? node.requests.childNodes
-      : [node.endpoints, node.schemas, node.components, node.requests]
+      ? node.requests.childNodes.sort((a, b) => a.order - b.order)
+      : [node.endpoints, node.schemas, node.components, node.requests].sort((a, b) => a.order - b.order)
   );
 
   const shouldRenderAddRootForm = displayMode === "REQUEST_FIRST" && (isAddingRootFileNode || isAddingRootFolderNode);
@@ -43,11 +43,13 @@ export const TreeRootNodeChildren = ({
       {nodesToRender.map((childNode, index) => {
         return (
           <TreeNode
+            parentNode={displayMode === "REQUEST_FIRST" ? node.requests : node}
             onNodeUpdate={onNodeUpdate}
             key={childNode.id}
             node={childNode}
             depth={1}
             isLastChild={index === nodesToRender.length - 1}
+            isRootNode={displayMode === "DESIGN_FIRST"}
           />
         );
       })}

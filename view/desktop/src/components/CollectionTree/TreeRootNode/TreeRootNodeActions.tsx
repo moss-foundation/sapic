@@ -51,7 +51,7 @@ export const TreeRootNodeActions = ({
             <ActionButton
               customHoverBackground="hover:background-(--moss-icon-primary-background-hover)"
               icon="CollapseAll"
-              disabled={allFoldersAreCollapsed}
+              // disabled={allFoldersAreCollapsed} //TODO: Fix this, allFoldersAreCollapsed always returns true
               onClick={handleCollapseAll}
             />
           </div>
@@ -80,7 +80,7 @@ export const TreeRootNodeActions = ({
               </ActionMenu.Item>
               <ActionMenu.Item
                 alignWithIcons
-                disabled={allFoldersAreExpanded}
+                // disabled={allFoldersAreExpanded} //TODO: Fix this, allFoldersAreExpanded always returns true
                 onClick={handleExpandAll}
                 icon="ExpandAll"
               >

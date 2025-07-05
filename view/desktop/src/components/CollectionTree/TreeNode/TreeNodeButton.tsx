@@ -163,7 +163,11 @@ const TreeNodeButton = forwardRef<HTMLDivElement, TreeNodeButtonProps>(
 
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
-              <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+              <NodeLabel
+                label={`${node.name} (${node.order})`}
+                searchInput={searchInput}
+                className={cn({ "capitalize": isRootNode })}
+              />
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
             {preview &&
