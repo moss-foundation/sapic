@@ -22,6 +22,8 @@ env:
   CARGO_NET_RETRY: 10
   RUSTUP_MAX_RETRIES: 10
   CARGO_NET_GIT_FETCH_WITH_CLI: true
+  # Fallback for sccache issues
+  SCCACHE_IDLE_TIMEOUT: 0
 
 jobs:
   check-modified-files:
@@ -133,6 +135,7 @@ jobs:
     env:
       RUSTC_WRAPPER: sccache
       SCCACHE_GHA_ENABLED: true
+      SCCACHE_ERROR_LOG: warn
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -175,6 +178,7 @@ jobs:
           tool: sccache
 
       - name: Configure sccache
+        continue-on-error: true
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
@@ -201,7 +205,10 @@ jobs:
           MODELS='${{ needs.check-modified-models.outputs.UPDATED_MODELS }}'
           echo "$MODELS" | jq -r '.[]' | while read -r model; do
             echo "Checking bindings for $model"
-            make gen-$model-bindings &
+            if ! make gen-$model-bindings; then
+              echo "Bindings generation failed for $model, retrying without sccache"
+              RUSTC_WRAPPER= make gen-$model-bindings
+            fi &
           done
           wait
           git diff --exit-code -- crates/moss-*/bindings/**
@@ -216,6 +223,7 @@ jobs:
     env:
       RUSTC_WRAPPER: sccache
       SCCACHE_GHA_ENABLED: true
+      SCCACHE_ERROR_LOG: warn
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -252,6 +260,7 @@ jobs:
           tool: sccache
 
       - name: Configure sccache
+        continue-on-error: true
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
@@ -276,16 +285,23 @@ jobs:
         run: |
           if [ -d "tools/xtask" ]; then
             cd tools/xtask
-            cargo run -- --fail-fast audit
+            if ! cargo run -- --fail-fast audit; then
+              echo "Workspace audit failed, retrying without sccache"
+              RUSTC_WRAPPER= cargo run -- --fail-fast audit
+            fi
           else
             echo "tools/xtask directory not found, skipping workspace audit"
           fi
 
       - name: Run All Tests in Parallel
         run: |
-          cargo test --workspace --all-targets --all-features --no-fail-fast
+          if ! cargo test --workspace --all-targets --all-features --no-fail-fast; then
+            echo "Tests failed, retrying without sccache"
+            RUSTC_WRAPPER= cargo test --workspace --all-targets --all-features --no-fail-fast
+          fi
 
       - name: Show sccache stats
+        continue-on-error: true
         run: sccache --show-stats
 
 
@@ -298,6 +314,7 @@ jobs:
     env:
       RUSTC_WRAPPER: sccache
       SCCACHE_GHA_ENABLED: true
+      SCCACHE_ERROR_LOG: warn
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -334,6 +351,7 @@ jobs:
           tool: sccache
 
       - name: Configure sccache
+        continue-on-error: true
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
@@ -365,11 +383,17 @@ jobs:
         env:
           RUSTFLAGS: "-D warnings"
         run: |
-          cargo check --workspace --all-targets --all-features
+          if ! cargo check --workspace --all-targets --all-features; then
+            echo "Cargo check failed, retrying without sccache"
+            RUSTC_WRAPPER= cargo check --workspace --all-targets --all-features
+          fi
 
       - name: Run Clippy
         run: |
-          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          if ! cargo clippy --workspace --all-targets --all-features -- -D warnings; then
+            echo "Clippy failed, retrying without sccache"
+            RUSTC_WRAPPER= cargo clippy --workspace --all-targets --all-features -- -D warnings
+          fi
 
       - name: Rust Grit Check All
         run: |
