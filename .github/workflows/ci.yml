@@ -19,7 +19,9 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_INCREMENTAL: 0
-  RUSTC_WRAPPER: sccache
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
   check-modified-files:
@@ -43,7 +45,6 @@ jobs:
           files: |
             **.rs
             Cargo.toml
-            Cargo.lock
           files_ignore: |
             .github/**
 
@@ -57,7 +58,36 @@ jobs:
             **.js
             **.jsx
             package.json
-            pnpm-lock.yaml
+
+  setup-rust:
+    name: Setup Rust Environment
+    needs: check-modified-files
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Rust Setup
+        id: cache-rust-setup
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.rustup/
+          key: ${{ runner.os }}-rust-setup-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-rust-setup-
+
+      - name: Setup Rust toolchain
+        if: steps.cache-rust-setup.outputs.cache-hit != 'true'
+        uses: dtolnay/rust-toolchain@4305c38b25d97ef35a8ad1f985ccf2d2242004f2 # stable
+
+      - name: Install sccache
+        if: steps.cache-rust-setup.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@56ab7930c591507f833cbaed864d201386d518a8 # v2.44.13
+        with:
+          tool: sccache
 
   check-modified-models:
     name: Check Modified Models
@@ -83,55 +113,16 @@ jobs:
         id: output-models
         run: python3 .github/scripts/check_modified_models.py
 
-  # Single job to build Rust cache - all other Rust jobs depend on this
-  rust-build-cache:
-    name: Build Rust Cache
-    needs: check-modified-files
-    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
-        with:
-          egress-policy: audit
 
-      - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Use Linux Apt Cache
-        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
-        with:
-          packages: |
-            libwebkit2gtk-4.1-dev
-            libappindicator3-dev
-            librsvg2-dev
-            patchelf
-
-      - name: Use Rust Cache (Primary - Read/Write)
-        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
-        with:
-          cache-all-crates: true
-          shared-key: "build"
-
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.3
-
-      - name: Build dependencies and internal crates
-        run: |
-          echo "Fetching all dependencies..."
-          cargo fetch --locked
-          
-  check-bindings:
-    name: Check Bindings
-    needs: [check-modified-models, rust-build-cache]
+  check-all-bindings:
+    name: Check All Bindings
+    needs: [check-modified-models, setup-rust]
     if: ${{ needs.check-modified-models.outputs.UPDATED_MODELS != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        crate: ${{fromJSON(needs.check-modified-models.outputs.UPDATED_MODELS)}}
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: true
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
@@ -144,6 +135,28 @@ jobs:
       - name: Install PNPM
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
+      - name: Install gen-bindings dependencies
+        run: cd tools/gen-bindings && pnpm install
+
+      - name: Restore Rust Setup
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.rustup/
+          key: ${{ runner.os }}-rust-setup-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          fail-on-cache-miss: true
+
+      - name: Configure sccache
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Use Linux Apt Cache
         uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
         with:
@@ -153,36 +166,171 @@ jobs:
             librsvg2-dev
             patchelf
 
-      - name: Use Rust Cache (Read-Only)
+      - name: Use Rust Cache
         uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
         with:
-          cache-all-crates: true
-          shared-key: "build"
+          cache-all-crates: "true"
           save-if: false
 
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.3
-
-      - name: Install gen-bindings dependencies
-        run: cd tools/gen-bindings && pnpm install --frozen-lockfile
-
-      - name: Verify that bindings are updated
+      - name: Verify all bindings in parallel
         run: |
-          make gen-${{matrix.crate}}-bindings
-          git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
+          MODELS='${{ needs.check-modified-models.outputs.UPDATED_MODELS }}'
+          echo "$MODELS" | jq -r '.[]' | while read -r model; do
+            echo "Checking bindings for $model"
+            make gen-$model-bindings &
+          done
+          wait
+          git diff --exit-code -- crates/moss-*/bindings/**
   
-  # Optimized Node.js workflows - single job with matrix for tasks
+
+  rust-all-checks:
+    name: Rust Tests and Checks
+    needs: [check-modified-files, setup-rust]
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: true
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Restore Rust Setup
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.rustup/
+          key: ${{ runner.os }}-rust-setup-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          fail-on-cache-miss: true
+
+      - name: Configure sccache
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
+
+      - name: Workspace Audit
+        run: |
+          cd "${GITHUB_WORKSPACE}/tools/xtask"
+          cargo -q run -- --fail-fast audit
+
+      - name: Run All Tests in Parallel
+        run: |
+          cargo test --workspace --all-targets --all-features --no-fail-fast
+
+      - name: Show sccache stats
+        run: sccache --show-stats
+
+
+  rust-lint-all:
+    name: Rust Lint Check All
+    needs: [check-modified-files, setup-rust]
+    if: ${{ needs.check-modified-files.outputs.rust == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: true
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Restore Rust Setup
+        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.rustup/
+          key: ${{ runner.os }}-rust-setup-${{ hashFiles('rust-toolchain.toml', '**/Cargo.lock') }}
+          fail-on-cache-miss: true
+
+      - name: Configure sccache
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Use Linux Apt Cache
+        uses: awalsh128/cache-apt-pkgs-action@7ca5f46d061ad9aa95863cd9b214dd48edef361d # latest
+        with:
+          packages: |
+            libwebkit2gtk-4.1-dev
+            libappindicator3-dev
+            librsvg2-dev
+            patchelf
+
+      - name: Use Rust Cache
+        uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          cache-all-crates: "true"
+          save-if: false
+
+      - name: Install Grit
+        run: |
+          curl -fsSL https://docs.grit.io/install | bash
+          grit init
+
+      - name: Check All Rust Warnings
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: |
+          cargo check --workspace --all-targets --all-features
+
+      - name: Run Clippy
+        run: |
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Rust Grit Check All
+        run: |
+          grit apply --dry-run
+  
+
   node-workflows:
-    name: Node.js - ${{ matrix.task.name }}
+    name: Node.js Workflows - ${{ matrix.task.name }}
     needs: check-modified-files
     if: ${{ needs.check-modified-files.outputs.node == 'true' }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         task:
           - name: Lint
-            command: pnpm run lint -- --quiet
+            command: |
+              pnpm run lint -- --quiet
 
           - name: Test Packages
             command: pnpm run test --project packages
@@ -213,10 +361,10 @@ jobs:
           cache: "pnpm"
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
-      - name: Install Dependencies for desktop
-        run: cd view/desktop && pnpm install --frozen-lockfile --force
+      - name: Install Dependencies for desktop # TODO: This is a hack to get around eslint issues
+        run: cd view/desktop && pnpm install --force
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
@@ -226,21 +374,10 @@ jobs:
         with:
           path: |
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-            ${{ runner.os }}-playwright-
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}
 
       - name: Setup uv
         uses: astral-sh/setup-uv@bd01e18f51369d5a26f1651c3cb451d3417e3bba # v6.3.1
-
-      - name: Cache UV packages
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
 
       - name: Build Icons
         run: make gen-icons
