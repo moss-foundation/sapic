@@ -1,18 +1,23 @@
 pub mod shared;
 
-use moss_app::{context::ctxkeys, dirs, models::operations::CreateWorkspaceInput};
+use moss_app::{
+    context::ctxkeys, dirs, models::operations::CreateWorkspaceInput,
+    services::workspace_service::WorkspaceService,
+};
 use moss_applib::context::Context;
 use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
+use tauri::test::MockRuntime;
 
 use crate::shared::{set_up_test_app, workspace_key};
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
 
     let workspace_name = random_workspace_name();
     let create_result = app
@@ -37,12 +42,9 @@ async fn create_workspace_success() {
     let id = create_output.id;
 
     // Check active workspace
-    let active_workspace = app.workspace().await;
-    let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    let active_workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id).unwrap();
+    assert!(workspace_service.is_workspace_open().await.is_some());
+    let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
     assert_eq!(active_workspace_id, id);
-    assert_eq!(workspace_guard.abs_path(), &expected_path);
-    assert_eq!(workspace_guard.manifest().await.name, workspace_name);
 
     // Check known_workspaces
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -59,7 +61,7 @@ async fn create_workspace_success() {
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
 
     let create_result = app
         .create_workspace(
@@ -92,7 +94,7 @@ async fn create_workspace_empty_name() {
 
 #[tokio::test]
 async fn create_workspace_same_name() {
-    let (app, ctx, cleanup, workspaces_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
 
@@ -109,7 +111,7 @@ async fn create_workspace_same_name() {
         .await;
     let first_output = first_result.unwrap();
 
-    let first_path: Arc<Path> = workspaces_path
+    let first_path: Arc<Path> = abs_path
         .join(dirs::WORKSPACES_DIR)
         .join(&first_output.id.to_string())
         .into();
@@ -134,7 +136,7 @@ async fn create_workspace_same_name() {
         .await;
     let second_output = second_result.unwrap();
 
-    let second_path: Arc<Path> = workspaces_path
+    let second_path: Arc<Path> = abs_path
         .join(dirs::WORKSPACES_DIR)
         .join(&second_output.id.to_string())
         .into();
@@ -177,7 +179,7 @@ async fn create_workspace_same_name() {
 
 #[tokio::test]
 async fn create_workspace_special_chars() {
-    let (app, ctx, cleanup, workspaces_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
 
     let base_name = random_workspace_name();
     let mut created_count = 0;
@@ -198,7 +200,7 @@ async fn create_workspace_special_chars() {
         let create_output = create_result.unwrap();
         created_count += 1;
 
-        let expected_path: Arc<Path> = workspaces_path
+        let expected_path: Arc<Path> = abs_path
             .join(dirs::WORKSPACES_DIR)
             .join(&create_output.id.to_string())
             .into();
@@ -231,7 +233,7 @@ async fn create_workspace_special_chars() {
 
 #[tokio::test]
 async fn create_workspace_not_open_on_creation() {
-    let (app, ctx, cleanup, workspaces_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_result = app
@@ -246,7 +248,7 @@ async fn create_workspace_not_open_on_creation() {
         .await;
     let create_output = create_result.unwrap();
 
-    let expected_path: Arc<Path> = workspaces_path
+    let expected_path: Arc<Path> = abs_path
         .join(dirs::WORKSPACES_DIR)
         .join(&create_output.id.to_string())
         .into();

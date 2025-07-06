@@ -10,13 +10,17 @@ use moss_app::{
         primitives::ThemeMode,
         types::{ColorThemeInfo, LocaleInfo},
     },
-    services::{log_service::LogService, workspace_service::WorkspaceService},
-    storage::segments::WORKSPACE_SEGKEY,
+    services::{
+        log_service::LogService, storage_service::StorageService,
+        workspace_service::WorkspaceService,
+    },
+    storage::segments::SEGKEY_WORKSPACE,
 };
+use moss_applib::providers::{ServiceMap, ServiceProvider};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
-use std::{future::Future, path::PathBuf, pin::Pin, sync::Arc};
+use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};
 use tauri::test::MockRuntime;
 use uuid::Uuid;
 
@@ -30,10 +34,16 @@ pub fn random_app_dir_path() -> PathBuf {
 }
 
 pub fn workspace_key(id: Uuid) -> SegKeyBuf {
-    WORKSPACE_SEGKEY.join(id.to_string())
+    SEGKEY_WORKSPACE.join(id.to_string())
 }
 
-pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, PathBuf) {
+pub async fn set_up_test_app() -> (
+    App<MockRuntime>,
+    MockAppContext,
+    ServiceProvider,
+    CleanupFn,
+    PathBuf,
+) {
     let fs = Arc::new(RealFileSystem::new());
     let tauri_app = tauri::test::mock_app();
     let app_handle = tauri_app.handle().to_owned();
@@ -56,19 +66,33 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
     let global_storage = Arc::new(GlobalStorageImpl::new(globals_abs_path).unwrap());
 
     let session_id = Uuid::new_v4();
-    let log_service = LogService::new(
+    let mut services: ServiceMap = Default::default();
+
+    let log_service: Arc<LogService> = LogService::new(
         fs.clone(),
         app_handle.clone(),
         &logs_abs_path,
         &session_id,
         global_storage.clone(),
     )
-    .unwrap();
+    .unwrap()
+    .into();
 
-    let workspace_service: WorkspaceService<MockRuntime> =
-        WorkspaceService::new(global_storage.clone(), fs.clone(), &app_path)
+    let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
+    let workspace_service: Arc<WorkspaceService<MockRuntime>> =
+        WorkspaceService::new(storage_service.clone(), fs.clone(), &app_path)
             .await
-            .expect("Failed to create workspace service");
+            .expect("Failed to create workspace service")
+            .into();
+
+    {
+        services.insert(TypeId::of::<LogService>(), log_service.clone());
+        services.insert(
+            TypeId::of::<WorkspaceService<MockRuntime>>(),
+            workspace_service.clone(),
+        );
+        services.insert(TypeId::of::<StorageService>(), storage_service.clone());
+    }
 
     let cleanup_fn = Box::new({
         let path = app_path.clone();
@@ -109,11 +133,13 @@ pub async fn set_up_test_app() -> (App<MockRuntime>, MockAppContext, CleanupFn, 
         app_path.clone(),
     )
     .with_service(log_service)
-    .with_service(workspace_service);
+    .with_service(workspace_service)
+    .with_service::<StorageService>(storage_service);
 
     (
         app_builder.build().await.unwrap(),
         ctx,
+        services.into(),
         cleanup_fn,
         app_path,
     )

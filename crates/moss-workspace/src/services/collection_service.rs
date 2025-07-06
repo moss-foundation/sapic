@@ -18,7 +18,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
-    dirs, services::storage_service::StorageService, storage::segments::COLLECTION_SEGKEY,
+    dirs, services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
 };
 
 #[derive(Error, Debug)]
@@ -275,7 +275,7 @@ impl CollectionService {
             let mut txn = self.storage.begin_write()?;
 
             self.storage
-                .remove_item_metadata_txn(&mut txn, COLLECTION_SEGKEY.join(&id.to_string()))?;
+                .remove_item_metadata_txn(&mut txn, SEGKEY_COLLECTION.join(&id.to_string()))?;
             self.storage
                 .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
 
@@ -417,11 +417,11 @@ async fn restore_collections(
         collections.push((id, collection));
     }
 
-    let metadata = storage.list_items_metadata(COLLECTION_SEGKEY.to_segkey_buf())?;
+    let metadata = storage.list_items_metadata(SEGKEY_COLLECTION.to_segkey_buf())?;
 
     let mut result = HashMap::new();
     for (id, collection) in collections {
-        let segkey_prefix = COLLECTION_SEGKEY.join(&id.to_string());
+        let segkey_prefix = SEGKEY_COLLECTION.join(&id.to_string());
 
         let order = metadata
             .get(&segkey_prefix.join("order"))

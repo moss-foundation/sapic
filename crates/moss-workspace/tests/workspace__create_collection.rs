@@ -9,7 +9,7 @@ use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_co
 use moss_workspace::{
     models::operations::CreateCollectionInput,
     services::{collection_service::CollectionService, storage_service::StorageService},
-    storage::segments::{COLLECTION_SEGKEY, SEGKEY_EXPANDED_ITEMS},
+    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 use uuid::Uuid;
@@ -56,7 +56,7 @@ async fn create_collection_success() {
     let item_store = storage_service.__storage().item_store();
 
     // Check order was stored
-    let order_key = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
@@ -133,7 +133,7 @@ async fn create_collection_special_chars() {
         let item_store = storage_service.__storage().item_store();
 
         // Check order was stored
-        let order_key = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+        let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
         let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
         let stored_order: usize = order_value.deserialize().unwrap();
         assert_eq!(stored_order, 0);
@@ -186,7 +186,7 @@ async fn create_collection_with_order() {
     let item_store = storage_service.__storage().item_store();
 
     // Check order was stored
-    let order_key = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 42);
@@ -246,7 +246,7 @@ async fn create_collection_with_repo() {
     let item_store = storage_service.__storage().item_store();
 
     // Check order was stored
-    let order_key = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);
@@ -305,7 +305,7 @@ async fn create_collection_with_icon() {
     let item_store = storage_service.__storage().item_store();
 
     // Check order was stored
-    let order_key = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
     let order_value = GetItem::get(item_store.as_ref(), order_key).unwrap();
     let stored_order: usize = order_value.deserialize().unwrap();
     assert_eq!(stored_order, 0);

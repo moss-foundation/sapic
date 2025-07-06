@@ -65,7 +65,7 @@ pub struct App<R: TauriRuntime> {
 }
 
 impl<R: TauriRuntime> App<R> {
-    pub fn app_handle(&self) -> AppHandle<R> {
+    pub fn handle(&self) -> AppHandle<R> {
         self.app_handle.clone()
     }
 

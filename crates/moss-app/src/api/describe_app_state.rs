@@ -1,5 +1,6 @@
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
+use uuid::Uuid;
 
 use crate::{
     app::App,
@@ -7,14 +8,15 @@ use crate::{
         operations::DescribeAppStateOutput,
         types::{Defaults, Preferences},
     },
-    services::workspace_service::WorkspaceService,
+    services::{storage_service::StorageService, workspace_service::WorkspaceService},
 };
 
 // TODO: We must rewrite this crap later, it's a mess
 
 impl<R: TauriRuntime> App<R> {
-    pub async fn describe_state(&self) -> OperationResult<DescribeAppStateOutput> {
+    pub async fn describe_app_state(&self) -> OperationResult<DescribeAppStateOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
+        let storage_service = self.services.get::<StorageService>();
 
         // HACK: This is a hack to get the last workspace name
         let active_workspace_lock = workspace_service.workspace().await;
@@ -28,6 +30,12 @@ impl<R: TauriRuntime> App<R> {
                 .to_string()
         });
 
+        let last_workspace_id = if let Ok(id_str) = storage_service.get_last_active_workspace() {
+            Uuid::parse_str(&id_str).ok()
+        } else {
+            None
+        };
+
         Ok(DescribeAppStateOutput {
             preferences: Preferences {
                 theme: self.preferences().theme.read().await.clone(),
@@ -37,6 +45,7 @@ impl<R: TauriRuntime> App<R> {
                 theme: self.defaults().theme.clone(),
                 locale: self.defaults().locale.clone(),
             },
+            prev_workspace_id: last_workspace_id,
             last_workspace: last_workspace_name.clone(), // Some("TestWorkspace".to_string())
         })
     }

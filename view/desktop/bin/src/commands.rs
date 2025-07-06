@@ -32,7 +32,7 @@ where
     Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
 {
     moss_api::with_timeout(options, async move {
-        let app_handle = app.app_handle();
+        let app_handle = app.handle();
         let (workspace, _ctx) = app
             .service::<WorkspaceService<R>>()
             .workspace_with_context(app_handle)
@@ -62,7 +62,7 @@ where
     Fut: std::future::Future<Output = TauriResult<T>> + Send + 'static,
 {
     moss_api::with_timeout(options, async move {
-        let app_handle = app.app_handle();
+        let app_handle = app.handle();
         let (workspace, ctx) = app
             .service::<WorkspaceService<R>>()
             .workspace_with_context(app_handle)

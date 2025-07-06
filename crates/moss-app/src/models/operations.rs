@@ -49,6 +49,7 @@ pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
     pub last_workspace: Option<String>,
+    pub prev_workspace_id: Option<Uuid>,
 }
 
 /// @category Operation

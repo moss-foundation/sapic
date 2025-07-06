@@ -4,13 +4,7 @@ use std::sync::Arc;
 use crate::{
     global_storage::stores::GlobalItemStore,
     primitives::segkey::SegKeyBuf,
-    storage::{
-        SegBinTable,
-        operations::{
-            GetItem, ListByPrefix, PutItem, RemoveItem, TransactionalGetItem,
-            TransactionalListByPrefix, TransactionalPutItem, TransactionalRemoveItem,
-        },
-    },
+    storage::{SegBinTable, operations::*},
 };
 
 pub struct GlobalItemStoreImpl {
@@ -71,6 +65,30 @@ impl TransactionalPutItem for GlobalItemStoreImpl {
         self.table.insert(txn, key, &entity)
     }
 }
+
+impl RemoveByPrefix for GlobalItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn remove_by_prefix(&self, prefix: &str) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        let mut write_txn = self.client.begin_write()?;
+        self.table.remove_by_prefix(&mut write_txn, prefix)
+    }
+}
+
+impl TransactionalRemoveByPrefix for GlobalItemStoreImpl {
+    type Key = SegKeyBuf;
+    type Entity = AnyValue;
+
+    fn remove_by_prefix(
+        &self,
+        txn: &mut Transaction,
+        prefix: &str,
+    ) -> DatabaseResult<Vec<(Self::Key, Self::Entity)>> {
+        self.table.remove_by_prefix(txn, prefix)
+    }
+}
+
 impl RemoveItem for GlobalItemStoreImpl {
     type Key = SegKeyBuf;
     type Entity = AnyValue;

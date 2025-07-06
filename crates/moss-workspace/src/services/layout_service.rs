@@ -20,8 +20,8 @@ use crate::{
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{
-            LAYOUT_ACTIVITYBAR_SEGKEY, LAYOUT_EDITOR_SEGKEY, LAYOUT_PANEL_SEGKEY,
-            LAYOUT_SIDEBAR_SEGKEY,
+            SEGKEY_LAYOUT_ACTIVITYBAR, SEGKEY_LAYOUT_EDITOR, SEGKEY_LAYOUT_PANEL,
+            SEGKEY_LAYOUT_SIDEBAR,
         },
     },
 };
@@ -191,15 +191,15 @@ impl LayoutService {
         Ok(SidebarPartStateInfo {
             position: get_from_cache::<SidebarPosition>(
                 cache,
-                LAYOUT_SIDEBAR_SEGKEY.join("position"),
+                SEGKEY_LAYOUT_SIDEBAR.join("position"),
             )
             .or(preferences.position)
             .unwrap_or(SIDEBAR_DEFAULTS.position),
 
-            size: get_from_cache::<usize>(cache, LAYOUT_SIDEBAR_SEGKEY.join("size"))
+            size: get_from_cache::<usize>(cache, SEGKEY_LAYOUT_SIDEBAR.join("size"))
                 .unwrap_or(SIDEBAR_DEFAULTS.size),
 
-            visible: get_from_cache::<bool>(cache, LAYOUT_SIDEBAR_SEGKEY.join("visible"))
+            visible: get_from_cache::<bool>(cache, SEGKEY_LAYOUT_SIDEBAR.join("visible"))
                 .or(preferences.visible)
                 .unwrap_or(SIDEBAR_DEFAULTS.is_visible),
         })
@@ -219,13 +219,13 @@ impl LayoutService {
         Ok(ActivitybarPartStateInfo {
             last_active_container_id: get_from_cache::<String>(
                 cache,
-                LAYOUT_ACTIVITYBAR_SEGKEY.join("lastActiveContainerId"),
+                SEGKEY_LAYOUT_ACTIVITYBAR.join("lastActiveContainerId"),
             )
             .or_else(|| Some(TREE_VIEW_GROUP_COLLECTIONS.to_string())),
 
             position: get_from_cache::<ActivitybarPosition>(
                 cache,
-                LAYOUT_ACTIVITYBAR_SEGKEY.join("position"),
+                SEGKEY_LAYOUT_ACTIVITYBAR.join("position"),
             )
             .or(preferences.position)
             .unwrap_or(ACTIVITYBAR_DEFAULTS.position),
@@ -238,7 +238,7 @@ impl LayoutService {
                         .items
                         .as_ref()
                         .and_then(|items| items.iter().find(|item| item.id == default_item.id));
-                    let container_segkey = LAYOUT_ACTIVITYBAR_SEGKEY
+                    let container_segkey = SEGKEY_LAYOUT_ACTIVITYBAR
                         .join("container")
                         .join(default_item.id);
 
@@ -266,10 +266,10 @@ impl LayoutService {
         let preferences = PanelPartPreferences { visible: None };
 
         Ok(PanelPartStateInfo {
-            size: get_from_cache::<usize>(cache, LAYOUT_PANEL_SEGKEY.join("size"))
+            size: get_from_cache::<usize>(cache, SEGKEY_LAYOUT_PANEL.join("size"))
                 .unwrap_or(PANEL_DEFAULTS.size),
 
-            visible: get_from_cache::<bool>(cache, LAYOUT_PANEL_SEGKEY.join("visible"))
+            visible: get_from_cache::<bool>(cache, SEGKEY_LAYOUT_PANEL.join("visible"))
                 .or(preferences.visible)
                 .unwrap_or(PANEL_DEFAULTS.is_visible),
         })
@@ -284,7 +284,7 @@ impl LayoutService {
         let _preferences = EditorPartPreferences {};
 
         let grid =
-            get_from_cache::<EditorGridStateEntity>(cache, LAYOUT_EDITOR_SEGKEY.join("grid"));
+            get_from_cache::<EditorGridStateEntity>(cache, SEGKEY_LAYOUT_EDITOR.join("grid"));
         let grid = if let Some(grid) = grid {
             grid
         } else {
@@ -294,12 +294,12 @@ impl LayoutService {
 
         let panels = get_from_cache::<HashMap<String, EditorPanelStateEntity>>(
             cache,
-            LAYOUT_EDITOR_SEGKEY.join("panels"),
+            SEGKEY_LAYOUT_EDITOR.join("panels"),
         )
         .unwrap_or_default();
 
         let active_group =
-            get_from_cache::<String>(cache, LAYOUT_EDITOR_SEGKEY.join("activeGroup"));
+            get_from_cache::<String>(cache, SEGKEY_LAYOUT_EDITOR.join("activeGroup"));
 
         Ok(Some(EditorPartStateInfo {
             grid: grid.into(),

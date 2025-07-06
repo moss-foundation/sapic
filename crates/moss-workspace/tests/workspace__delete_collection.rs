@@ -5,7 +5,7 @@ use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::operations::{CreateCollectionInput, DeleteCollectionInput},
     services::storage_service::StorageService,
-    storage::segments::{COLLECTION_SEGKEY, SEGKEY_EXPANDED_ITEMS},
+    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 use uuid::Uuid;
@@ -47,7 +47,7 @@ async fn delete_collection_success() {
     let item_store = storage_service.__storage().item_store();
 
     // Check that collection-specific entries are removed
-    let collection_prefix = COLLECTION_SEGKEY.join(&id.to_string());
+    let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());
     let list_result =
         ListByPrefix::list_by_prefix(item_store.as_ref(), &collection_prefix.to_string()).unwrap();
     assert!(list_result.is_empty());

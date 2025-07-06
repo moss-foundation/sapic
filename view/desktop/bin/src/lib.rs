@@ -15,7 +15,8 @@ use moss_app::{
     app::AppDefaults,
     services::{
         locale_service::LocaleService, log_service::LogService, session_service::SessionService,
-        theme_service::ThemeService, workspace_service::WorkspaceService,
+        storage_service::StorageService, theme_service::ThemeService,
+        workspace_service::WorkspaceService,
     },
 };
 use moss_applib::context::ContextValueSet;
@@ -70,8 +71,11 @@ pub async fn run<R: TauriRuntime>() {
                     .expect("Environment variable APP_LOG_DIR is not set")
                     .into();
 
+                let storage_service: Arc<StorageService> = StorageService::new(&app_dir)
+                    .expect("Failed to create storage service")
+                    .into();
                 let workspace_service =
-                    WorkspaceService::<R>::new(global_storage.clone(), fs.clone(), &app_dir)
+                    WorkspaceService::<R>::new(storage_service.clone(), fs.clone(), &app_dir)
                         .await
                         .expect("Failed to create workspace service");
                 let theme_service = ThemeService::new(fs.clone(), themes_dir);
@@ -114,6 +118,7 @@ pub async fn run<R: TauriRuntime>() {
                     fs,
                     app_dir.into(),
                 )
+                .with_service::<StorageService>(storage_service)
                 .with_service(theme_service)
                 .with_service(locale_service)
                 .with_service(session_service)

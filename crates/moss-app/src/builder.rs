@@ -54,8 +54,11 @@ impl<R: TauriRuntime> AppBuilder<R> {
         }
     }
 
-    pub fn with_service<T: ServiceMarker + Send + Sync>(mut self, service: T) -> Self {
-        self.services.insert(TypeId::of::<T>(), Arc::new(service));
+    pub fn with_service<T: ServiceMarker + Send + Sync>(
+        mut self,
+        service: impl Into<Arc<T>>,
+    ) -> Self {
+        self.services.insert(TypeId::of::<T>(), service.into());
         self
     }
 
