@@ -245,9 +245,6 @@ pub struct DescribeWorkbenchStateOutput {
     pub active_workspace_id: Option<Uuid>,
 
     pub prev_workspace_id: Option<Uuid>,
-    // #[serde(skip)]
-    // #[ts(skip)]
-    // pub abs_path: Arc<Path>,
 }
 
 // Close Workspace
