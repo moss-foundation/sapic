@@ -84,7 +84,6 @@ impl<R: TauriRuntime> AppBuilder<R> {
             defaults: self.defaults,
             services: self.services.into(),
             activity_indicator: self.activity_indicator,
-            // abs_path: self.abs_path,
         })
     }
 }

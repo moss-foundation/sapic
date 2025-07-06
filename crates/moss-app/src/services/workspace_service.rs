@@ -127,11 +127,8 @@ pub struct WorkspaceService<R: TauriRuntime> {
     /// The absolute path to the workspaces directory
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    // global_storage: Arc<dyn GlobalStorage>,
     storage: Arc<StorageService>, // TODO: should be a trait
     state: Arc<RwLock<ServiceState<R>>>,
-    // known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
-    // active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
 }
 
 impl<R: TauriRuntime> ServiceMarker for WorkspaceService<R> {}
@@ -158,8 +155,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
                 known_workspaces,
                 active_workspace: None,
             })),
-            // known_workspaces: OnceCell::new(),
-            // active_workspace: RwLock::new(None),
         })
     }
 
@@ -261,7 +256,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             let _ = self
                 .storage
                 .remove_all_by_prefix(&segkey_workspace(&id_str).to_string())
-                .map_err(|e| WorkspaceServiceError::Storage(e.to_string()));
+                .map_err(|e| WorkspaceServiceError::Storage(e.to_string())); // TODO: log error
         }
 
         if active_workspace_id != Some(item.id) {
@@ -270,62 +265,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         Ok(self.deactivate_workspace(ctx).await?)
     }
-
-    // pub(crate) async fn load_workspace(
-    //     &self,
-    //     id: Uuid,
-    //     activity_indicator: ActivityIndicator<R>,
-    // ) -> WorkspaceServiceResult<(Workspace<R>, WorkspaceItem)> {
-    //     let state_lock = self.state.write().await;
-    //     let descriptor = if let Some(d) = state_lock.known_workspaces.get(&id) {
-    //         d.clone()
-    //     } else {
-    //         return Err(WorkspaceServiceError::NotFound(id.to_string()));
-    //     };
-
-    //     if !descriptor.abs_path.exists() {
-    //         return Err(WorkspaceServiceError::NotFound(
-    //             descriptor.abs_path.to_string_lossy().to_string(),
-    //         ));
-    //     }
-
-    //     let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
-    //     if active_workspace_id == Some(id) {
-    //         return Err(WorkspaceServiceError::AlreadyLoaded(id.to_string()));
-    //     }
-
-    //     let storage_service: Arc<StorageService> = StorageService::new(&descriptor.abs_path)
-    //         .context("Failed to load the storage service")
-    //         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-    //         .into();
-
-    //     let collection_service = CollectionService::new(
-    //         descriptor.abs_path.clone(),
-    //         self.fs.clone(),
-    //         storage_service.clone(),
-    //     )
-    //     .await
-    //     // .context("Failed to load the collection service")
-    //     .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
-
-    //     let layout_service = LayoutService::new(storage_service.clone());
-
-    //     let workspace = WorkspaceBuilder::new(self.fs.clone())
-    //         .with_service::<StorageService>(storage_service.clone())
-    //         .with_service(collection_service)
-    //         .with_service(layout_service)
-    //         .load(
-    //             WorkspaceLoadParams {
-    //                 abs_path: descriptor.abs_path.clone(),
-    //             },
-    //             activity_indicator,
-    //         )
-    //         .await
-    //         .context("Failed to load the workspace")
-    //         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
-
-    //     Ok((workspace, descriptor))
-    // }
 
     pub(crate) async fn create_workspace(
         &self,
@@ -342,34 +281,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             .await
             .context("Failed to create workspace directory")
             .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
-
-        // let storage_service: Arc<StorageService> = StorageService::new(&abs_path)
-        //     .context("Failed to load the storage service")
-        //     .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-        //     .into();
-
-        // let collection_service =
-        //     CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
-        //         .await
-        //         // .context("Failed to load the collection service")
-        //         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
-
-        // let layout_service = LayoutService::new(storage_service.clone());
-
-        // let workspace = WorkspaceBuilder::new(self.fs.clone())
-        //     .with_service::<StorageService>(storage_service.clone())
-        //     .with_service(collection_service)
-        //     .with_service(layout_service)
-        //     .create(
-        //         WorkspaceCreateParams {
-        //             name: name.to_string(),
-        //             abs_path: abs_path.clone(),
-        //         },
-        //         activity_indicator,
-        //     )
-        //     .await
-        //     .context("Failed to create the workspace")
-        //     .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         WorkspaceBuilder::initialize(
             self.fs.clone(),
@@ -407,10 +318,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         if state_lock.active_workspace.is_none() {
             return None;
         }
-        // let id = guard.as_ref()?.id;
-        // let workspace_guard = RwLockReadGuard::map(guard, |opt| {
-        //     opt.as_ref().map(|a| &a.handle).unwrap() // This is safe because we checked for None above
-        // });
 
         Some(state_lock.active_workspace.as_ref()?.handle.clone())
     }
@@ -424,12 +331,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             return None;
         }
 
-        // let id = state_lock.active_workspace.as_ref()?.id;
         let context_state = state_lock.active_workspace.as_ref()?.context.clone();
-        // let workspace_guard = RwLockReadGuard::map(state_lock.active_workspace.as_ref(), |opt| {
-        //     opt.as_ref().map(|a| &a.handle).unwrap() // This is safe because we checked for None above
-        // });
-
         let context = WorkspaceContext::new(app_handle, context_state);
         Some((
             state_lock.active_workspace.as_ref()?.handle.clone(),
@@ -442,7 +344,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         ctx: &C,
         id: Uuid,
         activity_indicator: ActivityIndicator<R>,
-        // workspace: Workspace<R>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
         let item = state_lock
@@ -461,7 +362,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let collection_service =
             CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
                 .await
-                // .context("Failed to load the collection service")
                 .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         let layout_service = LayoutService::new(storage_service.clone());
@@ -500,12 +400,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             txn.commit()?;
         }
 
-        // let item_store = self.global_storage.item_store();
-        // let id_str = id.to_string();
-        // let segkey = SEGKEY_WORKSPACE.join(id_str);
-        // let value = AnyValue::serialize(&WorkspaceInfoEntity { last_opened_at })?;
-        // PutItem::put(item_store.as_ref(), segkey, value)?;
-
         let workspace_id: ctxkeys::WorkspaceId = id.into();
         ctx.set_value(workspace_id);
 
@@ -531,103 +425,6 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         Ok(())
     }
-
-    // async fn workspaces(&self) -> WorkspaceServiceResult<&RwLock<WorkspaceMap>> {
-    //     Ok(self
-    //         .known_workspaces
-    //         .get_or_try_init(|| async move {
-    //             let mut workspaces: WorkspaceMap = HashMap::new();
-
-    //             let restored_items = ListByPrefix::list_by_prefix(
-    //                 self.global_storage.item_store().as_ref(),
-    //                 WORKSPACE_SEGKEY.as_str().expect("invalid utf-8"),
-    //             )
-    //             .map_err(|e| WorkspaceServiceError::Storage(e.to_string()))?;
-    //             let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
-    //                 let path = k.after(&WORKSPACE_SEGKEY);
-    //                 if let Some(path) = path {
-    //                     Some((path, v))
-    //                 } else {
-    //                     None
-    //                 }
-    //             });
-
-    //             let mut restored_entities = HashMap::with_capacity(restored_items.len());
-    //             for (segkey, value) in filtered_restored_items {
-    //                 let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
-    //                     Ok(name) => name,
-    //                     Err(_) => {
-    //                         // TODO: logging
-    //                         println!("failed to get the workspace {:?} name", segkey);
-    //                         continue;
-    //                     }
-    //                 };
-
-    //                 restored_entities.insert(encoded_name, value);
-    //             }
-
-    //             let mut read_dir = self
-    //                 .fs
-    //                 .read_dir(&self.abs_path)
-    //                 .await
-    //                 .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?;
-
-    //             while let Some(entry) = read_dir
-    //                 .next_entry()
-    //                 .await
-    //                 .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?
-    //             {
-    //                 if !entry
-    //                     .file_type()
-    //                     .await
-    //                     .map_err(|e| WorkspaceServiceError::Io(e.to_string()))?
-    //                     .is_dir()
-    //                 {
-    //                     continue;
-    //                 }
-
-    //                 let id_str = entry.file_name().to_string_lossy().to_string();
-    //                 let id = match Uuid::parse_str(&id_str) {
-    //                     Ok(id) => id,
-    //                     Err(_) => {
-    //                         // TODO: logging
-    //                         println!("failed to get the collection {:?} name", id_str);
-    //                         continue;
-    //                     }
-    //                 };
-
-    //                 let summary = Workspace::<R>::summary(self.fs.clone(), &entry.path())
-    //                     .await
-    //                     .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
-
-    //                 let restored_entity =
-    //                     match restored_entities.remove(&id_str).map_or(Ok(None), |v| {
-    //                         v.deserialize::<WorkspaceInfoEntity>().map(Some)
-    //                     }) {
-    //                         Ok(value) => value,
-    //                         Err(_err) => {
-    //                             // TODO: logging
-    //                             println!("failed to get the workspace {:?} info", id_str);
-    //                             continue;
-    //                         }
-    //                     };
-
-    //                 workspaces.insert(
-    //                     id,
-    //                     WorkspaceDescriptor {
-    //                         id,
-    //                         name: summary.manifest.name,
-    //                         abs_path: entry.path().into(),
-    //                         last_opened_at: restored_entity.map(|v| v.last_opened_at),
-    //                     }
-    //                     .into(),
-    //                 );
-    //             }
-
-    //             Ok::<_, WorkspaceServiceError>(RwLock::new(workspaces))
-    //         })
-    //         .await?)
-    // }
 }
 
 // TODO: These methods might later be moved into a wrapper around this service for integration tests
@@ -647,35 +444,6 @@ async fn restore_known_workspaces<R: TauriRuntime>(
 
     let restored_items =
         storage_service.list_all_by_prefix(SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"))?;
-
-    // let restored_items = ListByPrefix::list_by_prefix(
-    //     global_storage.item_store().as_ref(),
-    //     SEGKEY_WORKSPACE.as_str().expect("invalid utf-8"),
-    // )
-    // .map_err(|e| WorkspaceServiceError::Storage(e.to_string()))?;
-
-    // let filtered_restored_items = restored_items.iter().filter_map(|(k, v)| {
-    //     let path = k.after(&SEGKEY_WORKSPACE);
-    //     if let Some(path) = path {
-    //         Some((path, v))
-    //     } else {
-    //         None
-    //     }
-    // });
-
-    // let mut restored_entities = HashMap::with_capacity(restored_items.len());
-    // for (segkey, value) in filtered_restored_items {
-    //     let encoded_name = match String::from_utf8(segkey.as_bytes().to_owned()) {
-    //         Ok(name) => name,
-    //         Err(_) => {
-    //             // TODO: logging
-    //             println!("failed to get the workspace {:?} name", segkey);
-    //             continue;
-    //         }
-    //     };
-
-    //     restored_entities.insert(encoded_name, value);
-    // }
 
     let mut read_dir = fs
         .read_dir(&abs_path)

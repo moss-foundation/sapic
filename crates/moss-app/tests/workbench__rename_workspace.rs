@@ -49,9 +49,6 @@ async fn rename_workspace_success() {
     assert_eq!(list_workspaces[0].id, create_output.id);
     assert_eq!(list_workspaces[0].name, new_name);
 
-    // Verify active workspace has the new name (we skip this check since we can't access workspace directly)
-    // The name verification is already done through list_workspaces check above
-
     cleanup().await;
 }
 
