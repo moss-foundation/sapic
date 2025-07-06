@@ -31,6 +31,6 @@ export const useWorkspaceMapping = () => {
     workspaces: workspaces || [],
     workspaceMap,
     getWorkspaceById,
-    getNameById: (id: string) => workspaceMap.get(id)?.displayName,
+    getNameById: (id: string) => workspaceMap.get(id)?.name,
   };
 };

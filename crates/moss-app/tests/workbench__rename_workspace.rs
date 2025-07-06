@@ -28,7 +28,7 @@ async fn rename_workspace_success() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Rename the workspace
     let new_name = random_workspace_name();
@@ -47,7 +47,7 @@ async fn rename_workspace_success() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, new_name);
+    assert_eq!(list_workspaces[0].name, new_name);
 
     // Verify active workspace has the new name
     let active_workspace = app.workspace().await;
@@ -93,7 +93,7 @@ async fn rename_workspace_empty_name() {
     // Verify workspace name didn't change
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     cleanup().await;
 }
@@ -131,7 +131,7 @@ async fn rename_workspace_same_name() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     cleanup().await;
 }

@@ -48,7 +48,7 @@ async fn create_workspace_success() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Check database
     let item_store = app.__storage().item_store();
@@ -119,7 +119,7 @@ async fn create_workspace_same_name() {
     let list_after_first = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_after_first.len(), 1);
     assert_eq!(list_after_first[0].id, first_output.id);
-    assert_eq!(list_after_first[0].display_name, workspace_name);
+    assert_eq!(list_after_first[0].name, workspace_name);
 
     // Create second workspace with same name
     let second_result = app
@@ -157,13 +157,13 @@ async fn create_workspace_same_name() {
         .iter()
         .find(|w| w.id == first_output.id)
         .unwrap();
-    assert_eq!(listed_first.display_name, workspace_name);
+    assert_eq!(listed_first.name, workspace_name);
 
     let listed_second = list_after_second
         .iter()
         .find(|w| w.id == second_output.id)
         .unwrap();
-    assert_eq!(listed_second.display_name, workspace_name);
+    assert_eq!(listed_second.name, workspace_name);
 
     // Check only second workspace has entry in the databased since it's been opened
 
@@ -220,7 +220,7 @@ async fn create_workspace_special_chars() {
             .iter()
             .find(|w| w.id == create_output.id)
             .unwrap();
-        assert_eq!(matching_workspace.display_name, name);
+        assert_eq!(matching_workspace.name, name);
         // Check database
         let item_store = app.__storage().item_store();
         let _ = GetItem::get(item_store.as_ref(), workspace_key(create_output.id)).unwrap();
@@ -259,7 +259,7 @@ async fn create_workspace_not_open_on_creation() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Check that a database entry is not created for unopened workspace
     let item_store = app.__storage().item_store();

@@ -29,7 +29,7 @@ use std::{
 };
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
-use tokio::sync::{RwLock, RwLockMappedWriteGuard, RwLockReadGuard};
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
@@ -182,21 +182,25 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         self.abs_path.join(path)
     }
 
-    // pub(crate) async fn map_known_workspaces_to_vec<T>(
-    //     &self,
-    //     f: impl Fn(Uuid, Arc<WorkspaceDescription>) -> T,
-    // ) -> WorkspaceServiceResult<Vec<T>> {
-    //     // let workspaces = self.workspaces().await?;
-    //     // let workspaces_lock = workspaces.read().await;
-    //     let state_lock = self.state.read().await;
-    //     let mut result = Vec::with_capacity(state_lock.known_workspaces.len());
+    pub(crate) async fn list_workspaces(
+        &self,
+    ) -> WorkspaceServiceResult<Vec<WorkspaceItemDescription>> {
+        let state_lock = self.state.read().await;
+        let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
 
-    //     for (&id, v) in state_lock.known_workspaces.iter() {
-    //         result.push(f(id, v.clone()));
-    //     }
-
-    //     Ok(result)
-    // }
+        let workspaces = state_lock
+            .known_workspaces
+            .values()
+            .map(|item| WorkspaceItemDescription {
+                id: item.id,
+                name: item.name.clone(),
+                abs_path: item.abs_path.clone(),
+                last_opened_at: item.last_opened_at,
+                active: Some(item.id) == active_workspace_id,
+            })
+            .collect();
+        Ok(workspaces)
+    }
 
     pub(crate) async fn update_workspace(
         &self,

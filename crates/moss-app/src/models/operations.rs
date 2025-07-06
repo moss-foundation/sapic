@@ -99,11 +99,11 @@ pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLogsInput {
     pub dates: Vec<LogDate>,
     pub levels: Vec<LogLevel>,
-    #[ts(optional)]
     pub resource: Option<String>,
 }
 
@@ -135,7 +135,7 @@ pub struct BatchDeleteLogOutput {
 // List Workspaces
 
 /// @category Operation
-#[derive(Debug, Deserialize, Serialize, Deref, TS)]
+#[derive(Debug, Serialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 

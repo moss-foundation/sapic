@@ -29,7 +29,7 @@ export const HeadBarLeftItems = ({
   const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
 
   const workspace = useActiveWorkspace();
-  const selectedWorkspace = propSelectedWorkspace || workspace?.displayName || null;
+  const selectedWorkspace = propSelectedWorkspace || workspace?.name || null;
 
   return (
     <div
