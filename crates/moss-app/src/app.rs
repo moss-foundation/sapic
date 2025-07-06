@@ -61,7 +61,6 @@ pub struct App<R: TauriRuntime> {
 
     // TODO: This is also might be better to be a service
     pub(super) activity_indicator: ActivityIndicator<R>,
-    pub(super) global_storage: Arc<dyn GlobalStorage>,
 }
 
 impl<R: TauriRuntime> App<R> {
@@ -83,10 +82,5 @@ impl<R: TauriRuntime> App<R> {
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
-    }
-
-    /// Test only utility, not feature-flagged for easier CI setup
-    pub fn __storage(&self) -> Arc<dyn GlobalStorage> {
-        self.global_storage.clone()
     }
 }

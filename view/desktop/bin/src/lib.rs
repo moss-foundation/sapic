@@ -54,11 +54,6 @@ pub async fn run<R: TauriRuntime>() {
                 let app_dir =
                     PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
 
-                let global_storage = Arc::new(
-                    GlobalStorageImpl::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
-                        .expect("Failed to create global storage"),
-                );
-
                 let themes_dir: PathBuf = std::env::var("THEMES_DIR")
                     .expect("Environment variable THEMES_DIR is not set")
                     .into();
@@ -71,9 +66,10 @@ pub async fn run<R: TauriRuntime>() {
                     .expect("Environment variable APP_LOG_DIR is not set")
                     .into();
 
-                let storage_service: Arc<StorageService> = StorageService::new(&app_dir)
-                    .expect("Failed to create storage service")
-                    .into();
+                let storage_service: Arc<StorageService> =
+                    StorageService::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
+                        .expect("Failed to create storage service")
+                        .into();
                 let workspace_service =
                     WorkspaceService::<R>::new(storage_service.clone(), fs.clone(), &app_dir)
                         .await
@@ -86,7 +82,7 @@ pub async fn run<R: TauriRuntime>() {
                     app_handle.clone(),
                     &logs_dir,
                     session_service.session_id(),
-                    global_storage.clone(),
+                    storage_service.__storage(), // HACK:   // This should be removed once the log service is refactored to use the storage service.
                 )
                 .expect("Failed to create log service");
 
@@ -112,7 +108,6 @@ pub async fn run<R: TauriRuntime>() {
                 let activity_indicator = ActivityIndicator::new(app_handle.clone());
                 let app = AppBuilder::new(
                     app_handle.clone(),
-                    global_storage,
                     activity_indicator,
                     defaults,
                     fs,

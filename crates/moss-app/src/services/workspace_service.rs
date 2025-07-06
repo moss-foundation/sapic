@@ -128,7 +128,7 @@ pub struct WorkspaceService<R: TauriRuntime> {
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     // global_storage: Arc<dyn GlobalStorage>,
-    storage_service: Arc<StorageService>, // TODO: should be a trait
+    storage: Arc<StorageService>, // TODO: should be a trait
     state: Arc<RwLock<ServiceState<R>>>,
     // known_workspaces: OnceCell<RwLock<WorkspaceMap>>,
     // active_workspace: RwLock<Option<ActiveWorkspace<R>>>,
@@ -152,7 +152,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         Ok(Self {
             fs,
-            storage_service,
+            storage: storage_service,
             abs_path,
             state: Arc::new(RwLock::new(ServiceState {
                 known_workspaces,
@@ -264,7 +264,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         // Only try to remove from database if it exists (ignore error if not found)
         let _ = self
-            .storage_service
+            .storage
             .remove_all_by_prefix(&segkey_workspace(&id_str).to_string())
             .map_err(|e| WorkspaceServiceError::Storage(e.to_string()));
 
@@ -495,11 +495,11 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let id_str = id.to_string();
 
         {
-            let mut txn = self.storage_service.begin_write()?;
+            let mut txn = self.storage.begin_write()?;
 
-            self.storage_service
+            self.storage
                 .put_last_active_workspace_txn(&mut txn, &id_str)?;
-            self.storage_service
+            self.storage
                 .put_last_opened_at_txn(&mut txn, &id_str, last_opened_at)?;
 
             txn.commit()?;
@@ -530,7 +530,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let mut state_lock = self.state.write().await;
         state_lock.active_workspace = None;
 
-        self.storage_service.remove_last_active_workspace()?;
+        self.storage.remove_last_active_workspace()?;
 
         ctx.remove_value::<ctxkeys::WorkspaceId>();
 

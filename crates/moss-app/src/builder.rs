@@ -25,14 +25,12 @@ pub struct AppBuilder<R: TauriRuntime> {
     preferences: AppPreferences,
     commands: AppCommands<R>,
     activity_indicator: ActivityIndicator<R>,
-    global_storage: Arc<dyn GlobalStorage>,
     abs_path: Arc<Path>,
 }
 
 impl<R: TauriRuntime> AppBuilder<R> {
     pub fn new(
         app_handle: AppHandle<R>,
-        global_storage: Arc<dyn GlobalStorage>,
         activity_indicator: ActivityIndicator<R>,
         defaults: AppDefaults,
         fs: Arc<dyn FileSystem>,
@@ -49,7 +47,6 @@ impl<R: TauriRuntime> AppBuilder<R> {
             commands: Default::default(),
             services: Default::default(),
             activity_indicator,
-            global_storage,
             abs_path: abs_path.into(),
         }
     }
@@ -88,7 +85,6 @@ impl<R: TauriRuntime> AppBuilder<R> {
             defaults: self.defaults,
             services: self.services.into(),
             activity_indicator: self.activity_indicator,
-            global_storage: self.global_storage,
             // abs_path: self.abs_path,
         })
     }

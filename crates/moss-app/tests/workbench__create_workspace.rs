@@ -62,6 +62,7 @@ async fn create_workspace_success() {
 #[tokio::test]
 async fn create_workspace_empty_name() {
     let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
 
     let create_result = app
         .create_workspace(
@@ -82,7 +83,7 @@ async fn create_workspace_empty_name() {
     // Ensure no workspace was created or activated
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert!(list_workspaces.is_empty());
-    assert!(app.workspace().await.is_none());
+    assert!(workspace_service.is_workspace_open().await.is_none());
 
     // Check database
     let item_store = app.__storage().item_store();

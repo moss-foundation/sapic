@@ -20,6 +20,14 @@ pub struct StorageService {
 impl ServiceMarker for StorageService {}
 
 impl StorageService {
+    // HACK: This is a temporary hack to allow access to the storage to be used in the log service.
+    // This should be removed once the log service is refactored to use the storage service.
+    pub fn __storage(&self) -> Arc<dyn GlobalStorage> {
+        self.storage.clone()
+    }
+}
+
+impl StorageService {
     pub fn new(abs_path: &Path) -> Result<Self> {
         let storage =
             Arc::new(GlobalStorageImpl::new(abs_path).expect("Failed to create global storage"));
