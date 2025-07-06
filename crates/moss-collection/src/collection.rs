@@ -40,7 +40,7 @@ pub enum OnDidChangeEvent {
 
 impl EventMarker for OnDidChangeEvent {}
 
-pub struct ModifyParams {
+pub struct CollectionModifyParams {
     pub name: Option<String>,
     pub repository: Option<ChangeString>,
     pub icon_path: Option<ChangePath>,
@@ -91,7 +91,7 @@ impl Collection {
         self.services.get_arc::<T>()
     }
 
-    pub async fn modify(&self, params: ModifyParams) -> Result<()> {
+    pub async fn modify(&self, params: CollectionModifyParams) -> Result<()> {
         if params.name.is_some() || params.repository.is_some() {
             let normalized_repo = if let Some(ChangeString::Update(url)) = params.repository {
                 Some(ChangeString::Update(normalize_git_url(&url)?))

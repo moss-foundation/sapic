@@ -5,7 +5,7 @@ use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::operations::{CreateCollectionInput, DeleteCollectionInput},
     services::storage_service::StorageService,
-    storage::segments::{COLLECTION_SEGKEY, SEGKEY_EXPANDED_ITEMS},
+    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
 use uuid::Uuid;
@@ -14,7 +14,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -47,7 +47,7 @@ async fn delete_collection_success() {
     let item_store = storage_service.__storage().item_store();
 
     // Check that collection-specific entries are removed
-    let collection_prefix = COLLECTION_SEGKEY.join(&id.to_string());
+    let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());
     let list_result =
         ListByPrefix::list_by_prefix(item_store.as_ref(), &collection_prefix.to_string()).unwrap();
     assert!(list_result.is_empty());
@@ -63,7 +63,7 @@ async fn delete_collection_success() {
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
@@ -100,7 +100,7 @@ async fn delete_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace

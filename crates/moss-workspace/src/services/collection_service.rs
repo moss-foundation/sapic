@@ -3,7 +3,9 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_collection::{self as collection, Collection as CollectionHandle, CollectionBuilder};
+use moss_collection::{
+    self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
+};
 use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
@@ -16,7 +18,7 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::{
-    dirs, services::storage_service::StorageService, storage::segments::COLLECTION_SEGKEY,
+    dirs, services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
 };
 
 #[derive(Error, Debug)]
@@ -273,7 +275,7 @@ impl CollectionService {
             let mut txn = self.storage.begin_write()?;
 
             self.storage
-                .remove_item_metadata_txn(&mut txn, COLLECTION_SEGKEY.join(&id.to_string()))?;
+                .remove_item_metadata_txn(&mut txn, SEGKEY_COLLECTION.join(&id.to_string()))?;
             self.storage
                 .put_expanded_items_txn(&mut txn, &state_lock.expanded_items)?;
 
@@ -315,7 +317,7 @@ impl CollectionService {
             self.storage.put_item_order_txn(&mut txn, id, order)?;
         }
 
-        item.modify(collection::ModifyParams {
+        item.modify(CollectionModifyParams {
             name: params.name,
             repository: params.repository,
             icon_path: params.icon_path,
@@ -415,11 +417,11 @@ async fn restore_collections(
         collections.push((id, collection));
     }
 
-    let metadata = storage.list_items_metadata(COLLECTION_SEGKEY.to_segkey_buf())?;
+    let metadata = storage.list_items_metadata(SEGKEY_COLLECTION.to_segkey_buf())?;
 
     let mut result = HashMap::new();
     for (id, collection) in collections {
-        let segkey_prefix = COLLECTION_SEGKEY.join(&id.to_string());
+        let segkey_prefix = SEGKEY_COLLECTION.join(&id.to_string());
 
         let order = metadata
             .get(&segkey_prefix.join("order"))

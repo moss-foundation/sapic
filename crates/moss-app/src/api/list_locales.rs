@@ -7,7 +7,7 @@ use crate::{
 
 impl<R: TauriRuntime> App<R> {
     pub async fn list_locales(&self) -> OperationResult<ListLocalesOutput> {
-        let locale_service = self.service::<LocaleService>();
+        let locale_service = self.services.get::<LocaleService>();
         let locales = locale_service.locales().await?;
 
         Ok(ListLocalesOutput(

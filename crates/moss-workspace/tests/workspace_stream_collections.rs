@@ -39,7 +39,7 @@ async fn stream_collections_empty_workspace() {
 
 #[tokio::test]
 async fn stream_collections_single_collection() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 42;
@@ -94,7 +94,7 @@ async fn stream_collections_single_collection() {
 
 #[tokio::test]
 async fn stream_collections_multiple_collections() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let mut expected_collections = Vec::new();
 
@@ -158,7 +158,7 @@ async fn stream_collections_multiple_collections() {
 
 #[tokio::test]
 async fn stream_collections_with_repository() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 100;
@@ -216,7 +216,7 @@ async fn stream_collections_with_repository() {
 
 #[tokio::test]
 async fn stream_collections_with_icon() {
-    let (ctx, workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let collection_order = 200;
@@ -275,7 +275,7 @@ async fn stream_collections_with_icon() {
 
 #[tokio::test]
 async fn stream_collections_mixed_configurations() {
-    let (ctx, workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Create icon file
     let icon_path = workspace_path.join("mixed_test_icon.png");
@@ -387,7 +387,7 @@ async fn stream_collections_mixed_configurations() {
 
 #[tokio::test]
 async fn stream_collections_order_verification() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let orders = vec![10, 5, 20, 1, 15];
     let mut expected_collections = Vec::new();

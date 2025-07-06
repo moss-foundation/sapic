@@ -60,10 +60,10 @@ const DynamicPageWrapper = ({
 
   // Update panel title dynamically for WorkspaceSettings - must be called before any returns
   React.useEffect(() => {
-    if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.displayName) {
-      props.api.setTitle(currentWorkspace.displayName);
+    if (pageKey === "WorkspaceSettings" && props.api && currentWorkspace?.name) {
+      props.api.setTitle(currentWorkspace.name);
     }
-  }, [currentWorkspace?.displayName, props.api, pageKey]);
+  }, [currentWorkspace?.name, props.api, pageKey]);
 
   // Special case for full-page components (no title)
   if (!config.title) {

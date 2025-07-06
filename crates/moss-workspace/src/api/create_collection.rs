@@ -12,7 +12,7 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection<C: AnyWorkspaceContext<R>>(
-        &mut self,
+        &self,
         _ctx: &C,
         input: &CreateCollectionInput,
     ) -> OperationResult<CreateCollectionOutput> {

@@ -12,6 +12,11 @@ pub struct WorkspaceSummary {
     pub manifest: ManifestModel,
 }
 
+#[derive(Clone)]
+pub struct WorkspaceModifyParams {
+    pub name: Option<String>,
+}
+
 pub struct Workspace<R: TauriRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) services: ServiceProvider,
@@ -21,18 +26,13 @@ pub struct Workspace<R: TauriRuntime> {
     pub(super) manifest: JsonFileHandle<ManifestModel>,
 }
 
-#[derive(Clone)]
-pub struct ModifyParams {
-    pub name: Option<String>,
-}
-
 impl<R: TauriRuntime> Workspace<R> {
     pub fn service<S: PublicServiceMarker>(&self) -> &S {
         self.services.get::<S>()
     }
 
     // INFO: This will probably be moved to EditService in the future.
-    pub async fn modify(&self, params: ModifyParams) -> Result<()> {
+    pub async fn modify(&self, params: WorkspaceModifyParams) -> Result<()> {
         if params.name.is_some() {
             self.manifest
                 .edit(

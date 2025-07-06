@@ -79,6 +79,7 @@ export const describeAppStateOutputSchema = z.object({
   preferences: preferencesSchema,
   defaults: defaultsSchema,
   lastWorkspace: z.string().optional(),
+  prevWorkspaceId: z.string().optional(),
 });
 
 export const getTranslationsOutputSchema = jsonValueSchema;

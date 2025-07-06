@@ -10,7 +10,7 @@ use crate::{
 
 impl<R: TauriRuntime> App<R> {
     pub async fn list_logs(&self, input: &ListLogsInput) -> OperationResult<ListLogsOutput> {
-        let log_service = self.service::<LogService>();
+        let log_service = self.services.get::<LogService>();
 
         let filter = LogFilter {
             // Skip invalid dates

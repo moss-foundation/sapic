@@ -21,7 +21,7 @@ use moss_workspace::{
         collection_service::CollectionService, layout_service::LayoutService,
         storage_service::StorageService,
     },
-    storage::segments::COLLECTION_SEGKEY,
+    storage::segments::SEGKEY_COLLECTION,
 };
 use rand::Rng;
 use std::{
@@ -179,7 +179,7 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
 }
 
 pub fn collection_key(id: Uuid) -> SegKeyBuf {
-    COLLECTION_SEGKEY.join(id.to_string())
+    SEGKEY_COLLECTION.join(id.to_string())
 }
 
 pub fn generate_random_icon(output_path: &Path) {

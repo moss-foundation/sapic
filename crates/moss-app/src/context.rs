@@ -82,7 +82,7 @@ impl<R: TauriRuntime> Context<R> for AppContext<R> {
 impl<R: TauriRuntime> From<App<R>> for AppContext<R> {
     fn from(app: App<R>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
@@ -91,7 +91,7 @@ impl<R: TauriRuntime> From<App<R>> for AppContext<R> {
 impl<R: TauriRuntime> From<State<'_, App<R>>> for AppContext<R> {
     fn from(app: State<'_, App<R>>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
@@ -100,7 +100,7 @@ impl<R: TauriRuntime> From<State<'_, App<R>>> for AppContext<R> {
 impl<R: TauriRuntime> From<&State<'_, App<R>>> for AppContext<R> {
     fn from(app: &State<'_, App<R>>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }

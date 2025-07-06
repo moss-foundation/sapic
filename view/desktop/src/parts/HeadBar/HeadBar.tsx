@@ -33,7 +33,7 @@ export const HeadBar = () => {
   const { isMedium, isLarge, isXLarge, breakpoint } = useResponsive();
 
   const workspace = useActiveWorkspace();
-  const selectedWorkspace = workspace?.displayName || null;
+  const selectedWorkspace = workspace?.name || null;
 
   // TEST: Hardoce default user/branch for testing
   const [selectedUser, setSelectedUser] = useState<string | null>(null);

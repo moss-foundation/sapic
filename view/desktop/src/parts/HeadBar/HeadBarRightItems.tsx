@@ -33,7 +33,7 @@ export const HeadBarRightItems = ({
   const isMac = os === "macos";
 
   const workspace = useActiveWorkspace();
-  const selectedWorkspace = propSelectedWorkspace || workspace?.displayName || null;
+  const selectedWorkspace = propSelectedWorkspace || workspace?.name || null;
 
   return (
     <div className="flex items-center place-self-end">

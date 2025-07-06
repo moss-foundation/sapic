@@ -22,7 +22,7 @@ use crate::{
     models::primitives::{ActivitybarPosition, SidebarPosition},
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, COLLECTION_SEGKEY},
+        segments::{self, SEGKEY_COLLECTION},
     },
 };
 
@@ -56,7 +56,7 @@ impl StorageService {
     ) -> Result<()> {
         let store = self.storage.item_store();
 
-        let segkey = COLLECTION_SEGKEY.join(&id.to_string()).join("order");
+        let segkey = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
         TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())
@@ -118,7 +118,7 @@ impl StorageService {
 
     pub(crate) fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.item_store();
-        let segkey = segments::LAYOUT_SEGKEY.to_segkey_buf();
+        let segkey = segments::SEGKEY_LAYOUT.to_segkey_buf();
         let value = ListByPrefix::list_by_prefix(store.as_ref(), segkey.to_string().as_str())?;
         Ok(value.into_iter().collect())
     }
@@ -135,21 +135,21 @@ impl StorageService {
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_SIDEBAR_SEGKEY.join("position"),
+            segments::SEGKEY_LAYOUT_SIDEBAR.join("position"),
             AnyValue::serialize(&position)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_SIDEBAR_SEGKEY.join("size"),
+            segments::SEGKEY_LAYOUT_SIDEBAR.join("size"),
             AnyValue::serialize(&size)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_SIDEBAR_SEGKEY.join("visible"),
+            segments::SEGKEY_LAYOUT_SIDEBAR.join("visible"),
             AnyValue::serialize(&visible)?,
         )?;
 
@@ -163,14 +163,14 @@ impl StorageService {
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_PANEL_SEGKEY.join("size"),
+            segments::SEGKEY_LAYOUT_PANEL.join("size"),
             AnyValue::serialize(&size)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_PANEL_SEGKEY.join("visible"),
+            segments::SEGKEY_LAYOUT_PANEL.join("visible"),
             AnyValue::serialize(&visible)?,
         )?;
 
@@ -189,7 +189,7 @@ impl StorageService {
             TransactionalPutItem::put(
                 store.as_ref(),
                 &mut txn,
-                segments::LAYOUT_ACTIVITYBAR_SEGKEY.join("lastActiveContainerId"),
+                segments::SEGKEY_LAYOUT_ACTIVITYBAR.join("lastActiveContainerId"),
                 AnyValue::serialize(&last_active_container_id)?,
             )?
         }
@@ -197,7 +197,7 @@ impl StorageService {
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_ACTIVITYBAR_SEGKEY.join("position"),
+            segments::SEGKEY_LAYOUT_ACTIVITYBAR.join("position"),
             AnyValue::serialize(&position)?,
         )?;
 
@@ -216,14 +216,14 @@ impl StorageService {
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_EDITOR_SEGKEY.join("grid"),
+            segments::SEGKEY_LAYOUT_EDITOR.join("grid"),
             AnyValue::serialize(&grid)?,
         )?;
 
         TransactionalPutItem::put(
             store.as_ref(),
             &mut txn,
-            segments::LAYOUT_EDITOR_SEGKEY.join("panels"),
+            segments::SEGKEY_LAYOUT_EDITOR.join("panels"),
             AnyValue::serialize(&panels)?,
         )?;
 
@@ -231,7 +231,7 @@ impl StorageService {
             TransactionalPutItem::put(
                 store.as_ref(),
                 &mut txn,
-                segments::LAYOUT_EDITOR_SEGKEY.join("activeGroup"),
+                segments::SEGKEY_LAYOUT_EDITOR.join("activeGroup"),
                 AnyValue::serialize(&active_group)?,
             )?
         }

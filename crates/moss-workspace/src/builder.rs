@@ -33,6 +33,23 @@ impl WorkspaceBuilder {
         }
     }
 
+    pub async fn initialize(fs: Arc<dyn FileSystem>, params: WorkspaceCreateParams) -> Result<()> {
+        debug_assert!(params.abs_path.is_absolute());
+
+        for dir in &[dirs::COLLECTIONS_DIR, dirs::ENVIRONMENTS_DIR] {
+            fs.create_dir(&params.abs_path.join(dir)).await?;
+        }
+
+        JsonFileHandle::create(
+            fs.clone(),
+            &params.abs_path.join(MANIFEST_FILE_NAME),
+            ManifestModel { name: params.name },
+        )
+        .await?;
+
+        Ok(())
+    }
+
     pub fn with_service<T: ServiceMarker + Send + Sync>(
         mut self,
         service: impl Into<Arc<T>>,

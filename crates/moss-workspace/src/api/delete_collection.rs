@@ -10,7 +10,7 @@ use crate::{
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn delete_collection<C: Context<R>>(
-        &mut self,
+        &self,
         _ctx: &C,
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {

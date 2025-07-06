@@ -56,6 +56,14 @@ impl SegKeyBuf {
     }
 }
 
+impl From<&str> for SegKeyBuf {
+    fn from(value: &str) -> Self {
+        let mut buf = SegKeyBuf::with_capacity(value.len());
+        buf.extend_from_slice(value.as_bytes());
+        buf
+    }
+}
+
 impl std::borrow::Borrow<[u8]> for SegKeyBuf {
     fn borrow(&self) -> &[u8] {
         &self.inner

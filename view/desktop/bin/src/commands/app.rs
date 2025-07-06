@@ -84,7 +84,7 @@ pub async fn describe_app_state<R: TauriRuntime>(
     options: Options,
 ) -> TauriResult<DescribeAppStateOutput> {
     api::with_timeout(options, async move {
-        app.describe_state()
+        app.describe_app_state()
             .await
             .map_err(TauriError::OperationError)
     })
@@ -274,7 +274,7 @@ pub async fn execute_command<R: TauriRuntime>(
     options: Options,
 ) -> TauriResult<JsonValue> {
     api::with_timeout(options, async move {
-        let app_handle = app.app_handle();
+        let app_handle = app.handle();
         match app.command(&cmd) {
             Some(command_handler) => {
                 command_handler(&mut CommandContext::new(app_handle.clone(), window, args)).await
