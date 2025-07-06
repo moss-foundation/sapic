@@ -14,7 +14,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -63,7 +63,7 @@ async fn delete_collection_success() {
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
@@ -100,7 +100,7 @@ async fn delete_collection_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace

@@ -24,7 +24,7 @@ use uuid::Uuid;
 
 #[tokio::test]
 async fn create_collection_success() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -72,7 +72,7 @@ async fn create_collection_success() {
 
 #[tokio::test]
 async fn create_collection_empty_name() {
-    let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = "".to_string();
     let create_collection_result = workspace
@@ -98,7 +98,7 @@ async fn create_collection_empty_name() {
 
 #[tokio::test]
 async fn create_collection_special_chars() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -155,7 +155,7 @@ async fn create_collection_special_chars() {
 
 #[tokio::test]
 async fn create_collection_with_order() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_result = workspace
@@ -202,7 +202,7 @@ async fn create_collection_with_order() {
 
 #[tokio::test]
 async fn create_collection_with_repo() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let repo = "https://github.com/moss-foundation/sapic.git".to_string();
@@ -262,7 +262,7 @@ async fn create_collection_with_repo() {
 
 #[tokio::test]
 async fn create_collection_with_icon() {
-    let (ctx, workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let input_icon_path = workspace_path.join("test_icon.png");
@@ -321,7 +321,7 @@ async fn create_collection_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_collections_expanded_items() {
-    let (ctx, _workspace_path, mut workspace, services, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     // Create first collection
     let collection_name1 = random_collection_name();

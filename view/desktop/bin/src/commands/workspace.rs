@@ -1,6 +1,5 @@
-use moss_api::{self as api, TauriError, TauriResult};
+use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
-use moss_common::api::OperationOptionExt;
 use moss_workspace::models::{events::*, operations::*};
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
 
@@ -81,7 +80,7 @@ pub async fn create_collection<R: TauriRuntime>(
     input: CreateCollectionInput,
     options: Options,
 ) -> TauriResult<CreateCollectionOutput> {
-    super::with_workspace_timeout(app, options, |ctx, mut workspace| async move {
+    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
         workspace
             .create_collection(&ctx, &input)
             .await
@@ -98,7 +97,7 @@ pub async fn delete_collection<R: TauriRuntime>(
     input: DeleteCollectionInput,
     options: Options,
 ) -> TauriResult<DeleteCollectionOutput> {
-    super::with_workspace_timeout(app, options, |ctx, mut workspace| async move {
+    super::with_workspace_timeout(app, options, |ctx, workspace| async move {
         workspace
             .delete_collection(&ctx, &input)
             .await

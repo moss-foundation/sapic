@@ -21,7 +21,6 @@ use moss_app::{
 };
 use moss_applib::context::ContextValueSet;
 use moss_fs::{FileSystem, RealFileSystem};
-use moss_storage::global_storage::GlobalStorageImpl;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
