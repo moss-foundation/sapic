@@ -3,10 +3,12 @@ pub mod shared;
 use moss_app::{
     context::ctxkeys,
     models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
-    services::workspace_service::WorkspaceService,
+    services::{storage_service::StorageService, workspace_service::WorkspaceService},
+    storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 use moss_applib::context::Context;
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use tauri::test::MockRuntime;
@@ -49,6 +51,17 @@ async fn close_workspace_success() {
 
     // Check that no workspace is active
     assert!(workspace_service.is_workspace_open().await.is_none());
+
+    // Check that last active workspace is removed from database
+    let storage_service = services.get::<StorageService>();
+    let item_store = storage_service.__storage().item_store();
+    assert!(
+        GetItem::get(
+            item_store.as_ref(),
+            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
+        )
+        .is_err()
+    );
 
     cleanup().await;
 }
@@ -173,6 +186,17 @@ async fn close_workspace_after_another_opened() {
 
     // Check that no workspace is active
     assert!(workspace_service.is_workspace_open().await.is_none());
+
+    // Check that last active workspace is removed from database
+    let storage_service = services.get::<StorageService>();
+    let item_store = storage_service.__storage().item_store();
+    assert!(
+        GetItem::get(
+            item_store.as_ref(),
+            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
+        )
+        .is_err()
+    );
 
     cleanup().await;
 }

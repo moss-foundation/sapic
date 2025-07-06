@@ -11,5 +11,5 @@ pub fn segkey_last_opened_at(id: &str) -> SegKeyBuf {
 }
 
 pub fn segkey_workspace(id: &str) -> SegKeyBuf {
-    SEGKEY_WORKSPACE.to_segkey_buf().join(id)
+    SEGKEY_WORKSPACE.join(id)
 }

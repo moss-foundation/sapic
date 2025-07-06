@@ -226,19 +226,20 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         ctx: &C,
         id: Uuid,
     ) -> WorkspaceServiceResult<()> {
-        // let workspaces = self.workspaces().await?;
-        let state_lock = self.state.write().await;
+        let (active_workspace_id, item) = {
+            let state_lock = self.state.read().await;
 
-        let (id, abs_path) = if let Some(descriptor) = state_lock.known_workspaces.get(&id) {
-            (descriptor.id, descriptor.abs_path.clone())
-        } else {
-            return Err(WorkspaceServiceError::NotFound(id.to_string()));
+            let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
+            let item = state_lock.known_workspaces.get(&id).cloned();
+
+            (active_workspace_id, item)
         };
 
-        if abs_path.exists() {
+        let item = item.ok_or(WorkspaceServiceError::NotFound(id.to_string()))?;
+        if item.abs_path.exists() {
             self.fs
                 .remove_dir(
-                    &abs_path,
+                    &item.abs_path,
                     RemoveOptions {
                         recursive: true,
                         ignore_if_not_exists: true,
@@ -253,23 +254,17 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             state_lock.known_workspaces.remove(&id);
         }
 
-        // {
-        //     let item_store = self.global_storage.item_store();
-        //     let segkey = SEGKEY_WORKSPACE.join(id.to_string());
-        //     // Only try to remove from database if it exists (ignore error if not found)
-        //     let _ = RemoveItem::remove(item_store.as_ref(), segkey);
-        // }
+        {
+            let id_str = id.to_string();
 
-        let id_str = id.to_string();
+            // Only try to remove from database if it exists (ignore error if not found)
+            let _ = self
+                .storage
+                .remove_all_by_prefix(&segkey_workspace(&id_str).to_string())
+                .map_err(|e| WorkspaceServiceError::Storage(e.to_string()));
+        }
 
-        // Only try to remove from database if it exists (ignore error if not found)
-        let _ = self
-            .storage
-            .remove_all_by_prefix(&segkey_workspace(&id_str).to_string())
-            .map_err(|e| WorkspaceServiceError::Storage(e.to_string()));
-
-        let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
-        if active_workspace_id != Some(id) {
+        if active_workspace_id != Some(item.id) {
             return Ok(());
         }
 

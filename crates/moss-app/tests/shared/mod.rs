@@ -14,11 +14,9 @@ use moss_app::{
         log_service::LogService, storage_service::StorageService,
         workspace_service::WorkspaceService,
     },
-    storage::segments::SEGKEY_WORKSPACE,
 };
 use moss_applib::providers::{ServiceMap, ServiceProvider};
 use moss_fs::{FileSystem, RealFileSystem};
-use moss_storage::{global_storage::GlobalStorageImpl, primitives::segkey::SegKeyBuf};
 use moss_testutils::random_name::random_string;
 use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};
 use tauri::test::MockRuntime;
@@ -31,10 +29,6 @@ pub fn random_app_dir_path() -> PathBuf {
         .join("tests")
         .join("data")
         .join(random_string(10))
-}
-
-pub fn workspace_key(id: Uuid) -> SegKeyBuf {
-    SEGKEY_WORKSPACE.join(id.to_string())
 }
 
 pub async fn set_up_test_app() -> (
@@ -63,7 +57,7 @@ pub async fn set_up_test_app() -> (
         tokio::fs::create_dir(&globals_abs_path).await.unwrap();
     }
 
-    let global_storage = Arc::new(GlobalStorageImpl::new(globals_abs_path).unwrap());
+    let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
 
     let session_id = Uuid::new_v4();
     let mut services: ServiceMap = Default::default();
@@ -73,12 +67,11 @@ pub async fn set_up_test_app() -> (
         app_handle.clone(),
         &logs_abs_path,
         &session_id,
-        global_storage.clone(),
+        storage_service.__storage(),
     )
     .unwrap()
     .into();
 
-    let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
     let workspace_service: Arc<WorkspaceService<MockRuntime>> =
         WorkspaceService::new(storage_service.clone(), fs.clone(), &app_path)
             .await
@@ -110,7 +103,6 @@ pub async fn set_up_test_app() -> (
     let ctx = MockAppContext::new(app_handle.clone());
     let app_builder = AppBuilder::new(
         app_handle.clone(),
-        global_storage,
         activity_indicator,
         AppDefaults {
             theme: ColorThemeInfo {
@@ -132,8 +124,8 @@ pub async fn set_up_test_app() -> (
         fs.clone(),
         app_path.clone(),
     )
-    .with_service(log_service)
-    .with_service(workspace_service)
+    .with_service::<LogService>(log_service)
+    .with_service::<WorkspaceService<MockRuntime>>(workspace_service)
     .with_service::<StorageService>(storage_service);
 
     (

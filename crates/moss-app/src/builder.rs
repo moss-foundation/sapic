@@ -2,7 +2,6 @@ use anyhow::{Context as _, Result};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{ServiceMarker, providers::ServiceMap};
 use moss_fs::FileSystem;
-use moss_storage::GlobalStorage;
 use std::{
     any::TypeId,
     path::{Path, PathBuf},

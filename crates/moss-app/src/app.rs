@@ -2,7 +2,6 @@ use derive_more::Deref;
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{PublicServiceMarker, providers::ServiceProvider};
 use moss_fs::FileSystem;
-use moss_storage::GlobalStorage;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use std::{

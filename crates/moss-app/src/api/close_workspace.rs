@@ -27,7 +27,7 @@ impl<R: TauriRuntime> App<R> {
             )));
         }
 
-        workspace_service.deactivate_workspace(ctx).await;
+        let _ = workspace_service.deactivate_workspace(ctx).await;
 
         Ok(CloseWorkspaceOutput { id: workspace_id })
     }

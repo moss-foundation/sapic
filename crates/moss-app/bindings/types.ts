@@ -56,9 +56,9 @@ export type LogItemSourceInfo = { id: string };
 /**
  * @category Type
  */
-export type Preferences = { theme: ColorThemeInfo | null; locale: LocaleInfo | null };
+export type Preferences = { theme?: ColorThemeInfo; locale?: LocaleInfo };
 
 /**
  * @category Type
  */
-export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint };
+export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint; active: boolean };
