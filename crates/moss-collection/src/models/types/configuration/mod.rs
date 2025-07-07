@@ -40,7 +40,7 @@ use crate::models::{
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {
-    Request(DirRequestConfigurationModel),
+    Request(RequestDirConfigurationModel),
     Endpoint(EndpointDirConfigurationModel),
     Component(ComponentDirConfigurationModel),
     Schema(SchemaDirConfigurationModel),
@@ -66,7 +66,7 @@ impl From<RawDirConfiguration> for CompositeDirConfigurationModel {
 
                 CompositeDirConfigurationModel {
                     metadata,
-                    inner: DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+                    inner: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
                         DirHttpConfigurationModel {},
                     )),
                 }
@@ -106,7 +106,7 @@ impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
         match self.inner {
             DirConfigurationModel::Request(model) => {
                 let configuration = match model {
-                    DirRequestConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
+                    RequestDirConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
                         metadata: self.metadata.into(),
                         headers: None,
                     },

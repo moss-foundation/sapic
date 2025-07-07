@@ -2,9 +2,14 @@ use moss_collection::{
     CollectionBuilder,
     builder::CollectionCreateParams,
     collection::Collection,
-    models::types::configuration::{
-        DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
-        ItemConfigurationModel,
+    dirs,
+    models::{
+        operations::{CreateDirEntryInput, CreateEntryInput},
+        types::configuration::{
+            ComponentDirConfigurationModel, DirConfigurationModel, DirHttpConfigurationModel,
+            EndpointDirConfigurationModel, HttpEndpointDirConfiguration, ItemConfigurationModel,
+            RequestDirConfigurationModel, SchemaDirConfigurationModel,
+        },
     },
     services::{storage_service::StorageService, worktree_service::WorktreeService},
 };
@@ -66,8 +71,74 @@ pub fn create_test_item_configuration() -> ItemConfigurationModel {
     unreachable!("Configuration models are empty enums - cannot be instantiated")
 }
 
-pub fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+pub fn create_test_request_dir_configuration() -> DirConfigurationModel {
+    DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
         DirHttpConfigurationModel {},
     ))
+}
+
+pub fn create_test_endpoint_dir_configuration() -> DirConfigurationModel {
+    DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
+        HttpEndpointDirConfiguration {},
+    ))
+}
+
+pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
+    DirConfigurationModel::Component(ComponentDirConfigurationModel {})
+}
+
+pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
+    DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
+}
+
+pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+    collection
+        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
+            path: PathBuf::from(dirs::REQUESTS_DIR),
+            name: name.to_string(),
+            order: 0,
+            configuration: create_test_request_dir_configuration(),
+        }))
+        .await
+        .unwrap()
+        .id
+}
+
+pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+    collection
+        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
+            path: PathBuf::from(dirs::ENDPOINTS_DIR),
+            name: name.to_string(),
+            order: 0,
+            configuration: create_test_endpoint_dir_configuration(),
+        }))
+        .await
+        .unwrap()
+        .id
+}
+
+pub async fn create_test_component_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+    collection
+        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
+            path: PathBuf::from(dirs::COMPONENTS_DIR),
+            name: name.to_string(),
+            order: 0,
+            configuration: create_test_component_dir_configuration(),
+        }))
+        .await
+        .unwrap()
+        .id
+}
+
+pub async fn create_test_schema_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+    collection
+        .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
+            path: PathBuf::from(dirs::SCHEMAS_DIR),
+            name: name.to_string(),
+            order: 0,
+            configuration: create_test_schema_dir_configuration(),
+        }))
+        .await
+        .unwrap()
+        .id
 }

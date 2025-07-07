@@ -18,7 +18,7 @@ export type ComponentDirConfigurationModel = Record<string, never>;
 export type ComponentItemConfigurationModel = Record<string, never>;
 
 export type CompositeDirConfigurationModel = { metadata: ConfigurationMetadata } & (
-  | { "request": DirRequestConfigurationModel }
+  | { "request": RequestDirConfigurationModel }
   | { "endpoint": EndpointDirConfigurationModel }
   | { "component": ComponentDirConfigurationModel }
   | { "schema": SchemaDirConfigurationModel }
@@ -34,14 +34,12 @@ export type CompositeItemConfigurationModel = { metadata: ConfigurationMetadata 
 export type ConfigurationMetadata = { id: string };
 
 export type DirConfigurationModel =
-  | { "request": DirRequestConfigurationModel }
+  | { "request": RequestDirConfigurationModel }
   | { "endpoint": EndpointDirConfigurationModel }
   | { "component": ComponentDirConfigurationModel }
   | { "schema": SchemaDirConfigurationModel };
 
 export type DirHttpConfigurationModel = Record<string, never>;
-
-export type DirRequestConfigurationModel = { "http": DirHttpConfigurationModel };
 
 export type EndpointDirConfigurationModel = { "Http": HttpEndpointDirConfiguration };
 
@@ -178,6 +176,8 @@ export type RequestBody =
   | { "formData": Array<FormDataItem> }
   | { "urlEncoded": Array<UrlEncodedItem> }
   | { "binary": string };
+
+export type RequestDirConfigurationModel = { "http": DirHttpConfigurationModel };
 
 export type SchemaDirConfigurationModel = Record<string, never>;
 

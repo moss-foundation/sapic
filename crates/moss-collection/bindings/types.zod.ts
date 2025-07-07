@@ -22,10 +22,6 @@ export const schemaItemConfigurationModelSchema = z.record(z.never());
 
 export const dirHttpConfigurationModelSchema = z.record(z.never());
 
-export const dirRequestConfigurationModelSchema = z.object({
-  "http": dirHttpConfigurationModelSchema,
-});
-
 export const httpEndpointDirConfigurationSchema = z.record(z.never());
 
 export const environmentInfoSchema = z.object({
@@ -99,6 +95,10 @@ export const formDataItemSchema = z.object({
   options: formDataOptionsSchema,
 });
 
+export const requestDirConfigurationModelSchema = z.object({
+  "http": dirHttpConfigurationModelSchema,
+});
+
 export const updateDirEntryParamsSchema = z.object({
   id: z.string(),
   path: z.string(),
@@ -116,7 +116,7 @@ export const endpointDirConfigurationModelSchema = z.object({
 
 export const dirConfigurationModelSchema = z.union([
   z.object({
-    "request": dirRequestConfigurationModelSchema,
+    "request": requestDirConfigurationModelSchema,
   }),
   z.object({
     "endpoint": endpointDirConfigurationModelSchema,
@@ -204,7 +204,7 @@ export const compositeDirConfigurationModelSchema = z
   .and(
     z.union([
       z.object({
-        "request": dirRequestConfigurationModelSchema,
+        "request": requestDirConfigurationModelSchema,
       }),
       z.object({
         "endpoint": endpointDirConfigurationModelSchema,

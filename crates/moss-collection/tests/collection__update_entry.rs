@@ -13,7 +13,10 @@ use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 use uuid::Uuid;
 
-use crate::shared::{create_test_collection, create_test_dir_configuration, random_entry_name};
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_request_dir_configuration,
+    random_entry_name,
+};
 
 mod shared;
 
@@ -21,22 +24,15 @@ mod shared;
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_path = dirs::COMPONENTS_DIR;
 
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: old_entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
+    let id = create_test_component_dir_entry(&mut collection, &old_entry_name).await;
 
-    let id = collection.create_entry(input).await.unwrap().id;
-
-    let output = collection
+    let _ = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
             id,
             path: Default::default(),
@@ -48,8 +44,8 @@ async fn rename_dir_entry_success() {
         .unwrap();
 
     // Verify the path has been renamed
-    let old_path = collection_path.join(&entry_path).join(&old_entry_name);
-    let new_path = collection_path.join(&entry_path).join(&new_entry_name);
+    let old_path = collection_path.join(entry_path).join(&old_entry_name);
+    let new_path = collection_path.join(entry_path).join(&new_entry_name);
     assert!(!old_path.exists());
     assert!(new_path.exists());
 
@@ -59,20 +55,12 @@ async fn rename_dir_entry_success() {
 
 #[tokio::test]
 async fn rename_dir_entry_empty_name() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let old_entry_name = random_entry_name();
     let new_entry_name = "".to_string();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: old_entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
-
-    let id = collection.create_entry(input).await.unwrap().id;
+    let id = create_test_component_dir_entry(&mut collection, &old_entry_name).await;
 
     let result = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
@@ -92,30 +80,16 @@ async fn rename_dir_entry_empty_name() {
 
 #[tokio::test]
 async fn rename_dir_entry_already_exists() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
-    let first_input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: first_entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
+    let first_id = create_test_component_dir_entry(&mut collection, &first_entry_name).await;
 
-    let first_id = collection.create_entry(first_input).await.unwrap().id;
+    let _ = create_test_component_dir_entry(&mut collection, &second_entry_name).await;
 
-    let second_input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: second_entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
-
-    let _ = collection.create_entry(second_input).await.unwrap();
     // Try to rename first entry to the second name
-
     let result = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
             id: first_id,
@@ -134,21 +108,15 @@ async fn rename_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn rename_dir_entry_special_chars_in_name() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     for special_char in FILENAME_SPECIAL_CHARS {
         let entry_name = random_entry_name();
         let new_entry_name = format!("{}{}", entry_name, special_char);
         dbg!(&new_entry_name);
-        let create_input = CreateEntryInput::Dir(CreateDirEntryInput {
-            path: entry_path.clone(),
-            name: entry_name.clone(),
-            order: 0,
-            configuration: create_test_dir_configuration(),
-        });
 
-        let id = collection.create_entry(create_input).await.unwrap().id;
+        let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
 
         let result = collection
             .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
@@ -168,7 +136,7 @@ async fn rename_dir_entry_special_chars_in_name() {
             );
             continue;
         }
-        let output = result.unwrap();
+        let _ = result.unwrap();
 
         let expected_dir = collection_path
             .join(&entry_path)
@@ -184,19 +152,11 @@ async fn rename_dir_entry_special_chars_in_name() {
 
 #[tokio::test]
 async fn update_dir_entry_order() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
-
-    let id = collection.create_entry(input).await.unwrap().id;
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
 
     let _ = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
@@ -224,19 +184,11 @@ async fn update_dir_entry_order() {
 
 #[tokio::test]
 async fn expand_and_collapse_dir_entry() {
-    let (collection_path, collection) = create_test_collection().await;
+    let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: entry_name.clone(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
-
-    let id = collection.create_entry(input).await.unwrap().id;
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
 
     let storage_service = collection.service_arc::<StorageService>();
     let resource_store = storage_service.__storage().resource_store();

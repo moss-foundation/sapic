@@ -12,20 +12,22 @@ use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
-use crate::shared::{create_test_collection, create_test_dir_configuration, random_entry_name};
+use crate::shared::{
+    create_test_collection, create_test_request_dir_configuration, random_entry_name,
+};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
     let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
-        configuration: create_test_dir_configuration(),
+        configuration: create_test_request_dir_configuration(),
     });
 
     let result = collection.create_entry(input).await;
@@ -55,14 +57,14 @@ async fn create_dir_entry_with_order() {
     let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
     let order_value = 42;
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: order_value,
-        configuration: create_test_dir_configuration(),
+        configuration: create_test_request_dir_configuration(),
     });
 
     let result = collection.create_entry(input).await;
@@ -94,13 +96,13 @@ async fn create_dir_entry_already_exists() {
     let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
         order: 0,
-        configuration: create_test_dir_configuration(),
+        configuration: create_test_request_dir_configuration(),
     });
 
     // Create the entry first time - should succeed
@@ -132,13 +134,13 @@ async fn create_dir_entry_special_chars_in_name() {
 
     for special_char in FILENAME_SPECIAL_CHARS {
         let entry_name = format!("{}{}", base_name, special_char);
-        let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+        let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
 
         let input = CreateEntryInput::Dir(CreateDirEntryInput {
             path: entry_path.clone(),
             name: entry_name.clone(),
             order: 0,
-            configuration: create_test_dir_configuration(),
+            configuration: create_test_request_dir_configuration(),
         });
 
         let result = collection.create_entry(input).await;
