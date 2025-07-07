@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use ts_rs::TS;
 use uuid::Uuid;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
-use crate::models::types::{
-    AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
-    UpdateItemEntryParams,
-    configuration::{DirConfigurationModel, ItemConfigurationModel},
+use crate::{
+    dirs,
+    models::types::{
+        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
+        UpdateItemEntryParams,
+        configuration::{DirConfigurationModel, ItemConfigurationModel},
+    },
 };
 
 // ########################################################
@@ -15,11 +18,12 @@ use crate::models::types::{
 // ########################################################
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[validate(schema(function = "validate_create_item_entry_input"))]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateItemEntryInput {
-    // TODO: Add validation for path
+    #[validate(custom(function = "validate_input_path"))]
     pub path: PathBuf,
 
     #[validate(length(min = 1))]
@@ -30,11 +34,12 @@ pub struct CreateItemEntryInput {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[validate(schema(function = "validate_create_dir_entry_input"))]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateDirEntryInput {
-    // TODO: Add validation for path
+    #[validate(custom(function = "validate_input_path"))]
     pub path: PathBuf,
 
     #[validate(length(min = 1))]
@@ -146,3 +151,94 @@ pub enum StreamEntriesInput {
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct StreamEntriesOutput {}
+
+// Check that input path begins with a valid top folder
+// such as requests, endpoints, etc.
+fn validate_input_path(path: &Path) -> Result<(), ValidationError> {
+    for folder in [
+        dirs::REQUESTS_DIR,
+        dirs::ENDPOINTS_DIR,
+        dirs::COMPONENTS_DIR,
+        dirs::SCHEMAS_DIR,
+        dirs::ENVIRONMENTS_DIR,
+        dirs::ASSETS_DIR,
+    ] {
+        if path.starts_with(folder) {
+            return Ok(());
+        }
+    }
+    Err(ValidationError::new(
+        "The input path does not start with a valid top folder",
+    ))
+}
+
+fn validate_create_item_entry_input(input: &CreateItemEntryInput) -> Result<(), ValidationError> {
+    let folder = match input.configuration {
+        ItemConfigurationModel::Request(_) => dirs::REQUESTS_DIR,
+        ItemConfigurationModel::Endpoint(_) => dirs::ENDPOINTS_DIR,
+        ItemConfigurationModel::Component(_) => dirs::COMPONENTS_DIR,
+        ItemConfigurationModel::Schema(_) => dirs::SCHEMAS_DIR,
+    };
+
+    if !input.path.starts_with(folder) {
+        Err(ValidationError::new(
+            "The input path does not match with the config model",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn validate_create_dir_entry_input(input: &CreateDirEntryInput) -> Result<(), ValidationError> {
+    let folder = match input.configuration {
+        DirConfigurationModel::Request(_) => dirs::REQUESTS_DIR,
+        DirConfigurationModel::Endpoint(_) => dirs::ENDPOINTS_DIR,
+        DirConfigurationModel::Component(_) => dirs::COMPONENTS_DIR,
+        DirConfigurationModel::Schema(_) => dirs::SCHEMAS_DIR,
+    };
+
+    if !input.path.starts_with(folder) {
+        Err(ValidationError::new(
+            "The input path does not match with the config model",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::models::{
+        operations::CreateItemEntryInput,
+        types::configuration::{ComponentItemConfigurationModel, ItemConfigurationModel},
+    };
+    use std::path::PathBuf;
+    use validator::Validate;
+
+    #[test]
+    fn test_validate_input_path() {
+        let path = PathBuf::from("something");
+        let input = CreateItemEntryInput {
+            path,
+            name: "test".to_string(),
+            order: 0,
+            configuration: ItemConfigurationModel::Component(ComponentItemConfigurationModel {}),
+        };
+
+        let result = input.validate();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_create_item_entry_input() {
+        let path = PathBuf::from("requests");
+        let input = CreateItemEntryInput {
+            path,
+            name: "component1".to_string(),
+            order: 0,
+            configuration: ItemConfigurationModel::Component(ComponentItemConfigurationModel {}),
+        };
+        let result = input.validate();
+        assert!(result.is_err());
+    }
+}
