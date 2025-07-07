@@ -1,4 +1,3 @@
-use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 use anyhow::Result;
 use moss_applib::ServiceMarker;
 use moss_common::NanoId;
@@ -12,6 +11,8 @@ use moss_storage::{
     },
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
+
+use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 
 pub struct StorageService {
     storage: Arc<dyn GlobalStorage>,

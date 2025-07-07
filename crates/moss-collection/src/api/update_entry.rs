@@ -1,3 +1,6 @@
+use moss_common::{NanoId, api::OperationResult};
+use validator::Validate;
+
 use crate::{
     collection::Collection,
     models::{
@@ -11,8 +14,6 @@ use crate::{
     },
     services::worktree_service::{ModifyParams, WorktreeService},
 };
-use moss_common::{NanoId, api::OperationResult};
-use validator::Validate;
 
 impl Collection {
     pub async fn update_entry(

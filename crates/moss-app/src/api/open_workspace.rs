@@ -1,11 +1,12 @@
+use moss_common::{NanoId, api::OperationResult};
+use tauri::Runtime as TauriRuntime;
+
 use crate::{
     app::App,
     context::AnyAppContext,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
     services::workspace_service::WorkspaceService,
 };
-use moss_common::{NanoId, api::OperationResult};
-use tauri::Runtime as TauriRuntime;
 
 impl<R: TauriRuntime> App<R> {
     pub async fn open_workspace<C: AnyAppContext<R>>(

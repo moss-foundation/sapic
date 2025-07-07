@@ -1,10 +1,3 @@
-use crate::{
-    models::primitives::{ActivitybarPosition, SidebarPosition},
-    storage::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, SEGKEY_COLLECTION},
-    },
-};
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;
 use moss_common::NanoId;
@@ -23,6 +16,14 @@ use std::{
     hash::Hash,
     path::Path,
     sync::Arc,
+};
+
+use crate::{
+    models::primitives::{ActivitybarPosition, SidebarPosition},
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+        segments::{self, SEGKEY_COLLECTION},
+    },
 };
 
 pub struct StorageService {

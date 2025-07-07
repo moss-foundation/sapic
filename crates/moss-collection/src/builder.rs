@@ -1,19 +1,3 @@
-use crate::{
-    Collection,
-    config::{CONFIG_FILE_NAME, ConfigModel},
-    constants::COLLECTION_ICON_FILENAME,
-    defaults,
-    dirs::{self, ASSETS_DIR},
-    manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-        RawDirRequestConfiguration, RawDirSchemaConfiguration,
-    },
-    services::{
-        set_icon::{SetIconService, constants::ICON_SIZE},
-        worktree_service::{EntryMetadata, WorktreeService},
-    },
-};
 use anyhow::Result;
 use moss_applib::{
     ServiceMarker,
@@ -31,6 +15,23 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
+
+use crate::{
+    Collection,
+    config::{CONFIG_FILE_NAME, ConfigModel},
+    constants::COLLECTION_ICON_FILENAME,
+    defaults,
+    dirs::{self, ASSETS_DIR},
+    manifest::{MANIFEST_FILE_NAME, ManifestModel},
+    models::types::configuration::docschema::{
+        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+        RawDirRequestConfiguration, RawDirSchemaConfiguration,
+    },
+    services::{
+        set_icon::{SetIconService, constants::ICON_SIZE},
+        worktree_service::{EntryMetadata, WorktreeService},
+    },
+};
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 

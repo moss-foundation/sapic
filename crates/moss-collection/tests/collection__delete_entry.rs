@@ -1,6 +1,5 @@
 pub mod shared;
 
-use crate::shared::create_test_collection;
 use moss_collection::{
     dirs,
     models::{
@@ -10,9 +9,11 @@ use moss_collection::{
         },
     },
 };
-use moss_common::{NanoId, api::OperationError, new_nanoid_string};
+use moss_common::{api::OperationError, new_nanoid_string};
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
+
+use crate::shared::create_test_collection;
 
 fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))

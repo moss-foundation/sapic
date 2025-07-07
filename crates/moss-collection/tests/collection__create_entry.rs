@@ -86,7 +86,7 @@ async fn create_dir_entry_with_order() {
     });
 
     let result = collection.create_entry(input).await;
-    let output = result.unwrap();
+    let _output = result.unwrap();
 
     // Verify the directory was created
     let expected_dir = collection_path.join(&entry_path).join(&entry_name);
@@ -160,7 +160,7 @@ async fn create_dir_entry_special_chars_in_name() {
             continue;
         }
 
-        let output = result.unwrap();
+        let _output = result.unwrap();
 
         // The exact directory name might be sanitized, but some directory should exist
         // We just verify that the operation completed successfully

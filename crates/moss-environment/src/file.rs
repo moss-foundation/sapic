@@ -1,8 +1,8 @@
+use moss_common::{NanoId, new_nanoid};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::models::types::{VariableKind, VariableName, VariableValue};
-use moss_common::{NanoId, new_nanoid};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct VariableUpdate {

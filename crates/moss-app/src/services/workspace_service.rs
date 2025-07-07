@@ -1,9 +1,3 @@
-use crate::{
-    context::{AnyAppContext, ctxkeys},
-    dirs,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
@@ -30,6 +24,13 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::sync::RwLock;
+
+use crate::{
+    context::{AnyAppContext, ctxkeys},
+    dirs,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {

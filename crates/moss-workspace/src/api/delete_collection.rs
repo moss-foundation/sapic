@@ -1,11 +1,12 @@
+use moss_applib::context::Context;
+use moss_common::{NanoId, api::OperationResult};
+use tauri::Runtime as TauriRuntime;
+
 use crate::{
     models::operations::{DeleteCollectionInput, DeleteCollectionOutput},
     services::collection_service::CollectionService,
     workspace::Workspace,
 };
-use moss_applib::context::Context;
-use moss_common::{NanoId, api::OperationResult};
-use tauri::Runtime as TauriRuntime;
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn delete_collection<C: Context<R>>(

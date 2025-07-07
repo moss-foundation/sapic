@@ -1,3 +1,6 @@
+use moss_common::{api::OperationResult, new_nanoid};
+use validator::Validate;
+
 use crate::{
     collection::Collection,
     models::{
@@ -10,8 +13,6 @@ use crate::{
     },
     services::worktree_service::{EntryMetadata, WorktreeService},
 };
-use moss_common::{api::OperationResult, new_nanoid};
-use validator::Validate;
 
 impl Collection {
     pub async fn create_entry(

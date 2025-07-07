@@ -8,11 +8,12 @@ pub use endpoint::*;
 pub use request::*;
 pub use schema::*;
 
-use crate::models::primitives::{EntryClass, EntryProtocol};
 use hcl::Expression;
 use moss_common::NanoId;
 use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
+
+use crate::models::primitives::{EntryClass, EntryProtocol};
 
 pub type HeaderName = String;
 pub type Protocol = String;

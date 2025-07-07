@@ -1,6 +1,5 @@
 pub mod shared;
 
-use crate::shared::set_up_test_app;
 use moss_app::{
     context::ctxkeys,
     models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
@@ -8,11 +7,13 @@ use moss_app::{
     storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 use moss_applib::context::Context;
-use moss_common::{api::OperationError, new_nanoid, new_nanoid_string};
+use moss_common::{api::OperationError, new_nanoid_string};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use tauri::test::MockRuntime;
+
+use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {

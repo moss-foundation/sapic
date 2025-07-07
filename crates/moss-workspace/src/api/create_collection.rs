@@ -1,12 +1,13 @@
+use moss_common::{api::OperationResult, new_nanoid};
+use tauri::Runtime as TauriRuntime;
+use validator::Validate;
+
 use crate::{
     context::AnyWorkspaceContext,
     models::operations::{CreateCollectionInput, CreateCollectionOutput},
     services::collection_service::{CollectionItemCreateParams, CollectionService},
     workspace::Workspace,
 };
-use moss_common::{api::OperationResult, new_nanoid};
-use tauri::Runtime as TauriRuntime;
-use validator::Validate;
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn create_collection<C: AnyWorkspaceContext<R>>(

@@ -1,6 +1,5 @@
 pub mod shared;
 
-use crate::shared::set_up_test_app;
 use moss_app::{
     dirs,
     models::operations::CreateWorkspaceInput,
@@ -13,6 +12,8 @@ use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_wo
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 use tauri::test::MockRuntime;
+
+use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {
