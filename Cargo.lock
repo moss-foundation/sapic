@@ -1574,6 +1574,7 @@ dependencies = [
  "macos-trampoline",
  "mimalloc",
  "moss_activity_indicator",
+ "moss_api",
  "moss_app",
  "moss_applib",
  "moss_collection",
@@ -1581,7 +1582,6 @@ dependencies = [
  "moss_db",
  "moss_fs",
  "moss_storage",
- "moss_tauri",
  "moss_text",
  "moss_workspace",
  "objc",
@@ -3628,6 +3628,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "moss_common",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_app"
 version = "0.1.0"
 dependencies = [
@@ -3636,12 +3649,12 @@ dependencies = [
  "chrono",
  "derive_more 2.0.1",
  "moss_activity_indicator",
+ "moss_api",
  "moss_applib",
  "moss_common",
  "moss_db",
  "moss_fs",
  "moss_storage",
- "moss_tauri",
  "moss_testutils",
  "moss_text",
  "moss_workspace",
@@ -3674,6 +3687,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "moss_bindingutils"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "ts-rs",
+]
+
+[[package]]
 name = "moss_collection"
 version = "0.1.0"
 dependencies = [
@@ -3685,6 +3706,7 @@ dependencies = [
  "indexmap 2.10.0",
  "moss_activity_indicator",
  "moss_applib",
+ "moss_bindingutils",
  "moss_common",
  "moss_db",
  "moss_environment",
@@ -3750,6 +3772,7 @@ dependencies = [
  "moss_file",
  "moss_fs",
  "moss_storage",
+ "nanoid",
  "serde",
  "serde_json",
  "ts-rs",
@@ -3777,6 +3800,7 @@ dependencies = [
  "anyhow",
  "async-stream",
  "async-trait",
+ "derive_more 2.0.1",
  "futures",
  "moss_applib",
  "moss_text",
@@ -3847,16 +3871,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_tauri"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "moss_common",
- "serde",
- "thiserror 2.0.12",
-]
-
-[[package]]
 name = "moss_testutils"
 version = "0.1.0"
 dependencies = [
@@ -3887,12 +3901,14 @@ name = "moss_workspace"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-stream",
  "async-trait",
  "derive_more 2.0.1",
  "futures",
  "image",
  "moss_activity_indicator",
  "moss_applib",
+ "moss_bindingutils",
  "moss_collection",
  "moss_common",
  "moss_db",
@@ -3907,6 +3923,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri",
+ "thiserror 2.0.12",
  "tokio",
  "ts-rs",
  "uuid",

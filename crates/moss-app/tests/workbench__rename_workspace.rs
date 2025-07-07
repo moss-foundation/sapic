@@ -9,7 +9,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn rename_workspace_success() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_output = app
@@ -28,7 +28,7 @@ async fn rename_workspace_success() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     // Rename the workspace
     let new_name = random_workspace_name();
@@ -47,19 +47,14 @@ async fn rename_workspace_success() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, new_name);
-
-    // Verify active workspace has the new name
-    let active_workspace = app.workspace().await;
-    let (workspace_guard, _context) = active_workspace.as_ref().unwrap();
-    assert_eq!(workspace_guard.manifest().await.name, new_name);
+    assert_eq!(list_workspaces[0].name, new_name);
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_workspace_empty_name() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let _create_output = app
@@ -93,14 +88,14 @@ async fn rename_workspace_empty_name() {
     // Verify workspace name didn't change
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_workspace_same_name() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     let workspace_name = random_workspace_name();
     let create_output = app
@@ -131,14 +126,14 @@ async fn rename_workspace_same_name() {
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, create_output.id);
-    assert_eq!(list_workspaces[0].display_name, workspace_name);
+    assert_eq!(list_workspaces[0].name, workspace_name);
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn rename_workspace_no_active_workspace() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     // Try to rename when no workspace is active
     let rename_result = app

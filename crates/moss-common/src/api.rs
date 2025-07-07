@@ -171,9 +171,3 @@ impl<T> OperationResultExt<T> for Result<T, &str> {
         self.map_err(|e| OperationError::FailedPrecondition(e.to_string()))
     }
 }
-
-#[derive(Debug)]
-pub enum Change<T> {
-    Update(T),
-    Remove,
-}

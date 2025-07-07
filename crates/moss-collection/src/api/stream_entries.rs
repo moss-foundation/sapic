@@ -1,8 +1,15 @@
-use std::path::Path;
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    sync::Arc,
+};
 
 use moss_common::api::OperationResult;
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
+use uuid::Uuid;
 
 use crate::{
     Collection,
@@ -10,10 +17,14 @@ use crate::{
     dirs,
     models::{
         events::StreamEntriesEvent,
-        operations::StreamEntriesOutput,
-        types::{EntryInfo, EntryPath},
+        operations::{StreamEntriesInput, StreamEntriesOutput},
+        primitives::EntryPath,
+        types::EntryInfo,
     },
-    worktree::WorktreeEntry,
+    services::{
+        storage_service::StorageService,
+        worktree_service::{EntryDescription, WorktreeService},
+    },
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
@@ -27,19 +38,60 @@ impl Collection {
     pub async fn stream_entries(
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
+        input: StreamEntriesInput,
     ) -> OperationResult<StreamEntriesOutput> {
-        let (tx, mut rx) = mpsc::unbounded_channel::<WorktreeEntry>();
+        let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
-        let worktree = self.worktree();
+        let worktree_service = self.service_arc::<WorktreeService>();
+        let storage_service = self.service::<StorageService>();
 
         let mut handles = Vec::new();
-        for dir in EXPANSION_DIRECTORIES {
-            let dir_path = Path::new(dir);
-            let entries_tx_clone = tx.clone();
-            let worktree_clone = worktree.clone();
+        let expansion_dirs = match input {
+            StreamEntriesInput::LoadRoot => EXPANSION_DIRECTORIES
+                .iter()
+                .map(|dir| PathBuf::from(dir))
+                .collect::<Vec<_>>(),
+            StreamEntriesInput::ReloadPath(path) => vec![path],
+        };
 
-            let handle = tokio::spawn(async move {
-                let _ = worktree_clone.scan(dir_path, entries_tx_clone).await;
+        let expanded_entries: Arc<HashSet<Uuid>> =
+            match storage_service.get_expanded_entries::<Uuid>() {
+                Ok(entries) => HashSet::from_iter(entries).into(),
+                Err(error) => {
+                    println!("warn: getting expanded entries: {}", error);
+                    HashSet::default().into()
+                }
+            };
+
+        let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
+            match storage_service.get_all_entry_keys() {
+                Ok(keys) => keys.collect::<HashMap<_, _>>().into(),
+                Err(error) => {
+                    println!("warn: getting all entry keys: {}", error);
+                    HashMap::default().into()
+                }
+            };
+
+        for dir in expansion_dirs {
+            let entries_tx_clone = tx.clone();
+            let worktree_service_clone = worktree_service.clone();
+
+            // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
+
+            let handle = tokio::spawn({
+                let expanded_entries_clone = expanded_entries.clone();
+                let all_entry_keys_clone = all_entry_keys.clone();
+
+                async move {
+                    let _ = worktree_service_clone
+                        .scan(
+                            &dir,
+                            expanded_entries_clone,
+                            all_entry_keys_clone,
+                            entries_tx_clone,
+                        )
+                        .await;
+                }
             });
 
             handles.push(handle);
@@ -55,18 +107,14 @@ impl Collection {
                             let entry_info = EntryInfo {
                                 id: entry.id,
                                 name: entry.name,
-                                path: EntryPath {
-                                    raw: entry.path.to_path_buf(),
-                                    segments: entry.path.to_path_buf().iter().map(|s| s.to_string_lossy().to_string()).collect(),
-                                },
+                                path: EntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: None, // FIXME: hardcoded
-                                expanded: false,  // FIXME: hardcoded
+                                order: entry.order,
+                                expanded: entry.expanded,
                             };
 
-                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }
@@ -84,11 +132,10 @@ impl Collection {
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: None,  // FIXME: hardcoded
-                                expanded: false,  // FIXME: hardcoded
+                                order: entry.order,
+                                expanded: entry.expanded,
                             };
 
-                            dbg!(&entry_info);
 
                             let _ = channel.send(StreamEntriesEvent(entry_info));
                         }

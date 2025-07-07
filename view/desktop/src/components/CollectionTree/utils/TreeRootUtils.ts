@@ -4,31 +4,40 @@ export const updateNodeInTree = (
   tree: TreeCollectionRootNode,
   updatedNode: TreeCollectionNode
 ): TreeCollectionRootNode => {
-  //TODO: use class to decide which node to update, but now class is always a Request
-
   switch (updatedNode.class) {
     case "Request":
-      tree.requests = updateNode(tree.requests, updatedNode);
-      break;
+      return {
+        ...tree,
+        requests: updateNode(tree.requests, updatedNode),
+      };
     case "Endpoint":
-      tree.endpoints = updateNode(tree.endpoints, updatedNode);
-      break;
+      return {
+        ...tree,
+        endpoints: updateNode(tree.endpoints, updatedNode),
+      };
     case "Component":
-      tree.components = updateNode(tree.components, updatedNode);
-      break;
+      return {
+        ...tree,
+        components: updateNode(tree.components, updatedNode),
+      };
     case "Schema":
-      tree.schemas = updateNode(tree.schemas, updatedNode);
-      break;
+      return {
+        ...tree,
+        schemas: updateNode(tree.schemas, updatedNode),
+      };
+    default:
+      return tree;
   }
-
-  return tree;
 };
 
 const updateNode = (node: TreeCollectionNode, updatedNode: TreeCollectionNode): TreeCollectionNode => {
   if (node.id === updatedNode.id) return updatedNode;
 
   if (node.childNodes.length > 0) {
-    node.childNodes = updateNodeInArray(node.childNodes, updatedNode);
+    return {
+      ...node,
+      childNodes: updateNodeInArray(node.childNodes, updatedNode),
+    };
   }
 
   return node;

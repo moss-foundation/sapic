@@ -1,4 +1,5 @@
 pub mod api;
+pub mod builder;
 pub mod collection;
 pub mod config;
 pub mod context;
@@ -6,9 +7,9 @@ pub mod manifest;
 pub mod models;
 pub mod services;
 pub mod storage;
-pub mod worktree;
 
-pub use collection::Collection;
+pub use builder::CollectionBuilder;
+pub use collection::{Collection, CollectionModifyParams};
 
 pub mod constants {
     pub const COLLECTION_ICON_FILENAME: &str = "icon.png";

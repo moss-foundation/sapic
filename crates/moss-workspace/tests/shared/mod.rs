@@ -3,11 +3,13 @@ mod context;
 pub use context::*;
 
 use moss_activity_indicator::ActivityIndicator;
+use moss_applib::providers::{ServiceMap, ServiceProvider};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::{
     Workspace,
+    builder::{WorkspaceBuilder, WorkspaceCreateParams},
     models::{
         primitives::{EditorGridOrientation, PanelRenderer},
         types::{
@@ -15,11 +17,15 @@ use moss_workspace::{
             EditorPartStateInfo,
         },
     },
-    storage::segments::COLLECTION_SEGKEY,
-    workspace::CreateParams,
+    services::{
+        collection_service::CollectionService, layout_service::LayoutService,
+        storage_service::StorageService,
+    },
+    storage::segments::SEGKEY_COLLECTION,
 };
 use rand::Rng;
 use std::{
+    any::TypeId,
     collections::HashMap,
     fs,
     future::Future,
@@ -36,6 +42,7 @@ pub async fn setup_test_workspace() -> (
     MockWorkspaceContext,
     Arc<Path>,
     Workspace<MockRuntime>,
+    ServiceProvider,
     CleanupFn,
 ) {
     let fs = Arc::new(RealFileSystem::new());
@@ -46,40 +53,64 @@ pub async fn setup_test_workspace() -> (
 
     let ctx = MockWorkspaceContext::new(app_handle.clone());
 
-    let workspace_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
         .join("workspaces")
         .join(Uuid::new_v4().to_string())
         .into();
-    fs::create_dir_all(&workspace_path).unwrap();
+    fs::create_dir_all(&abs_path).unwrap();
+
+    let mut services: ServiceMap = Default::default();
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let workspace = Workspace::create(
-        fs,
-        &workspace_path,
-        activity_indicator,
-        CreateParams {
-            name: Some(random_workspace_name()),
-        },
-    )
-    .await
-    .unwrap();
+    let storage_service: Arc<StorageService> = StorageService::new(&abs_path).unwrap().into();
+    let layout_service: Arc<LayoutService> = LayoutService::new(storage_service.clone()).into();
+    let collection_service: Arc<CollectionService> =
+        CollectionService::new(abs_path.clone(), fs.clone(), storage_service.clone())
+            .await
+            .unwrap()
+            .into();
 
-    let path = workspace_path.to_path_buf();
-    let cleanup_fn = Box::new(move || {
-        let path = path;
-        Box::pin(async move {
-            if let Err(e) = tokio::fs::remove_dir_all(&path).await {
-                eprintln!("Failed to clean up test workspace directory: {}", e);
-            }
-        }) as Pin<Box<dyn Future<Output = ()> + Send>>
+    {
+        services.insert(TypeId::of::<LayoutService>(), layout_service.clone());
+        services.insert(TypeId::of::<StorageService>(), storage_service.clone());
+        services.insert(
+            TypeId::of::<CollectionService>(),
+            collection_service.clone(),
+        );
+    }
+
+    let workspace = WorkspaceBuilder::new(fs.clone())
+        .with_service::<StorageService>(storage_service.clone())
+        .with_service::<CollectionService>(collection_service.clone())
+        .with_service::<LayoutService>(layout_service.clone())
+        .create(
+            WorkspaceCreateParams {
+                name: random_workspace_name(),
+                abs_path: abs_path.clone(),
+            },
+            activity_indicator,
+        )
+        .await
+        .unwrap();
+
+    let cleanup_fn = Box::new({
+        let abs_path_clone = abs_path.clone();
+        move || {
+            Box::pin(async move {
+                if let Err(e) = tokio::fs::remove_dir_all(&abs_path_clone).await {
+                    eprintln!("Failed to clean up test workspace directory: {}", e);
+                }
+            }) as Pin<Box<dyn Future<Output = ()> + Send>>
+        }
     });
 
     (
         MockWorkspaceContext::from(ctx),
-        workspace_path,
+        abs_path,
         workspace,
+        services.into(),
         cleanup_fn,
     )
 }
@@ -148,7 +179,7 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
 }
 
 pub fn collection_key(id: Uuid) -> SegKeyBuf {
-    COLLECTION_SEGKEY.join(id.to_string())
+    SEGKEY_COLLECTION.join(id.to_string())
 }
 
 pub fn generate_random_icon(output_path: &Path) {

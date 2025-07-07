@@ -19,6 +19,7 @@ use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 // ###                      Locale                      ###
 // ########################################################
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -27,16 +28,19 @@ pub struct GetTranslationsInput {
     pub namespace: String,
 }
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct GetTranslationsOutput(#[ts(type = "JsonValue")] pub JsonValue);
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 
 // Describe App State
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -45,8 +49,10 @@ pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
     pub last_workspace: Option<String>,
+    pub prev_workspace_id: Option<Uuid>,
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -54,6 +60,7 @@ pub struct SetColorThemeInput {
     pub theme_info: ColorThemeInfo,
 }
 
+/// @category Operation
 #[derive(Debug, Deserialize, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -65,6 +72,7 @@ pub struct SetLocaleInput {
 // ###                      Theme                       ###
 // ########################################################
 
+/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -72,6 +80,7 @@ pub struct GetColorThemeInput {
     pub id: ThemeId,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -79,6 +88,7 @@ pub struct GetColorThemeOutput {
     pub css_content: String,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
@@ -87,16 +97,18 @@ pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
 // ###                      Log                          ###
 // #########################################################
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListLogsInput {
     pub dates: Vec<LogDate>,
     pub levels: Vec<LogLevel>,
-    #[ts(optional)]
     pub resource: Option<String>,
 }
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -104,10 +116,12 @@ pub struct ListLogsOutput {
     pub contents: Vec<LogEntryInfo>,
 }
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchDeleteLogInput(pub Vec<String>);
 
+/// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -121,12 +135,14 @@ pub struct BatchDeleteLogOutput {
 
 // List Workspaces
 
-#[derive(Debug, Deserialize, Serialize, Deref, TS)]
+/// @category Operation
+#[derive(Debug, Serialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 
 // Open Workspace
 
+/// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -134,6 +150,7 @@ pub struct OpenWorkspaceInput {
     pub id: Uuid,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -147,6 +164,7 @@ pub struct OpenWorkspaceOutput {
 
 // Create Workspace
 
+/// @category Operation
 #[derive(Debug, Validate, Deserialize, TS, Clone)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -155,6 +173,7 @@ pub struct CreateWorkspaceInput {
     pub name: String,
 
     #[serde(default)]
+    #[ts(type = "WorkspaceMode")]
     pub mode: WorkspaceMode,
 
     #[serde(default = "default_open_on_creation")]
@@ -165,6 +184,7 @@ fn default_open_on_creation() -> bool {
     true
 }
 
+/// @category Operation
 #[derive(Debug, Validate, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -180,6 +200,7 @@ pub struct CreateWorkspaceOutput {
 
 // Delete Workspace
 
+/// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -187,6 +208,7 @@ pub struct DeleteWorkspaceInput {
     pub id: Uuid,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -200,6 +222,7 @@ pub struct DeleteWorkspaceOutput {
 
 // Rename Workspace
 
+/// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -212,6 +235,7 @@ pub struct UpdateWorkspaceInput {
 
 // Describe Workbench State
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -221,14 +245,11 @@ pub struct DescribeWorkbenchStateOutput {
     pub active_workspace_id: Option<Uuid>,
 
     pub prev_workspace_id: Option<Uuid>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
 }
 
 // Close Workspace
 
+/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
@@ -238,6 +259,7 @@ pub struct CloseWorkspaceInput {
     pub id: Uuid,
 }
 
+/// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

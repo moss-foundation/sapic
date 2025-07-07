@@ -1,15 +1,15 @@
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar } from "@/components";
-import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
+import { SidebarWorkspaceContent } from "@/components/SidebarWorkspaceContent";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { useActiveWorkspace } from "@/hooks";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
+import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
-import { useActiveWorkspace } from "@/hooks";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
 
 import SidebarHeader from "./SidebarHeader";
 
@@ -19,7 +19,7 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const { sideBarPosition } = useAppResizableLayoutStore();
+  const sideBarPosition = useAppResizableLayoutStore((state) => state.sideBarPosition);
 
   return (
     <div
@@ -96,7 +96,7 @@ export const Sidebar = () => {
   // Content based on workspace status
   // Pass the workspace name and groupId to the SidebarWorkspaceContent component
   const sidebarContent = hasWorkspace ? (
-    <SidebarWorkspaceContent workspaceName={workspace!.displayName} groupId={activeGroupId} />
+    <SidebarWorkspaceContent workspaceName={workspace!.name} groupId={activeGroupId} />
   ) : (
     <EmptyWorkspace inSidebar={true} />
   );

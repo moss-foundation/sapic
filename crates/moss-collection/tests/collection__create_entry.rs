@@ -37,7 +37,7 @@ fn create_test_dir_configuration() -> DirConfigurationModel {
 
 #[tokio::test]
 async fn create_dir_entry_success() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
@@ -45,7 +45,7 @@ async fn create_dir_entry_success() {
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
-        order: None,
+        order: 0,
         configuration: create_test_dir_configuration(),
     });
 
@@ -73,7 +73,7 @@ async fn create_dir_entry_success() {
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
@@ -82,7 +82,7 @@ async fn create_dir_entry_with_order() {
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
-        order: Some(order_value),
+        order: order_value,
         configuration: create_test_dir_configuration(),
     });
 
@@ -100,7 +100,7 @@ async fn create_dir_entry_with_order() {
 
 #[tokio::test]
 async fn create_dir_entry_already_exists() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
     let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
@@ -108,7 +108,7 @@ async fn create_dir_entry_already_exists() {
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
         path: entry_path.clone(),
         name: entry_name.clone(),
-        order: None,
+        order: 0,
         configuration: create_test_dir_configuration(),
     });
 
@@ -135,7 +135,7 @@ async fn create_dir_entry_already_exists() {
 
 #[tokio::test]
 async fn create_dir_entry_special_chars_in_name() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
     let base_name = random_entry_name();
 
@@ -146,7 +146,7 @@ async fn create_dir_entry_special_chars_in_name() {
         let input = CreateEntryInput::Dir(CreateDirEntryInput {
             path: entry_path.clone(),
             name: entry_name.clone(),
-            order: None,
+            order: 0,
             configuration: create_test_dir_configuration(),
         });
 

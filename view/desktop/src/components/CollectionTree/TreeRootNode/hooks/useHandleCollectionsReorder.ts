@@ -14,15 +14,8 @@ export const useHandleCollectionsReorder = () => {
       onDrop({ location, source }) {
         if (location.current?.dropTargets.length === 0) return;
 
-        // console.log("drop", { location, source });
-
         const sourceData = getTreeRootNodeSource(source);
         const targetData = getTreeRootNodeTarget(location);
-
-        console.log({
-          sourceData,
-          targetData,
-        });
       },
     });
   }, []);

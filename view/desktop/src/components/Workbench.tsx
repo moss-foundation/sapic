@@ -1,7 +1,7 @@
-import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
-import { Workspace } from "@/components/Workspace";
 import { PageLoader } from "@/components/PageLoader";
+import { Workspace } from "@/components/Workspace";
+import { ActivityEventsProvider } from "@/context/ActivityEventsContext";
 import { useActiveWorkspace, useDescribeAppState } from "@/hooks";
 import { AppLayout, RootLayout } from "@/layouts";
 
@@ -17,9 +17,7 @@ export const Workbench = () => {
   return (
     <ActivityEventsProvider>
       <RootLayout>
-        <AppLayout>
-          {hasWorkspace ? <Workspace workspaceName={workspace!.displayName} /> : <EmptyWorkspace />}
-        </AppLayout>
+        <AppLayout>{hasWorkspace ? <Workspace workspaceName={workspace!.name} /> : <EmptyWorkspace />}</AppLayout>
       </RootLayout>
     </ActivityEventsProvider>
   );

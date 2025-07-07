@@ -14,7 +14,7 @@ impl<R: TauriRuntime> App<R> {
         ctx: &C,
         input: &CloseWorkspaceInput,
     ) -> OperationResult<CloseWorkspaceOutput> {
-        let workspace_service = self.service::<WorkspaceService<R>>();
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspace_id = ctx
             .value::<ctxkeys::WorkspaceId>()
             .map(|id| **id)
@@ -27,7 +27,7 @@ impl<R: TauriRuntime> App<R> {
             )));
         }
 
-        workspace_service.deactivate_workspace(ctx).await;
+        let _ = workspace_service.deactivate_workspace(ctx).await;
 
         Ok(CloseWorkspaceOutput { id: workspace_id })
     }

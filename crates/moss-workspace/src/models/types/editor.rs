@@ -118,27 +118,19 @@ impl From<EditorGridStateEntity> for EditorGridState {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPanelState {
     pub id: String,
-    #[ts(optional)]
     pub content_component: Option<String>,
-    #[ts(optional)]
     pub tab_component: Option<String>,
-    #[ts(optional)]
     pub title: Option<String>,
-    #[ts(optional)]
     pub renderer: Option<PanelRenderer>,
-    #[ts(optional)]
     #[ts(type = "{ [key: string]: JsonValue }")]
     pub params: Option<HashMap<String, JsonValue>>,
-    #[ts(optional)]
     pub minimum_width: Option<f64>,
-    #[ts(optional)]
     pub minimum_height: Option<f64>,
-    #[ts(optional)]
     pub maximum_width: Option<f64>,
-    #[ts(optional)]
     pub maximum_height: Option<f64>,
 }
 

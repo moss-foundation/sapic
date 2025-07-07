@@ -1,9 +1,8 @@
+use rustc_hash::FxHashMap;
 use std::{
     any::{Any, TypeId},
     sync::Arc,
 };
-
-use rustc_hash::FxHashMap;
 
 use crate::ServiceMarker;
 
@@ -38,5 +37,177 @@ impl ServiceProvider {
             "Service {} is registered with the wrong type type id",
             std::any::type_name::<T>()
         ))
+    }
+
+    pub fn get_arc<T: ServiceMarker + Send + Sync>(&self) -> Arc<T> {
+        let type_id = TypeId::of::<T>();
+        let service = self.services.get(&type_id).expect(&format!(
+            "Service {} must be registered before it can be used",
+            std::any::type_name::<T>()
+        ));
+
+        service.clone().downcast::<T>().expect(&format!(
+            "Service {} is registered with the wrong type type id",
+            std::any::type_name::<T>()
+        ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::any::TypeId;
+
+    #[derive(Debug, Clone, PartialEq)]
+    struct TestService {
+        pub name: String,
+        pub value: u32,
+    }
+
+    impl ServiceMarker for TestService {}
+
+    #[derive(Debug, Clone, PartialEq)]
+    struct AnotherTestService {
+        pub data: Vec<String>,
+    }
+
+    impl ServiceMarker for AnotherTestService {}
+
+    #[test]
+    fn test_service_provider_new() {
+        let provider = ServiceProvider::new();
+        assert_eq!(provider.services.len(), 0);
+    }
+
+    #[test]
+    fn test_service_provider_from_service_map() {
+        let mut services = ServiceMap::default();
+        let test_service = TestService {
+            name: "test".to_string(),
+            value: 42,
+        };
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service));
+
+        let provider = ServiceProvider::from(services);
+        assert_eq!(provider.services.len(), 1);
+    }
+
+    #[test]
+    fn test_get_service_success() {
+        let mut services = ServiceMap::default();
+        let test_service = TestService {
+            name: "test".to_string(),
+            value: 42,
+        };
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service.clone()));
+
+        let provider = ServiceProvider::from(services);
+        let retrieved_service = provider.get::<TestService>();
+
+        assert_eq!(retrieved_service.name, "test");
+        assert_eq!(retrieved_service.value, 42);
+        assert_eq!(retrieved_service, &test_service);
+    }
+
+    #[test]
+    fn test_get_arc_service_success() {
+        let mut services = ServiceMap::default();
+        let test_service = TestService {
+            name: "test_arc".to_string(),
+            value: 123,
+        };
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service.clone()));
+
+        let provider = ServiceProvider::from(services);
+        let retrieved_service_arc = provider.get_arc::<TestService>();
+
+        assert_eq!(retrieved_service_arc.name, "test_arc");
+        assert_eq!(retrieved_service_arc.value, 123);
+        assert_eq!(*retrieved_service_arc, test_service);
+    }
+
+    #[test]
+    fn test_multiple_services() {
+        let mut services = ServiceMap::default();
+
+        let test_service = TestService {
+            name: "service1".to_string(),
+            value: 100,
+        };
+        let another_service = AnotherTestService {
+            data: vec!["hello".to_string(), "world".to_string()],
+        };
+
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service.clone()));
+        services.insert(
+            TypeId::of::<AnotherTestService>(),
+            Arc::new(another_service.clone()),
+        );
+
+        let provider = ServiceProvider::from(services);
+
+        let retrieved_test = provider.get::<TestService>();
+        let retrieved_another = provider.get::<AnotherTestService>();
+
+        assert_eq!(retrieved_test, &test_service);
+        assert_eq!(retrieved_another, &another_service);
+    }
+
+    #[test]
+    fn test_arc_and_ref_same_service() {
+        let mut services = ServiceMap::default();
+        let test_service = TestService {
+            name: "same_service".to_string(),
+            value: 999,
+        };
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service.clone()));
+
+        let provider = ServiceProvider::from(services);
+        let service_ref = provider.get::<TestService>();
+        let service_arc = provider.get_arc::<TestService>();
+
+        assert_eq!(service_ref, &*service_arc);
+        assert_eq!(service_ref, &test_service);
+        assert_eq!(*service_arc, test_service);
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Service moss_applib::providers::tests::TestService must be registered before it can be used"
+    )]
+    fn test_get_unregistered_service_panics() {
+        let provider = ServiceProvider::new();
+        let _ = provider.get::<TestService>();
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Service moss_applib::providers::tests::TestService must be registered before it can be used"
+    )]
+    fn test_get_arc_unregistered_service_panics() {
+        let provider = ServiceProvider::new();
+        let _ = provider.get_arc::<TestService>();
+    }
+
+    #[test]
+    fn test_arc_reference_counting() {
+        let mut services = ServiceMap::default();
+        let test_service = TestService {
+            name: "ref_count_test".to_string(),
+            value: 555,
+        };
+        services.insert(TypeId::of::<TestService>(), Arc::new(test_service));
+
+        let provider = ServiceProvider::from(services);
+
+        let arc1 = provider.get_arc::<TestService>();
+        let arc2 = provider.get_arc::<TestService>();
+
+        // Both arcs should point to the same data
+        assert_eq!(arc1.name, arc2.name);
+        assert_eq!(arc1.value, arc2.value);
+
+        // They should be equal
+        assert_eq!(*arc1, *arc2);
     }
 }

@@ -1,8 +1,9 @@
 import React from "react";
 
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import ButtonPrimary from "@/components/ButtonPrimary";
 import { Modal } from "@/lib/ui/Modal";
+
+import ButtonDanger from "../ButtonDanger";
 
 interface ConfirmationModalProps {
   showModal: boolean;
@@ -65,12 +66,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
         <div className="flex justify-end gap-3 px-6 py-4">
           <ButtonNeutralOutlined onClick={handleCancel}>{cancelLabel}</ButtonNeutralOutlined>
-          <ButtonPrimary
-            onClick={handleConfirm}
-            className="!background-(--moss-button-background-delete) hover:!background-(--moss-button-background-delete-hover) !text-(--moss-button-text-delete)"
-          >
-            {confirmLabel}
-          </ButtonPrimary>
+          <ButtonDanger onClick={handleConfirm}>{confirmLabel}</ButtonDanger>
         </div>
       </div>
     </Modal>

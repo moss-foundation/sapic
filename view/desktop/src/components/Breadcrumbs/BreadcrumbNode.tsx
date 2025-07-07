@@ -3,8 +3,8 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
 import Icon from "../../lib/ui/Icon";
+import { DebugCollectionIconPlaceholder } from "../CollectionTree/DebugCollectionIconPlaceholder";
 import NodeLabel from "../CollectionTree/NodeLabel";
-import { TestCollectionIcon } from "../CollectionTree/TestCollectionIcon";
 import { TreeNodeProps } from "../CollectionTree/types";
 
 interface BreadcrumbNodeProps {
@@ -59,7 +59,7 @@ export const BreadcrumbNode = ({
         }}
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
       >
-        <TestCollectionIcon type={node.type} />
+        <DebugCollectionIconPlaceholder type={node.type} protocol={undefined} />
         <NodeLabel label={node.id} />
         <span className="DragHandle h-full min-h-4 grow" />
         <Icon

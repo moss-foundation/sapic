@@ -17,7 +17,7 @@ use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn delete_workspace_success() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -68,7 +68,7 @@ async fn delete_workspace_success() {
 
 #[tokio::test]
 async fn delete_workspace_filesystem_only() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -114,7 +114,7 @@ async fn delete_workspace_filesystem_only() {
 
 #[tokio::test]
 async fn delete_workspace_opened() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
 
     // Create and open a workspace
     let workspace_name = random_workspace_name();
@@ -167,7 +167,7 @@ async fn delete_workspace_opened() {
 
 #[tokio::test]
 async fn delete_workspace_nonexistent() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     let nonexistent_id = Uuid::new_v4();
 
@@ -183,7 +183,7 @@ async fn delete_workspace_nonexistent() {
 
 #[tokio::test]
 async fn delete_workspace_filesystem_does_not_exist() {
-    let (app, ctx, cleanup, abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, abs_path) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
