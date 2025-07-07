@@ -1,9 +1,6 @@
 use moss_collection::{
     dirs,
-    models::{
-        operations::{CreateDirEntryInput, CreateEntryInput, UpdateEntryInput},
-        types::UpdateDirEntryParams,
-    },
+    models::{operations::UpdateEntryInput, types::UpdateDirEntryParams},
     services::StorageService,
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
 };
@@ -13,10 +10,7 @@ use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 use uuid::Uuid;
 
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_request_dir_configuration,
-    random_entry_name,
-};
+use crate::shared::{create_test_collection, create_test_component_dir_entry, random_entry_name};
 
 mod shared;
 
@@ -83,7 +77,6 @@ async fn rename_dir_entry_already_exists() {
     let (collection_path, mut collection) = create_test_collection().await;
     let first_entry_name = random_entry_name();
     let second_entry_name = random_entry_name();
-    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
 
     let first_id = create_test_component_dir_entry(&mut collection, &first_entry_name).await;
 

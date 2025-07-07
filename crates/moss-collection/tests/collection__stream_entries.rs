@@ -2,18 +2,8 @@ pub mod shared;
 
 use futures;
 use moss_collection::{
-    dirs,
-    models::{
-        operations::{CreateDirEntryInput, CreateEntryInput},
-        primitives::EntryKind,
-        types::configuration::{
-            DirConfigurationModel, DirHttpConfigurationModel, RequestDirConfigurationModel,
-        },
-    },
-    services::worktree_service::EntryDescription,
+    dirs, models::primitives::EntryKind, services::worktree_service::EntryDescription,
 };
-use moss_testutils::random_name::random_string;
-use std::path::PathBuf;
 use tokio::sync::mpsc;
 
 use crate::shared::{

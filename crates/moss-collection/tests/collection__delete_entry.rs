@@ -1,19 +1,13 @@
 pub mod shared;
 
-use moss_collection::{
-    dirs,
-    models::operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
-};
+use moss_collection::{dirs, models::operations::DeleteEntryInput};
 use moss_common::api::OperationError;
 use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::shared::{
-    create_test_collection, create_test_component_dir_configuration,
-    create_test_component_dir_entry, create_test_endpoint_dir_configuration,
-    create_test_endpoint_dir_entry, create_test_request_dir_configuration,
-    create_test_request_dir_entry, create_test_schema_dir_configuration,
-    create_test_schema_dir_entry, random_entry_name,
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
 };
 
 #[tokio::test]

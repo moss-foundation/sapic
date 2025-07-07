@@ -71,26 +71,31 @@ pub fn create_test_item_configuration() -> ItemConfigurationModel {
     unreachable!("Configuration models are empty enums - cannot be instantiated")
 }
 
+#[allow(dead_code)]
 pub fn create_test_request_dir_configuration() -> DirConfigurationModel {
     DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
         DirHttpConfigurationModel {},
     ))
 }
 
+#[allow(dead_code)]
 pub fn create_test_endpoint_dir_configuration() -> DirConfigurationModel {
     DirConfigurationModel::Endpoint(EndpointDirConfigurationModel::Http(
         HttpEndpointDirConfiguration {},
     ))
 }
 
+#[allow(dead_code)]
 pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
     DirConfigurationModel::Component(ComponentDirConfigurationModel {})
 }
 
+#[allow(dead_code)]
 pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
     DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
 }
 
+#[allow(dead_code)]
 pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
@@ -104,6 +109,7 @@ pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &s
         .id
 }
 
+#[allow(dead_code)]
 pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
@@ -117,6 +123,7 @@ pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &
         .id
 }
 
+#[allow(dead_code)]
 pub async fn create_test_component_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
@@ -130,6 +137,7 @@ pub async fn create_test_component_dir_entry(collection: &mut Collection, name: 
         .id
 }
 
+#[allow(dead_code)]
 pub async fn create_test_schema_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
