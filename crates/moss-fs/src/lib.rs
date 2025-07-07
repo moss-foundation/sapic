@@ -7,7 +7,7 @@ pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
 use futures::stream::BoxStream;
 use moss_applib::{GlobalMarker, context::Context};
-use std::{error::Error, io, io::ErrorKind, path::Path, sync::Arc, time::Duration};
+use std::{io, io::ErrorKind, path::Path, sync::Arc, time::Duration};
 use tauri::{AppHandle, Manager, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::fs::ReadDir;
