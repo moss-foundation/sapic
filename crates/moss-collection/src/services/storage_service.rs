@@ -51,7 +51,7 @@ impl StorageService {
         let store = self.storage.resource_store();
 
         let segkey = segments::segkey_entry_order(&id.to_string());
-        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::from(order))?;
+        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())
     }
@@ -101,5 +101,12 @@ impl StorageService {
         let segkey = segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
         Ok(AnyValue::deserialize::<Vec<T>>(&value)?)
+    }
+
+    // HACK: This is a hack to get the storage service for testing purposes.
+    // As soon as we switch to getting services by trait instead of by type,
+    // we'll be able to move this method into the test service, TestStorageService.
+    pub fn __storage(&self) -> &Arc<dyn CollectionStorage> {
+        &self.storage
     }
 }

@@ -3,9 +3,12 @@ pub mod shared;
 use moss_collection::{
     constants, dirs,
     models::operations::{CreateDirEntryInput, CreateEntryInput},
+    services::StorageService,
+    storage::segments::SEGKEY_RESOURCE_ENTRY,
 };
 use moss_common::api::OperationError;
-use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_string};
+use moss_storage::storage::operations::GetItem;
+use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
@@ -73,6 +76,14 @@ async fn create_dir_entry_with_order() {
     assert!(expected_dir.exists());
 
     // TODO: Check that order is correctly stored
+    let storage_service = collection.service_arc::<StorageService>();
+    let resource_store = storage_service.__storage().resource_store();
+
+    // Check order was updated
+    let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
+    let order_value = GetItem::get(resource_store.as_ref(), order_key).unwrap();
+    let stored_order: isize = order_value.deserialize().unwrap();
+    assert_eq!(stored_order, 42);
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();

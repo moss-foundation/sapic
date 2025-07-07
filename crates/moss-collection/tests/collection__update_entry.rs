@@ -4,10 +4,14 @@ use moss_collection::{
         operations::{CreateDirEntryInput, CreateEntryInput, UpdateEntryInput},
         types::UpdateDirEntryParams,
     },
+    services::StorageService,
+    storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
 };
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
+use uuid::Uuid;
 
 use crate::shared::{create_test_collection, create_test_dir_configuration, random_entry_name};
 
@@ -176,4 +180,109 @@ async fn rename_dir_entry_special_chars_in_name() {
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn update_dir_entry_order() {
+    let (collection_path, collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+
+    let input = CreateEntryInput::Dir(CreateDirEntryInput {
+        path: entry_path.clone(),
+        name: entry_name.clone(),
+        order: 0,
+        configuration: create_test_dir_configuration(),
+    });
+
+    let id = collection.create_entry(input).await.unwrap().id;
+
+    let _ = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Default::default(),
+            name: None,
+            order: Some(42),
+            expanded: None,
+        }))
+        .await
+        .unwrap();
+
+    let storage_service = collection.service_arc::<StorageService>();
+    let resource_store = storage_service.__storage().resource_store();
+
+    // Check order was updated
+    let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
+    let order_value = GetItem::get(resource_store.as_ref(), order_key).unwrap();
+    let stored_order: isize = order_value.deserialize().unwrap();
+    assert_eq!(stored_order, 42);
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn expand_and_collapse_dir_entry() {
+    let (collection_path, collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+    let entry_path = PathBuf::from(dirs::COMPONENTS_DIR);
+
+    let input = CreateEntryInput::Dir(CreateDirEntryInput {
+        path: entry_path.clone(),
+        name: entry_name.clone(),
+        order: 0,
+        configuration: create_test_dir_configuration(),
+    });
+
+    let id = collection.create_entry(input).await.unwrap().id;
+
+    let storage_service = collection.service_arc::<StorageService>();
+    let resource_store = storage_service.__storage().resource_store();
+
+    // Expanding the entry
+    let _ = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Default::default(),
+            name: None,
+            order: None,
+            expanded: Some(true),
+        }))
+        .await
+        .unwrap();
+
+    // Check expanded_items contains the entry id
+    let expanded_items_value = GetItem::get(
+        resource_store.as_ref(),
+        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
+    )
+    .unwrap();
+    let expanded_items: Vec<Uuid> = expanded_items_value.deserialize().unwrap();
+    assert!(expanded_items.contains(&id));
+
+    // Collapsing the entry
+    let _ = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Default::default(),
+            name: None,
+            order: None,
+            expanded: Some(false),
+        }))
+        .await
+        .unwrap();
+
+    // Check expanded_items contains the entry id
+    let expanded_items_value = GetItem::get(
+        resource_store.as_ref(),
+        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
+    )
+    .unwrap();
+    let expanded_items: Vec<Uuid> = expanded_items_value.deserialize().unwrap();
+    assert!(!expanded_items.contains(&id));
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap()
 }
