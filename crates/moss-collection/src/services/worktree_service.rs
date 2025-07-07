@@ -2,7 +2,9 @@ use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath, FsError};
+use moss_fs::{
+    CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
+};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
@@ -743,11 +745,8 @@ impl WorktreeService {
     }
 
     async fn rename_entry(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
-        let encoded_from = moss_fs::utils::sanitize_path(from, None)?;
-        let encoded_to = moss_fs::utils::sanitize_path(to, None)?;
-
-        let abs_from = self.absolutize(&encoded_from)?;
-        let abs_to = self.absolutize(&encoded_to)?;
+        let abs_from = self.absolutize(&from)?;
+        let abs_to = self.absolutize(&to)?;
 
         if !abs_from.exists() {
             return Err(WorktreeError::NotFound(from.display().to_string()));
@@ -772,6 +771,7 @@ impl WorktreeService {
     }
 }
 
+/// Update the filename of a path to the encoded input name
 fn rename_path(path: &Path, name: &str) -> PathBuf {
     let mut buf = PathBuf::from(path);
     buf.pop();

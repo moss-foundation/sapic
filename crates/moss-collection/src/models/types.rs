@@ -35,7 +35,7 @@ pub struct EnvironmentInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
     pub id: Uuid,
-    // TODO: Add validation for path
+    // FIXME: Remove this field during frontend change
     pub path: PathBuf,
 
     #[validate(length(min = 1))]
@@ -52,7 +52,7 @@ pub struct UpdateItemEntryParams {
 pub struct UpdateDirEntryParams {
     pub id: Uuid,
 
-    // TODO: Add validation for path
+    // TODO: Remove this field during frontend change
     pub path: PathBuf,
 
     #[validate(length(min = 1))]

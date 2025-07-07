@@ -1,39 +1,15 @@
 pub mod shared;
 
-use crate::shared::create_test_collection;
 use moss_collection::{
     constants, dirs,
-    models::{
-        operations::{CreateDirEntryInput, CreateEntryInput},
-        types::configuration::{
-            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
-            ItemConfigurationModel,
-        },
-    },
+    models::operations::{CreateDirEntryInput, CreateEntryInput},
 };
 use moss_common::api::OperationError;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_string};
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
 
-fn random_entry_name() -> String {
-    format!("Test_{}_Entry", random_string(10))
-}
-
-// Since configuration models are empty enums, we need to use unreachable! for now
-// This is a limitation of the current implementation
-#[allow(dead_code)]
-fn create_test_item_configuration() -> ItemConfigurationModel {
-    // For now, we cannot create any variant since all configuration models are empty enums
-    // This is a known issue in the codebase
-    unreachable!("Configuration models are empty enums - cannot be instantiated")
-}
-
-fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
-        DirHttpConfigurationModel {},
-    ))
-}
+use crate::shared::{create_test_collection, create_test_dir_configuration, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
@@ -88,11 +64,15 @@ async fn create_dir_entry_with_order() {
 
     let result = collection.create_entry(input).await;
     let output = result.unwrap();
-    assert!(!output.id.is_nil());
+    let id = output.id;
+
+    assert!(!id.is_nil());
 
     // Verify the directory was created
     let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
+
+    // TODO: Check that order is correctly stored
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap();
