@@ -1,3 +1,4 @@
+use crate::FsResult;
 use anyhow::Result;
 use notify::Watcher;
 use std::{
@@ -35,7 +36,7 @@ impl FsWatcher {
         }
     }
 
-    pub fn add(&self, path: &PathBuf) -> Result<()> {
+    pub fn add(&self, path: &PathBuf) -> FsResult<()> {
         let tx = self.tx.clone();
         let pending_path_events = self.pending_path_events.clone();
         let path_owned = path.clone();
