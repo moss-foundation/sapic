@@ -2,7 +2,9 @@ use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{NanoId, api::OperationError, continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
+use moss_fs::{
+    CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
+};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
@@ -48,6 +50,12 @@ pub enum WorktreeError {
 
     #[error("unknown error: {0}")]
     Unknown(#[from] anyhow::Error),
+}
+
+impl From<moss_fs::FsError> for WorktreeError {
+    fn from(error: FsError) -> Self {
+        WorktreeError::Io(error.to_string())
+    }
 }
 
 impl From<hcl::Error> for WorktreeError {
