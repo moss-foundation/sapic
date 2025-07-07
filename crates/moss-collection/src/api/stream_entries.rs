@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    path::Path,
+    path::PathBuf,
     sync::Arc,
 };
 
@@ -16,7 +16,9 @@ use crate::{
     collection::OnDidChangeEvent,
     dirs,
     models::{
-        events::StreamEntriesEvent, operations::StreamEntriesOutput, primitives::EntryPath,
+        events::StreamEntriesEvent,
+        operations::{StreamEntriesInput, StreamEntriesOutput},
+        primitives::EntryPath,
         types::EntryInfo,
     },
     services::{
@@ -36,6 +38,7 @@ impl Collection {
     pub async fn stream_entries(
         &self,
         channel: TauriChannel<StreamEntriesEvent>,
+        input: StreamEntriesInput,
     ) -> OperationResult<StreamEntriesOutput> {
         let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
@@ -43,40 +46,52 @@ impl Collection {
         let storage_service = self.service::<StorageService>();
 
         let mut handles = Vec::new();
-        for dir in EXPANSION_DIRECTORIES {
-            let dir_path = Path::new(dir);
+        let expansion_dirs = match input {
+            StreamEntriesInput::LoadRoot => EXPANSION_DIRECTORIES
+                .iter()
+                .map(|dir| PathBuf::from(dir))
+                .collect::<Vec<_>>(),
+            StreamEntriesInput::ReloadPath(path) => vec![path],
+        };
+
+        let expanded_entries: Arc<HashSet<Uuid>> =
+            match storage_service.get_expanded_entries::<Uuid>() {
+                Ok(entries) => HashSet::from_iter(entries).into(),
+                Err(error) => {
+                    println!("warn: getting expanded entries: {}", error);
+                    HashSet::default().into()
+                }
+            };
+
+        let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
+            match storage_service.get_all_entry_keys() {
+                Ok(keys) => keys.collect::<HashMap<_, _>>().into(),
+                Err(error) => {
+                    println!("warn: getting all entry keys: {}", error);
+                    HashMap::default().into()
+                }
+            };
+
+        for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();
             let worktree_service_clone = worktree_service.clone();
 
-            // We need to fetch this data from the database here, otherwise we’ll be requesting it every time the scan method is called.
+            // We need to fetch this data from the database here, otherwise we'll be requesting it every time the scan method is called.
 
-            let expanded_entries: Arc<HashSet<Uuid>> =
-                match storage_service.get_expanded_entries::<Uuid>() {
-                    Ok(entries) => entries.collect::<HashSet<_>>().into(),
-                    Err(error) => {
-                        println!("warn: getting expanded entries: {}", error);
-                        HashSet::default().into()
-                    }
-                };
+            let handle = tokio::spawn({
+                let expanded_entries_clone = expanded_entries.clone();
+                let all_entry_keys_clone = all_entry_keys.clone();
 
-            let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
-                match storage_service.get_all_entry_keys() {
-                    Ok(keys) => keys.collect::<HashMap<_, _>>().into(),
-                    Err(error) => {
-                        println!("warn: getting all entry keys: {}", error);
-                        HashMap::default().into()
-                    }
-                };
-
-            let handle = tokio::spawn(async move {
-                let _ = worktree_service_clone
-                    .scan(
-                        dir_path,
-                        expanded_entries.clone(),
-                        all_entry_keys.clone(),
-                        entries_tx_clone,
-                    )
-                    .await;
+                async move {
+                    let _ = worktree_service_clone
+                        .scan(
+                            &dir,
+                            expanded_entries_clone,
+                            all_entry_keys_clone,
+                            entries_tx_clone,
+                        )
+                        .await;
+                }
             });
 
             handles.push(handle);

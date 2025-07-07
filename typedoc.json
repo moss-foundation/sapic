@@ -8,7 +8,8 @@
     "crates/moss-collection",
     "crates/moss-environment",
     "crates/moss-workspace",
-    "crates/moss-bindingutils"
+    "crates/moss-bindingutils",
+    "crates/moss-api"
   ],
   "entryPointStrategy": "packages",
   "packageOptions": {
@@ -20,5 +21,9 @@
   "excludeExternals": true,
   "useTsLinkResolution": true,
   "alwaysCreateEntryPointModule": true,
-  "plugin": ["./misc/typedoc/typedoc-rename-plugin.js", "./misc/typedoc/typedoc-git-branch-plugin.js"]
+  "plugin": [
+    "./misc/typedoc/typedoc-rename-plugin.js",
+    "./misc/typedoc/typedoc-git-branch-plugin.js",
+    "./misc/typedoc/typedoc-categorize-plugin.js"
+  ]
 }

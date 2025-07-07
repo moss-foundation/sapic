@@ -1,4 +1,5 @@
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import ButtonDanger from "@/components/ButtonDanger";
+
 import { SectionTitle } from "./SectionTitle";
 
 interface WorkspaceDangerZoneSectionProps {
@@ -16,13 +17,9 @@ export const WorkspaceDangerZoneSection = ({ onDeleteClick }: WorkspaceDangerZon
             Once you delete a workspace, there is no going back. Please be certain.
           </p>
         </div>
-        <ButtonNeutralOutlined
-          size="md"
-          onClick={onDeleteClick}
-          className="!background-(--moss-button-background-delete) hover:!background--(--moss-button-background-delete-hover) !h-7 !text-(--moss-button-text-delete)"
-        >
+        <ButtonDanger size="md" onClick={onDeleteClick}>
           Delete
-        </ButtonNeutralOutlined>
+        </ButtonDanger>
       </div>
     </div>
   );

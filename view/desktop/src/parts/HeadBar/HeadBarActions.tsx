@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 
-import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
+import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/useActiveWorkspace";
 
@@ -151,7 +151,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
           if (workspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
             setWorkspaceToDelete({
               id: workspaceId,
-              name: workspace.displayName,
+              name: workspace.name,
             });
             setShowDeleteConfirmModal(true);
           }
@@ -184,7 +184,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
       if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
         setWorkspaceToDelete({
           id: activeWorkspace.id,
-          name: activeWorkspace.displayName,
+          name: activeWorkspace.name,
         });
         setShowDeleteConfirmModal(true);
       }

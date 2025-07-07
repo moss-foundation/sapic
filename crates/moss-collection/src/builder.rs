@@ -42,7 +42,7 @@ const WORKTREE_DIRS: [(&str, isize); 4] = [
     (dirs::SCHEMAS_DIR, 3),
 ];
 
-pub struct CreateParams {
+pub struct CollectionCreateParams {
     pub name: Option<String>,
     pub internal_abs_path: Arc<Path>,
     pub external_abs_path: Option<Arc<Path>>,
@@ -50,7 +50,7 @@ pub struct CreateParams {
     pub icon_path: Option<PathBuf>,
 }
 
-pub struct LoadParams {
+pub struct CollectionLoadParams {
     pub internal_abs_path: Arc<Path>,
 }
 
@@ -75,7 +75,7 @@ impl CollectionBuilder {
         self
     }
 
-    pub async fn load(self, params: LoadParams) -> Result<Collection> {
+    pub async fn load(self, params: CollectionLoadParams) -> Result<Collection> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
@@ -103,7 +103,7 @@ impl CollectionBuilder {
         })
     }
 
-    pub async fn create(self, params: CreateParams) -> Result<Collection> {
+    pub async fn create(self, params: CollectionCreateParams) -> Result<Collection> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params

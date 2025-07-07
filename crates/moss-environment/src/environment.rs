@@ -1,13 +1,9 @@
 use anyhow::Result;
-use moss_common::models::primitives::Identifier;
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
-use std::{
-    collections::HashMap,
-    path::Path,
-    sync::{Arc, atomic::AtomicUsize},
-};
+use nanoid::nanoid;
+use std::{collections::HashMap, path::Path, sync::Arc};
 use uuid::Uuid;
 
 use crate::{
@@ -44,7 +40,7 @@ pub struct VariableItemParams {
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
-    pub id: Identifier,
+    pub id: String,
     pub kind: Option<VariableKind>,
     pub global_value: Option<VariableValue>,
     pub desc: Option<String>,
@@ -58,8 +54,6 @@ pub struct Environment {
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
     variables: VariableMap,
-    #[allow(dead_code)]
-    next_variable_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     store: Arc<dyn WorkspaceVariableStore>,
     file: JsonFileHandle<FileModel>,
@@ -83,7 +77,6 @@ impl Environment {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         store: Arc<dyn WorkspaceVariableStore>,
-        next_variable_id: Arc<AtomicUsize>,
         params: LoadParams,
     ) -> Result<Self> {
         let abs_path: Arc<Path> = abs_path.into();
@@ -116,7 +109,7 @@ impl Environment {
             variables.insert(
                 name,
                 VariableItem {
-                    id: Identifier::new(&next_variable_id),
+                    id: nanoid!(10), // FIXME: temporary a string, should be some kind of Arc
                     kind: value.kind,
                     global_value: value.value,
                     desc: value.desc,
@@ -131,7 +124,6 @@ impl Environment {
             fs,
             abs_path,
             variables,
-            next_variable_id,
             store,
             file: file_handle,
         })

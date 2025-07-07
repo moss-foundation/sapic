@@ -16,9 +16,9 @@ use crate::shared::set_up_test_app;
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_queue() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
-    let log_service = app.service::<LogService>();
     // We only have one log, less than the dump threshold
     // So we should delete from the queue
     log_service.warn(
@@ -63,8 +63,8 @@ async fn test_delete_logs_from_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_delete_logs_from_file() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
     // By default, the dump threshold is 10, which means that the first log
     for _ in 0..15 {
@@ -111,8 +111,8 @@ async fn test_delete_logs_from_file() {
 
 #[tokio::test]
 async fn test_delete_all_logs() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
     for _ in 0..15 {
         log_service.warn(

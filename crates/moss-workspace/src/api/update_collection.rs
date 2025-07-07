@@ -1,61 +1,35 @@
-use anyhow::Context as _;
 use moss_applib::context::Context;
-use moss_collection::collection;
-use moss_common::api::{Change, OperationError, OperationResult, OperationResultExt};
+use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
-    models::operations::{
-        ChangeIcon, ChangeRepository, UpdateCollectionInput, UpdateCollectionOutput,
-    },
+    models::operations::{UpdateCollectionInput, UpdateCollectionOutput},
+    services::collection_service::{CollectionItemUpdateParams, CollectionService},
     workspace::Workspace,
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn update_collection<C: Context<R>>(
         &mut self,
-        ctx: &C,
+        _ctx: &C,
         input: UpdateCollectionInput,
     ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
 
-        let collections = self
-            .collections_mut(ctx)
-            .await
-            .context("Failed to get collections")?;
-
-        let item = collections
-            .get(&input.id)
-            .context("Collection not found")
-            .map_err_as_not_found()?
-            .clone();
-
-        let need_modify =
-            input.new_name.is_some() || input.new_repo.is_some() || input.new_icon.is_some();
-
-        if need_modify {
-            let item_lock = item.write().await;
-
-            let repository = input.new_repo.map(|repo| match repo {
-                ChangeRepository::Update(repo_url) => Change::Update(repo_url),
-                ChangeRepository::Remove => Change::Remove,
-            });
-
-            let icon = input.new_icon.map(|icon| match icon {
-                ChangeIcon::Update(icon_path) => Change::Update(icon_path),
-                ChangeIcon::Remove => Change::Remove,
-            });
-
-            item_lock
-                .modify(collection::ModifyParams {
-                    name: input.new_name,
-                    repository,
-                    icon,
-                })
-                .await
-                .map_err(|e| OperationError::Internal(e.to_string()))?;
-        }
+        let collections = self.services.get::<CollectionService>();
+        collections
+            .update_collection(
+                input.id,
+                CollectionItemUpdateParams {
+                    name: input.name,
+                    order: input.order,
+                    expanded: input.expanded,
+                    repository: input.repository,
+                    icon_path: input.icon_path,
+                },
+            )
+            .await?;
 
         Ok(UpdateCollectionOutput { id: input.id })
     }

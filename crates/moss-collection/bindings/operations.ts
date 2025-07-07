@@ -30,6 +30,8 @@ export type DeleteEntryInput = { id: string };
 
 export type DeleteEntryOutput = { id: string };
 
+export type StreamEntriesInput = "LOAD_ROOT" | { "RELOAD_PATH": string };
+
 export type StreamEntriesOutput = Record<string, never>;
 
 export type UpdateEntryInput = { "ITEM": UpdateItemEntryParams } | { "DIR": UpdateDirEntryParams };

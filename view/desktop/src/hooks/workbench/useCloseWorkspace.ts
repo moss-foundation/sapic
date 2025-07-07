@@ -3,6 +3,7 @@ import { CloseWorkspaceInput, CloseWorkspaceOutput } from "@repo/moss-app";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_STATE_QUERY_KEY } from "../appState/useDescribeAppState";
+import { USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY, USE_STREAMED_COLLECTIONS_QUERY_KEY } from "../collection";
 import { USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY } from "../workspace/useDescribeWorkspaceState";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
@@ -33,10 +34,15 @@ export const useCloseWorkspace = () => {
         queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
         exact: false,
       });
+      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+      queryClient.removeQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
 
       // Invalidate other related queries
       queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+
+      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
+      queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
     },
   });
 };

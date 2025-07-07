@@ -66,7 +66,7 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
               <SelectOutlined.Content>
                 {workspaces?.map((workspace) => (
                   <SelectOutlined.Item value={workspace.id} key={workspace.id}>
-                    {workspace.displayName}
+                    {workspace.name}
                   </SelectOutlined.Item>
                 ))}
               </SelectOutlined.Content>

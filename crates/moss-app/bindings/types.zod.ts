@@ -22,11 +22,10 @@ export const logItemSourceInfoSchema = z.object({
 
 export const workspaceInfoSchema = z.object({
   id: z.string(),
-  displayName: z.string(),
+  name: z.string(),
   lastOpenedAt: z.bigint().optional(),
+  active: z.boolean(),
 });
-
-export const workspaceModeSchema = z.union([z.literal("DESIGN_FIRST"), z.literal("REQUEST_FIRST")]);
 export const colorThemeInfoSchema = z.object({
   identifier: z.string(),
   displayName: z.string(),
@@ -50,6 +49,6 @@ export const logEntryInfoSchema = z.object({
 });
 
 export const preferencesSchema = z.object({
-  theme: colorThemeInfoSchema.nullable(),
-  locale: localeInfoSchema.nullable(),
+  theme: colorThemeInfoSchema.optional(),
+  locale: localeInfoSchema.optional(),
 });

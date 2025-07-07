@@ -1,5 +1,5 @@
 use anyhow::Result;
-use moss_tauri::TauriResult;
+use moss_api::TauriResult;
 use moss_text::ReadOnlyStr;
 use serde::de::DeserializeOwned;
 use serde_json::Value;

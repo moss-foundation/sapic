@@ -1,6 +1,6 @@
 use moss_collection::{
     CollectionBuilder,
-    builder::CreateParams,
+    builder::CollectionCreateParams,
     collection::Collection,
     services::{storage_service::StorageService, worktree_service::WorktreeService},
 };
@@ -36,7 +36,7 @@ pub async fn create_test_collection() -> (Arc<Path>, Collection) {
     let collection = CollectionBuilder::new(fs)
         .with_service::<StorageService>(storage)
         .with_service(worktree)
-        .create(CreateParams {
+        .create(CollectionCreateParams {
             name: Some(random_collection_name()),
             external_abs_path: None,
             repository: None,

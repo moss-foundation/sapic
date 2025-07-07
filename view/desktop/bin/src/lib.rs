@@ -11,15 +11,16 @@ extern crate tracing;
 
 use moss_activity_indicator::ActivityIndicator;
 use moss_app::{
-    app::{AppBuilder, AppDefaults},
+    AppBuilder,
+    app::AppDefaults,
     services::{
         locale_service::LocaleService, log_service::LogService, session_service::SessionService,
-        theme_service::ThemeService, workspace_service::WorkspaceService,
+        storage_service::StorageService, theme_service::ThemeService,
+        workspace_service::WorkspaceService,
     },
 };
 use moss_applib::context::ContextValueSet;
 use moss_fs::{FileSystem, RealFileSystem};
-use moss_storage::global_storage::GlobalStorageImpl;
 use std::{path::PathBuf, sync::Arc};
 use tauri::{AppHandle, Manager, RunEvent, Runtime as TauriRuntime, WebviewWindow, WindowEvent};
 use tauri_plugin_os;
@@ -52,11 +53,6 @@ pub async fn run<R: TauriRuntime>() {
                 let app_dir =
                     PathBuf::from(std::env::var("DEV_APP_DIR").expect("DEV_APP_DIR is not set"));
 
-                let global_storage = Arc::new(
-                    GlobalStorageImpl::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
-                        .expect("Failed to create global storage"),
-                );
-
                 let themes_dir: PathBuf = std::env::var("THEMES_DIR")
                     .expect("Environment variable THEMES_DIR is not set")
                     .into();
@@ -69,8 +65,14 @@ pub async fn run<R: TauriRuntime>() {
                     .expect("Environment variable APP_LOG_DIR is not set")
                     .into();
 
+                let storage_service: Arc<StorageService> =
+                    StorageService::new(&app_dir.join(moss_app::dirs::GLOBALS_DIR))
+                        .expect("Failed to create storage service")
+                        .into();
                 let workspace_service =
-                    WorkspaceService::<R>::new(global_storage.clone(), fs.clone(), &app_dir);
+                    WorkspaceService::<R>::new(storage_service.clone(), fs.clone(), &app_dir)
+                        .await
+                        .expect("Failed to create workspace service");
                 let theme_service = ThemeService::new(fs.clone(), themes_dir);
                 let locale_service = LocaleService::new(fs.clone(), locales_dir);
                 let session_service = SessionService::new();
@@ -79,7 +81,7 @@ pub async fn run<R: TauriRuntime>() {
                     app_handle.clone(),
                     &logs_dir,
                     session_service.session_id(),
-                    global_storage.clone(),
+                    storage_service.__storage(), // HACK:   // This should be removed once the log service is refactored to use the storage service.
                 )
                 .expect("Failed to create log service");
 
@@ -105,12 +107,12 @@ pub async fn run<R: TauriRuntime>() {
                 let activity_indicator = ActivityIndicator::new(app_handle.clone());
                 let app = AppBuilder::new(
                     app_handle.clone(),
-                    global_storage,
                     activity_indicator,
                     defaults,
                     fs,
                     app_dir.into(),
                 )
+                .with_service::<StorageService>(storage_service)
                 .with_service(theme_service)
                 .with_service(locale_service)
                 .with_service(session_service)

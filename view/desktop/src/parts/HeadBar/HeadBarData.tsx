@@ -92,7 +92,7 @@ export const createAllWorkspacesMenuSection = (workspaces: ListWorkspacesOutput 
     items: workspaces.map((workspace) => ({
       id: `workspace:${workspace.id}`,
       type: "submenu",
-      label: workspace.displayName,
+      label: workspace.name,
       icon: "WorkspaceActive" as Icons,
       items: createStandardMenuItems(workspace.id),
     })),
