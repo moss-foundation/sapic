@@ -1,15 +1,17 @@
 pub mod shared;
 
+use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::{api::OperationError, new_nanoid_string};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
-    models::operations::{CreateCollectionInput, UpdateCollectionInput},
+    models::{
+        operations::{CreateCollectionInput, UpdateCollectionInput},
+        primitives::CollectionId,
+    },
     services::collection_service::CollectionService,
 };
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 // FIXME: The tests and business logic are poorly organized.
 // A collection shouldn't expose implementation details, and the workspace shouldn't be
@@ -153,7 +155,7 @@ async fn rename_collection_nonexistent_id() {
     let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
-    let nonexistent_id = new_nanoid_string();
+    let nonexistent_id = CollectionId::new();
 
     let result = workspace
         .update_collection(

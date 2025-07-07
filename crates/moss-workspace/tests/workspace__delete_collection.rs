@@ -1,16 +1,18 @@
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_common::NanoId;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
-    models::operations::{CreateCollectionInput, DeleteCollectionInput},
+    models::{
+        operations::{CreateCollectionInput, DeleteCollectionInput},
+        primitives::CollectionId,
+    },
     services::storage_service::StorageService,
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
@@ -55,8 +57,8 @@ async fn delete_collection_success() {
     // Check that expanded_items no longer contains the deleted collection
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
-    assert!(!expanded_items.contains(&id.into()));
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    assert!(!expanded_items.contains(&id));
 
     cleanup().await;
 }

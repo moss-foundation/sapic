@@ -8,7 +8,7 @@ use moss_common::NanoId;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
-    models::operations::CreateCollectionInput,
+    models::{operations::CreateCollectionInput, primitives::CollectionId},
     services::{collection_service::CollectionService, storage_service::StorageService},
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
@@ -50,7 +50,7 @@ async fn create_collection_success() {
     assert!(create_collection_output.abs_path.exists());
 
     // Verify the db entries were created
-    let id: NanoId = create_collection_output.id.into();
+    let id = create_collection_output.id;
     let storage_service = services.get::<StorageService>();
     let item_store = storage_service.__storage().item_store();
 
@@ -63,7 +63,7 @@ async fn create_collection_success() {
     // Check expanded_items contains the collection id
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -124,7 +124,7 @@ async fn create_collection_special_chars() {
         assert!(create_collection_output.abs_path.exists());
 
         // Verify the db entries were created
-        let id: NanoId = create_collection_output.id.into();
+        let id = create_collection_output.id;
         let storage_service = services.get::<StorageService>();
         let item_store = storage_service.__storage().item_store();
 
@@ -137,7 +137,7 @@ async fn create_collection_special_chars() {
         // Check expanded_items contains the collection id
         let expanded_items_value =
             GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-        let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+        let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
         assert!(expanded_items.contains(&id));
     }
 
@@ -177,7 +177,7 @@ async fn create_collection_with_order() {
     assert!(create_collection_output.abs_path.exists());
 
     // Verify the db entries were created
-    let id: NanoId = create_collection_output.id.into();
+    let id = create_collection_output.id;
     let storage_service = services.get::<StorageService>();
     let item_store = storage_service.__storage().item_store();
 
@@ -190,7 +190,7 @@ async fn create_collection_with_order() {
     // Check expanded_items contains the collection id
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -226,7 +226,7 @@ async fn create_collection_with_repo() {
     assert!(create_collection_output.abs_path.exists());
 
     // Verify that the repo is stored in the manifest model
-    let id: NanoId = create_collection_output.id.into();
+    let id = create_collection_output.id;
     let collection_service = services.get::<CollectionService>();
     let collection = collection_service.collection(&id).await.unwrap();
     assert_eq!(
@@ -247,7 +247,7 @@ async fn create_collection_with_repo() {
     // Check expanded_items contains the collection id
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -293,7 +293,7 @@ async fn create_collection_with_icon() {
     );
 
     // Verify the db entries were created
-    let id: NanoId = create_collection_output.id.into();
+    let id = create_collection_output.id;
     let storage_service = services.get::<StorageService>();
     let item_store = storage_service.__storage().item_store();
 
@@ -306,7 +306,7 @@ async fn create_collection_with_icon() {
     // Check expanded_items contains the collection id
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -353,11 +353,11 @@ async fn create_multiple_collections_expanded_items() {
     let item_store = storage_service.__storage().item_store();
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
 
     assert_eq!(expanded_items.len(), 2);
-    assert!(expanded_items.contains(&create_result1.id.into()));
-    assert!(expanded_items.contains(&create_result2.id.into()));
+    assert!(expanded_items.contains(&create_result1.id));
+    assert!(expanded_items.contains(&create_result2.id));
 
     cleanup().await;
 }

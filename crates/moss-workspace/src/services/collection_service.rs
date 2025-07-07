@@ -6,7 +6,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
 };
-use moss_common::{NanoId, api::OperationError};
+use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     collections::{HashMap, HashSet},
@@ -17,7 +17,8 @@ use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    dirs, services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
+    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
 };
 
 #[derive(Error, Debug)]
@@ -90,7 +91,7 @@ pub(crate) struct CollectionItemCreateParams {
 
 #[derive(Deref, DerefMut)]
 struct CollectionItem {
-    pub id: NanoId,
+    pub id: CollectionId,
     pub order: Option<usize>,
 
     #[deref]
@@ -99,7 +100,7 @@ struct CollectionItem {
 }
 
 pub(crate) struct CollectionItemDescription {
-    pub id: NanoId,
+    pub id: CollectionId,
     pub name: String,
     pub order: Option<usize>,
     pub expanded: bool,
@@ -112,8 +113,8 @@ pub(crate) struct CollectionItemDescription {
 
 #[derive(Default)]
 struct ServiceState {
-    collections: HashMap<NanoId, CollectionItem>,
-    expanded_items: HashSet<NanoId>,
+    collections: HashMap<CollectionId, CollectionItem>,
+    expanded_items: HashSet<CollectionId>,
 }
 
 pub struct CollectionService {
@@ -132,11 +133,12 @@ impl CollectionService {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService>,
     ) -> CollectionResult<Self> {
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<NanoId>() {
-            expanded_items.into_iter().collect::<HashSet<_>>()
-        } else {
-            HashSet::new()
-        };
+        let expanded_items =
+            if let Ok(expanded_items) = storage.get_expanded_items::<CollectionId>() {
+                expanded_items.into_iter().collect::<HashSet<_>>()
+            } else {
+                HashSet::new()
+            };
 
         let collections = restore_collections(&abs_path, &fs, &storage).await?;
 
@@ -155,7 +157,7 @@ impl CollectionService {
         self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
     }
 
-    pub async fn collection(&self, id: &NanoId) -> CollectionResult<Arc<CollectionHandle>> {
+    pub async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
@@ -167,7 +169,7 @@ impl CollectionService {
 
     pub(crate) async fn create_collection(
         &self,
-        id: &NanoId,
+        id: &CollectionId,
         params: CollectionItemCreateParams,
     ) -> CollectionResult<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -248,7 +250,7 @@ impl CollectionService {
 
     pub(crate) async fn delete_collection(
         &self,
-        id: &NanoId,
+        id: &CollectionId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
         let abs_path = self.absolutize(id_str);
@@ -301,7 +303,7 @@ impl CollectionService {
 
     pub(crate) async fn update_collection(
         &self,
-        id: &NanoId,
+        id: &CollectionId,
         params: CollectionItemUpdateParams,
     ) -> CollectionResult<()> {
         let mut state_lock = self.state.write().await;
@@ -366,7 +368,7 @@ async fn restore_collections(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService>,
-) -> Result<HashMap<NanoId, CollectionItem>> {
+) -> Result<HashMap<CollectionId, CollectionItem>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
         return Ok(HashMap::new());
@@ -385,7 +387,7 @@ async fn restore_collections(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: NanoId = id_str.into();
+        let id: CollectionId = id_str.into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
@@ -413,7 +415,7 @@ async fn restore_collections(
 
     let mut result = HashMap::new();
     for (id, collection) in collections {
-        let segkey_prefix = SEGKEY_COLLECTION.join(&id.to_string());
+        let segkey_prefix = SEGKEY_COLLECTION.join(&id);
 
         let order = metadata
             .get(&segkey_prefix.join("order"))

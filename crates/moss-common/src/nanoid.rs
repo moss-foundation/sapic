@@ -1,11 +1,18 @@
 use nanoid::nanoid;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::{fmt::Display, hash::Hash, sync::Arc};
+use ts_rs::TS;
 
 const ID_LENGTH: usize = 10;
 
-#[derive(Debug)]
+#[derive(Debug, TS)]
 pub struct NanoId(Arc<String>);
+
+impl NanoId {
+    pub fn new(length: usize) -> Self {
+        Self(Arc::new(nanoid::nanoid!(length)))
+    }
+}
 
 impl Clone for NanoId {
     fn clone(&self) -> Self {

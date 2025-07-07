@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use crate::models::primitives::CollectionId;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -8,7 +9,8 @@ use ts_rs::TS;
 #[ts(optional_fields)]
 #[ts(export, export_to = "events.ts")]
 pub struct StreamCollectionsEvent {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
     pub name: String,
     pub repository: Option<String>,
     pub order: Option<usize>,

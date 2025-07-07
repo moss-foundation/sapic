@@ -18,3 +18,4 @@ tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 toml.workspace = true
 hcl-rs.workspace = true
 nanoid.workspace = true
+derive_more.workspace = true

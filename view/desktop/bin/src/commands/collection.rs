@@ -1,9 +1,8 @@
 use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
 use moss_collection::models::{events::*, operations::*};
+use moss_workspace::models::primitives::CollectionId;
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
-
-use moss_common::NanoId;
 
 use crate::commands::Options;
 
@@ -12,7 +11,7 @@ use crate::commands::Options;
 pub async fn create_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: NanoId,
+    collection_id: CollectionId,
     input: CreateEntryInput,
     options: Options,
 ) -> TauriResult<CreateEntryOutput> {
@@ -30,7 +29,7 @@ pub async fn create_collection_entry<R: TauriRuntime>(
 pub async fn delete_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: NanoId,
+    collection_id: CollectionId,
     input: DeleteEntryInput,
     options: Options,
 ) -> TauriResult<DeleteEntryOutput> {
@@ -48,7 +47,7 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
 pub async fn update_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: NanoId,
+    collection_id: CollectionId,
     input: UpdateEntryInput,
     options: Options,
 ) -> TauriResult<UpdateEntryOutput> {
@@ -67,7 +66,7 @@ pub async fn batch_update_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
     channel: TauriChannel<BatchUpdateEntryEvent>,
-    collection_id: NanoId,
+    collection_id: CollectionId,
     input: BatchUpdateEntryInput,
     options: Options,
 ) -> TauriResult<BatchUpdateEntryOutput> {
@@ -85,7 +84,7 @@ pub async fn batch_update_collection_entry<R: TauriRuntime>(
 pub async fn stream_collection_entries<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: NanoId,
+    collection_id: CollectionId,
     input: Option<StreamEntriesInput>, // FIXME: this needs to be optional because the frontend doesn't send it yet
     channel: TauriChannel<StreamEntriesEvent>,
     options: Options,

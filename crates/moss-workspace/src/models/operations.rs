@@ -9,7 +9,7 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::types::EditorPartStateInfo;
+use crate::models::{primitives::CollectionId, types::EditorPartStateInfo};
 
 use super::types::{ActivitybarPartStateInfo, PanelPartStateInfo, SidebarPartStateInfo};
 
@@ -33,7 +33,8 @@ pub struct CreateCollectionInput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateCollectionOutput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
     pub name: String,
     pub order: Option<usize>,
     pub expanded: bool,
@@ -53,7 +54,8 @@ pub struct CreateCollectionOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionInput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
@@ -82,21 +84,24 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateCollectionOutput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionInput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
 }
 
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteCollectionOutput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -107,7 +112,8 @@ pub struct DeleteCollectionOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    pub id: String,
+    #[ts(type = "string")]
+    pub id: CollectionId,
 }
 
 #[derive(Debug, Serialize, TS)]

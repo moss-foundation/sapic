@@ -51,7 +51,7 @@ impl StorageService {
     pub(crate) fn put_item_order_txn(
         &self,
         txn: &mut Transaction,
-        id: &NanoId,
+        id: &str,
         order: usize,
     ) -> Result<()> {
         let store = self.storage.item_store();

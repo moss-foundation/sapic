@@ -1,5 +1,5 @@
 use moss_applib::context::Context;
-use moss_common::{NanoId, api::OperationResult};
+use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -15,11 +15,10 @@ impl<R: TauriRuntime> Workspace<R> {
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let collection_service = self.services.get::<CollectionService>();
-        let id: NanoId = input.id.clone().into();
-        let description = collection_service.delete_collection(&id).await?;
+        let description = collection_service.delete_collection(&input.id).await?;
 
         Ok(DeleteCollectionOutput {
-            id: id.to_string(),
+            id: input.id.to_owned(),
             abs_path: description.map(|d| d.abs_path),
         })
     }
