@@ -1,8 +1,8 @@
 use moss_applib::ServiceMarker;
-use uuid::Uuid;
+use moss_common::{NanoId, new_nanoid};
 
 pub struct SessionService {
-    session_id: Uuid,
+    session_id: NanoId,
 }
 
 impl ServiceMarker for SessionService {}
@@ -10,11 +10,11 @@ impl ServiceMarker for SessionService {}
 impl SessionService {
     pub fn new() -> Self {
         Self {
-            session_id: Uuid::new_v4(),
+            session_id: new_nanoid(),
         }
     }
 
-    pub fn session_id(&self) -> &Uuid {
+    pub fn session_id(&self) -> &NanoId {
         &self.session_id
     }
 }

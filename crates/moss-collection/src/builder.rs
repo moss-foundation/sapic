@@ -1,21 +1,3 @@
-use anyhow::Result;
-use moss_applib::{
-    ServiceMarker,
-    providers::{ServiceMap, ServiceProvider},
-    subscription::EventEmitter,
-};
-use moss_file::toml::TomlFileHandle;
-use moss_fs::FileSystem;
-use moss_git::url::normalize_git_url;
-use moss_hcl::Block;
-use std::{
-    any::TypeId,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::OnceCell;
-use uuid::Uuid;
-
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigModel},
@@ -32,6 +14,23 @@ use crate::{
         worktree_service::{EntryMetadata, WorktreeService},
     },
 };
+use anyhow::Result;
+use moss_applib::{
+    ServiceMarker,
+    providers::{ServiceMap, ServiceProvider},
+    subscription::EventEmitter,
+};
+use moss_common::new_nanoid;
+use moss_file::toml::TomlFileHandle;
+use moss_fs::FileSystem;
+use moss_git::url::normalize_git_url;
+use moss_hcl::Block;
+use std::{
+    any::TypeId,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+use tokio::sync::OnceCell;
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
@@ -116,26 +115,26 @@ impl CollectionBuilder {
         let worktree_service = services.get::<WorktreeService>();
 
         for (dir, order) in &WORKTREE_DIRS {
-            let id = Uuid::new_v4();
+            let id = new_nanoid();
             let configuration = match *dir {
                 dirs::REQUESTS_DIR => {
-                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(id)))
+                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))
                 }
                 dirs::ENDPOINTS_DIR => {
-                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(id)))
+                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(&id)))
                 }
                 dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
-                    RawDirComponentConfiguration::new(id),
+                    RawDirComponentConfiguration::new(&id),
                 )),
                 dirs::SCHEMAS_DIR => {
-                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(id)))
+                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(&id)))
                 }
                 _ => unreachable!(),
             };
 
             worktree_service
                 .create_dir_entry(
-                    id,
+                    &id,
                     dir,
                     "",
                     configuration,

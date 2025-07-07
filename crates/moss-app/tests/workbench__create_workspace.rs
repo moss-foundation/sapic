@@ -1,19 +1,18 @@
 pub mod shared;
 
+use crate::shared::set_up_test_app;
 use moss_app::{
     dirs,
     models::operations::CreateWorkspaceInput,
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_common::api::OperationError;
+use moss_common::{NanoId, api::OperationError};
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::types::WorkspaceMode;
 use std::{path::Path, sync::Arc};
 use tauri::test::MockRuntime;
-
-use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn create_workspace_success() {
@@ -46,7 +45,7 @@ async fn create_workspace_success() {
     // Check active workspace
     assert!(workspace_service.is_workspace_open().await.is_some());
     let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-    assert_eq!(active_workspace_id, id);
+    assert_eq!(active_workspace_id.to_string(), id);
 
     // Check known_workspaces
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -56,7 +55,11 @@ async fn create_workspace_success() {
 
     // Check database - verify last opened at timestamp is saved
     let item_store = storage_service.__storage().item_store();
-    let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id.to_string())).unwrap();
+    let _ = GetItem::get(
+        item_store.as_ref(),
+        segkey_last_opened_at(&id.clone().into()),
+    )
+    .unwrap();
 
     // Check that last active workspace is set in database
     let last_active_workspace = GetItem::get(
@@ -161,7 +164,7 @@ async fn create_workspace_same_name() {
     // Check active workspace is the second one
     assert!(workspace_service.is_workspace_open().await.is_some());
     let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-    assert_eq!(active_workspace_id, second_output.id);
+    assert_eq!(active_workspace_id.to_string(), second_output.id);
 
     // Check both workspaces are in list
     let list_after_second = app.list_workspaces(&ctx).await.unwrap();
@@ -182,18 +185,10 @@ async fn create_workspace_same_name() {
     // Check only second workspace has entry in the database since it's been opened
 
     let item_store = storage_service.__storage().item_store();
-    let _ = GetItem::get(
-        item_store.as_ref(),
-        segkey_last_opened_at(&second_output.id.to_string()),
-    )
-    .unwrap();
-    assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&first_output.id.to_string())
-        )
-        .is_err()
-    );
+    let first_id: NanoId = first_output.id.clone().into();
+    let second_id: NanoId = second_output.id.clone().into();
+    let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&second_id)).unwrap();
+    assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&first_id)).is_err());
 
     // Check that last active workspace is set in database (second workspace)
     let last_active_workspace = GetItem::get(
@@ -241,7 +236,7 @@ async fn create_workspace_special_chars() {
         // Check active workspace
         assert!(workspace_service.is_workspace_open().await.is_some());
         let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-        assert_eq!(active_workspace_id, create_output.id);
+        assert_eq!(active_workspace_id.to_string(), create_output.id);
 
         // Check workspace is in list
         let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -255,11 +250,8 @@ async fn create_workspace_special_chars() {
 
         // Check database - verify last opened at timestamp is saved
         let item_store = storage_service.__storage().item_store();
-        let _ = GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&create_output.id.to_string()),
-        )
-        .unwrap();
+        let id: NanoId = create_output.id.clone().into();
+        let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).unwrap();
 
         // Check that last active workspace is set in database
         let last_active_workspace = GetItem::get(
@@ -310,13 +302,8 @@ async fn create_workspace_not_open_on_creation() {
 
     // Check that a database entry is not created for unopened workspace
     let item_store = storage_service.__storage().item_store();
-    assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&create_output.id.to_string())
-        )
-        .is_err()
-    );
+    let id: NanoId = create_output.id.clone().into();
+    assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).is_err());
 
     // Check that last active workspace is not set in database
     assert!(

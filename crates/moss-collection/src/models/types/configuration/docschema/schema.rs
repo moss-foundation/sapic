@@ -1,8 +1,7 @@
+use crate::models::types::configuration::docschema::RawMetadata;
+use moss_common::NanoId;
 use moss_hcl::Block;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use crate::models::types::configuration::docschema::RawMetadata;
 
 // #########################################################
 // ###                      Item                         ###
@@ -23,9 +22,9 @@ pub struct RawDirSchemaConfiguration {
 }
 
 impl RawDirSchemaConfiguration {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: &NanoId) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id }),
+            metadata: Block::new(RawMetadata { id: id.to_owned() }),
         }
     }
 }

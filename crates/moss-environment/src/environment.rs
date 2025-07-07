@@ -8,7 +8,6 @@ use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
 use std::{collections::HashMap, path::Path, sync::Arc};
-use uuid::Uuid;
 
 // #[derive(Error, Debug)]
 // pub enum EnvironmentError {
@@ -128,8 +127,8 @@ impl Environment {
         })
     }
 
-    pub async fn id(&self) -> Uuid {
-        self.file.model().await.id
+    pub async fn id(&self) -> NanoId {
+        self.file.model().await.id.clone()
     }
 
     pub fn variables(&self) -> &VariableMap {

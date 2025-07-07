@@ -1,5 +1,7 @@
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
+use moss_common::NanoId;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
@@ -8,9 +10,6 @@ use moss_workspace::{
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
-use uuid::Uuid;
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
@@ -33,7 +32,7 @@ async fn delete_collection_success() {
 
     let id = create_collection_output.id;
     let _ = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 
@@ -55,8 +54,8 @@ async fn delete_collection_success() {
     // Check that expanded_items no longer contains the deleted collection
     let expanded_items_value =
         GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
-    let expanded_items: Vec<Uuid> = expanded_items_value.deserialize().unwrap();
-    assert!(!expanded_items.contains(&id));
+    let expanded_items: Vec<NanoId> = expanded_items_value.deserialize().unwrap();
+    assert!(!expanded_items.contains(&id.into()));
 
     cleanup().await;
 }
@@ -82,13 +81,13 @@ async fn delete_collection_nonexistent_id() {
         .id;
 
     workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 
     // Delete the collection again - should succeed but return None abs_path
     let delete_collection_result = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 

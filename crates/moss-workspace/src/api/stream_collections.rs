@@ -22,7 +22,7 @@ impl<R: TauriRuntime> Workspace<R> {
         let mut total_returned = 0;
         while let Some(collection) = stream.next().await {
             if let Err(e) = channel.send(StreamCollectionsEvent {
-                id: collection.id,
+                id: collection.id.to_string(),
                 name: collection.name,
                 repository: None, // TODO: get from collection manifest
                 order: collection.order,

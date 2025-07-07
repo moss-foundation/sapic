@@ -19,12 +19,11 @@ moss_bindingutils.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
-ts-rs = { workspace = true, features = ["uuid-impl", "url-impl"] }
+ts-rs = { workspace = true, features = ["url-impl"] }
 tokio.workspace = true
 validator = { workspace = true, features = ["derive"] }
 tauri.workspace = true
 serde_json.workspace = true
-uuid = { workspace = true, features = ["serde"] }
 futures.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 image.workspace = true

@@ -1,10 +1,9 @@
-use moss_common::api::OperationResult;
-use tauri::Runtime as TauriRuntime;
-
 use crate::{
     app::App, context::AnyAppContext, models::operations::DeleteWorkspaceInput,
     services::workspace_service::WorkspaceService,
 };
+use moss_common::{NanoId, api::OperationResult};
+use tauri::Runtime as TauriRuntime;
 
 impl<R: TauriRuntime> App<R> {
     pub async fn delete_workspace<C: AnyAppContext<R>>(
@@ -13,7 +12,8 @@ impl<R: TauriRuntime> App<R> {
         input: &DeleteWorkspaceInput,
     ) -> OperationResult<()> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
-        workspace_service.delete_workspace(ctx, input.id).await?;
+        let id: NanoId = input.id.clone().into();
+        workspace_service.delete_workspace(ctx, id).await?;
 
         Ok(())
     }

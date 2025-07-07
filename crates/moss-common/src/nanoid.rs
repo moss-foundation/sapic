@@ -1,6 +1,6 @@
 use nanoid::nanoid;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::sync::Arc;
+use std::{fmt::Display, hash::Hash, sync::Arc};
 
 const ID_LENGTH: usize = 10;
 
@@ -41,6 +41,32 @@ impl AsRef<str> for NanoId {
 impl From<NanoId> for String {
     fn from(value: NanoId) -> Self {
         value.0.to_string()
+    }
+}
+
+impl From<String> for NanoId {
+    fn from(value: String) -> Self {
+        NanoId(Arc::new(value))
+    }
+}
+
+impl PartialEq for NanoId {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl Eq for NanoId {}
+
+impl Hash for NanoId {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+
+impl Display for NanoId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

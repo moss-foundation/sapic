@@ -1,6 +1,5 @@
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
-use uuid::Uuid;
 
 use crate::{
     app::App,
@@ -31,7 +30,7 @@ impl<R: TauriRuntime> App<R> {
         });
 
         let last_workspace_id = if let Ok(id_str) = storage_service.get_last_active_workspace() {
-            Uuid::parse_str(&id_str).ok()
+            Some(id_str)
         } else {
             None
         };

@@ -6,7 +6,7 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{
     self as collection, Collection as CollectionHandle, CollectionBuilder, CollectionModifyParams,
 };
-use moss_common::api::OperationError;
+use moss_common::{NanoId, api::OperationError};
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{
     collections::{HashMap, HashSet},
@@ -15,7 +15,6 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 
 use crate::{
     dirs, services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
@@ -91,7 +90,7 @@ pub(crate) struct CollectionItemCreateParams {
 
 #[derive(Deref, DerefMut)]
 struct CollectionItem {
-    pub id: Uuid,
+    pub id: NanoId,
     pub order: Option<usize>,
 
     #[deref]
@@ -100,7 +99,7 @@ struct CollectionItem {
 }
 
 pub(crate) struct CollectionItemDescription {
-    pub id: Uuid,
+    pub id: NanoId,
     pub name: String,
     pub order: Option<usize>,
     pub expanded: bool,
@@ -113,8 +112,8 @@ pub(crate) struct CollectionItemDescription {
 
 #[derive(Default)]
 struct ServiceState {
-    collections: HashMap<Uuid, CollectionItem>,
-    expanded_items: HashSet<Uuid>,
+    collections: HashMap<NanoId, CollectionItem>,
+    expanded_items: HashSet<NanoId>,
 }
 
 pub struct CollectionService {
@@ -133,7 +132,7 @@ impl CollectionService {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService>,
     ) -> CollectionResult<Self> {
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<Uuid>() {
+        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<NanoId>() {
             expanded_items.into_iter().collect::<HashSet<_>>()
         } else {
             HashSet::new()
@@ -156,11 +155,11 @@ impl CollectionService {
         self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
     }
 
-    pub async fn collection(&self, id: Uuid) -> CollectionResult<Arc<CollectionHandle>> {
+    pub async fn collection(&self, id: &NanoId) -> CollectionResult<Arc<CollectionHandle>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
-            .get(&id)
+            .get(id)
             .ok_or(CollectionError::NotFound(id.to_string()))?;
 
         Ok(item.handle.clone())
@@ -168,7 +167,7 @@ impl CollectionService {
 
     pub(crate) async fn create_collection(
         &self,
-        id: Uuid,
+        id: &NanoId,
         params: CollectionItemCreateParams,
     ) -> CollectionResult<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -214,11 +213,11 @@ impl CollectionService {
         //     .await;
 
         let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id);
+        state_lock.expanded_items.insert(id.to_owned());
         state_lock.collections.insert(
-            id,
+            id.to_owned(),
             CollectionItem {
-                id,
+                id: id.to_owned(),
                 order: Some(params.order),
                 handle: Arc::new(collection),
             },
@@ -236,7 +235,7 @@ impl CollectionService {
         }
 
         Ok(CollectionItemDescription {
-            id,
+            id: id.to_owned(),
             name: params.name,
             order: Some(params.order),
             expanded: true,
@@ -249,7 +248,7 @@ impl CollectionService {
 
     pub(crate) async fn delete_collection(
         &self,
-        id: Uuid,
+        id: &NanoId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
         let abs_path = self.absolutize(id_str);
@@ -286,7 +285,7 @@ impl CollectionService {
             let manifest = item.handle.manifest().await;
 
             Ok(Some(CollectionItemDescription {
-                id,
+                id: id.to_owned(),
                 name: manifest.name,
                 order: item.order,
                 expanded: false,
@@ -302,7 +301,7 @@ impl CollectionService {
 
     pub(crate) async fn update_collection(
         &self,
-        id: Uuid,
+        id: &NanoId,
         params: CollectionItemUpdateParams,
     ) -> CollectionResult<()> {
         let mut state_lock = self.state.write().await;
@@ -327,9 +326,9 @@ impl CollectionService {
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_items.insert(id);
+                state_lock.expanded_items.insert(id.to_owned());
             } else {
-                state_lock.expanded_items.remove(&id);
+                state_lock.expanded_items.remove(id);
             }
 
             self.storage
@@ -349,7 +348,7 @@ impl CollectionService {
                 let expanded = state_lock.expanded_items.contains(id);
 
                 yield CollectionItemDescription {
-                    id: item.id,
+                    id: item.id.clone(),
                     name: manifest.name,
                     order: item.order,
                     expanded,
@@ -367,7 +366,7 @@ async fn restore_collections(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService>,
-) -> Result<HashMap<Uuid, CollectionItem>> {
+) -> Result<HashMap<NanoId, CollectionItem>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
         return Ok(HashMap::new());
@@ -386,14 +385,7 @@ async fn restore_collections(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id = match Uuid::parse_str(&id_str) {
-            Ok(id) => id,
-            Err(_) => {
-                // TODO: logging
-                println!("failed to get the collection {:?} name", id_str);
-                continue;
-            }
-        };
+        let id: NanoId = id_str.into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
@@ -428,7 +420,7 @@ async fn restore_collections(
             .and_then(|v| v.deserialize().ok());
 
         result.insert(
-            id,
+            id.clone(),
             CollectionItem {
                 id,
                 order,

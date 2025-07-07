@@ -1,9 +1,15 @@
+use crate::{
+    context::{AnyAppContext, ctxkeys},
+    dirs,
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
+};
 use anyhow::{Context as _, Result};
 use chrono::Utc;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
-use moss_common::api::OperationError;
+use moss_common::{NanoId, api::OperationError};
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_workspace::{
@@ -24,14 +30,6 @@ use std::{
 use tauri::{AppHandle, Runtime as TauriRuntime};
 use thiserror::Error;
 use tokio::sync::RwLock;
-use uuid::Uuid;
-
-use crate::{
-    context::{AnyAppContext, ctxkeys},
-    dirs,
-    services::storage_service::StorageService,
-    storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
-};
 
 #[derive(Debug, Error)]
 pub enum WorkspaceServiceError {
@@ -83,7 +81,7 @@ type WorkspaceServiceResult<T> = Result<T, WorkspaceServiceError>;
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct ActiveWorkspace<R: TauriRuntime> {
-    id: Uuid,
+    id: NanoId,
 
     #[deref]
     #[deref_mut]
@@ -101,21 +99,21 @@ pub(crate) struct WorkspaceItemUpdateParams {
 
 #[derive(Debug, Clone)]
 pub(crate) struct WorkspaceItem {
-    pub id: Uuid,
+    pub id: NanoId,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
 pub(crate) struct WorkspaceItemDescription {
-    pub id: Uuid,
+    pub id: NanoId,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
     pub active: bool,
 }
 
-type WorkspaceMap = HashMap<Uuid, WorkspaceItem>;
+type WorkspaceMap = HashMap<NanoId, WorkspaceItem>;
 
 #[derive(Default)]
 struct ServiceState<R: TauriRuntime> {
@@ -166,17 +164,17 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         &self,
     ) -> WorkspaceServiceResult<Vec<WorkspaceItemDescription>> {
         let state_lock = self.state.read().await;
-        let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
+        let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
 
         let workspaces = state_lock
             .known_workspaces
             .values()
             .map(|item| WorkspaceItemDescription {
-                id: item.id,
+                id: item.id.clone(),
                 name: item.name.clone(),
                 abs_path: item.abs_path.clone(),
                 last_opened_at: item.last_opened_at,
-                active: Some(item.id) == active_workspace_id,
+                active: Some(item.id.clone()) == active_workspace_id,
             })
             .collect();
         Ok(workspaces)
@@ -211,7 +209,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         state_lock
             .known_workspaces
-            .insert(descriptor.id, descriptor);
+            .insert(descriptor.id.clone(), descriptor);
 
         Ok(())
     }
@@ -219,12 +217,12 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn delete_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: Uuid,
+        id: NanoId,
     ) -> WorkspaceServiceResult<()> {
         let (active_workspace_id, item) = {
             let state_lock = self.state.read().await;
 
-            let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id);
+            let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
             let item = state_lock.known_workspaces.get(&id).cloned();
 
             (active_workspace_id, item)
@@ -250,12 +248,10 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         }
 
         {
-            let id_str = id.to_string();
-
             // Only try to remove from database if it exists (ignore error if not found)
             let _ = self
                 .storage
-                .remove_all_by_prefix(&segkey_workspace(&id_str).to_string())
+                .remove_all_by_prefix(&segkey_workspace(&id).to_string())
                 .map_err(|e| WorkspaceServiceError::Storage(e.to_string())); // TODO: log error
         }
 
@@ -268,7 +264,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
     pub(crate) async fn create_workspace(
         &self,
-        id: Uuid,
+        id: &NanoId,
         params: WorkspaceItemCreateParams,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
@@ -294,9 +290,9 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
 
         state_lock.known_workspaces.insert(
-            id,
+            id.clone(),
             WorkspaceItem {
-                id,
+                id: id.clone(),
                 name: params.name.clone(),
                 last_opened_at: None,
                 abs_path: Arc::clone(&abs_path),
@@ -304,7 +300,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         );
 
         Ok(WorkspaceItemDescription {
-            id,
+            id: id.to_owned(),
             name: params.name,
             abs_path: Arc::clone(&abs_path),
             last_opened_at: None,
@@ -342,7 +338,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn activate_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: Uuid,
+        id: &NanoId,
         activity_indicator: ActivityIndicator<R>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
@@ -382,29 +378,26 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         item.last_opened_at = Some(last_opened_at);
         state_lock.active_workspace = Some(ActiveWorkspace {
-            id,
+            id: id.clone(),
             handle: Arc::new(workspace),
             context: Arc::new(RwLock::new(WorkspaceContextState::new())),
         });
 
-        let id_str = id.to_string();
-
         {
             let mut txn = self.storage.begin_write()?;
 
+            self.storage.put_last_active_workspace_txn(&mut txn, &id)?;
             self.storage
-                .put_last_active_workspace_txn(&mut txn, &id_str)?;
-            self.storage
-                .put_last_opened_at_txn(&mut txn, &id_str, last_opened_at)?;
+                .put_last_opened_at_txn(&mut txn, &id, last_opened_at)?;
 
             txn.commit()?;
         }
 
-        let workspace_id: ctxkeys::WorkspaceId = id.into();
+        let workspace_id: ctxkeys::WorkspaceId = id.clone().into();
         ctx.set_value(workspace_id);
 
         Ok(WorkspaceItemDescription {
-            id,
+            id: id.to_owned(),
             name,
             abs_path: Arc::clone(&abs_path),
             last_opened_at: Some(last_opened_at),
@@ -429,9 +422,9 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
 // TODO: These methods might later be moved into a wrapper around this service for integration tests
 impl<R: TauriRuntime> WorkspaceService<R> {
-    pub async fn is_workspace_open(&self) -> Option<Uuid> {
+    pub async fn is_workspace_open(&self) -> Option<NanoId> {
         let state_lock = self.state.read().await;
-        state_lock.active_workspace.as_ref().map(|a| a.id)
+        state_lock.active_workspace.as_ref().map(|a| a.id.clone())
     }
 }
 
@@ -465,14 +458,7 @@ async fn restore_known_workspaces<R: TauriRuntime>(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id = match Uuid::parse_str(&id_str) {
-            Ok(id) => id,
-            Err(_) => {
-                // TODO: logging
-                println!("failed to get the collection {:?} name", id_str);
-                continue;
-            }
-        };
+        let id: NanoId = id_str.into();
 
         let summary = Workspace::<R>::summary(fs.clone(), &entry.path())
             .await
@@ -487,11 +473,11 @@ async fn restore_known_workspaces<R: TauriRuntime>(
 
         let filtered_items = restored_items
             .iter()
-            .filter(|(key, _)| key.starts_with(&segkey_workspace(&id_str)))
+            .filter(|(key, _)| key.starts_with(&segkey_workspace(&id)))
             .collect::<HashMap<_, _>>();
 
         let last_opened_at = filtered_items
-            .get(&segkey_last_opened_at(&id_str))
+            .get(&segkey_last_opened_at(&id))
             .map(|v| {
                 v.deserialize::<i64>()
                     .map_err(|e| WorkspaceServiceError::Storage(e.to_string()))
@@ -510,7 +496,7 @@ async fn restore_known_workspaces<R: TauriRuntime>(
         // };
 
         workspaces.insert(
-            id,
+            id.clone(),
             WorkspaceItem {
                 id,
                 name: summary.manifest.name,

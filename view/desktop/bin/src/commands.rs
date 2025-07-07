@@ -10,19 +10,18 @@ use anyhow::Context as _;
 use moss_api::{TauriError, TauriResult};
 use moss_app::{app::App, services::workspace_service::WorkspaceService};
 use moss_collection::Collection;
-use moss_common::api::OperationOptionExt;
+use moss_common::{NanoId, api::OperationOptionExt};
 use moss_workspace::{
     Workspace, context::WorkspaceContext, services::collection_service::CollectionService,
 };
 use std::sync::Arc;
 use tauri::{Runtime as TauriRuntime, State};
-use uuid::Uuid;
 
 pub(super) type Options = Option<moss_api::models::types::Options>;
 
 pub(super) async fn with_collection_timeout<R, T, F, Fut>(
     app: State<'_, App<R>>,
-    id: Uuid,
+    id: NanoId,
     options: Options,
     f: F,
 ) -> TauriResult<T>
@@ -41,7 +40,7 @@ where
 
         let collection = workspace
             .service::<CollectionService>()
-            .collection(id)
+            .collection(&id)
             .await
             .context("Collection not found")?;
 

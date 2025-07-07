@@ -1,5 +1,13 @@
+use crate::{
+    models::primitives::{ActivitybarPosition, SidebarPosition},
+    storage::{
+        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+        segments::{self, SEGKEY_COLLECTION},
+    },
+};
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;
+use moss_common::NanoId;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
     WorkspaceStorage,
@@ -15,15 +23,6 @@ use std::{
     hash::Hash,
     path::Path,
     sync::Arc,
-};
-use uuid::Uuid;
-
-use crate::{
-    models::primitives::{ActivitybarPosition, SidebarPosition},
-    storage::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{self, SEGKEY_COLLECTION},
-    },
 };
 
 pub struct StorageService {
@@ -51,12 +50,12 @@ impl StorageService {
     pub(crate) fn put_item_order_txn(
         &self,
         txn: &mut Transaction,
-        id: Uuid,
+        id: &NanoId,
         order: usize,
     ) -> Result<()> {
         let store = self.storage.item_store();
 
-        let segkey = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+        let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
         TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())

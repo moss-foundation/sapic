@@ -4,13 +4,6 @@ use std::{
     sync::Arc,
 };
 
-use moss_common::api::OperationResult;
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
-use tauri::ipc::Channel as TauriChannel;
-use tokio::sync::{mpsc, oneshot};
-use uuid::Uuid;
-
 use crate::{
     Collection,
     collection::OnDidChangeEvent,
@@ -26,6 +19,11 @@ use crate::{
         worktree_service::{EntryDescription, WorktreeService},
     },
 };
+use moss_common::{NanoId, api::OperationResult};
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
+use tauri::ipc::Channel as TauriChannel;
+use tokio::sync::{mpsc, oneshot};
 
 const EXPANSION_DIRECTORIES: &[&str] = &[
     dirs::REQUESTS_DIR,
@@ -54,8 +52,8 @@ impl Collection {
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<Uuid>> =
-            match storage_service.get_expanded_entries::<Uuid>() {
+        let expanded_entries: Arc<HashSet<NanoId>> =
+            match storage_service.get_expanded_entries::<NanoId>() {
                 Ok(entries) => HashSet::from_iter(entries).into(),
                 Err(error) => {
                     println!("warn: getting expanded entries: {}", error);
@@ -105,7 +103,7 @@ impl Collection {
                     entry_result = rx.recv() => {
                         if let Some(entry) = entry_result {
                             let entry_info = EntryInfo {
-                                id: entry.id,
+                                id: entry.id.to_string(),
                                 name: entry.name,
                                 path: EntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
@@ -123,7 +121,7 @@ impl Collection {
                     _ = &mut done_rx => {
                         while let Ok(entry) = rx.try_recv() {
                             let entry_info = EntryInfo {
-                                id: entry.id,
+                                id: entry.id.to_string(),
                                 name: entry.name,
                                 path: EntryPath {
                                     raw: entry.path.to_path_buf(),

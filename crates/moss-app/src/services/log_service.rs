@@ -35,7 +35,6 @@ use tracing_subscriber::{
     },
     prelude::*,
 };
-use uuid::Uuid;
 
 use crate::{
     models::types::{LogEntryInfo, LogItemSourceInfo},
@@ -148,7 +147,7 @@ impl LogService {
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
-        session_id: &Uuid,
+        session_id: &NanoId,
         storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
@@ -665,6 +664,7 @@ impl LogService {
 mod tests {
     use super::*;
     use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use moss_common::new_nanoid;
     use moss_fs::RealFileSystem;
     use moss_storage::global_storage::GlobalStorageImpl;
     use moss_testutils::random_name::random_string;
@@ -683,7 +683,7 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = Uuid::new_v4();
+        let session_id = new_nanoid();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,

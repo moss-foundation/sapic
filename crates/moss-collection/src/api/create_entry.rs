@@ -1,7 +1,3 @@
-use moss_common::api::OperationResult;
-use uuid::Uuid;
-use validator::Validate;
-
 use crate::{
     collection::Collection,
     models::{
@@ -14,6 +10,8 @@ use crate::{
     },
     services::worktree_service::{EntryMetadata, WorktreeService},
 };
+use moss_common::{api::OperationResult, new_nanoid};
+use validator::Validate;
 
 impl Collection {
     pub async fn create_entry(
@@ -34,15 +32,15 @@ impl Collection {
 
         let worktree_service = self.service::<WorktreeService>();
 
-        let id = Uuid::new_v4();
+        let id = new_nanoid();
         let model = CompositeDirConfigurationModel {
-            metadata: ConfigurationMetadata { id },
+            metadata: ConfigurationMetadata { id: id.to_string() },
             inner: input.configuration,
         };
 
         worktree_service
             .create_dir_entry(
-                id,
+                &id,
                 &input.name,
                 input.path,
                 model.into(),
@@ -53,7 +51,7 @@ impl Collection {
             )
             .await?;
 
-        Ok(CreateEntryOutput { id })
+        Ok(CreateEntryOutput { id: id.to_string() })
     }
 
     async fn create_item_entry(
@@ -64,15 +62,15 @@ impl Collection {
 
         let worktree_service = self.service::<WorktreeService>();
 
-        let id = Uuid::new_v4();
+        let id = new_nanoid();
         let model = CompositeItemConfigurationModel {
-            metadata: ConfigurationMetadata { id },
+            metadata: ConfigurationMetadata { id: id.to_string() },
             inner: input.configuration,
         };
 
         worktree_service
             .create_item_entry(
-                id,
+                &id,
                 &input.name,
                 input.path,
                 model.into(),
@@ -83,6 +81,6 @@ impl Collection {
             )
             .await?;
 
-        Ok(CreateEntryOutput { id })
+        Ok(CreateEntryOutput { id: id.to_string() })
     }
 }

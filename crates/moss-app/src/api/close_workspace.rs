@@ -17,10 +17,11 @@ impl<R: TauriRuntime> App<R> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspace_id = ctx
             .value::<ctxkeys::WorkspaceId>()
-            .map(|id| **id)
+            .map(|id| (*id).clone())
             .map_err_as_failed_precondition("No active workspace to close")?;
 
-        if workspace_id != input.id {
+        let id_str = workspace_id.to_string();
+        if id_str != input.id {
             return Err(OperationError::InvalidInput(format!(
                 "Workspace {} is not currently active",
                 input.id
@@ -29,6 +30,6 @@ impl<R: TauriRuntime> App<R> {
 
         let _ = workspace_service.deactivate_workspace(ctx).await;
 
-        Ok(CloseWorkspaceOutput { id: workspace_id })
+        Ok(CloseWorkspaceOutput { id: id_str })
     }
 }

@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::models::types::{
@@ -56,7 +55,7 @@ pub enum CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 // ########################################################
@@ -67,13 +66,13 @@ pub struct CreateEntryOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryOutput {
-    pub id: Uuid,
+    pub id: String,
 }
 
 // ########################################################

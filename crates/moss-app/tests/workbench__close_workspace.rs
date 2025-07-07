@@ -1,5 +1,6 @@
 pub mod shared;
 
+use crate::shared::set_up_test_app;
 use moss_app::{
     context::ctxkeys,
     models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
@@ -7,14 +8,11 @@ use moss_app::{
     storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 use moss_applib::context::Context;
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, new_nanoid, new_nanoid_string};
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
 use tauri::test::MockRuntime;
-use uuid::Uuid;
-
-use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {
@@ -40,7 +38,7 @@ async fn close_workspace_success() {
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output.id,
+                id: create_output.id.clone(),
             },
         )
         .await;
@@ -126,7 +124,7 @@ async fn close_workspace_after_another_opened() {
     app.open_workspace(
         &ctx,
         &OpenWorkspaceInput {
-            id: create_output1.id,
+            id: create_output1.id.clone(),
         },
     )
     .await
@@ -148,18 +146,18 @@ async fn close_workspace_after_another_opened() {
 
     // Check that the second workspace is active
 
-    let maybe_active_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id);
+    let maybe_active_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| id.to_string());
     assert!(maybe_active_id.is_some());
     let active_id = maybe_active_id.unwrap();
 
-    assert_eq!(active_id, create_output2.id);
+    assert_eq!(active_id.to_string(), create_output2.id);
 
     // Attempt to close the first workspace (should fail because it's not active)
     let close_result1 = app
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output1.id,
+                id: create_output1.id.clone(),
             },
         )
         .await;
@@ -175,7 +173,7 @@ async fn close_workspace_after_another_opened() {
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output2.id,
+                id: create_output2.id.clone(),
             },
         )
         .await;
@@ -205,7 +203,7 @@ async fn close_workspace_after_another_opened() {
 async fn close_workspace_nonexistent() {
     let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = Uuid::new_v4();
+    let nonexistent_id = new_nanoid_string();
 
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: nonexistent_id })
@@ -249,7 +247,7 @@ async fn close_workspace_from_different_session() {
     .unwrap();
 
     // Try to close a workspace with wrong id
-    let wrong_id = Uuid::new_v4();
+    let wrong_id = new_nanoid_string();
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: wrong_id })
         .await;

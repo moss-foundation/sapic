@@ -1,8 +1,8 @@
+use moss_common::NanoId;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use uuid::Uuid;
 
-pub type CollectionId = Uuid;
+pub type CollectionId = NanoId;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]

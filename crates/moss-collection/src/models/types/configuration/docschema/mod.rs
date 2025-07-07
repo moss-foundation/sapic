@@ -8,12 +8,11 @@ pub use endpoint::*;
 pub use request::*;
 pub use schema::*;
 
+use crate::models::primitives::{EntryClass, EntryProtocol};
 use hcl::Expression;
+use moss_common::NanoId;
 use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
-use crate::models::primitives::{EntryClass, EntryProtocol};
 
 pub type HeaderName = String;
 pub type Protocol = String;
@@ -67,7 +66,7 @@ pub struct HeaderParameterOptions {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawMetadata {
-    pub id: Uuid,
+    pub id: NanoId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,12 +79,12 @@ pub enum RawItemConfiguration {
 }
 
 impl RawItemConfiguration {
-    pub fn id(&self) -> Uuid {
+    pub fn id(&self) -> &NanoId {
         match self {
-            RawItemConfiguration::Request(block) => block.metadata.id,
-            RawItemConfiguration::Endpoint(block) => block.metadata.id,
-            RawItemConfiguration::Component(block) => block.metadata.id,
-            RawItemConfiguration::Schema(block) => block.metadata.id,
+            RawItemConfiguration::Request(block) => &block.metadata.id,
+            RawItemConfiguration::Endpoint(block) => &block.metadata.id,
+            RawItemConfiguration::Component(block) => &block.metadata.id,
+            RawItemConfiguration::Schema(block) => &block.metadata.id,
         }
     }
 }
@@ -100,12 +99,12 @@ pub enum RawDirConfiguration {
 }
 
 impl RawDirConfiguration {
-    pub fn id(&self) -> Uuid {
+    pub fn id(&self) -> &NanoId {
         match self {
-            RawDirConfiguration::Request(block) => block.metadata.id,
-            RawDirConfiguration::Endpoint(block) => block.metadata.id,
-            RawDirConfiguration::Component(block) => block.metadata.id,
-            RawDirConfiguration::Schema(block) => block.metadata.id,
+            RawDirConfiguration::Request(block) => &block.metadata.id,
+            RawDirConfiguration::Endpoint(block) => &block.metadata.id,
+            RawDirConfiguration::Component(block) => &block.metadata.id,
+            RawDirConfiguration::Schema(block) => &block.metadata.id,
         }
     }
 
@@ -124,11 +123,12 @@ mod tests {
     use super::*;
     use hcl::{Expression as HclExpression, ser::LabeledBlock};
     use indexmap::indexmap;
+    use moss_common::new_nanoid;
 
     #[test]
     fn test_dir() {
         let config = RawDirRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            metadata: Block::new(RawMetadata { id: new_nanoid() }),
             headers: None,
         };
 
@@ -145,7 +145,7 @@ mod tests {
     #[test]
     fn test_item() {
         let config = RawItemRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            metadata: Block::new(RawMetadata { id: new_nanoid() }),
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),

@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 moss_fs.workspace = true
+moss_common.workspace = true
 
 toml_edit.workspace = true
 toml.workspace = true
@@ -16,4 +17,3 @@ anyhow.workspace = true
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 toml.workspace = true
-uuid = { workspace = true, features = ["v4"] }

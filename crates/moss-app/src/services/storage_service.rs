@@ -1,5 +1,7 @@
+use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 use anyhow::Result;
 use moss_applib::ServiceMarker;
+use moss_common::NanoId;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
     GlobalStorage,
@@ -10,8 +12,6 @@ use moss_storage::{
     },
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
-
-use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 
 pub struct StorageService {
     storage: Arc<dyn GlobalStorage>,
@@ -56,7 +56,7 @@ impl StorageService {
     pub(crate) fn put_last_active_workspace_txn(
         &self,
         txn: &mut Transaction,
-        id: &str,
+        id: &NanoId,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();
 
@@ -73,7 +73,7 @@ impl StorageService {
     pub(crate) fn put_last_opened_at_txn(
         &self,
         txn: &mut Transaction,
-        id: &str,
+        id: &NanoId,
         timestamp: i64,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();

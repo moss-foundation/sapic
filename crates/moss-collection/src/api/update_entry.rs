@@ -1,6 +1,3 @@
-use moss_common::api::OperationResult;
-use validator::Validate;
-
 use crate::{
     collection::Collection,
     models::{
@@ -14,6 +11,8 @@ use crate::{
     },
     services::worktree_service::{ModifyParams, WorktreeService},
 };
+use moss_common::{NanoId, api::OperationResult};
+use validator::Validate;
 
 impl Collection {
     pub async fn update_entry(
@@ -37,12 +36,12 @@ impl Collection {
         input: UpdateItemEntryParams,
     ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
-
+        let id: NanoId = input.id.clone().into();
         let worktree_service = self.service::<WorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_item_entry(
-                input.id,
+                &id,
                 ModifyParams {
                     name: input.name,
                     protocol: input.protocol,
@@ -67,12 +66,12 @@ impl Collection {
         input: UpdateDirEntryParams,
     ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;
-
+        let id: NanoId = input.id.clone().into();
         let worktree_service = self.service::<WorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_dir_entry(
-                input.id,
+                &id,
                 ModifyParams {
                     name: input.name,
                     order: input.order,

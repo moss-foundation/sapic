@@ -1,12 +1,11 @@
-use hcl::ser::{Block, LabeledBlock};
-use indexmap::IndexMap;
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
 use crate::models::{
     primitives::EntryProtocol,
     types::configuration::docschema::{HeaderName, RawHeaderParameter, RawMetadata, UrlParts},
 };
+use hcl::ser::{Block, LabeledBlock};
+use indexmap::IndexMap;
+use moss_common::NanoId;
+use serde::{Deserialize, Serialize};
 
 // #########################################################
 // ###                      Item                         ###
@@ -55,9 +54,9 @@ pub struct RawDirEndpointConfiguration {
 }
 
 impl RawDirEndpointConfiguration {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: &NanoId) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id }),
+            metadata: Block::new(RawMetadata { id: id.to_owned() }),
             headers: None,
         }
     }

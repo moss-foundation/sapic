@@ -1,6 +1,8 @@
 pub mod api;
 pub mod nanoid;
 
+pub use nanoid::*;
+
 pub trait Merge<T> {
     fn merge(&mut self, other: T) -> &mut Self;
 }

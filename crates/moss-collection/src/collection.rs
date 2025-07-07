@@ -5,6 +5,7 @@ use moss_applib::{
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
+use moss_common::NanoId;
 use moss_environment::environment::Environment;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
@@ -15,7 +16,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use uuid::Uuid;
 
 use crate::{
     config::ConfigModel,
@@ -26,12 +26,12 @@ use crate::{
 };
 
 pub struct EnvironmentItem {
-    pub id: Uuid,
+    pub id: NanoId,
     pub name: String,
     pub inner: Environment,
 }
 
-type EnvironmentMap = HashMap<Uuid, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<NanoId, Arc<EnvironmentItem>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {

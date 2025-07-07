@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use derive_more::{Deref, DerefMut};
+use moss_common::NanoId;
 use moss_environment::environment::Environment as EnvironmentHandle;
-use uuid::Uuid;
 
 #[derive(Deref, DerefMut)]
 pub struct EnvironmentItem {
-    pub id: Uuid,
+    pub id: NanoId,
     pub name: String,
     pub display_name: String,
 

@@ -4,7 +4,6 @@ use std::{
     sync::Arc,
 };
 use ts_rs::TS;
-use uuid::Uuid;
 
 use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode};
 
@@ -111,7 +110,7 @@ pub struct LogEntryInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct WorkspaceInfo {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
     pub last_opened_at: Option<i64>,
     pub active: bool,

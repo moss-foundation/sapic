@@ -2,7 +2,7 @@ pub mod shared;
 
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
-use moss_common::api::OperationError;
+use moss_common::{api::OperationError, new_nanoid_string};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::operations::{CreateCollectionInput, UpdateCollectionInput},
@@ -43,7 +43,7 @@ async fn rename_collection_success() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: create_collection_output.id.clone(),
                 name: Some(new_collection_name.clone()),
                 repository: None,
                 icon_path: None,
@@ -58,7 +58,7 @@ async fn rename_collection_success() {
     // Verify the manifest is updated
     let collection_service = services.get::<CollectionService>();
     let collection = collection_service
-        .collection(create_collection_output.id)
+        .collection(&create_collection_output.id.into())
         .await
         .unwrap();
     assert_eq!(collection.manifest().await.name, new_collection_name);
@@ -153,7 +153,7 @@ async fn rename_collection_nonexistent_id() {
     let (ctx, _workspace_path, mut workspace, _services, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
-    let nonexistent_id = uuid::Uuid::new_v4();
+    let nonexistent_id = new_nanoid_string();
 
     let result = workspace
         .update_collection(
@@ -201,7 +201,7 @@ async fn update_collection_repo() {
         .update_collection(
             &ctx,
             UpdateCollectionInput {
-                id: create_collection_output.id,
+                id: create_collection_output.id.clone(),
                 name: None,
                 repository: Some(ChangeString::Update(new_repo.clone())),
                 icon_path: None,
@@ -216,7 +216,7 @@ async fn update_collection_repo() {
     // Verify the manifest is updated
     let collection_service = services.get::<CollectionService>();
     let collection = collection_service
-        .collection(create_collection_output.id)
+        .collection(&create_collection_output.id.into())
         .await
         .unwrap();
 
