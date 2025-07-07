@@ -1,15 +1,14 @@
-use anyhow::Result;
-use moss_file::json::JsonFileHandle;
-use moss_fs::FileSystem;
-use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
-use nanoid::nanoid;
-use std::{collections::HashMap, path::Path, sync::Arc};
-use uuid::Uuid;
-
 use crate::{
     file::FileModel,
     models::types::{VariableKind, VariableName, VariableValue},
 };
+use anyhow::Result;
+use moss_common::nanoid::{NanoId, new_nanoid};
+use moss_file::json::JsonFileHandle;
+use moss_fs::FileSystem;
+use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
+use std::{collections::HashMap, path::Path, sync::Arc};
+use uuid::Uuid;
 
 // #[derive(Error, Debug)]
 // pub enum EnvironmentError {
@@ -40,7 +39,7 @@ pub struct VariableItemParams {
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
-    pub id: String,
+    pub id: NanoId,
     pub kind: Option<VariableKind>,
     pub global_value: Option<VariableValue>,
     pub desc: Option<String>,
@@ -109,7 +108,7 @@ impl Environment {
             variables.insert(
                 name,
                 VariableItem {
-                    id: nanoid!(10), // FIXME: temporary a string, should be some kind of Arc
+                    id: new_nanoid(),
                     kind: value.kind,
                     global_value: value.value,
                     desc: value.desc,

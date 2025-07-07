@@ -4,7 +4,10 @@ mod taurilog_writer;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
-use moss_common::api::OperationError;
+use moss_common::{
+    api::OperationError,
+    nanoid::{NanoId, new_nanoid_string},
+};
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
@@ -12,7 +15,6 @@ use moss_storage::{
     primitives::segkey::SegKey,
     storage::operations::{GetItem, TransactionalRemoveItem},
 };
-use nanoid::nanoid;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -51,10 +53,6 @@ pub mod constants {
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 
     pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
-}
-
-fn new_id() -> String {
-    nanoid!(ID_LENGTH)
 }
 
 const DUMP_THRESHOLD: usize = 10;
@@ -328,11 +326,12 @@ impl LogService {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
+        let id = new_nanoid_string();
         match scope {
             LogScope::App => {
                 trace!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -340,7 +339,7 @@ impl LogService {
             LogScope::Session => {
                 trace!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -349,11 +348,12 @@ impl LogService {
     }
 
     pub fn debug(&self, scope: LogScope, payload: LogPayload) {
+        let id = new_nanoid_string();
         match scope {
             LogScope::App => {
                 debug!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -361,7 +361,7 @@ impl LogService {
             LogScope::Session => {
                 debug!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -370,11 +370,12 @@ impl LogService {
     }
 
     pub fn info(&self, scope: LogScope, payload: LogPayload) {
+        let id = new_nanoid_string();
         match scope {
             LogScope::App => {
                 info!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -382,7 +383,7 @@ impl LogService {
             LogScope::Session => {
                 info!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -391,11 +392,12 @@ impl LogService {
     }
 
     pub fn warn(&self, scope: LogScope, payload: LogPayload) {
+        let id = new_nanoid_string();
         match scope {
             LogScope::App => {
                 warn!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -403,7 +405,7 @@ impl LogService {
             LogScope::Session => {
                 warn!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -412,11 +414,12 @@ impl LogService {
     }
 
     pub fn error(&self, scope: LogScope, payload: LogPayload) {
+        let id = new_nanoid_string();
         match scope {
             LogScope::App => {
                 error!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -424,7 +427,7 @@ impl LogService {
             LogScope::Session => {
                 error!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
