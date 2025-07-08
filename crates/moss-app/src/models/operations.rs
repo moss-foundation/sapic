@@ -9,10 +9,9 @@ use validator::Validate;
 
 use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 use crate::models::{
-    primitives::{LogLevel, ThemeId, WorkspaceId},
+    primitives::{LogEntryId, LogLevel, ThemeId, WorkspaceId},
     types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
 };
-
 // ########################################################
 // ###                      Locale                      ###
 // ########################################################
@@ -119,7 +118,7 @@ pub struct ListLogsOutput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchDeleteLogInput(pub Vec<String>);
+pub struct BatchDeleteLogInput(#[ts(as = "Vec<String>")] pub Vec<LogEntryId>);
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

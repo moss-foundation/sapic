@@ -1,6 +1,7 @@
 pub mod shared;
 
 use moss_app::{
+    context::ctxkeys,
     dirs,
     models::{
         operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
@@ -138,7 +139,10 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = ctx.value::<WorkspaceId>().map(|id| (*id).clone()).unwrap();
+    let active_workspace_id = ctx
+        .value::<ctxkeys::ActiveWorkspaceId>()
+        .map(|id| (*id).clone())
+        .unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -161,7 +165,7 @@ async fn delete_workspace_opened() {
     assert!(list_workspaces.is_empty());
 
     // Verify that no workspace is active after deletion
-    assert!(ctx.value::<WorkspaceId>().is_none());
+    assert!(ctx.value::<ctxkeys::ActiveWorkspaceId>().is_none());
 
     cleanup().await;
 }

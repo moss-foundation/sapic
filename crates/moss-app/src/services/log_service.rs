@@ -4,7 +4,7 @@ mod taurilog_writer;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
-use moss_common::{api::OperationError, new_nanoid_string};
+use moss_common::api::OperationError;
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
@@ -34,7 +34,10 @@ use tracing_subscriber::{
 };
 
 use crate::{
-    models::types::{LogEntryInfo, LogItemSourceInfo},
+    models::{
+        primitives::LogEntryId,
+        types::{LogEntryInfo, LogItemSourceInfo},
+    },
     services::{
         log_service::{
             constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
@@ -269,7 +272,7 @@ impl LogService {
 
     pub(crate) async fn delete_logs(
         &self,
-        input: impl Iterator<Item = &str>,
+        input: impl Iterator<Item = &LogEntryId>,
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
@@ -279,11 +282,11 @@ impl LogService {
                 .applog_queue
                 .lock()
                 .map_err(|_| anyhow!("Mutex poisoned"))?;
-            let idx = applog_queue_lock.iter().position(|x| x.id == entry_id);
+            let idx = applog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_id.to_string(),
+                    id: entry_id.to_owned(),
                     file_path: None,
                 });
                 continue;
@@ -295,11 +298,11 @@ impl LogService {
                 .sessionlog_queue
                 .lock()
                 .map_err(|_| anyhow!("Mutex poisoned"))?;
-            let idx = sessionlog_queue_lock.iter().position(|x| x.id == entry_id);
+            let idx = sessionlog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_id.to_string(),
+                    id: entry_id.to_owned(),
                     file_path: None,
                 });
                 continue;
@@ -323,7 +326,7 @@ impl LogService {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
-        let id = new_nanoid_string();
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 trace!(
@@ -345,7 +348,7 @@ impl LogService {
     }
 
     pub fn debug(&self, scope: LogScope, payload: LogPayload) {
-        let id = new_nanoid_string();
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 debug!(
@@ -367,7 +370,7 @@ impl LogService {
     }
 
     pub fn info(&self, scope: LogScope, payload: LogPayload) {
-        let id = new_nanoid_string();
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 info!(
@@ -389,7 +392,7 @@ impl LogService {
     }
 
     pub fn warn(&self, scope: LogScope, payload: LogPayload) {
-        let id = new_nanoid_string();
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 warn!(
@@ -411,7 +414,7 @@ impl LogService {
     }
 
     pub fn error(&self, scope: LogScope, payload: LogPayload) {
-        let id = new_nanoid_string();
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 error!(
@@ -435,7 +438,7 @@ impl LogService {
 
 /// Helper methods for delete_logs
 impl LogService {
-    fn find_files_to_update(&self, entries: &[&str]) -> Result<HashSet<PathBuf>> {
+    fn find_files_to_update(&self, entries: &[&LogEntryId]) -> Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
         for entry_id in entries {
             let segkey = SegKey::new(&entry_id).to_segkey_buf();
@@ -450,13 +453,10 @@ impl LogService {
 
     async fn delete_logs_from_files(
         &self,
-        entries: &[&str],
+        entries: &[&LogEntryId],
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut deleted_entries = Vec::new();
-        let mut ids_to_delete = entries
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<HashSet<_>>();
+        let mut ids_to_delete = entries.iter().cloned().cloned().collect::<HashSet<_>>();
 
         let log_files = self.find_files_to_update(entries)?;
         for file in log_files {
@@ -469,7 +469,7 @@ impl LogService {
     async fn update_log_file(
         &self,
         path: &Path,
-        ids: &mut HashSet<String>,
+        ids: &mut HashSet<LogEntryId>,
     ) -> Result<Vec<LogItemSourceInfo>> {
         let mut new_content = String::new();
         let mut removed_entries = Vec::new();

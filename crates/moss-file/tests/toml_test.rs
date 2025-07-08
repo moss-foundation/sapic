@@ -1,10 +1,10 @@
 use anyhow::Result;
-use moss_common::new_nanoid_string;
 use moss_file::{
     common::FileHandle,
     toml::{EditableInPlaceFileHandle, InPlaceEditor},
 };
 use moss_fs::{FileSystem, RealFileSystem};
+use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
@@ -21,7 +21,7 @@ struct TestDir {
 impl TestDir {
     fn new(test_name: &str) -> Result<Self> {
         let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let unique_id = new_nanoid_string();
+        let unique_id = nanoid!(10);
         let path = manifest_dir
             .join("data")
             .join(format!("{}-{}", test_name, unique_id));

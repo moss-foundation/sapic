@@ -3784,6 +3784,7 @@ dependencies = [
  "anyhow",
  "moss_common",
  "moss_fs",
+ "nanoid",
  "serde",
  "serde_json",
  "tokio",

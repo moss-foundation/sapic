@@ -1,6 +1,7 @@
 pub mod shared;
 
 use moss_app::{
+    context::ctxkeys,
     models::{
         operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
         primitives::WorkspaceId,
@@ -149,7 +150,9 @@ async fn close_workspace_after_another_opened() {
 
     // Check that the second workspace is active
 
-    let maybe_active_id = ctx.value::<WorkspaceId>().map(|id| (*id).clone());
+    let maybe_active_id = ctx
+        .value::<ctxkeys::ActiveWorkspaceId>()
+        .map(|id| (*id).clone());
     assert!(maybe_active_id.is_some());
     let active_id = maybe_active_id.unwrap();
 

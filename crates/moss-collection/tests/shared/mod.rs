@@ -4,9 +4,9 @@ use moss_collection::{
     collection::Collection,
     services::{storage_service::StorageService, worktree_service::WorktreeService},
 };
-use moss_common::new_nanoid_string;
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::{random_collection_name, random_string};
+use nanoid::nanoid;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -21,7 +21,7 @@ fn random_collection_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
-        .join(new_nanoid_string())
+        .join(nanoid!(10))
 }
 
 pub async fn create_test_collection() -> (Arc<Path>, Collection) {

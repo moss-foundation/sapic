@@ -5,7 +5,7 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
+use crate::models::primitives::{LocaleId, LogEntryId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
 
 // ########################################################
 // ###                      Locale                      ###
@@ -79,7 +79,8 @@ pub struct LogDate {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct LogItemSourceInfo {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: LogEntryId,
 
     #[serde(skip)]
     /// None if deleted from in-memory queue
@@ -92,7 +93,8 @@ pub struct LogItemSourceInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct LogEntryInfo {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: LogEntryId,
     /// A timestamp string, such as "2025-06-06T19:26:39.084+0300"
     pub timestamp: String,
     pub level: LogLevel,
