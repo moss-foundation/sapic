@@ -56,7 +56,7 @@ pub async fn setup_test_workspace() -> (
         .join("tests")
         .join("data")
         .join("workspaces")
-        .join()
+        .join(random_workspace_name())
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
