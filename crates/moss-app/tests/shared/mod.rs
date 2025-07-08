@@ -16,7 +16,6 @@ use moss_app::{
     },
 };
 use moss_applib::providers::{ServiceMap, ServiceProvider};
-use moss_common::new_nanoid;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_string;
 use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};

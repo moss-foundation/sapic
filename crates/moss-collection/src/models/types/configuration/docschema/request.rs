@@ -63,15 +63,14 @@ impl RawDirRequestConfiguration {
 
 #[cfg(test)]
 mod tests {
+    use hcl::{Expression as HclExpression, ser::LabeledBlock};
+    use indexmap::indexmap;
+
     use crate::models::types::configuration::docschema::{
         HeaderParameterOptions, Object, RawHeaderParameter, UrlDetails,
     };
 
     use super::*;
-
-    use hcl::{Expression as HclExpression, ser::LabeledBlock};
-    use indexmap::indexmap;
-    use moss_common::new_nanoid;
 
     #[test]
     fn test_labeled_block() {

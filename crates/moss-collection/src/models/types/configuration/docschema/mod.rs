@@ -120,10 +120,10 @@ impl RawDirConfiguration {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hcl::{Expression as HclExpression, ser::LabeledBlock};
     use indexmap::indexmap;
-    use moss_common::new_nanoid;
+
+    use super::*;
 
     #[test]
     fn test_dir() {
