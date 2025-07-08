@@ -667,7 +667,7 @@ mod tests {
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
 
-    use crate::{constants::LOGGING_SERVICE_CHANNEL, services::session_service::SessionService};
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
 
     use super::*;
 

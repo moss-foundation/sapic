@@ -11,9 +11,7 @@ use moss_app::{
         types::{ColorThemeInfo, LocaleInfo},
     },
     services::{
-        log_service::LogService,
-        session_service::{SessionId, SessionService},
-        storage_service::StorageService,
+        log_service::LogService, session_service::SessionId, storage_service::StorageService,
         workspace_service::WorkspaceService,
     },
 };
