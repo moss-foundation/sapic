@@ -37,12 +37,11 @@ impl Collection {
         input: UpdateItemEntryParams,
     ) -> OperationResult<AfterUpdateItemEntryDescription> {
         input.validate()?;
-
         let worktree_service = self.service::<WorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_item_entry(
-                input.id,
+                &input.id,
                 ModifyParams {
                     name: input.name,
                     protocol: input.protocol,
@@ -68,12 +67,11 @@ impl Collection {
         input: UpdateDirEntryParams,
     ) -> OperationResult<AfterUpdateDirEntryDescription> {
         input.validate()?;
-
         let worktree_service = self.service::<WorktreeService>();
 
         let (path, configuration) = worktree_service
             .update_dir_entry(
-                input.id,
+                &input.id,
                 ModifyParams {
                     name: input.name,
                     order: input.order,

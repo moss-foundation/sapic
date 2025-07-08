@@ -9,9 +9,8 @@ use moss_storage::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 use std::{hash::Hash, path::Path, sync::Arc};
-use uuid::Uuid;
 
-use crate::storage::segments;
+use crate::{models::primitives::EntryId, storage::segments};
 
 pub struct StorageService {
     storage: Arc<dyn CollectionStorage>,
@@ -45,12 +44,12 @@ impl StorageService {
     pub(crate) fn put_entry_order_txn(
         &self,
         txn: &mut Transaction,
-        id: Uuid,
+        id: &EntryId,
         order: isize,
     ) -> Result<()> {
         let store = self.storage.resource_store();
 
-        let segkey = segments::segkey_entry_order(&id.to_string());
+        let segkey = segments::segkey_entry_order(&id);
         TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())

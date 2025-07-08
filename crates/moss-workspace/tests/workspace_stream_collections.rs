@@ -1,15 +1,16 @@
 pub mod shared;
 
+use moss_testutils::random_name::random_collection_name;
+use moss_workspace::models::{
+    events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
+};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
+use tauri::ipc::{Channel, InvokeResponseBody};
 
 use crate::shared::setup_test_workspace;
-use moss_testutils::random_name::random_collection_name;
-use moss_workspace::models::{events::StreamCollectionsEvent, operations::CreateCollectionInput};
-use tauri::ipc::{Channel, InvokeResponseBody};
-use uuid::Uuid;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {
@@ -141,14 +142,16 @@ async fn stream_collections_multiple_collections() {
     assert_eq!(output.total_returned, 5);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<Uuid, &StreamCollectionsEvent> =
-        events.iter().map(|event| (event.id, event)).collect();
+    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
+        .iter()
+        .map(|event| (event.id.clone(), event))
+        .collect();
 
     // Verify each expected collection is present with correct data
-    for (expected_id, expected_name, expected_order) in &expected_collections {
-        let event = events_map.get(expected_id).unwrap();
-        assert_eq!(event.name, *expected_name);
-        assert_eq!(event.order, Some(*expected_order));
+    for (expected_id, expected_name, expected_order) in expected_collections {
+        let event = events_map.get(&expected_id).unwrap();
+        assert_eq!(event.name, expected_name);
+        assert_eq!(event.order, Some(expected_order));
         assert_eq!(event.repository, None);
         assert_eq!(event.picture_path, None);
     }
@@ -362,16 +365,18 @@ async fn stream_collections_mixed_configurations() {
     assert_eq!(output.total_returned, 3);
 
     // Convert events to a map for easier verification
-    let events_map: HashMap<Uuid, &StreamCollectionsEvent> =
-        events.iter().map(|event| (event.id, event)).collect();
+    let events_map: HashMap<CollectionId, &StreamCollectionsEvent> = events
+        .iter()
+        .map(|event| (event.id.clone(), event))
+        .collect();
 
     // Verify each expected collection
     for (expected_id, expected_name, expected_order, _expected_repo, expected_icon) in
-        &expected_collections
+        expected_collections
     {
-        let event = events_map.get(expected_id).unwrap();
+        let event = events_map.get(&expected_id).unwrap();
         assert_eq!(event.name, *expected_name);
-        assert_eq!(event.order, Some(*expected_order));
+        assert_eq!(event.order, Some(expected_order));
         // Note: Repository is currently not returned by the API
         assert_eq!(event.repository, None);
 

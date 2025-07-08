@@ -105,7 +105,6 @@ async fn stream_entries_single_entry() {
         created_entry.path.file_name().unwrap().to_string_lossy(),
         entry_name
     );
-    assert!(!created_entry.id.is_nil());
 
     // Verify the directory entry is also present
     let dir_entry = entries
@@ -155,15 +154,6 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry2_name.as_str()));
     assert!(entry_names.contains(&entry3_name.as_str()));
 
-    // Verify all entries have valid IDs
-    for entry in &created_entries {
-        assert!(
-            !entry.id.is_nil(),
-            "Entry {} should have a valid ID",
-            entry.name
-        );
-    }
-
     // Verify the directory entry is present
     let dir_entry = entries
         .iter()
@@ -209,8 +199,7 @@ async fn stream_entries_multiple_directories() {
             .find(|e| e.name == "entry")
             .expect(&format!("Should find created entry in {}", dir));
 
-        assert_eq!(created_entry.name, "entry");
-        assert!(!created_entry.id.is_nil());
+        assert_eq!(created_entry.name, *expected_name);
 
         // Verify the directory entry is present
         let dir_entry = entries
@@ -357,7 +346,6 @@ async fn stream_entries_verify_entry_properties() {
         .expect("Should find the created entry");
 
     // Verify all properties are set correctly for the created entry
-    assert!(!created_entry.id.is_nil(), "ID should be set");
     assert_eq!(created_entry.name, entry_name, "Name should match");
     assert!(
         !created_entry.path.to_string_lossy().is_empty(),

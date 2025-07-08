@@ -12,7 +12,9 @@ impl<R: TauriRuntime> App<R> {
         &self,
         ctx: &C,
     ) -> OperationResult<DescribeWorkbenchStateOutput> {
-        let workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id);
+        let workspace_id = ctx
+            .value::<ctxkeys::ActiveWorkspaceId>()
+            .map(|id| (*id).clone());
 
         Ok(DescribeWorkbenchStateOutput {
             active_workspace_id: workspace_id,

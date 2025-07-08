@@ -16,11 +16,11 @@ impl<R: TauriRuntime> Workspace<R> {
         input: UpdateCollectionInput,
     ) -> OperationResult<UpdateCollectionOutput> {
         input.validate()?;
-
+        let id = input.id.clone().into();
         let collections = self.services.get::<CollectionService>();
         collections
             .update_collection(
-                input.id,
+                &id,
                 CollectionItemUpdateParams {
                     name: input.name,
                     order: input.order,

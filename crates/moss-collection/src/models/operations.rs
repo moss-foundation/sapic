@@ -1,15 +1,17 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use ts_rs::TS;
-use uuid::Uuid;
 use validator::{Validate, ValidationError};
 
 use crate::{
     dirs,
-    models::types::{
-        AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
-        UpdateItemEntryParams,
-        configuration::{DirConfigurationModel, ItemConfigurationModel},
+    models::{
+        primitives::EntryId,
+        types::{
+            AfterUpdateDirEntryDescription, AfterUpdateItemEntryDescription, UpdateDirEntryParams,
+            UpdateItemEntryParams,
+            configuration::{DirConfigurationModel, ItemConfigurationModel},
+        },
     },
 };
 
@@ -61,7 +63,8 @@ pub enum CreateEntryInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEntryOutput {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 }
 
 // ########################################################
@@ -72,13 +75,15 @@ pub struct CreateEntryOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryInput {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 }
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEntryOutput {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 }
 
 // ########################################################

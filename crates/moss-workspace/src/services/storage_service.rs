@@ -16,7 +16,6 @@ use std::{
     path::Path,
     sync::Arc,
 };
-use uuid::Uuid;
 
 use crate::{
     models::primitives::{ActivitybarPosition, SidebarPosition},
@@ -51,12 +50,12 @@ impl StorageService {
     pub(crate) fn put_item_order_txn(
         &self,
         txn: &mut Transaction,
-        id: Uuid,
+        id: &str,
         order: usize,
     ) -> Result<()> {
         let store = self.storage.item_store();
 
-        let segkey = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
+        let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
         TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())

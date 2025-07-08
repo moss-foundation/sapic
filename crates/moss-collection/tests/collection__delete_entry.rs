@@ -3,7 +3,6 @@ pub mod shared;
 use moss_collection::{dirs, models::operations::DeleteEntryInput};
 use moss_common::api::OperationError;
 use std::path::PathBuf;
-use uuid::Uuid;
 
 use crate::shared::{
     create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
@@ -39,7 +38,7 @@ async fn delete_entry_success() {
 async fn delete_entry_not_found() {
     let (collection_path, collection) = create_test_collection().await;
 
-    let delete_input = DeleteEntryInput { id: Uuid::new_v4() };
+    let delete_input = DeleteEntryInput { id: EntryId::new() };
 
     let result = collection.delete_entry(delete_input).await;
     assert!(result.is_err());

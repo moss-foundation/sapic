@@ -18,13 +18,12 @@ use tokio::{
     fs,
     sync::{RwLock, mpsc},
 };
-use uuid::Uuid;
 
 use crate::{
     constants,
     constants::DIR_CONFIG_FILENAME,
     models::{
-        primitives::{EntryClass, EntryKind, EntryProtocol},
+        primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
     services::storage_service::StorageService,
@@ -187,7 +186,7 @@ pub struct EntryDirMut<'a> {
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct Entry {
-    id: Uuid,
+    id: EntryId,
     path: Arc<Path>,
 
     #[deref]
@@ -219,7 +218,7 @@ impl Entry {
 
 #[derive(Debug)]
 pub struct EntryDescription {
-    pub id: Uuid,
+    pub id: EntryId,
     pub name: String,
     pub path: Arc<Path>,
     pub class: EntryClass,
@@ -231,8 +230,8 @@ pub struct EntryDescription {
 
 #[derive(Default)]
 struct WorktreeState {
-    entries: HashMap<Uuid, Entry>,
-    expanded_entries: HashSet<Uuid>,
+    entries: HashMap<EntryId, Entry>,
+    expanded_entries: HashSet<EntryId>,
 }
 
 pub struct WorktreeService {
@@ -274,7 +273,7 @@ impl WorktreeService {
         }
     }
 
-    pub async fn remove_entry(&self, id: Uuid) -> WorktreeResult<()> {
+    pub async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -304,7 +303,7 @@ impl WorktreeService {
             state_lock
                 .expanded_entries
                 .iter()
-                .copied()
+                .cloned()
                 .collect::<Vec<_>>(),
         )?;
 
@@ -314,7 +313,7 @@ impl WorktreeService {
     pub async fn scan(
         &self,
         path: &Path,
-        expanded_entries: Arc<HashSet<Uuid>>,
+        expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> WorktreeResult<()> {
@@ -355,7 +354,7 @@ impl WorktreeService {
                     Ok(Some(entry)) => {
                         let expanded = expanded_entries.contains(&entry.id);
                         let desc = EntryDescription {
-                            id: entry.id,
+                            id: entry.id.clone(),
                             name: desanitize(&dir_name),
                             path: entry.path.clone(),
                             class: entry.classification(),
@@ -363,15 +362,19 @@ impl WorktreeService {
                             protocol: entry.configuration.protocol(),
                             expanded,
                             order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
+                                .get(&segments::segkey_entry_order(&entry.id))
                                 .map(|o| o.to_owned().into()),
                         };
 
                         let _ = sender.send(desc);
                         if expanded {
-                            state.write().await.expanded_entries.insert(entry.id);
+                            state
+                                .write()
+                                .await
+                                .expanded_entries
+                                .insert(entry.id.clone());
                         }
-                        state.write().await.entries.insert(entry.id, entry);
+                        state.write().await.entries.insert(entry.id.clone(), entry);
                     }
                     Ok(None) => {
                         // TODO: log error
@@ -424,7 +427,7 @@ impl WorktreeService {
                         });
                     } else {
                         let desc = EntryDescription {
-                            id: entry.id,
+                            id: entry.id.clone(),
                             name: desanitize(&child_name),
                             path: entry.path.clone(),
                             class: entry.classification(),
@@ -432,7 +435,7 @@ impl WorktreeService {
                             protocol: entry.configuration.protocol(),
                             expanded: expanded_entries.contains(&entry.id),
                             order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
+                                .get(&segments::segkey_entry_order(&entry.id))
                                 .map(|o| o.to_owned().into()),
                         };
 
@@ -442,7 +445,7 @@ impl WorktreeService {
                         });
                     }
 
-                    state.write().await.entries.insert(entry.id, entry);
+                    state.write().await.entries.insert(entry.id.clone(), entry);
                 }
 
                 for new_job in new_jobs {
@@ -467,7 +470,7 @@ impl WorktreeService {
 
     pub async fn create_item_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawItemConfiguration,
@@ -486,9 +489,9 @@ impl WorktreeService {
 
         let mut state_lock = self.state.write().await;
         state_lock.entries.insert(
-            id,
+            id.to_owned(),
             Entry {
-                id,
+                id: id.to_owned(),
                 path: sanitized_path.to_path_buf().into(),
                 configuration: EntryConfiguration::Item(configuration),
             },
@@ -501,14 +504,14 @@ impl WorktreeService {
                 .put_entry_order_txn(&mut txn, id, metadata.order)?;
 
             if metadata.expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
 
                 self.storage.put_expanded_entries_txn(
                     &mut txn,
                     state_lock
                         .expanded_entries
                         .iter()
-                        .copied()
+                        .cloned()
                         .collect::<Vec<_>>(),
                 )?;
             }
@@ -521,7 +524,7 @@ impl WorktreeService {
 
     pub async fn create_dir_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawDirConfiguration,
@@ -540,9 +543,9 @@ impl WorktreeService {
 
         let mut state_lock = self.state.write().await;
         state_lock.entries.insert(
-            id,
+            id.to_owned(),
             Entry {
-                id,
+                id: id.to_owned(),
                 path: sanitized_path.to_path_buf().into(),
                 configuration: EntryConfiguration::Dir(configuration),
             },
@@ -554,14 +557,14 @@ impl WorktreeService {
                 .put_entry_order_txn(&mut txn, id, metadata.order)?;
 
             if metadata.expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
 
                 self.storage.put_expanded_entries_txn(
                     &mut txn,
                     state_lock
                         .expanded_entries
                         .iter()
-                        .copied()
+                        .cloned()
                         .collect::<Vec<_>>(),
                 )?;
             }
@@ -574,7 +577,7 @@ impl WorktreeService {
 
     pub async fn update_dir_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
         let mut state_lock = self.state.write().await;
@@ -632,14 +635,14 @@ impl WorktreeService {
         let mut txn = self.storage.begin_write()?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, id, order)?;
+            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
         }
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
             } else {
-                state_lock.expanded_entries.remove(&id);
+                state_lock.expanded_entries.remove(id);
             }
 
             self.storage.put_expanded_entries_txn(
@@ -647,7 +650,7 @@ impl WorktreeService {
                 state_lock
                     .expanded_entries
                     .iter()
-                    .copied()
+                    .cloned()
                     .collect::<Vec<_>>(),
             )?;
         }
@@ -659,7 +662,7 @@ impl WorktreeService {
 
     pub async fn update_item_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
         let mut state_lock = self.state.write().await;
@@ -738,14 +741,14 @@ impl WorktreeService {
         let mut txn = self.storage.begin_write()?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, id, order)?;
+            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
         }
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
             } else {
-                state_lock.expanded_entries.remove(&id);
+                state_lock.expanded_entries.remove(id);
             }
 
             self.storage.put_expanded_entries_txn(
@@ -753,7 +756,7 @@ impl WorktreeService {
                 state_lock
                     .expanded_entries
                     .iter()
-                    .copied()
+                    .cloned()
                     .collect::<Vec<_>>(),
             )?;
         }
@@ -860,7 +863,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(Entry {
-            id: config.id(),
+            id: config.id().clone(),
             path: desanitize_path(path, None)?.into(),
             configuration: EntryConfiguration::Dir(config),
         }));
@@ -870,7 +873,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(Entry {
-            id: config.id(),
+            id: config.id().clone(),
             path: desanitize_path(path, None)?.into(),
             configuration: EntryConfiguration::Item(config),
         }));

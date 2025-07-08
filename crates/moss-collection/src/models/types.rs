@@ -4,11 +4,11 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol},
+    primitives::{EntryClass, EntryId, EntryKind, EntryPath, EntryProtocol},
     types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
 };
 
@@ -17,7 +17,7 @@ use crate::models::{
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
 
     /// Determines the display position of this entry among others in the same group.
@@ -34,7 +34,8 @@ pub struct EnvironmentInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     /// If provided, the entry will move to the new path
     /// For example, if the new path is "requests/folder/", the name is "entry"
@@ -53,7 +54,8 @@ pub struct UpdateItemEntryParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateDirEntryParams {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     /// If provided, the directory will move to the new path
     /// For example, if the new path is "requests/folder/", the name is "group"
@@ -70,7 +72,9 @@ pub struct UpdateDirEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateDirEntryDescription {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeDirConfigurationModel,
 }
@@ -79,7 +83,9 @@ pub struct AfterUpdateDirEntryDescription {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateItemEntryDescription {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeItemConfigurationModel,
 }
@@ -90,7 +96,8 @@ pub struct AfterUpdateItemEntryDescription {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
     /// Unique identifier for this entry
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     /// Display name of the entry
     pub name: String,

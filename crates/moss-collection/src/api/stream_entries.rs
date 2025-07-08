@@ -1,15 +1,13 @@
+use moss_common::api::OperationResult;
+use moss_db::primitives::AnyValue;
+use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
     collections::{HashMap, HashSet},
     path::PathBuf,
     sync::Arc,
 };
-
-use moss_common::api::OperationResult;
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
 use tauri::ipc::Channel as TauriChannel;
 use tokio::sync::{mpsc, oneshot};
-use uuid::Uuid;
 
 use crate::{
     Collection,
@@ -18,7 +16,7 @@ use crate::{
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
-        primitives::EntryPath,
+        primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
     services::{
@@ -54,8 +52,8 @@ impl Collection {
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<Uuid>> =
-            match storage_service.get_expanded_entries::<Uuid>() {
+        let expanded_entries: Arc<HashSet<EntryId>> =
+            match storage_service.get_expanded_entries::<EntryId>() {
                 Ok(entries) => HashSet::from_iter(entries).into(),
                 Err(error) => {
                     println!("warn: getting expanded entries: {}", error);

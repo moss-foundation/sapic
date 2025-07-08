@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use crate::models::primitives::EnvironmentId;
 
 use super::models::types::{VariableKind, VariableName, VariableValue};
 
@@ -36,14 +36,14 @@ impl Variable {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FileModel {
-    pub id: Uuid,
+    pub id: EnvironmentId,
     pub values: HashMap<VariableName, Variable>,
 }
 
 impl FileModel {
     pub fn new() -> Self {
         Self {
-            id: Uuid::new_v4(),
+            id: EnvironmentId::new(),
             values: HashMap::new(),
         }
     }
