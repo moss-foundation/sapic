@@ -5,6 +5,7 @@ use moss_collection::{
     dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
+        primitives::EntryId,
         types::configuration::{
             ComponentDirConfigurationModel, ComponentItemConfigurationModel, DirConfigurationModel,
             DirHttpConfigurationModel, EndpointDirConfigurationModel, HttpEndpointDirConfiguration,
@@ -101,7 +102,7 @@ pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
 }
 
 #[allow(dead_code)]
-pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
             path: PathBuf::from(dirs::REQUESTS_DIR),
@@ -115,7 +116,7 @@ pub async fn create_test_request_dir_entry(collection: &mut Collection, name: &s
 }
 
 #[allow(dead_code)]
-pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
             path: PathBuf::from(dirs::ENDPOINTS_DIR),
@@ -129,7 +130,7 @@ pub async fn create_test_endpoint_dir_entry(collection: &mut Collection, name: &
 }
 
 #[allow(dead_code)]
-pub async fn create_test_component_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+pub async fn create_test_component_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
             path: PathBuf::from(dirs::COMPONENTS_DIR),
@@ -143,7 +144,7 @@ pub async fn create_test_component_dir_entry(collection: &mut Collection, name: 
 }
 
 #[allow(dead_code)]
-pub async fn create_test_component_item_entry(collection: &mut Collection, name: &str) -> Uuid {
+pub async fn create_test_component_item_entry(collection: &mut Collection, name: &str) -> EntryId {
     collection
         .create_entry(CreateEntryInput::Item(CreateItemEntryInput {
             path: PathBuf::from(dirs::COMPONENTS_DIR),
@@ -157,7 +158,7 @@ pub async fn create_test_component_item_entry(collection: &mut Collection, name:
 }
 
 #[allow(dead_code)]
-pub async fn create_test_schema_dir_entry(collection: &mut Collection, name: &str) -> Uuid {
+pub async fn create_test_schema_dir_entry(collection: &mut Collection, name: &str) -> EntryId {
     collection
         .create_entry(CreateEntryInput::Dir(CreateDirEntryInput {
             path: PathBuf::from(dirs::SCHEMAS_DIR),

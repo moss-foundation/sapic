@@ -1,6 +1,10 @@
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
+    create_test_request_dir_entry, random_entry_name,
+};
 use moss_collection::{
     dirs,
-    models::{operations::UpdateEntryInput, types::UpdateDirEntryParams},
+    models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
     services::StorageService,
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
 };
@@ -8,12 +12,6 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::{Path, PathBuf};
-use uuid::Uuid;
-
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
-    create_test_request_dir_entry, random_entry_name,
-};
 
 mod shared;
 
@@ -156,7 +154,7 @@ async fn update_dir_entry_order() {
 
     let _ = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
+            id: id.clone(),
             path: Default::default(),
             name: None,
             order: Some(42),
@@ -192,7 +190,7 @@ async fn expand_and_collapse_dir_entry() {
     // Expanding the entry
     let _ = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
+            id: id.clone(),
             path: Default::default(),
             name: None,
             order: None,
@@ -207,13 +205,13 @@ async fn expand_and_collapse_dir_entry() {
         SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
     )
     .unwrap();
-    let expanded_items: Vec<Uuid> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
     assert!(expanded_items.contains(&id));
 
     // Collapsing the entry
     let _ = collection
         .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
-            id,
+            id: id.clone(),
             path: Default::default(),
             name: None,
             order: None,
@@ -228,7 +226,7 @@ async fn expand_and_collapse_dir_entry() {
         SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
     )
     .unwrap();
-    let expanded_items: Vec<Uuid> = expanded_items_value.deserialize().unwrap();
+    let expanded_items: Vec<EntryId> = expanded_items_value.deserialize().unwrap();
     assert!(!expanded_items.contains(&id));
 
     // Cleanup

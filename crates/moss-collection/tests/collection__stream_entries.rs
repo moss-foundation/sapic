@@ -169,11 +169,13 @@ async fn stream_entries_multiple_entries_same_directory() {
 async fn stream_entries_multiple_directories() {
     let (collection_path, mut collection) = create_test_collection().await;
 
+    let expected_name = "entry".to_string();
+
     // We have to manually do this now, since we will validate path against configuration
-    let _ = create_test_request_dir_entry(&mut collection, "entry").await;
-    let _ = create_test_endpoint_dir_entry(&mut collection, "entry").await;
-    let _ = create_test_component_dir_entry(&mut collection, "entry").await;
-    let _ = create_test_schema_dir_entry(&mut collection, "entry").await;
+    let _ = create_test_request_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_endpoint_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_component_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_schema_dir_entry(&mut collection, &expected_name).await;
 
     let directories = [
         dirs::REQUESTS_DIR,
@@ -196,10 +198,10 @@ async fn stream_entries_multiple_directories() {
         // Find the created entry (not the directory)
         let created_entry = entries
             .iter()
-            .find(|e| e.name == "entry")
+            .find(|e| e.name == expected_name)
             .expect(&format!("Should find created entry in {}", dir));
 
-        assert_eq!(created_entry.name, *expected_name);
+        assert_eq!(created_entry.name, expected_name);
 
         // Verify the directory entry is present
         let dir_entry = entries
