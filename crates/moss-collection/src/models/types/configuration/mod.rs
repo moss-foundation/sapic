@@ -163,6 +163,7 @@ impl CompositeDirConfigurationModel {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ItemConfigurationModel {
+    // FIXME: This should be `RequestItemConfigurationModel` for consistency
     Request(ItemRequestConfigurationModel),
     Endpoint(EndpointItemConfigurationModel),
     Component(ComponentItemConfigurationModel),
