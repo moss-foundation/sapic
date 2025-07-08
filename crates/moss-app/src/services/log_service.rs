@@ -4,10 +4,7 @@ mod taurilog_writer;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
-use moss_common::{
-    api::OperationError,
-    nanoid::{NanoId, new_nanoid_string},
-};
+use moss_common::{api::OperationError, nanoid::new_nanoid_string};
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
@@ -38,8 +35,11 @@ use tracing_subscriber::{
 
 use crate::{
     models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::log_service::{
-        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+    services::{
+        log_service::{
+            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+        },
+        session_service::SessionId,
     },
 };
 
@@ -147,7 +147,7 @@ impl LogService {
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
-        session_id: &NanoId,
+        session_id: &SessionId,
         storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
@@ -663,7 +663,7 @@ impl LogService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
+    use crate::{constants::LOGGING_SERVICE_CHANNEL, services::session_service::SessionService};
     use moss_common::new_nanoid;
     use moss_fs::RealFileSystem;
     use moss_storage::global_storage::GlobalStorageImpl;
@@ -683,13 +683,13 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = new_nanoid();
+        let session_id = SessionService::new().session_id();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
-            &session_id,
+            session_id,
             storage.clone(),
         )
         .unwrap();
