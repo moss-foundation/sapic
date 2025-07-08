@@ -4,7 +4,6 @@ use moss_applib::{
     providers::{ServiceMap, ServiceProvider},
     subscription::EventEmitter,
 };
-use moss_common::new_nanoid;
 use moss_file::toml::TomlFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
@@ -23,9 +22,12 @@ use crate::{
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-        RawDirRequestConfiguration, RawDirSchemaConfiguration,
+    models::{
+        primitives::EntryId,
+        types::configuration::docschema::{
+            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+            RawDirRequestConfiguration, RawDirSchemaConfiguration,
+        },
     },
     services::{
         set_icon::{SetIconService, constants::ICON_SIZE},
@@ -116,7 +118,7 @@ impl CollectionBuilder {
         let worktree_service = services.get::<WorktreeService>();
 
         for (dir, order) in &WORKTREE_DIRS {
-            let id = new_nanoid();
+            let id = EntryId::new();
             let configuration = match *dir {
                 dirs::REQUESTS_DIR => {
                     RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))

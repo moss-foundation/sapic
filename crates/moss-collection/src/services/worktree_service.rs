@@ -1,6 +1,6 @@
 use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
-use moss_common::{NanoId, api::OperationError, continue_if_err, continue_if_none};
+use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
 use moss_fs::{
     CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
@@ -21,7 +21,7 @@ use tokio::{
 use crate::{
     constants,
     models::{
-        primitives::{EntryClass, EntryKind, EntryProtocol},
+        primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
     services::storage_service::StorageService,
@@ -183,7 +183,7 @@ pub struct EntryDirMut<'a> {
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct Entry {
-    id: NanoId,
+    id: EntryId,
     path: Arc<Path>,
 
     #[deref]
@@ -215,7 +215,7 @@ impl Entry {
 
 #[derive(Debug)]
 pub struct EntryDescription {
-    pub id: NanoId,
+    pub id: EntryId,
     pub name: String,
     pub path: Arc<Path>,
     pub class: EntryClass,
@@ -227,8 +227,8 @@ pub struct EntryDescription {
 
 #[derive(Default)]
 struct WorktreeState {
-    entries: HashMap<NanoId, Entry>,
-    expanded_entries: HashSet<NanoId>,
+    entries: HashMap<EntryId, Entry>,
+    expanded_entries: HashSet<EntryId>,
 }
 
 pub struct WorktreeService {
@@ -270,7 +270,7 @@ impl WorktreeService {
         }
     }
 
-    pub async fn remove_entry(&self, id: &NanoId) -> WorktreeResult<()> {
+    pub async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -310,7 +310,7 @@ impl WorktreeService {
     pub async fn scan(
         &self,
         path: &Path,
-        expanded_entries: Arc<HashSet<NanoId>>,
+        expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> WorktreeResult<()> {
@@ -467,7 +467,7 @@ impl WorktreeService {
 
     pub async fn create_item_entry(
         &self,
-        id: &NanoId,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawItemConfiguration,
@@ -521,7 +521,7 @@ impl WorktreeService {
 
     pub async fn create_dir_entry(
         &self,
-        id: &NanoId,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawDirConfiguration,
@@ -574,7 +574,7 @@ impl WorktreeService {
 
     pub async fn update_dir_entry(
         &self,
-        id: &NanoId,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
         let mut state_lock = self.state.write().await;
@@ -633,7 +633,7 @@ impl WorktreeService {
 
     pub async fn update_item_entry(
         &self,
-        id: &NanoId,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
         let mut state_lock = self.state.write().await;

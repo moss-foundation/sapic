@@ -8,7 +8,7 @@ use ts_rs::TS;
 use validator::Validate;
 
 use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol},
+    primitives::{EntryClass, EntryId, EntryKind, EntryPath, EntryProtocol},
     types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
 };
 
@@ -34,7 +34,8 @@ pub struct EnvironmentInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: EntryId,
     // TODO: Add validation for path
     pub path: PathBuf,
 
@@ -50,7 +51,8 @@ pub struct UpdateItemEntryParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateDirEntryParams {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     // TODO: Add validation for path
     pub path: PathBuf,
@@ -65,7 +67,9 @@ pub struct UpdateDirEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateDirEntryDescription {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeDirConfigurationModel,
 }
@@ -74,7 +78,9 @@ pub struct AfterUpdateDirEntryDescription {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateItemEntryDescription {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeItemConfigurationModel,
 }
@@ -85,7 +91,8 @@ pub struct AfterUpdateItemEntryDescription {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
     /// Unique identifier for this entry
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     /// Display name of the entry
     pub name: String,

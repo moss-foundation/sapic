@@ -9,11 +9,10 @@ pub use request::*;
 pub use schema::*;
 
 use hcl::Expression;
-use moss_common::NanoId;
 use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
 
-use crate::models::primitives::{EntryClass, EntryProtocol};
+use crate::models::primitives::{EntryClass, EntryId, EntryProtocol};
 
 pub type HeaderName = String;
 pub type Protocol = String;
@@ -67,7 +66,7 @@ pub struct HeaderParameterOptions {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawMetadata {
-    pub id: NanoId,
+    pub id: EntryId,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,7 +79,7 @@ pub enum RawItemConfiguration {
 }
 
 impl RawItemConfiguration {
-    pub fn id(&self) -> &NanoId {
+    pub fn id(&self) -> &EntryId {
         match self {
             RawItemConfiguration::Request(block) => &block.metadata.id,
             RawItemConfiguration::Endpoint(block) => &block.metadata.id,
@@ -100,7 +99,7 @@ pub enum RawDirConfiguration {
 }
 
 impl RawDirConfiguration {
-    pub fn id(&self) -> &NanoId {
+    pub fn id(&self) -> &EntryId {
         match self {
             RawDirConfiguration::Request(block) => &block.metadata.id,
             RawDirConfiguration::Endpoint(block) => &block.metadata.id,
@@ -129,7 +128,7 @@ mod tests {
     #[test]
     fn test_dir() {
         let config = RawDirRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: new_nanoid() }),
+            metadata: Block::new(RawMetadata { id: EntryId::new() }),
             headers: None,
         };
 
@@ -146,7 +145,7 @@ mod tests {
     #[test]
     fn test_item() {
         let config = RawItemRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: new_nanoid() }),
+            metadata: Block::new(RawMetadata { id: EntryId::new() }),
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),

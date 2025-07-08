@@ -18,7 +18,7 @@ moss_bindingutils.workspace = true
 
 moss_applib.workspace = true
 anyhow.workspace = true
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "rc"] }
 thiserror.workspace = true
 tokio = { workspace = true, features = ["sync"] }
 ts-rs = { workspace = true, features = ["serde-json-impl", "url-impl"] }
@@ -32,6 +32,7 @@ image.workspace = true
 hcl-rs.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 indexmap.workspace = true
+nanoid.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

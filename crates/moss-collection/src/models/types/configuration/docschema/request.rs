@@ -1,13 +1,11 @@
 use indexmap::IndexMap;
-use moss_common::NanoId;
 use moss_hcl::{Block, LabeledBlock};
 use serde::{Deserialize, Serialize};
 
 use crate::models::{
-    primitives::EntryProtocol,
+    primitives::{EntryId, EntryProtocol},
     types::configuration::docschema::{HeaderName, RawHeaderParameter, RawMetadata, UrlParts},
 };
-
 // #########################################################
 // ###                      Item                         ###
 // #########################################################
@@ -55,7 +53,7 @@ pub struct RawDirRequestConfiguration {
 }
 
 impl RawDirRequestConfiguration {
-    pub fn new(id: &NanoId) -> Self {
+    pub fn new(id: &EntryId) -> Self {
         Self {
             metadata: Block::new(RawMetadata { id: id.to_owned() }),
             headers: None,
@@ -78,7 +76,7 @@ mod tests {
     #[test]
     fn test_labeled_block() {
         let config = RawItemRequestConfiguration {
-            metadata: Block::new(RawMetadata { id: new_nanoid() }),
+            metadata: Block::new(RawMetadata { id: EntryId::new() }),
             url: Block::new(UrlParts::Get(Block::new(UrlDetails {
                 raw: "https://example.com".to_string(),
             }))),

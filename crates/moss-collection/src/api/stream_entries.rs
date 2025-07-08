@@ -1,4 +1,4 @@
-use moss_common::{NanoId, api::OperationResult};
+use moss_common::api::OperationResult;
 use moss_db::primitives::AnyValue;
 use moss_storage::primitives::segkey::SegKeyBuf;
 use std::{
@@ -16,7 +16,7 @@ use crate::{
     models::{
         events::StreamEntriesEvent,
         operations::{StreamEntriesInput, StreamEntriesOutput},
-        primitives::EntryPath,
+        primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
     services::{
@@ -52,8 +52,8 @@ impl Collection {
             StreamEntriesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<NanoId>> =
-            match storage_service.get_expanded_entries::<NanoId>() {
+        let expanded_entries: Arc<HashSet<EntryId>> =
+            match storage_service.get_expanded_entries::<EntryId>() {
                 Ok(entries) => HashSet::from_iter(entries).into(),
                 Err(error) => {
                     println!("warn: getting expanded entries: {}", error);
@@ -103,7 +103,7 @@ impl Collection {
                     entry_result = rx.recv() => {
                         if let Some(entry) = entry_result {
                             let entry_info = EntryInfo {
-                                id: entry.id.to_string(),
+                                id: entry.id,
                                 name: entry.name,
                                 path: EntryPath::new(entry.path.to_path_buf()),
                                 class: entry.class,
@@ -121,7 +121,7 @@ impl Collection {
                     _ = &mut done_rx => {
                         while let Ok(entry) = rx.try_recv() {
                             let entry_info = EntryInfo {
-                                id: entry.id.to_string(),
+                                id: entry.id,
                                 name: entry.name,
                                 path: EntryPath {
                                     raw: entry.path.to_path_buf(),
