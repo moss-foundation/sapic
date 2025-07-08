@@ -1,6 +1,5 @@
 pub mod shared;
 
-use crate::shared::create_test_collection;
 use moss_collection::{
     constants, dirs,
     models::{
@@ -15,6 +14,8 @@ use moss_common::api::OperationError;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_string};
 use moss_text::sanitized::sanitize;
 use std::path::PathBuf;
+
+use crate::shared::create_test_collection;
 
 fn random_entry_name() -> String {
     format!("Test_{}_Entry", random_string(10))

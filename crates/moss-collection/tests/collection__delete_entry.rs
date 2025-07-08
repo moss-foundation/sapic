@@ -4,12 +4,13 @@ use moss_collection::{
     dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
+        primitives::EntryId,
         types::configuration::{
             DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
     },
 };
-use moss_common::{api::OperationError, new_nanoid_string};
+use moss_common::api::OperationError;
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
 
@@ -29,7 +30,7 @@ async fn create_test_entry(
     collection: &mut moss_collection::Collection,
     entry_name: &str,
     dir_name: &str,
-) -> (String, PathBuf) {
+) -> (EntryId, PathBuf) {
     let entry_path = PathBuf::from(dir_name);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
@@ -72,9 +73,7 @@ async fn delete_entry_success() {
 async fn delete_entry_not_found() {
     let (collection_path, collection) = create_test_collection().await;
 
-    let delete_input = DeleteEntryInput {
-        id: new_nanoid_string(),
-    };
+    let delete_input = DeleteEntryInput { id: EntryId::new() };
 
     let result = collection.delete_entry(delete_input).await;
     assert!(result.is_err());
