@@ -1,3 +1,5 @@
+// TEST: Trigger a Rust workflow
+
 pub mod api;
 
 pub trait Merge<T> {
