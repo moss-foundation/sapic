@@ -11,7 +11,7 @@ use moss_workspace::{
     Workspace,
     builder::{WorkspaceBuilder, WorkspaceCreateParams},
     models::{
-        primitives::{EditorGridOrientation, PanelRenderer},
+        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
@@ -34,7 +34,6 @@ use std::{
     sync::Arc,
 };
 use tauri::test::MockRuntime;
-use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -57,7 +56,7 @@ pub async fn setup_test_workspace() -> (
         .join("tests")
         .join("data")
         .join("workspaces")
-        .join(Uuid::new_v4().to_string())
+        .join(random_workspace_name())
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
@@ -178,8 +177,8 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
     }
 }
 
-pub fn collection_key(id: Uuid) -> SegKeyBuf {
-    SEGKEY_COLLECTION.join(id.to_string())
+pub fn collection_key(id: &CollectionId) -> SegKeyBuf {
+    SEGKEY_COLLECTION.join(id)
 }
 
 pub fn generate_random_icon(output_path: &Path) {

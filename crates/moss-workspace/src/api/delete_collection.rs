@@ -15,10 +15,10 @@ impl<R: TauriRuntime> Workspace<R> {
         input: &DeleteCollectionInput,
     ) -> OperationResult<DeleteCollectionOutput> {
         let collection_service = self.services.get::<CollectionService>();
-        let description = collection_service.delete_collection(input.id).await?;
+        let description = collection_service.delete_collection(&input.id).await?;
 
         Ok(DeleteCollectionOutput {
-            id: input.id,
+            id: input.id.to_owned(),
             abs_path: description.map(|d| d.abs_path),
         })
     }

@@ -12,7 +12,6 @@ use moss_storage::{
     primitives::segkey::SegKey,
     storage::operations::{GetItem, TransactionalRemoveItem},
 };
-use nanoid::nanoid;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -33,12 +32,17 @@ use tracing_subscriber::{
     },
     prelude::*,
 };
-use uuid::Uuid;
 
 use crate::{
-    models::types::{LogEntryInfo, LogItemSourceInfo},
-    services::log_service::{
-        constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+    models::{
+        primitives::LogEntryId,
+        types::{LogEntryInfo, LogItemSourceInfo},
+    },
+    services::{
+        log_service::{
+            constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
+        },
+        session_service::SessionId,
     },
 };
 
@@ -46,15 +50,9 @@ pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
     pub const SESSION_SCOPE: &'static str = "session";
 
-    pub const ID_LENGTH: usize = 10;
-
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 
     pub const FILE_TIMESTAMP_FORMAT: &'static str = "%Y_%m_%dT%H_%M_%S%z";
-}
-
-fn new_id() -> String {
-    nanoid!(ID_LENGTH)
 }
 
 const DUMP_THRESHOLD: usize = 10;
@@ -150,7 +148,7 @@ impl LogService {
         fs: Arc<dyn FileSystem>,
         app_handle: AppHandle<R>,
         applog_path: &Path,
-        session_id: &Uuid,
+        session_id: &SessionId,
         storage: Arc<dyn GlobalStorage>,
     ) -> Result<LogService> {
         // Rolling log file format
@@ -274,7 +272,7 @@ impl LogService {
 
     pub(crate) async fn delete_logs(
         &self,
-        input: impl Iterator<Item = &str>,
+        input: impl Iterator<Item = &LogEntryId>,
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut file_entries = Vec::new();
         let mut result = Vec::new();
@@ -284,11 +282,11 @@ impl LogService {
                 .applog_queue
                 .lock()
                 .map_err(|_| anyhow!("Mutex poisoned"))?;
-            let idx = applog_queue_lock.iter().position(|x| x.id == entry_id);
+            let idx = applog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 applog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_id.to_string(),
+                    id: entry_id.to_owned(),
                     file_path: None,
                 });
                 continue;
@@ -300,11 +298,11 @@ impl LogService {
                 .sessionlog_queue
                 .lock()
                 .map_err(|_| anyhow!("Mutex poisoned"))?;
-            let idx = sessionlog_queue_lock.iter().position(|x| x.id == entry_id);
+            let idx = sessionlog_queue_lock.iter().position(|x| &x.id == entry_id);
             if let Some(idx) = idx {
                 sessionlog_queue_lock.remove(idx);
                 result.push(LogItemSourceInfo {
-                    id: entry_id.to_string(),
+                    id: entry_id.to_owned(),
                     file_path: None,
                 });
                 continue;
@@ -328,11 +326,12 @@ impl LogService {
     // Tracing disallows non-constant value for `target`
     // So we have to manually match it
     pub fn trace(&self, scope: LogScope, payload: LogPayload) {
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 trace!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -340,7 +339,7 @@ impl LogService {
             LogScope::Session => {
                 trace!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -349,11 +348,12 @@ impl LogService {
     }
 
     pub fn debug(&self, scope: LogScope, payload: LogPayload) {
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 debug!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -361,7 +361,7 @@ impl LogService {
             LogScope::Session => {
                 debug!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -370,11 +370,12 @@ impl LogService {
     }
 
     pub fn info(&self, scope: LogScope, payload: LogPayload) {
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 info!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -382,7 +383,7 @@ impl LogService {
             LogScope::Session => {
                 info!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -391,11 +392,12 @@ impl LogService {
     }
 
     pub fn warn(&self, scope: LogScope, payload: LogPayload) {
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 warn!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -403,7 +405,7 @@ impl LogService {
             LogScope::Session => {
                 warn!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -412,11 +414,12 @@ impl LogService {
     }
 
     pub fn error(&self, scope: LogScope, payload: LogPayload) {
+        let id = LogEntryId::new().to_string();
         match scope {
             LogScope::App => {
                 error!(
                     target: APP_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -424,7 +427,7 @@ impl LogService {
             LogScope::Session => {
                 error!(
                     target: SESSION_SCOPE,
-                    id = new_id(),
+                    id = id,
                     resource = payload.resource,
                     message = payload.message
                 )
@@ -435,7 +438,7 @@ impl LogService {
 
 /// Helper methods for delete_logs
 impl LogService {
-    fn find_files_to_update(&self, entries: &[&str]) -> Result<HashSet<PathBuf>> {
+    fn find_files_to_update(&self, entries: &[&LogEntryId]) -> Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
         for entry_id in entries {
             let segkey = SegKey::new(&entry_id).to_segkey_buf();
@@ -450,13 +453,10 @@ impl LogService {
 
     async fn delete_logs_from_files(
         &self,
-        entries: &[&str],
+        entries: &[&LogEntryId],
     ) -> LogServiceResult<Vec<LogItemSourceInfo>> {
         let mut deleted_entries = Vec::new();
-        let mut ids_to_delete = entries
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<HashSet<_>>();
+        let mut ids_to_delete = entries.iter().cloned().cloned().collect::<HashSet<_>>();
 
         let log_files = self.find_files_to_update(entries)?;
         for file in log_files {
@@ -469,7 +469,7 @@ impl LogService {
     async fn update_log_file(
         &self,
         path: &Path,
-        ids: &mut HashSet<String>,
+        ids: &mut HashSet<LogEntryId>,
     ) -> Result<Vec<LogItemSourceInfo>> {
         let mut new_content = String::new();
         let mut removed_entries = Vec::new();
@@ -660,14 +660,16 @@ impl LogService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::constants::LOGGING_SERVICE_CHANNEL;
     use moss_fs::RealFileSystem;
     use moss_storage::global_storage::GlobalStorageImpl;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
+
+    use crate::constants::LOGGING_SERVICE_CHANNEL;
+
+    use super::*;
 
     fn random_app_log_path() -> PathBuf {
         Path::new("tests").join("data").join(random_string(10))
@@ -680,7 +682,7 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = Uuid::new_v4();
+        let session_id = SessionId::new();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,

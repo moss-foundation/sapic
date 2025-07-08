@@ -4,6 +4,7 @@ use moss_collection::{
     dirs,
     models::{
         operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
+        primitives::EntryId,
         types::configuration::{
             DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
         },
@@ -12,7 +13,6 @@ use moss_collection::{
 use moss_common::api::OperationError;
 use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
-use uuid::Uuid;
 
 use crate::shared::create_test_collection;
 
@@ -30,7 +30,7 @@ async fn create_test_entry(
     collection: &mut moss_collection::Collection,
     entry_name: &str,
     dir_name: &str,
-) -> (Uuid, PathBuf) {
+) -> (EntryId, PathBuf) {
     let entry_path = PathBuf::from(dir_name);
 
     let input = CreateEntryInput::Dir(CreateDirEntryInput {
@@ -73,7 +73,7 @@ async fn delete_entry_success() {
 async fn delete_entry_not_found() {
     let (collection_path, collection) = create_test_collection().await;
 
-    let delete_input = DeleteEntryInput { id: Uuid::new_v4() };
+    let delete_input = DeleteEntryInput { id: EntryId::new() };
 
     let result = collection.delete_entry(delete_input).await;
     assert!(result.is_err());
@@ -240,7 +240,9 @@ async fn delete_entries_from_different_directories() {
 
     // Delete all entries
     for (entry_id, entry_path, entry_name, _) in &entries {
-        let delete_input = DeleteEntryInput { id: *entry_id };
+        let delete_input = DeleteEntryInput {
+            id: entry_id.to_owned(),
+        };
 
         let result = collection.delete_entry(delete_input).await;
         let _ = result.expect(&format!("Failed to delete entry at {:?}", entry_path));

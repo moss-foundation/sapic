@@ -11,7 +11,7 @@ use moss_app::{
         types::{ColorThemeInfo, LocaleInfo},
     },
     services::{
-        log_service::LogService, storage_service::StorageService,
+        log_service::LogService, session_service::SessionId, storage_service::StorageService,
         workspace_service::WorkspaceService,
     },
 };
@@ -20,7 +20,6 @@ use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_string;
 use std::{any::TypeId, future::Future, path::PathBuf, pin::Pin, sync::Arc};
 use tauri::test::MockRuntime;
-use uuid::Uuid;
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -59,7 +58,7 @@ pub async fn set_up_test_app() -> (
 
     let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
 
-    let session_id = Uuid::new_v4();
+    let session_id = SessionId::new();
     let mut services: ServiceMap = Default::default();
 
     let log_service: Arc<LogService> = LogService::new(

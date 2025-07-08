@@ -14,7 +14,6 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use uuid::Uuid;
 
 use crate::{
     Collection,
@@ -23,9 +22,12 @@ use crate::{
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-        RawDirRequestConfiguration, RawDirSchemaConfiguration,
+    models::{
+        primitives::EntryId,
+        types::configuration::docschema::{
+            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+            RawDirRequestConfiguration, RawDirSchemaConfiguration,
+        },
     },
     services::{
         set_icon::{SetIconService, constants::ICON_SIZE},
@@ -116,26 +118,26 @@ impl CollectionBuilder {
         let worktree_service = services.get::<WorktreeService>();
 
         for (dir, order) in &WORKTREE_DIRS {
-            let id = Uuid::new_v4();
+            let id = EntryId::new();
             let configuration = match *dir {
                 dirs::REQUESTS_DIR => {
-                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(id)))
+                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))
                 }
                 dirs::ENDPOINTS_DIR => {
-                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(id)))
+                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(&id)))
                 }
                 dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
-                    RawDirComponentConfiguration::new(id),
+                    RawDirComponentConfiguration::new(&id),
                 )),
                 dirs::SCHEMAS_DIR => {
-                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(id)))
+                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(&id)))
                 }
                 _ => unreachable!(),
             };
 
             worktree_service
                 .create_dir_entry(
-                    id,
+                    &id,
                     dir,
                     "",
                     configuration,
