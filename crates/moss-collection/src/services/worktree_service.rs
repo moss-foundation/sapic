@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
@@ -21,6 +22,7 @@ use uuid::Uuid;
 
 use crate::{
     constants,
+    constants::DIR_CONFIG_FILENAME,
     models::{
         primitives::{EntryClass, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
@@ -162,6 +164,7 @@ pub struct ModifyParams {
     pub protocol: Option<EntryProtocol>,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
+    pub path: Option<PathBuf>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -585,6 +588,32 @@ impl WorktreeService {
             ))?;
 
         let mut path = entry.path.clone().to_path_buf();
+
+        if let Some(new_parent) = params.path {
+            let classification_folder = entry.configuration.classification_folder();
+            if !new_parent.starts_with(classification_folder) {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entry to a different classification folder".to_string(),
+                ));
+            }
+
+            // We can only move entries into a directory entry
+            // Check if the destination path has dir config file
+            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
+            if !dest_entry_config.exists() {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entries into a non-directory entry".to_string(),
+                ));
+            }
+
+            let old_path = entry.path.clone();
+            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            path = new_path.clone();
+
+            self.rename_entry(&old_path, &new_path).await?;
+            *entry.path = new_path.into();
+        }
+
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
@@ -644,6 +673,32 @@ impl WorktreeService {
             ))?;
 
         let mut path = entry.path.clone().to_path_buf();
+
+        if let Some(new_parent) = params.path {
+            let classification_folder = entry.configuration.classification_folder();
+            if !new_parent.starts_with(classification_folder) {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entry to a different classification folder".to_string(),
+                ));
+            }
+
+            // We can only move entries into a directory entry
+            // Check if the destination path has dir config file
+            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
+            if !dest_entry_config.exists() {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entries into a non-directory entry".to_string(),
+                ));
+            }
+
+            let old_path = entry.path.clone();
+            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            path = new_path.clone();
+
+            self.rename_entry(&old_path, &new_path).await?;
+            *entry.path = new_path.into();
+        }
+
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
@@ -777,6 +832,20 @@ fn rename_path(path: &Path, name: &str) -> PathBuf {
     buf.pop();
     buf.push(sanitize(name));
     buf
+}
+
+/// Update the parent of a path, preserving the filename
+fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf> {
+    let name = path
+        .file_name()
+        .ok_or(anyhow!(format!(
+            "Invalid entry path: {}",
+            path.to_string_lossy().to_string()
+        )))?
+        .to_string_lossy()
+        .to_string();
+
+    Ok(new_parent.join(name))
 }
 
 async fn process_dir_entry(

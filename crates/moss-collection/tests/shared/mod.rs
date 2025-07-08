@@ -4,11 +4,11 @@ use moss_collection::{
     collection::Collection,
     dirs,
     models::{
-        operations::{CreateDirEntryInput, CreateEntryInput},
+        operations::{CreateDirEntryInput, CreateEntryInput, CreateItemEntryInput},
         types::configuration::{
-            ComponentDirConfigurationModel, DirConfigurationModel, DirHttpConfigurationModel,
-            EndpointDirConfigurationModel, HttpEndpointDirConfiguration, ItemConfigurationModel,
-            RequestDirConfigurationModel, SchemaDirConfigurationModel,
+            ComponentDirConfigurationModel, ComponentItemConfigurationModel, DirConfigurationModel,
+            DirHttpConfigurationModel, EndpointDirConfigurationModel, HttpEndpointDirConfiguration,
+            ItemConfigurationModel, RequestDirConfigurationModel, SchemaDirConfigurationModel,
         },
     },
     services::{storage_service::StorageService, worktree_service::WorktreeService},
@@ -91,6 +91,11 @@ pub fn create_test_component_dir_configuration() -> DirConfigurationModel {
 }
 
 #[allow(dead_code)]
+pub fn create_test_component_item_configuration() -> ItemConfigurationModel {
+    ItemConfigurationModel::Component(ComponentItemConfigurationModel {})
+}
+
+#[allow(dead_code)]
 pub fn create_test_schema_dir_configuration() -> DirConfigurationModel {
     DirConfigurationModel::Schema(SchemaDirConfigurationModel {})
 }
@@ -131,6 +136,20 @@ pub async fn create_test_component_dir_entry(collection: &mut Collection, name: 
             name: name.to_string(),
             order: 0,
             configuration: create_test_component_dir_configuration(),
+        }))
+        .await
+        .unwrap()
+        .id
+}
+
+#[allow(dead_code)]
+pub async fn create_test_component_item_entry(collection: &mut Collection, name: &str) -> Uuid {
+    collection
+        .create_entry(CreateEntryInput::Item(CreateItemEntryInput {
+            path: PathBuf::from(dirs::COMPONENTS_DIR),
+            name: name.to_string(),
+            order: 0,
+            configuration: create_test_component_item_configuration(),
         }))
         .await
         .unwrap()

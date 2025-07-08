@@ -35,8 +35,11 @@ pub struct EnvironmentInfo {
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
     pub id: Uuid,
-    // FIXME: Remove this field during frontend change
-    pub path: PathBuf,
+
+    /// If provided, the entry will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "entry"
+    /// The new relative path of the entry folder will be "requests/folder/entry"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
@@ -52,8 +55,10 @@ pub struct UpdateItemEntryParams {
 pub struct UpdateDirEntryParams {
     pub id: Uuid,
 
-    // TODO: Remove this field during frontend change
-    pub path: PathBuf,
+    /// If provided, the directory will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "group"
+    /// The new relative path of the directory folder will be "requests/folder/group"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,

@@ -7,10 +7,13 @@ use moss_collection::{
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
-use crate::shared::{create_test_collection, create_test_component_dir_entry, random_entry_name};
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
+    create_test_request_dir_entry, random_entry_name,
+};
 
 mod shared;
 
@@ -230,4 +233,168 @@ async fn expand_and_collapse_dir_entry() {
 
     // Cleanup
     std::fs::remove_dir_all(collection_path).unwrap()
+}
+
+#[tokio::test]
+async fn move_dir_entry_success() {
+    let (collection_path, mut collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+
+    // Create a destination_directory named dest
+    let _ = create_test_component_dir_entry(&mut collection, "dest").await;
+
+    let old_dest = PathBuf::from(dirs::COMPONENTS_DIR);
+    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
+
+    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
+    let _output = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Some(new_dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await
+        .unwrap();
+
+    // Verify the path has been changed
+    let old_path = collection_path.join(old_dest).join(&entry_name);
+    let new_path = collection_path.join(new_dest).join(&entry_name);
+    assert!(!old_path.exists());
+    assert!(new_path.exists());
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_nonexistent_destination() {
+    let (collection_path, mut collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+
+    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
+
+    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
+    let result = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Some(new_dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_different_classification_folder() {
+    let (collection_path, mut collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+
+    // Create a destination_directory named dest
+    let _ = create_test_request_dir_entry(&mut collection, "dest").await;
+
+    let new_dest = Path::new(dirs::REQUESTS_DIR).join("dest");
+
+    // Move entry path from `components/{entry_name}` to `requests/dest/{entry_name}`
+    let result = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Some(new_dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_non_dir_destination() {
+    let (collection_path, mut collection) = create_test_collection().await;
+
+    let entry_name = random_entry_name();
+
+    let id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+
+    // Create a destination entry (non-directory) named dest
+    let _ = create_test_component_item_entry(&mut collection, "dest").await;
+
+    let new_dest = Path::new(dirs::COMPONENTS_DIR).join("dest");
+
+    // Move entry path from `components/{entry_name}` to `components/dest/{entry_name}`
+    let result = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id,
+            path: Some(new_dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
+}
+
+#[tokio::test]
+async fn move_dir_entry_already_exists() {
+    let (collection_path, mut collection) = create_test_collection().await;
+
+    // First create a dest/entry entry
+    let dest_name = "dest".to_string();
+    let entry_name = "entry".to_string();
+
+    create_test_component_dir_entry(&mut collection, &dest_name).await;
+    let existing_id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+
+    let dest = Path::new(dirs::COMPONENTS_DIR).join(&dest_name);
+    let _ = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id: existing_id,
+            path: Some(dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await
+        .unwrap();
+
+    // Create a new entry and try to move it into dest
+    let new_id = create_test_component_dir_entry(&mut collection, &entry_name).await;
+    let result = collection
+        .update_entry(UpdateEntryInput::Dir(UpdateDirEntryParams {
+            id: new_id,
+            path: Some(dest.clone()),
+            name: None,
+            order: None,
+            expanded: None,
+        }))
+        .await;
+
+    assert!(result.is_err());
+
+    // Cleanup
+    std::fs::remove_dir_all(collection_path).unwrap();
 }
