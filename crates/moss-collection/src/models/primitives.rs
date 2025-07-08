@@ -32,8 +32,6 @@ impl Display for EntryId {
     }
 }
 
-impl ContextValue for EntryId {}
-
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]

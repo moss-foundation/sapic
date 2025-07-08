@@ -14,6 +14,18 @@ use tauri::{AppHandle, Manager, Runtime as TauriRuntime, State};
 
 use crate::app::App;
 
+pub mod ctxkeys {
+    use moss_applib::context::ContextValue;
+
+    use crate::models::primitives::WorkspaceId;
+
+    /// The id of the workspace that is currently active.
+    #[derive(Debug, Deref, From, PartialEq, Eq, Hash)]
+    pub struct ActiveWorkspaceId(WorkspaceId);
+
+    impl ContextValue for ActiveWorkspaceId {}
+}
+
 #[async_trait]
 pub trait AnyAppContext<R: TauriRuntime>: Context<R> {
     fn app_handle(&self) -> AppHandle<R>;

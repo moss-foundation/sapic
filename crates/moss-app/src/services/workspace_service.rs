@@ -26,7 +26,7 @@ use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    context::AnyAppContext,
+    context::{AnyAppContext, ctxkeys},
     dirs,
     models::primitives::WorkspaceId,
     services::storage_service::StorageService,
@@ -395,8 +395,8 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             txn.commit()?;
         }
 
-        let workspace_id: WorkspaceId = id.to_owned();
-        ctx.set_value(workspace_id);
+        let active_workspace_id: ctxkeys::ActiveWorkspaceId = id.to_owned().into();
+        ctx.set_value(active_workspace_id);
 
         Ok(WorkspaceItemDescription {
             id: id.to_owned(),
@@ -416,7 +416,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         self.storage.remove_last_active_workspace()?;
 
-        ctx.remove_value::<WorkspaceId>();
+        ctx.remove_value::<ctxkeys::ActiveWorkspaceId>();
 
         Ok(())
     }

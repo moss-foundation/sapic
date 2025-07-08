@@ -1,4 +1,3 @@
-use moss_applib::context::ContextValue;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Display, sync::Arc};
@@ -34,8 +33,6 @@ impl Display for WorkspaceId {
         write!(f, "{}", self.0)
     }
 }
-
-impl ContextValue for WorkspaceId {}
 
 // ########################################################
 // ###                      Theme                       ###
