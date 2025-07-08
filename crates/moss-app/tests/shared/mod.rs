@@ -11,7 +11,9 @@ use moss_app::{
         types::{ColorThemeInfo, LocaleInfo},
     },
     services::{
-        log_service::LogService, session_service::SessionService, storage_service::StorageService,
+        log_service::LogService,
+        session_service::{SessionId, SessionService},
+        storage_service::StorageService,
         workspace_service::WorkspaceService,
     },
 };
@@ -58,7 +60,7 @@ pub async fn set_up_test_app() -> (
 
     let storage_service: Arc<StorageService> = StorageService::new(&app_path).unwrap().into();
 
-    let session_id = SessionService::new().session_id().to_owned();
+    let session_id = SessionId::new();
     let mut services: ServiceMap = Default::default();
 
     let log_service: Arc<LogService> = LogService::new(

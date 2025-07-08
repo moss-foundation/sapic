@@ -682,7 +682,7 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = SessionService::new().session_id().to_owned();
+        let session_id = SessionId::new();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,
