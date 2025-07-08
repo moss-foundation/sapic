@@ -1,5 +1,4 @@
 use nanoid::nanoid;
-use std::{fmt::Display, hash::Hash};
 
 const ID_LENGTH: usize = 10;
 
