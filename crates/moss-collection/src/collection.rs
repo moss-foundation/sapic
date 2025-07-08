@@ -1,3 +1,10 @@
+use crate::{
+    config::ConfigModel,
+    constants::COLLECTION_ICON_FILENAME,
+    dirs::ASSETS_DIR,
+    manifest::{ManifestModel, ManifestModelDiff},
+    services::set_icon::{SetIconService, constants::ICON_SIZE},
+};
 use anyhow::Result;
 use moss_applib::{
     EventMarker, ServiceMarker,
@@ -5,8 +12,7 @@ use moss_applib::{
     subscription::{Event, EventEmitter},
 };
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_common::NanoId;
-use moss_environment::environment::Environment;
+use moss_environment::{environment::Environment, models::primitives::EnvironmentId};
 use moss_file::toml::TomlFileHandle;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::normalize_git_url;
@@ -17,21 +23,13 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-use crate::{
-    config::ConfigModel,
-    constants::COLLECTION_ICON_FILENAME,
-    dirs::ASSETS_DIR,
-    manifest::{ManifestModel, ManifestModelDiff},
-    services::set_icon::{SetIconService, constants::ICON_SIZE},
-};
-
 pub struct EnvironmentItem {
-    pub id: NanoId,
+    pub id: EnvironmentId,
     pub name: String,
     pub inner: Environment,
 }
 
-type EnvironmentMap = HashMap<NanoId, Arc<EnvironmentItem>>;
+type EnvironmentMap = HashMap<EnvironmentId, Arc<EnvironmentItem>>;
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {

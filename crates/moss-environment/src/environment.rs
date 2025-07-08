@@ -1,5 +1,4 @@
 use anyhow::Result;
-use moss_common::nanoid::{NanoId, new_nanoid};
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
@@ -7,9 +6,11 @@ use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     file::FileModel,
-    models::types::{VariableKind, VariableName, VariableValue},
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::{VariableKind, VariableName, VariableValue},
+    },
 };
-
 // #[derive(Error, Debug)]
 // pub enum EnvironmentError {
 //     #[error("Failed to parse environment file as JSON: {0}")]
@@ -41,7 +42,7 @@ pub struct VariableItemParams {
 
 #[derive(Debug, Clone)]
 pub struct VariableItem {
-    pub id: NanoId,
+    pub id: VariableId,
     pub kind: Option<VariableKind>,
     pub global_value: Option<VariableValue>,
     pub desc: Option<String>,
@@ -110,7 +111,7 @@ impl Environment {
             variables.insert(
                 name,
                 VariableItem {
-                    id: new_nanoid(),
+                    id: VariableId::new(),
                     kind: value.kind,
                     global_value: value.value,
                     desc: value.desc,
@@ -130,7 +131,7 @@ impl Environment {
         })
     }
 
-    pub async fn id(&self) -> NanoId {
+    pub async fn id(&self) -> EnvironmentId {
         self.file.model().await.id.clone()
     }
 

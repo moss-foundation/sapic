@@ -3766,10 +3766,12 @@ name = "moss_environment"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "derive_more 2.0.1",
  "moss_common",
  "moss_file",
  "moss_fs",
  "moss_storage",
+ "nanoid",
  "serde",
  "serde_json",
  "ts-rs",

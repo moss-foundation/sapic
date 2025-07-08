@@ -1,6 +1,7 @@
-use moss_common::{NanoId, new_nanoid};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::models::primitives::EnvironmentId;
 
 use super::models::types::{VariableKind, VariableName, VariableValue};
 
@@ -35,14 +36,14 @@ impl Variable {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct FileModel {
-    pub id: NanoId,
+    pub id: EnvironmentId,
     pub values: HashMap<VariableName, Variable>,
 }
 
 impl FileModel {
     pub fn new() -> Self {
         Self {
-            id: new_nanoid(),
+            id: EnvironmentId::new(),
             values: HashMap::new(),
         }
     }
