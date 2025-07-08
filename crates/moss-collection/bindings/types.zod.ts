@@ -101,7 +101,7 @@ export const requestDirConfigurationModelSchema = z.object({
 
 export const updateDirEntryParamsSchema = z.object({
   id: z.string(),
-  path: z.string(),
+  path: z.string().optional(),
   name: z.string().optional(),
   order: z.number().optional(),
   expanded: z.boolean().optional(),
@@ -190,7 +190,7 @@ export const urlEncodedItemSchema = z.object({
 
 export const updateItemEntryParamsSchema = z.object({
   id: z.string(),
-  path: z.string(),
+  path: z.string().optional(),
   name: z.string().optional(),
   protocol: entryProtocolSchema.optional(),
   order: z.number().optional(),

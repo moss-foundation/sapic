@@ -183,11 +183,27 @@ export type SchemaDirConfigurationModel = Record<string, never>;
 
 export type SchemaItemConfigurationModel = Record<string, never>;
 
-export type UpdateDirEntryParams = { id: string; path: string; name?: string; order?: number; expanded?: boolean };
+export type UpdateDirEntryParams = {
+  id: string;
+  /**
+   * If provided, the directory will move to the new path
+   * For example, if the new path is "requests/folder/", the name is "group"
+   * The new relative path of the directory folder will be "requests/folder/group"
+   */
+  path?: string;
+  name?: string;
+  order?: number;
+  expanded?: boolean;
+};
 
 export type UpdateItemEntryParams = {
   id: string;
-  path: string;
+  /**
+   * If provided, the entry will move to the new path
+   * For example, if the new path is "requests/folder/", the name is "entry"
+   * The new relative path of the entry folder will be "requests/folder/entry"
+   */
+  path?: string;
   name?: string;
   protocol?: EntryProtocol;
   order?: number;
