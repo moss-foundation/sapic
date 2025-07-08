@@ -4,7 +4,7 @@ mod taurilog_writer;
 use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
-use moss_common::{api::OperationError, nanoid::new_nanoid_string};
+use moss_common::{api::OperationError, new_nanoid_string};
 use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage::{
@@ -46,8 +46,6 @@ use crate::{
 pub mod constants {
     pub const APP_SCOPE: &'static str = "app";
     pub const SESSION_SCOPE: &'static str = "session";
-
-    pub const ID_LENGTH: usize = 10;
 
     pub const TIMESTAMP_FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f%z";
 
@@ -662,15 +660,16 @@ impl LogService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{constants::LOGGING_SERVICE_CHANNEL, services::session_service::SessionService};
-    use moss_common::new_nanoid;
     use moss_fs::RealFileSystem;
     use moss_storage::global_storage::GlobalStorageImpl;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
     use tokio::fs::remove_dir_all;
+
+    use crate::{constants::LOGGING_SERVICE_CHANNEL, services::session_service::SessionService};
+
+    use super::*;
 
     fn random_app_log_path() -> PathBuf {
         Path::new("tests").join("data").join(random_string(10))
@@ -683,13 +682,13 @@ mod tests {
 
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
-        let session_id = SessionService::new().session_id();
+        let session_id = SessionService::new().session_id().to_owned();
         let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
             &test_app_log_path,
-            session_id,
+            &session_id,
             storage.clone(),
         )
         .unwrap();

@@ -1,12 +1,14 @@
 pub mod shared;
 
 use moss_app::{
-    context::ctxkeys,
     dirs,
-    models::operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
+    models::{
+        operations::{CreateWorkspaceInput, DeleteWorkspaceInput},
+        primitives::WorkspaceId,
+    },
 };
 use moss_applib::context::Context;
-use moss_common::{api::OperationError, new_nanoid_string};
+use moss_common::api::OperationError;
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
@@ -136,10 +138,7 @@ async fn delete_workspace_opened() {
     assert!(workspace_path.exists());
 
     // Verify workspace is active
-    let active_workspace_id = ctx
-        .value::<ctxkeys::WorkspaceId>()
-        .map(|id| id.to_string())
-        .unwrap();
+    let active_workspace_id = ctx.value::<WorkspaceId>().map(|id| (*id).clone()).unwrap();
     assert_eq!(active_workspace_id, create_output.id);
 
     // Delete the workspace (should succeed and deactivate it)
@@ -162,7 +161,7 @@ async fn delete_workspace_opened() {
     assert!(list_workspaces.is_empty());
 
     // Verify that no workspace is active after deletion
-    assert!(ctx.value::<ctxkeys::WorkspaceId>().is_none());
+    assert!(ctx.value::<WorkspaceId>().is_none());
 
     cleanup().await;
 }
@@ -171,7 +170,7 @@ async fn delete_workspace_opened() {
 async fn delete_workspace_nonexistent() {
     let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = new_nanoid_string();
+    let nonexistent_id = WorkspaceId::new();
 
     let delete_result = app
         .delete_workspace(&ctx, &DeleteWorkspaceInput { id: nonexistent_id })

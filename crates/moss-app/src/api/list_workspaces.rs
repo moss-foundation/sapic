@@ -18,7 +18,7 @@ impl<R: TauriRuntime> App<R> {
         let workspaces = workspaces
             .into_iter()
             .map(|item| WorkspaceInfo {
-                id: item.id.to_string(),
+                id: item.id,
                 name: item.name.clone(),
                 last_opened_at: item.last_opened_at,
                 active: item.active,

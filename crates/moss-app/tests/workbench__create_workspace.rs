@@ -2,11 +2,11 @@ pub mod shared;
 
 use moss_app::{
     dirs,
-    models::operations::CreateWorkspaceInput,
+    models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
-use moss_common::{NanoId, api::OperationError};
+use moss_common::api::OperationError;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_workspace_name};
 use moss_workspace::models::types::WorkspaceMode;
@@ -46,7 +46,7 @@ async fn create_workspace_success() {
     // Check active workspace
     assert!(workspace_service.is_workspace_open().await.is_some());
     let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-    assert_eq!(active_workspace_id.to_string(), id);
+    assert_eq!(active_workspace_id, id);
 
     // Check known_workspaces
     let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -165,7 +165,7 @@ async fn create_workspace_same_name() {
     // Check active workspace is the second one
     assert!(workspace_service.is_workspace_open().await.is_some());
     let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-    assert_eq!(active_workspace_id.to_string(), second_output.id);
+    assert_eq!(active_workspace_id, second_output.id);
 
     // Check both workspaces are in list
     let list_after_second = app.list_workspaces(&ctx).await.unwrap();
@@ -186,8 +186,8 @@ async fn create_workspace_same_name() {
     // Check only second workspace has entry in the database since it's been opened
 
     let item_store = storage_service.__storage().item_store();
-    let first_id: NanoId = first_output.id.clone().into();
-    let second_id: NanoId = second_output.id.clone().into();
+    let first_id: WorkspaceId = first_output.id;
+    let second_id: WorkspaceId = second_output.id;
     let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&second_id)).unwrap();
     assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&first_id)).is_err());
 
@@ -197,8 +197,8 @@ async fn create_workspace_same_name() {
         SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
     )
     .unwrap();
-    let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, second_output.id.to_string());
+    let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
+    assert_eq!(last_active_workspace_id, second_id);
 
     cleanup().await;
 }
@@ -237,7 +237,7 @@ async fn create_workspace_special_chars() {
         // Check active workspace
         assert!(workspace_service.is_workspace_open().await.is_some());
         let active_workspace_id = workspace_service.is_workspace_open().await.unwrap();
-        assert_eq!(active_workspace_id.to_string(), create_output.id);
+        assert_eq!(active_workspace_id, create_output.id);
 
         // Check workspace is in list
         let list_workspaces = app.list_workspaces(&ctx).await.unwrap();
@@ -249,9 +249,9 @@ async fn create_workspace_special_chars() {
             .unwrap();
         assert_eq!(matching_workspace.name, name);
 
+        let id: WorkspaceId = create_output.id;
         // Check database - verify last opened at timestamp is saved
         let item_store = storage_service.__storage().item_store();
-        let id: NanoId = create_output.id.clone().into();
         let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).unwrap();
 
         // Check that last active workspace is set in database
@@ -260,8 +260,8 @@ async fn create_workspace_special_chars() {
             SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
         )
         .unwrap();
-        let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-        assert_eq!(last_active_workspace_id, create_output.id.to_string());
+        let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
+        assert_eq!(last_active_workspace_id, id);
     }
 
     cleanup().await;
@@ -303,7 +303,7 @@ async fn create_workspace_not_open_on_creation() {
 
     // Check that a database entry is not created for unopened workspace
     let item_store = storage_service.__storage().item_store();
-    let id: NanoId = create_output.id.clone().into();
+    let id: WorkspaceId = create_output.id;
     assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).is_err());
 
     // Check that last active workspace is not set in database

@@ -5,7 +5,7 @@ use std::{
 };
 use ts_rs::TS;
 
-use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode};
+use crate::models::primitives::{LocaleId, LogLevel, ThemeId, ThemeMode, WorkspaceId};
 
 // ########################################################
 // ###                      Locale                      ###
@@ -110,7 +110,8 @@ pub struct LogEntryInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct WorkspaceInfo {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
     pub name: String,
     pub last_opened_at: Option<i64>,
     pub active: bool,

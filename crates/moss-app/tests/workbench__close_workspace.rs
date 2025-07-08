@@ -1,13 +1,15 @@
 pub mod shared;
 
 use moss_app::{
-    context::ctxkeys,
-    models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
+    models::{
+        operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
+        primitives::WorkspaceId,
+    },
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 use moss_applib::context::Context;
-use moss_common::{api::OperationError, new_nanoid_string};
+use moss_common::api::OperationError;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
@@ -147,11 +149,11 @@ async fn close_workspace_after_another_opened() {
 
     // Check that the second workspace is active
 
-    let maybe_active_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| id.to_string());
+    let maybe_active_id = ctx.value::<WorkspaceId>().map(|id| (*id).clone());
     assert!(maybe_active_id.is_some());
     let active_id = maybe_active_id.unwrap();
 
-    assert_eq!(active_id.to_string(), create_output2.id);
+    assert_eq!(active_id, create_output2.id);
 
     // Attempt to close the first workspace (should fail because it's not active)
     let close_result1 = app
@@ -204,7 +206,7 @@ async fn close_workspace_after_another_opened() {
 async fn close_workspace_nonexistent() {
     let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = new_nanoid_string();
+    let nonexistent_id = WorkspaceId::new();
 
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: nonexistent_id })
@@ -248,7 +250,7 @@ async fn close_workspace_from_different_session() {
     .unwrap();
 
     // Try to close a workspace with wrong id
-    let wrong_id = new_nanoid_string();
+    let wrong_id = WorkspaceId::new();
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: wrong_id })
         .await;
