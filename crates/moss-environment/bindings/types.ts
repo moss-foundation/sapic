@@ -6,8 +6,8 @@ export type VariableInfo = {
   localValue: VariableValue;
   disabled: boolean;
   kind: VariableKind;
-  order: number | null;
-  desc: string | null;
+  order?: number;
+  desc?: string;
 };
 
 export type VariableKind = "secret" | "default";

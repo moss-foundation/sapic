@@ -43,7 +43,7 @@ impl TryFrom<JsonValue> for VariableValue {
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "types.ts", optional_fields)]
 pub struct VariableInfo {
     pub name: VariableName,
     pub global_value: VariableValue,

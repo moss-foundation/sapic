@@ -11,6 +11,6 @@ export const variableInfoSchema = z.object({
   localValue: variableValueSchema,
   disabled: z.boolean(),
   kind: variableKindSchema,
-  order: z.number().nullable(),
-  desc: z.string().nullable(),
+  order: z.number().optional(),
+  desc: z.string().optional(),
 });
