@@ -118,7 +118,10 @@ pub struct ListLogsOutput {
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, Deref, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct BatchDeleteLogInput(#[ts(as = "Vec<String>")] pub Vec<LogEntryId>);
+pub struct BatchDeleteLogInput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<LogEntryId>,
+}
 
 /// @category Operation
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

@@ -13,7 +13,7 @@ impl<R: TauriRuntime> App<R> {
         input: &BatchDeleteLogInput,
     ) -> OperationResult<BatchDeleteLogOutput> {
         let log_service = self.services.get::<LogService>();
-        match log_service.delete_logs(input.0.iter()).await {
+        match log_service.delete_logs(input.ids.iter()).await {
             Ok(output) => Ok(BatchDeleteLogOutput {
                 deleted_entries: output,
             }),
