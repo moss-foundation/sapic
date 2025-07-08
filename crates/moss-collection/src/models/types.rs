@@ -36,13 +36,16 @@ pub struct EnvironmentInfo {
 pub struct UpdateItemEntryParams {
     #[ts(as = "String")]
     pub id: EntryId,
-    // TODO: Add validation for path
-    pub path: PathBuf,
+
+    /// If provided, the entry will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "entry"
+    /// The new relative path of the entry folder will be "requests/folder/entry"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -54,12 +57,14 @@ pub struct UpdateDirEntryParams {
     #[ts(as = "String")]
     pub id: EntryId,
 
-    // TODO: Add validation for path
-    pub path: PathBuf,
+    /// If provided, the directory will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "group"
+    /// The new relative path of the directory folder will be "requests/folder/group"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -116,7 +121,7 @@ pub struct EntryInfo {
     /// If multiple entries have the same order, they are sorted alphabetically.
     /// If not specified, the entry appears last and is sorted alphabetically
     /// among unspecified items.
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 
     /// Whether this entry is expanded in the tree view (applies to directories)
     pub expanded: bool,

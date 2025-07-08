@@ -25,6 +25,8 @@ mod defaults {
     pub(crate) const _DEFAULT_ENVIRONMENT_NAME: &str = "New Environment";
 }
 
+// When updating this, the `validate_input_path` method in models/operations.rs
+// should also be updated
 pub mod dirs {
     pub const REQUESTS_DIR: &str = "requests";
     pub const ENDPOINTS_DIR: &str = "endpoints";

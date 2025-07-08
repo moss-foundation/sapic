@@ -37,7 +37,7 @@ use crate::{
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
-const WORKTREE_DIRS: [(&str, usize); 4] = [
+const WORKTREE_DIRS: [(&str, isize); 4] = [
     (dirs::REQUESTS_DIR, 0),
     (dirs::ENDPOINTS_DIR, 1),
     (dirs::COMPONENTS_DIR, 2),

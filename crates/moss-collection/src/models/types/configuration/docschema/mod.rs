@@ -8,11 +8,13 @@ pub use endpoint::*;
 pub use request::*;
 pub use schema::*;
 
+use crate::{
+    dirs,
+    models::primitives::{EntryClass, EntryId, EntryProtocol},
+};
 use hcl::Expression;
 use moss_hcl::{Block, Object};
 use serde::{Deserialize, Serialize};
-
-use crate::models::primitives::{EntryClass, EntryId, EntryProtocol};
 
 pub type HeaderName = String;
 pub type Protocol = String;
@@ -87,6 +89,15 @@ impl RawItemConfiguration {
             RawItemConfiguration::Schema(block) => &block.metadata.id,
         }
     }
+
+    pub fn classification_folder(&self) -> &str {
+        match self {
+            RawItemConfiguration::Request(_) => dirs::REQUESTS_DIR,
+            RawItemConfiguration::Endpoint(_) => dirs::ENDPOINTS_DIR,
+            RawItemConfiguration::Component(_) => dirs::COMPONENTS_DIR,
+            RawItemConfiguration::Schema(_) => dirs::SCHEMAS_DIR,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,6 +125,15 @@ impl RawDirConfiguration {
             RawDirConfiguration::Endpoint(_) => EntryClass::Endpoint,
             RawDirConfiguration::Component(_) => EntryClass::Component,
             RawDirConfiguration::Schema(_) => EntryClass::Schema,
+        }
+    }
+
+    pub fn classification_folder(&self) -> &str {
+        match self {
+            RawDirConfiguration::Request(_) => dirs::REQUESTS_DIR,
+            RawDirConfiguration::Endpoint(_) => dirs::ENDPOINTS_DIR,
+            RawDirConfiguration::Component(_) => dirs::COMPONENTS_DIR,
+            RawDirConfiguration::Schema(_) => dirs::SCHEMAS_DIR,
         }
     }
 }

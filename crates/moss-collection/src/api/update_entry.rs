@@ -47,6 +47,7 @@ impl Collection {
                     protocol: input.protocol,
                     expanded: input.expanded,
                     order: input.order,
+                    path: input.path,
                 },
             )
             .await?;
@@ -76,6 +77,7 @@ impl Collection {
                     order: input.order,
                     expanded: input.expanded,
                     protocol: None,
+                    path: input.path,
                 },
             )
             .await?;
