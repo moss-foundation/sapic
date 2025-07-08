@@ -7,12 +7,11 @@ use serde_json::Value as JsonValue;
 use ts_rs::TS;
 use validator::Validate;
 
+use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 use crate::models::{
-    primitives::{LogLevel, ThemeId},
+    primitives::{LogLevel, ThemeId, WorkspaceId},
     types::{LogDate, LogEntryInfo, LogItemSourceInfo, WorkspaceInfo},
 };
-
-use super::types::{ColorThemeInfo, Defaults, LocaleInfo, Preferences};
 
 // ########################################################
 // ###                      Locale                      ###
@@ -47,8 +46,10 @@ pub struct ListLocalesOutput(pub Vec<LocaleInfo>);
 pub struct DescribeAppStateOutput {
     pub preferences: Preferences,
     pub defaults: Defaults,
+    // FIXME: Deprecated field
     pub last_workspace: Option<String>,
-    pub prev_workspace_id: Option<String>,
+    #[ts(as = "Option<String>")]
+    pub prev_workspace_id: Option<WorkspaceId>,
 }
 
 /// @category Operation
@@ -146,7 +147,8 @@ pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceInput {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 }
 
 /// @category Operation
@@ -154,7 +156,8 @@ pub struct OpenWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct OpenWorkspaceOutput {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -188,7 +191,8 @@ fn default_open_on_creation() -> bool {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateWorkspaceOutput {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 
     pub active: bool,
 
@@ -204,7 +208,8 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceInput {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 }
 
 /// @category Operation
@@ -212,7 +217,8 @@ pub struct DeleteWorkspaceInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteWorkspaceOutput {
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 
     #[serde(skip)]
     #[ts(skip)]
@@ -241,9 +247,10 @@ pub struct UpdateWorkspaceInput {
 pub struct DescribeWorkbenchStateOutput {
     #[serde(skip)]
     #[ts(skip)]
-    pub active_workspace_id: Option<String>,
+    pub active_workspace_id: Option<WorkspaceId>,
 
-    pub prev_workspace_id: Option<String>,
+    #[ts(as = "Option<String>")]
+    pub prev_workspace_id: Option<WorkspaceId>,
 }
 
 // Close Workspace
@@ -255,7 +262,8 @@ pub struct DescribeWorkbenchStateOutput {
 pub struct CloseWorkspaceInput {
     /// The workspace id is required to ensure the close function
     /// is only called when a workspace is open.
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 }
 
 /// @category Operation
@@ -264,5 +272,6 @@ pub struct CloseWorkspaceInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
-    pub id: String,
+    #[ts(as = "String")]
+    pub id: WorkspaceId,
 }

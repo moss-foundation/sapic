@@ -1,6 +1,9 @@
+use crate::{
+    models::primitives::WorkspaceId,
+    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
+};
 use anyhow::Result;
 use moss_applib::ServiceMarker;
-use moss_common::NanoId;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
     GlobalStorage,
@@ -11,8 +14,6 @@ use moss_storage::{
     },
 };
 use std::{collections::HashMap, path::Path, sync::Arc};
-
-use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
 
 pub struct StorageService {
     storage: Arc<dyn GlobalStorage>,
@@ -48,16 +49,16 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_last_active_workspace(&self) -> DatabaseResult<String> {
+    pub(crate) fn get_last_active_workspace(&self) -> DatabaseResult<WorkspaceId> {
         let store = self.storage.item_store();
         let data = GetItem::get(store.as_ref(), SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf())?;
-        Ok(data.deserialize::<String>()?)
+        Ok(data.deserialize::<WorkspaceId>()?)
     }
 
     pub(crate) fn put_last_active_workspace_txn(
         &self,
         txn: &mut Transaction,
-        id: &NanoId,
+        id: &WorkspaceId,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();
 
@@ -74,7 +75,7 @@ impl StorageService {
     pub(crate) fn put_last_opened_at_txn(
         &self,
         txn: &mut Transaction,
-        id: &NanoId,
+        id: &WorkspaceId,
         timestamp: i64,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();

@@ -3,7 +3,7 @@ use chrono::Utc;
 use derive_more::{Deref, DerefMut};
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::{PublicServiceMarker, ServiceMarker};
-use moss_common::{NanoId, api::OperationError};
+use moss_common::api::OperationError;
 use moss_db::DatabaseError;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_workspace::{
@@ -26,8 +26,9 @@ use thiserror::Error;
 use tokio::sync::RwLock;
 
 use crate::{
-    context::{AnyAppContext, ctxkeys},
+    context::AnyAppContext,
     dirs,
+    models::primitives::WorkspaceId,
     services::storage_service::StorageService,
     storage::segments::{SEGKEY_WORKSPACE, segkey_last_opened_at, segkey_workspace},
 };
@@ -82,7 +83,7 @@ type WorkspaceServiceResult<T> = Result<T, WorkspaceServiceError>;
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct ActiveWorkspace<R: TauriRuntime> {
-    id: NanoId,
+    id: WorkspaceId,
 
     #[deref]
     #[deref_mut]
@@ -100,21 +101,21 @@ pub(crate) struct WorkspaceItemUpdateParams {
 
 #[derive(Debug, Clone)]
 pub(crate) struct WorkspaceItem {
-    pub id: NanoId,
+    pub id: WorkspaceId,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
 }
 
 pub(crate) struct WorkspaceItemDescription {
-    pub id: NanoId,
+    pub id: WorkspaceId,
     pub name: String,
     pub abs_path: Arc<Path>,
     pub last_opened_at: Option<i64>,
     pub active: bool,
 }
 
-type WorkspaceMap = HashMap<NanoId, WorkspaceItem>;
+type WorkspaceMap = HashMap<WorkspaceId, WorkspaceItem>;
 
 #[derive(Default)]
 struct ServiceState<R: TauriRuntime> {
@@ -218,7 +219,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn delete_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: NanoId,
+        id: &WorkspaceId,
     ) -> WorkspaceServiceResult<()> {
         let (active_workspace_id, item) = {
             let state_lock = self.state.read().await;
@@ -265,7 +266,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
     pub(crate) async fn create_workspace(
         &self,
-        id: &NanoId,
+        id: &WorkspaceId,
         params: WorkspaceItemCreateParams,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
@@ -339,7 +340,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
     pub(crate) async fn activate_workspace<C: AnyAppContext<R>>(
         &self,
         ctx: &C,
-        id: &NanoId,
+        id: &WorkspaceId,
         activity_indicator: ActivityIndicator<R>,
     ) -> WorkspaceServiceResult<WorkspaceItemDescription> {
         let mut state_lock = self.state.write().await;
@@ -394,7 +395,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
             txn.commit()?;
         }
 
-        let workspace_id: ctxkeys::WorkspaceId = id.clone().into();
+        let workspace_id: WorkspaceId = id.to_owned();
         ctx.set_value(workspace_id);
 
         Ok(WorkspaceItemDescription {
@@ -415,7 +416,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
         self.storage.remove_last_active_workspace()?;
 
-        ctx.remove_value::<ctxkeys::WorkspaceId>();
+        ctx.remove_value::<WorkspaceId>();
 
         Ok(())
     }
@@ -423,7 +424,7 @@ impl<R: TauriRuntime> WorkspaceService<R> {
 
 // TODO: These methods might later be moved into a wrapper around this service for integration tests
 impl<R: TauriRuntime> WorkspaceService<R> {
-    pub async fn is_workspace_open(&self) -> Option<NanoId> {
+    pub async fn is_workspace_open(&self) -> Option<WorkspaceId> {
         let state_lock = self.state.read().await;
         state_lock.active_workspace.as_ref().map(|a| a.id.clone())
     }
@@ -459,7 +460,7 @@ async fn restore_known_workspaces<R: TauriRuntime>(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id: NanoId = id_str.into();
+        let id: WorkspaceId = id_str.into();
 
         let summary = Workspace::<R>::summary(fs.clone(), &entry.path())
             .await

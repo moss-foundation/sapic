@@ -1,7 +1,5 @@
 pub mod shared;
 
-use crate::shared::setup_test_workspace;
-use moss_common::NanoId;
 use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
@@ -13,6 +11,8 @@ use moss_workspace::{
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
+
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {

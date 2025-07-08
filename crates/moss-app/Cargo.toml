@@ -20,7 +20,7 @@ thiserror.workspace = true
 tokio = { workspace = true, features = ["time", "rt-multi-thread"] }
 rustc-hash.workspace = true
 serde_json.workspace = true
-serde.workspace = true
+serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs.workspace = true
 chrono.workspace = true
 tracing.workspace = true
@@ -29,6 +29,7 @@ tracing-appender.workspace = true
 derive_more = { workspace = true, features = ["deref", "deref_mut", "from"] }
 validator.workspace = true
 async-trait.workspace = true
+nanoid.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

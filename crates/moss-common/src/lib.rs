@@ -1,5 +1,6 @@
 pub mod api;
 pub mod nanoid;
+mod test;
 
 pub use nanoid::*;
 

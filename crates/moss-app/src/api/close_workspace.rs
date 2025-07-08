@@ -3,8 +3,11 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
-    context::{AnyAppContext, ctxkeys},
-    models::operations::{CloseWorkspaceInput, CloseWorkspaceOutput},
+    context::AnyAppContext,
+    models::{
+        operations::{CloseWorkspaceInput, CloseWorkspaceOutput},
+        primitives::WorkspaceId,
+    },
     services::workspace_service::WorkspaceService,
 };
 
@@ -16,12 +19,11 @@ impl<R: TauriRuntime> App<R> {
     ) -> OperationResult<CloseWorkspaceOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspace_id = ctx
-            .value::<ctxkeys::WorkspaceId>()
+            .value::<WorkspaceId>()
             .map(|id| (*id).clone())
             .map_err_as_failed_precondition("No active workspace to close")?;
 
-        let id_str = workspace_id.to_string();
-        if id_str != input.id {
+        if workspace_id != input.id {
             return Err(OperationError::InvalidInput(format!(
                 "Workspace {} is not currently active",
                 input.id
@@ -30,6 +32,6 @@ impl<R: TauriRuntime> App<R> {
 
         let _ = workspace_service.deactivate_workspace(ctx).await;
 
-        Ok(CloseWorkspaceOutput { id: id_str })
+        Ok(CloseWorkspaceOutput { id: workspace_id })
     }
 }

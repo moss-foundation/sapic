@@ -1,4 +1,4 @@
-use moss_common::{NanoId, api::OperationResult};
+use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 
 use crate::{
@@ -15,13 +15,12 @@ impl<R: TauriRuntime> App<R> {
         input: &OpenWorkspaceInput,
     ) -> OperationResult<OpenWorkspaceOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
-        let id: NanoId = input.id.clone().into();
         let desc = workspace_service
-            .activate_workspace(ctx, &id, self.activity_indicator.clone())
+            .activate_workspace(ctx, &input.id, self.activity_indicator.clone())
             .await?;
 
         Ok(OpenWorkspaceOutput {
-            id: desc.id.to_string(),
+            id: desc.id,
             abs_path: desc.abs_path.to_owned(),
         })
     }

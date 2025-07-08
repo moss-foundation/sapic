@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use nanoid::nanoid;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use ts_rs::TS;
 
@@ -15,7 +15,7 @@ impl CollectionId {
 
 impl From<String> for CollectionId {
     fn from(s: String) -> Self {
-        CollectionId(Arc::new(s))
+        Self(Arc::new(s))
     }
 }
 

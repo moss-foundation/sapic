@@ -1,6 +1,5 @@
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;
-use moss_common::NanoId;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
     WorkspaceStorage,

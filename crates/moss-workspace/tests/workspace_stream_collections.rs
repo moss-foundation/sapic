@@ -1,17 +1,16 @@
 pub mod shared;
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
-
-use crate::shared::setup_test_workspace;
-use moss_common::NanoId;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::models::{
     events::StreamCollectionsEvent, operations::CreateCollectionInput, primitives::CollectionId,
 };
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 use tauri::ipc::{Channel, InvokeResponseBody};
+
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_collections_empty_workspace() {

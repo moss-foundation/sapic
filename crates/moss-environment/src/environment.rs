@@ -37,6 +37,8 @@ pub struct VariableItemParams {
     pub disabled: bool,
 }
 
+// VariableId: length-5?
+
 #[derive(Debug, Clone)]
 pub struct VariableItem {
     pub id: NanoId,

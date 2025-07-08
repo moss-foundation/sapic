@@ -3,8 +3,8 @@ use tauri::Runtime as TauriRuntime;
 
 use crate::{
     app::App,
-    context::{AnyAppContext, ctxkeys},
-    models::operations::DescribeWorkbenchStateOutput,
+    context::AnyAppContext,
+    models::{operations::DescribeWorkbenchStateOutput, primitives::WorkspaceId},
 };
 
 impl<R: TauriRuntime> App<R> {
@@ -12,7 +12,7 @@ impl<R: TauriRuntime> App<R> {
         &self,
         ctx: &C,
     ) -> OperationResult<DescribeWorkbenchStateOutput> {
-        let workspace_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| id.to_string());
+        let workspace_id = ctx.value::<WorkspaceId>().map(|id| (*id).clone());
 
         Ok(DescribeWorkbenchStateOutput {
             active_workspace_id: workspace_id,

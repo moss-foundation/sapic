@@ -1,11 +1,14 @@
-use moss_common::{api::OperationResult, new_nanoid};
+use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
 use validator::Validate;
 
 use crate::{
     app::App,
     context::AnyAppContext,
-    models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
+    models::{
+        operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
+        primitives::WorkspaceId,
+    },
     services::workspace_service::{WorkspaceItemCreateParams, WorkspaceService},
 };
 
@@ -19,7 +22,7 @@ impl<R: TauriRuntime> App<R> {
 
         let workspace_service = self.services.get::<WorkspaceService<R>>();
 
-        let id = new_nanoid();
+        let id = WorkspaceId::new();
         let item = workspace_service
             .create_workspace(
                 &id,
@@ -36,7 +39,7 @@ impl<R: TauriRuntime> App<R> {
         }
 
         Ok(CreateWorkspaceOutput {
-            id: item.id.to_string(),
+            id: item.id,
             active: input.open_on_creation,
             abs_path: item.abs_path.clone(),
         })

@@ -4,7 +4,6 @@ pub use context::*;
 
 use moss_activity_indicator::ActivityIndicator;
 use moss_applib::providers::{ServiceMap, ServiceProvider};
-use moss_common::{NanoId, new_nanoid_string};
 use moss_fs::{FileSystem, RealFileSystem};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_testutils::random_name::random_workspace_name;
@@ -12,7 +11,7 @@ use moss_workspace::{
     Workspace,
     builder::{WorkspaceBuilder, WorkspaceCreateParams},
     models::{
-        primitives::{EditorGridOrientation, PanelRenderer},
+        primitives::{CollectionId, EditorGridOrientation, PanelRenderer},
         types::{
             EditorGridLeafData, EditorGridNode, EditorGridState, EditorPanelState,
             EditorPartStateInfo,
@@ -57,7 +56,7 @@ pub async fn setup_test_workspace() -> (
         .join("tests")
         .join("data")
         .join("workspaces")
-        .join(new_nanoid_string())
+        .join()
         .into();
     fs::create_dir_all(&abs_path).unwrap();
 
@@ -178,8 +177,8 @@ pub fn create_simple_editor_state() -> EditorPartStateInfo {
     }
 }
 
-pub fn collection_key(id: &NanoId) -> SegKeyBuf {
-    SEGKEY_COLLECTION.join(id.to_string())
+pub fn collection_key(id: &CollectionId) -> SegKeyBuf {
+    SEGKEY_COLLECTION.join(id)
 }
 
 pub fn generate_random_icon(output_path: &Path) {

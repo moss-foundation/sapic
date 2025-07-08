@@ -1,9 +1,8 @@
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
-use moss_common::{api::OperationError, new_nanoid_string};
+use moss_common::api::OperationError;
 use moss_testutils::random_name::random_collection_name;
 use moss_workspace::{
     models::{
@@ -12,6 +11,8 @@ use moss_workspace::{
     },
     services::collection_service::CollectionService,
 };
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 // FIXME: The tests and business logic are poorly organized.
 // A collection shouldn't expose implementation details, and the workspace shouldn't be

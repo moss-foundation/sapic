@@ -1,10 +1,7 @@
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_collection::{constants::COLLECTION_ICON_FILENAME, dirs::ASSETS_DIR};
 use moss_common::api::OperationError;
-
-use moss_common::NanoId;
 use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
@@ -13,6 +10,8 @@ use moss_workspace::{
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 // FIXME: The tests and business logic are poorly organized.
 // A collection shouldn't expose implementation details, and the workspace shouldn't be
 // testing logic that doesn't belong to it. The DTO for creating a collection should simply

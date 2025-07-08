@@ -18,7 +18,7 @@ moss_git.workspace = true
 moss_bindingutils.workspace = true
 
 anyhow.workspace = true
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "rc"] }
 ts-rs = { workspace = true, features = ["url-impl"] }
 tokio.workspace = true
 validator = { workspace = true, features = ["derive"] }
