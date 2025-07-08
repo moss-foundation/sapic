@@ -5,13 +5,7 @@ use anyhow::{Result, anyhow};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use moss_applib::ServiceMarker;
 use moss_common::api::OperationError;
-use moss_db::primitives::AnyValue;
 use moss_fs::{CreateOptions, FileSystem};
-use moss_storage::{
-    GlobalStorage,
-    primitives::segkey::SegKey,
-    storage::operations::{GetItem, TransactionalRemoveItem},
-};
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -43,6 +37,7 @@ use crate::{
             constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter,
         },
         session_service::SessionId,
+        storage_service::StorageService,
     },
 };
 
@@ -135,7 +130,7 @@ pub struct LogService {
     sessionlog_path: PathBuf,
     applog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
     sessionlog_queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
-    storage: Arc<dyn GlobalStorage>,
+    storage: Arc<StorageService>,
     _applog_writerguard: WorkerGuard,
     _sessionlog_writerguard: WorkerGuard,
     _taurilog_writerguard: WorkerGuard,
@@ -149,7 +144,7 @@ impl LogService {
         app_handle: AppHandle<R>,
         applog_path: &Path,
         session_id: &SessionId,
-        storage: Arc<dyn GlobalStorage>,
+        storage: Arc<StorageService>,
     ) -> Result<LogService> {
         // Rolling log file format
         let standard_log_format = tracing_subscriber::fmt::format()
@@ -441,10 +436,7 @@ impl LogService {
     fn find_files_to_update(&self, entries: &[&LogEntryId]) -> Result<HashSet<PathBuf>> {
         let mut files = HashSet::new();
         for entry_id in entries {
-            let segkey = SegKey::new(&entry_id).to_segkey_buf();
-            let log_store = self.storage.log_store();
-            let value = GetItem::get(log_store.as_ref(), segkey)?;
-            let path: PathBuf = AnyValue::deserialize(&value)?;
+            let path = self.storage.get_log_path(*entry_id)?;
             files.insert(path);
         }
 
@@ -478,7 +470,6 @@ impl LogService {
         let reader = BufReader::new(f);
 
         let mut write_txn = self.storage.begin_write()?;
-        let log_store = self.storage.log_store();
 
         for line in reader.lines() {
             let line = line?;
@@ -490,8 +481,8 @@ impl LogService {
                     file_path: Some(path.to_path_buf()),
                 });
                 // Remove the entry from the database
-                let segkey = SegKey::new(&log_entry.id).to_segkey_buf();
-                TransactionalRemoveItem::remove(log_store.as_ref(), &mut write_txn, segkey)?;
+                self.storage
+                    .remove_log_path_txn(&mut write_txn, &log_entry.id)?;
             } else {
                 new_content.push_str(&line);
                 new_content.push('\n');
@@ -661,7 +652,6 @@ impl LogService {
 #[cfg(test)]
 mod tests {
     use moss_fs::RealFileSystem;
-    use moss_storage::global_storage::GlobalStorageImpl;
     use moss_testutils::random_name::random_string;
     use std::{fs::create_dir_all, sync::atomic::AtomicUsize, time::Duration};
     use tauri::{Listener, Manager};
@@ -683,7 +673,7 @@ mod tests {
         let fs = Arc::new(RealFileSystem::new());
         let mock_app = tauri::test::mock_app();
         let session_id = SessionId::new();
-        let storage = Arc::new(GlobalStorageImpl::new(&test_app_log_path).unwrap());
+        let storage = Arc::new(StorageService::new(&test_app_log_path).unwrap());
         let logging_service = LogService::new(
             fs,
             mock_app.app_handle().clone(),
