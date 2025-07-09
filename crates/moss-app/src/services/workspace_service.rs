@@ -11,6 +11,7 @@ use moss_workspace::{
     builder::{WorkspaceBuilder, WorkspaceCreateParams, WorkspaceLoadParams},
     context::{WorkspaceContext, WorkspaceContextState},
     services::{
+        DynCollectionService, DynLayoutService, DynStorageService,
         collection_service::CollectionService, layout_service::LayoutService,
         storage_service::StorageService as WorkspaceStorageService,
     },
@@ -352,22 +353,36 @@ impl<R: TauriRuntime> WorkspaceService<R> {
         let last_opened_at = Utc::now().timestamp();
         let name = item.name.clone();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let storage_service: Arc<WorkspaceStorageService> = WorkspaceStorageService::new(&abs_path)
-            .context("Failed to load the storage service")
-            .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
-            .into();
 
-        let collection_service =
-            CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
-                .await
-                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?;
+        let storage_service: Arc<DynStorageService> = {
+            let service: Arc<WorkspaceStorageService> = WorkspaceStorageService::new(&abs_path)
+                .context("Failed to load the storage service")
+                .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+                .into();
 
-        let layout_service = LayoutService::new(storage_service.clone());
+            DynStorageService::new(service)
+        };
+
+        let collection_service: Arc<DynCollectionService> = {
+            let service: Arc<CollectionService> =
+                CollectionService::new(abs_path.clone(), self.fs.clone(), storage_service.clone())
+                    .await
+                    .map_err(|e| WorkspaceServiceError::Workspace(e.to_string()))?
+                    .into();
+
+            DynCollectionService::new(service)
+        };
+
+        let layout_service: Arc<DynLayoutService> = {
+            let service: Arc<LayoutService> = LayoutService::new(storage_service.clone()).into();
+
+            DynLayoutService::new(service)
+        };
 
         let workspace = WorkspaceBuilder::new(self.fs.clone())
-            .with_service::<WorkspaceStorageService>(storage_service.clone())
-            .with_service(collection_service)
-            .with_service(layout_service)
+            .with_service::<DynStorageService>(storage_service.clone())
+            .with_service::<DynCollectionService>(collection_service)
+            .with_service::<DynLayoutService>(layout_service)
             .load(
                 WorkspaceLoadParams {
                     abs_path: abs_path.clone(),

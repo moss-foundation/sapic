@@ -9,7 +9,7 @@ use moss_workspace::{
         operations::{CreateCollectionInput, UpdateCollectionInput},
         primitives::CollectionId,
     },
-    services::collection_service::CollectionService,
+    services::{AnyCollectionService, collection_service::CollectionService},
 };
 
 use crate::shared::{generate_random_icon, setup_test_workspace};

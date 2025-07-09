@@ -18,6 +18,7 @@ use moss_workspace::{
         },
     },
     services::{
+        AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
         DynStorageService,
         collection_service::CollectionService,
         layout_service::LayoutService,
@@ -65,15 +66,23 @@ pub async fn setup_test_workspace() -> (
     let mut services: ServiceMap = Default::default();
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
+
     let storage_service: Arc<TestStorageService> =
         TestStorageService::from(StorageService::new(&abs_path).unwrap()).into();
-    let layout_service: Arc<LayoutService> =
-        LayoutService::new(storage_service.real().clone()).into();
+    let storage_service_dyn: Arc<DynStorageService> =
+        DynStorageService::new(storage_service.clone());
+
+    let layout_service: Arc<LayoutService> = LayoutService::new(storage_service_dyn.clone()).into();
+    let layout_service_dyn: Arc<DynLayoutService> =
+        DynLayoutService::new(layout_service.clone() as Arc<dyn AnyLayoutService>);
+
     let collection_service: Arc<CollectionService> =
-        CollectionService::new(abs_path.clone(), fs.clone(), storage_service.clone())
+        CollectionService::new(abs_path.clone(), fs.clone(), storage_service_dyn.clone())
             .await
             .unwrap()
             .into();
+    let collection_service_dyn: Arc<DynCollectionService> =
+        DynCollectionService::new(collection_service.clone() as Arc<dyn AnyCollectionService>);
 
     {
         services.insert(TypeId::of::<LayoutService>(), layout_service.clone());
@@ -85,9 +94,9 @@ pub async fn setup_test_workspace() -> (
     }
 
     let workspace = WorkspaceBuilder::new(fs.clone())
-        .with_service::<DynStorageService>(DynStorageService::new(storage_service.clone()))
-        .with_service::<CollectionService>(collection_service.clone())
-        .with_service::<LayoutService>(layout_service.clone())
+        .with_service::<DynStorageService>(storage_service_dyn)
+        .with_service::<DynCollectionService>(collection_service_dyn)
+        .with_service::<DynLayoutService>(layout_service_dyn)
         .create(
             WorkspaceCreateParams {
                 name: random_workspace_name(),

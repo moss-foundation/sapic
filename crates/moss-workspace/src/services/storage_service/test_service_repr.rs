@@ -1,9 +1,17 @@
-use std::sync::Arc;
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 use moss_applib::ServiceMarker;
-use moss_storage::WorkspaceStorage;
+use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
+use moss_storage::{WorkspaceStorage, primitives::segkey::SegKeyBuf};
 
-use crate::services::{AnyStorageService, storage_service::StorageService};
+use crate::{
+    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    services::{AnyStorageService, storage_service::StorageService},
+    storage::entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
+};
 
 pub struct TestStorageService {
     real: Arc<StorageService>,
@@ -30,13 +38,13 @@ impl From<StorageService> for TestStorageService {
 }
 
 impl AnyStorageService for TestStorageService {
-    fn begin_write(&self) -> anyhow::Result<moss_db::Transaction> {
+    fn begin_write(&self) -> anyhow::Result<Transaction> {
         self.real.begin_write()
     }
 
     fn put_item_order_txn(
         &self,
-        txn: &mut moss_db::Transaction,
+        txn: &mut Transaction,
         id: &str,
         order: usize,
     ) -> anyhow::Result<()> {
@@ -45,46 +53,63 @@ impl AnyStorageService for TestStorageService {
 
     fn put_expanded_items_txn(
         &self,
-        txn: &mut moss_db::Transaction,
-        expanded_entries: &std::collections::HashSet<crate::models::primitives::CollectionId>,
+        txn: &mut Transaction,
+        expanded_entries: &HashSet<CollectionId>,
     ) -> anyhow::Result<()> {
         self.real.put_expanded_items_txn(txn, expanded_entries)
     }
 
-    fn get_expanded_items(
-        &self,
-    ) -> anyhow::Result<std::collections::HashSet<crate::models::primitives::CollectionId>> {
+    fn get_expanded_items(&self) -> anyhow::Result<HashSet<CollectionId>> {
         self.real.get_expanded_items()
     }
 
     fn remove_item_metadata_txn(
         &self,
-        txn: &mut moss_db::Transaction,
-        segkey_prefix: moss_storage::primitives::segkey::SegKeyBuf,
-    ) -> moss_db::DatabaseResult<()> {
+        txn: &mut Transaction,
+        segkey_prefix: SegKeyBuf,
+    ) -> DatabaseResult<()> {
         self.real.remove_item_metadata_txn(txn, segkey_prefix)
     }
 
     fn list_items_metadata(
         &self,
-        segkey_prefix: moss_storage::primitives::segkey::SegKeyBuf,
-    ) -> moss_db::DatabaseResult<
-        std::collections::HashMap<
-            moss_storage::primitives::segkey::SegKeyBuf,
-            moss_db::primitives::AnyValue,
-        >,
-    > {
+        segkey_prefix: SegKeyBuf,
+    ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
         self.real.list_items_metadata(segkey_prefix)
     }
 
-    fn get_layout_cache(
-        &self,
-    ) -> anyhow::Result<
-        std::collections::HashMap<
-            moss_storage::primitives::segkey::SegKeyBuf,
-            moss_db::primitives::AnyValue,
-        >,
-    > {
+    fn get_layout_cache(&self) -> anyhow::Result<HashMap<SegKeyBuf, AnyValue>> {
         self.real.get_layout_cache()
+    }
+
+    fn put_sidebar_layout(
+        &self,
+        position: SidebarPosition,
+        size: usize,
+        visible: bool,
+    ) -> anyhow::Result<()> {
+        self.real.put_sidebar_layout(position, size, visible)
+    }
+
+    fn put_panel_layout(&self, size: usize, visible: bool) -> anyhow::Result<()> {
+        self.real.put_panel_layout(size, visible)
+    }
+
+    fn put_activitybar_layout(
+        &self,
+        last_active_container_id: Option<String>,
+        position: ActivitybarPosition,
+    ) -> anyhow::Result<()> {
+        self.real
+            .put_activitybar_layout(last_active_container_id, position)
+    }
+
+    fn put_editor_layout(
+        &self,
+        grid: EditorGridStateEntity,
+        panels: HashMap<String, EditorPanelStateEntity>,
+        active_group: Option<String>,
+    ) -> anyhow::Result<()> {
+        self.real.put_editor_layout(grid, panels, active_group)
     }
 }

@@ -83,10 +83,6 @@ impl AnyStorageService for StorageService {
         Ok(data.into_iter().collect())
     }
 
-    fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
-        self.get_layout_cache()
-    }
-
     fn remove_item_metadata_txn(
         &self,
         txn: &mut Transaction,
@@ -100,28 +96,17 @@ impl AnyStorageService for StorageService {
 
         Ok(())
     }
-}
-
-impl StorageService {
-    pub fn new(abs_path: &Path) -> Result<Self> {
-        let storage = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to load the workspace state database")?;
-
-        Ok(Self {
-            storage: Arc::new(storage),
-        })
-    }
 
     // Layout operations
 
-    pub(crate) fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
+    fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_LAYOUT.to_segkey_buf();
         let value = ListByPrefix::list_by_prefix(store.as_ref(), segkey.to_string().as_str())?;
         Ok(value.into_iter().collect())
     }
 
-    pub(crate) fn put_sidebar_layout(
+    fn put_sidebar_layout(
         &self,
         position: SidebarPosition,
         size: usize,
@@ -154,7 +139,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_panel_layout(&self, size: usize, visible: bool) -> Result<()> {
+    fn put_panel_layout(&self, size: usize, visible: bool) -> Result<()> {
         let store = self.storage.item_store();
         let mut txn = self.begin_write()?;
 
@@ -175,7 +160,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_activitybar_layout(
+    fn put_activitybar_layout(
         &self,
         last_active_container_id: Option<String>,
         position: ActivitybarPosition,
@@ -202,7 +187,7 @@ impl StorageService {
         Ok(txn.commit()?)
     }
 
-    pub(crate) fn put_editor_layout(
+    fn put_editor_layout(
         &self,
         grid: EditorGridStateEntity,
         panels: HashMap<String, EditorPanelStateEntity>,
@@ -235,6 +220,17 @@ impl StorageService {
         }
 
         Ok(txn.commit()?)
+    }
+}
+
+impl StorageService {
+    pub fn new(abs_path: &Path) -> Result<Self> {
+        let storage = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to load the workspace state database")?;
+
+        Ok(Self {
+            storage: Arc::new(storage),
+        })
     }
 
     // HACK: This is a hack to get the storage service for testing purposes.

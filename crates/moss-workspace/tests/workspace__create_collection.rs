@@ -6,7 +6,10 @@ use moss_storage::storage::operations::GetItem;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_collection_name};
 use moss_workspace::{
     models::{operations::CreateCollectionInput, primitives::CollectionId},
-    services::{collection_service::CollectionService, storage_service::StorageService},
+    services::{
+        AnyCollectionService, collection_service::CollectionService,
+        storage_service::StorageService,
+    },
     storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use tauri::ipc::Channel;

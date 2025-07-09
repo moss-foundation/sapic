@@ -4,12 +4,12 @@ use tauri::Runtime as TauriRuntime;
 use crate::{
     Workspace,
     models::operations::DescribeStateOutput,
-    services::{DynStorageService, layout_service::LayoutService},
+    services::{DynLayoutService, DynStorageService},
 };
 
 impl<R: TauriRuntime> Workspace<R> {
     pub async fn describe_state(&self) -> OperationResult<DescribeStateOutput> {
-        let layout = self.services.get::<LayoutService>();
+        let layout = self.services.get::<DynLayoutService>();
         let storage = self.services.get::<DynStorageService>();
 
         // HACK: cache here is a temporary solution
