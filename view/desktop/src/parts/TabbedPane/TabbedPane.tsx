@@ -100,6 +100,7 @@ const PanelToolbar = (props: IDockviewHeaderActionsProps) => {
 const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | "welcome" | "empty" }) => {
   const { showDebugPanels } = useTabbedPaneStore();
   const { api, addOrFocusPanel, setApi } = useTabbedPaneStore();
+  const activeWorkspace = useActiveWorkspace();
 
   const [panels, setPanels] = React.useState<string[]>([]);
   const [groups, setGroups] = React.useState<string[]>([]);
@@ -183,11 +184,14 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
     if (!api) return;
 
     const event = api.onDidLayoutChange(() => {
-      updateEditorPartState(api.toJSON());
+      // Only update workspace state if there's an active workspace
+      if (activeWorkspace) {
+        updateEditorPartState(api.toJSON());
+      }
     });
 
     return () => event.dispose();
-  }, [api, updateEditorPartState]);
+  }, [api, updateEditorPartState, activeWorkspace]);
 
   const pageConfigs: Record<string, PageConfig> = {
     KitchenSink: {
