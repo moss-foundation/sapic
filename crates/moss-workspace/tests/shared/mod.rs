@@ -19,8 +19,10 @@ use moss_workspace::{
     },
     services::{
         AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
-        DynStorageService, collection_service::CollectionService, layout_service::LayoutService,
-        storage_service::StorageService,
+        DynStorageService,
+        collection_service::CollectionService,
+        layout_service::LayoutService,
+        storage_service::{StorageService, test_service_repr::TestStorageService},
     },
     storage::segments::SEGKEY_COLLECTION,
 };
