@@ -51,26 +51,21 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
     },
     ref
   ) => {
-    const { id, nodeOffset, searchInput, paddingRight, onNodeRenameCallback } = useContext(TreeContext);
+    const { id, nodeOffset, searchInput, paddingRight } = useContext(TreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+    const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
     const handleClick = () => {
       if (node.kind === "Dir" || node.kind === "Case") {
-        // onNodeUpdate({
-        //   ...node,
-        //   expanded: true,
-        // });
-
-        const { childNodes, ...nodeWithoutChildren } = node;
-
-        placeholderFnForUpdateCollectionEntry({
+        updateCollectionEntry({
           collectionId: id,
           updatedEntry: {
-            ...nodeWithoutChildren,
-            expanded: true,
+            ITEM: {
+              id: node.id,
+              expanded: true,
+            },
           },
         });
       }
@@ -93,17 +88,15 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
 
     const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
-      if (node.kind === "Item") {
-        return;
-      }
+      if (node.kind === "Item") return;
 
-      const { childNodes, ...nodeWithoutChildren } = node;
-
-      placeholderFnForUpdateCollectionEntry({
+      updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...nodeWithoutChildren,
-          expanded: !nodeWithoutChildren.expanded,
+          DIR: {
+            id: node.id,
+            expanded: !node.expanded,
+          },
         },
       });
     };
@@ -165,12 +158,15 @@ const TreeNodeButton = forwardRef<HTMLButtonElement, TreeNodeButtonProps>(
               <DebugCollectionIconPlaceholder protocol={node.protocol} type={node.kind} />
 
               <NodeLabel label={node.name} searchInput={searchInput} className={cn({ "capitalize": isRootNode })} />
+              <span>({node.order})</span>
               <span className="DragHandle h-full min-h-4 grow" />
             </span>
+
             {preview &&
               createPortal(
                 <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
                   <TreeNode
+                    isRootNode={isRootNode}
                     parentNode={{
                       ...node,
                       id: "-",

@@ -74,7 +74,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
     return {
       dir: {
         ...baseEntry,
-        order: 0,
+        order: parentNode.childNodes.length + 1,
         configuration: createDirConfiguration(parentNode.class),
       },
     };
@@ -83,7 +83,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
   return {
     item: {
       ...baseEntry,
-      order: 0,
+      order: parentNode.childNodes.length + 1,
       configuration: createItemConfiguration(parentNode.class),
     },
   };
@@ -92,7 +92,7 @@ const createEntry = (parentNode: TreeCollectionNode, name: string, isAddingFolde
 export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (node: TreeCollectionNode) => void) => {
   const { id } = useContext(TreeContext);
   const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
-  const { placeholderFnForUpdateCollectionEntry } = useUpdateCollectionEntry();
+  const { mutateAsync: updateCollectionEntry } = useUpdateCollectionEntry();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
@@ -101,33 +101,20 @@ export const useNodeAddForm = (parentNode: TreeCollectionNode, onNodeUpdate: (no
     const newEntry = createEntry(parentNode, name, isAddingFolderNode);
 
     try {
-      const result = await createCollectionEntry({
+      await createCollectionEntry({
         collectionId: id,
         input: newEntry,
       });
 
-      const { childNodes, ...parentNodeWithoutChildren } = parentNode;
-      placeholderFnForUpdateCollectionEntry({
+      await updateCollectionEntry({
         collectionId: id,
         updatedEntry: {
-          ...parentNodeWithoutChildren,
-          expanded: true,
+          DIR: {
+            id: parentNode.id,
+            expanded: true,
+          },
         },
       });
-
-      if (result) {
-        onNodeUpdate({
-          ...parentNode,
-          expanded: true,
-          childNodes: [
-            ...parentNode.childNodes,
-            {
-              ...result,
-              childNodes: [],
-            },
-          ],
-        });
-      }
     } catch (error) {
       console.error(error);
     } finally {

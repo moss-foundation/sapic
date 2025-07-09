@@ -6,13 +6,13 @@ import { CreateEntryInput } from "@repo/moss-collection";
 import { TreeContext } from "../../Tree";
 import { TreeCollectionRootNode } from "../../types";
 
-const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput => {
+const createEntry = (name: string, isAddingFolder: boolean, order: number): CreateEntryInput => {
   if (isAddingFolder) {
     return {
       dir: {
         name,
         path: "requests",
-        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
+        order,
         configuration: {
           request: {
             http: {},
@@ -26,7 +26,7 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
     item: {
       name,
       path: "requests",
-      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
+      order,
       configuration: {
         request: {
           http: {
@@ -51,7 +51,7 @@ export const useRootNodeAddForm = (
   const [isAddingRootNodeFolder, setIsAddingRootNodeFolder] = useState(false);
 
   const handleRootAddFormSubmit = async (name: string) => {
-    const newEntry = createEntry(name, isAddingRootNodeFolder);
+    const newEntry = createEntry(name, isAddingRootNodeFolder, node.requests.childNodes.length + 1);
 
     try {
       const result = await createCollectionEntry({

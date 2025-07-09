@@ -1,6 +1,5 @@
 import { createContext, useEffect, useState } from "react";
 
-import { useMoveTreeNodeEvent } from "./hooks/useMoveTreeNodeEvent.ts";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { TreeCollectionNode, TreeCollectionRootNode, TreeContextProps, TreeProps } from "./types.ts";
 import {
@@ -12,9 +11,9 @@ import {
 export const TreeContext = createContext<TreeContextProps>({
   id: "",
   name: "",
-  repository: null,
-  order: null,
-  picturePath: null,
+  repository: undefined,
+  order: undefined,
+  picturePath: undefined,
 
   paddingLeft: 0,
   paddingRight: 0,
@@ -83,15 +82,15 @@ export const CollectionTree = ({
   //   setTree,
   // });
 
-  useMoveTreeNodeEvent({
-    treeId: initialTree.id,
-    onNodeAdd,
-    onNodeRemove,
-    onRootAdd,
-    onRootRemove,
-    onTreeUpdate,
-    setTree,
-  });
+  // useMoveTreeNodeEvent({
+  //   treeId: initialTree.id,
+  //   onNodeAdd,
+  //   onNodeRemove,
+  //   onRootAdd,
+  //   onRootRemove,
+  //   onTreeUpdate,
+  //   setTree,
+  // });
 
   return (
     <TreeContext.Provider

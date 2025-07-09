@@ -29,15 +29,23 @@ const shouldRenderTreeNode = (
 export interface TreeNodeComponentProps extends NodeEvents {
   node: TreeCollectionNode;
   depth: number;
-  parentNode?: TreeCollectionNode;
+  parentNode: TreeCollectionNode;
   isLastChild: boolean;
+  isRootNode: boolean;
 }
 
 export interface NodeEvents {
   onNodeUpdate: (node: TreeCollectionNode) => void;
 }
 
-export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
+export const TreeNode = ({
+  node,
+  onNodeUpdate,
+  depth,
+  parentNode,
+  isLastChild,
+  isRootNode = false,
+}: TreeNodeComponentProps) => {
   const { nodeOffset, paddingRight, id } = useContext(TreeContext);
   const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   // const triggerRef = useRef<HTMLButtonElement>(null);
@@ -86,7 +94,6 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
   const shouldRenderAddingFormDivider = false; // !isAddingDividerNodeAbove && !isAddingDividerNodeBelow;
   const nodePaddingLeft = depth * nodeOffset;
   const restrictedNames = parentNode?.childNodes.map((childNode) => childNode.name) ?? [];
-  const isRootNode = node.path.segments.length === 1;
 
   return (
     <li className="relative">
