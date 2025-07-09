@@ -31,7 +31,7 @@ const useInitializeAppState = () => {
       document.querySelector("html")?.setAttribute("data-theme", theme.mode);
 
       applyColorTheme(theme.identifier);
-      applyLanguagePack(languagePack);
+      applyLanguagePack(languagePack).catch(console.error);
     }
   }, [data]);
 };

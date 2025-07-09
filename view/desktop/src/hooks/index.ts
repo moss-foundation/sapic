@@ -9,6 +9,7 @@ export * from "./colorTheme/useSetColorTheme";
 
 export * from "./locales/useListLocales";
 export * from "./locales/useSetLocale";
+export * from "./locales/useGetTranslations";
 
 export * from "./workbench";
 export * from "./workspace";
