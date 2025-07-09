@@ -2,8 +2,8 @@
 
 export type VariableInfo = {
   name: string;
-  globalValue: VariableValue;
-  localValue: VariableValue;
+  globalValue?: VariableValue;
+  localValue?: VariableValue;
   disabled: boolean;
   kind: VariableKind;
   order?: number;
@@ -12,4 +12,4 @@ export type VariableInfo = {
 
 export type VariableKind = "secret" | "default";
 
-export type VariableValue = string | number | boolean | null;
+export type VariableValue = string | number | boolean;
