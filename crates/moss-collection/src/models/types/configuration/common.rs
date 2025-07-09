@@ -11,7 +11,6 @@ use crate::models::{primitives::HttpMethod, types::configuration::docschema::Raw
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum Expression {
-    Null,
     String(String),
     Variable(String),
     Number(Number),
@@ -82,7 +81,7 @@ pub struct QueryParamOptions {
 #[ts(export, export_to = "types.ts")]
 pub struct QueryParamItem {
     pub key: String,
-    pub value: Expression,
+    pub value: Option<Expression>,
     #[ts(optional)]
     pub order: Option<isize>,
     #[ts(optional)]
@@ -105,7 +104,7 @@ pub struct PathParamOptions {
 #[ts(export, export_to = "types.ts")]
 pub struct PathParamItem {
     pub key: String,
-    pub value: Expression,
+    pub value: Option<Expression>,
     #[ts(optional)]
     pub order: Option<isize>,
     #[ts(optional)]
@@ -128,7 +127,7 @@ pub struct HeaderParamOptions {
 #[ts(export, export_to = "types.ts")]
 pub struct HeaderParamItem {
     pub key: String,
-    pub value: Expression,
+    pub value: Option<Expression>,
     #[ts(optional)]
     pub order: Option<isize>,
     #[ts(optional)]

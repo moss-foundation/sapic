@@ -100,12 +100,7 @@ export type EnvironmentInfo = {
   order?: number;
 };
 
-export type Expression =
-  | "null"
-  | { "string": string }
-  | { "variable": string }
-  | { "number": number }
-  | { "bool": boolean };
+export type Expression = { "string": string } | { "variable": string } | { "number": number } | { "bool": boolean };
 
 export type FormDataItem = {
   key: string;
@@ -122,7 +117,7 @@ export type FormDataValue = { "text": string } | { "file": string };
 
 export type HeaderParamItem = {
   key: string;
-  value: Expression;
+  value: Expression | null;
   order?: number;
   desc?: string;
   disabled: boolean;
@@ -149,7 +144,7 @@ export type ItemRequestConfigurationModel = { "http": ItemHttpRequestConfigurati
 
 export type PathParamItem = {
   key: string;
-  value: Expression;
+  value: Expression | null;
   order?: number;
   desc?: string;
   disabled: boolean;
@@ -160,7 +155,7 @@ export type PathParamOptions = { propagate: boolean };
 
 export type QueryParamItem = {
   key: string;
-  value: Expression;
+  value: Expression | null;
   order?: number;
   desc?: string;
   disabled: boolean;
