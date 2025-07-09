@@ -1,14 +1,13 @@
 use moss_hcl::Block;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
-use crate::models::types::configuration::docschema::RawMetadata;
+use crate::models::{primitives::EntryId, types::configuration::docschema::RawMetadata};
 
 // #########################################################
 // ###                      Item                         ###
 // #########################################################
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawItemComponentConfiguration {
     pub metadata: Block<RawMetadata>,
 }
@@ -17,15 +16,15 @@ pub struct RawItemComponentConfiguration {
 // ###                      Dir                          ###
 // #########################################################
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawDirComponentConfiguration {
     pub metadata: Block<RawMetadata>,
 }
 
 impl RawDirComponentConfiguration {
-    pub fn new() -> Self {
+    pub fn new(id: &EntryId) -> Self {
         Self {
-            metadata: Block::new(RawMetadata { id: Uuid::new_v4() }),
+            metadata: Block::new(RawMetadata { id: id.to_owned() }),
         }
     }
 }

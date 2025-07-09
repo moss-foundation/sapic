@@ -1,20 +1,16 @@
 use anyhow::Result;
-use moss_common::models::primitives::Identifier;
 use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_storage::workspace_storage::stores::WorkspaceVariableStore;
-use std::{
-    collections::HashMap,
-    path::Path,
-    sync::{Arc, atomic::AtomicUsize},
-};
-use uuid::Uuid;
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
     file::FileModel,
-    models::types::{VariableKind, VariableName, VariableValue},
+    models::{
+        primitives::{EnvironmentId, VariableId},
+        types::{VariableKind, VariableName, VariableValue},
+    },
 };
-
 // #[derive(Error, Debug)]
 // pub enum EnvironmentError {
 //     #[error("Failed to parse environment file as JSON: {0}")]
@@ -42,9 +38,11 @@ pub struct VariableItemParams {
     pub disabled: bool,
 }
 
+// VariableId: length-5?
+
 #[derive(Debug, Clone)]
 pub struct VariableItem {
-    pub id: Identifier,
+    pub id: VariableId,
     pub kind: Option<VariableKind>,
     pub global_value: Option<VariableValue>,
     pub desc: Option<String>,
@@ -58,8 +56,6 @@ pub struct Environment {
     fs: Arc<dyn FileSystem>,
     abs_path: Arc<Path>,
     variables: VariableMap,
-    #[allow(dead_code)]
-    next_variable_id: Arc<AtomicUsize>,
     #[allow(dead_code)]
     store: Arc<dyn WorkspaceVariableStore>,
     file: JsonFileHandle<FileModel>,
@@ -83,7 +79,6 @@ impl Environment {
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         store: Arc<dyn WorkspaceVariableStore>,
-        next_variable_id: Arc<AtomicUsize>,
         params: LoadParams,
     ) -> Result<Self> {
         let abs_path: Arc<Path> = abs_path.into();
@@ -116,7 +111,7 @@ impl Environment {
             variables.insert(
                 name,
                 VariableItem {
-                    id: Identifier::new(&next_variable_id),
+                    id: VariableId::new(),
                     kind: value.kind,
                     global_value: value.value,
                     desc: value.desc,
@@ -131,14 +126,13 @@ impl Environment {
             fs,
             abs_path,
             variables,
-            next_variable_id,
             store,
             file: file_handle,
         })
     }
 
-    pub async fn id(&self) -> Uuid {
-        self.file.model().await.id
+    pub async fn id(&self) -> EnvironmentId {
+        self.file.model().await.id.clone()
     }
 
     pub fn variables(&self) -> &VariableMap {

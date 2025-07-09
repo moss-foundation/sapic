@@ -20,8 +20,8 @@ use crate::shared::set_up_test_app;
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_empty() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let _log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let _log_service = services.get::<LogService>();
 
     let list_logs_result = app
         .list_logs(&ListLogsInput {
@@ -43,8 +43,8 @@ async fn test_list_logs_empty() {
 async fn test_list_logs_from_both_files_and_queue() {
     // By default, the applong and session log queue will be flushed to files for every ten log
     // We will create 25 of each to see that the logs are successfully combined
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
     for _ in 0..25 {
         log_service.warn(
@@ -88,8 +88,8 @@ async fn test_list_logs_from_both_files_and_queue() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_level() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
     log_service.debug(
         LogScope::App,
@@ -152,8 +152,8 @@ async fn test_list_logs_by_level() {
 #[ignore]
 #[tokio::test]
 async fn test_list_logs_by_resource() {
-    let (app, _ctx, cleanup, _abs_path) = set_up_test_app().await;
-    let log_service = app.service::<LogService>();
+    let (app, _ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let log_service = services.get::<LogService>();
 
     log_service.debug(
         LogScope::App,

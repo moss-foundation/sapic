@@ -1,19 +1,21 @@
 import { create } from "zustand";
 
+import { WorkspaceMode } from "@repo/moss-workspace";
+
 interface RequestModeStore {
-  displayMode: "RequestFirst" | "DesignFirst";
-  setDisplayMode: (displayMode: "RequestFirst" | "DesignFirst") => void;
+  displayMode: WorkspaceMode;
+  setDisplayMode: (displayMode: WorkspaceMode) => void;
   toggleDisplayMode: () => void;
 }
 
 export const useRequestModeStore = create<RequestModeStore>((set) => ({
-  displayMode: "RequestFirst",
-  setDisplayMode: (displayMode: "RequestFirst" | "DesignFirst") => {
+  displayMode: "REQUEST_FIRST",
+  setDisplayMode: (displayMode: WorkspaceMode) => {
     set({ displayMode });
   },
   toggleDisplayMode: () => {
     set((state) => ({
-      displayMode: state.displayMode === "RequestFirst" ? "DesignFirst" : "RequestFirst",
+      displayMode: state.displayMode === "REQUEST_FIRST" ? "DESIGN_FIRST" : "REQUEST_FIRST",
     }));
   },
 }));

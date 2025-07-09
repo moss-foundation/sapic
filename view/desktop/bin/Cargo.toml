@@ -24,7 +24,7 @@ compression = ["tauri/compression"]
 moss_activity_indicator.workspace = true
 moss_applib.workspace = true
 moss_common.workspace = true
-moss_tauri.workspace = true
+moss_api.workspace = true
 moss_db.workspace = true
 moss_collection.workspace = true
 moss_app.workspace = true
@@ -39,7 +39,6 @@ tauri-plugin-os = "2.2.0"
 tauri-plugin-log = { version = "2.2.1", features = ["colored"] }
 tauri-plugin-window-state = "2.2.1"
 tauri-plugin-single-instance = "2.2.2"
-uuid = { workspace = true, features = ["serde"] }
 anyhow.workspace = true
 log.workspace = true
 rand.workspace = true

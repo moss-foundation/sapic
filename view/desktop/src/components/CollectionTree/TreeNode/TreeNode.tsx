@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { useCollectionsStore } from "@/store/collections";
+import { useDeleteCollectionEntry } from "@/hooks";
 
 import { TreeContext } from "../..";
 import { useNodeAddForm } from "../hooks/useNodeAddForm";
@@ -38,8 +38,8 @@ export interface NodeEvents {
 }
 
 export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
-  const { nodeOffset, paddingRight, treeId, displayMode } = useContext(TreeContext);
-  const { deleteCollectionEntry } = useCollectionsStore();
+  const { nodeOffset, paddingRight, id } = useContext(TreeContext);
+  const { mutateAsync: deleteCollectionEntry } = useDeleteCollectionEntry();
   // const triggerRef = useRef<HTMLButtonElement>(null);
 
   const {
@@ -72,10 +72,9 @@ export const TreeNode = ({ node, onNodeUpdate, depth, parentNode, isLastChild }:
 
   const handleDeleteNode = () => {
     deleteCollectionEntry({
-      collectionId: treeId,
+      collectionId: id,
       input: {
         id: node.id,
-        path: node.path.raw,
       },
     });
     // onNodeUpdate(node);

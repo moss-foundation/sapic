@@ -1,3 +1,11 @@
-use moss_storage::primitives::segkey::SegKey;
+use moss_storage::primitives::segkey::{SegKey, SegKeyBuf};
 
-pub static SEGKEY_FOLDERS_STATE: SegKey = SegKey::new("foldersState");
+use crate::models::primitives::EntryId;
+
+pub static SEGKEY_RESOURCE_ENTRY: SegKey = SegKey::new("entry");
+pub static SEGKEY_EXPANDED_ENTRIES: SegKey = SegKey::new("expandedEntries");
+pub static SEGKEY_RESOURCE_ENVIRONMENT: SegKey = SegKey::new("env");
+
+pub fn segkey_entry_order(id: &EntryId) -> SegKeyBuf {
+    SEGKEY_RESOURCE_ENTRY.join(id).join("order")
+}

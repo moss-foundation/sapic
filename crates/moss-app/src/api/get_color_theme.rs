@@ -12,7 +12,7 @@ impl<R: TauriRuntime> App<R> {
         &self,
         input: &GetColorThemeInput,
     ) -> OperationResult<GetColorThemeOutput> {
-        let theme_service = self.service::<ThemeService>();
+        let theme_service = self.services.get::<ThemeService>();
         let themes = theme_service.themes().await?;
 
         if let Some(descriptor) = themes.get(&input.id) {

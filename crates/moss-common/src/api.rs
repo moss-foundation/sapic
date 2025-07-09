@@ -30,6 +30,12 @@ pub enum OperationError {
     Unknown(#[from] anyhow::Error),
 }
 
+impl From<moss_fs::FsError> for OperationError {
+    fn from(error: moss_fs::FsError) -> Self {
+        OperationError::Internal(error.to_string())
+    }
+}
+
 impl From<moss_db::common::DatabaseError> for OperationError {
     fn from(error: moss_db::common::DatabaseError) -> Self {
         OperationError::Internal(error.to_string())
@@ -164,10 +170,4 @@ impl<T> OperationResultExt<T> for Result<T, &str> {
     fn map_err_as_failed_precondition(self) -> OperationResult<T> {
         self.map_err(|e| OperationError::FailedPrecondition(e.to_string()))
     }
-}
-
-#[derive(Debug)]
-pub enum Change<T> {
-    Update(T),
-    Remove,
 }

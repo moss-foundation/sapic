@@ -27,7 +27,14 @@ pub enum EndpointItemConfigurationModel {
 // #########################################################
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct HttpEndpointDirConfiguration {}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[serde(rename_all = "snake_case")]
 // #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum EndpointDirConfigurationModel {}
+pub enum EndpointDirConfigurationModel {
+    Http(HttpEndpointDirConfiguration),
+}

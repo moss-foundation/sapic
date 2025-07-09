@@ -1,44 +1,27 @@
+use moss_api::{TauriError, TauriResult};
 use moss_app::app::App;
-use moss_collection::models::{
-    events::StreamEntriesEvent,
-    operations::{
-        CreateEntryInput, CreateEntryOutput, DeleteEntryInput, DeleteEntryOutput,
-        StreamEntriesOutput,
-    },
-};
-use moss_common::api::OperationOptionExt;
-use moss_tauri::{TauriError, TauriResult};
+use moss_collection::models::{events::*, operations::*};
+use moss_workspace::models::primitives::CollectionId;
 use tauri::{Runtime as TauriRuntime, State, Window, ipc::Channel as TauriChannel};
-use uuid::Uuid;
 
-use crate::constants::DEFAULT_COMMAND_TIMEOUT;
+use crate::commands::Options;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn create_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: CollectionId,
     input: CreateEntryInput,
+    options: Options,
 ) -> TauriResult<CreateEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let (mut workspace, ctx) = app
-            .workspace_mut()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
-
-        let collections = workspace.collections_mut(&ctx).await?;
-        let collection_item = collections
-            .get(&collection_id)
-            .map_err_as_not_found("Collection not found")?;
-        let mut collection_item_lock = collection_item.write().await;
-        collection_item_lock
+    super::with_collection_timeout(app, collection_id, options, |collection| async move {
+        collection
             .create_entry(input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }
 
 #[tauri::command(async)]
@@ -46,27 +29,54 @@ pub async fn create_collection_entry<R: TauriRuntime>(
 pub async fn delete_collection_entry<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: CollectionId,
     input: DeleteEntryInput,
+    options: Options,
 ) -> TauriResult<DeleteEntryOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let (mut workspace, ctx) = app
-            .workspace_mut()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
-
-        let collections = workspace.collections_mut(&ctx).await?;
-        let collection_item = collections
-            .get(&collection_id)
-            .map_err_as_not_found("Collection not found")?;
-        let mut collection_item_lock = collection_item.write().await;
-        collection_item_lock
+    super::with_collection_timeout(app, collection_id, options, |collection| async move {
+        collection
             .delete_entry(input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+pub async fn update_collection_entry<R: TauriRuntime>(
+    app: State<'_, App<R>>,
+    window: Window<R>,
+    collection_id: CollectionId,
+    input: UpdateEntryInput,
+    options: Options,
+) -> TauriResult<UpdateEntryOutput> {
+    super::with_collection_timeout(app, collection_id, options, |collection| async move {
+        collection
+            .update_entry(input)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app), fields(window = window.label(), channel = channel.id()))]
+pub async fn batch_update_collection_entry<R: TauriRuntime>(
+    app: State<'_, App<R>>,
+    window: Window<R>,
+    channel: TauriChannel<BatchUpdateEntryEvent>,
+    collection_id: CollectionId,
+    input: BatchUpdateEntryInput,
+    options: Options,
+) -> TauriResult<BatchUpdateEntryOutput> {
+    super::with_collection_timeout(app, collection_id, options, |collection| async move {
+        collection
+            .batch_update_entry(input, channel)
+            .await
+            .map_err(TauriError::OperationError)
+    })
+    .await
 }
 
 #[tauri::command(async)]
@@ -74,26 +84,23 @@ pub async fn delete_collection_entry<R: TauriRuntime>(
 pub async fn stream_collection_entries<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
-    collection_id: Uuid,
+    collection_id: CollectionId,
+    input: Option<StreamEntriesInput>, // FIXME: this needs to be optional because the frontend doesn't send it yet
     channel: TauriChannel<StreamEntriesEvent>,
+    options: Options,
 ) -> TauriResult<StreamEntriesOutput> {
-    tokio::time::timeout(DEFAULT_COMMAND_TIMEOUT, async move {
-        let (workspace, ctx) = app
-            .workspace()
-            .await
-            .map_err_as_failed_precondition("No active workspace")?;
+    super::with_collection_timeout(app, collection_id, options, |collection| async move {
+        // FIXME: temporary hack
+        let input = if let Some(input) = input {
+            input
+        } else {
+            StreamEntriesInput::LoadRoot
+        };
 
-        let collections = workspace.collections(&ctx).await?;
-        let collection_item = collections
-            .get(&collection_id)
-            .map_err_as_not_found("Collection not found")?;
-
-        let collection_item_lock = collection_item.read().await;
-        collection_item_lock
-            .stream_entries(channel)
+        collection
+            .stream_entries(channel, input)
             .await
             .map_err(TauriError::OperationError)
     })
     .await
-    .map_err(|_| TauriError::Timeout)?
 }

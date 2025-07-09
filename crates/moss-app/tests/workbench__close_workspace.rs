@@ -2,19 +2,26 @@ pub mod shared;
 
 use moss_app::{
     context::ctxkeys,
-    models::operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
+    models::{
+        operations::{CloseWorkspaceInput, CreateWorkspaceInput, OpenWorkspaceInput},
+        primitives::WorkspaceId,
+    },
+    services::{storage_service::StorageService, workspace_service::WorkspaceService},
+    storage::segments::SEGKEY_LAST_ACTIVE_WORKSPACE,
 };
 use moss_applib::context::Context;
 use moss_common::api::OperationError;
+use moss_storage::storage::operations::GetItem;
 use moss_testutils::random_name::random_workspace_name;
 use moss_workspace::models::types::WorkspaceMode;
-use uuid::Uuid;
+use tauri::test::MockRuntime;
 
 use crate::shared::set_up_test_app;
 
 #[tokio::test]
 async fn close_workspace_success() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
 
     // Create and open a workspace
     let workspace_name = random_workspace_name();
@@ -35,7 +42,7 @@ async fn close_workspace_success() {
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output.id,
+                id: create_output.id.clone(),
             },
         )
         .await;
@@ -45,14 +52,25 @@ async fn close_workspace_success() {
     assert_eq!(close_output.id, create_output.id);
 
     // Check that no workspace is active
-    assert!(app.workspace().await.is_none());
+    assert!(workspace_service.is_workspace_open().await.is_none());
+
+    // Check that last active workspace is removed from database
+    let storage_service = services.get::<StorageService>();
+    let item_store = storage_service.__storage().item_store();
+    assert!(
+        GetItem::get(
+            item_store.as_ref(),
+            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
+        )
+        .is_err()
+    );
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn close_workspace_not_open() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     // Create a workspace without opening it
     let workspace_name = random_workspace_name();
@@ -89,7 +107,8 @@ async fn close_workspace_not_open() {
 
 #[tokio::test]
 async fn close_workspace_after_another_opened() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, services, cleanup, _abs_path) = set_up_test_app().await;
+    let workspace_service = services.get::<WorkspaceService<MockRuntime>>();
 
     // Create and open first workspace
     let workspace_name1 = random_workspace_name();
@@ -109,7 +128,7 @@ async fn close_workspace_after_another_opened() {
     app.open_workspace(
         &ctx,
         &OpenWorkspaceInput {
-            id: create_output1.id,
+            id: create_output1.id.clone(),
         },
     )
     .await
@@ -131,7 +150,9 @@ async fn close_workspace_after_another_opened() {
 
     // Check that the second workspace is active
 
-    let maybe_active_id = ctx.value::<ctxkeys::WorkspaceId>().map(|id| **id);
+    let maybe_active_id = ctx
+        .value::<ctxkeys::ActiveWorkspaceId>()
+        .map(|id| (*id).clone());
     assert!(maybe_active_id.is_some());
     let active_id = maybe_active_id.unwrap();
 
@@ -142,7 +163,7 @@ async fn close_workspace_after_another_opened() {
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output1.id,
+                id: create_output1.id.clone(),
             },
         )
         .await;
@@ -158,7 +179,7 @@ async fn close_workspace_after_another_opened() {
         .close_workspace(
             &ctx,
             &CloseWorkspaceInput {
-                id: create_output2.id,
+                id: create_output2.id.clone(),
             },
         )
         .await;
@@ -168,16 +189,27 @@ async fn close_workspace_after_another_opened() {
     assert_eq!(close_output.id, create_output2.id);
 
     // Check that no workspace is active
-    assert!(app.workspace().await.is_none());
+    assert!(workspace_service.is_workspace_open().await.is_none());
+
+    // Check that last active workspace is removed from database
+    let storage_service = services.get::<StorageService>();
+    let item_store = storage_service.__storage().item_store();
+    assert!(
+        GetItem::get(
+            item_store.as_ref(),
+            SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf()
+        )
+        .is_err()
+    );
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn close_workspace_nonexistent() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
-    let nonexistent_id = Uuid::new_v4();
+    let nonexistent_id = WorkspaceId::new();
 
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: nonexistent_id })
@@ -194,7 +226,7 @@ async fn close_workspace_nonexistent() {
 
 #[tokio::test]
 async fn close_workspace_from_different_session() {
-    let (app, ctx, cleanup, _abs_path) = set_up_test_app().await;
+    let (app, ctx, _services, cleanup, _abs_path) = set_up_test_app().await;
 
     // Create a workspace
     let workspace_name = random_workspace_name();
@@ -221,7 +253,7 @@ async fn close_workspace_from_different_session() {
     .unwrap();
 
     // Try to close a workspace with wrong id
-    let wrong_id = Uuid::new_v4();
+    let wrong_id = WorkspaceId::new();
     let close_result = app
         .close_workspace(&ctx, &CloseWorkspaceInput { id: wrong_id })
         .await;

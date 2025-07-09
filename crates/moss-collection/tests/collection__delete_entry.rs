@@ -1,66 +1,30 @@
 pub mod shared;
 
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+};
 use moss_collection::{
     dirs,
-    models::{
-        operations::{CreateDirEntryInput, CreateEntryInput, DeleteEntryInput},
-        types::configuration::{
-            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
-        },
-    },
+    models::{operations::DeleteEntryInput, primitives::EntryId},
 };
 use moss_common::api::OperationError;
-use moss_testutils::random_name::random_string;
 use std::path::PathBuf;
-use uuid::Uuid;
-
-use crate::shared::create_test_collection;
-
-fn random_entry_name() -> String {
-    format!("Test_{}_Entry", random_string(10))
-}
-
-fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
-        DirHttpConfigurationModel {},
-    ))
-}
-
-async fn create_test_entry(
-    collection: &mut moss_collection::Collection,
-    entry_name: &str,
-    dir_name: &str,
-) -> (Uuid, PathBuf) {
-    let entry_path = PathBuf::from(dir_name);
-
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: entry_name.to_string(),
-        order: None,
-        configuration: create_test_dir_configuration(),
-    });
-
-    let result = collection.create_entry(input).await.unwrap();
-    (result.id, entry_path)
-}
 
 #[tokio::test]
 async fn delete_entry_success() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let (entry_id, entry_path) =
-        create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry_id = create_test_request_dir_entry(&mut collection, &entry_name).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result = collection.delete_entry(delete_input).await;
     let _ = result.unwrap();
@@ -74,13 +38,9 @@ async fn delete_entry_success() {
 
 #[tokio::test]
 async fn delete_entry_not_found() {
-    let (collection_path, mut collection) = create_test_collection().await;
+    let (collection_path, collection) = create_test_collection().await;
 
-    let non_existent_path = PathBuf::from(dirs::COMPONENTS_DIR).join("non_existent_entry");
-    let delete_input = DeleteEntryInput {
-        id: Uuid::new_v4(),
-        path: non_existent_path,
-    };
+    let delete_input = DeleteEntryInput { id: EntryId::new() };
 
     let result = collection.delete_entry(delete_input).await;
     assert!(result.is_err());
@@ -103,11 +63,11 @@ async fn delete_entry_with_subdirectories() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let (entry_id, entry_path) =
-        create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry_id = create_test_request_dir_entry(&mut collection, &entry_name).await;
 
     // Create some subdirectories and files inside the entry
-    let entry_dir = collection_path.join(&entry_path);
+    let entry_dir = collection_path.join(&entry_path).join(&entry_name);
     let sub_dir = entry_dir.join("subdir");
     let sub_sub_dir = sub_dir.join("subsubdir");
 
@@ -121,10 +81,7 @@ async fn delete_entry_with_subdirectories() {
     assert!(sub_sub_dir.exists());
 
     // Delete the entry
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result = collection.delete_entry(delete_input).await;
     let _ = result.unwrap();
@@ -145,22 +102,20 @@ async fn delete_multiple_entries() {
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
 
-    let (entry1_id, entry1_path) =
-        create_test_entry(&mut collection, &entry1_name, dirs::COMPONENTS_DIR).await;
-    let (entry2_id, entry2_path) =
-        create_test_entry(&mut collection, &entry2_name, dirs::SCHEMAS_DIR).await;
+    let entry1_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry1_id = create_test_request_dir_entry(&mut collection, &entry1_name).await;
+
+    let entry2_path = PathBuf::from(dirs::ENDPOINTS_DIR);
+    let entry2_id = create_test_endpoint_dir_entry(&mut collection, &entry2_name).await;
 
     // Verify both entries were created
-    let expected_dir1 = collection_path.join(&entry1_path);
-    let expected_dir2 = collection_path.join(&entry2_path);
+    let expected_dir1 = collection_path.join(&entry1_path).join(&entry1_name);
+    let expected_dir2 = collection_path.join(&entry2_path).join(&entry2_name);
     assert!(expected_dir1.exists());
     assert!(expected_dir2.exists());
 
     // Delete first entry
-    let delete_input1 = DeleteEntryInput {
-        id: entry1_id,
-        path: entry1_path.clone(),
-    };
+    let delete_input1 = DeleteEntryInput { id: entry1_id };
 
     let result1 = collection.delete_entry(delete_input1).await;
     let _ = result1.unwrap();
@@ -170,10 +125,7 @@ async fn delete_multiple_entries() {
     assert!(expected_dir2.exists());
 
     // Delete second entry
-    let delete_input2 = DeleteEntryInput {
-        id: entry2_id,
-        path: entry2_path.clone(),
-    };
+    let delete_input2 = DeleteEntryInput { id: entry2_id };
 
     let result2 = collection.delete_entry(delete_input2).await;
     let _ = result2.unwrap();
@@ -191,18 +143,15 @@ async fn delete_entry_twice() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    let (entry_id, entry_path) =
-        create_test_entry(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
+    let entry_path = PathBuf::from(dirs::REQUESTS_DIR);
+    let entry_id = create_test_request_dir_entry(&mut collection, &entry_name).await;
 
     // Verify entry was created
-    let expected_dir = collection_path.join(&entry_path);
+    let expected_dir = collection_path.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
     // Delete the entry first time - should succeed
-    let delete_input = DeleteEntryInput {
-        id: entry_id,
-        path: entry_path.clone(),
-    };
+    let delete_input = DeleteEntryInput { id: entry_id };
 
     let result1 = collection.delete_entry(delete_input.clone()).await;
     let _ = result1.unwrap();
@@ -231,48 +180,41 @@ async fn delete_entry_twice() {
 async fn delete_entries_from_different_directories() {
     let (collection_path, mut collection) = create_test_collection().await;
 
-    let directories = vec![
+    let mut entries = Vec::new();
+
+    // We have to manually do this now, since we will validate path against configuration
+    let request_id = create_test_request_dir_entry(&mut collection, "entry").await;
+    entries.push(request_id);
+
+    let endpoint_id = create_test_endpoint_dir_entry(&mut collection, "entry").await;
+    entries.push(endpoint_id);
+
+    let component_id = create_test_component_dir_entry(&mut collection, "entry").await;
+    entries.push(component_id);
+
+    let schema_id = create_test_schema_dir_entry(&mut collection, "entry").await;
+    entries.push(schema_id);
+
+    // Create entries in different directories
+    for entry_id in entries {
+        let _ = collection
+            .delete_entry(DeleteEntryInput { id: entry_id })
+            .await
+            .unwrap();
+    }
+
+    // Verify that all the dir entries are removed
+    for dir in [
         dirs::REQUESTS_DIR,
         dirs::ENDPOINTS_DIR,
         dirs::COMPONENTS_DIR,
         dirs::SCHEMAS_DIR,
-    ];
-
-    let mut entries = Vec::new();
-
-    // Create entries in different directories
-    for (idx, dir) in directories.iter().enumerate() {
-        let entry_name = format!("{}_{}", random_entry_name(), idx);
-        let (entry_id, entry_path) = create_test_entry(&mut collection, &entry_name, dir).await;
-        entries.push((entry_id, entry_path, dir));
-    }
-
-    // Verify all entries were created
-    for (_, entry_path, _) in &entries {
-        let expected_dir = collection_path.join(entry_path);
-        assert!(
-            expected_dir.exists(),
-            "Entry not created at {:?}",
-            entry_path
-        );
-    }
-
-    // Delete all entries
-    for (entry_id, entry_path, _) in &entries {
-        let delete_input = DeleteEntryInput {
-            id: *entry_id,
-            path: entry_path.clone(),
-        };
-
-        let result = collection.delete_entry(delete_input).await;
-        let _ = result.expect(&format!("Failed to delete entry at {:?}", entry_path));
-
-        // Verify the directory was removed
-        let expected_dir = collection_path.join(entry_path);
+    ] {
+        let expected_dir = collection_path.join(dir).join("entry");
         assert!(
             !expected_dir.exists(),
             "Entry not deleted at {:?}",
-            entry_path
+            expected_dir
         );
     }
 

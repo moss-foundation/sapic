@@ -1,4 +1,5 @@
-import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
+import ButtonDanger from "@/components/ButtonDanger";
+
 import { SectionTitle } from "./SectionTitle";
 
 interface CollectionDangerZoneSectionProps {
@@ -9,6 +10,7 @@ export const CollectionDangerZoneSection = ({ onDeleteClick }: CollectionDangerZ
   return (
     <div className="mt-8 text-(--moss-primary-text)">
       <SectionTitle>Danger Zone</SectionTitle>
+
       <div className="flex w-[36rem] items-center justify-between">
         <div>
           <p className="mb-1 font-medium">Delete this collection</p>
@@ -16,13 +18,10 @@ export const CollectionDangerZoneSection = ({ onDeleteClick }: CollectionDangerZ
             Once you delete a collection, there is no going back. Please be certain.
           </p>
         </div>
-        <ButtonNeutralOutlined
-          size="md"
-          onClick={onDeleteClick}
-          className="!background-(--moss-button-background-delete) hover:!background--(--moss-button-background-delete-hover) !h-7 !text-(--moss-button-text-delete)"
-        >
+
+        <ButtonDanger size="md" onClick={onDeleteClick}>
           Delete
-        </ButtonNeutralOutlined>
+        </ButtonDanger>
       </div>
     </div>
   );

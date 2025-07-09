@@ -12,8 +12,8 @@ impl<R: TauriRuntime> App<R> {
         ctx: &C,
         input: &DeleteWorkspaceInput,
     ) -> OperationResult<()> {
-        let workspace_service = self.service::<WorkspaceService<R>>();
-        workspace_service.delete_workspace(ctx, input.id).await?;
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
+        workspace_service.delete_workspace(ctx, &input.id).await?;
 
         Ok(())
     }

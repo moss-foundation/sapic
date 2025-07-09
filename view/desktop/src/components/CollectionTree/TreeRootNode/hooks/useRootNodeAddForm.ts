@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useCollectionsStore } from "@/store/collections";
+import { useCreateCollectionEntry } from "@/hooks";
 import { CreateEntryInput } from "@repo/moss-collection";
 
 import { TreeContext } from "../../Tree";
@@ -12,6 +12,7 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
       dir: {
         name,
         path: "requests",
+        order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
         configuration: {
           request: {
             http: {},
@@ -25,6 +26,7 @@ const createEntry = (name: string, isAddingFolder: boolean): CreateEntryInput =>
     item: {
       name,
       path: "requests",
+      order: 0, // FIXME: Temporary hardcoded, to avoid error from the backend
       configuration: {
         request: {
           http: {
@@ -42,8 +44,8 @@ export const useRootNodeAddForm = (
   node: TreeCollectionRootNode,
   onRootNodeUpdate: (node: TreeCollectionRootNode) => void
 ) => {
-  const { treeId } = useContext(TreeContext);
-  const { createCollectionEntry } = useCollectionsStore();
+  const { id } = useContext(TreeContext);
+  const { mutateAsync: createCollectionEntry } = useCreateCollectionEntry();
 
   const [isAddingRootNodeFile, setIsAddingRootNodeFile] = useState(false);
   const [isAddingRootNodeFolder, setIsAddingRootNodeFolder] = useState(false);
@@ -51,29 +53,33 @@ export const useRootNodeAddForm = (
   const handleRootAddFormSubmit = async (name: string) => {
     const newEntry = createEntry(name, isAddingRootNodeFolder);
 
-    const result = await createCollectionEntry({
-      collectionId: treeId,
-      input: newEntry,
-    });
-
-    if (result) {
-      onRootNodeUpdate({
-        ...node,
-        requests: {
-          ...node.requests,
-          childNodes: [
-            ...node.requests.childNodes,
-            {
-              ...result,
-              childNodes: [],
-            },
-          ],
-        },
+    try {
+      const result = await createCollectionEntry({
+        collectionId: id,
+        input: newEntry,
       });
-    }
 
-    setIsAddingRootNodeFile(false);
-    setIsAddingRootNodeFolder(false);
+      if (result) {
+        onRootNodeUpdate({
+          ...node,
+          requests: {
+            ...node.requests,
+            childNodes: [
+              ...node.requests.childNodes,
+              {
+                ...result,
+                childNodes: [],
+              },
+            ],
+          },
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsAddingRootNodeFile(false);
+      setIsAddingRootNodeFolder(false);
+    }
   };
 
   const handleRootAddFormCancel = () => {

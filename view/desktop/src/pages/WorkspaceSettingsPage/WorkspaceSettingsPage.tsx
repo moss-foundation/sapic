@@ -15,19 +15,19 @@ export const WorkspaceSettings = () => {
   const { mutate: updateWorkspace, isPending } = useUpdateWorkspace();
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
 
-  const [name, setName] = useState(workspace?.displayName || "");
+  const [name, setName] = useState(workspace?.name || "");
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   useEffect(() => {
     if (workspace) {
-      setName(workspace.displayName);
+      setName(workspace.name);
     }
   }, [workspace]);
 
   const handleSave = () => {
-    if (name.trim() && name.trim() !== workspace?.displayName) {
+    if (name.trim() && name.trim() !== workspace?.name) {
       updateWorkspace(
         { name: name.trim() },
         {
@@ -78,7 +78,7 @@ export const WorkspaceSettings = () => {
           showModal={showDeleteConfirmModal}
           closeModal={closeDeleteConfirmModal}
           title="Delete"
-          message={`Delete "${workspace?.displayName}"?`}
+          message={`Delete "${workspace?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with collections in the workspace."
           confirmLabel="Delete"
           cancelLabel="Close"

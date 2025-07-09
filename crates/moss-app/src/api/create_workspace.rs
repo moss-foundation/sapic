@@ -5,8 +5,11 @@ use validator::Validate;
 use crate::{
     app::App,
     context::AnyAppContext,
-    models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
-    services::workspace_service::WorkspaceService,
+    models::{
+        operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
+        primitives::WorkspaceId,
+    },
+    services::workspace_service::{WorkspaceItemCreateParams, WorkspaceService},
 };
 
 impl<R: TauriRuntime> App<R> {
@@ -17,21 +20,28 @@ impl<R: TauriRuntime> App<R> {
     ) -> OperationResult<CreateWorkspaceOutput> {
         input.validate()?;
 
-        let workspace_service = self.service::<WorkspaceService<R>>();
-        let (workspace, descriptor) = workspace_service
-            .create_workspace(input.name.as_str(), self.activity_indicator.clone())
+        let workspace_service = self.services.get::<WorkspaceService<R>>();
+
+        let id = WorkspaceId::new();
+        let item = workspace_service
+            .create_workspace(
+                &id,
+                WorkspaceItemCreateParams {
+                    name: input.name.to_owned(),
+                },
+            )
             .await?;
 
         if input.open_on_creation {
             workspace_service
-                .activate_workspace(ctx, descriptor.id, workspace)
+                .activate_workspace(ctx, &id, self.activity_indicator.clone())
                 .await?;
         }
 
         Ok(CreateWorkspaceOutput {
-            id: descriptor.id,
+            id: item.id,
             active: input.open_on_creation,
-            abs_path: descriptor.abs_path.clone(),
+            abs_path: item.abs_path.clone(),
         })
     }
 }

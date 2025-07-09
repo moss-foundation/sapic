@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { ConfirmationModal, InputOutlined } from "@/components";
-import { useModal } from "@/hooks";
-import { useCollectionsStore } from "@/store/collections";
-
+import { InputOutlined } from "@/components";
+import { DeleteCollectionModal } from "@/components/Modals/Collection/DeleteCollectionModal";
+import { useModal, useStreamedCollections, useUpdateCollection } from "@/hooks";
 import { IDockviewPanelProps } from "@/lib/moss-tabs/src";
+
 import { CollectionDangerZoneSection } from "../CollectionDangerZoneSection";
 import { CollectionSummarySection } from "../CollectionSummarySection";
 
@@ -13,35 +13,33 @@ interface OverviewTabContentProps {
 }
 
 export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
-  const { streamedCollections, updateStreamedCollection, deleteCollection } = useCollectionsStore();
+  const { data: streamedCollections } = useStreamedCollections();
+  const { placeholderFnForUpdateCollection } = useUpdateCollection();
 
-  const collection = streamedCollections.find((collection) => collection.id === params.collectionId);
+  const collection = streamedCollections?.find((collection) => collection.id === params.collectionId);
 
   const { showModal, closeModal, openModal } = useModal();
 
   const [name, setName] = useState(collection?.name);
-  const [repository, setRepository] = useState("github.com/moss-foundation/sapic");
+  const [repository, setRepository] = useState(collection?.repository || "github.com/moss-foundation/sapic");
 
   useEffect(() => {
     if (collection) {
-      setName(collection?.name);
+      setName(collection.name);
+      const currentPanel = containerApi.getPanel(collection.id);
+      currentPanel?.api.setTitle(collection.name);
     }
-  }, [collection]);
-
-  const handleDeleteCollection = () => {
-    deleteCollection(params.collectionId);
-  };
+  }, [collection, containerApi]);
 
   const updateCollection = () => {
     if (!collection || !name) return;
 
-    updateStreamedCollection({
-      ...collection,
-      name,
-    });
+    // updateStreamedCollection({
+    //   ...collection,
+    //   name,
+    // });
 
-    const currentPanel = containerApi.getPanel(collection.id);
-    currentPanel?.api.setTitle(name);
+    placeholderFnForUpdateCollection({ id: collection.id, collection: { ...collection, name } });
   };
 
   const handleBlur = () => {
@@ -122,19 +120,7 @@ export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps
         <CollectionSummarySection />
       </div>
 
-      {showModal && (
-        <ConfirmationModal
-          showModal={showModal}
-          closeModal={closeModal}
-          title="Delete"
-          message={`Delete "${collection.name}"?`}
-          description="This will delete all requests, endpoints, and other items in this collection. This action cannot be undone."
-          confirmLabel="Delete"
-          cancelLabel="Close"
-          onConfirm={handleDeleteCollection}
-          variant="danger"
-        />
-      )}
+      {showModal && <DeleteCollectionModal showModal={showModal} closeModal={closeModal} id={params.collectionId} />}
     </div>
   );
 };

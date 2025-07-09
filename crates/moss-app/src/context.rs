@@ -16,13 +16,14 @@ use crate::app::App;
 
 pub mod ctxkeys {
     use moss_applib::context::ContextValue;
-    use uuid::Uuid;
+
+    use crate::models::primitives::WorkspaceId;
 
     /// The id of the workspace that is currently active.
     #[derive(Debug, Deref, From, PartialEq, Eq, Hash)]
-    pub struct WorkspaceId(Uuid);
+    pub struct ActiveWorkspaceId(WorkspaceId);
 
-    impl ContextValue for WorkspaceId {}
+    impl ContextValue for ActiveWorkspaceId {}
 }
 
 #[async_trait]
@@ -82,7 +83,7 @@ impl<R: TauriRuntime> Context<R> for AppContext<R> {
 impl<R: TauriRuntime> From<App<R>> for AppContext<R> {
     fn from(app: App<R>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
@@ -91,7 +92,7 @@ impl<R: TauriRuntime> From<App<R>> for AppContext<R> {
 impl<R: TauriRuntime> From<State<'_, App<R>>> for AppContext<R> {
     fn from(app: State<'_, App<R>>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }
@@ -100,7 +101,7 @@ impl<R: TauriRuntime> From<State<'_, App<R>>> for AppContext<R> {
 impl<R: TauriRuntime> From<&State<'_, App<R>>> for AppContext<R> {
     fn from(app: &State<'_, App<R>>) -> Self {
         AppContext {
-            app_handle: app.app_handle().clone(),
+            app_handle: app.handle().clone(),
             values: app.state::<ContextValueSet>().inner().clone(),
         }
     }

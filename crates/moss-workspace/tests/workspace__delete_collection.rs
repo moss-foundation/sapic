@@ -1,14 +1,22 @@
 pub mod shared;
 
-use moss_storage::storage::operations::ListByPrefix;
+use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_testutils::random_name::random_collection_name;
-use moss_workspace::models::operations::{CreateCollectionInput, DeleteCollectionInput};
+use moss_workspace::{
+    models::{
+        operations::{CreateCollectionInput, DeleteCollectionInput},
+        primitives::CollectionId,
+    },
+    services::storage_service::StorageService,
+    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+};
+use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_collection_success() {
-    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -16,7 +24,7 @@ async fn delete_collection_success() {
             &ctx,
             &CreateCollectionInput {
                 name: collection_name.clone(),
-                order: None,
+                order: 0,
                 external_path: None,
                 repo: None,
                 icon_path: None,
@@ -27,25 +35,37 @@ async fn delete_collection_success() {
 
     let id = create_collection_output.id;
     let _ = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 
     // Check updating collections
-    let collections = workspace.collections(&ctx).await.unwrap();
-    assert!(collections.is_empty());
+    let channel = Channel::new(move |_| Ok(()));
+    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    assert_eq!(output.total_returned, 0);
 
-    // Check updating database
-    let item_store = workspace.__storage().item_store();
-    let list_result = ListByPrefix::list_by_prefix(item_store.as_ref(), "collection").unwrap();
+    // Check updating database - collection metadata should be removed
+    let storage_service = services.get::<StorageService>();
+    let item_store = storage_service.__storage().item_store();
+
+    // Check that collection-specific entries are removed
+    let collection_prefix = SEGKEY_COLLECTION.join(&id.to_string());
+    let list_result =
+        ListByPrefix::list_by_prefix(item_store.as_ref(), &collection_prefix.to_string()).unwrap();
     assert!(list_result.is_empty());
+
+    // Check that expanded_items no longer contains the deleted collection
+    let expanded_items_value =
+        GetItem::get(item_store.as_ref(), SEGKEY_EXPANDED_ITEMS.to_segkey_buf()).unwrap();
+    let expanded_items: Vec<CollectionId> = expanded_items_value.deserialize().unwrap();
+    assert!(!expanded_items.contains(&id));
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_collection_nonexistent_id() {
-    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let id = workspace
@@ -53,7 +73,7 @@ async fn delete_collection_nonexistent_id() {
             &ctx,
             &CreateCollectionInput {
                 name: collection_name.clone(),
-                order: None,
+                order: 0,
                 external_path: None,
                 repo: None,
                 icon_path: None,
@@ -64,23 +84,25 @@ async fn delete_collection_nonexistent_id() {
         .id;
 
     workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
         .await
         .unwrap();
 
-    // Delete the collection again
+    // Delete the collection again - should succeed but return None abs_path
     let delete_collection_result = workspace
-        .delete_collection(&ctx, &DeleteCollectionInput { id })
-        .await;
+        .delete_collection(&ctx, &DeleteCollectionInput { id: id.clone() })
+        .await
+        .unwrap();
 
-    assert!(delete_collection_result.is_err());
+    // The second deletion should succeed but indicate nothing was deleted
+    assert!(delete_collection_result.abs_path.is_none());
 
     cleanup().await;
 }
 
 #[tokio::test]
 async fn delete_collection_fs_already_deleted() {
-    let (ctx, _workspace_path, mut workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _workspace_path, workspace, _services, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_collection_name();
     let create_collection_output = workspace
@@ -88,7 +110,7 @@ async fn delete_collection_fs_already_deleted() {
             &ctx,
             &CreateCollectionInput {
                 name: collection_name.clone(),
-                order: None,
+                order: 0,
                 external_path: None,
                 repo: None,
                 icon_path: None,
@@ -114,8 +136,9 @@ async fn delete_collection_fs_already_deleted() {
         .unwrap();
 
     // Check collections are updated
-    let collections = workspace.collections(&ctx).await.unwrap();
-    assert!(collections.is_empty());
+    let channel = Channel::new(move |_| Ok(()));
+    let output = workspace.stream_collections(&ctx, channel).await.unwrap();
+    assert_eq!(output.total_returned, 0);
 
     // TODO: Check database after implementing self-healing mechanism?
 

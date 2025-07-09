@@ -216,4 +216,42 @@ where
             )),
         }
     }
+
+    pub fn remove_by_prefix<P>(
+        &self,
+        txn: &mut Transaction,
+        prefix: P,
+    ) -> Result<Vec<(K, V)>, DatabaseError>
+    where
+        P: AsRef<str>,
+    {
+        match txn {
+            Transaction::Write(txn) => {
+                let mut table = txn.open_table(self.table)?;
+                let prefix_str = prefix.as_ref();
+                let mut result = Vec::new();
+
+                for entry in table.iter()? {
+                    let (key_guard, value_guard) = entry?;
+                    let key = key_guard.value().to_owned();
+                    let key_str = key.to_string();
+
+                    if key_str.starts_with(prefix_str) {
+                        let bytes = value_guard.value();
+                        let value: V = serde_json::from_slice(&bytes)?;
+                        result.push((key.clone(), value));
+                    }
+                }
+
+                for (key, _) in result.iter() {
+                    table.remove(key.borrow())?;
+                }
+
+                Ok(result)
+            }
+            Transaction::Read(_txn) => Err(DatabaseError::Transaction(
+                "Cannot remove by prefix from read transaction".to_string(),
+            )),
+        }
+    }
 }

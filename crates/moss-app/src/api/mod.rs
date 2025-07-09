@@ -2,7 +2,7 @@ pub mod batch_delete_log;
 pub mod close_workspace;
 pub mod create_workspace;
 pub mod delete_workspace;
-pub mod describe_state;
+pub mod describe_app_state;
 pub mod get_color_theme;
 pub mod get_translations;
 pub mod list_color_themes;

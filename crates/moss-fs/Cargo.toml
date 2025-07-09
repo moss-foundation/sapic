@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 moss_applib.workspace = true
-moss_common.workspace = true
 moss_text.workspace = true
 
 async-trait.workspace = true
@@ -16,3 +15,5 @@ futures.workspace = true
 async-stream.workspace = true
 tokio-stream.workspace = true
 tauri.workspace = true
+derive_more.workspace = true
+thiserror.workspace = true

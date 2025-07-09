@@ -1,31 +1,16 @@
-use moss_storage::workspace_storage::entities::state_store_entities::{
-    EditorGridLeafDataEntity, EditorGridNodeEntity, EditorGridOrientationEntity,
-    EditorGridStateEntity, EditorPanelStateEntity, PanelRendererEntity,
-};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use ts_rs::TS;
 
-use crate::models::primitives::{EditorGridOrientation, PanelRenderer};
+use crate::{
+    models::primitives::{EditorGridOrientation, PanelRenderer},
+    storage::entities::state_store::{
+        EditorGridLeafDataEntity, EditorGridNodeEntity, EditorGridStateEntity,
+        EditorPanelStateEntity,
+    },
+};
 
-impl From<EditorGridOrientation> for EditorGridOrientationEntity {
-    fn from(value: EditorGridOrientation) -> Self {
-        match value {
-            EditorGridOrientation::Horizontal => EditorGridOrientationEntity::Horizontal,
-            EditorGridOrientation::Vertical => EditorGridOrientationEntity::Vertical,
-        }
-    }
-}
-
-impl From<EditorGridOrientationEntity> for EditorGridOrientation {
-    fn from(value: EditorGridOrientationEntity) -> Self {
-        match value {
-            EditorGridOrientationEntity::Horizontal => EditorGridOrientation::Horizontal,
-            EditorGridOrientationEntity::Vertical => EditorGridOrientation::Vertical,
-        }
-    }
-}
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -131,46 +116,21 @@ impl From<EditorGridStateEntity> for EditorGridState {
     }
 }
 
-impl From<PanelRenderer> for PanelRendererEntity {
-    fn from(value: PanelRenderer) -> Self {
-        match value {
-            PanelRenderer::OnlyWhenVisible => PanelRendererEntity::OnlyWhenVisible,
-            PanelRenderer::Always => PanelRendererEntity::Always,
-        }
-    }
-}
-
-impl From<PanelRendererEntity> for PanelRenderer {
-    fn from(value: PanelRendererEntity) -> Self {
-        match value {
-            PanelRendererEntity::OnlyWhenVisible => PanelRenderer::OnlyWhenVisible,
-            PanelRendererEntity::Always => PanelRenderer::Always,
-        }
-    }
-}
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EditorPanelState {
     pub id: String,
-    #[ts(optional)]
     pub content_component: Option<String>,
-    #[ts(optional)]
     pub tab_component: Option<String>,
-    #[ts(optional)]
     pub title: Option<String>,
-    #[ts(optional)]
     pub renderer: Option<PanelRenderer>,
-    #[ts(optional)]
     #[ts(type = "{ [key: string]: JsonValue }")]
     pub params: Option<HashMap<String, JsonValue>>,
-    #[ts(optional)]
     pub minimum_width: Option<f64>,
-    #[ts(optional)]
     pub minimum_height: Option<f64>,
-    #[ts(optional)]
     pub maximum_width: Option<f64>,
-    #[ts(optional)]
     pub maximum_height: Option<f64>,
 }
 
