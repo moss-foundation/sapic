@@ -1,6 +1,14 @@
 [workspace]
 resolver = "1"
 members = [
+    #
+    # Library crates
+    #
+    "libs/joinerror", 
+    #
+    # Workspace crates
+    #
+    "crates/moss-applib",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-api",
@@ -22,11 +30,21 @@ members = [
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
     "crates/moss-wasm",
+    #
+    # Apps
+    #
+    "view/desktop/bin",
+    #
+    # Tools
+    #
     "tools/xtask",
-    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
+#
+# Library crates
+#
+joinerror = { path = "libs/joinerror" }
 #
 # Workspace crates
 #

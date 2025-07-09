@@ -1,5 +1,4 @@
 pub mod context;
-pub mod error;
 pub mod markers;
 pub mod providers;
 pub mod subscription;

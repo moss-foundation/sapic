@@ -3188,6 +3188,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "joinerror"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
 name = "jpeg-decoder"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
