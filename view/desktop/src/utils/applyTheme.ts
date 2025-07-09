@@ -1,5 +1,13 @@
 import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
 import { GetColorThemeInput, GetColorThemeOutput } from "@repo/moss-app";
+import { QueryClient } from "@tanstack/react-query";
+
+// Interface for the theme store object
+interface ThemeStore {
+  shouldApplyTheme(themeId: string): boolean;
+  setIsApplying(isApplying: boolean): void;
+  setCurrentThemeId(themeId: string): void;
+}
 
 // Legacy direct API call (used by non-React contexts)
 export const getColorTheme = async (input: GetColorThemeInput): Promise<IpcResult<GetColorThemeOutput, string>> => {
@@ -43,7 +51,11 @@ export const applyColorTheme = async (themeId: string): Promise<void> => {
 };
 
 // Cached version that uses React Query client to avoid duplicate API calls
-export const applyColorThemeFromCache = async (themeId: string, queryClient: any, themeStore?: any): Promise<void> => {
+export const applyColorThemeFromCache = async (
+  themeId: string,
+  queryClient: QueryClient,
+  themeStore?: ThemeStore
+): Promise<void> => {
   try {
     // Check if we should apply this theme
     if (themeStore && !themeStore.shouldApplyTheme(themeId)) {
@@ -61,7 +73,7 @@ export const applyColorThemeFromCache = async (themeId: string, queryClient: any
     }
 
     // Try to get theme from cache first
-    const cachedTheme = queryClient.getQueryData(["getColorTheme", themeId]);
+    const cachedTheme = queryClient.getQueryData<GetColorThemeOutput>(["getColorTheme", themeId]);
 
     let cssContent: string;
 

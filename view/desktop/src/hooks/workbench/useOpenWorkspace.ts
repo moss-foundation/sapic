@@ -1,5 +1,11 @@
 import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/moss-app";
+import {
+  OpenWorkspaceInput,
+  OpenWorkspaceOutput,
+  DescribeAppStateOutput,
+  ListWorkspacesOutput,
+  WorkspaceInfo,
+} from "@repo/moss-app";
 import { DescribeStateOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -36,7 +42,7 @@ export const useOpenWorkspace = () => {
         exact: false,
       });
 
-      queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (oldData: any) => {
+      queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (oldData: DescribeAppStateOutput | undefined) => {
         if (oldData) {
           return {
             ...oldData,
@@ -46,9 +52,9 @@ export const useOpenWorkspace = () => {
         return oldData;
       });
 
-      queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: any) => {
+      queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: ListWorkspacesOutput | undefined) => {
         if (Array.isArray(oldData)) {
-          return oldData.map((workspace: any) => ({
+          return oldData.map((workspace: WorkspaceInfo) => ({
             ...workspace,
             active: workspace.id === workspaceId,
           }));
