@@ -64,7 +64,7 @@ export const TreeRootNodeActions = ({
             />
           </ActionMenu.Trigger>
           <ActionMenu.Portal>
-            <ActionMenu.Content className="z-30" align="center">
+            <ActionMenu.Content className="z-40" align="center">
               <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFileNode(true)}>
                 Add File
               </ActionMenu.Item>
