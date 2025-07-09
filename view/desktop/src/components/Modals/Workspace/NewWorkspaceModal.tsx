@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { InputOutlined, RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
@@ -12,12 +12,20 @@ import { WorkspaceMode } from "@repo/moss-workspace";
 import { ModalWrapperProps } from "../types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { mutate: createWorkspace } = useCreateWorkspace();
   const { mutate: openWorkspace } = useOpenWorkspace();
 
   const [name, setName] = useState("");
   const [mode, setMode] = useState<WorkspaceMode>("REQUEST_FIRST");
   const [openAutomatically, setOpenAutomatically] = useState(true);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    inputRef.current.focus();
+    inputRef.current.select();
+  }, []);
 
   const handleSubmit = async () => {
     if (name) {
@@ -66,6 +74,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
           <div className="grid grid-cols-[min-content_1fr] grid-rows-[repeat(2,1fr)] items-center gap-x-3.75 py-4">
             <div className="self-start">Name:</div>
             <InputOutlined
+              ref={inputRef}
               value={name}
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}

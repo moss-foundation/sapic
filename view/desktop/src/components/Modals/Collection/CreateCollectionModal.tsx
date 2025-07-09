@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { RadioGroup } from "@/components";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
@@ -12,6 +12,8 @@ import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { ModalWrapperProps } from "../types";
 
 export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { mutateAsync: createCollection, isPending: isCreateCollectionLoading } = useCreateCollection();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -20,6 +22,12 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
   const [repo, setRepo] = useState("github.com/moss-foundation/sapic");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
   const [openAutomatically, setOpenAutomatically] = useState(true);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    inputRef.current.focus();
+    inputRef.current.select();
+  }, []);
 
   const handleSubmit = async () => {
     const result = await createCollection({
@@ -70,6 +78,7 @@ export const CreateCollectionModal = ({ closeModal, showModal }: ModalWrapperPro
             <div className="col-span-2 grid grid-cols-subgrid items-center gap-y-3">
               <div>Name:</div>
               <InputOutlined
+                ref={inputRef}
                 value={name}
                 className="max-w-72"
                 onChange={(e) => setName(e.target.value)}
