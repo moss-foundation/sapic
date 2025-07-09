@@ -44,7 +44,6 @@ export const Modal = ({
       style={{
         "WebkitBackdropFilter": "blur(8px)", // BackdropFilter doesn't work on Linux without this
       }}
-      // onClick={onBackdropClick}
       onMouseDown={onBackdropClick}
     >
       <dialog
@@ -57,6 +56,9 @@ export const Modal = ({
           },
           className
         )}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+        }}
       >
         {children}
       </dialog>
