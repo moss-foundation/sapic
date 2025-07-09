@@ -479,6 +479,13 @@ impl WorktreeService {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
+        if !is_parent_entry_dir(self.abs_path.as_ref(), path) {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Cannot create entry inside Item entry {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
+
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
             .into();
@@ -532,6 +539,13 @@ impl WorktreeService {
     ) -> WorktreeResult<()> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
+
+        if !is_parent_entry_dir(self.abs_path.as_ref(), path) {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Cannot create entry inside Item entry {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -849,6 +863,18 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
         .to_string();
 
     Ok(new_parent.join(name))
+}
+
+// We don't allow creating subentries inside an item
+fn is_parent_entry_dir(abs_path: &Path, parent_path: &Path) -> bool {
+    if parent_path == Path::new("") {
+        // Ignore the root level since it's not an entry
+        return true;
+    }
+    abs_path
+        .join(parent_path)
+        .join(constants::DIR_CONFIG_FILENAME)
+        .exists()
 }
 
 async fn process_dir_entry(

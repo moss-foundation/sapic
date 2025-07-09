@@ -19,6 +19,7 @@ use crate::{
 // ###                   Create Entry                   ###
 // ########################################################
 
+// TODO: Should this be named CreateItemEntryParams?
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[validate(schema(function = "validate_create_item_entry_input"))]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +36,7 @@ pub struct CreateItemEntryInput {
     pub configuration: ItemConfigurationModel,
 }
 
+// TODO: Should this be named CreateDirEntryParams?
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[validate(schema(function = "validate_create_dir_entry_input"))]
 #[serde(rename_all = "camelCase")]
@@ -65,6 +67,33 @@ pub enum CreateEntryInput {
 pub struct CreateEntryOutput {
     #[ts(as = "String")]
     pub id: EntryId,
+}
+
+// ########################################################
+// ###                Batch Create Entry                ###
+// ########################################################
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "UPPERCASE")]
+#[ts(export, export_to = "operations.ts")]
+pub enum BatchCreateEntryKind {
+    Item(CreateItemEntryInput),
+    Dir(CreateDirEntryInput),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchCreateEntryInput {
+    pub entries: Vec<BatchCreateEntryKind>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchCreateEntryOutput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<EntryId>,
 }
 
 // ########################################################
@@ -120,7 +149,6 @@ pub enum BatchUpdateEntryKind {
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateEntryInput {
     pub entries: Vec<BatchUpdateEntryKind>,
