@@ -1,3 +1,5 @@
+pub mod test_service_repr;
+
 use anyhow::{Context as _, Result};
 use moss_applib::ServiceMarker;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
@@ -9,16 +11,15 @@ use moss_storage::{
     },
     workspace_storage::WorkspaceStorageImpl,
 };
-use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::{HashMap, HashSet},
-    hash::Hash,
     path::Path,
     sync::Arc,
 };
 
 use crate::{
-    models::primitives::{ActivitybarPosition, SidebarPosition},
+    models::primitives::{ActivitybarPosition, CollectionId, SidebarPosition},
+    services::AnyStorageService,
     storage::{
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{self, SEGKEY_COLLECTION},
@@ -26,33 +27,19 @@ use crate::{
 };
 
 pub struct StorageService {
-    storage: Arc<dyn WorkspaceStorage>,
+    pub(super) storage: Arc<dyn WorkspaceStorage>,
 }
 
 impl ServiceMarker for StorageService {}
 
-impl StorageService {
-    pub fn new(abs_path: &Path) -> Result<Self> {
-        let storage = WorkspaceStorageImpl::new(&abs_path)
-            .context("Failed to load the workspace state database")?;
-
-        Ok(Self {
-            storage: Arc::new(storage),
-        })
-    }
-
-    pub(crate) fn begin_write(&self) -> Result<Transaction> {
+impl AnyStorageService for StorageService {
+    fn begin_write(&self) -> Result<Transaction> {
         Ok(self.storage.begin_write()?)
     }
 
     // Items operations
 
-    pub(crate) fn put_item_order_txn(
-        &self,
-        txn: &mut Transaction,
-        id: &str,
-        order: usize,
-    ) -> Result<()> {
+    fn put_item_order_txn(&self, txn: &mut Transaction, id: &str, order: usize) -> Result<()> {
         let store = self.storage.item_store();
 
         let segkey = SEGKEY_COLLECTION.join(id.to_string()).join("order");
@@ -61,10 +48,10 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn put_expanded_items_txn<T: Serialize>(
+    fn put_expanded_items_txn(
         &self,
         txn: &mut Transaction,
-        expanded_entries: &HashSet<T>,
+        expanded_entries: &HashSet<CollectionId>,
     ) -> Result<()> {
         let store = self.storage.item_store();
         TransactionalPutItem::put(
@@ -77,17 +64,14 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_expanded_items<T: DeserializeOwned>(&self) -> Result<HashSet<T>>
-    where
-        T: Eq + Hash,
-    {
+    fn get_expanded_items(&self) -> Result<HashSet<CollectionId>> {
         let store = self.storage.item_store();
         let segkey = segments::SEGKEY_EXPANDED_ITEMS.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
-        Ok(AnyValue::deserialize::<HashSet<T>>(&value)?)
+        Ok(AnyValue::deserialize::<HashSet<_>>(&value)?)
     }
 
-    pub(crate) fn list_items_metadata(
+    fn list_items_metadata(
         &self,
         segkey_prefix: SegKeyBuf,
     ) -> DatabaseResult<HashMap<SegKeyBuf, AnyValue>> {
@@ -99,7 +83,7 @@ impl StorageService {
         Ok(data.into_iter().collect())
     }
 
-    pub(crate) fn remove_item_metadata_txn(
+    fn remove_item_metadata_txn(
         &self,
         txn: &mut Transaction,
         segkey_prefix: SegKeyBuf,
@@ -111,6 +95,17 @@ impl StorageService {
         )?;
 
         Ok(())
+    }
+}
+
+impl StorageService {
+    pub fn new(abs_path: &Path) -> Result<Self> {
+        let storage = WorkspaceStorageImpl::new(&abs_path)
+            .context("Failed to load the workspace state database")?;
+
+        Ok(Self {
+            storage: Arc::new(storage),
+        })
     }
 
     // Layout operations
