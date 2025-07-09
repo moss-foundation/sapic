@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { InputOutlined, RadioGroup } from "@/components";
+import { VALID_NAME_PATTERN } from "@/constants/validation";
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
 import ButtonPrimary from "@/components/ButtonPrimary";
 import CheckboxWithLabel from "@/components/CheckboxWithLabel";
@@ -69,7 +70,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
               value={name}
               className="max-w-72"
               onChange={(e) => setName(e.target.value)}
-              pattern="^[^/:\*?|]+$"
+              pattern={VALID_NAME_PATTERN}
               required
             />
             <p className="col-start-2 max-w-72 text-xs text-(--moss-secondary-text)">{`Invalid filename characters (e.g. / \ : * ? " < > |) will be escaped`}</p>
