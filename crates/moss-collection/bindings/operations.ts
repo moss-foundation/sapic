@@ -11,6 +11,21 @@ import type {
 /**
  * @category Operation
  */
+export type BatchCreateEntryInput = { entries: Array<BatchCreateEntryKind> };
+
+/**
+ * @category Operation
+ */
+export type BatchCreateEntryKind = { "ITEM": CreateItemEntryInput } | { "DIR": CreateDirEntryInput };
+
+/**
+ * @category Operation
+ */
+export type BatchCreateEntryOutput = { ids: Array<string> };
+
+/**
+ * @category Operation
+ */
 export type BatchUpdateEntryInput = { entries: Array<BatchUpdateEntryKind> };
 
 /**
