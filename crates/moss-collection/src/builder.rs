@@ -18,7 +18,7 @@ use tokio::sync::OnceCell;
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigModel},
-    constants::COLLECTION_ICON_FILENAME,
+    constants::{COLLECTION_ICON_FILENAME, COLLECTION_ROOT_PATH},
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
@@ -139,7 +139,7 @@ impl CollectionBuilder {
                 .create_dir_entry(
                     &id,
                     dir,
-                    "",
+                    COLLECTION_ROOT_PATH,
                     configuration,
                     EntryMetadata {
                         order: *order,
