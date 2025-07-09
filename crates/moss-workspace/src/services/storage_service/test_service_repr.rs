@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use moss_applib::ServiceMarker;
 use moss_storage::WorkspaceStorage;
 
 use crate::services::{AnyStorageService, storage_service::StorageService};
@@ -12,11 +13,19 @@ impl TestStorageService {
     pub fn storage(&self) -> &Arc<dyn WorkspaceStorage> {
         &self.real.storage
     }
+
+    pub fn real(&self) -> &Arc<StorageService> {
+        &self.real
+    }
 }
 
-impl From<Arc<StorageService>> for TestStorageService {
-    fn from(real: Arc<StorageService>) -> Self {
-        Self { real }
+impl ServiceMarker for TestStorageService {}
+
+impl From<StorageService> for TestStorageService {
+    fn from(real: StorageService) -> Self {
+        Self {
+            real: Arc::new(real),
+        }
     }
 }
 
@@ -66,5 +75,16 @@ impl AnyStorageService for TestStorageService {
         >,
     > {
         self.real.list_items_metadata(segkey_prefix)
+    }
+
+    fn get_layout_cache(
+        &self,
+    ) -> anyhow::Result<
+        std::collections::HashMap<
+            moss_storage::primitives::segkey::SegKeyBuf,
+            moss_db::primitives::AnyValue,
+        >,
+    > {
+        self.real.get_layout_cache()
     }
 }

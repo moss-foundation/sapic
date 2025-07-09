@@ -83,6 +83,10 @@ impl AnyStorageService for StorageService {
         Ok(data.into_iter().collect())
     }
 
+    fn get_layout_cache(&self) -> Result<HashMap<SegKeyBuf, AnyValue>> {
+        self.get_layout_cache()
+    }
+
     fn remove_item_metadata_txn(
         &self,
         txn: &mut Transaction,

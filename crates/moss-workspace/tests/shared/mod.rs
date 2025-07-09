@@ -18,8 +18,10 @@ use moss_workspace::{
         },
     },
     services::{
-        AnyStorageService, collection_service::CollectionService, layout_service::LayoutService,
-        storage_service::StorageService,
+        DynStorageService,
+        collection_service::CollectionService,
+        layout_service::LayoutService,
+        storage_service::{StorageService, test_service_repr::TestStorageService},
     },
     storage::segments::SEGKEY_COLLECTION,
 };
@@ -63,8 +65,10 @@ pub async fn setup_test_workspace() -> (
     let mut services: ServiceMap = Default::default();
 
     let activity_indicator = ActivityIndicator::new(app_handle.clone());
-    let storage_service: Arc<StorageService> = StorageService::new(&abs_path).unwrap().into();
-    let layout_service: Arc<LayoutService> = LayoutService::new(storage_service.clone()).into();
+    let storage_service: Arc<TestStorageService> =
+        TestStorageService::from(StorageService::new(&abs_path).unwrap()).into();
+    let layout_service: Arc<LayoutService> =
+        LayoutService::new(storage_service.real().clone()).into();
     let collection_service: Arc<CollectionService> =
         CollectionService::new(abs_path.clone(), fs.clone(), storage_service.clone())
             .await
@@ -81,10 +85,8 @@ pub async fn setup_test_workspace() -> (
     }
 
     let workspace = WorkspaceBuilder::new(fs.clone())
-        .with_service::<StorageService>(storage_service.clone())
-        .with_service::<AnyCollectionService>(
-            collection_service.clone() as Arc<dyn AnyCollectionService>
-        )
+        .with_service::<DynStorageService>(DynStorageService::new(storage_service.clone()))
+        .with_service::<CollectionService>(collection_service.clone())
         .with_service::<LayoutService>(layout_service.clone())
         .create(
             WorkspaceCreateParams {
