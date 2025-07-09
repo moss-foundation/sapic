@@ -1,13 +1,12 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-/// @category Type
 /// Configuration options for API operations.
 ///
 /// This struct provides configurable parameters that affect the behavior of API operations,
 /// particularly timeout handling for asynchronous operations. It is commonly used with
 /// the `with_timeout` utility function to wrap async operations with configurable timeouts.
-
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
