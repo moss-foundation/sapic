@@ -1,9 +1,7 @@
-import React from "react";
-
 import ButtonNeutralOutlined from "@/components/ButtonNeutralOutlined";
-import { Modal } from "@/lib/ui/Modal";
 
 import ButtonDanger from "../ButtonDanger";
+import { ModalForm } from "../ModalForm";
 
 interface ConfirmationModalProps {
   showModal: boolean;
@@ -17,7 +15,7 @@ interface ConfirmationModalProps {
   variant?: "warning" | "danger" | "info";
 }
 
-export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+export const ConfirmationModal = ({
   showModal,
   closeModal,
   title,
@@ -26,7 +24,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmLabel = "OK",
   cancelLabel = "Cancel",
   onConfirm,
-}) => {
+}: ConfirmationModalProps) => {
   const handleConfirm = () => {
     onConfirm();
     closeModal();
@@ -37,38 +35,34 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   };
 
   return (
-    <Modal
+    <ModalForm
       showModal={showModal}
       onBackdropClick={handleCancel}
-      className="background-(--moss-primary-background) h-52 w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
-    >
-      <div className="flex h-full flex-col">
-        <div className="pt-2 pb-1.5">
-          <h2 className="text-center text-base font-semibold text-(--moss-primary-text)">{title}</h2>
+      onSubmit={handleConfirm}
+      className="background-(--moss-primary-background) w-[27rem] overflow-hidden border border-(--moss-border-color) text-(--moss-primary-text)"
+      title={title}
+      content={
+        <div className="flex h-full flex-col">
+          <div className="flex-1 py-4.5">
+            <div className="mb-1 text-base font-medium">{message}</div>
+            {description && (
+              <div className="text-sm text-(--moss-secondary-text)">
+                {description.split("\n").map((line, index) => (
+                  <p key={index} className={index > 0 ? "mt-2" : ""}>
+                    {line}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-
-        <div className="border-t border-(--moss-border-color)"></div>
-
-        <div className="flex-1 px-5.5 py-4.5">
-          <div className="mb-1 text-base font-medium">{message}</div>
-          {description && (
-            <div className="text-sm text-(--moss-secondary-text)">
-              {description.split("\n").map((line, index) => (
-                <p key={index} className={index > 0 ? "mt-2" : ""}>
-                  {line}
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="border-t border-(--moss-border-color)"></div>
-
-        <div className="flex justify-end gap-3 px-6 py-4">
+      }
+      footer={
+        <div className="flex items-center justify-end gap-3 py-0.75">
           <ButtonNeutralOutlined onClick={handleCancel}>{cancelLabel}</ButtonNeutralOutlined>
-          <ButtonDanger onClick={handleConfirm}>{confirmLabel}</ButtonDanger>
+          <ButtonDanger type="submit">{confirmLabel}</ButtonDanger>
         </div>
-      </div>
-    </Modal>
+      }
+    />
   );
 };

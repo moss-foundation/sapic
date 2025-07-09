@@ -29,10 +29,17 @@ export const ModalForm = ({
     <Modal {...props}>
       <form onSubmit={handleSubmit} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
         {title && (
-          <h2 className={cn("flex items-center justify-center py-1.5 font-medium", titleClassName)}>{title}</h2>
+          <h2
+            className={cn(
+              "flex items-center justify-center border-b border-(--moss-border-color) py-1.5 font-medium",
+              titleClassName
+            )}
+          >
+            {title}
+          </h2>
         )}
         <div className="px-6 pt-3 pb-5">{content}</div>
-        <div className={cn("px-6 py-2", footerClassName)}>{footer}</div>
+        <div className={cn("border-t border-(--moss-border-color) px-6 py-2", footerClassName)}>{footer}</div>
       </form>
     </Modal>
   );
