@@ -78,13 +78,11 @@ pub struct QueryParamOptions {
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "types.ts", optional_fields)]
 pub struct QueryParamItem {
     pub key: String,
     pub value: Option<Expression>,
-    #[ts(optional)]
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: QueryParamOptions,
@@ -101,13 +99,11 @@ pub struct PathParamOptions {
 
 #[derive(Clone, Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "types.ts", optional_fields)]
 pub struct PathParamItem {
     pub key: String,
     pub value: Option<Expression>,
-    #[ts(optional)]
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: PathParamOptions,
@@ -124,13 +120,11 @@ pub struct HeaderParamOptions {
 
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "types.ts", optional_fields)]
 pub struct HeaderParamItem {
     pub key: String,
     pub value: Option<Expression>,
-    #[ts(optional)]
     pub order: Option<isize>,
-    #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: HeaderParamOptions,
