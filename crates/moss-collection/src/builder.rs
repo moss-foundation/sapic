@@ -4,7 +4,7 @@ use moss_applib::{
     providers::{ServiceMap, ServiceProvider},
     subscription::EventEmitter,
 };
-use moss_file::toml::TomlFileHandle;
+use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
@@ -80,13 +80,13 @@ impl CollectionBuilder {
     pub async fn load(self, params: CollectionLoadParams) -> Result<Collection> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
+        let manifest = JsonFileHandle::load(
             self.fs.clone(),
-            params.internal_abs_path.join(MANIFEST_FILE_NAME),
+            &params.internal_abs_path.join(MANIFEST_FILE_NAME),
         )
         .await?;
 
-        let config = TomlFileHandle::load(
+        let config = JsonFileHandle::load(
             self.fs.clone(),
             &params.internal_abs_path.join(CONFIG_FILE_NAME),
         )
@@ -159,9 +159,9 @@ impl CollectionBuilder {
             None
         };
 
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
+        let manifest = JsonFileHandle::create(
             self.fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            &abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
                 name: params
                     .name
@@ -171,7 +171,7 @@ impl CollectionBuilder {
         )
         .await?;
 
-        let config = TomlFileHandle::create(
+        let config = JsonFileHandle::create(
             self.fs.clone(),
             &params.internal_abs_path.join(CONFIG_FILE_NAME),
             ConfigModel {
