@@ -81,7 +81,7 @@ pub async fn run<R: TauriRuntime>() {
                     app_handle.clone(),
                     &logs_dir,
                     session_service.session_id(),
-                    storage_service.__storage(), // HACK:   // This should be removed once the log service is refactored to use the storage service.
+                    storage_service.clone(),
                 )
                 .expect("Failed to create log service");
 
