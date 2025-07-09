@@ -4,7 +4,7 @@ use moss_file::toml::InPlaceEditor;
 use serde::{Deserialize, Serialize};
 use toml_edit::DocumentMut;
 
-pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.toml";
+pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ManifestModel {
