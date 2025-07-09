@@ -21,7 +21,7 @@ use tokio::{
 
 use crate::{
     constants,
-    constants::DIR_CONFIG_FILENAME,
+    constants::{COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
     models::{
         primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
@@ -479,7 +479,7 @@ impl WorktreeService {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        if !is_parent_entry_dir(self.abs_path.as_ref(), path) {
+        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
             return Err(WorktreeError::InvalidInput(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
@@ -540,7 +540,7 @@ impl WorktreeService {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
 
-        if !is_parent_entry_dir(self.abs_path.as_ref(), path) {
+        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
             return Err(WorktreeError::InvalidInput(format!(
                 "Cannot create entry inside Item entry {}",
                 path.to_string_lossy().to_string()
@@ -866,8 +866,8 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 }
 
 // We don't allow creating subentries inside an item
-fn is_parent_entry_dir(abs_path: &Path, parent_path: &Path) -> bool {
-    if parent_path == Path::new("") {
+fn is_parent_a_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
+    if parent_path == Path::new(COLLECTION_ROOT_PATH) {
         // Ignore the root level since it's not an entry
         return true;
     }

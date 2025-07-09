@@ -2,9 +2,7 @@ use moss_common::api::OperationResult;
 
 use crate::{
     Collection,
-    models::operations::{
-        BatchCreateEntryInput, BatchCreateEntryKind, BatchCreateEntryOutput, CreateEntryInput,
-    },
+    models::operations::{BatchCreateEntryInput, BatchCreateEntryKind, BatchCreateEntryOutput},
 };
 
 impl Collection {
@@ -38,12 +36,12 @@ impl Collection {
         });
 
         for dir in dirs {
-            let output = self.create_entry(CreateEntryInput::Dir(dir)).await?;
+            let output = self.create_dir_entry(dir).await?;
             ids.push(output.id);
         }
 
         for item in items {
-            let output = self.create_entry(CreateEntryInput::Item(item)).await?;
+            let output = self.create_item_entry(item).await?;
             ids.push(output.id);
         }
 

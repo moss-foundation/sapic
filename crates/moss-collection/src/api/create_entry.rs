@@ -26,7 +26,7 @@ impl Collection {
         }
     }
 
-    async fn create_dir_entry(
+    pub(crate) async fn create_dir_entry(
         &self,
         input: CreateDirEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
@@ -56,7 +56,7 @@ impl Collection {
         Ok(CreateEntryOutput { id: id })
     }
 
-    async fn create_item_entry(
+    pub(crate) async fn create_item_entry(
         &self,
         input: CreateItemEntryInput,
     ) -> OperationResult<CreateEntryOutput> {
