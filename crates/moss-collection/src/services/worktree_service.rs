@@ -363,7 +363,7 @@ impl WorktreeService {
                             expanded,
                             order: all_entry_keys
                                 .get(&segments::segkey_entry_order(&entry.id))
-                                .map(|o| o.to_owned().into()),
+                                .and_then(|o| o.deserialize().ok()),
                         };
 
                         let _ = sender.send(desc);
@@ -436,7 +436,7 @@ impl WorktreeService {
                             expanded: expanded_entries.contains(&entry.id),
                             order: all_entry_keys
                                 .get(&segments::segkey_entry_order(&entry.id))
-                                .map(|o| o.to_owned().into()),
+                                .and_then(|o| o.deserialize().ok()),
                         };
 
                         continue_if_err!(sender.send(desc), |_err| {
