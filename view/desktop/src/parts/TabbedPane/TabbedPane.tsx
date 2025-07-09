@@ -114,6 +114,9 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
   const dockviewRef = React.useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = React.useRef<HTMLDivElement>(null);
 
+  // Track when we're restoring layout to prevent automatic state updates
+  const isRestoringLayout = React.useRef(false);
+
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
 
   useTabbedPaneEventHandlers(api, setPanels, setGroups, setActivePanel, setActiveGroup, canDrop);
@@ -154,15 +157,26 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     try {
       if (layout?.editor) {
+        // Set flag to prevent automatic state updates during restoration
+        isRestoringLayout.current = true;
         api.fromJSON(mapEditorPartStateToSerializedDockview(layout.editor));
+        // Reset flag after a short delay to allow layout change events to settle
+        setTimeout(() => {
+          isRestoringLayout.current = false;
+        }, 100);
       } else if (layout !== undefined) {
         // Layout data has been fetched but no editor state exists
         // This means it's a new workspace - ensure it starts empty
         console.log("Starting with empty TabbedPane for new workspace");
+        isRestoringLayout.current = true;
         api.clear();
+        setTimeout(() => {
+          isRestoringLayout.current = false;
+        }, 100);
       }
     } catch (error) {
       console.error("Failed to restore workspace layout:", error);
+      isRestoringLayout.current = false;
     }
   }, [api, layout, mode]);
 
@@ -185,7 +199,7 @@ const TabbedPane = ({ theme, mode = "auto" }: { theme?: string; mode?: "auto" | 
 
     const event = api.onDidLayoutChange(() => {
       // Only update workspace state if there's an active workspace
-      if (activeWorkspace) {
+      if (activeWorkspace && !isRestoringLayout.current) {
         updateEditorPartState(api.toJSON());
       }
     });
