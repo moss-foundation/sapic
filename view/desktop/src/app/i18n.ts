@@ -8,6 +8,9 @@ let isInitialized = false;
 
 export const initializeI18n = async (language?: string) => {
   if (isInitialized) {
+    if (language && language !== i18next.language) {
+      await i18next.changeLanguage(language);
+    }
     return;
   }
 
@@ -25,12 +28,10 @@ export const initializeI18n = async (language?: string) => {
         escapeValue: false,
       },
       react: {
-        useSuspense: true,
+        useSuspense: false,
       },
-      // Add cache configuration to prevent unnecessary loads
-      initImmediate: false,
-      load: "languageOnly", // Only load the exact language, not region variants
-      preload: [], // Don't preload any languages
+      initImmediate: true,
+      load: "languageOnly",
       // Backend cache settings
       backend: {
         loadPath: function (_lngs: string[], _namespaces: string[]) {

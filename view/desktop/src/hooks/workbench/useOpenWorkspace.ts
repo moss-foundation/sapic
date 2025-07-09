@@ -31,15 +31,30 @@ export const useOpenWorkspace = () => {
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
     onSuccess: (_, workspaceId) => {
-      // Remove ALL cached workspace state queries to prevent stale data
       queryClient.removeQueries({
         queryKey: [USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY],
         exact: false,
       });
 
-      // Invalidate other related queries
-      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_STATE_QUERY_KEY] });
+      queryClient.setQueryData([USE_DESCRIBE_APP_STATE_QUERY_KEY], (oldData: any) => {
+        if (oldData) {
+          return {
+            ...oldData,
+            lastWorkspace: workspaceId,
+          };
+        }
+        return oldData;
+      });
+
+      queryClient.setQueryData([USE_LIST_WORKSPACES_QUERY_KEY], (oldData: any) => {
+        if (Array.isArray(oldData)) {
+          return oldData.map((workspace: any) => ({
+            ...workspace,
+            active: workspace.id === workspaceId,
+          }));
+        }
+        return oldData;
+      });
 
       // Pre-fetch the new workspace state to ensure it's ready
       queryClient.prefetchQuery({
@@ -55,6 +70,7 @@ export const useOpenWorkspace = () => {
         },
       });
 
+      // Only invalidate workspace-specific data
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTIONS_QUERY_KEY], exact: true });
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_COLLECTION_ENTRIES_QUERY_KEY], exact: true });
     },

@@ -33,7 +33,6 @@ const getTranslationsFn = async (input: GetTranslationsInput): Promise<IpcResult
     input: input,
   });
 };
-
 const I18nTauriBackend: BackendModule = {
   type: "backend",
   init: () => {},
@@ -46,15 +45,19 @@ const I18nTauriBackend: BackendModule = {
       return;
     }
 
-    const result = await getTranslationsFn({ language, namespace });
+    try {
+      const result = await getTranslationsFn({ language, namespace });
 
-    if (result.status === "ok") {
-      const translations = result.data as I18nDictionary;
-      // Cache the translations
-      translationCache.set(cacheKey, translations);
-      callback(null, translations);
-    } else {
-      callback(result.error, false);
+      if (result.status === "ok") {
+        const translations = result.data as I18nDictionary;
+        // Cache the translations
+        translationCache.set(cacheKey, translations);
+        callback(null, translations);
+      } else {
+        callback(result.error, false);
+      }
+    } catch (error) {
+      callback(String(error), false);
     }
   },
 };
