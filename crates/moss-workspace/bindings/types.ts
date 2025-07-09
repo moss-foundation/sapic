@@ -2,22 +2,40 @@
 import { JsonValue } from "@repo/bindings-utils";
 import type { ActivitybarPosition, EditorGridOrientation, PanelRenderer, SidebarPosition } from "./primitives";
 
+/**
+ * @category Type
+ */
 export type ActivitybarItemStateInfo = { id: string; order: number; visible: boolean };
 
+/**
+ * @category Type
+ */
 export type ActivitybarPartStateInfo = {
   lastActiveContainerId?: string;
   position: ActivitybarPosition;
   items: Array<ActivitybarItemStateInfo>;
 };
 
+/**
+ * @category Type
+ */
 export type CollectionInfo = { id: string; displayName: string; order?: number };
 
+/**
+ * @category Type
+ */
 export type EditorGridLeafData = { views: Array<string>; activeView: string; id: string };
 
+/**
+ * @category Type
+ */
 export type EditorGridNode =
   | { "type": "branch"; data: Array<EditorGridNode>; size: number }
   | { "type": "leaf"; data: EditorGridLeafData; size: number };
 
+/**
+ * @category Type
+ */
 export type EditorGridState = {
   root: EditorGridNode;
   width: number;
@@ -25,6 +43,9 @@ export type EditorGridState = {
   orientation: EditorGridOrientation;
 };
 
+/**
+ * @category Type
+ */
 export type EditorPanelState = {
   id: string;
   contentComponent?: string;
@@ -38,16 +59,31 @@ export type EditorPanelState = {
   maximumHeight?: number;
 };
 
+/**
+ * @category Type
+ */
 export type EditorPartStateInfo = {
   grid: EditorGridState;
   panels: Record<string, EditorPanelState>;
   activeGroup?: string;
 };
 
+/**
+ * @category Type
+ */
 export type EnvironmentInfo = { id: string; collectionId?: string; name: string; order?: number };
 
+/**
+ * @category Type
+ */
 export type PanelPartStateInfo = { size: number; visible: boolean };
 
+/**
+ * @category Type
+ */
 export type SidebarPartStateInfo = { position: SidebarPosition; size: number; visible: boolean };
 
+/**
+ * @category Type
+ */
 export type WorkspaceMode = "DESIGN_FIRST" | "REQUEST_FIRST";

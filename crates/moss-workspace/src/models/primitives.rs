@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use ts_rs::TS;
 
+/// @category Primitive
 #[derive(Clone, Debug, PartialEq, Hash, Eq, Deref, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct CollectionId(Arc<String>);
@@ -25,6 +26,7 @@ impl AsRef<str> for CollectionId {
     }
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -41,6 +43,7 @@ impl Default for ActivitybarPosition {
     }
 }
 
+/// @category Primitive
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -49,6 +52,7 @@ pub enum SidebarPosition {
     Right,
 }
 
+/// @category Primitive
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
@@ -57,6 +61,7 @@ pub enum EditorGridOrientation {
     Vertical,
 }
 
+/// @category Primitive
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "primitives.ts")]

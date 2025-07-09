@@ -9,6 +9,7 @@ use super::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
 
+/// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]
 #[ts(export, export_to = "types.ts")]
 pub enum WorkspaceMode {
@@ -25,6 +26,7 @@ impl Default for WorkspaceMode {
     }
 }
 
+/// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -35,6 +37,7 @@ pub struct CollectionInfo {
     pub order: Option<usize>,
 }
 
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -50,6 +53,7 @@ pub struct EnvironmentInfo {
 // Activitybar Part State
 // ------------------------------------------------------------
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -59,6 +63,7 @@ pub struct ActivitybarItemStateInfo {
     pub visible: bool,
 }
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -73,6 +78,7 @@ pub struct ActivitybarPartStateInfo {
 // Sidebar Part State
 // ------------------------------------------------------------
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -86,6 +92,7 @@ pub struct SidebarPartStateInfo {
 // Panel Part State
 // ------------------------------------------------------------
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -98,6 +105,7 @@ pub struct PanelPartStateInfo {
 // Editor Part State
 // ------------------------------------------------------------
 
+/// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

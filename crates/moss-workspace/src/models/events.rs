@@ -4,6 +4,7 @@ use crate::models::primitives::CollectionId;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+/// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -17,6 +18,7 @@ pub struct StreamCollectionsEvent {
     pub picture_path: Option<PathBuf>,
 }
 
+/// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]

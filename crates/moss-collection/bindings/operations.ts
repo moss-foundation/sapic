@@ -8,32 +8,74 @@ import type {
   UpdateItemEntryParams,
 } from "./types";
 
+/**
+ * @category Operation
+ */
 export type BatchUpdateEntryInput = { entries: Array<BatchUpdateEntryKind> };
 
+/**
+ * @category Operation
+ */
 export type BatchUpdateEntryKind = { "ITEM": UpdateItemEntryParams } | { "DIR": UpdateDirEntryParams };
 
+/**
+ * @category Operation
+ */
 export type BatchUpdateEntryOutput = Record<string, never>;
 
+/**
+ * @category Operation
+ */
 export type BatchUpdateEntryOutputKind =
   | { "ITEM": AfterUpdateItemEntryDescription }
   | { "DIR": AfterUpdateDirEntryDescription };
 
+/**
+ * @category Operation
+ */
 export type CreateDirEntryInput = { path: string; name: string; order: number; configuration: DirConfigurationModel };
 
+/**
+ * @category Operation
+ */
 export type CreateEntryInput = { "item": CreateItemEntryInput } | { "dir": CreateDirEntryInput };
 
+/**
+ * @category Operation
+ */
 export type CreateEntryOutput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type CreateItemEntryInput = { path: string; name: string; order: number; configuration: ItemConfigurationModel };
 
+/**
+ * @category Operation
+ */
 export type DeleteEntryInput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type DeleteEntryOutput = { id: string };
 
+/**
+ * @category Operation
+ */
 export type StreamEntriesInput = "LOAD_ROOT" | { "RELOAD_PATH": string };
 
+/**
+ * @category Operation
+ */
 export type StreamEntriesOutput = Record<string, never>;
 
+/**
+ * @category Operation
+ */
 export type UpdateEntryInput = { "ITEM": UpdateItemEntryParams } | { "DIR": UpdateDirEntryParams };
 
+/**
+ * @category Operation
+ */
 export type UpdateEntryOutput = { "ITEM": AfterUpdateItemEntryDescription } | { "DIR": AfterUpdateDirEntryDescription };
