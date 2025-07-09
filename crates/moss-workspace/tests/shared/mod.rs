@@ -19,10 +19,8 @@ use moss_workspace::{
     },
     services::{
         AnyCollectionService, AnyLayoutService, DynCollectionService, DynLayoutService,
-        DynStorageService,
-        collection_service::CollectionService,
-        layout_service::LayoutService,
-        storage_service::{StorageService, test_service_repr::TestStorageService},
+        DynStorageService, collection_service::CollectionService, layout_service::LayoutService,
+        storage_service::StorageService,
     },
     storage::segments::SEGKEY_COLLECTION,
 };
@@ -86,7 +84,7 @@ pub async fn setup_test_workspace() -> (
 
     {
         services.insert(TypeId::of::<LayoutService>(), layout_service.clone());
-        services.insert(TypeId::of::<StorageService>(), storage_service.clone());
+        services.insert(TypeId::of::<TestStorageService>(), storage_service.clone());
         services.insert(
             TypeId::of::<CollectionService>(),
             collection_service.clone(),

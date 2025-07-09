@@ -232,11 +232,4 @@ impl StorageService {
             storage: Arc::new(storage),
         })
     }
-
-    // HACK: This is a hack to get the storage service for testing purposes.
-    // As soon as we switch to getting services by trait instead of by type,
-    // we'll be able to move this method into the test service, TestStorageService.
-    pub fn __storage(&self) -> &Arc<dyn WorkspaceStorage> {
-        &self.storage
-    }
 }

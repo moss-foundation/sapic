@@ -12,10 +12,8 @@ use moss_app::{app::App, services::workspace_service::WorkspaceService};
 use moss_collection::Collection;
 use moss_common::api::OperationOptionExt;
 use moss_workspace::{
-    Workspace,
-    context::WorkspaceContext,
-    models::primitives::CollectionId,
-    services::{AnyCollectionService, DynCollectionService, collection_service::CollectionService},
+    Workspace, context::WorkspaceContext, models::primitives::CollectionId,
+    services::DynCollectionService,
 };
 use std::sync::Arc;
 use tauri::{Runtime as TauriRuntime, State};
