@@ -141,7 +141,7 @@ export const entryInfoSchema = z.object({
 
 export const headerParamItemSchema = z.object({
   key: z.string(),
-  value: expressionSchema.nullable(),
+  value: expressionSchema.optional(),
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
@@ -162,7 +162,7 @@ export const itemRequestConfigurationModelSchema = z.object({
 
 export const pathParamItemSchema = z.object({
   key: z.string(),
-  value: expressionSchema.nullable(),
+  value: expressionSchema.optional(),
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
@@ -171,7 +171,7 @@ export const pathParamItemSchema = z.object({
 
 export const queryParamItemSchema = z.object({
   key: z.string(),
-  value: expressionSchema.nullable(),
+  value: expressionSchema.optional(),
   order: z.number().optional(),
   desc: z.string().optional(),
   disabled: z.boolean(),
