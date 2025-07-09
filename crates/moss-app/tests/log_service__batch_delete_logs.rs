@@ -39,12 +39,14 @@ async fn test_delete_logs_from_queue() {
         .unwrap()
         .contents;
 
-    let input = BatchDeleteLogInput(logs.into_iter().map(|log| log.id).collect());
+    let input = BatchDeleteLogInput {
+        ids: logs.into_iter().map(|log| log.id).collect(),
+    };
 
     let output = app.batch_delete_log(&input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 1);
-    assert_eq!(deleted_entries[0].id, input.0[0]);
+    assert_eq!(deleted_entries[0].id, input.ids[0]);
     assert!(deleted_entries[0].file_path.is_none());
 
     let new_logs = app
@@ -87,12 +89,14 @@ async fn test_delete_logs_from_file() {
         .unwrap()
         .contents;
 
-    let input = BatchDeleteLogInput(vec![logs[0].id.clone()]);
+    let input = BatchDeleteLogInput {
+        ids: vec![logs[0].id.clone()],
+    };
 
     let output = app.batch_delete_log(&input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 1);
-    assert_eq!(deleted_entries[0].id, input.0[0]);
+    assert_eq!(deleted_entries[0].id, input.ids[0]);
     // It should be deleted from a file
     assert!(deleted_entries[0].file_path.is_some());
 
@@ -137,7 +141,10 @@ async fn test_delete_all_logs() {
         .unwrap()
         .contents;
 
-    let input = BatchDeleteLogInput(logs.into_iter().map(|log| log.id.clone()).collect());
+    let input = BatchDeleteLogInput {
+        ids: logs.into_iter().map(|log| log.id.clone()).collect(),
+    };
+
     let output = app.batch_delete_log(&input).await.unwrap();
     let deleted_entries = output.deleted_entries;
     assert_eq!(deleted_entries.len(), 15);

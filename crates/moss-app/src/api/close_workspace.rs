@@ -16,8 +16,8 @@ impl<R: TauriRuntime> App<R> {
     ) -> OperationResult<CloseWorkspaceOutput> {
         let workspace_service = self.services.get::<WorkspaceService<R>>();
         let workspace_id = ctx
-            .value::<ctxkeys::WorkspaceId>()
-            .map(|id| **id)
+            .value::<ctxkeys::ActiveWorkspaceId>()
+            .map(|id| (*id).clone())
             .map_err_as_failed_precondition("No active workspace to close")?;
 
         if workspace_id != input.id {

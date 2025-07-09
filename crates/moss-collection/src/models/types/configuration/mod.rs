@@ -17,8 +17,6 @@ use derive_more::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use uuid::Uuid;
-
 use crate::models::{
     primitives::{EntryClass, HttpMethod},
     types::{
@@ -40,7 +38,7 @@ use crate::models::{
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum DirConfigurationModel {
-    Request(DirRequestConfigurationModel),
+    Request(RequestDirConfigurationModel),
     Endpoint(EndpointDirConfigurationModel),
     Component(ComponentDirConfigurationModel),
     Schema(SchemaDirConfigurationModel),
@@ -66,7 +64,7 @@ impl From<RawDirConfiguration> for CompositeDirConfigurationModel {
 
                 CompositeDirConfigurationModel {
                     metadata,
-                    inner: DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
+                    inner: DirConfigurationModel::Request(RequestDirConfigurationModel::Http(
                         DirHttpConfigurationModel {},
                     )),
                 }
@@ -106,7 +104,7 @@ impl Into<RawDirConfiguration> for CompositeDirConfigurationModel {
         match self.inner {
             DirConfigurationModel::Request(model) => {
                 let configuration = match model {
-                    DirRequestConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
+                    RequestDirConfigurationModel::Http(_http_model) => RawDirRequestConfiguration {
                         metadata: self.metadata.into(),
                         headers: None,
                     },
@@ -163,6 +161,7 @@ impl CompositeDirConfigurationModel {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub enum ItemConfigurationModel {
+    // FIXME: This should be `RequestItemConfigurationModel` for consistency
     Request(ItemRequestConfigurationModel),
     Endpoint(EndpointItemConfigurationModel),
     Component(ComponentItemConfigurationModel),
@@ -423,10 +422,10 @@ pub enum ConfigurationModel {
 }
 
 impl ConfigurationModel {
-    pub fn id(&self) -> Uuid {
+    pub fn id(&self) -> &str {
         match self {
-            ConfigurationModel::Item(item) => item.metadata.id,
-            ConfigurationModel::Dir(dir) => dir.metadata.id,
+            ConfigurationModel::Item(item) => &item.metadata.id,
+            ConfigurationModel::Dir(dir) => &dir.metadata.id,
         }
     }
 }

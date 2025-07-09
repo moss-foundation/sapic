@@ -11,7 +11,7 @@ impl Collection {
         let environments = environments
             .values()
             .map(|item| EnvironmentInfo {
-                id: item.id,
+                id: item.id.to_string(),
                 name: item.name.clone(),
                 order: None, // TODO: restore order from cache
             })

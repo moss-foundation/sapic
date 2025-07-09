@@ -2,7 +2,7 @@ pub mod shared;
 
 use moss_app::{
     dirs,
-    models::operations::CreateWorkspaceInput,
+    models::{operations::CreateWorkspaceInput, primitives::WorkspaceId},
     services::{storage_service::StorageService, workspace_service::WorkspaceService},
     storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
 };
@@ -56,7 +56,11 @@ async fn create_workspace_success() {
 
     // Check database - verify last opened at timestamp is saved
     let item_store = storage_service.__storage().item_store();
-    let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id.to_string())).unwrap();
+    let _ = GetItem::get(
+        item_store.as_ref(),
+        segkey_last_opened_at(&id.clone().into()),
+    )
+    .unwrap();
 
     // Check that last active workspace is set in database
     let last_active_workspace = GetItem::get(
@@ -182,18 +186,10 @@ async fn create_workspace_same_name() {
     // Check only second workspace has entry in the database since it's been opened
 
     let item_store = storage_service.__storage().item_store();
-    let _ = GetItem::get(
-        item_store.as_ref(),
-        segkey_last_opened_at(&second_output.id.to_string()),
-    )
-    .unwrap();
-    assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&first_output.id.to_string())
-        )
-        .is_err()
-    );
+    let first_id: WorkspaceId = first_output.id;
+    let second_id: WorkspaceId = second_output.id;
+    let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&second_id)).unwrap();
+    assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&first_id)).is_err());
 
     // Check that last active workspace is set in database (second workspace)
     let last_active_workspace = GetItem::get(
@@ -201,8 +197,8 @@ async fn create_workspace_same_name() {
         SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
     )
     .unwrap();
-    let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-    assert_eq!(last_active_workspace_id, second_output.id.to_string());
+    let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
+    assert_eq!(last_active_workspace_id, second_id);
 
     cleanup().await;
 }
@@ -253,13 +249,10 @@ async fn create_workspace_special_chars() {
             .unwrap();
         assert_eq!(matching_workspace.name, name);
 
+        let id: WorkspaceId = create_output.id;
         // Check database - verify last opened at timestamp is saved
         let item_store = storage_service.__storage().item_store();
-        let _ = GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&create_output.id.to_string()),
-        )
-        .unwrap();
+        let _ = GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).unwrap();
 
         // Check that last active workspace is set in database
         let last_active_workspace = GetItem::get(
@@ -267,8 +260,8 @@ async fn create_workspace_special_chars() {
             SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf(),
         )
         .unwrap();
-        let last_active_workspace_id: String = last_active_workspace.deserialize().unwrap();
-        assert_eq!(last_active_workspace_id, create_output.id.to_string());
+        let last_active_workspace_id: WorkspaceId = last_active_workspace.deserialize().unwrap();
+        assert_eq!(last_active_workspace_id, id);
     }
 
     cleanup().await;
@@ -310,13 +303,8 @@ async fn create_workspace_not_open_on_creation() {
 
     // Check that a database entry is not created for unopened workspace
     let item_store = storage_service.__storage().item_store();
-    assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            segkey_last_opened_at(&create_output.id.to_string())
-        )
-        .is_err()
-    );
+    let id: WorkspaceId = create_output.id;
+    assert!(GetItem::get(item_store.as_ref(), segkey_last_opened_at(&id)).is_err());
 
     // Check that last active workspace is not set in database
     assert!(

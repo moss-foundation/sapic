@@ -15,10 +15,10 @@ use std::{
 };
 use thiserror::Error;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 
 use crate::{
-    dirs, services::storage_service::StorageService, storage::segments::SEGKEY_COLLECTION,
+    dirs, models::primitives::CollectionId, services::storage_service::StorageService,
+    storage::segments::SEGKEY_COLLECTION,
 };
 
 #[derive(Error, Debug)]
@@ -91,7 +91,7 @@ pub(crate) struct CollectionItemCreateParams {
 
 #[derive(Deref, DerefMut)]
 struct CollectionItem {
-    pub id: Uuid,
+    pub id: CollectionId,
     pub order: Option<usize>,
 
     #[deref]
@@ -100,7 +100,7 @@ struct CollectionItem {
 }
 
 pub(crate) struct CollectionItemDescription {
-    pub id: Uuid,
+    pub id: CollectionId,
     pub name: String,
     pub order: Option<usize>,
     pub expanded: bool,
@@ -113,8 +113,8 @@ pub(crate) struct CollectionItemDescription {
 
 #[derive(Default)]
 struct ServiceState {
-    collections: HashMap<Uuid, CollectionItem>,
-    expanded_items: HashSet<Uuid>,
+    collections: HashMap<CollectionId, CollectionItem>,
+    expanded_items: HashSet<CollectionId>,
 }
 
 pub struct CollectionService {
@@ -133,11 +133,12 @@ impl CollectionService {
         fs: Arc<dyn FileSystem>,
         storage: Arc<StorageService>,
     ) -> CollectionResult<Self> {
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items::<Uuid>() {
-            expanded_items.into_iter().collect::<HashSet<_>>()
-        } else {
-            HashSet::new()
-        };
+        let expanded_items =
+            if let Ok(expanded_items) = storage.get_expanded_items::<CollectionId>() {
+                expanded_items.into_iter().collect::<HashSet<_>>()
+            } else {
+                HashSet::new()
+            };
 
         let collections = restore_collections(&abs_path, &fs, &storage).await?;
 
@@ -156,11 +157,11 @@ impl CollectionService {
         self.abs_path.join(dirs::COLLECTIONS_DIR).join(path)
     }
 
-    pub async fn collection(&self, id: Uuid) -> CollectionResult<Arc<CollectionHandle>> {
+    pub async fn collection(&self, id: &CollectionId) -> CollectionResult<Arc<CollectionHandle>> {
         let state_lock = self.state.read().await;
         let item = state_lock
             .collections
-            .get(&id)
+            .get(id)
             .ok_or(CollectionError::NotFound(id.to_string()))?;
 
         Ok(item.handle.clone())
@@ -168,7 +169,7 @@ impl CollectionService {
 
     pub(crate) async fn create_collection(
         &self,
-        id: Uuid,
+        id: &CollectionId,
         params: CollectionItemCreateParams,
     ) -> CollectionResult<CollectionItemDescription> {
         let id_str = id.to_string();
@@ -214,11 +215,11 @@ impl CollectionService {
         //     .await;
 
         let mut state_lock = self.state.write().await;
-        state_lock.expanded_items.insert(id);
+        state_lock.expanded_items.insert(id.to_owned());
         state_lock.collections.insert(
-            id,
+            id.to_owned(),
             CollectionItem {
-                id,
+                id: id.to_owned(),
                 order: Some(params.order),
                 handle: Arc::new(collection),
             },
@@ -236,7 +237,7 @@ impl CollectionService {
         }
 
         Ok(CollectionItemDescription {
-            id,
+            id: id.to_owned(),
             name: params.name,
             order: Some(params.order),
             expanded: true,
@@ -249,7 +250,7 @@ impl CollectionService {
 
     pub(crate) async fn delete_collection(
         &self,
-        id: Uuid,
+        id: &CollectionId,
     ) -> CollectionResult<Option<CollectionItemDescription>> {
         let id_str = id.to_string();
         let abs_path = self.absolutize(id_str);
@@ -286,7 +287,7 @@ impl CollectionService {
             let manifest = item.handle.manifest().await;
 
             Ok(Some(CollectionItemDescription {
-                id,
+                id: id.to_owned(),
                 name: manifest.name,
                 order: item.order,
                 expanded: false,
@@ -302,7 +303,7 @@ impl CollectionService {
 
     pub(crate) async fn update_collection(
         &self,
-        id: Uuid,
+        id: &CollectionId,
         params: CollectionItemUpdateParams,
     ) -> CollectionResult<()> {
         let mut state_lock = self.state.write().await;
@@ -327,9 +328,9 @@ impl CollectionService {
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_items.insert(id);
+                state_lock.expanded_items.insert(id.to_owned());
             } else {
-                state_lock.expanded_items.remove(&id);
+                state_lock.expanded_items.remove(id);
             }
 
             self.storage
@@ -349,7 +350,7 @@ impl CollectionService {
                 let expanded = state_lock.expanded_items.contains(id);
 
                 yield CollectionItemDescription {
-                    id: item.id,
+                    id: item.id.clone(),
                     name: manifest.name,
                     order: item.order,
                     expanded,
@@ -367,7 +368,7 @@ async fn restore_collections(
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     storage: &Arc<StorageService>,
-) -> Result<HashMap<Uuid, CollectionItem>> {
+) -> Result<HashMap<CollectionId, CollectionItem>> {
     let dir_abs_path = abs_path.join(dirs::COLLECTIONS_DIR);
     if !dir_abs_path.exists() {
         return Ok(HashMap::new());
@@ -386,14 +387,7 @@ async fn restore_collections(
         }
 
         let id_str = entry.file_name().to_string_lossy().to_string();
-        let id = match Uuid::parse_str(&id_str) {
-            Ok(id) => id,
-            Err(_) => {
-                // TODO: logging
-                println!("failed to get the collection {:?} name", id_str);
-                continue;
-            }
-        };
+        let id: CollectionId = id_str.into();
 
         let collection = {
             let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
@@ -421,14 +415,14 @@ async fn restore_collections(
 
     let mut result = HashMap::new();
     for (id, collection) in collections {
-        let segkey_prefix = SEGKEY_COLLECTION.join(&id.to_string());
+        let segkey_prefix = SEGKEY_COLLECTION.join(&id);
 
         let order = metadata
             .get(&segkey_prefix.join("order"))
             .and_then(|v| v.deserialize().ok());
 
         result.insert(
-            id,
+            id.clone(),
             CollectionItem {
                 id,
                 order,

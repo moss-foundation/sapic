@@ -1,6 +1,14 @@
 [workspace]
 resolver = "1"
 members = [
+    #
+    # Library crates
+    #
+    "libs/joinerror", 
+    #
+    # Workspace crates
+    #
+    "crates/moss-applib",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
     "crates/moss-api",
@@ -22,11 +30,21 @@ members = [
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
     "crates/moss-wasm",
+    #
+    # Apps
+    #
+    "view/desktop/bin",
+    #
+    # Tools
+    #
     "tools/xtask",
-    "view/desktop/bin", 
 ]
 
 [workspace.dependencies]
+#
+# Library crates
+#
+joinerror = { path = "libs/joinerror" }
 #
 # Workspace crates
 #
@@ -83,7 +101,6 @@ dotenv = "0.15.0"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 whoami = "1.5.2"
 chrono = { version = "0.4.40", features = ["now"] }
-uuid = { version = "1.17.0", default-features = false }
 webbrowser = "1.0.3"
 zeroize = "1.7"
 aes-gcm = "0.10.3"

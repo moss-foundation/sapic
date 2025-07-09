@@ -4,11 +4,11 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use uuid::Uuid;
+
 use validator::Validate;
 
 use crate::models::{
-    primitives::{EntryClass, EntryKind, EntryPath, EntryProtocol},
+    primitives::{EntryClass, EntryId, EntryKind, EntryPath, EntryProtocol},
     types::configuration::{CompositeDirConfigurationModel, CompositeItemConfigurationModel},
 };
 
@@ -17,7 +17,7 @@ use crate::models::{
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct EnvironmentInfo {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
 
     /// Determines the display position of this entry among others in the same group.
@@ -34,14 +34,18 @@ pub struct EnvironmentInfo {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateItemEntryParams {
-    pub id: Uuid,
-    // TODO: Add validation for path
-    pub path: PathBuf,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
+    /// If provided, the entry will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "entry"
+    /// The new relative path of the entry folder will be "requests/folder/entry"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -50,14 +54,17 @@ pub struct UpdateItemEntryParams {
 #[ts(optional_fields)]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateDirEntryParams {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
-    // TODO: Add validation for path
-    pub path: PathBuf,
+    /// If provided, the directory will move to the new path
+    /// For example, if the new path is "requests/folder/", the name is "group"
+    /// The new relative path of the directory folder will be "requests/folder/group"
+    pub path: Option<PathBuf>,
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: Option<bool>,
 }
 
@@ -65,7 +72,9 @@ pub struct UpdateDirEntryParams {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateDirEntryDescription {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeDirConfigurationModel,
 }
@@ -74,7 +83,9 @@ pub struct AfterUpdateDirEntryDescription {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct AfterUpdateItemEntryDescription {
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
+
     pub path: EntryPath,
     pub configuration: CompositeItemConfigurationModel,
 }
@@ -85,7 +96,8 @@ pub struct AfterUpdateItemEntryDescription {
 #[ts(export, export_to = "types.ts")]
 pub struct EntryInfo {
     /// Unique identifier for this entry
-    pub id: Uuid,
+    #[ts(as = "String")]
+    pub id: EntryId,
 
     /// Display name of the entry
     pub name: String,
@@ -109,7 +121,7 @@ pub struct EntryInfo {
     /// If multiple entries have the same order, they are sorted alphabetically.
     /// If not specified, the entry appears last and is sorted alphabetically
     /// among unspecified items.
-    pub order: Option<usize>,
+    pub order: Option<isize>,
 
     /// Whether this entry is expanded in the tree view (applies to directories)
     pub expanded: bool,

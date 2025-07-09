@@ -16,7 +16,7 @@ import type {
 /**
  * @category Operation
  */
-export type BatchDeleteLogInput = Array<string>;
+export type BatchDeleteLogInput = { ids: Array<string> };
 
 /**
  * @category Operation

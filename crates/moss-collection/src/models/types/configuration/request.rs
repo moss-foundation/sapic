@@ -34,6 +34,6 @@ pub struct DirHttpConfigurationModel {}
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
-pub enum DirRequestConfigurationModel {
+pub enum RequestDirConfigurationModel {
     Http(DirHttpConfigurationModel),
 }

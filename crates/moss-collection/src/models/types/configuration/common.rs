@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-use uuid::Uuid;
 
 use crate::models::{primitives::HttpMethod, types::configuration::docschema::RawMetadata};
 
@@ -28,19 +27,21 @@ pub enum Expression {
 #[ts(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct ConfigurationMetadata {
-    pub id: Uuid,
+    pub id: String,
 }
 
 impl Into<Block<RawMetadata>> for ConfigurationMetadata {
     fn into(self) -> Block<RawMetadata> {
-        Block::new(RawMetadata { id: self.id })
+        Block::new(RawMetadata { id: self.id.into() })
     }
 }
 
 impl From<Block<RawMetadata>> for ConfigurationMetadata {
     fn from(block: Block<RawMetadata>) -> Self {
         let inner = block.into_inner();
-        Self { id: inner.id }
+        Self {
+            id: inner.id.to_string(),
+        }
     }
 }
 
@@ -83,7 +84,7 @@ pub struct QueryParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -106,7 +107,7 @@ pub struct PathParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -129,7 +130,7 @@ pub struct HeaderParamItem {
     pub key: String,
     pub value: Expression,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -170,7 +171,7 @@ pub struct FormDataItem {
     pub key: String,
     pub value: FormDataValue,
     #[ts(optional)]
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     #[ts(optional)]
     pub desc: Option<String>,
     pub disabled: bool,
@@ -191,7 +192,7 @@ pub struct UrlEncodedOptions {
 pub struct UrlEncodedItem {
     pub key: String,
     pub value: String,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub desc: Option<String>,
     pub disabled: bool,
     pub options: UrlEncodedOptions,

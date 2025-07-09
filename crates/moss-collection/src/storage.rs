@@ -6,5 +6,5 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WorktreeNodeStateEntity {
     pub expanded: bool,
-    pub order: Option<u8>,
+    pub order: Option<isize>,
 }

@@ -1,8 +1,11 @@
+use anyhow::anyhow;
 use derive_more::{Deref, DerefMut};
 use moss_applib::ServiceMarker;
 use moss_common::{api::OperationError, continue_if_err, continue_if_none};
 use moss_db::primitives::AnyValue;
-use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath, FsError};
+use moss_fs::{
+    CreateOptions, FileSystem, FsError, RemoveOptions, desanitize_path, utils::SanitizedPath,
+};
 use moss_storage::primitives::segkey::SegKeyBuf;
 use moss_text::sanitized::{desanitize, sanitize};
 use std::{
@@ -15,12 +18,12 @@ use tokio::{
     fs,
     sync::{RwLock, mpsc},
 };
-use uuid::Uuid;
 
 use crate::{
     constants,
+    constants::{COLLECTION_ROOT_PATH, DIR_CONFIG_FILENAME},
     models::{
-        primitives::{EntryClass, EntryKind, EntryProtocol},
+        primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
     services::storage_service::StorageService,
@@ -99,7 +102,7 @@ struct ScanJob {
 }
 
 pub struct EntryMetadata {
-    pub order: usize,
+    pub order: isize,
     pub expanded: bool,
 }
 
@@ -159,7 +162,8 @@ pub struct ModifyParams {
     pub name: Option<String>,
     pub protocol: Option<EntryProtocol>,
     pub expanded: Option<bool>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
+    pub path: Option<PathBuf>,
 }
 
 #[derive(Deref, DerefMut)]
@@ -182,7 +186,7 @@ pub struct EntryDirMut<'a> {
 
 #[derive(Deref, DerefMut)]
 pub(crate) struct Entry {
-    id: Uuid,
+    id: EntryId,
     path: Arc<Path>,
 
     #[deref]
@@ -214,20 +218,20 @@ impl Entry {
 
 #[derive(Debug)]
 pub struct EntryDescription {
-    pub id: Uuid,
+    pub id: EntryId,
     pub name: String,
     pub path: Arc<Path>,
     pub class: EntryClass,
     pub kind: EntryKind,
     pub protocol: Option<EntryProtocol>,
-    pub order: Option<usize>,
+    pub order: Option<isize>,
     pub expanded: bool,
 }
 
 #[derive(Default)]
 struct WorktreeState {
-    entries: HashMap<Uuid, Entry>,
-    expanded_entries: HashSet<Uuid>,
+    entries: HashMap<EntryId, Entry>,
+    expanded_entries: HashSet<EntryId>,
 }
 
 pub struct WorktreeService {
@@ -269,7 +273,7 @@ impl WorktreeService {
         }
     }
 
-    pub async fn remove_entry(&self, id: Uuid) -> WorktreeResult<()> {
+    pub async fn remove_entry(&self, id: &EntryId) -> WorktreeResult<()> {
         let mut state_lock = self.state.write().await;
         let entry = state_lock
             .entries
@@ -299,7 +303,7 @@ impl WorktreeService {
             state_lock
                 .expanded_entries
                 .iter()
-                .copied()
+                .cloned()
                 .collect::<Vec<_>>(),
         )?;
 
@@ -309,7 +313,7 @@ impl WorktreeService {
     pub async fn scan(
         &self,
         path: &Path,
-        expanded_entries: Arc<HashSet<Uuid>>,
+        expanded_entries: Arc<HashSet<EntryId>>,
         all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> WorktreeResult<()> {
@@ -350,7 +354,7 @@ impl WorktreeService {
                     Ok(Some(entry)) => {
                         let expanded = expanded_entries.contains(&entry.id);
                         let desc = EntryDescription {
-                            id: entry.id,
+                            id: entry.id.clone(),
                             name: desanitize(&dir_name),
                             path: entry.path.clone(),
                             class: entry.classification(),
@@ -358,15 +362,19 @@ impl WorktreeService {
                             protocol: entry.configuration.protocol(),
                             expanded,
                             order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
-                                .map(|o| o.to_owned().into()),
+                                .get(&segments::segkey_entry_order(&entry.id))
+                                .and_then(|o| o.deserialize().ok()),
                         };
 
                         let _ = sender.send(desc);
                         if expanded {
-                            state.write().await.expanded_entries.insert(entry.id);
+                            state
+                                .write()
+                                .await
+                                .expanded_entries
+                                .insert(entry.id.clone());
                         }
-                        state.write().await.entries.insert(entry.id, entry);
+                        state.write().await.entries.insert(entry.id.clone(), entry);
                     }
                     Ok(None) => {
                         // TODO: log error
@@ -419,7 +427,7 @@ impl WorktreeService {
                         });
                     } else {
                         let desc = EntryDescription {
-                            id: entry.id,
+                            id: entry.id.clone(),
                             name: desanitize(&child_name),
                             path: entry.path.clone(),
                             class: entry.classification(),
@@ -427,8 +435,8 @@ impl WorktreeService {
                             protocol: entry.configuration.protocol(),
                             expanded: expanded_entries.contains(&entry.id),
                             order: all_entry_keys
-                                .get(&segments::segkey_entry_order(&entry.id.to_string()))
-                                .map(|o| o.to_owned().into()),
+                                .get(&segments::segkey_entry_order(&entry.id))
+                                .and_then(|o| o.deserialize().ok()),
                         };
 
                         continue_if_err!(sender.send(desc), |_err| {
@@ -437,7 +445,7 @@ impl WorktreeService {
                         });
                     }
 
-                    state.write().await.entries.insert(entry.id, entry);
+                    state.write().await.entries.insert(entry.id.clone(), entry);
                 }
 
                 for new_job in new_jobs {
@@ -462,7 +470,7 @@ impl WorktreeService {
 
     pub async fn create_item_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawItemConfiguration,
@@ -470,6 +478,13 @@ impl WorktreeService {
     ) -> WorktreeResult<()> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
+
+        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Cannot create entry inside Item entry {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -481,9 +496,9 @@ impl WorktreeService {
 
         let mut state_lock = self.state.write().await;
         state_lock.entries.insert(
-            id,
+            id.to_owned(),
             Entry {
-                id,
+                id: id.to_owned(),
                 path: sanitized_path.to_path_buf().into(),
                 configuration: EntryConfiguration::Item(configuration),
             },
@@ -496,14 +511,14 @@ impl WorktreeService {
                 .put_entry_order_txn(&mut txn, id, metadata.order)?;
 
             if metadata.expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
 
                 self.storage.put_expanded_entries_txn(
                     &mut txn,
                     state_lock
                         .expanded_entries
                         .iter()
-                        .copied()
+                        .cloned()
                         .collect::<Vec<_>>(),
                 )?;
             }
@@ -516,7 +531,7 @@ impl WorktreeService {
 
     pub async fn create_dir_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         name: &str,
         path: impl AsRef<Path>,
         configuration: RawDirConfiguration,
@@ -524,6 +539,13 @@ impl WorktreeService {
     ) -> WorktreeResult<()> {
         let path = path.as_ref();
         debug_assert!(path.is_relative());
+
+        if !is_parent_a_dir_entry(self.abs_path.as_ref(), path) {
+            return Err(WorktreeError::InvalidInput(format!(
+                "Cannot create entry inside Item entry {}",
+                path.to_string_lossy().to_string()
+            )));
+        }
 
         let sanitized_path: SanitizedPath = moss_fs::utils::sanitize_path(path, None)?
             .join(sanitize(name))
@@ -535,9 +557,9 @@ impl WorktreeService {
 
         let mut state_lock = self.state.write().await;
         state_lock.entries.insert(
-            id,
+            id.to_owned(),
             Entry {
-                id,
+                id: id.to_owned(),
                 path: sanitized_path.to_path_buf().into(),
                 configuration: EntryConfiguration::Dir(configuration),
             },
@@ -549,14 +571,14 @@ impl WorktreeService {
                 .put_entry_order_txn(&mut txn, id, metadata.order)?;
 
             if metadata.expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
 
                 self.storage.put_expanded_entries_txn(
                     &mut txn,
                     state_lock
                         .expanded_entries
                         .iter()
-                        .copied()
+                        .cloned()
                         .collect::<Vec<_>>(),
                 )?;
             }
@@ -569,7 +591,7 @@ impl WorktreeService {
 
     pub async fn update_dir_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawDirConfiguration)> {
         let mut state_lock = self.state.write().await;
@@ -583,6 +605,32 @@ impl WorktreeService {
             ))?;
 
         let mut path = entry.path.clone().to_path_buf();
+
+        if let Some(new_parent) = params.path {
+            let classification_folder = entry.configuration.classification_folder();
+            if !new_parent.starts_with(classification_folder) {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entry to a different classification folder".to_string(),
+                ));
+            }
+
+            // We can only move entries into a directory entry
+            // Check if the destination path has dir config file
+            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
+            if !dest_entry_config.exists() {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entries into a non-directory entry".to_string(),
+                ));
+            }
+
+            let old_path = entry.path.clone();
+            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            path = new_path.clone();
+
+            self.rename_entry(&old_path, &new_path).await?;
+            *entry.path = new_path.into();
+        }
+
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
@@ -601,14 +649,14 @@ impl WorktreeService {
         let mut txn = self.storage.begin_write()?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, id, order)?;
+            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
         }
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
             } else {
-                state_lock.expanded_entries.remove(&id);
+                state_lock.expanded_entries.remove(id);
             }
 
             self.storage.put_expanded_entries_txn(
@@ -616,7 +664,7 @@ impl WorktreeService {
                 state_lock
                     .expanded_entries
                     .iter()
-                    .copied()
+                    .cloned()
                     .collect::<Vec<_>>(),
             )?;
         }
@@ -628,7 +676,7 @@ impl WorktreeService {
 
     pub async fn update_item_entry(
         &self,
-        id: Uuid,
+        id: &EntryId,
         params: ModifyParams,
     ) -> WorktreeResult<(PathBuf, RawItemConfiguration)> {
         let mut state_lock = self.state.write().await;
@@ -642,6 +690,32 @@ impl WorktreeService {
             ))?;
 
         let mut path = entry.path.clone().to_path_buf();
+
+        if let Some(new_parent) = params.path {
+            let classification_folder = entry.configuration.classification_folder();
+            if !new_parent.starts_with(classification_folder) {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entry to a different classification folder".to_string(),
+                ));
+            }
+
+            // We can only move entries into a directory entry
+            // Check if the destination path has dir config file
+            let dest_entry_config = self.abs_path.join(&new_parent).join(DIR_CONFIG_FILENAME);
+            if !dest_entry_config.exists() {
+                return Err(WorktreeError::InvalidInput(
+                    "Cannot move entries into a non-directory entry".to_string(),
+                ));
+            }
+
+            let old_path = entry.path.clone();
+            let new_path = update_path_parent(entry.path.as_ref(), &new_parent)?;
+            path = new_path.clone();
+
+            self.rename_entry(&old_path, &new_path).await?;
+            *entry.path = new_path.into();
+        }
+
         if let Some(name) = params.name {
             let old_path = entry.path.clone();
             let new_path = rename_path(entry.path.as_ref(), &name);
@@ -681,14 +755,14 @@ impl WorktreeService {
         let mut txn = self.storage.begin_write()?;
 
         if let Some(order) = params.order {
-            self.storage.put_entry_order_txn(&mut txn, id, order)?;
+            self.storage.put_entry_order_txn(&mut txn, &id, order)?;
         }
 
         if let Some(expanded) = params.expanded {
             if expanded {
-                state_lock.expanded_entries.insert(id);
+                state_lock.expanded_entries.insert(id.to_owned());
             } else {
-                state_lock.expanded_entries.remove(&id);
+                state_lock.expanded_entries.remove(id);
             }
 
             self.storage.put_expanded_entries_txn(
@@ -696,7 +770,7 @@ impl WorktreeService {
                 state_lock
                     .expanded_entries
                     .iter()
-                    .copied()
+                    .cloned()
                     .collect::<Vec<_>>(),
             )?;
         }
@@ -743,11 +817,8 @@ impl WorktreeService {
     }
 
     async fn rename_entry(&self, from: &Path, to: &Path) -> WorktreeResult<()> {
-        let encoded_from = moss_fs::utils::sanitize_path(from, None)?;
-        let encoded_to = moss_fs::utils::sanitize_path(to, None)?;
-
-        let abs_from = self.absolutize(&encoded_from)?;
-        let abs_to = self.absolutize(&encoded_to)?;
+        let abs_from = self.absolutize(&from)?;
+        let abs_to = self.absolutize(&to)?;
 
         if !abs_from.exists() {
             return Err(WorktreeError::NotFound(from.display().to_string()));
@@ -772,11 +843,38 @@ impl WorktreeService {
     }
 }
 
+/// Update the filename of a path to the encoded input name
 fn rename_path(path: &Path, name: &str) -> PathBuf {
     let mut buf = PathBuf::from(path);
     buf.pop();
     buf.push(sanitize(name));
     buf
+}
+
+/// Update the parent of a path, preserving the filename
+fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf> {
+    let name = path
+        .file_name()
+        .ok_or(anyhow!(format!(
+            "Invalid entry path: {}",
+            path.to_string_lossy().to_string()
+        )))?
+        .to_string_lossy()
+        .to_string();
+
+    Ok(new_parent.join(name))
+}
+
+// We don't allow creating subentries inside an item
+fn is_parent_a_dir_entry(abs_path: &Path, parent_path: &Path) -> bool {
+    if parent_path == Path::new(COLLECTION_ROOT_PATH) {
+        // Ignore the root level since it's not an entry
+        return true;
+    }
+    abs_path
+        .join(parent_path)
+        .join(constants::DIR_CONFIG_FILENAME)
+        .exists()
 }
 
 async fn process_dir_entry(
@@ -791,7 +889,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawDirConfiguration>(&fs, &dir_config_path).await?;
 
         return Ok(Some(Entry {
-            id: config.id(),
+            id: config.id().clone(),
             path: desanitize_path(path, None)?.into(),
             configuration: EntryConfiguration::Dir(config),
         }));
@@ -801,7 +899,7 @@ async fn process_dir_entry(
         let config = parse_configuration::<RawItemConfiguration>(&fs, &item_config_path).await?;
 
         return Ok(Some(Entry {
-            id: config.id(),
+            id: config.id().clone(),
             path: desanitize_path(path, None)?.into(),
             configuration: EntryConfiguration::Item(config),
         }));

@@ -1,17 +1,24 @@
+use crate::{
+    models::primitives::{LogEntryId, WorkspaceId},
+    storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at},
+};
 use anyhow::Result;
 use moss_applib::ServiceMarker;
 use moss_db::{DatabaseResult, Transaction, primitives::AnyValue};
 use moss_storage::{
     GlobalStorage,
     global_storage::GlobalStorageImpl,
-    primitives::segkey::SegKeyBuf,
+    primitives::segkey::{SegKey, SegKeyBuf},
     storage::operations::{
         GetItem, ListByPrefix, RemoveByPrefix, RemoveItem, TransactionalPutItem,
+        TransactionalRemoveItem,
     },
 };
-use std::{collections::HashMap, path::Path, sync::Arc};
-
-use crate::storage::segments::{SEGKEY_LAST_ACTIVE_WORKSPACE, segkey_last_opened_at};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 pub struct StorageService {
     storage: Arc<dyn GlobalStorage>,
@@ -47,16 +54,16 @@ impl StorageService {
         Ok(())
     }
 
-    pub(crate) fn get_last_active_workspace(&self) -> DatabaseResult<String> {
+    pub(crate) fn get_last_active_workspace(&self) -> DatabaseResult<WorkspaceId> {
         let store = self.storage.item_store();
         let data = GetItem::get(store.as_ref(), SEGKEY_LAST_ACTIVE_WORKSPACE.to_segkey_buf())?;
-        Ok(data.deserialize::<String>()?)
+        Ok(data.deserialize::<WorkspaceId>()?)
     }
 
     pub(crate) fn put_last_active_workspace_txn(
         &self,
         txn: &mut Transaction,
-        id: &str,
+        id: &WorkspaceId,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();
 
@@ -73,7 +80,7 @@ impl StorageService {
     pub(crate) fn put_last_opened_at_txn(
         &self,
         txn: &mut Transaction,
-        id: &str,
+        id: &WorkspaceId,
         timestamp: i64,
     ) -> DatabaseResult<()> {
         let store = self.storage.item_store();
@@ -104,6 +111,36 @@ impl StorageService {
 
         RemoveByPrefix::remove_by_prefix(store.as_ref(), prefix)?;
 
+        Ok(())
+    }
+
+    pub(crate) fn get_log_path(&self, log_id: &LogEntryId) -> DatabaseResult<PathBuf> {
+        let segkey = SegKey::new(&log_id).to_segkey_buf();
+        let store = self.storage.log_store();
+        let data = GetItem::get(store.as_ref(), segkey)?;
+        Ok(data.deserialize::<PathBuf>()?)
+    }
+
+    pub(crate) fn remove_log_path_txn(
+        &self,
+        txn: &mut Transaction,
+        log_id: &LogEntryId,
+    ) -> DatabaseResult<()> {
+        let segkey = SegKey::new(&log_id).to_segkey_buf();
+        let store = self.storage.log_store();
+        TransactionalRemoveItem::remove(store.as_ref(), txn, segkey)?;
+        Ok(())
+    }
+
+    pub(crate) fn put_log_path_txn(
+        &self,
+        txn: &mut Transaction,
+        log_id: &LogEntryId,
+        path: PathBuf,
+    ) -> DatabaseResult<()> {
+        let segkey = SegKey::new(&log_id).to_segkey_buf();
+        let store = self.storage.log_store();
+        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&path)?)?;
         Ok(())
     }
 }

@@ -4,7 +4,7 @@ use moss_applib::{
     providers::{ServiceMap, ServiceProvider},
     subscription::EventEmitter,
 };
-use moss_file::toml::TomlFileHandle;
+use moss_file::json::JsonFileHandle;
 use moss_fs::FileSystem;
 use moss_git::url::normalize_git_url;
 use moss_hcl::Block;
@@ -14,18 +14,20 @@ use std::{
     sync::Arc,
 };
 use tokio::sync::OnceCell;
-use uuid::Uuid;
 
 use crate::{
     Collection,
     config::{CONFIG_FILE_NAME, ConfigModel},
-    constants::COLLECTION_ICON_FILENAME,
+    constants::{COLLECTION_ICON_FILENAME, COLLECTION_ROOT_PATH},
     defaults,
     dirs::{self, ASSETS_DIR},
     manifest::{MANIFEST_FILE_NAME, ManifestModel},
-    models::types::configuration::docschema::{
-        RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
-        RawDirRequestConfiguration, RawDirSchemaConfiguration,
+    models::{
+        primitives::EntryId,
+        types::configuration::docschema::{
+            RawDirComponentConfiguration, RawDirConfiguration, RawDirEndpointConfiguration,
+            RawDirRequestConfiguration, RawDirSchemaConfiguration,
+        },
     },
     services::{
         set_icon::{SetIconService, constants::ICON_SIZE},
@@ -35,7 +37,7 @@ use crate::{
 
 const OTHER_DIRS: [&str; 2] = [dirs::ASSETS_DIR, dirs::ENVIRONMENTS_DIR];
 
-const WORKTREE_DIRS: [(&str, usize); 4] = [
+const WORKTREE_DIRS: [(&str, isize); 4] = [
     (dirs::REQUESTS_DIR, 0),
     (dirs::ENDPOINTS_DIR, 1),
     (dirs::COMPONENTS_DIR, 2),
@@ -78,13 +80,13 @@ impl CollectionBuilder {
     pub async fn load(self, params: CollectionLoadParams) -> Result<Collection> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::load(
+        let manifest = JsonFileHandle::load(
             self.fs.clone(),
-            params.internal_abs_path.join(MANIFEST_FILE_NAME),
+            &params.internal_abs_path.join(MANIFEST_FILE_NAME),
         )
         .await?;
 
-        let config = TomlFileHandle::load(
+        let config = JsonFileHandle::load(
             self.fs.clone(),
             &params.internal_abs_path.join(CONFIG_FILE_NAME),
         )
@@ -116,28 +118,28 @@ impl CollectionBuilder {
         let worktree_service = services.get::<WorktreeService>();
 
         for (dir, order) in &WORKTREE_DIRS {
-            let id = Uuid::new_v4();
+            let id = EntryId::new();
             let configuration = match *dir {
                 dirs::REQUESTS_DIR => {
-                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(id)))
+                    RawDirConfiguration::Request(Block::new(RawDirRequestConfiguration::new(&id)))
                 }
                 dirs::ENDPOINTS_DIR => {
-                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(id)))
+                    RawDirConfiguration::Endpoint(Block::new(RawDirEndpointConfiguration::new(&id)))
                 }
                 dirs::COMPONENTS_DIR => RawDirConfiguration::Component(Block::new(
-                    RawDirComponentConfiguration::new(id),
+                    RawDirComponentConfiguration::new(&id),
                 )),
                 dirs::SCHEMAS_DIR => {
-                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(id)))
+                    RawDirConfiguration::Schema(Block::new(RawDirSchemaConfiguration::new(&id)))
                 }
                 _ => unreachable!(),
             };
 
             worktree_service
                 .create_dir_entry(
-                    id,
+                    &id,
                     dir,
-                    "",
+                    COLLECTION_ROOT_PATH,
                     configuration,
                     EntryMetadata {
                         order: *order,
@@ -157,9 +159,9 @@ impl CollectionBuilder {
             None
         };
 
-        let manifest = moss_file::toml::EditableInPlaceFileHandle::create(
+        let manifest = JsonFileHandle::create(
             self.fs.clone(),
-            abs_path.join(MANIFEST_FILE_NAME),
+            &abs_path.join(MANIFEST_FILE_NAME),
             ManifestModel {
                 name: params
                     .name
@@ -169,7 +171,7 @@ impl CollectionBuilder {
         )
         .await?;
 
-        let config = TomlFileHandle::create(
+        let config = JsonFileHandle::create(
             self.fs.clone(),
             &params.internal_abs_path.join(CONFIG_FILE_NAME),
             ConfigModel {

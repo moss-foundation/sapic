@@ -1,11 +1,13 @@
 use moss_common::api::OperationResult;
 use tauri::Runtime as TauriRuntime;
-use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     context::AnyWorkspaceContext,
-    models::operations::{CreateCollectionInput, CreateCollectionOutput},
+    models::{
+        operations::{CreateCollectionInput, CreateCollectionOutput},
+        primitives::CollectionId,
+    },
     services::collection_service::{CollectionItemCreateParams, CollectionService},
     workspace::Workspace,
 };
@@ -21,11 +23,11 @@ impl<R: TauriRuntime> Workspace<R> {
         debug_assert!(input.external_path.is_none(), "Is not implemented");
 
         let collection_service = self.services.get::<CollectionService>();
-        let id = Uuid::new_v4();
+        let id = CollectionId::new();
 
         let description = collection_service
             .create_collection(
-                id,
+                &id,
                 CollectionItemCreateParams {
                     name: input.name.to_owned(),
                     order: input.order.to_owned(),
@@ -37,7 +39,7 @@ impl<R: TauriRuntime> Workspace<R> {
             .await?;
 
         Ok(CreateCollectionOutput {
-            id,
+            id: id,
             name: description.name,
             order: description.order,
             expanded: description.expanded,

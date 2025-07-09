@@ -9,9 +9,8 @@ use moss_storage::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 use std::{hash::Hash, path::Path, sync::Arc};
-use uuid::Uuid;
 
-use crate::storage::segments;
+use crate::{models::primitives::EntryId, storage::segments};
 
 pub struct StorageService {
     storage: Arc<dyn CollectionStorage>,
@@ -45,13 +44,13 @@ impl StorageService {
     pub(crate) fn put_entry_order_txn(
         &self,
         txn: &mut Transaction,
-        id: Uuid,
-        order: usize,
+        id: &EntryId,
+        order: isize,
     ) -> Result<()> {
         let store = self.storage.resource_store();
 
-        let segkey = segments::segkey_entry_order(&id.to_string());
-        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::from(order))?;
+        let segkey = segments::segkey_entry_order(&id);
+        TransactionalPutItem::put(store.as_ref(), txn, segkey, AnyValue::serialize(&order)?)?;
 
         Ok(())
     }
@@ -101,5 +100,12 @@ impl StorageService {
         let segkey = segments::SEGKEY_EXPANDED_ENTRIES.to_segkey_buf();
         let value = GetItem::get(store.as_ref(), segkey)?;
         Ok(AnyValue::deserialize::<Vec<T>>(&value)?)
+    }
+
+    // HACK: This is a hack to get the storage service for testing purposes.
+    // As soon as we switch to getting services by trait instead of by type,
+    // we'll be able to move this method into the test service, TestStorageService.
+    pub fn __storage(&self) -> &Arc<dyn CollectionStorage> {
+        &self.storage
     }
 }

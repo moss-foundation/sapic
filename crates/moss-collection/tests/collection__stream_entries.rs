@@ -2,48 +2,14 @@ pub mod shared;
 
 use futures;
 use moss_collection::{
-    dirs,
-    models::{
-        operations::{CreateDirEntryInput, CreateEntryInput},
-        primitives::EntryKind,
-        types::configuration::{
-            DirConfigurationModel, DirHttpConfigurationModel, DirRequestConfigurationModel,
-        },
-    },
-    services::worktree_service::EntryDescription,
+    dirs, models::primitives::EntryKind, services::worktree_service::EntryDescription,
 };
-use moss_testutils::random_name::random_string;
-use std::path::PathBuf;
 use tokio::sync::mpsc;
 
-use crate::shared::create_test_collection;
-
-fn random_entry_name() -> String {
-    format!("Test_{}_Entry", random_string(10))
-}
-
-fn create_test_dir_configuration() -> DirConfigurationModel {
-    DirConfigurationModel::Request(DirRequestConfigurationModel::Http(
-        DirHttpConfigurationModel {},
-    ))
-}
-
-async fn create_test_entry_in_dir(
-    collection: &mut moss_collection::Collection,
-    entry_name: &str,
-    dir_name: &str,
-) {
-    let entry_path = PathBuf::from(dir_name);
-
-    let input = CreateEntryInput::Dir(CreateDirEntryInput {
-        path: entry_path.clone(),
-        name: entry_name.to_string(),
-        order: 0,
-        configuration: create_test_dir_configuration(),
-    });
-
-    collection.create_entry(input).await.unwrap();
-}
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+};
 
 // Helper function to scan entries using worktree directly
 // This bypasses the Tauri Channel requirement for testing
@@ -116,10 +82,10 @@ async fn stream_entries_single_entry() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    create_test_entry_in_dir(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
+    create_test_request_dir_entry(&mut collection, &entry_name).await;
 
     // Scan the components directory
-    let entries = scan_entries_for_test(&collection, dirs::COMPONENTS_DIR).await;
+    let entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
 
     // Should have 2 entries: the directory itself + the created entry
     assert_eq!(
@@ -139,12 +105,11 @@ async fn stream_entries_single_entry() {
         created_entry.path.file_name().unwrap().to_string_lossy(),
         entry_name
     );
-    assert!(!created_entry.id.is_nil());
 
     // Verify the directory entry is also present
     let dir_entry = entries
         .iter()
-        .find(|e| e.name == dirs::COMPONENTS_DIR)
+        .find(|e| e.name == dirs::REQUESTS_DIR)
         .expect("Should find the directory entry");
     assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
@@ -160,9 +125,9 @@ async fn stream_entries_multiple_entries_same_directory() {
     let entry2_name = format!("{}_2", random_entry_name());
     let entry3_name = format!("{}_3", random_entry_name());
 
-    create_test_entry_in_dir(&mut collection, &entry1_name, dirs::REQUESTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &entry2_name, dirs::REQUESTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &entry3_name, dirs::REQUESTS_DIR).await;
+    create_test_request_dir_entry(&mut collection, &entry1_name).await;
+    create_test_request_dir_entry(&mut collection, &entry2_name).await;
+    create_test_request_dir_entry(&mut collection, &entry3_name).await;
 
     let entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
 
@@ -189,15 +154,6 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry2_name.as_str()));
     assert!(entry_names.contains(&entry3_name.as_str()));
 
-    // Verify all entries have valid IDs
-    for entry in &created_entries {
-        assert!(
-            !entry.id.is_nil(),
-            "Entry {} should have a valid ID",
-            entry.name
-        );
-    }
-
     // Verify the directory entry is present
     let dir_entry = entries
         .iter()
@@ -213,6 +169,14 @@ async fn stream_entries_multiple_entries_same_directory() {
 async fn stream_entries_multiple_directories() {
     let (collection_path, mut collection) = create_test_collection().await;
 
+    let expected_name = "entry".to_string();
+
+    // We have to manually do this now, since we will validate path against configuration
+    let _ = create_test_request_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_endpoint_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_component_dir_entry(&mut collection, &expected_name).await;
+    let _ = create_test_schema_dir_entry(&mut collection, &expected_name).await;
+
     let directories = [
         dirs::REQUESTS_DIR,
         dirs::ENDPOINTS_DIR,
@@ -220,17 +184,7 @@ async fn stream_entries_multiple_directories() {
         dirs::SCHEMAS_DIR,
     ];
 
-    let mut expected_entries = Vec::new();
-
-    // Create one entry in each directory
-    for (idx, dir) in directories.iter().enumerate() {
-        let entry_name = format!("{}_{}", random_entry_name(), idx);
-        create_test_entry_in_dir(&mut collection, &entry_name, dir).await;
-        expected_entries.push((entry_name, dir));
-    }
-
-    // Scan each directory and verify entries
-    for (expected_name, dir) in &expected_entries {
+    for dir in directories {
         let entries = scan_entries_for_test(&collection, dir).await;
 
         // Should have 2 entries: the directory itself + the created entry
@@ -244,19 +198,15 @@ async fn stream_entries_multiple_directories() {
         // Find the created entry (not the directory)
         let created_entry = entries
             .iter()
-            .find(|e| e.name == *expected_name)
-            .expect(&format!(
-                "Should find created entry {} in {}",
-                expected_name, dir
-            ));
+            .find(|e| e.name == expected_name)
+            .expect(&format!("Should find created entry in {}", dir));
 
-        assert_eq!(created_entry.name, *expected_name);
-        assert!(!created_entry.id.is_nil());
+        assert_eq!(created_entry.name, expected_name);
 
         // Verify the directory entry is present
         let dir_entry = entries
             .iter()
-            .find(|e| e.name == **dir)
+            .find(|e| e.name == dir)
             .expect(&format!("Should find directory entry for {}", dir));
         assert!(matches!(dir_entry.kind, EntryKind::Dir));
     }
@@ -273,8 +223,8 @@ async fn stream_entries_scan_operation_stability() {
     let entry1_name = format!("{}_1", random_entry_name());
     let entry2_name = format!("{}_2", random_entry_name());
 
-    create_test_entry_in_dir(&mut collection, &entry1_name, dirs::COMPONENTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &entry2_name, dirs::REQUESTS_DIR).await;
+    let _ = create_test_component_dir_entry(&mut collection, &entry1_name).await;
+    let _ = create_test_request_dir_entry(&mut collection, &entry2_name).await;
 
     // Test that scan operations don't crash with mixed content
     for dir in &[
@@ -330,10 +280,10 @@ async fn stream_entries_mixed_content() {
     let components_entry2 = format!("{}_comp2", random_entry_name());
     let schemas_entry = format!("{}_schema", random_entry_name());
 
-    create_test_entry_in_dir(&mut collection, &requests_entry, dirs::REQUESTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &components_entry1, dirs::COMPONENTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &components_entry2, dirs::COMPONENTS_DIR).await;
-    create_test_entry_in_dir(&mut collection, &schemas_entry, dirs::SCHEMAS_DIR).await;
+    create_test_request_dir_entry(&mut collection, &requests_entry).await;
+    create_test_component_dir_entry(&mut collection, &components_entry1).await;
+    create_test_component_dir_entry(&mut collection, &components_entry2).await;
+    create_test_schema_dir_entry(&mut collection, &schemas_entry).await;
 
     // Test each directory independently
 
@@ -385,9 +335,9 @@ async fn stream_entries_verify_entry_properties() {
     let (collection_path, mut collection) = create_test_collection().await;
 
     let entry_name = random_entry_name();
-    create_test_entry_in_dir(&mut collection, &entry_name, dirs::COMPONENTS_DIR).await;
+    create_test_request_dir_entry(&mut collection, &entry_name).await;
 
-    let entries = scan_entries_for_test(&collection, dirs::COMPONENTS_DIR).await;
+    let entries = scan_entries_for_test(&collection, dirs::REQUESTS_DIR).await;
     // Should have 2 entries: directory + created entry
     assert_eq!(entries.len(), 2);
 
@@ -398,7 +348,6 @@ async fn stream_entries_verify_entry_properties() {
         .expect("Should find the created entry");
 
     // Verify all properties are set correctly for the created entry
-    assert!(!created_entry.id.is_nil(), "ID should be set");
     assert_eq!(created_entry.name, entry_name, "Name should match");
     assert!(
         !created_entry.path.to_string_lossy().is_empty(),
@@ -424,7 +373,7 @@ async fn stream_entries_verify_entry_properties() {
     // Verify the directory entry is also present
     let dir_entry = entries
         .iter()
-        .find(|e| e.name == dirs::COMPONENTS_DIR)
+        .find(|e| e.name == dirs::REQUESTS_DIR)
         .expect("Should find the directory entry");
     assert!(matches!(dir_entry.kind, EntryKind::Dir));
 
