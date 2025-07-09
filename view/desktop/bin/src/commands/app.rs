@@ -249,23 +249,6 @@ pub async fn update_workspace<R: TauriRuntime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn describe_workbench_state<R: TauriRuntime>(
-    app: State<'_, App<R>>,
-    window: Window<R>,
-    options: Options,
-) -> TauriResult<DescribeWorkbenchStateOutput> {
-    api::with_timeout(options, async move {
-        let ctx = AppContext::from(&app);
-        app.describe_workbench_state(&ctx)
-            .await
-            .map_err(TauriError::OperationError)
-    })
-    .await
-    .map_err(|_| TauriError::Timeout)?
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn execute_command<R: TauriRuntime>(
     app: State<'_, App<R>>,
     window: Window<R>,
