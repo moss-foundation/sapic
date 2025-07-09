@@ -1,6 +1,6 @@
 pub mod batch_create_entry;
-pub mod batch_delete_entry;
 pub mod batch_update_entry;
+mod common;
 pub mod create_entry;
 pub mod delete_entry;
 pub mod list_environments;
