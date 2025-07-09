@@ -469,7 +469,7 @@ impl LogService {
         let f = self.fs.open_file(path).await?;
         let reader = BufReader::new(f);
 
-        let mut write_txn = self.storage.begin_write()?;
+        let mut txn = self.storage.begin_write()?;
 
         for line in reader.lines() {
             let line = line?;
@@ -481,8 +481,7 @@ impl LogService {
                     file_path: Some(path.to_path_buf()),
                 });
                 // Remove the entry from the database
-                self.storage
-                    .remove_log_path_txn(&mut write_txn, &log_entry.id)?;
+                self.storage.remove_log_path_txn(&mut txn, &log_entry.id)?;
             } else {
                 new_content.push_str(&line);
                 new_content.push('\n');
@@ -501,7 +500,7 @@ impl LogService {
                 )
                 .await?;
         }
-        write_txn.commit()?;
+        txn.commit()?;
 
         // TODO: Should we delete a file if all entries in it are deleted?
         Ok(removed_entries)
