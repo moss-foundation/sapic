@@ -1,3 +1,5 @@
+#![cfg(feature = "integration-tests")]
+
 use moss_collection::{
     constants, dirs,
     models::operations::{

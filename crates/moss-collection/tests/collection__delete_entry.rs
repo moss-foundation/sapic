@@ -1,15 +1,17 @@
+#![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
-    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
-};
 use moss_collection::{
     dirs,
     models::{operations::DeleteEntryInput, primitives::EntryId},
 };
 use moss_common::api::OperationError;
 use std::path::PathBuf;
+
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_endpoint_dir_entry,
+    create_test_request_dir_entry, create_test_schema_dir_entry, random_entry_name,
+};
 
 #[tokio::test]
 async fn delete_entry_success() {

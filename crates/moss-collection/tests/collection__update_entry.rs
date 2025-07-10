@@ -1,14 +1,11 @@
-use crate::shared::{
-    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
-    create_test_request_dir_entry, random_entry_name,
-};
+#![cfg(feature = "integration-tests")]
+
+mod shared;
+
 use moss_collection::{
     dirs,
     models::{operations::UpdateEntryInput, primitives::EntryId, types::UpdateDirEntryParams},
-    services::{
-        StorageService,
-        storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
-    },
+    services::storage_service::impl_for_integration_test::StorageServiceForIntegrationTest,
     storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
 };
 use moss_storage::storage::operations::GetItem;
@@ -16,8 +13,10 @@ use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use std::path::{Path, PathBuf};
 
-mod shared;
-
+use crate::shared::{
+    create_test_collection, create_test_component_dir_entry, create_test_component_item_entry,
+    create_test_request_dir_entry, random_entry_name,
+};
 // TODO: Test updating entry order
 
 #[tokio::test]

@@ -30,9 +30,9 @@ use crate::{
         },
     },
     services::{
-        AnyWorktreeService, DynWorktreeService,
+        DynWorktreeService,
         set_icon_service::{SetIconService, constants::ICON_SIZE},
-        worktree_service::{EntryMetadata, WorktreeService},
+        worktree_service::EntryMetadata,
     },
 };
 

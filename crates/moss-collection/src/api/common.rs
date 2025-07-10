@@ -16,7 +16,7 @@ use crate::{
         },
     },
     services::{
-        DynWorktreeService, WorktreeService,
+        DynWorktreeService,
         worktree_service::{EntryMetadata, ModifyParams},
     },
 };

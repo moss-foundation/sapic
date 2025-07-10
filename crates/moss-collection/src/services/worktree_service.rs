@@ -27,7 +27,7 @@ use crate::{
         primitives::{EntryClass, EntryId, EntryKind, EntryProtocol},
         types::configuration::docschema::{RawDirConfiguration, RawItemConfiguration},
     },
-    services::{AnyWorktreeService, DynStorageService, storage_service::StorageService},
+    services::{AnyWorktreeService, DynStorageService},
     storage::segments,
 };
 

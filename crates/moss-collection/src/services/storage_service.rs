@@ -1,6 +1,6 @@
+#[cfg(any(test, feature = "integration-tests"))]
 pub mod impl_for_integration_test;
 
-use crate::{models::primitives::EntryId, services::AnyStorageService, storage::segments};
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
 use moss_applib::ServiceMarker;
@@ -11,8 +11,9 @@ use moss_storage::{
     primitives::segkey::SegKeyBuf,
     storage::operations::{GetItem, ListByPrefix, TransactionalPutItem},
 };
-use serde::{Serialize, de::DeserializeOwned};
-use std::{collections::HashMap, hash::Hash, path::Path, sync::Arc};
+use std::{collections::HashMap, path::Path, sync::Arc};
+
+use crate::{models::primitives::EntryId, services::AnyStorageService, storage::segments};
 
 pub struct StorageService {
     storage: Arc<dyn CollectionStorage>,

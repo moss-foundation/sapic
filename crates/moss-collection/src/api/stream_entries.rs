@@ -19,11 +19,7 @@ use crate::{
         primitives::{EntryId, EntryPath},
         types::EntryInfo,
     },
-    services::{
-        DynStorageService, DynWorktreeService,
-        storage_service::StorageService,
-        worktree_service::{EntryDescription, WorktreeService},
-    },
+    services::{DynStorageService, DynWorktreeService, worktree_service::EntryDescription},
 };
 
 const EXPANSION_DIRECTORIES: &[&str] = &[

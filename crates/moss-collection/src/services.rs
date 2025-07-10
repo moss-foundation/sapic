@@ -10,10 +10,8 @@ use derive_more::Deref;
 use moss_applib::ServiceMarker;
 use moss_db::{Transaction, primitives::AnyValue};
 use moss_storage::primitives::segkey::SegKeyBuf;
-use serde::{Serialize, de::DeserializeOwned};
 use std::{
     collections::{HashMap, HashSet},
-    hash::Hash,
     path::{Path, PathBuf},
     sync::Arc,
 };

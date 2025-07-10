@@ -1,12 +1,11 @@
-use crate::{
-    collection::Collection,
-    models::operations::{DeleteEntryInput, DeleteEntryOutput},
-    services::worktree_service::WorktreeService,
-};
 use moss_common::api::OperationResult;
 use validator::Validate;
 
-use crate::services::{AnyWorktreeService, DynWorktreeService};
+use crate::{
+    collection::Collection,
+    models::operations::{DeleteEntryInput, DeleteEntryOutput},
+    services::DynWorktreeService,
+};
 
 impl Collection {
     pub async fn delete_entry(

@@ -1,6 +1,5 @@
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
-use moss_applib::ServiceMarker;
 use std::path::Path;
 
 // FIXME: This either shouldn’t be public or should be moved to `lib.rs`.

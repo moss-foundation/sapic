@@ -1,11 +1,12 @@
+use moss_applib::ServiceMarker;
+use moss_db::{Transaction, primitives::AnyValue};
+use moss_storage::{CollectionStorage, primitives::segkey::SegKeyBuf};
+use std::{collections::HashMap, sync::Arc};
+
 use crate::{
     models::primitives::EntryId,
     services::{AnyStorageService, StorageService},
 };
-use moss_applib::ServiceMarker;
-use moss_db::{Transaction, primitives::AnyValue};
-use moss_storage::{CollectionStorage, primitives::segkey::SegKeyBuf, storage::Storage};
-use std::{collections::HashMap, sync::Arc};
 
 pub struct StorageServiceForIntegrationTest {
     real: Arc<StorageService>,
